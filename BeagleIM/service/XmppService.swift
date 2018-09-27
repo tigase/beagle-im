@@ -12,14 +12,14 @@ import TigaseSwift
 class XmppService: EventHandler {
     
     static let CONTACT_PRESENCE_CHANGED = Notification.Name("contactPresenceChanged");
-    static let ROOM_STATUS_CHANGED = Notification.Name("roomStatusChanged");
-    static let ROOM_OCCUPANTS_CHANGED = Notification.Name("roomOccupantsChanged");
     static let STATUS_CHANGED = Notification.Name("statusChanged");
     static let SERVER_CERTIFICATE_ERROR = Notification.Name("serverCertificateError");
     
     static let instance = XmppService();
  
-    fileprivate let observedEvents: [Event] = [ SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, MessageModule.MessageReceivedEvent.TYPE, RosterModule.ItemUpdatedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE, PresenceModule.BeforePresenceSendEvent.TYPE, PresenceModule.SubscribeRequestEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE, MucModule.OccupantChangedNickEvent.TYPE, MucModule.OccupantChangedPresenceEvent.TYPE, MucModule.OccupantLeavedEvent.TYPE, MucModule.OccupantComesEvent.TYPE, MucModule.PresenceErrorEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, PEPUserAvatarModule.AvatarChangedEvent.TYPE ];
+    fileprivate let observedEvents: [Event] = [ SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE ];
+    
+    fileprivate let eventHandlers: [XmppServiceEventHandler] = [MucEventHandler(), PresenceRosterEventHandler(), AvatarEventHandler(), MessageEventHandler()];
     
     var clients: [BareJID: XMPPClient] {
         get {
@@ -146,25 +146,7 @@ class XmppService: EventHandler {
             //test(e.sessionObject);
             print("account", e.sessionObject.userBareJid!, "is now connected!");
             self.updateCurrentStatus();
-            
-            if let mucModule: MucModule = self.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(MucModule.ID) {
-                mucModule.roomsManager.getRooms().forEach { (room) in
-                    _ = room.rejoin();
-                    NotificationCenter.default.post(name: XmppService.ROOM_STATUS_CHANGED, object: room);
-                }
-            }
-//            if e.sessionObject.userBareJid?.domain == "localhost" {
-//                VCardManager.instance.refreshVCard(for: BareJID("admin@localhost"), on: e.sessionObject.userBareJid!, completionHandler: nil);
-//            }
             break;
-        case let e as MessageModule.MessageReceivedEvent:
-            guard let from = e.message.from, let body = e.message.body else {
-                return;
-            }
-            let timestamp = e.message.delay?.stamp ?? Date();
-            DBChatHistoryStore.instance.appendItem(for: e.sessionObject.userBareJid!, with: from.bareJid, state: ((e.message.type ?? .chat) == .error) ? .incoming_error_unread : .incoming_unread, type: .message, timestamp: timestamp, stanzaId: e.message.id, data: body, completionHandler: nil);
-        case let e as RosterModule.ItemUpdatedEvent:
-            NotificationCenter.default.post(name: DBRosterStore.ITEM_UPDATED, object: e);
         case let e as SocketConnector.CertificateErrorEvent:
             let certData = ServerCertificateInfo(trust: e.trust);
             
@@ -195,6 +177,9 @@ class XmppService: EventHandler {
                     }
                     DispatchQueue.global().asyncAfter(deadline: DispatchTime.now() + 0.5, execute: {
                         client.eventBus.unregister(handler: self, for: self.observedEvents);
+                        self.eventHandlers.forEach { handler in
+                            client.eventBus.unregister(handler: handler, for: handler.events);
+                        }
                     })
                 }
             }
@@ -212,95 +197,6 @@ class XmppService: EventHandler {
                     self.connect(client: client);
                 }
             }
-        case let e as PresenceModule.BeforePresenceSendEvent:
-            e.presence.show = status.show;
-            e.presence.status = status.message;
-        case let e as PresenceModule.ContactPresenceChanged:
-            NotificationCenter.default.post(name: XmppService.CONTACT_PRESENCE_CHANGED, object: e);
-            guard let photoId = e.presence.vcardTempPhoto else {
-                return;
-            }
-            AvatarManager.instance.avatarHashChanged(for: e.presence.from!.bareJid, on: e.presence.to!.bareJid, type: .vcardTemp, hash: photoId);
-        case let e as PresenceModule.SubscribeRequestEvent:
-            guard let jid = e.presence.from else {
-                return;
-            }
-            DispatchQueue.main.async {
-                let alert = NSAlert();
-                alert.icon = NSImage(named: NSImage.userName);
-                alert.messageText = "Authroization request";
-                alert.informativeText = "\(jid.bareJid) requests authorization to access information about you presence";
-                alert.addButton(withTitle: "Accept");
-                alert.addButton(withTitle: "Deny");
-                
-                if alert.runModal() == NSApplication.ModalResponse.alertFirstButtonReturn {
-                    guard let presenceModule: PresenceModule = self.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(PresenceModule.ID) else {
-                        return;
-                    }
-                    
-                    presenceModule.subscribed(by: jid);
-                    
-                    if Settings.requestPresenceSubscription.bool() {
-                        presenceModule.subscribe(to: jid);
-                    }
-                }
-            }
-        case let e as PEPUserAvatarModule.AvatarChangedEvent:
-            guard let item = e.info.first(where: { info -> Bool in
-                return info.url == nil;
-            }) else {
-                return;
-            }
-            AvatarManager.instance.avatarHashChanged(for: e.jid.bareJid, on: e.sessionObject.userBareJid!, type: .pepUserAvatar, hash: item.id);
-        case let e as MucModule.YouJoinedEvent:
-            guard let room = e.room as? DBChatStore.DBRoom else {
-                return;
-            }
-            NotificationCenter.default.post(name: XmppService.ROOM_STATUS_CHANGED, object: room);
-            NotificationCenter.default.post(name: XmppService.ROOM_OCCUPANTS_CHANGED, object: room.presences[room.nickname]);
-        case let e as MucModule.RoomClosedEvent:
-            guard let room = e.room as? DBChatStore.DBRoom else {
-                return;
-            }
-            NotificationCenter.default.post(name: XmppService.ROOM_STATUS_CHANGED, object: room);
-        case let e as MucModule.MessageReceivedEvent:
-            guard let room = e.room as? DBChatStore.DBRoom else {
-                return;
-            }
-            
-            if e.message.findChild(name: "subject") != nil {
-                room.subject = e.message.subject;
-                NotificationCenter.default.post(name: XmppService.ROOM_STATUS_CHANGED, object: room);
-            }
-            
-            guard let body = e.message.body else {
-                return;
-            }
-        
-            let authorJid = e.nickname == nil ? nil : room.presences[e.nickname!]?.jid?.bareJid;
-            
-            DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: ((e.nickname == nil) || (room.nickname != e.nickname!)) ? .incoming_unread : .outgoing, authorNickname: e.nickname, authorJid: authorJid, type: .message, timestamp: e.timestamp, stanzaId: e.message.id, data: body, completionHandler: nil);
-        case let e as MucModule.AbstractOccupantEvent:
-            NotificationCenter.default.post(name: XmppService.ROOM_OCCUPANTS_CHANGED, object: e);
-        case let e as MucModule.PresenceErrorEvent:
-            guard let error = MucModule.RoomError.from(presence: e.presence), e.nickname == nil || e.nickname! == e.room.nickname else {
-                return;
-            }
-            print("received error from room:", e.room, ", error:", error)
-            let notification = NSUserNotification();
-            notification.identifier = UUID().uuidString;
-            notification.title = "Room \(e.room.roomJid.stringValue)";
-            notification.informativeText = "Could not join room. Reason:\n\(error.reason)";
-            notification.soundName = NSUserNotificationDefaultSoundName;
-            notification.contentImage = NSImage(named: NSImage.userGroupName);
-            if error != .banned && error != .registrationRequired {
-                notification.userInfo = ["account": e.sessionObject.userBareJid!.stringValue, "roomJid": e.room.roomJid.stringValue, "nickname": e.room.nickname, "id": "room-join-error"];
-            }
-            NSUserNotificationCenter.default.deliver(notification);
-            guard let mucModule: MucModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(MucModule.ID) else {
-                return;
-            }
-            mucModule.leave(room: e.room);
         default:
             break;
         }
@@ -342,21 +238,6 @@ class XmppService: EventHandler {
                 }
                 
                 client.disconnect();
-                
-//                guard let client = self._clients.removeValue(forKey: account.name) else {
-//                    return;
-//                }
-//                client.disconnect();
-//
-//                if active != nil {
-//                    if let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) {
-//                        ((messageModule.chatManager as! DefaultChatManager).chatStore as! DBChatStoreWrapper).deinitialize();
-//                    }
-//                } else {
-//                    DBRosterStore.instance.removeAll(for: account.name);
-//                    DBChatStore.instance.closeAll(for: account.name);
-//                    DBChatHistoryStore.instance.removeHistory(for: account.name, with: nil);
-//                }
             }
             return;
         }
@@ -394,7 +275,6 @@ class XmppService: EventHandler {
         
         let client = XMPPClient();
         client.connectionConfiguration.setUserJID(jid);
-//        client.connectionConfiguration.setUserPassword(account.password);
         
         _ = client.modulesManager.register(StreamManagementModule());
         _ = client.modulesManager.register(AuthModule());
@@ -438,6 +318,9 @@ class XmppService: EventHandler {
     fileprivate func register(client: XMPPClient, for account: BareJID) -> XMPPClient {
         return dispatcher.sync {
             client.eventBus.register(handler: self, for: observedEvents);
+            eventHandlers.forEach { handler in
+                client.eventBus.register(handler: handler, for: handler.events);
+            }
         
             self._clients[account] = client;
             return client;
@@ -480,38 +363,6 @@ class XmppService: EventHandler {
                 dict["show"] = show?.rawValue;
             }
             return dict;
-        }
-    }
-}
-
-extension XMPPClient {
-    
-    fileprivate static let RETRY_NO_KEY = "retryNo";
-    
-    var retryNo: Int {
-        get {
-            return sessionObject.getProperty(XMPPClient.RETRY_NO_KEY) ?? 0;
-        }
-        set {
-            sessionObject.setUserProperty(XMPPClient.RETRY_NO_KEY, value: newValue);
-        }
-    }
-    
-    var presenceStore: PresenceStore? {
-        get {
-            guard let presenceModule: PresenceModule = modulesManager.getModule(PresenceModule.ID) else {
-                return nil;
-            }
-            return presenceModule.presenceStore;
-        }
-    }
-    
-    var rosterStore: RosterStore? {
-        get {
-            guard let rosterModule: RosterModule = modulesManager.getModule(RosterModule.ID) else {
-                return nil;
-            }
-            return rosterModule.rosterStore;
         }
     }
 }

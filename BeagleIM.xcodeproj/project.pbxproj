@@ -26,6 +26,12 @@
 		FE41FB31215AB32200AD86D3 /* ServerCertificateInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB30215AB32200AD86D3 /* ServerCertificateInfo.swift */; };
 		FE41FB33215B8D5A00AD86D3 /* ServerCertificateErrorController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB32215B8D5A00AD86D3 /* ServerCertificateErrorController.swift */; };
 		FE41FB37215BBFC800AD86D3 /* DBCapabilitiesCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB36215BBFC800AD86D3 /* DBCapabilitiesCache.swift */; };
+		FE41FB39215CD51700AD86D3 /* MucEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB38215CD51700AD86D3 /* MucEventHandler.swift */; };
+		FE41FB3B215CD7F300AD86D3 /* XmppServiceEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB3A215CD7F300AD86D3 /* XmppServiceEventHandler.swift */; };
+		FE41FB3D215CD82500AD86D3 /* PresenceRosterEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB3C215CD82500AD86D3 /* PresenceRosterEventHandler.swift */; };
+		FE41FB3F215CD95D00AD86D3 /* AvatarEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB3E215CD95D00AD86D3 /* AvatarEventHandler.swift */; };
+		FE41FB41215CDA6000AD86D3 /* MessageEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB40215CDA6000AD86D3 /* MessageEventHandler.swift */; };
+		FE41FB43215CDAF900AD86D3 /* XMPPClient_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB42215CDAF900AD86D3 /* XMPPClient_extension.swift */; };
 		FE5BE64C213AC3EA00463183 /* ChatsCellViewCloseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5BE64B213AC3EA00463183 /* ChatsCellViewCloseButton.swift */; };
 		FE5BE64E213AD19A00463183 /* ChatCellViewMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5BE64D213AD19A00463183 /* ChatCellViewMessage.swift */; };
 		FE6E6BF721384D5F003B1696 /* AutoresizingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */; };
@@ -108,6 +114,12 @@
 		FE41FB30215AB32200AD86D3 /* ServerCertificateInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerCertificateInfo.swift; sourceTree = "<group>"; };
 		FE41FB32215B8D5A00AD86D3 /* ServerCertificateErrorController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerCertificateErrorController.swift; sourceTree = "<group>"; };
 		FE41FB36215BBFC800AD86D3 /* DBCapabilitiesCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBCapabilitiesCache.swift; sourceTree = "<group>"; };
+		FE41FB38215CD51700AD86D3 /* MucEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MucEventHandler.swift; sourceTree = "<group>"; };
+		FE41FB3A215CD7F300AD86D3 /* XmppServiceEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XmppServiceEventHandler.swift; sourceTree = "<group>"; };
+		FE41FB3C215CD82500AD86D3 /* PresenceRosterEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceRosterEventHandler.swift; sourceTree = "<group>"; };
+		FE41FB3E215CD95D00AD86D3 /* AvatarEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarEventHandler.swift; sourceTree = "<group>"; };
+		FE41FB40215CDA6000AD86D3 /* MessageEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEventHandler.swift; sourceTree = "<group>"; };
+		FE41FB42215CDAF900AD86D3 /* XMPPClient_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMPPClient_extension.swift; sourceTree = "<group>"; };
 		FE5BE64B213AC3EA00463183 /* ChatsCellViewCloseButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsCellViewCloseButton.swift; sourceTree = "<group>"; };
 		FE5BE64D213AD19A00463183 /* ChatCellViewMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatCellViewMessage.swift; sourceTree = "<group>"; };
 		FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoresizingTextField.swift; sourceTree = "<group>"; };
@@ -245,6 +257,12 @@
 			isa = PBXGroup;
 			children = (
 				FE6E6BE821384D5E003B1696 /* XmppService.swift */,
+				FE41FB38215CD51700AD86D3 /* MucEventHandler.swift */,
+				FE41FB3A215CD7F300AD86D3 /* XmppServiceEventHandler.swift */,
+				FE41FB3C215CD82500AD86D3 /* PresenceRosterEventHandler.swift */,
+				FE41FB3E215CD95D00AD86D3 /* AvatarEventHandler.swift */,
+				FE41FB40215CDA6000AD86D3 /* MessageEventHandler.swift */,
+				FE41FB42215CDAF900AD86D3 /* XMPPClient_extension.swift */,
 			);
 			path = service;
 			sourceTree = "<group>";
@@ -531,11 +549,15 @@
 				FE6E6C0321384D5F003B1696 /* DBRosterStore.swift in Sources */,
 				FE34BBD52157DDF200775B07 /* MucModule_RoomError_extension.swift in Sources */,
 				FEDE6AFC21455A2B0019170A /* RosterViewController.swift in Sources */,
+				FE41FB3F215CD95D00AD86D3 /* AvatarEventHandler.swift in Sources */,
 				FE30D8B7214D4BCD00670BEC /* Settings.swift in Sources */,
 				FEDE6AF32142DC590019170A /* AvatarViewWithStatus.swift in Sources */,
 				FED7AEC12140569E001E164B /* AddAccountController.swift in Sources */,
+				FE41FB39215CD51700AD86D3 /* MucEventHandler.swift in Sources */,
 				FE6E6BFF21384D5F003B1696 /* ChatViewController.swift in Sources */,
 				FEDE6AF52143D8130019170A /* ChatsListTableRowView.swift in Sources */,
+				FE41FB43215CDAF900AD86D3 /* XMPPClient_extension.swift in Sources */,
+				FE41FB41215CDA6000AD86D3 /* MessageEventHandler.swift in Sources */,
 				FE5BE64E213AD19A00463183 /* ChatCellViewMessage.swift in Sources */,
 				FED7AEC921418FA9001E164B /* DBVCardStore.swift in Sources */,
 				FEA8941F2156625E004C3B51 /* ConfigureRoomViewController.swift in Sources */,
@@ -554,11 +576,13 @@
 				FE3AA0D3215409B8001667A9 /* DBRoomsManager.swift in Sources */,
 				FE5BE64C213AC3EA00463183 /* ChatsCellViewCloseButton.swift in Sources */,
 				FE3AA0D12154077D001667A9 /* ChatsListGroupAbstractChat.swift in Sources */,
+				FE41FB3B215CD7F300AD86D3 /* XmppServiceEventHandler.swift in Sources */,
 				FE30D8B1214CE93600670BEC /* FormView.swift in Sources */,
 				FE30D8B3214CF15700670BEC /* AddContactController.swift in Sources */,
 				FE3AA0CF215406D1001667A9 /* ChatsListGroupChat.swift in Sources */,
 				FE6E6BF921384D5F003B1696 /* AvatarView.swift in Sources */,
 				FE6E6C0821384DF1003B1696 /* ChatCellView.swift in Sources */,
+				FE41FB3D215CD82500AD86D3 /* PresenceRosterEventHandler.swift in Sources */,
 				FEC5DC8421553A7500AA3E4F /* AbstractChatViewController.swift in Sources */,
 				FEC5DC8221552D8300AA3E4F /* ChatViewItemProtocol.swift in Sources */,
 				FEC5DC7E21552A3300AA3E4F /* ChatViewDataSourceDelegate.swift in Sources */,

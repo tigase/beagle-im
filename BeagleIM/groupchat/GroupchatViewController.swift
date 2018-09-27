@@ -47,8 +47,8 @@ class GroupchatViewController: AbstractChatViewController, NSTableViewDelegate {
 
         super.viewDidLoad();
         
-        NotificationCenter.default.addObserver(self, selector: #selector(roomStatusChanged), name: XmppService.ROOM_STATUS_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(roomOccupantsChanged), name: XmppService.ROOM_OCCUPANTS_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(roomStatusChanged), name: MucEventHandler.ROOM_STATUS_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(roomOccupantsChanged), name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: nil);
     }
     
     override func viewWillAppear() {
@@ -205,8 +205,8 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
     
     
     func registerNotifications() {
-        NotificationCenter.default.addObserver(self, selector: #selector(roomStatusChanged), name: XmppService.ROOM_STATUS_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(occupantsChanged), name: XmppService.ROOM_OCCUPANTS_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(roomStatusChanged), name: MucEventHandler.ROOM_STATUS_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(occupantsChanged), name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: nil);
     }
     
     func numberOfRows(in tableView: NSTableView) -> Int {

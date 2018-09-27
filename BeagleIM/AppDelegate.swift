@@ -132,7 +132,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             return;
         }
         
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 5.0) {
         if item.authorNickname != nil {
             guard let mucModule: MucModule = XmppService.instance.getClient(for: item.account)?.modulesManager.getModule(MucModule.ID), let room = mucModule.roomsManager.getRoom(for: item.jid) else {
                 return;
@@ -159,7 +158,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             notification.soundName = NSUserNotificationDefaultSoundName;
             notification.userInfo = ["account": item.account.stringValue, "jid": item.jid.stringValue];
             NSUserNotificationCenter.default.deliver(notification);
-        }
         }
     }
     
