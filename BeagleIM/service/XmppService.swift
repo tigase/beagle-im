@@ -299,6 +299,8 @@ class XmppService: EventHandler {
         messageModule.chatManager = DefaultChatManager(context: client.context, chatStore: chatStoreWrapper);
         _ = client.modulesManager.register(messageModule);
         
+        _ = client.modulesManager.register(MessageDeliveryReceiptsModule());
+        
         let rosterStoreWrapper = DBRosterStoreWrapper(sessionObject: client.context.sessionObject);
         rosterStoreWrapper.initialize();
         client.context.sessionObject.setUserProperty(RosterModule.ROSTER_STORE_KEY, value: rosterStoreWrapper);

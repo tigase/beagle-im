@@ -186,7 +186,7 @@ open class DBChatStore {
         }
     }
     
-    func newMessage(for account: BareJID, with jid: BareJID, timestamp: Date, message: String, state: MessageState) {
+    func newMessage(for account: BareJID, with jid: BareJID, timestamp: Date, message: String?, state: MessageState) {
         dispatcher.async {
             if let chat = self.getChat(for: account, with: jid) {
                 if chat.updateLastMessage(message, timestamp: timestamp, isUnread: state.isUnread) {

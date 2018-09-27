@@ -23,9 +23,9 @@ class ChatMessageCellView: NSTableCellView {
         self.senderName.stringValue = senderName!;
     }
     
-    func set(message: String?, timestamp: Date?) {
+    func set(message: String?, timestamp: Date?, state: MessageState) {
         if message != nil {
-        let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue);
+            let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue);
             let results = detector.matches(in: message!, range: NSMakeRange(0, message!.utf16.count));
             if (results.isEmpty) {
                 self.message.stringValue = message!;
@@ -41,7 +41,26 @@ class ChatMessageCellView: NSTableCellView {
             self.message.stringValue = "";
         }
         
-        self.timestamp.stringValue = timestamp != nil ? formatTimestamp(timestamp!) : "";
+        var timestampStr: NSMutableAttributedString? = nil;
+
+        self.message.textColor = NSColor.textColor;
+        
+        switch state {
+        case .incoming_error, .incoming_error_unread:
+            self.message.textColor = NSColor.red;
+        case .outgoing_delivered:
+            timestampStr = NSMutableAttributedString(string: "\u{2713} ");
+        case .outgoing_error, .outgoing_error_unread:
+            timestampStr = NSMutableAttributedString(string: "Not delivered\u{203c} ", attributes: [.foregroundColor: NSColor.red]);
+        default:
+            break;
+        }
+        if timestampStr != nil {
+            timestampStr!.append(NSMutableAttributedString(string: timestamp != nil ? formatTimestamp(timestamp!) : ""))
+            self.timestamp.attributedStringValue = timestampStr!;
+        } else {
+            self.timestamp.attributedStringValue = NSMutableAttributedString(string: timestamp != nil ? formatTimestamp(timestamp!) : "");
+        }
     }
 
     fileprivate func formatTimestamp(_ ts: Date) -> String {

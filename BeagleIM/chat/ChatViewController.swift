@@ -62,7 +62,7 @@ class ChatViewController: AbstractChatViewController, NSTableViewDelegate {
             let senderJid = item.state.direction == .incoming ? item.jid : item.account;
             cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
             cell.set(senderName: item.state.direction == .incoming ? buddyName : "Me");
-            cell.set(message: item.message, timestamp: item.timestamp);
+            cell.set(message: item.message, timestamp: item.timestamp, state: item.state);
             
             return cell;
         }
@@ -147,7 +147,12 @@ class ChatViewController: AbstractChatViewController, NSTableViewDelegate {
             return;
         }
         
-        let stanzaId = messageModule.sendMessage(in: chat, body: msg).id;
+        let message = chat.createMessage(msg);
+        message.messageDelivery = MessageDeliveryReceiptEnum.request;
+        
+        messageModule.context.writer?.write(message);
+        
+        let stanzaId = message.id;
         
         DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing, type: .message, timestamp: Date(), stanzaId: stanzaId, data: msg, completionHandler: nil);
         (sender as? AutoresizingTextField)?.reset();
@@ -204,6 +209,15 @@ public enum MessageState: Int {
             return .incoming;
         case .outgoing, .outgoing_unsent, .outgoing_delivered, .outgoing_read, .outgoing_error_unread, .outgoing_error:
             return .outgoing;
+        }
+    }
+    
+    var isError: Bool {
+        switch self {
+        case .incoming_error, .incoming_error_unread, .outgoing_error, .outgoing_error_unread:
+            return true;
+        default:
+            return false;
         }
     }
     

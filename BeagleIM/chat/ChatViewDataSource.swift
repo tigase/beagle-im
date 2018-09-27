@@ -24,6 +24,7 @@ class ChatViewDataSource {
     
     init() {
         NotificationCenter.default.addObserver(self, selector: #selector(messageNew), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(messageUpdated(_:)), name: DBChatHistoryStore.MESSAGE_UPDATED, object: nil);
         //NotificationCenter.default.addObserver(self, selector: #selector(messagesMarkedAsRead), name: DBChatHistoryStore.MESSAGES_MARKED_AS_READ, object: nil);
     }
     
@@ -92,7 +93,26 @@ class ChatViewDataSource {
             }
         }
     }
-    
+
+    func update(item: ChatViewItemProtocol) {
+        queue.async {
+            var items = DispatchQueue.main.sync { return self.items; }
+            guard let idx = items.index(where: { (it) -> Bool in
+                it.id == item.id;
+            }) else {
+                return;
+            }
+            // do something when item needs to be updated, ie. marked as delivered or read..
+            items[idx] = item;
+            
+            // notify that we finished
+            DispatchQueue.main.async {
+                self.items = items;
+                self.delegate?.itemUpdated(indexPath: IndexPath(item: idx, section: 0));
+            }
+        }
+    }
+
     @objc fileprivate func messageNew(_ notification: NSNotification) {
         guard let item = notification.object as? ChatViewItemProtocol else {
             return;
@@ -104,6 +124,19 @@ class ChatViewDataSource {
             return;
         }
         add(item: item);
+    }
+    
+    @objc fileprivate func messageUpdated(_ notification: Notification) {
+        guard let item = notification.object as? ChatViewItemProtocol else {
+            return;
+        }
+        guard let account = delegate?.account, let jid = delegate?.jid else {
+            return;
+        }
+        guard account == item.account && jid == item.jid else {
+            return;
+        }
+        update(item: item);
     }
     
     func refreshData() {
