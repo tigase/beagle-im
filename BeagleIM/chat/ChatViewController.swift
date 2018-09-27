@@ -223,12 +223,13 @@ public enum MessageState: Int {
     
     var isUnread: Bool {
         switch self {
-        case .incoming_unread, .incoming_error_unread, .incoming:
+        case .incoming_unread, .incoming_error_unread, .outgoing_error_unread:
             return true;
         default:
             return false;
         }
     }
+    
 }
 
 public enum MessageDirection: Int {

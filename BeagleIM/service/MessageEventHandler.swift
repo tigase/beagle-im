@@ -24,7 +24,41 @@ class MessageEventHandler: XmppServiceEventHandler {
         return body;
     }
     
-    let events: [Event] = [MessageModule.MessageReceivedEvent.TYPE, MessageDeliveryReceiptsModule.ReceiptEvent.TYPE];
+    let events: [Event] = [MessageModule.MessageReceivedEvent.TYPE, MessageDeliveryReceiptsModule.ReceiptEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE];
+    
+    init() {
+        NotificationCenter.default.addObserver(self, selector: #selector(settingsChanged), name: Settings.CHANGED, object: nil);
+    }
+    
+    @objc func settingsChanged(_ notification: Notification) {
+        guard let setting = notification.object as? Settings else {
+            return;
+        }
+        
+        switch setting {
+        case .enableMessageCarbons:
+            XmppService.instance.clients.values.filter { (client) -> Bool in
+                return client.state == .connected
+                }.forEach { client in
+                    guard let mcModule: MessageCarbonsModule = XmppService.instance.getClient(for: client.sessionObject.userBareJid!)?.modulesManager.getModule(MessageCarbonsModule.ID) else {
+                        return;
+                    }
+                    if setting.bool() {
+                        guard let features: [String] = client.sessionObject.getProperty(DiscoveryModule.SERVER_FEATURES_KEY) else {
+                            return;
+                        }
+                        guard features.contains(MessageCarbonsModule.MC_XMLNS) else {
+                            return;
+                        }
+                        mcModule.enable();
+                    } else {
+                        mcModule.disable();
+                    }
+            }
+        default:
+            break;
+        }
+    }
     
     func handle(event: Event) {
         switch event {
@@ -39,10 +73,43 @@ class MessageEventHandler: XmppServiceEventHandler {
             guard let from = e.message.from?.bareJid, let account = e.sessionObject.userBareJid else {
                 return;
             }
-            DBChatHistoryStore.instance.updateItemState(for: account, with: from, stanzaId: e.messageId, from: .outgoing, to: .outgoing_delivered)
+            DBChatHistoryStore.instance.updateItemState(for: account, with: from, stanzaId: e.messageId, from: .outgoing, to: .outgoing_delivered);
+        case let e as DiscoveryModule.ServerFeaturesReceivedEvent:
+            guard Settings.enableMessageCarbons.bool() else {
+                return;
+            }
+            guard e.features.contains(MessageCarbonsModule.MC_XMLNS) else {
+                return;
+            }
+            guard let mcModule: MessageCarbonsModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(MessageCarbonsModule.ID) else {
+                return;
+            }
+            mcModule.enable();
+        case let e as MessageCarbonsModule.CarbonReceivedEvent:
+            guard let account = e.sessionObject.userBareJid, let from = e.message.from, let to = e.message.to, let body = MessageEventHandler.prepareBody(message: e.message) else {
+                return;
+            }
+            let jid = account == from.bareJid ? to.bareJid : from.bareJid;
+            let timestamp = e.message.delay?.stamp ?? Date();
+            let state: MessageState = calculateState(direction: account == from.bareJid ? .outgoing : .incoming, error: ((e.message.type ?? .chat) == .error), unread: !Settings.markMessageCarbonsAsRead.bool());
+            DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, type: .message, timestamp: timestamp, stanzaId: e.message.id, data: body, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, completionHandler: nil);
         default:
             break;
         }
     }
     
+    fileprivate func calculateState(direction: MessageDirection, error: Bool, unread: Bool) -> MessageState {
+        if direction == .incoming {
+            if error {
+                return unread ? .incoming_error_unread : .incoming_error;
+            }
+            return unread ? .incoming_unread : .incoming;
+        } else {
+            if error {
+                return unread ? .outgoing_error_unread : .outgoing_error;
+            }
+            return .outgoing;
+        }
+    }
+
 }

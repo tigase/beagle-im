@@ -18,8 +18,16 @@ enum Settings: String {
     case showRoomDetailsSidebar
     case defaultAccount
     
+    case enableMessageCarbons
+    case markMessageCarbonsAsRead
+    
+    public static let CHANGED = Notification.Name("settingChanged");
+    
+    fileprivate static var observers: [Settings: [UUID: (Settings, Any?)->Void]] = [:];
+    
     func set(value: Bool) {
         UserDefaults.standard.set(value, forKey: self.rawValue);
+        valueChanged();
     }
     
     func bool() -> Bool {
@@ -28,6 +36,7 @@ enum Settings: String {
     
     func set(value: String?) {
         UserDefaults.standard.set(value, forKey: self.rawValue);
+        valueChanged();
     }
     
     func string() -> String? {
@@ -43,11 +52,13 @@ enum Settings: String {
     
     func set(bareJid: BareJID?) {
         UserDefaults.standard.set(bareJid?.stringValue, forKey: self.rawValue);
+        valueChanged();
     }
     
     func set(value: CustomDictionaryConvertible) {
         let dict = value.toDict();
         UserDefaults.standard.set(dict, forKey: self.rawValue);
+        valueChanged();
     }
     
     func object<T: CustomDictionaryConvertible>() -> T? {
@@ -55,6 +66,10 @@ enum Settings: String {
             return nil;
         }
         return T(from: dict);
+    }
+ 
+    fileprivate func valueChanged() {
+        NotificationCenter.default.post(name: Settings.CHANGED, object: self);
     }
 }
 
