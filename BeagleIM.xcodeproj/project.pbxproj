@@ -32,6 +32,7 @@
 		FE41FB3F215CD95D00AD86D3 /* AvatarEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB3E215CD95D00AD86D3 /* AvatarEventHandler.swift */; };
 		FE41FB41215CDA6000AD86D3 /* MessageEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB40215CDA6000AD86D3 /* MessageEventHandler.swift */; };
 		FE41FB43215CDAF900AD86D3 /* XMPPClient_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB42215CDAF900AD86D3 /* XMPPClient_extension.swift */; };
+		FE41FB45215E426400AD86D3 /* MessageArchivingSetttingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB44215E426400AD86D3 /* MessageArchivingSetttingsView.swift */; };
 		FE5BE64C213AC3EA00463183 /* ChatsCellViewCloseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5BE64B213AC3EA00463183 /* ChatsCellViewCloseButton.swift */; };
 		FE5BE64E213AD19A00463183 /* ChatCellViewMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5BE64D213AD19A00463183 /* ChatCellViewMessage.swift */; };
 		FE6E6BF721384D5F003B1696 /* AutoresizingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */; };
@@ -120,6 +121,7 @@
 		FE41FB3E215CD95D00AD86D3 /* AvatarEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarEventHandler.swift; sourceTree = "<group>"; };
 		FE41FB40215CDA6000AD86D3 /* MessageEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEventHandler.swift; sourceTree = "<group>"; };
 		FE41FB42215CDAF900AD86D3 /* XMPPClient_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMPPClient_extension.swift; sourceTree = "<group>"; };
+		FE41FB44215E426400AD86D3 /* MessageArchivingSetttingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageArchivingSetttingsView.swift; sourceTree = "<group>"; };
 		FE5BE64B213AC3EA00463183 /* ChatsCellViewCloseButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsCellViewCloseButton.swift; sourceTree = "<group>"; };
 		FE5BE64D213AD19A00463183 /* ChatCellViewMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatCellViewMessage.swift; sourceTree = "<group>"; };
 		FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoresizingTextField.swift; sourceTree = "<group>"; };
@@ -378,6 +380,7 @@
 				FED7AEC02140569E001E164B /* AddAccountController.swift */,
 				FE30D8B4214D39A700670BEC /* GeneralSettingsController.swift */,
 				FE41FB32215B8D5A00AD86D3 /* ServerCertificateErrorController.swift */,
+				FE41FB44215E426400AD86D3 /* MessageArchivingSetttingsView.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -592,6 +595,7 @@
 				FE30D8BA214ED28A00670BEC /* OpenGroupchatController.swift in Sources */,
 				FE41FB33215B8D5A00AD86D3 /* ServerCertificateErrorController.swift in Sources */,
 				FEDE6AF921440AEF0019170A /* StatusHelper.swift in Sources */,
+				FE41FB45215E426400AD86D3 /* MessageArchivingSetttingsView.swift in Sources */,
 				FE6E6C0021384D5F003B1696 /* ChatsListView.swift in Sources */,
 				FE6E6C0621384D5F003B1696 /* Database.swift in Sources */,
 				FEC5DC8021552A9B00AA3E4F /* ChatViewDataSource.swift in Sources */,

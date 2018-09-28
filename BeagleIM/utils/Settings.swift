@@ -67,9 +67,74 @@ enum Settings: String {
         }
         return T(from: dict);
     }
- 
+    
     fileprivate func valueChanged() {
         NotificationCenter.default.post(name: Settings.CHANGED, object: self);
+    }
+}
+
+enum AccountSettings {
+    case messageSyncAuto(BareJID)
+    case messageSyncPeriod(BareJID)
+    
+    public static let CHANGED = Notification.Name("accountSettingChanged");
+    
+    public var account: BareJID {
+        switch self {
+        case .messageSyncAuto(let account):
+            return account;
+        case .messageSyncPeriod(let account):
+            return account;
+        }
+    }
+    
+    public var name: String {
+        switch self {
+        case .messageSyncAuto(_):
+            return "messageSyncAuto";
+        case .messageSyncPeriod(_):
+            return "messageSyncPeriod";
+        }
+    }
+    
+    public var key: String {
+        return "accounts.\(account).\(name)";
+    }
+    
+    func bool() -> Bool {
+        return UserDefaults.standard.bool(forKey: key);
+    }
+    
+    func set(value: Bool) {
+        UserDefaults.standard.set(value, forKey: key);
+        valueChanged();
+    }
+    
+    func object() -> Any? {
+        return UserDefaults.standard.object(forKey: key);
+    }
+    
+    func double() -> Double {
+        return UserDefaults.standard.double(forKey: key);
+    }
+    
+    func set(value: Double) {
+        UserDefaults.standard.set(value, forKey: key);
+        valueChanged();
+    }
+    
+    func date() -> Date? {
+        let value = UserDefaults.standard.double(forKey: key);
+        return value == 0 ? nil : Date(timeIntervalSince1970: value);
+    }
+    
+    func set(value: Date) {
+        UserDefaults.standard.set(value.timeIntervalSince1970, forKey: key);
+        valueChanged();
+    }
+    
+    fileprivate func valueChanged() {
+        NotificationCenter.default.post(name: AccountSettings.CHANGED, object: self);
     }
 }
 

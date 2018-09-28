@@ -24,7 +24,7 @@ class MessageEventHandler: XmppServiceEventHandler {
         return body;
     }
     
-    let events: [Event] = [MessageModule.MessageReceivedEvent.TYPE, MessageDeliveryReceiptsModule.ReceiptEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE];
+    let events: [Event] = [MessageModule.MessageReceivedEvent.TYPE, MessageDeliveryReceiptsModule.ReceiptEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, MessageArchiveManagementModule.ArchivedMessageReceivedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE];
     
     init() {
         NotificationCenter.default.addObserver(self, selector: #selector(settingsChanged), name: Settings.CHANGED, object: nil);
@@ -40,16 +40,10 @@ class MessageEventHandler: XmppServiceEventHandler {
             XmppService.instance.clients.values.filter { (client) -> Bool in
                 return client.state == .connected
                 }.forEach { client in
-                    guard let mcModule: MessageCarbonsModule = XmppService.instance.getClient(for: client.sessionObject.userBareJid!)?.modulesManager.getModule(MessageCarbonsModule.ID) else {
+                    guard let mcModule: MessageCarbonsModule = client.modulesManager.getModule(MessageCarbonsModule.ID), mcModule.isAvailable else {
                         return;
                     }
                     if setting.bool() {
-                        guard let features: [String] = client.sessionObject.getProperty(DiscoveryModule.SERVER_FEATURES_KEY) else {
-                            return;
-                        }
-                        guard features.contains(MessageCarbonsModule.MC_XMLNS) else {
-                            return;
-                        }
                         mcModule.enable();
                     } else {
                         mcModule.disable();
@@ -74,6 +68,17 @@ class MessageEventHandler: XmppServiceEventHandler {
                 return;
             }
             DBChatHistoryStore.instance.updateItemState(for: account, with: from, stanzaId: e.messageId, from: .outgoing, to: .outgoing_delivered);
+        case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
+            let account = e.sessionObject.userBareJid!;
+            if AccountSettings.messageSyncAuto(account).bool() {
+                var syncPeriod = AccountSettings.messageSyncPeriod(account).double();
+                if syncPeriod == 0 {
+                    syncPeriod = 72;
+                }
+                let syncMessagesSince = max(DBChatStore.instance.lastMessageTimestamp(for: account), Date(timeIntervalSinceNow: -1 * syncPeriod * 3600));
+                
+                syncMessages(for: account, since: syncMessagesSince);
+            }
         case let e as DiscoveryModule.ServerFeaturesReceivedEvent:
             guard Settings.enableMessageCarbons.bool() else {
                 return;
@@ -92,6 +97,14 @@ class MessageEventHandler: XmppServiceEventHandler {
             let jid = account == from.bareJid ? to.bareJid : from.bareJid;
             let timestamp = e.message.delay?.stamp ?? Date();
             let state: MessageState = calculateState(direction: account == from.bareJid ? .outgoing : .incoming, error: ((e.message.type ?? .chat) == .error), unread: !Settings.markMessageCarbonsAsRead.bool());
+            DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, type: .message, timestamp: timestamp, stanzaId: e.message.id, data: body, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, completionHandler: nil);
+        case let e as MessageArchiveManagementModule.ArchivedMessageReceivedEvent:
+            guard let account = e.sessionObject.userBareJid, let from = e.message.from, let to = e.message.to, let body = MessageEventHandler.prepareBody(message: e.message) else {
+                return;
+            }
+            let jid = account == from.bareJid ? to.bareJid : from.bareJid;
+            let timestamp = e.timestamp!;
+            let state: MessageState = calculateState(direction: account == from.bareJid ? .outgoing : .incoming, error: ((e.message.type ?? .chat) == .error), unread: false);
             DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, type: .message, timestamp: timestamp, stanzaId: e.message.id, data: body, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, completionHandler: nil);
         default:
             break;
@@ -112,4 +125,20 @@ class MessageEventHandler: XmppServiceEventHandler {
         }
     }
 
+    fileprivate func syncMessages(for account: BareJID, since: Date, rsmQuery: RSM.Query? = nil) {
+        guard let mamModule: MessageArchiveManagementModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageArchiveManagementModule.ID) else {
+            return;
+        }
+        
+        let queryId = UUID().uuidString;
+        mamModule.queryItems(start: since, queryId: queryId, rsm: rsmQuery ?? RSM.Query(lastItems: 100), onSuccess: { (queryid,complete,rsmResponse) in
+            if rsmResponse != nil && rsmResponse!.index != 0 && rsmResponse?.first != nil {
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2) {
+                    self.syncMessages(for: account, since: since, rsmQuery: rsmResponse?.previous(100));
+                }
+            }
+        }) { (error, stanza) in
+            print("could not synchronize message archive for:", account, "got", error as Any);
+        }
+    }
 }

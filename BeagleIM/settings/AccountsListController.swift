@@ -61,10 +61,15 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
         guard (tableView?.selectedRow ?? -1) >= 0 else {
             return;
         }
-        let account = accounts[tableView!.selectedRow];
-        if let detailsView = tabViewController?.tabViewItems[0].view as? AccountDetailsView {
-            detailsView.account = account;
-        }
+        let account: BareJID = accounts[tableView!.selectedRow];
+        tabViewController?.tabViewItems.forEach({ (controller) in
+            if let view = controller.view as? AccountAwareView {
+                view.account = account;
+            }
+        })
+//        if let detailsView = tabViewController?.tabViewItems[0].view as? AccountDetailsView {
+//            detailsView.account = account;
+//        }
     }
     
     @IBAction func defaultAccountChanged(_ sender: NSPopUpButton) {
@@ -117,12 +122,17 @@ class AccountCellView: NSTableCellView {
     
 }
 
-class AccountDetailsView: NSView {
+protocol AccountAwareView: class {
+    
+    var account: BareJID? { get set }
+    
+}
+class AccountDetailsView: NSView, AccountAwareView {
     
     var account: BareJID? {
         didSet {
-            username?.stringValue = account!.stringValue;
-            let acc = AccountManager.getAccount(for: account!);
+            username?.stringValue = account?.stringValue ?? "";
+            let acc = account == nil ? nil : AccountManager.getAccount(for: account!);
             password?.stringValue = acc?.password ?? "";
             nickname?.stringValue = acc?.nickname ?? "";
             active?.state = (acc?.active ?? false) ? .on : .off;

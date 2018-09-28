@@ -186,6 +186,12 @@ open class DBChatStore {
         }
     }
     
+    func lastMessageTimestamp(for account: BareJID) -> Date {
+        return dispatcher.sync {
+            return self.getChats(for: account)?.lastMessageTimestamp() ?? Date(timeIntervalSince1970: 0);
+        }
+    }
+    
     func newMessage(for account: BareJID, with jid: BareJID, timestamp: Date, message: String?, state: MessageState) {
         dispatcher.async {
             if let chat = self.getChat(for: account, with: jid) {
@@ -210,27 +216,6 @@ open class DBChatStore {
             }
         }
     }
-    
-//    func newMessage(event: MessageModule.MessageReceivedEvent, timestamp: Date) {
-//        guard let chat = event.chat as? DBChat, let message = event.message.body else {
-//            return;
-//        }
-//
-//        guard chat.updateLastMessage(message, timestamp: timestamp) else {
-//            return;
-//        }
-//
-//        NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: chat);
-//    }
-    
-//    fileprivate func getOrCreateAccountChats(account: BareJID) -> AccountChats {
-//        guard let accountChats = chats[account] else {
-//            let accountChats = AccountChats();
-//            chats[account] = accountChats;
-//            return accountChats;
-//        }
-//        return accountChats;
-//    }
     
     fileprivate func createChat(account: BareJID, chat: ChatProtocol) -> DBChatProtocol? {
         guard chat as? DBChatProtocol == nil else {
@@ -365,6 +350,17 @@ open class DBChatStore {
         
         func get(with jid: BareJID) -> DBChatProtocol? {
             return chats[jid];
+        }
+        
+        func lastMessageTimestamp() -> Date {
+            var timestamp = Date(timeIntervalSince1970: 0);
+            chats.values.forEach { (chat) in
+                guard chat.lastMessage != nil else {
+                    return;
+                }
+                timestamp = max(timestamp, chat.timestamp);
+            }
+            return timestamp;
         }
     }
     

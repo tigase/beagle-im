@@ -951,6 +951,7 @@
                             <constraint firstItem="LND-SU-u8v" firstAttribute="centerY" secondItem="nOm-Tm-1vK" secondAttribute="centerY" id="YgV-nj-2jb"/>
                             <constraint firstAttribute="bottom" secondItem="LND-SU-u8v" secondAttribute="bottom" constant="20" id="aef-9J-CIs"/>
                             <constraint firstItem="DzT-UD-yaR" firstAttribute="top" secondItem="iXV-Wj-J3c" secondAttribute="top" constant="20" id="fqe-Ty-MiL"/>
+                            <constraint firstItem="wnw-0k-2Te" firstAttribute="width" secondItem="DzT-UD-yaR" secondAttribute="width" id="kaZ-nr-aze"/>
                             <constraint firstItem="LND-SU-u8v" firstAttribute="top" secondItem="AJc-NH-RSy" secondAttribute="bottom" constant="10" id="oBr-Sb-ub2"/>
                             <constraint firstItem="DzT-UD-yaR" firstAttribute="leading" secondItem="iXV-Wj-J3c" secondAttribute="leading" constant="20" id="sDq-OX-Ib7"/>
                             <constraint firstItem="LND-SU-u8v" firstAttribute="width" secondItem="AJc-NH-RSy" secondAttribute="width" multiplier="0.5" id="sqi-Hb-5wv"/>
@@ -1056,6 +1057,7 @@ Gw
                 <tabViewController selectedTabViewItemIndex="0" tabStyle="unspecified" id="rxZ-W4-pD8" sceneMemberID="viewController">
                     <tabViewItems>
                         <tabViewItem label="Account details" identifier="" id="Ku9-U1-Kmt"/>
+                        <tabViewItem label="Message archiving" id="1Og-DA-y8T"/>
                     </tabViewItems>
                     <tabView key="tabView" controlSize="small" id="Bn2-US-gYa">
                         <rect key="frame" x="0.0" y="0.0" width="450" height="300"/>
@@ -1067,11 +1069,104 @@ Gw
                     <connections>
                         <outlet property="tabView" destination="Bn2-US-gYa" id="bVc-Gg-2uG"/>
                         <segue destination="KHn-QE-OFW" kind="relationship" relationship="tabItems" id="Pva-9U-qFi"/>
+                        <segue destination="fWu-v1-OxO" kind="relationship" relationship="tabItems" id="ftb-hz-kZJ"/>
                     </connections>
                 </tabViewController>
                 <customObject id="Uk9-AQ-6v9" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2578" y="84"/>
+        </scene>
+        <!--View Controller-->
+        <scene sceneID="mjo-zH-q36">
+            <objects>
+                <viewController id="fWu-v1-OxO" sceneMemberID="viewController">
+                    <view key="view" id="veI-Lr-Pvk" customClass="MessageArchivingSettingsView" customModule="BeagleIM" customModuleProvider="target">
+                        <rect key="frame" x="0.0" y="0.0" width="350" height="300"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ch1-ov-oub">
+                                <rect key="frame" x="128" y="264" width="204" height="18"/>
+                                <buttonCell key="cell" type="check" title="Enabled" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="gpR-aC-82b">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="archivingStateChanged:" target="veI-Lr-Pvk" id="XKA-ql-HNI"/>
+                                </connections>
+                            </button>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="g2c-Fh-NUS">
+                                <rect key="frame" x="128" y="240" width="204" height="18"/>
+                                <buttonCell key="cell" type="check" title="Automatic synchronization" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="wtP-ot-Zbs">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="automaticSynchronizationChanged:" target="veI-Lr-Pvk" id="vyS-x8-lQ8"/>
+                                </connections>
+                            </button>
+                            <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ika-g1-Zxi">
+                                <rect key="frame" x="128" y="208" width="205" height="25"/>
+                                <popUpButtonCell key="cell" type="push" title="Item 1" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="2WQ-Cg-LTD" id="Q2h-7e-wdO">
+                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="menu"/>
+                                    <menu key="menu" id="a0f-gh-hqZ">
+                                        <items>
+                                            <menuItem title="Item 1" state="on" id="2WQ-Cg-LTD"/>
+                                            <menuItem title="Last 12 hours" tag="12" id="o17-R1-mNs"/>
+                                            <menuItem title="Last 24 hours" tag="24" id="AEy-jM-GUg"/>
+                                            <menuItem title="Last 3 days" tag="72" id="OZF-au-eLa">
+                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                            </menuItem>
+                                            <menuItem title="Last week" tag="168" id="B9q-jf-nOC">
+                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                            </menuItem>
+                                            <menuItem title="Last 2 weeks" tag="336" id="AJs-pn-Nb0">
+                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                            </menuItem>
+                                            <menuItem title="Last month" tag="744" id="qSg-kc-7nQ">
+                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                            </menuItem>
+                                        </items>
+                                    </menu>
+                                </popUpButtonCell>
+                                <connections>
+                                    <action selector="synchronizationPeriodChanged:" target="veI-Lr-Pvk" id="SDA-I6-EkE"/>
+                                </connections>
+                            </popUpButton>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="M5R-WA-8wp">
+                                <rect key="frame" x="18" y="213" width="104" height="17"/>
+                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Period" id="WUO-07-wXQ">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                        </subviews>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="Ika-g1-Zxi" secondAttribute="trailing" constant="20" id="978-YY-mxV"/>
+                            <constraint firstItem="g2c-Fh-NUS" firstAttribute="leading" secondItem="Ch1-ov-oub" secondAttribute="leading" id="Cyi-OB-CSg"/>
+                            <constraint firstAttribute="trailing" secondItem="g2c-Fh-NUS" secondAttribute="trailing" constant="20" id="DCD-oT-x7j"/>
+                            <constraint firstItem="Ika-g1-Zxi" firstAttribute="top" secondItem="g2c-Fh-NUS" secondAttribute="bottom" constant="10" id="DMF-Rq-0GL"/>
+                            <constraint firstItem="Ika-g1-Zxi" firstAttribute="leading" secondItem="Ch1-ov-oub" secondAttribute="leading" id="Hdu-Mq-DVG"/>
+                            <constraint firstItem="g2c-Fh-NUS" firstAttribute="top" secondItem="Ch1-ov-oub" secondAttribute="bottom" constant="10" id="NgT-Kt-r6s"/>
+                            <constraint firstItem="Ika-g1-Zxi" firstAttribute="leading" secondItem="M5R-WA-8wp" secondAttribute="trailing" constant="10" id="WQ1-Ri-J2i"/>
+                            <constraint firstItem="M5R-WA-8wp" firstAttribute="centerY" secondItem="Ika-g1-Zxi" secondAttribute="centerY" id="Y3G-kC-z2C"/>
+                            <constraint firstItem="Ch1-ov-oub" firstAttribute="leading" secondItem="veI-Lr-Pvk" secondAttribute="leading" constant="130" id="f1X-dY-B46"/>
+                            <constraint firstItem="M5R-WA-8wp" firstAttribute="leading" secondItem="veI-Lr-Pvk" secondAttribute="leading" constant="20" id="hXh-mh-ICj"/>
+                            <constraint firstAttribute="trailing" secondItem="Ch1-ov-oub" secondAttribute="trailing" constant="20" id="okl-0a-2hN"/>
+                            <constraint firstItem="Ch1-ov-oub" firstAttribute="top" secondItem="veI-Lr-Pvk" secondAttribute="top" constant="20" id="sLX-LS-6XF"/>
+                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="Ika-g1-Zxi" secondAttribute="bottom" constant="20" id="vzt-GN-gGC"/>
+                        </constraints>
+                        <connections>
+                            <outlet property="archivingEnabled" destination="Ch1-ov-oub" id="d2z-vf-5ia"/>
+                            <outlet property="automaticSynchronization" destination="g2c-Fh-NUS" id="IFb-u5-hwq"/>
+                            <outlet property="synchronizationPeriod" destination="Ika-g1-Zxi" id="tgV-w9-tLR"/>
+                        </connections>
+                    </view>
+                </viewController>
+                <customObject id="KJT-de-3Ml" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3265" y="-250"/>
         </scene>
         <!--View Controller-->
         <scene sceneID="Mcg-xy-ZXS">
@@ -1999,7 +2094,7 @@ Gw
                             <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="PVg-8T-5qZ">
                                 <rect key="frame" x="66" y="166" width="396" height="32"/>
                                 <textFieldCell key="cell" selectable="YES" title="It is not possible to automatically verify server certificate for test.com. Please review following certiciate details." id="Wxz-bh-twp">
-                                    <font key="font" metaFont="system" size="12"/>
+                                    <font key="font" metaFont="cellTitle"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
@@ -2015,7 +2110,7 @@ Gw
                             <textField verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dcc-gM-k6w">
                                 <rect key="frame" x="216" y="158" width="250" height="17"/>
                                 <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="sfI-Td-iUq">
-                                    <font key="font" metaFont="system" size="12"/>
+                                    <font key="font" metaFont="cellTitle"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
@@ -2023,7 +2118,7 @@ Gw
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="pVf-kZ-Ara">
                                 <rect key="frame" x="66" y="134" width="124" height="17"/>
                                 <textFieldCell key="cell" lineBreakMode="clipping" title="Fingerprint:" id="ZLa-eK-ZZz">
-                                    <font key="font" metaFont="system" size="12"/>
+                                    <font key="font" metaFont="cellTitle"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
@@ -2031,7 +2126,7 @@ Gw
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="def-pZ-Bbx">
                                 <rect key="frame" x="216" y="134" width="246" height="17"/>
                                 <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="Dmx-hJ-hXv">
-                                    <font key="font" metaFont="system" size="12"/>
+                                    <font key="font" metaFont="cellTitle"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
@@ -2039,7 +2134,7 @@ Gw
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ap1-Ug-nhj">
                                 <rect key="frame" x="66" y="85" width="124" height="16"/>
                                 <textFieldCell key="cell" lineBreakMode="clipping" title="Issued by:" id="0BK-38-f0S">
-                                    <font key="font" metaFont="system" size="12"/>
+                                    <font key="font" metaFont="cellTitle"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
@@ -2047,7 +2142,7 @@ Gw
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="V7s-ww-GPg">
                                 <rect key="frame" x="216" y="85" width="246" height="16"/>
                                 <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="Toq-W6-Bi6">
-                                    <font key="font" metaFont="system" size="12"/>
+                                    <font key="font" metaFont="cellTitle"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
@@ -2055,7 +2150,7 @@ Gw
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gko-B7-Baa">
                                 <rect key="frame" x="66" y="61" width="124" height="16"/>
                                 <textFieldCell key="cell" lineBreakMode="clipping" title="Fingerprint:" id="wmG-Ai-yUK">
-                                    <font key="font" metaFont="system" size="12"/>
+                                    <font key="font" metaFont="cellTitle"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
@@ -2063,7 +2158,7 @@ Gw
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ARy-Kq-eaC">
                                 <rect key="frame" x="216" y="61" width="246" height="16"/>
                                 <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="bgM-PY-KWL">
-                                    <font key="font" metaFont="system" size="12"/>
+                                    <font key="font" metaFont="cellTitle"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>

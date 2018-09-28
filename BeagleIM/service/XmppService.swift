@@ -301,6 +301,7 @@ class XmppService: EventHandler {
         
         _ = client.modulesManager.register(MessageCarbonsModule());
         _ = client.modulesManager.register(MessageDeliveryReceiptsModule());
+        _ = client.modulesManager.register(MessageArchiveManagementModule());
         
         let rosterStoreWrapper = DBRosterStoreWrapper(sessionObject: client.context.sessionObject);
         rosterStoreWrapper.initialize();
