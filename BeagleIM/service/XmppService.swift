@@ -19,7 +19,7 @@ class XmppService: EventHandler {
  
     fileprivate let observedEvents: [Event] = [ SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE ];
     
-    fileprivate let eventHandlers: [XmppServiceEventHandler] = [MucEventHandler(), PresenceRosterEventHandler(), AvatarEventHandler(), MessageEventHandler()];
+    fileprivate let eventHandlers: [XmppServiceEventHandler] = [MucEventHandler(), PresenceRosterEventHandler(), AvatarEventHandler(), MessageEventHandler(), HttpFileUploadEventHandler()];
     
     var clients: [BareJID: XMPPClient] {
         get {
@@ -302,6 +302,8 @@ class XmppService: EventHandler {
         _ = client.modulesManager.register(MessageCarbonsModule());
         _ = client.modulesManager.register(MessageDeliveryReceiptsModule());
         _ = client.modulesManager.register(MessageArchiveManagementModule());
+        
+        _ = client.modulesManager.register(HttpFileUploadModule());
         
         let rosterStoreWrapper = DBRosterStoreWrapper(sessionObject: client.context.sessionObject);
         rosterStoreWrapper.initialize();

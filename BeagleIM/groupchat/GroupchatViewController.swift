@@ -9,7 +9,7 @@
 import AppKit
 import TigaseSwift
 
-class GroupchatViewController: AbstractChatViewController, NSTableViewDelegate {
+class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableViewDelegate {
 
     @IBOutlet var avatarView: AvatarViewWithStatus!;
     @IBOutlet var titleView: NSTextField!;
@@ -23,6 +23,10 @@ class GroupchatViewController: AbstractChatViewController, NSTableViewDelegate {
     @IBOutlet var participantsTableView: NSTableView!;
     
     fileprivate var participantsContainer: GroupchatParticipantsContainer?;
+    
+    override var isSharingAvailable: Bool {
+        return super.isSharingAvailable && room.state == .joined;
+    }
     
     var room: DBChatStore.DBRoom! {
         get {
@@ -94,6 +98,8 @@ class GroupchatViewController: AbstractChatViewController, NSTableViewDelegate {
         subjectView.stringValue = room.subject ?? "";
         
         refreshPermissions();
+
+        self.sharingButton.isEnabled = self.isSharingAvailable;
     }
     
     fileprivate func refreshPermissions() {
@@ -174,15 +180,27 @@ class GroupchatViewController: AbstractChatViewController, NSTableViewDelegate {
             return;
         }
         
-        guard (XmppService.instance.getClient(for: account)?.state ?? .disconnected) == .connected else {
+        guard sendMessage(body: msg) else {
             return;
         }
-        guard room.state == .joined else {
-            return
-        }
         
-        room.sendMessage(msg);
         (sender as? AutoresizingTextField)?.reset();
+    }
+    
+    override func sendMessage(body: String? = nil, url: String? = nil) -> Bool {
+        guard let msg = body ?? url else {
+            return false;
+        }
+        guard (XmppService.instance.getClient(for: account)?.state ?? .disconnected) == .connected else {
+            return false;
+        }
+        guard room.state == .joined else {
+            return false;
+        }
+        let message = room.createMessage(msg);
+        message.oob = url;
+        room.context.writer?.write(message);
+        return true;
     }
 }
 

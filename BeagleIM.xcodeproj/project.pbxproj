@@ -33,6 +33,8 @@
 		FE41FB41215CDA6000AD86D3 /* MessageEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB40215CDA6000AD86D3 /* MessageEventHandler.swift */; };
 		FE41FB43215CDAF900AD86D3 /* XMPPClient_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB42215CDAF900AD86D3 /* XMPPClient_extension.swift */; };
 		FE41FB45215E426400AD86D3 /* MessageArchivingSetttingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB44215E426400AD86D3 /* MessageArchivingSetttingsView.swift */; };
+		FE4E8DDA215EA4860010D88E /* HttpFileUploadEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4E8DD9215EA4860010D88E /* HttpFileUploadEventHandler.swift */; };
+		FE4E8DDC215F72130010D88E /* AbstractChatView_ShareExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4E8DDB215F72130010D88E /* AbstractChatView_ShareExtension.swift */; };
 		FE5BE64C213AC3EA00463183 /* ChatsCellViewCloseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5BE64B213AC3EA00463183 /* ChatsCellViewCloseButton.swift */; };
 		FE5BE64E213AD19A00463183 /* ChatCellViewMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5BE64D213AD19A00463183 /* ChatCellViewMessage.swift */; };
 		FE6E6BF721384D5F003B1696 /* AutoresizingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */; };
@@ -122,6 +124,8 @@
 		FE41FB40215CDA6000AD86D3 /* MessageEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEventHandler.swift; sourceTree = "<group>"; };
 		FE41FB42215CDAF900AD86D3 /* XMPPClient_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMPPClient_extension.swift; sourceTree = "<group>"; };
 		FE41FB44215E426400AD86D3 /* MessageArchivingSetttingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageArchivingSetttingsView.swift; sourceTree = "<group>"; };
+		FE4E8DD9215EA4860010D88E /* HttpFileUploadEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HttpFileUploadEventHandler.swift; sourceTree = "<group>"; };
+		FE4E8DDB215F72130010D88E /* AbstractChatView_ShareExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractChatView_ShareExtension.swift; sourceTree = "<group>"; };
 		FE5BE64B213AC3EA00463183 /* ChatsCellViewCloseButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsCellViewCloseButton.swift; sourceTree = "<group>"; };
 		FE5BE64D213AD19A00463183 /* ChatCellViewMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatCellViewMessage.swift; sourceTree = "<group>"; };
 		FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoresizingTextField.swift; sourceTree = "<group>"; };
@@ -265,6 +269,7 @@
 				FE41FB3E215CD95D00AD86D3 /* AvatarEventHandler.swift */,
 				FE41FB40215CDA6000AD86D3 /* MessageEventHandler.swift */,
 				FE41FB42215CDAF900AD86D3 /* XMPPClient_extension.swift */,
+				FE4E8DD9215EA4860010D88E /* HttpFileUploadEventHandler.swift */,
 			);
 			path = service;
 			sourceTree = "<group>";
@@ -279,6 +284,7 @@
 				FEC5DC7F21552A9B00AA3E4F /* ChatViewDataSource.swift */,
 				FEC5DC8121552D8300AA3E4F /* ChatViewItemProtocol.swift */,
 				FEC5DC8321553A7500AA3E4F /* AbstractChatViewController.swift */,
+				FE4E8DDB215F72130010D88E /* AbstractChatView_ShareExtension.swift */,
 			);
 			path = chat;
 			sourceTree = "<group>";
@@ -546,6 +552,7 @@
 				FE41FB31215AB32200AD86D3 /* ServerCertificateInfo.swift in Sources */,
 				FE6E6BFE21384D5F003B1696 /* ChatMessageCellView.swift in Sources */,
 				FE3AA0CB21540669001667A9 /* ChatItemProtocol.swift in Sources */,
+				FE4E8DDA215EA4860010D88E /* HttpFileUploadEventHandler.swift in Sources */,
 				FED7AEC321415CB8001E164B /* AvatarManager.swift in Sources */,
 				FE3AA0C92154062F001667A9 /* ChatsListGroupProtocol.swift in Sources */,
 				FED7AEC721418B83001E164B /* VCardManager.swift in Sources */,
@@ -571,6 +578,7 @@
 				FE6E6BFA21384D5F003B1696 /* AccountManager.swift in Sources */,
 				FEC5DC8621553F4700AA3E4F /* GroupchatViewController.swift in Sources */,
 				FE6E6C0221384D5F003B1696 /* DBChatHistoryStore.swift in Sources */,
+				FE4E8DDC215F72130010D88E /* AbstractChatView_ShareExtension.swift in Sources */,
 				FE6E6BF821384D5F003B1696 /* ViewController.swift in Sources */,
 				FE34BBD12157901100775B07 /* JabberDataFormView.swift in Sources */,
 				FE30D8B5214D39A700670BEC /* GeneralSettingsController.swift in Sources */,

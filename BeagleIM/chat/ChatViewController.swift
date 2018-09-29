@@ -9,8 +9,8 @@
 import AppKit
 import TigaseSwift
 
-class ChatViewController: AbstractChatViewController, NSTableViewDelegate {
-    
+class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDelegate {
+
     @IBOutlet var buddyAvatarView: AvatarViewWithStatus!
     @IBOutlet var buddyNameLabel: NSTextFieldCell!
     @IBOutlet var buddyJidLabel: NSTextFieldCell!
@@ -139,15 +139,23 @@ class ChatViewController: AbstractChatViewController, NSTableViewDelegate {
             return;
         }
         
+        (sender as? AutoresizingTextField)?.reset();
+    }
+    
+    override func sendMessage(body: String? = nil, url: String? = nil) -> Bool {
+        guard let msg = body ?? url else {
+            return false;
+        }
         guard let messageModule: MessageModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageModule.ID) else {
-            return;
+            return false;
         }
         
         guard let chat = messageModule.chatManager.getChat(with: JID(jid), thread: nil) else {
-            return;
+            return false;
         }
-        
+
         let message = chat.createMessage(msg);
+        message.oob = url;
         message.messageDelivery = MessageDeliveryReceiptEnum.request;
         
         messageModule.context.writer?.write(message);
@@ -155,9 +163,9 @@ class ChatViewController: AbstractChatViewController, NSTableViewDelegate {
         let stanzaId = message.id;
         
         DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing, type: .message, timestamp: Date(), stanzaId: stanzaId, data: msg, completionHandler: nil);
-        (sender as? AutoresizingTextField)?.reset();
-    }
 
+        return true;
+    }
 }
 
 class ChatMessage: ChatViewItemProtocol {

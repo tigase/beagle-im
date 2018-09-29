@@ -55,6 +55,7 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
         
         disclosureConstraint = disclosureView.heightAnchor.constraint(equalToConstant: 0);
         disclosureConstraint.isActive = true;
+        disclosureView.isHidden = true;
         //accountSelector.widthAnchor.constraint(equalTo: requestSubscriptionButton.widthAnchor, multiplier: 1.0).isActive = true;
     }
     
@@ -85,7 +86,8 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
         }
         NSAnimationContext.runAnimationGroup({ (context) in
             context.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeInEaseOut);
-            context.duration = 0.5;
+            context.duration = 0.2;
+            self.disclosureView.animator().isHidden = (sender.state == .off);
             self.disclosureConstraint.animator().isActive = (sender.state == .off);
             self.windowHeightConstraint?.animator().isActive = (sender.state == .off);
         }, completionHandler: nil);
