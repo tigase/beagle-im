@@ -652,6 +652,17 @@
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="eu3-7i-yIM"/>
+                                        <menuItem title="Chats" keyEquivalent="1" allowsKeyEquivalentWhenHidden="YES" id="ZfF-gv-Ucr">
+                                            <connections>
+                                                <segue destination="B8D-0N-5wS" kind="show" id="KuL-b2-THh"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Contacts" keyEquivalent="2" allowsKeyEquivalentWhenHidden="YES" id="1rU-qU-qAY">
+                                            <connections>
+                                                <segue destination="qEo-e6-sLy" kind="show" id="1M4-fh-sMA"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="M2u-cQ-PVY"/>
                                         <menuItem title="Bring All to Front" id="LE2-aR-0XJ">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <connections>
@@ -689,10 +700,10 @@
         <scene sceneID="R2V-B0-nI4">
             <objects>
                 <windowController showSeguePresentationStyle="single" id="B8D-0N-5wS" userLabel="Chats Window" customClass="ChatsWindowController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
-                    <window key="window" title="Chats" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="IQv-IB-iLA" userLabel="Chats">
-                        <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+                    <window key="window" title="Chats" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" titlebarAppearsTransparent="YES" id="IQv-IB-iLA" userLabel="Chats">
+                        <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" fullSizeContentView="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-                        <rect key="contentRect" x="196" y="240" width="480" height="600"/>
+                        <rect key="contentRect" x="196" y="240" width="600" height="600"/>
                         <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
                         <connections>
                             <outlet property="delegate" destination="B8D-0N-5wS" id="98r-iN-zZc"/>
@@ -704,7 +715,7 @@
                 </windowController>
                 <customObject id="Oky-zY-oP4" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="75" y="250"/>
+            <point key="canvasLocation" x="-165" y="434"/>
         </scene>
         <!--Split View Controller-->
         <scene sceneID="DWf-Ci-9Qd">
@@ -2286,11 +2297,11 @@ Gw
         <!--Roster Window Controller-->
         <scene sceneID="dg8-fw-YTe">
             <objects>
-                <windowController storyboardIdentifier="RosterWindowController" id="qEo-e6-sLy" userLabel="Roster Window Controller" sceneMemberID="viewController">
+                <windowController storyboardIdentifier="RosterWindowController" showSeguePresentationStyle="single" id="qEo-e6-sLy" userLabel="Roster Window Controller" sceneMemberID="viewController">
                     <window key="window" title="Contacts" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="" animationBehavior="default" titlebarAppearsTransparent="YES" titleVisibility="hidden" id="AnF-Nc-3rl">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-                        <rect key="contentRect" x="-2135" y="470" width="376" height="418"/>
+                        <rect key="contentRect" x="-2135" y="470" width="350" height="600"/>
                         <rect key="screenRect" x="-2560" y="0.0" width="2560" height="1440"/>
                         <connections>
                             <outlet property="delegate" destination="qEo-e6-sLy" id="SU2-L9-KNi"/>

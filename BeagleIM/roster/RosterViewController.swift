@@ -52,6 +52,11 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
         
         reloadData();
     }
+    
+    override func viewWillAppear() {
+        super.viewWillAppear();
+        self.statusUpdated(XmppService.instance.currentStatus);
+    }
    
     func updateContactsFilterSelector() {
         contactsFilterSelector?.setSelected(true, forSegment: self.showOnlyOnline ? 1 : 0);
@@ -118,7 +123,10 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
     
     @objc func serviceStatusChanged(_ notification: Notification) {
         let status = notification.object as? XmppService.Status;
-        
+        self.statusUpdated(status);
+    }
+    
+    fileprivate func statusUpdated(_ status: XmppService.Status?) {
         self.statusView.stringValue = status?.message ?? "";
         let show = StatusShow.from(show: status?.show);
         let menuItem = self.statusButton.item(at: show.rawValue)!;

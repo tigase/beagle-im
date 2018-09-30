@@ -45,22 +45,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         NotificationCenter.default.addObserver(self, selector: #selector(serverCertificateError(_:)), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         // Insert code here to initialize your application
-        let window = NSApplication.shared.windows[0];
+//        let window = NSApplication.shared.windows[0];
 //        let titleAccessoryView = NSTitlebarAccessoryViewController();
 //        titleAccessoryView.view = window.contentView!;
 //        titleAccessoryView.layoutAttribute = ;
 //        window.addTitlebarAccessoryViewController(titleAccessoryView);
-        var mask = window.styleMask;
-        mask.insert(.fullSizeContentView)
-        window.styleMask = mask;// + [NSWindow.StyleMask.fullSizeContentView]
-        window.titlebarAppearsTransparent = true;
-        window.titleVisibility = .hidden;
+//        var mask = window.styleMask;
+//        mask.insert(.fullSizeContentView)
+//        window.styleMask = mask;// + [NSWindow.StyleMask.fullSizeContentView]
+//        window.titlebarAppearsTransparent = true;
+//        window.titleVisibility = .hidden;
         
         NSUserNotificationCenter.default.delegate = self;
         
-        let storyboard = NSStoryboard(name: "Main", bundle: nil);
-        let rosterWindowController = storyboard.instantiateController(withIdentifier: "RosterWindowController") as! NSWindowController;
-        rosterWindowController.showWindow(self);
+//        let storyboard = NSStoryboard(name: "Main", bundle: nil);
+//        let rosterWindowController = storyboard.instantiateController(withIdentifier: "RosterWindowController") as! NSWindowController;
+//        rosterWindowController.showWindow(self);
         _ = XmppService.instance;
     }
 

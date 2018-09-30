@@ -14,9 +14,15 @@ class ChatsWindowController: NSWindowController, NSWindowDelegate {
         super.init(coder: coder);
     }
     
-    func windowShouldClose(_ sender: NSWindow) -> Bool {
-        NSApp.hide(nil);
-        return false;
+    override func windowDidLoad() {
+        super.windowDidLoad();
+        self.window?.titleVisibility = .hidden;
     }
+    
+//    func windowShouldClose(_ sender: NSWindow) -> Bool {
+////        sender.orderOut(nil);
+//        sender.setIsMiniaturized(true);
+//        return false;
+//    }
     
 }
