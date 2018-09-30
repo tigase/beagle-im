@@ -7,7 +7,7 @@
 //
 
 import AppKit
-
+import TigaseSwift
 
 protocol ChatsListGroupProtocol {
     
@@ -18,4 +18,6 @@ protocol ChatsListGroupProtocol {
     func getChat(at: Int) -> ChatItemProtocol?;
     
     func forChat(_ chat: DBChatProtocol, execute: @escaping (ChatItemProtocol)->Void);
+    
+    func forChat(account: BareJID, jid: BareJID, execute: @escaping (ChatItemProtocol)->Void);
 }

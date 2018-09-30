@@ -215,6 +215,22 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     
     @objc func chatSelected(_ notification: Notification) {
         guard let chat = notification.object as? DBChatProtocol else {
+            guard let account = notification.userInfo?["account"] as? BareJID, let jid = notification.userInfo?["jid"] as? BareJID else {
+                return;
+            }
+            self.groups.forEach { group in
+                group.forChat(account: account, jid: jid) { item in
+                    DispatchQueue.main.async {
+                        let row = self.outlineView.row(forItem: item);
+                        guard row >= 0 else {
+                            return;
+                        }
+                        self.view.window?.windowController?.showWindow(self);
+
+                        self.outlineView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false);
+                    }
+                }
+            }
             return;
         }
 
@@ -225,6 +241,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
                     guard row >= 0 else {
                         return;
                     }
+                    self.view.window?.windowController?.showWindow(self);
                     
                     self.outlineView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false);
                 }

@@ -38,12 +38,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         return f;
     })();
     
+    fileprivate var mainWindowController: NSWindowController?;
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if #available(OSX 10.14, *) {
             NSApp.appearance = NSAppearance(named: .aqua)
         };
         NotificationCenter.default.addObserver(self, selector: #selector(serverCertificateError(_:)), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(chatUpdated), name: DBChatStore.CHAT_UPDATED, object: nil);
         // Insert code here to initialize your application
 //        let window = NSApplication.shared.windows[0];
 //        let titleAccessoryView = NSTitlebarAccessoryViewController();
@@ -56,6 +59,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 //        window.titlebarAppearsTransparent = true;
 //        window.titleVisibility = .hidden;
         
+        self.mainWindowController = NSApplication.shared.windows[0].windowController;
+        
         NSUserNotificationCenter.default.delegate = self;
         
 //        let storyboard = NSStoryboard(name: "Main", bundle: nil);
@@ -63,7 +68,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 //        rosterWindowController.showWindow(self);
         _ = XmppService.instance;
     }
-
+    
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
         XmppService.instance.disconnectClients();
@@ -97,10 +102,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             openRoomController.mucJids = [BareJID(roomJid.domain)];
             openRoomController.account = BareJID(accountStr);
             openRoomController.nicknameField.stringValue = nickname;
-            let window = NSApp.windows.first { w -> Bool in
-                return w.windowController is ChatsWindowController
+            guard let window = self.mainWindowController?.window else {
+                return;
             }
-            window!.beginSheet(windowController.window!, completionHandler: nil);
+            window.windowController?.showWindow(self);
+            window.beginSheet(windowController.window!, completionHandler: nil);
+        case "message-new":
+            guard let account = BareJID(notification.userInfo?["account"] as? String), let jid = BareJID(notification.userInfo?["jid"] as? String) else {
+                return;
+            }
+            NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: nil, userInfo: ["account": account, "jid": jid]);
         default:
             break;
         }
@@ -121,6 +132,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             return (chatViewController.account?.stringValue ?? "") != account || (chatViewController.chat?.jid.stringValue ?? "") != jid;
         }
         return true;
+    }
+    
+    @objc func chatUpdated(_ notification: Notification) {
+        guard let chat = notification.object as? DBChatProtocol, chat.unread == 0 else {
+            return;
+        }
+        NSUserNotificationCenter.default.deliveredNotifications.forEach { (n) in
+            guard let id = n.userInfo?["id"] as? String, id == "message-new" else {
+                return;
+            }
+            guard let account = BareJID(n.userInfo?["account"] as? String), let jid = BareJID(n.userInfo?["jid"] as? String) else {
+                return;
+            }
+            guard chat.account == account && chat.jid.bareJid == jid else {
+                return;
+            }
+            NSUserNotificationCenter.default.removeDeliveredNotification(n);
+        }
     }
 
     @objc func newMessage(_ notification: Notification) {
@@ -147,7 +176,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 //            notification.deliveryDate = item.timestamp;
             notification.informativeText = item.message;
             notification.soundName = NSUserNotificationDefaultSoundName;
-            notification.userInfo = ["account": item.account.stringValue, "jid": item.jid.stringValue];
+            notification.userInfo = ["account": item.account.stringValue, "jid": item.jid.stringValue, "id": "message-new"];
             NSUserNotificationCenter.default.deliver(notification);
         } else {
             let notification = NSUserNotification();
@@ -156,7 +185,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 //            notification.deliveryDate = item.timestamp;
             notification.informativeText = item.message;
             notification.soundName = NSUserNotificationDefaultSoundName;
-            notification.userInfo = ["account": item.account.stringValue, "jid": item.jid.stringValue];
+            notification.userInfo = ["account": item.account.stringValue, "jid": item.jid.stringValue, "id": "message-new"];
             NSUserNotificationCenter.default.deliver(notification);
         }
     }
