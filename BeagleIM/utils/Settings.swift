@@ -25,6 +25,17 @@ enum Settings: String {
     
     fileprivate static var observers: [Settings: [UUID: (Settings, Any?)->Void]] = [:];
     
+    public static func initialize() {
+        let defaults: [String: Any] = [
+            "automaticallyConnectAfterStart": true,
+            "requestPresenceSubscription": true,
+            "allowPresenceSubscription": true,
+            "enableMessageCarbons": true,
+            "markMessageCarbonsAsRead": true
+        ];
+        UserDefaults.standard.register(defaults: defaults);
+    }
+    
     func set(value: Bool) {
         UserDefaults.standard.set(value, forKey: self.rawValue);
         valueChanged();
@@ -78,6 +89,20 @@ enum AccountSettings {
     case messageSyncPeriod(BareJID)
     
     public static let CHANGED = Notification.Name("accountSettingChanged");
+    
+    public static func initialize() {
+        let accountJids = AccountManager.getAccounts().map { (jid) -> String in
+            return jid.stringValue
+        };
+        let toRemove = UserDefaults.standard.dictionaryRepresentation().keys.filter { key -> Bool in
+            return key.hasPrefix("accounts.") && accountJids.first(where: { jid -> Bool in
+                return key.hasPrefix("accounts.\(jid).");
+            }) == nil;
+        }
+        toRemove.forEach { key in
+            UserDefaults.standard.removeObject(forKey: key);
+        }
+    }
     
     public var account: BareJID {
         switch self {

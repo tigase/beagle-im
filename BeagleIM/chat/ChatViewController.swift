@@ -139,6 +139,11 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             return;
         }
         
+        
+        guard sendMessage(body: msg) else {
+            return;
+        }
+        
         (sender as? AutoresizingTextField)?.reset();
     }
     
