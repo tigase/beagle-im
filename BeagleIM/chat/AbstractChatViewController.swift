@@ -48,6 +48,13 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         self.dataSource.refreshData();
     }
     
+    override func viewDidAppear() {
+        super.viewDidAppear();
+        DispatchQueue.main.async {
+            self.view.window!.makeFirstResponder(self.messageField);
+        }
+    }
+    
     @objc func didBecomeKeyWindow(_ notification: Notification) {
         if chat.unread > 0 {
             DBChatHistoryStore.instance.markAsRead(for: account, with: jid);
