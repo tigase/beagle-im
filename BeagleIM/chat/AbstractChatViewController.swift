@@ -9,10 +9,12 @@
 import AppKit
 import TigaseSwift
 
-class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatViewDataSourceDelegate {
+class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatViewDataSourceDelegate, NSTextViewDelegate {
     
     @IBOutlet var tableView: NSTableView!;
-    @IBOutlet var messageField: NSTextField!;
+    @IBOutlet var messageFieldScroller: NSScrollView!;
+    @IBOutlet var messageField: AutoresizingTextView!;
+    @IBOutlet var messageFieldScrollerHeight: NSLayoutConstraint!;
     
     var dataSource: ChatViewDataSource!;
     var chat: DBChatProtocol!;
@@ -35,7 +37,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         self.view.layer?.backgroundColor = NSColor.white.cgColor;
         self.dataSource.delegate = self;
         self.tableView.dataSource = self;
-        
+        self.messageField.delegate = self;
         NotificationCenter.default.addObserver(self, selector: #selector(didBecomeKeyWindow), name: NSWindow.didBecomeKeyNotification, object: nil);
     }
     
@@ -46,6 +48,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         self.tableView.scrollRowToVisible(self.tableView.numberOfRows - 1);
         
         self.dataSource.refreshData();
+        self.updateMessageFieldSize();
     }
     
     override func viewDidAppear() {
@@ -60,7 +63,29 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
             DBChatHistoryStore.instance.markAsRead(for: account, with: jid);
         }
     }
-
+    
+    func textDidChange(_ notification: Notification) {
+        self.updateMessageFieldSize();
+    }
+    
+    func textView(_ textView: NSTextView, shouldChangeTextIn affectedCharRange: NSRange, replacementString: String?) -> Bool {
+        guard "\n" == replacementString else {
+            return true;
+        }
+        DispatchQueue.main.async {
+            let msg = textView.string;
+            guard !msg.isEmpty else {
+                return;
+            }
+            guard self.sendMessage(body: msg) else {
+                return;
+            }
+            self.messageField.reset();
+            self.updateMessageFieldSize();
+        }
+        return false;
+    }
+    
     func itemAdded(at rows: IndexSet) {
         tableView.insertRows(at: rows, withAnimation: NSTableView.AnimationOptions.slideLeft)
         if (rows.contains(0)) {
@@ -80,4 +105,12 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         return dataSource.count;
     }
 
+    func sendMessage(body: String? = nil, url: String? = nil) -> Bool {
+        return false;
+    }
+    
+    func updateMessageFieldSize() {
+        let height = min(max(messageField.intrinsicContentSize.height, 14), 100) + self.messageFieldScroller.contentInsets.top + self.messageFieldScroller.contentInsets.bottom;
+        self.messageFieldScrollerHeight.constant = height;
+    }
 }

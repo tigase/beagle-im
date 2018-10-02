@@ -133,20 +133,6 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         }
     }
     
-    @IBAction func enterInInputTextField(_ sender: NSTextField) {
-        let msg = sender.stringValue
-        guard !msg.isEmpty else {
-            return;
-        }
-        
-        
-        guard sendMessage(body: msg) else {
-            return;
-        }
-        
-        (sender as? AutoresizingTextField)?.reset();
-    }
-    
     override func sendMessage(body: String? = nil, url: String? = nil) -> Bool {
         guard let msg = body ?? url else {
             return false;

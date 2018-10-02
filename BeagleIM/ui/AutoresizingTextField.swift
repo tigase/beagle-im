@@ -21,7 +21,8 @@ class AutoresizingTextField: NSTextField {
     
     override var intrinsicContentSize: NSSize {
         var intrinsicSize = lastIntrinsicSize;
-        
+
+        print("calc:", editing, hasLastIntrinsicSize);
         if editing || !hasLastIntrinsicSize {
             intrinsicSize = super.intrinsicContentSize;
             if let editor = self.window?.fieldEditor(false, for: self) {
@@ -30,6 +31,9 @@ class AutoresizingTextField: NSTextField {
                         intrinsicSize.height = usedRect.size.height + 5.0;
                     }
                 }
+            }
+            if intrinsicSize.height < 22 {
+                intrinsicSize.height = 22;
             }
             if intrinsicSize.height < 100 || !hasLastIntrinsicSize {
                 lastIntrinsicSize = intrinsicSize;
@@ -54,9 +58,9 @@ class AutoresizingTextField: NSTextField {
         self.invalidateIntrinsicContentSize();
     }
     
-    func reset() {
-        self.stringValue = "";
+    func reset(repeat val: Bool = true) {
         self.hasLastIntrinsicSize = false;
         self.invalidateIntrinsicContentSize();
+        self.stringValue = "";
     }
 }

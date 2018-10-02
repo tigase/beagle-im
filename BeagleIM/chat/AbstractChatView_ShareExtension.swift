@@ -43,10 +43,6 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         }
     }
     
-    func sendMessage(body: String? = nil, url: String? = nil) -> Bool {
-        return false;
-    }
-    
     @IBAction func attachFile(_ sender: NSButton) {
         self.selectFile { (url) in
             self.uploadFileToHttpServer(url: url) { (uploadedUrl, errorCondition, errorMessage) in

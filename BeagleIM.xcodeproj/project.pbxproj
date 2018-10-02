@@ -56,6 +56,8 @@
 		FE6E6C0621384D5F003B1696 /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BF621384D5E003B1696 /* Database.swift */; };
 		FE6E6C0821384DF1003B1696 /* ChatCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6C0721384DF1003B1696 /* ChatCellView.swift */; };
 		FEA8941F2156625E004C3B51 /* ConfigureRoomViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8941E2156625E004C3B51 /* ConfigureRoomViewController.swift */; };
+		FEB4EAFC2162A3DC00F8A9E2 /* AutoresizineTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB4EAFB2162A3DC00F8A9E2 /* AutoresizineTextView.swift */; };
+		FEB4EAFE2163714300F8A9E2 /* RoundedScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB4EAFD2163714300F8A9E2 /* RoundedScrollView.swift */; };
 		FEC5DC7E21552A3300AA3E4F /* ChatViewDataSourceDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC5DC7D21552A3300AA3E4F /* ChatViewDataSourceDelegate.swift */; };
 		FEC5DC8021552A9B00AA3E4F /* ChatViewDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC5DC7F21552A9B00AA3E4F /* ChatViewDataSource.swift */; };
 		FEC5DC8221552D8300AA3E4F /* ChatViewItemProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC5DC8121552D8300AA3E4F /* ChatViewItemProtocol.swift */; };
@@ -161,6 +163,8 @@
 		FE6E6BF621384D5E003B1696 /* Database.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Database.swift; sourceTree = "<group>"; };
 		FE6E6C0721384DF1003B1696 /* ChatCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatCellView.swift; sourceTree = "<group>"; };
 		FEA8941E2156625E004C3B51 /* ConfigureRoomViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigureRoomViewController.swift; sourceTree = "<group>"; };
+		FEB4EAFB2162A3DC00F8A9E2 /* AutoresizineTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoresizineTextView.swift; sourceTree = "<group>"; };
+		FEB4EAFD2163714300F8A9E2 /* RoundedScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundedScrollView.swift; sourceTree = "<group>"; };
 		FEC5DC7D21552A3300AA3E4F /* ChatViewDataSourceDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewDataSourceDelegate.swift; sourceTree = "<group>"; };
 		FEC5DC7F21552A9B00AA3E4F /* ChatViewDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewDataSource.swift; sourceTree = "<group>"; };
 		FEC5DC8121552D8300AA3E4F /* ChatViewItemProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewItemProtocol.swift; sourceTree = "<group>"; };
@@ -255,6 +259,8 @@
 				FE30D8AE214C3B7600670BEC /* NSImage.swift */,
 				FE30D8B0214CE93600670BEC /* FormView.swift */,
 				FE34BBD02157901100775B07 /* JabberDataFormView.swift */,
+				FEB4EAFB2162A3DC00F8A9E2 /* AutoresizineTextView.swift */,
+				FEB4EAFD2163714300F8A9E2 /* RoundedScrollView.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -622,6 +628,8 @@
 				FE41FB45215E426400AD86D3 /* MessageArchivingSetttingsView.swift in Sources */,
 				FE6E6C0021384D5F003B1696 /* ChatsListView.swift in Sources */,
 				FE6E6C0621384D5F003B1696 /* Database.swift in Sources */,
+				FEB4EAFC2162A3DC00F8A9E2 /* AutoresizineTextView.swift in Sources */,
+				FEB4EAFE2163714300F8A9E2 /* RoundedScrollView.swift in Sources */,
 				FEC5DC8021552A9B00AA3E4F /* ChatViewDataSource.swift in Sources */,
 				FE41FB37215BBFC800AD86D3 /* DBCapabilitiesCache.swift in Sources */,
 				FE6E6BFB21384D5F003B1696 /* XmppService.swift in Sources */,

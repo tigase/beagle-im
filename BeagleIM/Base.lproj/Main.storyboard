@@ -1704,32 +1704,56 @@ AAAAAAEGA
                                     <action selector="attachFile:" target="bJ4-ee-HmU" id="aiD-fG-EcW"/>
                                 </connections>
                             </button>
-                            <textField translatesAutoresizingMaskIntoConstraints="NO" id="hER-uR-mOw" customClass="AutoresizingTextField" customModule="BeagleIM" customModuleProvider="target">
+                            <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eQY-WT-lv4" customClass="RoundedScrollView" customModule="BeagleIM" customModuleProvider="target">
                                 <rect key="frame" x="29" y="4" width="280" height="22"/>
-                                <textFieldCell key="cell" selectable="YES" editable="YES" state="on" borderStyle="bezel" bezelStyle="round" id="hB8-v2-QHd">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                                <connections>
-                                    <action selector="enterInInputTextField:" target="bJ4-ee-HmU" id="Pzv-gM-bS5"/>
-                                </connections>
-                            </textField>
+                                <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="kiN-QC-soI">
+                                    <rect key="frame" x="0.0" y="0.0" width="280" height="22"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <subviews>
+                                        <textView drawsBackground="NO" importsGraphics="NO" richText="NO" verticallyResizable="YES" smartInsertDelete="YES" id="55A-ac-2fc" customClass="AutoresizingTextView" customModule="BeagleIM" customModuleProvider="target">
+                                            <rect key="frame" x="0.0" y="0.0" width="258" height="16"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            <size key="minSize" width="258" height="14"/>
+                                            <size key="maxSize" width="280" height="10000000"/>
+                                            <attributedString key="textStorage">
+                                                <fragment content=" ">
+                                                    <attributes>
+                                                        <color key="NSColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                        <font key="NSFont" metaFont="system"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                    </attributes>
+                                                </fragment>
+                                            </attributedString>
+                                            <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                        </textView>
+                                    </subviews>
+                                </clipView>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="22" id="cVy-3f-LmV"/>
+                                </constraints>
+                                <edgeInsets key="contentInsets" left="11" right="11" top="4" bottom="4"/>
+                                <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="GoE-Qo-ht3">
+                                    <rect key="frame" x="253" y="4" width="16" height="14"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </scroller>
+                            </scrollView>
                         </subviews>
                         <constraints>
                             <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="FiK-DK-gMw" secondAttribute="bottom" constant="4" id="0r0-ah-oMk"/>
+                            <constraint firstItem="FiK-DK-gMw" firstAttribute="top" secondItem="eQY-WT-lv4" secondAttribute="top" id="1dH-nr-bnn"/>
                             <constraint firstItem="xMh-bV-LhL" firstAttribute="bottom" secondItem="AeQ-nG-KTC" secondAttribute="bottom" id="94v-72-Fsg"/>
-                            <constraint firstAttribute="bottom" secondItem="hER-uR-mOw" secondAttribute="bottom" constant="4" id="AhP-Bj-UV1"/>
-                            <constraint firstItem="hER-uR-mOw" firstAttribute="top" secondItem="AeQ-nG-KTC" secondAttribute="bottom" constant="4" id="Ii4-SR-l1v"/>
-                            <constraint firstItem="FiK-DK-gMw" firstAttribute="top" secondItem="hER-uR-mOw" secondAttribute="top" id="JeS-ZC-56L"/>
+                            <constraint firstAttribute="trailing" secondItem="eQY-WT-lv4" secondAttribute="trailing" constant="4" id="HJS-qt-FIG"/>
+                            <constraint firstItem="eQY-WT-lv4" firstAttribute="leading" secondItem="FiK-DK-gMw" secondAttribute="trailing" constant="4" id="KGs-ea-WhJ"/>
                             <constraint firstAttribute="trailing" secondItem="AeQ-nG-KTC" secondAttribute="trailing" id="PMk-TI-hyR"/>
                             <constraint firstItem="xMh-bV-LhL" firstAttribute="leading" secondItem="AeQ-nG-KTC" secondAttribute="leading" id="WEd-sy-D61"/>
                             <constraint firstItem="AeQ-nG-KTC" firstAttribute="leading" secondItem="XWz-tH-btE" secondAttribute="leading" id="YMI-Uw-krh"/>
                             <constraint firstItem="FRG-k1-QUa" firstAttribute="leading" secondItem="XWz-tH-btE" secondAttribute="leading" id="anJ-EZ-b1v"/>
+                            <constraint firstItem="eQY-WT-lv4" firstAttribute="top" secondItem="AeQ-nG-KTC" secondAttribute="bottom" constant="4" id="c98-zQ-aYM"/>
                             <constraint firstItem="FRG-k1-QUa" firstAttribute="top" secondItem="XWz-tH-btE" secondAttribute="top" id="g43-6o-9Bd"/>
-                            <constraint firstAttribute="trailing" secondItem="hER-uR-mOw" secondAttribute="trailing" constant="4" id="g5x-jB-w1u"/>
-                            <constraint firstItem="hER-uR-mOw" firstAttribute="leading" secondItem="FiK-DK-gMw" secondAttribute="trailing" constant="4" id="hLO-Ez-Kyt"/>
                             <constraint firstItem="AeQ-nG-KTC" firstAttribute="top" secondItem="FRG-k1-QUa" secondAttribute="bottom" id="l8X-bJ-ygP"/>
+                            <constraint firstAttribute="bottom" secondItem="eQY-WT-lv4" secondAttribute="bottom" constant="4" id="tie-AY-KmU"/>
                             <constraint firstItem="xMh-bV-LhL" firstAttribute="trailing" secondItem="AeQ-nG-KTC" secondAttribute="trailing" id="x6a-NJ-uEb"/>
                             <constraint firstItem="FiK-DK-gMw" firstAttribute="leading" secondItem="XWz-tH-btE" secondAttribute="leading" constant="4" id="y8V-Mp-vge"/>
                             <constraint firstAttribute="trailing" secondItem="FRG-k1-QUa" secondAttribute="trailing" id="zRg-xX-6hh"/>
@@ -1740,7 +1764,9 @@ AAAAAAEGA
                         <outlet property="buddyJidLabel" destination="gde-5T-n8j" id="tpb-WS-0GV"/>
                         <outlet property="buddyNameLabel" destination="yXg-0b-XTX" id="yhZ-VW-XT9"/>
                         <outlet property="buddyStatusLabel" destination="BoY-8I-sGR" id="nnV-tI-pbi"/>
-                        <outlet property="messageField" destination="hER-uR-mOw" id="EKo-Kj-Ber"/>
+                        <outlet property="messageField" destination="55A-ac-2fc" id="Qm4-k2-jg1"/>
+                        <outlet property="messageFieldScroller" destination="eQY-WT-lv4" id="WW0-y6-aFH"/>
+                        <outlet property="messageFieldScrollerHeight" destination="cVy-3f-LmV" id="tIw-Ll-M6s"/>
                         <outlet property="sharingButton" destination="FiK-DK-gMw" id="UCP-ja-dhS"/>
                         <outlet property="sharingProgressBar" destination="xMh-bV-LhL" id="Z0j-a3-Q85"/>
                         <outlet property="tableView" destination="N1B-Tt-jcO" id="rYb-EL-DnJ"/>
@@ -2895,11 +2921,11 @@ Gw
                 <customObject id="lca-E5-bXu" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <viewController identifier="GroupchatViewController" storyboardIdentifier="GroupchatViewController" id="vht-52-XAK" customClass="GroupchatViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="4Im-fO-8dU">
-                        <rect key="frame" x="0.0" y="0.0" width="400" height="364"/>
+                        <rect key="frame" x="0.0" y="0.0" width="400" height="365"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <box verticalHuggingPriority="750" boxType="custom" borderType="none" title="Box" transparent="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0O6-Pu-tW4">
-                                <rect key="frame" x="0.0" y="292" width="400" height="72"/>
+                                <rect key="frame" x="0.0" y="293" width="400" height="72"/>
                                 <view key="contentView" id="8J8-dt-vbv">
                                     <rect key="frame" x="0.0" y="0.0" width="400" height="72"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -3016,13 +3042,13 @@ AAAAAAEGA
                                 </view>
                             </box>
                             <scrollView verticalHuggingPriority="249" borderType="none" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xEj-nj-qPf">
-                                <rect key="frame" x="0.0" y="30" width="199" height="262"/>
+                                <rect key="frame" x="0.0" y="30" width="199" height="263"/>
                                 <clipView key="contentView" drawsBackground="NO" id="ZEQ-Qr-EIY">
-                                    <rect key="frame" x="0.0" y="0.0" width="199" height="262"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="199" height="263"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="none" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" enabled="NO" usesAutomaticRowHeights="YES" viewBased="YES" id="K6D-S9-WZN" customClass="ChatViewTableView" customModule="BeagleIM" customModuleProvider="target">
-                                            <rect key="frame" x="0.0" y="0.0" width="199" height="262"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="199" height="263"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <size key="intercellSpacing" width="3" height="2"/>
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -3117,28 +3143,52 @@ AAAAAAEGA
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
-                            <textField translatesAutoresizingMaskIntoConstraints="NO" id="uW5-bz-43h" customClass="AutoresizingTextField" customModule="BeagleIM" customModuleProvider="target">
+                            <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" translatesAutoresizingMaskIntoConstraints="NO" id="17f-xV-Jus" customClass="RoundedScrollView" customModule="BeagleIM" customModuleProvider="target">
                                 <rect key="frame" x="29" y="4" width="367" height="22"/>
-                                <textFieldCell key="cell" selectable="YES" editable="YES" state="on" borderStyle="bezel" bezelStyle="round" id="fzb-8f-apu">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                                <connections>
-                                    <action selector="enterInInputTextField:" target="vht-52-XAK" id="ov8-BC-zuh"/>
-                                </connections>
-                            </textField>
+                                <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="t2C-rl-jwx">
+                                    <rect key="frame" x="0.0" y="0.0" width="367" height="22"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <subviews>
+                                        <textView drawsBackground="NO" importsGraphics="NO" richText="NO" verticallyResizable="YES" smartInsertDelete="YES" id="fm7-td-rrI" customClass="AutoresizingTextView" customModule="BeagleIM" customModuleProvider="target">
+                                            <rect key="frame" x="0.0" y="0.0" width="345" height="16"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            <size key="minSize" width="345" height="14"/>
+                                            <size key="maxSize" width="370" height="10000000"/>
+                                            <attributedString key="textStorage">
+                                                <fragment content=" ">
+                                                    <attributes>
+                                                        <color key="NSColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                        <font key="NSFont" metaFont="system"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                    </attributes>
+                                                </fragment>
+                                            </attributedString>
+                                            <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                        </textView>
+                                    </subviews>
+                                </clipView>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="22" id="PDn-K3-Q21"/>
+                                </constraints>
+                                <edgeInsets key="contentInsets" left="11" right="11" top="4" bottom="4"/>
+                                <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="tGE-IC-605">
+                                    <rect key="frame" x="340" y="4" width="16" height="14"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </scroller>
+                            </scrollView>
                             <box horizontalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="fXI-LD-wEK">
-                                <rect key="frame" x="197" y="30" width="5" height="262"/>
+                                <rect key="frame" x="197" y="30" width="5" height="263"/>
                             </box>
                             <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="40" horizontalPageScroll="10" verticalLineScroll="40" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qPg-RH-BHf">
-                                <rect key="frame" x="200" y="30" width="200" height="262"/>
+                                <rect key="frame" x="200" y="30" width="200" height="263"/>
                                 <clipView key="contentView" drawsBackground="NO" id="KfR-1C-rOz">
-                                    <rect key="frame" x="0.0" y="0.0" width="200" height="262"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="200" height="263"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" ambiguous="YES" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="none" columnReordering="NO" multipleSelection="NO" autosaveColumns="NO" typeSelect="NO" enabled="NO" rowHeight="38" usesAutomaticRowHeights="YES" viewBased="YES" id="9Zj-K6-yAz">
-                                            <rect key="frame" x="0.0" y="0.0" width="200" height="262"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="200" height="263"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <size key="intercellSpacing" width="2" height="2"/>
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -3210,8 +3260,8 @@ AAAAAAEGA
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
-                            <progressIndicator hidden="YES" wantsLayer="YES" misplaced="YES" maxValue="100" controlSize="small" style="bar" translatesAutoresizingMaskIntoConstraints="NO" id="FRz-b3-39X">
-                                <rect key="frame" x="0.0" y="19" width="100" height="12"/>
+                            <progressIndicator hidden="YES" wantsLayer="YES" maxValue="100" controlSize="small" style="bar" translatesAutoresizingMaskIntoConstraints="NO" id="FRz-b3-39X">
+                                <rect key="frame" x="0.0" y="30" width="400" height="12"/>
                             </progressIndicator>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ehh-GE-Ait">
                                 <rect key="frame" x="4" y="7" width="21" height="19"/>
@@ -3225,36 +3275,37 @@ AAAAAAEGA
                             </button>
                         </subviews>
                         <constraints>
+                            <constraint firstItem="17f-xV-Jus" firstAttribute="top" secondItem="Ehh-GE-Ait" secondAttribute="top" id="0Z8-AC-OOJ"/>
                             <constraint firstItem="0O6-Pu-tW4" firstAttribute="leading" secondItem="4Im-fO-8dU" secondAttribute="leading" id="1Q0-ar-aLM"/>
                             <constraint firstItem="fXI-LD-wEK" firstAttribute="top" secondItem="xEj-nj-qPf" secondAttribute="top" id="2Ju-sr-S7G"/>
-                            <constraint firstItem="uW5-bz-43h" firstAttribute="top" secondItem="xEj-nj-qPf" secondAttribute="bottom" constant="4" id="3Z5-U8-Vo1"/>
                             <constraint firstItem="qPg-RH-BHf" firstAttribute="top" secondItem="0O6-Pu-tW4" secondAttribute="bottom" id="9tY-l0-H1N"/>
                             <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="Ehh-GE-Ait" secondAttribute="bottom" constant="4" id="BnR-PR-gLs"/>
                             <constraint firstItem="FRz-b3-39X" firstAttribute="trailing" secondItem="qPg-RH-BHf" secondAttribute="trailing" id="Dax-Kw-JSx"/>
+                            <constraint firstItem="17f-xV-Jus" firstAttribute="leading" secondItem="Ehh-GE-Ait" secondAttribute="trailing" constant="4" id="Env-Sr-kGe"/>
                             <constraint firstItem="xEj-nj-qPf" firstAttribute="leading" secondItem="4Im-fO-8dU" secondAttribute="leading" id="Fth-ke-YoY"/>
+                            <constraint firstItem="17f-xV-Jus" firstAttribute="top" secondItem="xEj-nj-qPf" secondAttribute="bottom" constant="4" id="L9F-lE-lrt"/>
                             <constraint firstItem="fXI-LD-wEK" firstAttribute="leading" secondItem="xEj-nj-qPf" secondAttribute="trailing" id="NxR-tV-408"/>
                             <constraint firstItem="xEj-nj-qPf" firstAttribute="top" secondItem="0O6-Pu-tW4" secondAttribute="bottom" id="Of6-pD-EOe"/>
                             <constraint firstItem="FRz-b3-39X" firstAttribute="leading" secondItem="xEj-nj-qPf" secondAttribute="leading" id="TSY-1u-HNd"/>
-                            <constraint firstItem="uW5-bz-43h" firstAttribute="top" secondItem="qPg-RH-BHf" secondAttribute="bottom" constant="4" id="UOz-T6-9yh"/>
-                            <constraint firstAttribute="bottom" secondItem="uW5-bz-43h" secondAttribute="bottom" constant="4" id="ZYL-1P-TjV"/>
-                            <constraint firstAttribute="trailing" secondItem="uW5-bz-43h" secondAttribute="trailing" constant="4" id="Zru-Q1-Esq"/>
                             <constraint firstItem="Ehh-GE-Ait" firstAttribute="leading" secondItem="4Im-fO-8dU" secondAttribute="leading" constant="4" id="bA0-zc-8en"/>
                             <constraint firstItem="FRz-b3-39X" firstAttribute="bottom" secondItem="qPg-RH-BHf" secondAttribute="bottom" id="bCg-fj-z3H"/>
-                            <constraint firstItem="Ehh-GE-Ait" firstAttribute="top" secondItem="uW5-bz-43h" secondAttribute="top" id="jRZ-gf-U5D"/>
+                            <constraint firstAttribute="bottom" secondItem="17f-xV-Jus" secondAttribute="bottom" constant="4" id="iZR-LW-nir"/>
+                            <constraint firstAttribute="trailing" secondItem="17f-xV-Jus" secondAttribute="trailing" constant="4" id="kWS-ir-Xj0"/>
                             <constraint firstItem="qPg-RH-BHf" firstAttribute="leading" secondItem="fXI-LD-wEK" secondAttribute="trailing" id="nhs-FT-I3J"/>
                             <constraint firstAttribute="trailing" secondItem="0O6-Pu-tW4" secondAttribute="trailing" id="pVG-rS-SFV"/>
                             <constraint firstAttribute="trailing" secondItem="qPg-RH-BHf" secondAttribute="trailing" id="sjB-Wl-AvQ"/>
                             <constraint firstItem="fXI-LD-wEK" firstAttribute="height" secondItem="qPg-RH-BHf" secondAttribute="height" id="wLV-Sb-ozo"/>
                             <constraint firstItem="FRz-b3-39X" firstAttribute="bottom" secondItem="xEj-nj-qPf" secondAttribute="bottom" id="wNt-zS-aPh"/>
                             <constraint firstItem="0O6-Pu-tW4" firstAttribute="top" secondItem="4Im-fO-8dU" secondAttribute="top" id="xGB-mZ-BXp"/>
-                            <constraint firstItem="uW5-bz-43h" firstAttribute="leading" secondItem="Ehh-GE-Ait" secondAttribute="trailing" constant="4" id="yLe-SH-5uE"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="avatarView" destination="zzQ-jt-v2u" id="SYJ-vL-Iuv"/>
                         <outlet property="infoButton" destination="7xK-y9-tDx" id="IWA-jh-yxQ"/>
                         <outlet property="jidView" destination="pxt-na-aFe" id="tFM-jH-dhL"/>
-                        <outlet property="messageField" destination="uW5-bz-43h" id="iSh-Lo-ZDm"/>
+                        <outlet property="messageField" destination="fm7-td-rrI" id="Fqe-55-DGN"/>
+                        <outlet property="messageFieldScroller" destination="17f-xV-Jus" id="apf-Z5-Cpu"/>
+                        <outlet property="messageFieldScrollerHeight" destination="PDn-K3-Q21" id="6KT-YO-JDW"/>
                         <outlet property="participantsTableView" destination="9Zj-K6-yAz" id="E07-d3-ZxL"/>
                         <outlet property="settingsButtin" destination="JOG-WH-1Aj" id="JG9-zY-unN"/>
                         <outlet property="sharingButton" destination="Ehh-GE-Ait" id="WGG-3U-x9w"/>
@@ -3267,7 +3318,7 @@ AAAAAAEGA
                 </viewController>
                 <customObject id="rVt-xg-c2a"/>
             </objects>
-            <point key="canvasLocation" x="906" y="1724"/>
+            <point key="canvasLocation" x="906" y="1723.5"/>
         </scene>
         <!--Manage Affiliations View Controller-->
         <scene sceneID="pDi-80-KjM">
