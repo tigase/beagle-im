@@ -11,13 +11,14 @@ import TigaseSwift
 
 class XmppService: EventHandler {
     
+    static let AUTHENTICATION_ERROR = Notification.Name("authenticationError");
     static let CONTACT_PRESENCE_CHANGED = Notification.Name("contactPresenceChanged");
     static let STATUS_CHANGED = Notification.Name("statusChanged");
     static let SERVER_CERTIFICATE_ERROR = Notification.Name("serverCertificateError");
     
     static let instance = XmppService();
  
-    fileprivate let observedEvents: [Event] = [ SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE ];
+    fileprivate let observedEvents: [Event] = [ SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE ];
     
     fileprivate let eventHandlers: [XmppServiceEventHandler] = [MucEventHandler(), PresenceRosterEventHandler(), AvatarEventHandler(), MessageEventHandler(), HttpFileUploadEventHandler()];
     
@@ -147,6 +148,24 @@ class XmppService: EventHandler {
             print("account", e.sessionObject.userBareJid!, "is now connected!");
             self.updateCurrentStatus();
             break;
+        case let e as AuthModule.AuthFailedEvent:
+            guard let accountName = e.sessionObject.userBareJid else {
+                return;
+            }
+            switch e.error! {
+            case .aborted, .temporary_auth_failure:
+                // those are temporary errors, we shoud retry
+                return;
+            default:
+                break;
+            }
+            
+            guard let account = AccountManager.getAccount(for: accountName) else {
+                return;
+            }
+            account.active = false;
+            _ = AccountManager.save(account: account);
+            NotificationCenter.default.post(name: XmppService.AUTHENTICATION_ERROR, object: accountName, userInfo: ["error": e.error ?? SaslError.not_authorized]);
         case let e as SocketConnector.CertificateErrorEvent:
             let certData = ServerCertificateInfo(trust: e.trust);
             
@@ -208,7 +227,7 @@ class XmppService: EventHandler {
         }
         
         client.connectionConfiguration.setUserPassword(account.password);
-            SslCertificateValidator.setAcceptedSslCertificate(client.sessionObject, fingerprint: (account.serverCertificate?.accepted ?? false) ? account.serverCertificate?.details.fingerprintSha1 : nil);
+        SslCertificateValidator.setAcceptedSslCertificate(client.sessionObject, fingerprint: (account.serverCertificate?.accepted ?? false) ? account.serverCertificate?.details.fingerprintSha1 : nil);
 
         client.login();
     }

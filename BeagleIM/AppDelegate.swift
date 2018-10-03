@@ -45,6 +45,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             NSApp.appearance = NSAppearance(named: .aqua)
         };
         Settings.initialize();
+        NotificationCenter.default.addObserver(self, selector: #selector(authenticationFailure), name: XmppService.AUTHENTICATION_ERROR, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(serverCertificateError(_:)), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(chatUpdated), name: DBChatStore.CHAT_UPDATED, object: nil);
@@ -87,6 +88,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
         
         switch id {
+        case "authentication-failure":
+            guard let _ = BareJID(notification.userInfo?["account"] as? String) else {
+                return;
+            }
+            guard let windowController = NSApplication.shared.windows.map({ (window) -> NSWindowController? in
+                return window.windowController;
+            }).filter({ (controller) -> Bool in
+                return controller != nil
+            }).first(where: { (controller) -> Bool in
+                return (controller?.contentViewController as? NSTabViewController) != nil
+            }) ?? mainWindowController?.storyboard?.instantiateController(withIdentifier: "PreferencesWindowController") as? NSWindowController else {
+                return;
+            }
+            (windowController.contentViewController as? NSTabViewController)?.selectedTabViewItemIndex = 1;
+            windowController.showWindow(self);
         case "room-join-error":
             guard let accountStr = notification.userInfo?["account"] as? String, let roomJidStr = notification.userInfo?["roomJid"] as? String, let nickname = notification.userInfo?["nickname"] as? String else {
                 return;
@@ -133,6 +149,41 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             return (chatViewController.account?.stringValue ?? "") != account || (chatViewController.chat?.jid.stringValue ?? "") != jid;
         }
         return true;
+    }
+    
+    @objc func authenticationFailure(_ notification: Notification) {
+        guard let accountName = notification.object as? BareJID, let error = notification.userInfo?["error"] as? SaslError else {
+            return;
+        }
+     
+        let id = "authenticationError.\(accountName.stringValue)";
+        
+        // invalidate old auth error notification if there is any
+        NSUserNotificationCenter.default.deliveredNotifications.filter { (n) -> Bool in
+            return n.identifier == id;
+            }.forEach { (n) in
+                NSUserNotificationCenter.default.removeDeliveredNotification(n);
+        }
+        
+        let notification = NSUserNotification();
+        notification.identifier = UUID().uuidString;
+        notification.title = accountName.stringValue;
+        notification.subtitle = "Authentication failure";
+        switch error {
+        case .aborted, .temporary_auth_failure:
+            notification.informativeText = "Temporary authetnication failure, will retry..";
+        case .invalid_mechanism:
+            notification.informativeText = "Required authentication mechanism not supported";
+        case .mechanism_too_weak:
+            notification.informativeText = "Authentication mechanism is too weak for authentication";
+        case .incorrect_encoding, .invalid_authzid, .not_authorized:
+            notification.informativeText = "Invalid password for account";
+        case .server_not_trusted:
+            notification.informativeText = "It was not possible to verify that server is trusted";
+        }
+        notification.soundName = NSUserNotificationDefaultSoundName;
+        notification.userInfo = ["account": accountName.stringValue, "id": "authentication-failure"];
+        NSUserNotificationCenter.default.deliver(notification);
     }
     
     @objc func chatUpdated(_ notification: Notification) {
