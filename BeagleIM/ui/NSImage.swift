@@ -33,7 +33,22 @@ extension NSImage {
         
         return NSImage(cgImage: composedImage, size: size);
     }
-    
+
+    func scaledToPng(to size: NSSize) -> Data? {
+        guard let cgImage = self.cgImage else {
+            return nil;
+        }
+        let newRep = NSBitmapImageRep(cgImage: cgImage);
+        newRep.size = size;
+        return newRep.representation(using: .png, properties: [:]);
+    }
+
+    func scaledToPng(to maxWidthOrHeight: CGFloat) -> Data? {
+        let maxDimmension = max(self.size.height, self.size.width);
+        let scale = maxDimmension / maxWidthOrHeight;
+        let expSize = NSSize(width: self.size.width / scale, height: self.size.height / scale);
+        return scaledToPng(to: size);
+    }
 }
 
 fileprivate extension NSImage {

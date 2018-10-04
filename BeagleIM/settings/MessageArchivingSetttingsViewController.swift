@@ -1,5 +1,5 @@
 //
-//  MessageArchivingSetttingsView.swift
+//  MessageArchivingSetttingsViewController.swift
 //  BeagleIM
 //
 //  Created by Andrzej Wójcik on 28/09/2018.
@@ -9,50 +9,62 @@
 import AppKit
 import TigaseSwift
 
-class MessageArchivingSettingsView: NSView, AccountAwareView {
+class MessageArchivingSettingsViewController: NSViewController, AccountAware {
     
     var account: BareJID? {
         didSet {
-            guard let account = self.account else {
-                self.disable();
-                return;
-            }
-            
-            let syncEnabled = AccountSettings.messageSyncAuto(account).bool();
-            automaticSynchronization.state = syncEnabled ? .on : .off;
-    
-            var syncPeriod = Int(AccountSettings.messageSyncPeriod(account).double());
-            if syncPeriod == 0 {
-                syncPeriod = 72;
-                AccountSettings.messageSyncPeriod(account).set(value: Double(syncPeriod));
-            }
-            let idx = synchronizationPeriod.itemArray.lastIndex { (item) -> Bool in
-                return item.tag <= syncPeriod
-            } ?? 0;
-            synchronizationPeriod.selectItem(at: idx == 0 ? 1 : idx);
-            synchronizationPeriod.title = synchronizationPeriod.titleOfSelectedItem ?? "";
-            
-            guard let mamModule: MessageArchiveManagementModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageArchiveManagementModule.ID), mamModule.isAvailable else {
-                self.disable();
-                return;
-            }
-            mamModule.retrieveSettings(onSuccess: { (defaultValue, _, _) in
-                DispatchQueue.main.async {
-                    let isOn = defaultValue == .always
-                    self.archivingEnabled.state = isOn ? .on : .off;
-                    self.archivingEnabled.isEnabled = true;
-                    self.automaticSynchronization.isEnabled = isOn;
-                    self.synchronizationPeriod.isEnabled = syncEnabled;
-                }
-            }) { (errorCondition, stanza) in
-                print("got an error from the server:", errorCondition as Any, ", ignoring...");
-            }
+            refresh()
         }
     }
     
     @IBOutlet var archivingEnabled: NSButton!;
     @IBOutlet var automaticSynchronization: NSButton!;
     @IBOutlet var synchronizationPeriod: NSPopUpButton!;
+    
+    override func viewWillAppear() {
+        super.viewWillAppear();
+        refresh();
+    }
+    
+    func refresh() {
+        guard automaticSynchronization != nil else {
+            return;
+        }
+        guard let account = self.account else {
+            self.disable();
+            return;
+        }
+        
+        let syncEnabled = AccountSettings.messageSyncAuto(account).bool();
+        automaticSynchronization.state = syncEnabled ? .on : .off;
+        
+        var syncPeriod = Int(AccountSettings.messageSyncPeriod(account).double());
+        if syncPeriod == 0 {
+            syncPeriod = 72;
+            AccountSettings.messageSyncPeriod(account).set(value: Double(syncPeriod));
+        }
+        let idx = synchronizationPeriod.itemArray.lastIndex { (item) -> Bool in
+            return item.tag <= syncPeriod
+            } ?? 0;
+        synchronizationPeriod.selectItem(at: idx == 0 ? 1 : idx);
+        synchronizationPeriod.title = synchronizationPeriod.titleOfSelectedItem ?? "";
+        
+        guard let mamModule: MessageArchiveManagementModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageArchiveManagementModule.ID), mamModule.isAvailable else {
+            self.disable();
+            return;
+        }
+        mamModule.retrieveSettings(onSuccess: { (defaultValue, _, _) in
+            DispatchQueue.main.async {
+                let isOn = defaultValue == .always
+                self.archivingEnabled.state = isOn ? .on : .off;
+                self.archivingEnabled.isEnabled = true;
+                self.automaticSynchronization.isEnabled = isOn;
+                self.synchronizationPeriod.isEnabled = syncEnabled;
+            }
+        }) { (errorCondition, stanza) in
+            print("got an error from the server:", errorCondition as Any, ", ignoring...");
+        }
+    }
     
     func disable() {
         archivingEnabled.isEnabled = false;

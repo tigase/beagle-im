@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FE28097D21652A7C002F5BD0 /* VCardEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */; };
+		FE28097F2166892D002F5BD0 /* AccountDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */; };
 		FE30D8AD214C2D7100670BEC /* RosterViewController_ContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8AC214C2D7100670BEC /* RosterViewController_ContextMenu.swift */; };
 		FE30D8AF214C3B7600670BEC /* NSImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8AE214C3B7600670BEC /* NSImage.swift */; };
 		FE30D8B1214CE93600670BEC /* FormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8B0214CE93600670BEC /* FormView.swift */; };
@@ -32,7 +34,7 @@
 		FE41FB3F215CD95D00AD86D3 /* AvatarEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB3E215CD95D00AD86D3 /* AvatarEventHandler.swift */; };
 		FE41FB41215CDA6000AD86D3 /* MessageEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB40215CDA6000AD86D3 /* MessageEventHandler.swift */; };
 		FE41FB43215CDAF900AD86D3 /* XMPPClient_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB42215CDAF900AD86D3 /* XMPPClient_extension.swift */; };
-		FE41FB45215E426400AD86D3 /* MessageArchivingSetttingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB44215E426400AD86D3 /* MessageArchivingSetttingsView.swift */; };
+		FE41FB45215E426400AD86D3 /* MessageArchivingSetttingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB44215E426400AD86D3 /* MessageArchivingSetttingsViewController.swift */; };
 		FE4E8DDA215EA4860010D88E /* HttpFileUploadEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4E8DD9215EA4860010D88E /* HttpFileUploadEventHandler.swift */; };
 		FE4E8DDC215F72130010D88E /* AbstractChatView_ShareExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4E8DDB215F72130010D88E /* AbstractChatView_ShareExtension.swift */; };
 		FE4E8DE12160E7AA0010D88E /* TigaseSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FEF9D12A2082804E00B09B6C /* TigaseSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -115,6 +117,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VCardEditorViewController.swift; sourceTree = "<group>"; };
+		FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDetailsViewController.swift; sourceTree = "<group>"; };
 		FE30D8AC214C2D7100670BEC /* RosterViewController_ContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RosterViewController_ContextMenu.swift; sourceTree = "<group>"; };
 		FE30D8AE214C3B7600670BEC /* NSImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSImage.swift; sourceTree = "<group>"; };
 		FE30D8B0214CE93600670BEC /* FormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormView.swift; sourceTree = "<group>"; };
@@ -140,7 +144,7 @@
 		FE41FB3E215CD95D00AD86D3 /* AvatarEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarEventHandler.swift; sourceTree = "<group>"; };
 		FE41FB40215CDA6000AD86D3 /* MessageEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEventHandler.swift; sourceTree = "<group>"; };
 		FE41FB42215CDAF900AD86D3 /* XMPPClient_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMPPClient_extension.swift; sourceTree = "<group>"; };
-		FE41FB44215E426400AD86D3 /* MessageArchivingSetttingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageArchivingSetttingsView.swift; sourceTree = "<group>"; };
+		FE41FB44215E426400AD86D3 /* MessageArchivingSetttingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageArchivingSetttingsViewController.swift; sourceTree = "<group>"; };
 		FE4E8DD9215EA4860010D88E /* HttpFileUploadEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HttpFileUploadEventHandler.swift; sourceTree = "<group>"; };
 		FE4E8DDB215F72130010D88E /* AbstractChatView_ShareExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractChatView_ShareExtension.swift; sourceTree = "<group>"; };
 		FE5BE64B213AC3EA00463183 /* ChatsCellViewCloseButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsCellViewCloseButton.swift; sourceTree = "<group>"; };
@@ -407,7 +411,9 @@
 				FED7AEC02140569E001E164B /* AddAccountController.swift */,
 				FE30D8B4214D39A700670BEC /* GeneralSettingsController.swift */,
 				FE41FB32215B8D5A00AD86D3 /* ServerCertificateErrorController.swift */,
-				FE41FB44215E426400AD86D3 /* MessageArchivingSetttingsView.swift */,
+				FE41FB44215E426400AD86D3 /* MessageArchivingSetttingsViewController.swift */,
+				FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */,
+				FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -587,6 +593,7 @@
 				FED7AEC12140569E001E164B /* AddAccountController.swift in Sources */,
 				FE41FB39215CD51700AD86D3 /* MucEventHandler.swift in Sources */,
 				FE6E6BFF21384D5F003B1696 /* ChatViewController.swift in Sources */,
+				FE28097D21652A7C002F5BD0 /* VCardEditorViewController.swift in Sources */,
 				FEDE6AF52143D8130019170A /* ChatsListTableRowView.swift in Sources */,
 				FE41FB43215CDAF900AD86D3 /* XMPPClient_extension.swift in Sources */,
 				FE41FB41215CDA6000AD86D3 /* MessageEventHandler.swift in Sources */,
@@ -604,6 +611,7 @@
 				FE6E6BF821384D5F003B1696 /* ViewController.swift in Sources */,
 				FE34BBD12157901100775B07 /* JabberDataFormView.swift in Sources */,
 				FE30D8B5214D39A700670BEC /* GeneralSettingsController.swift in Sources */,
+				FE28097F2166892D002F5BD0 /* AccountDetailsViewController.swift in Sources */,
 				FE30D8AD214C2D7100670BEC /* RosterViewController_ContextMenu.swift in Sources */,
 				FE6E6C0121384D5F003B1696 /* ChatsWindowController.swift in Sources */,
 				FE3AA0D3215409B8001667A9 /* DBRoomsManager.swift in Sources */,
@@ -625,7 +633,7 @@
 				FE30D8BA214ED28A00670BEC /* OpenGroupchatController.swift in Sources */,
 				FE41FB33215B8D5A00AD86D3 /* ServerCertificateErrorController.swift in Sources */,
 				FEDE6AF921440AEF0019170A /* StatusHelper.swift in Sources */,
-				FE41FB45215E426400AD86D3 /* MessageArchivingSetttingsView.swift in Sources */,
+				FE41FB45215E426400AD86D3 /* MessageArchivingSetttingsViewController.swift in Sources */,
 				FE6E6C0021384D5F003B1696 /* ChatsListView.swift in Sources */,
 				FE6E6C0621384D5F003B1696 /* Database.swift in Sources */,
 				FEB4EAFC2162A3DC00F8A9E2 /* AutoresizineTextView.swift in Sources */,

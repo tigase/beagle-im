@@ -63,13 +63,8 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
         }
         let account: BareJID = accounts[tableView!.selectedRow];
         tabViewController?.tabViewItems.forEach({ (controller) in
-            if let view = controller.view as? AccountAwareView {
-                view.account = account;
-            }
+            (controller.viewController as? AccountAware)?.account = account;
         })
-//        if let detailsView = tabViewController?.tabViewItems[0].view as? AccountDetailsView {
-//            detailsView.account = account;
-//        }
     }
     
     @IBAction func defaultAccountChanged(_ sender: NSPopUpButton) {
@@ -122,44 +117,8 @@ class AccountCellView: NSTableCellView {
     
 }
 
-protocol AccountAwareView: class {
+protocol AccountAware: class {
     
     var account: BareJID? { get set }
-    
-}
-class AccountDetailsView: NSView, AccountAwareView {
-    
-    var account: BareJID? {
-        didSet {
-            username?.stringValue = account?.stringValue ?? "";
-            let acc = account == nil ? nil : AccountManager.getAccount(for: account!);
-            password?.stringValue = acc?.password ?? "";
-            nickname?.stringValue = acc?.nickname ?? "";
-            active?.state = (acc?.active ?? false) ? .on : .off;
-        }
-    }
-    
-    @IBOutlet weak var username: NSTextField?;
-    @IBOutlet weak var password: NSSecureTextField?;
-    @IBOutlet weak var nickname: NSTextField?;
-    @IBOutlet weak var active: NSButton?;
-    
-    @IBAction func passwordChanged(_ sender: NSSecureTextFieldCell) {
-        let account = AccountManager.getAccount(for: self.account!)!;
-        account.password = sender.stringValue;
-        _ = AccountManager.save(account: account);
-    }
-
-    @IBAction func nicknameChanged(_ sender: NSTextField) {
-        let account = AccountManager.getAccount(for: self.account!)!;
-        account.nickname = sender.stringValue;
-        _ = AccountManager.save(account: account);
-    }
-    
-    @IBAction func activeStateChanged(_ sender: NSButton) {
-        let account = AccountManager.getAccount(for: self.account!)!;
-        account.active = sender.state == .on;
-        _ = AccountManager.save(account: account);
-    }
     
 }
