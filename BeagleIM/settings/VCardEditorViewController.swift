@@ -186,6 +186,25 @@ class VCardEditorViewController: NSViewController, AccountAware {
                 self.avatarView.image = image ?? NSImage(named: NSImage.userName);
                 let data = image?.scaledToPng(to: 512);
                 self.vcard.photos = data == nil ? [] : [ VCard.Photo(uri: nil, type: "image/png", binval: data!.base64EncodedString(options: []), types: [.home]) ];
+                
+                if data != nil {
+                    guard let account = self.account, let avatarModule: PEPUserAvatarModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PEPUserAvatarModule.ID), avatarModule.isPepAvailable else {
+                        return;
+                    }
+                    
+                    DispatchQueue.main.async {
+                        let alert = NSAlert();
+                        alert.messageText = "Should avatar be updated?";
+                        alert.addButton(withTitle: "Yes");
+                        alert.addButton(withTitle: "No");
+                        alert.icon = NSImage(named: NSImage.userName);
+                        alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
+                            if response == NSApplication.ModalResponse.alertFirstButtonReturn {
+                                self.publish(avatar: data!);
+                            }
+                        })
+                    }
+                }
             }
         }
     }
@@ -224,7 +243,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
             self.view.window?.makeFirstResponder(sender);
 
             guard let account = self.account, let vcard4Module: VCard4Module = XmppService.instance.getClient(for: account)?.modulesManager.getModule(VCard4Module.ID) else {
-                self.handleError(message: "Account is not connected");
+                self.handleError(title: "Publication of new version of VCard failed", message: "Account is not connected");
                 return;
             }
             self.progressIndicator.startAnimation(self);
@@ -236,21 +255,23 @@ class VCardEditorViewController: NSViewController, AccountAware {
                 }
             }, onError: { error in
                 self.progressIndicator.stopAnimation(self);
-                self.handleError(message: "Server returned an error: \(error ?? ErrorCondition.remote_server_timeout)");
+                self.handleError(title: "Publication of new version of VCard failed", message: "Server returned an error: \(error ?? ErrorCondition.remote_server_timeout)");
             });
         } else {
             refreshVCard(onSuccess: {
                 DispatchQueue.main.async {
                     self.isEnabled = true;
                 }
-            }, onFailure: self.handleError)
+            }, onFailure: { error in
+                self.handleError(title: "Could not retrive current version from the server.", message: error);
+            })
         }
     }
     
-    fileprivate func handleError(message msg: String) {
+    fileprivate func handleError(title: String, message msg: String) {
         DispatchQueue.main.async {
             let alert = NSAlert();
-            alert.messageText = "Could not retrive current version from the server.";
+            alert.messageText = title;
             alert.informativeText = msg;
             alert.addButton(withTitle: "OK");
             alert.icon = NSImage(named: NSImage.cautionName);
@@ -438,6 +459,18 @@ class VCardEditorViewController: NSViewController, AccountAware {
         typeButton.addItem(withTitle: "Work");
         typeButton.selectItem(at: item.types.contains(VCard.EntryType.home) ? 0 : 1);
         return typeButton;
+    }
+    
+    fileprivate func publish(avatar: Data) {
+        guard let account = self.account, let avatarModule: PEPUserAvatarModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PEPUserAvatarModule.ID) else {
+            handleError(title: "Publication of avatar failed", message: "Account is not connected");
+            return;
+        }
+        avatarModule.publishAvatar(data: avatar, mimeType: "image/png", onSuccess: {
+            print("avatar data published");
+        }) { (error, pubsubError) in
+            self.handleError(title: "Publication of avatar failed", message: "Server returned an error: \(error?.rawValue ?? pubsubError?.rawValue ?? ErrorCondition.remote_server_timeout.rawValue)");
+        }
     }
     
     class Row: NSStackView {
