@@ -129,11 +129,28 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
     fileprivate func statusUpdated(_ status: XmppService.Status?) {
         self.statusView.stringValue = status?.message ?? "";
         let show = StatusShow.from(show: status?.show);
-        let menuItem = self.statusButton.item(at: show.rawValue)!;
+        let menuItem = self.statusButton.item(at: self.statusShowToMenuItem(show))!;
         self.statusButton.title = menuItem.title;
         self.statusButton.item(at: 0)?.image = StatusHelper.imageFor(status: status?.show);
         self.statusView.placeholderString = show.name ?? "";
         self.addContactButton.isEnabled = status?.show != nil;
+    }
+    
+    fileprivate func statusShowToMenuItem(_ show: StatusShow) -> Int {
+        switch show {
+        case .offline:
+            return 1;
+        case .chat:
+            return 2;
+        case .online:
+            return 3;
+        case .away:
+            return 5;
+        case .xa:
+            return 6;
+        case .dnd:
+            return 8;
+        }
     }
     
     func getItem(at: Int) -> Item {
