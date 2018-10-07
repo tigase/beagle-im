@@ -16,6 +16,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     @IBOutlet var jidView: NSTextField!;
     @IBOutlet var subjectView: NSTextField!;
     
+    @IBOutlet var inviteButton: NSButton!;
     @IBOutlet var infoButton: NSButton!;
     @IBOutlet var settingsButtin: NSPopUpButton!;
     
@@ -115,6 +116,8 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             anyActive = anyActive || (self.settingsButtin.item(at: i)?.isEnabled ?? false);
         }
         self.settingsButtin.isEnabled = anyActive;
+        
+        self.inviteButton.isEnabled = currentRole != .none;
     }
     
     @IBAction func infoClicked(_ sender: NSButton) {
@@ -151,6 +154,20 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         let window = NSWindow(contentViewController: affilsViewController);
         affilsViewController.room = room;
         view.window?.beginSheet(window, completionHandler: nil);
+    }
+    
+    override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
+        super.prepare(for: segue, sender: sender);
+        if let id = segue.identifier {
+            switch id {
+            case "InviteToGroupchat":
+                if let controller = segue.destinationController as? InviteToGroupchatController {
+                    controller.room = self.room;
+                }
+            default:
+                break;
+            }
+        }
     }
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {

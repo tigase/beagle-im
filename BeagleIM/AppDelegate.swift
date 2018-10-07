@@ -38,8 +38,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         return f;
     })();
     
-    fileprivate var mainWindowController: NSWindowController?;
-    
+    fileprivate(set) var mainWindowController: NSWindowController?;
+
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if #available(OSX 10.14, *) {
             NSApp.appearance = NSAppearance(named: .aqua)

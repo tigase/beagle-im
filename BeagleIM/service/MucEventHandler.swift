@@ -14,7 +14,7 @@ class MucEventHandler: XmppServiceEventHandler {
     static let ROOM_STATUS_CHANGED = Notification.Name("roomStatusChanged");
     static let ROOM_OCCUPANTS_CHANGED = Notification.Name("roomOccupantsChanged");
 
-    let events: [Event] = [ SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE, MucModule.OccupantChangedNickEvent.TYPE, MucModule.OccupantChangedPresenceEvent.TYPE, MucModule.OccupantLeavedEvent.TYPE, MucModule.OccupantComesEvent.TYPE, MucModule.PresenceErrorEvent.TYPE ];
+    let events: [Event] = [ SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE, MucModule.OccupantChangedNickEvent.TYPE, MucModule.OccupantChangedPresenceEvent.TYPE, MucModule.OccupantLeavedEvent.TYPE, MucModule.OccupantComesEvent.TYPE, MucModule.PresenceErrorEvent.TYPE, MucModule.InvitationReceivedEvent.TYPE, MucModule.InvitationDeclinedEvent.TYPE ];
     
     func handle(event: Event) {
         switch event {
@@ -74,6 +74,59 @@ class MucEventHandler: XmppServiceEventHandler {
                 return;
             }
             mucModule.leave(room: e.room);
+        case let e as MucModule.InvitationReceivedEvent:
+            guard let mucModule: MucModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(MucModule.ID), let roomName = e.invitation.roomJid.localPart else {
+                return;
+            }
+            
+            guard !mucModule.roomsManager.contains(roomJid: e.invitation.roomJid) else {
+                mucModule.decline(invitation: e.invitation, reason: nil);
+                return;
+            }
+
+            let alert = Alert();
+            alert.messageText = "Invitation to groupchat";
+            if let inviter = e.invitation.inviter {
+                let name = XmppService.instance.clients.values.flatMap({ (client) -> [String] in
+                    guard let n = client.rosterStore?.get(for: inviter)?.name else {
+                        return [];
+                    }
+                    return ["\(n) (\(inviter))"];
+                }).first ?? inviter.stringValue;
+                alert.informativeText = "User \(name) invited you (\(e.sessionObject.userBareJid!)) to the groupchat \(e.invitation.roomJid)";
+            } else {
+                alert.informativeText = "You (\(e.sessionObject.userBareJid!)) were invited to the groupchat \(e.invitation.roomJid)";
+            }
+            alert.addButton(withTitle: "Accept");
+            alert.addButton(withTitle: "Decline");
+            
+            DispatchQueue.main.async {
+                alert.run { (response) in
+                    if response == NSApplication.ModalResponse.alertFirstButtonReturn {
+                        let nickname = AccountManager.getAccount(for: e.sessionObject.userBareJid!)?.nickname ?? e.sessionObject.userBareJid!.localPart!;
+                        _ = mucModule.join(roomName: roomName, mucServer: e.invitation.roomJid.domain, nickname: nickname, password: e.invitation.password);
+                    } else {
+                        mucModule.decline(invitation: e.invitation, reason: nil);
+                    }
+                }
+            }
+            
+            break;
+        case let e as MucModule.InvitationDeclinedEvent:
+            let notification = NSUserNotification();
+            notification.identifier = UUID().uuidString;
+            notification.title = "Invitation rejected";
+            let name = XmppService.instance.clients.values.flatMap({ (client) -> [String] in
+                guard let n = e.invitee != nil ? client.rosterStore?.get(for: e.invitee!)?.name : nil else {
+                    return [];
+                }
+                return [n];
+            }).first ?? e.invitee?.stringValue ?? "";
+
+            notification.informativeText = "User \(name) rejected invitation to room \(e.room.roomJid)";
+            notification.soundName = NSUserNotificationDefaultSoundName;
+            notification.contentImage = NSImage(named: NSImage.userGroupName);
+            NSUserNotificationCenter.default.deliver(notification);
         default:
             break;
         }

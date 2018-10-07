@@ -29,24 +29,26 @@ class PresenceRosterEventHandler: XmppServiceEventHandler {
                 return;
             }
             DispatchQueue.main.async {
-                let alert = NSAlert();
+                let alert = Alert();
                 alert.icon = NSImage(named: NSImage.userName);
-                alert.messageText = "Authroization request";
+                alert.messageText = "Authorization request";
                 alert.informativeText = "\(jid.bareJid) requests authorization to access information about you presence";
                 alert.addButton(withTitle: "Accept");
                 alert.addButton(withTitle: "Deny");
                 
-                if alert.runModal() == NSApplication.ModalResponse.alertFirstButtonReturn {
-                    guard let presenceModule: PresenceModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(PresenceModule.ID) else {
-                        return;
+                alert.run(completionHandler: { (result) in
+                    if result == .alertFirstButtonReturn {
+                        guard let presenceModule: PresenceModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(PresenceModule.ID) else {
+                            return;
+                        }
+                        
+                        presenceModule.subscribed(by: jid);
+                        
+                        if Settings.requestPresenceSubscription.bool() {
+                            presenceModule.subscribe(to: jid);
+                        }
                     }
-                    
-                    presenceModule.subscribed(by: jid);
-                    
-                    if Settings.requestPresenceSubscription.bool() {
-                        presenceModule.subscribe(to: jid);
-                    }
-                }
+                });
             }
         default:
             break;

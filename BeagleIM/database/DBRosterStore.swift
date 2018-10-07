@@ -55,6 +55,14 @@ class DBRosterStoreWrapper: RosterStore {
         return result;
     }
     
+    open func getAll() -> [RosterItem] {
+        return queue.sync {
+            return self.roster.values.map({ (item) -> RosterItem in
+                return item;
+            })
+        }
+    }
+    
     open override func get(for jid:JID) -> RosterItem? {
         return queue.sync {
             return self.roster[jid];

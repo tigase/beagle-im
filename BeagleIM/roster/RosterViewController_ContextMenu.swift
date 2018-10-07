@@ -28,12 +28,39 @@ extension RosterViewController: NSMenuDelegate {
             item.isEnabled = false;
             return true;
         }
-        item.isEnabled = true;
-        item.submenu?.items.forEach { subitem in
-            subitem.isEnabled = true;
-        }
-        print("menu item:", item.title)
+        guard let identifier = item.identifier else {
+            item.isEnabled = true;
+            item.submenu?.items.forEach { subitem in
+                subitem.isEnabled = true;
+            }
+            print("menu item:", item.title)
         
+            return true;
+        }
+        
+        switch identifier.rawValue {
+        case "RoomInvite":
+            let rooms = XmppService.instance.clients.values.filter({ (client) -> Bool in
+                return client.state == .connected;
+            }).map { (client) -> MucModule? in
+                return client.modulesManager.getModule(MucModule.ID);
+                }.flatMap { (mucModule) -> [Room] in
+                    return mucModule?.roomsManager.getRooms().filter({ (room) -> Bool in
+                        return (room.presences[room.nickname]?.role ?? .none) != .none;
+                    }) ?? [];
+            };
+            item.isEnabled = rooms.count > 0;
+            item.isHidden = rooms.count == 0;
+            item.submenu?.removeAllItems();
+            rooms.forEach { room in
+                let roomItem = InviteToRoomMenuItem(room: room, invitee: row.jid);
+                roomItem.isEnabled = true;
+                item.submenu?.addItem(roomItem);
+            }
+            break;
+        default:
+            break;
+        }
         return true;
     }
     
@@ -110,4 +137,25 @@ extension RosterViewController: NSMenuDelegate {
         rosterModule.rosterStore.remove(jid: JID(item.jid), onSuccess: nil, onError: nil);
     }
  
+    fileprivate class InviteToRoomMenuItem: NSMenuItem {
+        
+        let room: Room;
+        let invitee: BareJID;
+        
+        init(room: Room, invitee: BareJID) {
+            self.room = room;
+            self.invitee = invitee;
+            super.init(title: room.roomJid.stringValue, action: #selector(invite), keyEquivalent: "");
+            self.target = self;
+        }
+        
+        required init(coder decoder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+        
+        @objc func invite() {
+            room.invite(JID(invitee), reason: nil);
+        }
+        
+    }
 }

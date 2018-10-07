@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		FE28097D21652A7C002F5BD0 /* VCardEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */; };
 		FE28097F2166892D002F5BD0 /* AccountDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */; };
+		FE2809852169FB75002F5BD0 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2809842169FB74002F5BD0 /* Alert.swift */; };
 		FE30D8AD214C2D7100670BEC /* RosterViewController_ContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8AC214C2D7100670BEC /* RosterViewController_ContextMenu.swift */; };
 		FE30D8AF214C3B7600670BEC /* NSImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8AE214C3B7600670BEC /* NSImage.swift */; };
 		FE30D8B1214CE93600670BEC /* FormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8B0214CE93600670BEC /* FormView.swift */; };
@@ -80,6 +81,7 @@
 		FEDE6AF52143D8130019170A /* ChatsListTableRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE6AF42143D8130019170A /* ChatsListTableRowView.swift */; };
 		FEDE6AF921440AEF0019170A /* StatusHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE6AF821440AEF0019170A /* StatusHelper.swift */; };
 		FEDE6AFC21455A2B0019170A /* RosterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE6AFB21455A2B0019170A /* RosterViewController.swift */; };
+		FEF8BED2216A6761001DA755 /* InviteToGroupchatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF8BED1216A6761001DA755 /* InviteToGroupchatController.swift */; };
 		FEF9CE1D2082765000B09B6C /* db-schema-1.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEF9CE1C2082765000B09B6C /* db-schema-1.sql */; };
 		FEF9CE2220827F0000B09B6C /* libsqlite3.0.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF9CE2120827F0000B09B6C /* libsqlite3.0.tbd */; };
 		FEF9D12B2082804E00B09B6C /* TigaseSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF9D12A2082804E00B09B6C /* TigaseSwift.framework */; settings = {ATTRIBUTES = (Required, ); }; };
@@ -119,6 +121,7 @@
 /* Begin PBXFileReference section */
 		FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VCardEditorViewController.swift; sourceTree = "<group>"; };
 		FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDetailsViewController.swift; sourceTree = "<group>"; };
+		FE2809842169FB74002F5BD0 /* Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
 		FE30D8AC214C2D7100670BEC /* RosterViewController_ContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RosterViewController_ContextMenu.swift; sourceTree = "<group>"; };
 		FE30D8AE214C3B7600670BEC /* NSImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSImage.swift; sourceTree = "<group>"; };
 		FE30D8B0214CE93600670BEC /* FormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormView.swift; sourceTree = "<group>"; };
@@ -196,6 +199,7 @@
 		FEDE6AF42143D8130019170A /* ChatsListTableRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListTableRowView.swift; sourceTree = "<group>"; };
 		FEDE6AF821440AEF0019170A /* StatusHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusHelper.swift; sourceTree = "<group>"; };
 		FEDE6AFB21455A2B0019170A /* RosterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RosterViewController.swift; sourceTree = "<group>"; };
+		FEF8BED1216A6761001DA755 /* InviteToGroupchatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteToGroupchatController.swift; sourceTree = "<group>"; };
 		FEF9CE1C2082765000B09B6C /* db-schema-1.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-1.sql"; sourceTree = "<group>"; };
 		FEF9CE2120827F0000B09B6C /* libsqlite3.0.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.0.tbd; path = usr/lib/libsqlite3.0.tbd; sourceTree = SDKROOT; };
 		FEF9D12A2082804E00B09B6C /* TigaseSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TigaseSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -236,6 +240,7 @@
 				FEC5DC8521553F4700AA3E4F /* GroupchatViewController.swift */,
 				FEA8941E2156625E004C3B51 /* ConfigureRoomViewController.swift */,
 				FE41FB2E215A822700AD86D3 /* ManageAffiliationsViewController.swift */,
+				FEF8BED1216A6761001DA755 /* InviteToGroupchatController.swift */,
 			);
 			path = groupchat;
 			sourceTree = "<group>";
@@ -265,6 +270,7 @@
 				FE34BBD02157901100775B07 /* JabberDataFormView.swift */,
 				FEB4EAFB2162A3DC00F8A9E2 /* AutoresizineTextView.swift */,
 				FEB4EAFD2163714300F8A9E2 /* RoundedScrollView.swift */,
+				FE2809842169FB74002F5BD0 /* Alert.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -579,6 +585,7 @@
 				FE6E6BFC21384D5F003B1696 /* OutlineGroupItemButton.swift in Sources */,
 				FE41FB31215AB32200AD86D3 /* ServerCertificateInfo.swift in Sources */,
 				FE6E6BFE21384D5F003B1696 /* ChatMessageCellView.swift in Sources */,
+				FE2809852169FB75002F5BD0 /* Alert.swift in Sources */,
 				FE3AA0CB21540669001667A9 /* ChatItemProtocol.swift in Sources */,
 				FE4E8DDA215EA4860010D88E /* HttpFileUploadEventHandler.swift in Sources */,
 				FED7AEC321415CB8001E164B /* AvatarManager.swift in Sources */,
@@ -628,6 +635,7 @@
 				FEC5DC8221552D8300AA3E4F /* ChatViewItemProtocol.swift in Sources */,
 				FEC5DC7E21552A3300AA3E4F /* ChatViewDataSourceDelegate.swift in Sources */,
 				FED7AEBF214035C0001E164B /* AccountsListController.swift in Sources */,
+				FEF8BED2216A6761001DA755 /* InviteToGroupchatController.swift in Sources */,
 				FE6E6BFD21384D5F003B1696 /* Open1On1ChatController.swift in Sources */,
 				FED2ECF42066B01C00F506A5 /* AppDelegate.swift in Sources */,
 				FE30D8BA214ED28A00670BEC /* OpenGroupchatController.swift in Sources */,
