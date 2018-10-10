@@ -69,6 +69,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 //        let rosterWindowController = storyboard.instantiateController(withIdentifier: "RosterWindowController") as! NSWindowController;
 //        rosterWindowController.showWindow(self);
         _ = XmppService.instance;
+        
+        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receivedSleepNotification), name: NSWorkspace.willSleepNotification, object: nil);
+        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receivedWakeNotification), name: NSWorkspace.didWakeNotification, object: nil);        
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
@@ -240,6 +243,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             notification.userInfo = ["account": item.account.stringValue, "jid": item.jid.stringValue, "id": "message-new"];
             NSUserNotificationCenter.default.deliver(notification);
         }
+    }
+    
+    @objc func receivedSleepNotification(_ notification: Notification) {
+        print("####### Going to sleep.....", Date());
+        XmppService.instance.isAwake = false;
+    }
+    
+    @objc func receivedWakeNotification(_ notification: Notification) {
+        print("####### Waking up from sleep.....", Date());
+        XmppService.instance.isAwake = true;
     }
     
     @objc func serverCertificateError(_ notification: Notification) {

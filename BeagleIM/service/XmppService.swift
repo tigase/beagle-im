@@ -35,6 +35,16 @@ class XmppService: EventHandler {
     fileprivate let dispatcher = QueueDispatcher(label: "xmpp_service");
     fileprivate let reachability = Reachability();
     
+    var isAwake: Bool = true {
+        didSet {
+            if !isAwake {
+                self.isNetworkAvailable = false;
+            } else {
+                self.isNetworkAvailable = self.reachability.isConnectedToNetwork();
+            }
+        }
+    }
+    
     fileprivate(set) var isNetworkAvailable: Bool = false {
         didSet {
             if isNetworkAvailable {
@@ -44,7 +54,7 @@ class XmppService: EventHandler {
                     sendKeepAlive();
                 }
             } else {
-                disconnectClients(force: true);
+                disconnectClients(force: isAwake);
             }
         }
     }
@@ -176,6 +186,7 @@ class XmppService: EventHandler {
                 NotificationCenter.default.post(name: XmppService.SERVER_CERTIFICATE_ERROR, object: accountName);
             }
         case let e as SocketConnector.DisconnectedEvent:
+            print("##### \(e.sessionObject.userBareJid!.stringValue) - disconnected", Date());
             updateCurrentStatus();
             
             let accountName = e.sessionObject.userBareJid!;
@@ -222,7 +233,7 @@ class XmppService: EventHandler {
     }
     
     fileprivate func connect(client: XMPPClient) {
-        guard let account = AccountManager.getAccount(for: client.sessionObject.userBareJid!), account.active else {
+        guard let account = AccountManager.getAccount(for: client.sessionObject.userBareJid!), account.active, self.isNetworkAvailable, self.status.show != nil  else {
             return;
         }
         
