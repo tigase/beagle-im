@@ -81,6 +81,7 @@
 		FEDE6AF52143D8130019170A /* ChatsListTableRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE6AF42143D8130019170A /* ChatsListTableRowView.swift */; };
 		FEDE6AF921440AEF0019170A /* StatusHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE6AF821440AEF0019170A /* StatusHelper.swift */; };
 		FEDE6AFC21455A2B0019170A /* RosterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE6AFB21455A2B0019170A /* RosterViewController.swift */; };
+		FEF844742173B9DC0067B005 /* Markdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF844732173B9DC0067B005 /* Markdown.swift */; };
 		FEF8BED2216A6761001DA755 /* InviteToGroupchatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF8BED1216A6761001DA755 /* InviteToGroupchatController.swift */; };
 		FEF9CE1D2082765000B09B6C /* db-schema-1.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEF9CE1C2082765000B09B6C /* db-schema-1.sql */; };
 		FEF9CE2220827F0000B09B6C /* libsqlite3.0.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF9CE2120827F0000B09B6C /* libsqlite3.0.tbd */; };
@@ -199,6 +200,7 @@
 		FEDE6AF42143D8130019170A /* ChatsListTableRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListTableRowView.swift; sourceTree = "<group>"; };
 		FEDE6AF821440AEF0019170A /* StatusHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusHelper.swift; sourceTree = "<group>"; };
 		FEDE6AFB21455A2B0019170A /* RosterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RosterViewController.swift; sourceTree = "<group>"; };
+		FEF844732173B9DC0067B005 /* Markdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Markdown.swift; sourceTree = "<group>"; };
 		FEF8BED1216A6761001DA755 /* InviteToGroupchatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteToGroupchatController.swift; sourceTree = "<group>"; };
 		FEF9CE1C2082765000B09B6C /* db-schema-1.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-1.sql"; sourceTree = "<group>"; };
 		FEF9CE2120827F0000B09B6C /* libsqlite3.0.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.0.tbd; path = usr/lib/libsqlite3.0.tbd; sourceTree = SDKROOT; };
@@ -271,6 +273,7 @@
 				FEB4EAFB2162A3DC00F8A9E2 /* AutoresizineTextView.swift */,
 				FEB4EAFD2163714300F8A9E2 /* RoundedScrollView.swift */,
 				FE2809842169FB74002F5BD0 /* Alert.swift */,
+				FEF844732173B9DC0067B005 /* Markdown.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -613,6 +616,7 @@
 				FED7AEC521417328001E164B /* AvatarStore.swift in Sources */,
 				FE6E6BFA21384D5F003B1696 /* AccountManager.swift in Sources */,
 				FEC5DC8621553F4700AA3E4F /* GroupchatViewController.swift in Sources */,
+				FEF844742173B9DC0067B005 /* Markdown.swift in Sources */,
 				FE6E6C0221384D5F003B1696 /* DBChatHistoryStore.swift in Sources */,
 				FE4E8DDC215F72130010D88E /* AbstractChatView_ShareExtension.swift in Sources */,
 				FE6E6BF821384D5F003B1696 /* ViewController.swift in Sources */,

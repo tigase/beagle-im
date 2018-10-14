@@ -21,6 +21,8 @@ enum Settings: String {
     case enableMessageCarbons
     case markMessageCarbonsAsRead
     
+    case enableMarkdownFormatting
+    
     public static let CHANGED = Notification.Name("settingChanged");
     
     fileprivate static var observers: [Settings: [UUID: (Settings, Any?)->Void]] = [:];
@@ -31,7 +33,8 @@ enum Settings: String {
             "requestPresenceSubscription": true,
             "allowPresenceSubscription": true,
             "enableMessageCarbons": true,
-            "markMessageCarbonsAsRead": true
+            "markMessageCarbonsAsRead": true,
+            "enableMarkdownFormatting": true
         ];
         UserDefaults.standard.register(defaults: defaults);
     }

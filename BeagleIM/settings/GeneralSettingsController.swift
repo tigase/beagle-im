@@ -20,6 +20,8 @@ class GeneralSettingsController: NSViewController {
     fileprivate var enableMessageCarbonsButton: NSButton!;
     fileprivate var messageCarbonsMarkAsReadButton: NSButton!;
     
+    fileprivate var markdownFormatting: NSButton!;
+    
     override func viewDidLoad() {
         autoconnect = formView.addRow(label: "Account status:", field: NSButton(checkboxWithTitle: "Connect after start", target: self, action: #selector(checkboxChanged)))
         rememberLastStatusButton = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Remember last status", target: self, action: #selector(checkboxChanged)));
@@ -31,6 +33,10 @@ class GeneralSettingsController: NSViewController {
         
         enableMessageCarbonsButton = formView.addRow(label: "Message carbons:", field: NSButton(checkboxWithTitle: "Enable", target: self, action: #selector(checkboxChanged(_:))));
         messageCarbonsMarkAsReadButton = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Mark carbon messages as read", target: self, action: #selector(checkboxChanged(_:))));
+        
+        _ = formView.addRow(label: "", field: NSTextField(labelWithString: ""));
+        
+        markdownFormatting = formView.addRow(label: "Message formatting", field: NSButton(checkboxWithTitle: "Markdown", target: self, action: #selector(checkboxChanged(_:))));
     }
     
     override func viewWillAppear() {
@@ -41,6 +47,7 @@ class GeneralSettingsController: NSViewController {
         enableMessageCarbonsButton.state = Settings.enableMessageCarbons.bool() ? .on : .off;
         messageCarbonsMarkAsReadButton.state = Settings.markMessageCarbonsAsRead.bool() ? .on : .off;
         messageCarbonsMarkAsReadButton.isEnabled = Settings.enableMessageCarbons.bool();
+        markdownFormatting.state = Settings.enableMarkdownFormatting.bool() ? .on : .off;
     }
     
     @objc func checkboxChanged(_ sender: NSButton) {
@@ -63,6 +70,8 @@ class GeneralSettingsController: NSViewController {
             messageCarbonsMarkAsReadButton.isEnabled = sender.state == .on;
         case messageCarbonsMarkAsReadButton:
             Settings.markMessageCarbonsAsRead.set(value: sender.state == .on);
+        case markdownFormatting:
+            Settings.enableMarkdownFormatting.set(value: sender.state == .on);
         default:
             break;
         }

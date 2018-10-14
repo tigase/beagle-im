@@ -8,10 +8,11 @@
 
 import AppKit
 
-class AutoresizingTextView: NSTextView {
+class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
   
     override func awakeFromNib() {
         self.font = NSFont.systemFont(ofSize: NSFont.systemFontSize(for: .regular));
+        self.textStorage?.delegate = self;
     }
     
     override var intrinsicContentSize: NSSize {
@@ -27,5 +28,14 @@ class AutoresizingTextView: NSTextView {
     func reset() {
         self.string = "";
         self.invalidateIntrinsicContentSize();
+    }
+    
+    func textStorage(_ textStorage: NSTextStorage, didProcessEditing editedMask: NSTextStorageEditActions, range editedRange: NSRange, changeInLength delta: Int) {
+        let fullRange = NSRange(0..<textStorage.length);
+        textStorage.setAttributes([.font: self.font!], range: fullRange);
+        
+        if Settings.enableMarkdownFormatting.bool() {
+            Markdown.applyStyling(attributedString: textStorage);
+        }
     }
 }

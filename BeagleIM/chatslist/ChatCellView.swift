@@ -55,7 +55,15 @@ class ChatCellView: NSTableCellView {
     }
     
     func set(lastMessage: String?, ts: Date?) {
-        self.lastMessage?.stringValue = lastMessage ?? "";
+        if lastMessage == nil {
+            self.lastMessage?.stringValue = "";
+        } else {
+            let msg = NSMutableAttributedString(string: lastMessage!);
+            if Settings.enableMarkdownFormatting.bool() {
+                Markdown.applyStyling(attributedString: msg);
+            }
+            self.lastMessage?.attributedStringValue = msg;
+        }
         self.lastMessage?.maximumNumberOfLines = 3;
         //self.lastMessage?.preferredMaxLayoutWidth = self.lastMessage!.frame.width;
         self.lastMessageTs?.stringValue = ts != nil ? formatTimestamp(ts!) : "";
