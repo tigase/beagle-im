@@ -32,7 +32,8 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
     
     func textStorage(_ textStorage: NSTextStorage, didProcessEditing editedMask: NSTextStorageEditActions, range editedRange: NSRange, changeInLength delta: Int) {
         let fullRange = NSRange(0..<textStorage.length);
-        textStorage.setAttributes([.font: self.font!], range: fullRange);
+        textStorage.fixAttributes(in: fullRange);
+        //textStorage.setAttributes([.font: self.font!], range: fullRange);
         
         if Settings.enableMarkdownFormatting.bool() {
             Markdown.applyStyling(attributedString: textStorage);
