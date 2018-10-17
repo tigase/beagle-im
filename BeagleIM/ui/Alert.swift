@@ -30,6 +30,8 @@ class Alert {
     
     var buttons: [NSButton] = [];
     
+    var styleMask: NSWindow.StyleMask?;
+    
     @discardableResult
     func addButton(withTitle title: String) -> NSButton {
         let button = NSButton(title: title, target: nil, action: nil);
@@ -62,7 +64,11 @@ class Alert {
         controller.completionHandler = handler;
         
         if let window = windowController.window {
-            window.styleMask = NSWindow.StyleMask(rawValue: window.styleMask.rawValue |  NSWindow.StyleMask.nonactivatingPanel.rawValue | NSWindow.StyleMask.utilityWindow.rawValue)
+            if self.styleMask != nil {
+                self.styleMask = styleMask!;
+            } else {
+                window.styleMask = NSWindow.StyleMask(rawValue: window.styleMask.rawValue |  NSWindow.StyleMask.nonactivatingPanel.rawValue | NSWindow.StyleMask.utilityWindow.rawValue)
+            }
             window.level = .modalPanel;
         }
         

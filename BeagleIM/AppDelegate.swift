@@ -22,6 +22,8 @@
 import Cocoa
 import TigaseSwift
 import UserNotifications
+import AVFoundation
+import AVKit
 
 extension DBConnection {
     
@@ -64,7 +66,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     fileprivate var statusItem: NSStatusItem?;
     fileprivate(set) var mainWindowController: NSWindowController?;
-
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         Settings.initialize();
         
@@ -142,6 +144,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receivedScreensSleepNotification), name: NSWorkspace.screensDidSleepNotification, object: nil);
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receivedScreensWakeNotification), name: NSWorkspace.screensDidWakeNotification, object: nil);
+        
+        // TODO: maybe should be moved later on...
+        if #available(OSX 10.14, *) {
+            AVCaptureDevice.requestAccess(for: .audio, completionHandler: { granted in
+                print("permission granted: \(granted)");
+                if granted {
+                }
+            })
+        } else {
+            // Fallback on earlier versions
+        }
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {

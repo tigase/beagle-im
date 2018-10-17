@@ -33,7 +33,7 @@ class XmppService: EventHandler {
  
     fileprivate let observedEvents: [Event] = [ SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE ];
     
-    fileprivate let eventHandlers: [XmppServiceEventHandler] = [MucEventHandler(), PresenceRosterEventHandler(), AvatarEventHandler(), MessageEventHandler(), HttpFileUploadEventHandler()];
+    fileprivate let eventHandlers: [XmppServiceEventHandler] = [MucEventHandler(), PresenceRosterEventHandler(), AvatarEventHandler(), MessageEventHandler(), HttpFileUploadEventHandler(), JingleManager.instance];
     
     var clients: [BareJID: XMPPClient] {
         get {
@@ -382,6 +382,12 @@ class XmppService: EventHandler {
         _ = client.modulesManager.register(PresenceModule());
         
         client.modulesManager.register(MucModule()).roomsManager = DBRoomsManager();
+        
+        let jingleModule = client.modulesManager.register(JingleModule());
+        
+        jingleModule.supportedTransports.append(Jingle.Transport.RawUDPTransport.self);
+        jingleModule.supportedTransports.append(Jingle.Transport.ICEUDPTransport.self);
+        jingleModule.supportedDescriptions.append(Jingle.RTP.Description.self);
         
         client.modulesManager.initIfRequired();
         
