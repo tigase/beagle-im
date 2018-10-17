@@ -47,6 +47,12 @@ class PresenceRosterEventHandler: XmppServiceEventHandler {
                         if Settings.requestPresenceSubscription.bool() {
                             presenceModule.subscribe(to: jid);
                         }
+                    } else {
+                        guard let presenceModule: PresenceModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(PresenceModule.ID) else {
+                            return;
+                        }
+                        
+                        presenceModule.unsubscribed(by: jid);
                     }
                 });
             }
