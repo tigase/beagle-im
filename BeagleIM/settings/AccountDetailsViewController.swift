@@ -21,27 +21,28 @@ class AccountDetailsViewController: NSViewController, AccountAware {
         }
     }
     
-    @IBOutlet weak var username: NSTextField?;
-    @IBOutlet weak var password: NSSecureTextField?;
-    @IBOutlet weak var nickname: NSTextField?;
-    @IBOutlet weak var active: NSButton?;
+    @IBOutlet weak var username: NSTextField!;
+    @IBOutlet weak var password: NSSecureTextField!;
+    @IBOutlet weak var nickname: NSTextField!;
+    @IBOutlet weak var active: NSButton!;
     
     @IBAction func passwordChanged(_ sender: NSSecureTextFieldCell) {
-        let account = AccountManager.getAccount(for: self.account!)!;
-        account.password = sender.stringValue;
-        _ = AccountManager.save(account: account);
+        save();
     }
     
     @IBAction func nicknameChanged(_ sender: NSTextField) {
-        let account = AccountManager.getAccount(for: self.account!)!;
-        account.nickname = sender.stringValue;
-        _ = AccountManager.save(account: account);
+        save();
     }
     
     @IBAction func activeStateChanged(_ sender: NSButton) {
+        save();
+    }
+
+    func save() {
         let account = AccountManager.getAccount(for: self.account!)!;
-        account.active = sender.state == .on;
+        account.password = password.stringValue;
+        account.nickname = nickname.stringValue;
+        account.active = active.state == .on;
         _ = AccountManager.save(account: account);
     }
-    
 }
