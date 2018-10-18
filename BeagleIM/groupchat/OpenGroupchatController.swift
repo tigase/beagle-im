@@ -191,22 +191,10 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
             guard let item = self.items.first(where: { item -> Bool in
                 return roomName == (item.jid.localPart ?? "")
             }) else {
-                guard let configRoomController = storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier("ConfigureRoomViewController")) as? ConfigureRoomViewController else {
+                guard let mucDomain = self.mucJid?.domain else {
                     return;
                 }
-                
-                let roomJid = BareJID(localPart: roomName, domain: mucJid!.domain);
-                let window = NSWindow(contentViewController: configRoomController);
-                configRoomController.account = account;
-                configRoomController.mucComponent = mucJid!;
-                configRoomController.roomJid = roomJid;
-                view.window?.beginSheet(window, completionHandler: { result in
-                    if result == .OK {
-                        self.join(room: roomJid)
-                    }
-                    self.close();
-                });
-
+                self.join(room: BareJID(localPart: roomName, domain: mucDomain));
                 return;
             }
             self.openRoom(for: item);
@@ -264,8 +252,27 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                 }
             }
         }, onError: { (errorCondition) in
-            DispatchQueue.main.async {
-                self.close();
+            if errorCondition != nil && errorCondition! == ErrorCondition.item_not_found {
+                DispatchQueue.main.async {
+                    guard let configRoomController = self.storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier("ConfigureRoomViewController")) as? ConfigureRoomViewController else {
+                        return;
+                    }
+                    
+                    let window = NSWindow(contentViewController: configRoomController);
+                    configRoomController.account = self.account;
+                    configRoomController.mucComponent = self.mucJid!;
+                    configRoomController.roomJid = room;
+                    self.view.window?.beginSheet(window, completionHandler: { result in
+                        if result == .OK {
+                            self.join(room: room)
+                        }
+                        self.close();
+                    });
+                }
+            } else {
+                DispatchQueue.main.async {
+                    self.close();
+                }
             }
         });
     }
