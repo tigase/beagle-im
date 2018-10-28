@@ -168,6 +168,12 @@ open class DBChatStore {
             }
 
             destroyChat(account: account, chat: dbChat);
+
+            if dbChat.unread > 0 {
+                self.unreadMessagesCount = self.unreadMessagesCount - dbChat.unread;
+                
+                DBChatHistoryStore.instance.markAsRead(for: account, with: dbChat.jid.bareJid);
+            }
             
             NotificationCenter.default.post(name: DBChatStore.CHAT_CLOSED, object: dbChat
                 );
