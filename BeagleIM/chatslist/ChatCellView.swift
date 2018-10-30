@@ -45,9 +45,6 @@ class ChatCellView: NSTableCellView {
     
     func set(avatar: NSImage?) {
         self.avatar?.avatar = avatar;
-//        self.avatar?.wantsLayer = true;
-//        self.avatar?.layer?.cornerRadius = self.avatar!.frame.width / 2;
-//        self.avatar?.layer?.masksToBounds = true;
     }
     
     func set(name: String?) {
@@ -117,17 +114,10 @@ class ChatCellView: NSTableCellView {
     }
     
     override func resize(withOldSuperviewSize oldSize: NSSize) {
-        print("resizing cell", oldSize, self.frame.size, self.bounds.size);
-        print("last pref1", self.lastMessage.preferredMaxLayoutWidth);
         super.resize(withOldSuperviewSize: oldSize);
         if let width = self.superview?.superview?.frame.width {
             self.lastMessage.preferredMaxLayoutWidth = width - 80;
-            print("last pref2", self.lastMessage.preferredMaxLayoutWidth, self.lastMessage!.frame.width);
         }
-        //        super.layout()
-        //self.needsLayout = true;
-        //self.layoutSubtreeIfNeeded();
-        //self.lastMessage?.preferredMaxLayoutWidth = self.lastMessage!.frame.width;
     }
  
     func setMouseHovers(_ val: Bool) {

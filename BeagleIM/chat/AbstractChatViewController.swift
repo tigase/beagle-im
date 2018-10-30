@@ -53,9 +53,11 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     
     override func viewDidAppear() {
         super.viewDidAppear();
-        DispatchQueue.main.async {
-            self.view.window!.makeFirstResponder(self.messageField);
-        }
+        //DispatchQueue.main.async {
+            if !NSEvent.modifierFlags.contains(.shift) {
+                self.view.window?.makeFirstResponder(self.messageField);
+            }
+        //}
     }
     
     @objc func didBecomeKeyWindow(_ notification: Notification) {

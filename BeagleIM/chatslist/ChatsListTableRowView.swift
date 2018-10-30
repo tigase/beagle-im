@@ -26,21 +26,19 @@ class ChatsListTableRowView: NSTableRowView {
             let selectionRect = dirtyRect;//NSInsetRect(self.bounds, 2.5, 2.5)
             NSColor(calibratedWhite: 0.65, alpha: 0.15).setStroke();
             highlightColor.setFill();
-            let selectionPath = NSBezierPath(roundedRect: selectionRect, xRadius: 6, yRadius: 6);
-            selectionPath.fill();
-            selectionPath.stroke();
+            dirtyRect.fill();
+//            dirtyRect.stroke();
+//            let selectionPath = NSBezierPath(roundedRect: selectionRect, xRadius: 6, yRadius: 6);
+//            selectionPath.fill();
+//            selectionPath.stroke();
         }
     }
     
     override func layout() {
-        if let subview = self.subviews.last as? ChatCellView {
-            //                self.setFrameSize(NSSize(width: self.frame.width, height: 40));
-            super.layout();
-            let height = subview.lastMessage.intrinsicContentSize.height + subview.label.frame.height + 4 + 2 + 2;
-            self.setFrameSize(NSSize(width: self.frame.width, height: height < 44 ? 44 : height));
-        } else {
-            super.layout();
-        }
+        self.isGroupRowStyle = false;
+        super.layout();
+        self.invalidateIntrinsicContentSize();
+        super.layout();
     }
  
 }

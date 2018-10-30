@@ -64,60 +64,17 @@
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <menu key="submenu" title="File" id="bib-Uj-vzu">
                                     <items>
-                                        <menuItem title="New" keyEquivalent="n" id="Was-JA-tGl">
-                                            <connections>
-                                                <action selector="newDocument:" target="Ady-hI-5gd" id="4Si-XN-c54"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Open…" keyEquivalent="o" id="IAo-SY-fd9">
-                                            <connections>
-                                                <action selector="openDocument:" target="Ady-hI-5gd" id="bVn-NM-KNZ"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Open Recent" id="tXI-mr-wws">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <menu key="submenu" title="Open Recent" systemMenu="recentDocuments" id="oas-Oc-fiZ">
-                                                <items>
-                                                    <menuItem title="Clear Menu" id="vNY-rz-j42">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="clearRecentDocuments:" target="Ady-hI-5gd" id="Daa-9d-B3U"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                </items>
-                                            </menu>
-                                        </menuItem>
-                                        <menuItem isSeparatorItem="YES" id="m54-Is-iLE"/>
-                                        <menuItem title="Close" keyEquivalent="w" id="DVo-aG-piG">
+                                        <menuItem title="Close window" keyEquivalent="w" id="DVo-aG-piG">
                                             <connections>
                                                 <action selector="performClose:" target="Ady-hI-5gd" id="HmO-Ls-i7Q"/>
                                             </connections>
                                         </menuItem>
-                                        <menuItem title="Save…" keyEquivalent="s" id="pxx-59-PXV">
+                                        <menuItem title="Close chat" id="KaW-ft-85H">
+                                            <string key="keyEquivalent" base64-UTF8="YES">
+CA
+</string>
                                             <connections>
-                                                <action selector="saveDocument:" target="Ady-hI-5gd" id="teZ-XB-qJY"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Save As…" keyEquivalent="S" id="Bw7-FT-i3A">
-                                            <connections>
-                                                <action selector="saveDocumentAs:" target="Ady-hI-5gd" id="mDf-zr-I0C"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Revert to Saved" keyEquivalent="r" id="KaW-ft-85H">
-                                            <connections>
-                                                <action selector="revertDocumentToSaved:" target="Ady-hI-5gd" id="iJ3-Pv-kwq"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem isSeparatorItem="YES" id="aJh-i4-bef"/>
-                                        <menuItem title="Page Setup…" keyEquivalent="P" id="qIS-W8-SiK">
-                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
-                                            <connections>
-                                                <action selector="runPageLayout:" target="Ady-hI-5gd" id="Din-rz-gC5"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Print…" keyEquivalent="p" id="aTl-1u-JFS">
-                                            <connections>
-                                                <action selector="print:" target="Ady-hI-5gd" id="qaZ-4w-aoO"/>
+                                                <action selector="closeChat:" target="Voe-Tx-rLC" id="psw-1x-K8y"/>
                                             </connections>
                                         </menuItem>
                                     </items>
@@ -694,7 +651,7 @@
                 <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
                 <customObject id="Ady-hI-5gd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="75" y="0.0"/>
+            <point key="canvasLocation" x="-205" y="-189"/>
         </scene>
         <!--Chats Window-->
         <scene sceneID="R2V-B0-nI4">
@@ -1309,16 +1266,16 @@ Gw
                         <rect key="frame" x="0.0" y="0.0" width="306" height="600"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <scrollView misplaced="YES" borderType="none" autohidesScrollers="YES" horizontalLineScroll="45" horizontalPageScroll="10" verticalLineScroll="45" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" horizontalScrollElasticity="none" translatesAutoresizingMaskIntoConstraints="NO" id="LSz-a8-0g1">
+                            <scrollView misplaced="YES" borderType="none" autohidesScrollers="YES" horizontalLineScroll="44" horizontalPageScroll="10" verticalLineScroll="44" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" horizontalScrollElasticity="none" translatesAutoresizingMaskIntoConstraints="NO" id="LSz-a8-0g1">
                                 <rect key="frame" x="0.0" y="0.0" width="300" height="600"/>
                                 <clipView key="contentView" id="EPa-n0-PPe">
                                     <rect key="frame" x="0.0" y="0.0" width="300" height="600"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="firstColumnOnly" columnReordering="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="42" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" indentationMarkerFollowsCell="NO" autoresizesOutlineColumn="YES" outlineTableColumn="DEA-O0-PQ6" id="RNd-7b-gdr" customClass="ChatsListView" customModule="BeagleIM" customModuleProvider="target">
+                                        <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="firstColumnOnly" columnReordering="NO" autosaveColumns="NO" rowHeight="44" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" indentationMarkerFollowsCell="NO" autoresizesOutlineColumn="YES" outlineTableColumn="DEA-O0-PQ6" id="RNd-7b-gdr" customClass="ChatsListView" customModule="BeagleIM" customModuleProvider="target">
                                             <rect key="frame" x="0.0" y="0.0" width="300" height="600"/>
                                             <autoresizingMask key="autoresizingMask"/>
-                                            <size key="intercellSpacing" width="2" height="3"/>
+                                            <size key="intercellSpacing" width="2" height="0.0"/>
                                             <color key="backgroundColor" name="selectedKnobColor" catalog="System" colorSpace="catalog"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                             <tableColumns>
@@ -1337,7 +1294,7 @@ Gw
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView identifier="ChatGroupCell" id="gYg-HZ-CFu">
-                                                            <rect key="frame" x="1" y="1" width="298" height="25"/>
+                                                            <rect key="frame" x="1" y="0.0" width="298" height="25"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="249" translatesAutoresizingMaskIntoConstraints="NO" id="few-Rx-jGm">
@@ -1378,8 +1335,8 @@ Gw
                                                                 <outlet property="textField" destination="few-Rx-jGm" id="egO-4s-OCI"/>
                                                             </connections>
                                                         </tableCellView>
-                                                        <tableCellView identifier="ChatCell" misplaced="YES" id="17j-oV-5uz" customClass="ChatCellView" customModule="BeagleIM" customModuleProvider="target">
-                                                            <rect key="frame" x="1" y="29" width="298" height="42"/>
+                                                        <tableCellView identifier="ChatCell" id="17j-oV-5uz" customClass="ChatCellView" customModule="BeagleIM" customModuleProvider="target">
+                                                            <rect key="frame" x="1" y="25" width="298" height="44"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <view horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Aul-om-ezM" customClass="AvatarViewWithStatus" customModule="BeagleIM" customModuleProvider="target">
@@ -1389,14 +1346,14 @@ Gw
                                                                         <constraint firstAttribute="height" constant="40" id="Mta-U1-1K4"/>
                                                                     </constraints>
                                                                 </view>
-                                                                <textField verticalHuggingPriority="251" horizontalCompressionResistancePriority="450" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="m3j-Rb-M6x">
-                                                                    <rect key="frame" x="52" y="25" width="162" height="17"/>
+                                                                <textField verticalHuggingPriority="751" horizontalCompressionResistancePriority="450" translatesAutoresizingMaskIntoConstraints="NO" id="m3j-Rb-M6x">
+                                                                    <rect key="frame" x="52" y="25" width="146" height="17"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="30Y-0J-enL">
                                                                         <font key="font" metaFont="systemMedium" size="13"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
                                                                 </textField>
-                                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="PqR-oy-TGv">
+                                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="PqR-oy-TGv">
                                                                     <rect key="frame" x="218" y="25" width="74" height="17"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Timestamp" id="uIX-uL-LSO">
                                                                         <font key="font" metaFont="systemMedium" size="13"/>
@@ -1404,16 +1361,16 @@ Gw
                                                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
                                                                 </textField>
-                                                                <textField horizontalHuggingPriority="251" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ev0-pa-eYe" customClass="ChatCellViewMessage" customModule="BeagleIM" customModuleProvider="target">
-                                                                    <rect key="frame" x="52" y="7" width="240" height="16"/>
+                                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ev0-pa-eYe" customClass="ChatCellViewMessage" customModule="BeagleIM" customModuleProvider="target">
+                                                                    <rect key="frame" x="52" y="5" width="240" height="19"/>
                                                                     <textFieldCell key="cell" truncatesLastVisibleLine="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" title="Label" id="9cl-cN-VXM">
-                                                                        <font key="font" metaFont="cellTitle"/>
+                                                                        <font key="font" metaFont="system"/>
                                                                         <color key="textColor" name="controlHighlightColor" catalog="System" colorSpace="catalog"/>
-                                                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
                                                                 </textField>
                                                                 <button hidden="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6hC-0e-VWh" customClass="ChatsCellViewCloseButton" customModule="BeagleIM" customModuleProvider="target">
-                                                                    <rect key="frame" x="271" y="5" width="17" height="16"/>
+                                                                    <rect key="frame" x="271" y="7" width="17" height="16"/>
                                                                     <constraints>
                                                                         <constraint firstAttribute="height" constant="17" id="gZO-Ui-uaJ"/>
                                                                     </constraints>
@@ -1425,8 +1382,8 @@ Gw
                                                                         <action selector="closeClicked:" target="17j-oV-5uz" id="4Hf-Sb-Gdg"/>
                                                                     </connections>
                                                                 </button>
-                                                                <button verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="f5J-qG-57Z">
-                                                                    <rect key="frame" x="214" y="25" width="4" height="17"/>
+                                                                <button horizontalHuggingPriority="350" verticalHuggingPriority="750" horizontalCompressionResistancePriority="350" translatesAutoresizingMaskIntoConstraints="NO" id="f5J-qG-57Z">
+                                                                    <rect key="frame" x="198" y="25" width="20" height="17"/>
                                                                     <buttonCell key="cell" type="inline" title="0" bezelStyle="inline" alignment="center" enabled="NO" borderStyle="border" inset="2" id="UeY-XO-CZa">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                         <font key="font" metaFont="smallSystemBold"/>
@@ -1446,7 +1403,7 @@ Gw
                                                                 <constraint firstItem="m3j-Rb-M6x" firstAttribute="top" secondItem="17j-oV-5uz" secondAttribute="top" constant="2" id="b59-J4-AXC"/>
                                                                 <constraint firstItem="PqR-oy-TGv" firstAttribute="leading" secondItem="f5J-qG-57Z" secondAttribute="trailing" constant="2" id="fGO-11-ATv"/>
                                                                 <constraint firstItem="6hC-0e-VWh" firstAttribute="top" secondItem="Ev0-pa-eYe" secondAttribute="top" constant="2" id="jlM-is-5pp"/>
-                                                                <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="Ev0-pa-eYe" secondAttribute="bottom" constant="2" id="pQo-Ch-N6g"/>
+                                                                <constraint firstAttribute="bottom" secondItem="Ev0-pa-eYe" secondAttribute="bottom" constant="6" id="pQo-Ch-N6g"/>
                                                                 <constraint firstItem="6hC-0e-VWh" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="17j-oV-5uz" secondAttribute="leading" constant="10" id="pSi-oo-Mpa"/>
                                                                 <constraint firstItem="Aul-om-ezM" firstAttribute="leading" secondItem="17j-oV-5uz" secondAttribute="leading" constant="6" id="uKx-nI-d54"/>
                                                                 <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="6hC-0e-VWh" secondAttribute="bottom" constant="4" id="vFe-Ba-q6J"/>
@@ -1622,7 +1579,7 @@ AAAAAAEGA
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="8Ev-ze-rIj" customClass="AvatarView" customModule="BeagleIM" customModuleProvider="target">
-                                                                    <rect key="frame" x="8" y="10" width="30" height="30"/>
+                                                                    <rect key="frame" x="8" y="9" width="30" height="30"/>
                                                                     <constraints>
                                                                         <constraint firstAttribute="height" constant="30" id="JZX-EA-sF9"/>
                                                                         <constraint firstAttribute="width" constant="30" id="L22-Dx-h0G"/>
@@ -1630,7 +1587,7 @@ AAAAAAEGA
                                                                     <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="BQA-BR-0uu"/>
                                                                 </imageView>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="PwX-lh-NbT">
-                                                                    <rect key="frame" x="40" y="23" width="91" height="17"/>
+                                                                    <rect key="frame" x="40" y="22" width="91" height="17"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="Artur Hefczyc" placeholderString="Testing" id="A6u-yJ-Fv9">
                                                                         <font key="font" metaFont="systemMedium" size="13"/>
                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -1640,7 +1597,7 @@ AAAAAAEGA
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="b0k-Ke-dFq">
                                                                     <rect key="frame" x="34" y="4" width="411" height="17"/>
                                                                     <textFieldCell key="cell" selectable="YES" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="Some message to display from this person" allowsEditingTextAttributes="YES" id="b8k-ei-9Sv">
-                                                                        <font key="font" metaFont="system"/>
+                                                                        <font key="font" metaFont="system" size="12"/>
                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
@@ -3193,7 +3150,7 @@ AAAAAAEGA
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="jQZ-2V-BzC" customClass="AvatarView" customModule="BeagleIM" customModuleProvider="target">
-                                                                    <rect key="frame" x="8" y="10" width="30" height="30"/>
+                                                                    <rect key="frame" x="8" y="9" width="30" height="30"/>
                                                                     <constraints>
                                                                         <constraint firstAttribute="height" constant="30" id="9Dd-NR-Vic"/>
                                                                         <constraint firstAttribute="width" constant="30" id="Zdr-38-EOM"/>
@@ -3201,7 +3158,7 @@ AAAAAAEGA
                                                                     <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="XlP-aH-dgL"/>
                                                                 </imageView>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="6Id-pF-VjS">
-                                                                    <rect key="frame" x="40" y="23" width="91" height="17"/>
+                                                                    <rect key="frame" x="40" y="22" width="91" height="17"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Artur Hefczyc" placeholderString="Testing" id="QLn-ai-Kxc">
                                                                         <font key="font" metaFont="systemMedium" size="13"/>
                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -3209,9 +3166,9 @@ AAAAAAEGA
                                                                     </textFieldCell>
                                                                 </textField>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="KLp-tb-nar">
-                                                                    <rect key="frame" x="34" y="4" width="411" height="17"/>
+                                                                    <rect key="frame" x="32" y="4" width="411" height="17"/>
                                                                     <textFieldCell key="cell" selectable="YES" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="Some message to display from this person" allowsEditingTextAttributes="YES" id="Kyv-An-dNw">
-                                                                        <font key="font" metaFont="system"/>
+                                                                        <font key="font" metaFont="system" size="12"/>
                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>

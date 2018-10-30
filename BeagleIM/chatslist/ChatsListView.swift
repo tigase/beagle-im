@@ -65,6 +65,7 @@ protocol ChatsListViewDataSourceDelegate: class {
 class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsListViewDataSourceDelegate {
     
     static let CHAT_SELECTED = Notification.Name("chatSelected");
+    static let CLOSE_SELECTED_CHAT = Notification.Name("chatSelectedClose");
     
     @IBOutlet var outlineView: NSOutlineView!;
     
@@ -77,6 +78,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         outlineView.expandItem(nil, expandChildren: true);
         
         NotificationCenter.default.addObserver(self, selector: #selector(chatSelected), name: ChatsListViewController.CHAT_SELECTED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(closeSelectedChat), name: ChatsListViewController.CLOSE_SELECTED_CHAT, object: nil);
     }
     
     override func viewWillAppear() {
@@ -123,14 +125,22 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         return false;
     }
     
+    func outlineView(_ outlineView: NSOutlineView, isGroupItem item: Any) -> Bool {
+        return item is ChatsListGroupProtocol;
+    }
+    
     func outlineView(_ outlineView: NSOutlineView, rowViewForItem item: Any) -> NSTableRowView? {
         return ChatsListTableRowView(frame: NSRect.zero);
     }
     
     func outlineViewSelectionDidChange(_ notification: Notification) {
+        if self.outlineView.selectedRowIndexes.count <= 1 {
+            (self.outlineView as? ChatsListView)?.selectionDirection = .unknown;
+        }
+        
         let selected = self.outlineView.selectedRow;
         print("selected row:", selected);
-        let item = self.outlineView.item(atRow: selected);
+        let item = self.outlineView.selectedRowIndexes.count == 1 ? self.outlineView.item(atRow: selected) : nil;
         if let splitController = self.outlineView.window?.contentViewController as? NSSplitViewController {
             if let chat = item as? ChatItem {
                 print("selected chat item:", chat.name);
@@ -178,6 +188,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     }
     
     func itemChanged(item: Any?) {
+        outlineView.reloadItem(item);
         let row = outlineView.row(forItem: item);
         guard row == 0 || row > 0 else {
             return;
@@ -186,9 +197,6 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         // maybe we should update view?
         if let v = view as? ChatCellView, let i = item as? ChatItemProtocol {
             v.update(from: i);
-            v.lastMessage.sizeToFit();
-            v.superview!.layout();// = true;
-//            v.needsLayout = true;
         }
     }
     
@@ -210,6 +218,18 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
                 return;
             }
             view.window?.beginSheet(windowController.window!, completionHandler: nil);
+        }
+    }
+    
+    @objc func closeSelectedChat(_ notification: Notification) {
+        print("closing chats for: \(self.outlineView.selectedRowIndexes)");
+        let toClose = self.outlineView.selectedRowIndexes;
+        toClose.forEach { (row) in
+            guard let item = self.outlineView.item(atRow: row) as? ChatItemProtocol else {
+                return;
+            }
+            
+            self.close(chat: item);
         }
     }
     
@@ -264,9 +284,9 @@ extension ChatsListViewController: NSOutlineViewDelegate {
     
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
         //var view: NSTableCellView?
-        guard tableColumn!.identifier.rawValue == "ITEM1" else {
-            return nil;
-        }
+//        guard tableColumn?.identifier.rawValue == "ITEM1" else {
+//            return nil;
+//        }
         
         if let group = item as? ChatsListGroupProtocol {
             let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("ChatGroupCell"), owner: self) as? NSTableCellView;
@@ -284,21 +304,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
             view?.update(from: chat);
             view?.lastMessage.preferredMaxLayoutWidth = self.outlineView.outlineTableColumn!.width - 80;
             view?.closeFunction = {
-                switch chat.chat {
-                case let c as DBChatStore.DBChat:
-                    guard let messageModule: MessageModule = XmppService.instance.getClient(for: c.account)?.modulesManager.getModule(MessageModule.ID) else {
-                        return;
-                    }
-                    _ = messageModule.chatManager.close(chat: c);
-                case let r as DBChatStore.DBRoom:
-                    guard let mucModule: MucModule = XmppService.instance.getClient(for: r.account)?.modulesManager.getModule(MucModule.ID) else {
-                        return;
-                    }
-                    
-                    mucModule.leave(room: r);
-                default:
-                    print("unknown type of chat!");
-                }
+                self.close(chat: chat);
             }
             view?.layout();
             return view;
@@ -306,6 +312,23 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         return nil;
     }
     
+    func close(chat: ChatItemProtocol) {
+        switch chat.chat {
+        case let c as DBChatStore.DBChat:
+            guard let messageModule: MessageModule = XmppService.instance.getClient(for: c.account)?.modulesManager.getModule(MessageModule.ID) else {
+                return;
+            }
+            _ = messageModule.chatManager.close(chat: c);
+        case let r as DBChatStore.DBRoom:
+            guard let mucModule: MucModule = XmppService.instance.getClient(for: r.account)?.modulesManager.getModule(MucModule.ID) else {
+                return;
+            }
+            
+            mucModule.leave(room: r);
+        default:
+            print("unknown type of chat!");
+        }
+    }
 }
 
 class ChatsListView: NSOutlineView {
@@ -318,6 +341,15 @@ class ChatsListView: NSOutlineView {
         super.init(frame: frameRect);
         trackingArea = NSTrackingArea(rect: self.frame, options: [.mouseEnteredAndExited,.mouseMoved,.activeAlways], owner: self, userInfo: nil);
         self.addTrackingArea(trackingArea!);
+        
+        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { (event) -> NSEvent? in
+            guard event.modifierFlags.contains(.command) && event.charactersIgnoringModifiers?.first?.unicodeScalars.first?.value == UInt32(NSBackspaceCharacter) else {
+                return event;
+            }
+            
+            // we detected shortcut!!
+            return nil;
+        }
     }
     
     required init?(coder: NSCoder) {
@@ -326,19 +358,9 @@ class ChatsListView: NSOutlineView {
     
     override func awakeFromNib() {
         super.awakeFromNib();
-//        self.window!.acceptsMouseMovedEvents = true;
-//        trackingTag = self.addTrackingArea(NSTrackingArea(rect: self.frame, options: [.mouseEnteredAndExited,.mouseMoved], owner: self, userInfo: nil));
-//        trackingArea = NSTrackingArea(rect: self.frame, options: [.mouseEnteredAndExited,.mouseMoved], owner: self, userInfo: nil);
-//        if trackingArea != nil {
-//            self.addTrackingArea(trackingArea!);
-//        }
     }
     
     deinit {
-//        self.removeTrackingRect(self.trackingTag!);
-//        if trackingArea != nil {
-//            self.removeTrackingArea(trackingArea!);
-//        }
     }
     
     override func frameOfOutlineCell(atRow row: Int) -> NSRect {
@@ -365,6 +387,87 @@ class ChatsListView: NSOutlineView {
         updateMouseOver(from: event);
     }
 
+    enum SelectionDirection {
+        case up
+        case down
+        case unknown
+    }
+    
+    var selectionDirection: SelectionDirection = .unknown;
+    
+    override func keyDown(with event: NSEvent) {
+        print("got event: \(event)");
+        
+        let sorted = selectedRowIndexes.sorted();
+        guard !sorted.isEmpty else {
+            super.keyDown(with: event);
+            return;
+        }
+        
+        let first = sorted.first!;
+        let last = sorted.last!;
+        
+        let move = !event.modifierFlags.contains(.shift);
+        
+        switch Int(event.charactersIgnoringModifiers?.first?.unicodeScalars.first?.value ?? 0) {
+        case NSDownArrowFunctionKey:
+            switch selectionDirection {
+            case .down, .unknown:
+                selectionDirection = .down;
+                let newLast = last.advanced(by: 1);
+                guard newLast < numberOfRows else {
+                    return;
+                }
+                
+                if move {
+                    self.updateRowSelection(IndexSet(integer: newLast), byExtendingSelection: false);
+                } else {
+                    self.updateRowSelection(IndexSet(integersIn: first...newLast), byExtendingSelection: false);
+                }
+            case .up:
+                let newFirst = first.advanced(by: 1);
+                guard newFirst <= last else {
+                    self.selectionDirection = .unknown;
+                    self.keyDown(with: event);
+                    return;
+                }
+                if move {
+                    self.updateRowSelection(IndexSet(integer: newFirst), byExtendingSelection: false);
+                } else {
+                    self.updateRowSelection(IndexSet(integersIn: newFirst...last), byExtendingSelection: false);
+                }
+            }
+        case NSUpArrowFunctionKey:
+            switch selectionDirection {
+            case .down:
+                let newLast = last.advanced(by: -1);
+                guard newLast >= first else {
+                    selectionDirection = .unknown;
+                    self.keyDown(with: event);
+                    return;
+                }
+                if move {
+                    self.updateRowSelection(IndexSet(integer: newLast), byExtendingSelection: false);
+                } else {
+                    self.updateRowSelection(IndexSet(integersIn: first...newLast), byExtendingSelection: false);
+                }
+            case .up, .unknown:
+                selectionDirection = .up;
+                let newFirst = first.advanced(by: -1);
+                guard newFirst >= 0 else {
+                    return;
+                }
+                if move {
+                    self.updateRowSelection(IndexSet(integer: newFirst), byExtendingSelection: false);
+                } else {
+                    self.updateRowSelection(IndexSet(integersIn: newFirst...last), byExtendingSelection: false);
+                }
+            }
+        default:
+            break;
+        }
+    }
+    
     fileprivate func updateMouseOver(from event: NSEvent) {
         let prevMouseOverRow = self.mouseOverRow;
         self.mouseOverRow = self.row(at: self.convert(event.locationInWindow, from: nil));
@@ -394,4 +497,33 @@ class ChatsListView: NSOutlineView {
         self.addTrackingArea(trackingArea!);
     }
 
+    func updateRowSelection(_ indexes: IndexSet, byExtendingSelection extend: Bool) {
+        selectRowIndexes(indexes, byExtendingSelection: extend);
+        DispatchQueue.main.async {
+            self.window?.makeFirstResponder(self);
+        }
+    }
+    
+    override func mouseDown(with event: NSEvent) {
+        let selectedRow = self.selectedRow;
+        if event.modifierFlags.contains(.shift) {
+            if selectedRow != -1 {
+                let endRow = self.row(at: self.convert(event.locationInWindow, from: nil));
+                let range = selectedRow < endRow ? selectedRow...endRow : endRow...selectedRow;
+            
+                print("changing selection!");
+                self.updateRowSelection(IndexSet(integersIn: range), byExtendingSelection: false);
+                //NotificationCenter.default.post(name: NSOutlineView.selectionDidChangeNotification, object: nil);
+            } else {
+                let row = self.row(at: self.convert(event.locationInWindow, from: nil));
+
+                print("changing selection!");
+                self.updateRowSelection(IndexSet(integersIn: row...row), byExtendingSelection: false);
+                //NotificationCenter.default.post(name: NSOutlineView.selectionDidChangeNotification, object: nil);
+            }
+        } else {
+            super.mouseDown(with: event);
+        }
+    }
+    
 }

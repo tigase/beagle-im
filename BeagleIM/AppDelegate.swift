@@ -282,6 +282,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             windowController.showWindow(self);
         }
     }
+    
+    
+    @IBAction func closeChat(_ sender: Any) {
+        NotificationCenter.default.post(name: ChatsListViewController.CLOSE_SELECTED_CHAT, object: nil);
+    }
 }
 
 
