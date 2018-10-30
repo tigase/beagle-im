@@ -1353,7 +1353,7 @@ Gw
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
                                                                 </textField>
-                                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="PqR-oy-TGv">
+                                                                <textField horizontalHuggingPriority="300" verticalHuggingPriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="PqR-oy-TGv">
                                                                     <rect key="frame" x="218" y="25" width="74" height="17"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Timestamp" id="uIX-uL-LSO">
                                                                         <font key="font" metaFont="systemMedium" size="13"/>
@@ -1361,7 +1361,7 @@ Gw
                                                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
                                                                 </textField>
-                                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ev0-pa-eYe" customClass="ChatCellViewMessage" customModule="BeagleIM" customModuleProvider="target">
+                                                                <textField verticalHuggingPriority="750" misplaced="YES" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ev0-pa-eYe" customClass="ChatCellViewMessage" customModule="BeagleIM" customModuleProvider="target">
                                                                     <rect key="frame" x="52" y="5" width="240" height="19"/>
                                                                     <textFieldCell key="cell" truncatesLastVisibleLine="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" title="Label" id="9cl-cN-VXM">
                                                                         <font key="font" metaFont="system"/>
@@ -1407,6 +1407,7 @@ Gw
                                                                 <constraint firstItem="6hC-0e-VWh" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="17j-oV-5uz" secondAttribute="leading" constant="10" id="pSi-oo-Mpa"/>
                                                                 <constraint firstItem="Aul-om-ezM" firstAttribute="leading" secondItem="17j-oV-5uz" secondAttribute="leading" constant="6" id="uKx-nI-d54"/>
                                                                 <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="6hC-0e-VWh" secondAttribute="bottom" constant="4" id="vFe-Ba-q6J"/>
+                                                                <constraint firstAttribute="trailing" secondItem="Ev0-pa-eYe" secondAttribute="trailing" constant="8" id="wPk-dE-zD5"/>
                                                                 <constraint firstItem="f5J-qG-57Z" firstAttribute="leading" secondItem="m3j-Rb-M6x" secondAttribute="trailing" constant="2" id="wr4-dH-gTg"/>
                                                                 <constraint firstAttribute="trailing" secondItem="PqR-oy-TGv" secondAttribute="trailing" constant="8" id="xac-Ce-UMj"/>
                                                             </constraints>
