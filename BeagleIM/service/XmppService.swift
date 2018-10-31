@@ -44,6 +44,18 @@ class XmppService: EventHandler {
             }
         }
     }
+
+    fileprivate var nonIdleStatus: Status? = nil;
+    var isIdle: Bool = false {
+        didSet {
+            if isIdle && Settings.enableAutomaticStatus.bool() {
+                nonIdleStatus = status;
+                status = status.with(show: .xa);
+            } else if let restoreStatus = nonIdleStatus {
+                status = restoreStatus;
+            }
+        }
+    }
     
     fileprivate(set) var isNetworkAvailable: Bool = false {
         didSet {
@@ -63,6 +75,9 @@ class XmppService: EventHandler {
         didSet {
             if Settings.rememberLastStatus.bool() {
                 Settings.currentStatus.set(value: status);
+            }
+            guard isNetworkAvailable else {
+                return;
             }
             if status.show == nil && oldValue.show != nil {
                 self.disconnectClients();

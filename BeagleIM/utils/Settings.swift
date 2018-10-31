@@ -15,6 +15,7 @@ enum Settings: String {
     case currentStatus
     case automaticallyConnectAfterStart
     case rememberLastStatus
+    case enableAutomaticStatus
     case showRoomDetailsSidebar
     case defaultAccount
     
@@ -33,6 +34,7 @@ enum Settings: String {
             "requestPresenceSubscription": true,
             "allowPresenceSubscription": true,
             "enableMessageCarbons": true,
+            "enableAutomaticStatus": true,
             "markMessageCarbonsAsRead": true,
             "enableMarkdownFormatting": true
         ];

@@ -71,7 +71,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         _ = XmppService.instance;
         
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receivedSleepNotification), name: NSWorkspace.willSleepNotification, object: nil);
-        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receivedWakeNotification), name: NSWorkspace.didWakeNotification, object: nil);        
+        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receivedWakeNotification), name: NSWorkspace.didWakeNotification, object: nil);
+        
+        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receivedScreensSleepNotification), name: NSWorkspace.screensDidSleepNotification, object: nil);
+        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receivedScreensWakeNotification), name: NSWorkspace.screensDidWakeNotification, object: nil);
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
@@ -253,6 +256,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @objc func receivedWakeNotification(_ notification: Notification) {
         print("####### Waking up from sleep.....", Date());
         XmppService.instance.isAwake = true;
+    }
+    
+    @objc func receivedScreensSleepNotification(_ notification: Notification) {
+        XmppService.instance.isIdle = true;
+    }
+    
+    @objc func receivedScreensWakeNotification(_ notification: Notification) {
+        XmppService.instance.isIdle = false;
     }
     
     @objc func serverCertificateError(_ notification: Notification) {

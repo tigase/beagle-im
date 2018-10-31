@@ -13,6 +13,7 @@ class GeneralSettingsController: NSViewController {
     @IBOutlet var formView: FormView!;
     
     fileprivate var autoconnect: NSButton!;
+    fileprivate var automaticStatus: NSButton!;
     fileprivate var rememberLastStatusButton: NSButton!;
     fileprivate var requestSubscriptionButton: NSButton!;
     fileprivate var allowSubscriptionButton: NSButton!;
@@ -24,6 +25,7 @@ class GeneralSettingsController: NSViewController {
     
     override func viewDidLoad() {
         autoconnect = formView.addRow(label: "Account status:", field: NSButton(checkboxWithTitle: "Connect after start", target: self, action: #selector(checkboxChanged)))
+        automaticStatus = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Automatic status", target: self, action: #selector(checkboxChanged)));
         rememberLastStatusButton = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Remember last status", target: self, action: #selector(checkboxChanged)));
         _ = formView.addRow(label: "", field: NSTextField(labelWithString: ""));
         requestSubscriptionButton = formView.addRow(label: "Adding user:", field: NSButton(checkboxWithTitle: "Request presence subscription", target: self, action: #selector(checkboxChanged)));
@@ -41,6 +43,7 @@ class GeneralSettingsController: NSViewController {
     
     override func viewWillAppear() {
         autoconnect.state = Settings.automaticallyConnectAfterStart.bool() ? .on : .off;
+        automaticStatus.state = Settings.enableAutomaticStatus.bool() ? .on : .off;
         rememberLastStatusButton.state = Settings.rememberLastStatus.bool() ? .on : .off;
         requestSubscriptionButton.state = Settings.requestPresenceSubscription.bool() ? .on : .off;
         allowSubscriptionButton.state = Settings.allowPresenceSubscription.bool() ? .on : .off;
@@ -54,6 +57,8 @@ class GeneralSettingsController: NSViewController {
         switch sender {
         case autoconnect:
             Settings.automaticallyConnectAfterStart.set(value: sender.state == .on);
+        case automaticStatus:
+            Settings.enableAutomaticStatus.set(value: sender.state == .on);
         case rememberLastStatusButton:
             Settings.rememberLastStatus.set(value: sender.state == .on);
             if Settings.rememberLastStatus.bool() {
