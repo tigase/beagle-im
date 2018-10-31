@@ -15,6 +15,8 @@ protocol ChatsListGroupProtocol {
     
     var count: Int { get }
     
+    var canOpenChat: Bool { get }
+    
     func getChat(at: Int) -> ChatItemProtocol?;
     
     func forChat(_ chat: DBChatProtocol, execute: @escaping (ChatItemProtocol)->Void);

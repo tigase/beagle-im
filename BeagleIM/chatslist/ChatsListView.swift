@@ -32,10 +32,15 @@ class AbstractChatItem: ChatItemProtocol {
 
 class ChatItem: AbstractChatItem {
     
+    let isInRoster: Bool;
+    
     init(chat: DBChatProtocol) {
         if let sessionObject = XmppService.instance.getClient(for: chat.account)?.sessionObject {
-            super.init(chat: chat, name: RosterModule.getRosterStore(sessionObject).get(for: chat.jid)?.name ?? chat.jid.stringValue);
+            let rosterItem = RosterModule.getRosterStore(sessionObject).get(for: chat.jid);
+            isInRoster = rosterItem != nil;
+            super.init(chat: chat, name: rosterItem?.name ?? chat.jid.stringValue);
         } else {
+            isInRoster = true;
             super.init(chat: chat, name: chat.jid.stringValue);
         }
     }
@@ -72,7 +77,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     var groups: [ChatsListGroupProtocol] = [];
 
     override func viewDidLoad() {
-        self.groups = [ChatsListGroupGroupchat(delegate: self), ChatsListGroupChat(delegate: self)];
+        self.groups = [ChatsListGroupGroupchat(delegate: self), ChatsListGroupChat(delegate: self), ChatsListGroupChatUnknown(delegate: self)];
         outlineView.reloadData();
         self.view.wantsLayer = true;
         outlineView.expandItem(nil, expandChildren: true);
@@ -188,7 +193,6 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     }
     
     func itemChanged(item: Any?) {
-        outlineView.reloadItem(item);
         let row = outlineView.row(forItem: item);
         guard row == 0 || row > 0 else {
             return;
@@ -267,15 +271,6 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
                 }
             }
         }
-//        DispatchQueue.main.async {
-//            self.groups.forEach { group in
-//                guard let item = group.selected(chat: chat) else {
-//                    return;
-//                }
-//                
-//                self.outlineView.selectRowIndexes(IndexSet(integer: self.outlineView.row(forItem: item)), byExtendingSelection: false);
-//            }
-//        }
     }
     
 }
@@ -296,6 +291,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
             }
             if let button = view?.subviews[1] as? OutlineGroupItemButton {
                 button.group = group;
+                button.isHidden = !group.canOpenChat;
             }
             return view;
         } else if let chat = item as? ChatItemProtocol {
