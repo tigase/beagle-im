@@ -8,6 +8,7 @@
 
 import AppKit
 import TigaseSwift
+import UserNotifications
 
 class MucEventHandler: XmppServiceEventHandler {
     
@@ -60,16 +61,32 @@ class MucEventHandler: XmppServiceEventHandler {
                 return;
             }
             print("received error from room:", e.room, ", error:", error)
-            let notification = NSUserNotification();
-            notification.identifier = UUID().uuidString;
-            notification.title = "Room \(e.room.roomJid.stringValue)";
-            notification.informativeText = "Could not join room. Reason:\n\(error.reason)";
-            notification.soundName = NSUserNotificationDefaultSoundName;
-            notification.contentImage = NSImage(named: NSImage.userGroupName);
-            if error != .banned && error != .registrationRequired {
-                notification.userInfo = ["account": e.sessionObject.userBareJid!.stringValue, "roomJid": e.room.roomJid.stringValue, "nickname": e.room.nickname, "id": "room-join-error"];
+            
+            if #available(OSX 10.14, *) {
+                let content = UNMutableNotificationContent();
+                content.title = "Room \(e.room.roomJid.stringValue)";
+                content.body = "Could not join room. Reason:\n\(error.reason)";
+                content.sound = UNNotificationSound.defaultCritical;
+                if error != .banned && error != .registrationRequired {
+                    content.userInfo = ["account": e.sessionObject.userBareJid!.stringValue, "roomJid": e.room.roomJid.stringValue, "nickname": e.room.nickname, "id": "room-join-error"];
+                }
+                let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
+                UNUserNotificationCenter.current().add(request) { (error) in
+                    print("could not show notification:", error as Any);
+                }
+            } else {
+                let notification = NSUserNotification();
+                notification.identifier = UUID().uuidString;
+                notification.title = "Room \(e.room.roomJid.stringValue)";
+                notification.informativeText = "Could not join room. Reason:\n\(error.reason)";
+                notification.soundName = NSUserNotificationDefaultSoundName;
+                notification.contentImage = NSImage(named: NSImage.userGroupName);
+                if error != .banned && error != .registrationRequired {
+                    notification.userInfo = ["account": e.sessionObject.userBareJid!.stringValue, "roomJid": e.room.roomJid.stringValue, "nickname": e.room.nickname, "id": "room-join-error"];
+                }
+                NSUserNotificationCenter.default.deliver(notification);
             }
-            NSUserNotificationCenter.default.deliver(notification);
+
             guard let mucModule: MucModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(MucModule.ID) else {
                 return;
             }
@@ -113,20 +130,38 @@ class MucEventHandler: XmppServiceEventHandler {
             
             break;
         case let e as MucModule.InvitationDeclinedEvent:
-            let notification = NSUserNotification();
-            notification.identifier = UUID().uuidString;
-            notification.title = "Invitation rejected";
-            let name = XmppService.instance.clients.values.flatMap({ (client) -> [String] in
-                guard let n = e.invitee != nil ? client.rosterStore?.get(for: e.invitee!)?.name : nil else {
-                    return [];
+            if #available(OSX 10.14, *) {
+                let content = UNMutableNotificationContent();
+                content.title = "Invitation rejected";
+                let name = XmppService.instance.clients.values.flatMap({ (client) -> [String] in
+                    guard let n = e.invitee != nil ? client.rosterStore?.get(for: e.invitee!)?.name : nil else {
+                        return [];
+                    }
+                    return [n];
+                }).first ?? e.invitee?.stringValue ?? "";
+                
+                content.body = "User \(name) rejected invitation to room \(e.room.roomJid)";
+                content.sound = UNNotificationSound.default;
+                let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
+                UNUserNotificationCenter.current().add(request) { (error) in
+                    print("could not show notification:", error as Any);
                 }
-                return [n];
-            }).first ?? e.invitee?.stringValue ?? "";
-
-            notification.informativeText = "User \(name) rejected invitation to room \(e.room.roomJid)";
-            notification.soundName = NSUserNotificationDefaultSoundName;
-            notification.contentImage = NSImage(named: NSImage.userGroupName);
-            NSUserNotificationCenter.default.deliver(notification);
+            } else {
+                let notification = NSUserNotification();
+                notification.identifier = UUID().uuidString;
+                notification.title = "Invitation rejected";
+                let name = XmppService.instance.clients.values.flatMap({ (client) -> [String] in
+                    guard let n = e.invitee != nil ? client.rosterStore?.get(for: e.invitee!)?.name : nil else {
+                        return [];
+                    }
+                    return [n];
+                }).first ?? e.invitee?.stringValue ?? "";
+                
+                notification.informativeText = "User \(name) rejected invitation to room \(e.room.roomJid)";
+                notification.soundName = NSUserNotificationDefaultSoundName;
+                notification.contentImage = NSImage(named: NSImage.userGroupName);
+                NSUserNotificationCenter.default.deliver(notification);
+            }
         default:
             break;
         }

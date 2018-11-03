@@ -21,6 +21,8 @@ class GeneralSettingsController: NSViewController {
     fileprivate var enableMessageCarbonsButton: NSButton!;
     fileprivate var messageCarbonsMarkAsReadButton: NSButton!;
     
+    fileprivate var notificationsFromUnknownSenders: NSButton!;
+    
     fileprivate var markdownFormatting: NSButton!;
     
     override func viewDidLoad() {
@@ -37,6 +39,9 @@ class GeneralSettingsController: NSViewController {
         messageCarbonsMarkAsReadButton = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Mark carbon messages as read", target: self, action: #selector(checkboxChanged(_:))));
         
         _ = formView.addRow(label: "", field: NSTextField(labelWithString: ""));
+        notificationsFromUnknownSenders = formView.addRow(label: "Notifications", field: NSButton(checkboxWithTitle: "Show for messages from unknown senders", target: self, action: #selector(checkboxChanged(_:))));
+        
+        _ = formView.addRow(label: "", field: NSTextField(labelWithString: ""));
         
         markdownFormatting = formView.addRow(label: "Message formatting", field: NSButton(checkboxWithTitle: "Markdown", target: self, action: #selector(checkboxChanged(_:))));
     }
@@ -50,6 +55,7 @@ class GeneralSettingsController: NSViewController {
         enableMessageCarbonsButton.state = Settings.enableMessageCarbons.bool() ? .on : .off;
         messageCarbonsMarkAsReadButton.state = Settings.markMessageCarbonsAsRead.bool() ? .on : .off;
         messageCarbonsMarkAsReadButton.isEnabled = Settings.enableMessageCarbons.bool();
+        notificationsFromUnknownSenders.state = Settings.notificationsFromUnknownSenders.bool() ? .on : .off;
         markdownFormatting.state = Settings.enableMarkdownFormatting.bool() ? .on : .off;
     }
     
@@ -75,6 +81,8 @@ class GeneralSettingsController: NSViewController {
             messageCarbonsMarkAsReadButton.isEnabled = sender.state == .on;
         case messageCarbonsMarkAsReadButton:
             Settings.markMessageCarbonsAsRead.set(value: sender.state == .on);
+        case notificationsFromUnknownSenders:
+            Settings.notificationsFromUnknownSenders.set(value: sender.state == .on);
         case markdownFormatting:
             Settings.enableMarkdownFormatting.set(value: sender.state == .on);
         default:

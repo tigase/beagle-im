@@ -8,6 +8,7 @@
 
 import Cocoa
 import TigaseSwift
+import UserNotifications
 
 extension DBConnection {
     
@@ -20,7 +21,7 @@ extension DBConnection {
 }
 
 @NSApplicationMain
-class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDelegate, UNUserNotificationCenterDelegate {
 
     fileprivate let stampFormatter = ({()-> DateFormatter in
         var f = DateFormatter();
@@ -63,7 +64,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         self.mainWindowController = NSApplication.shared.windows[0].windowController;
         
-        NSUserNotificationCenter.default.delegate = self;
+        if #available(OSX 10.14, *) {
+            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge]) { (result, error) in
+                print("could not get authorization for notifications", result, error as Any);
+            }
+            UNUserNotificationCenter.current().delegate = self;
+        } else {
+            // Fallback on earlier versions
+            NSUserNotificationCenter.default.delegate = self;
+        }
         
 //        let storyboard = NSStoryboard(name: "Main", bundle: nil);
 //        let rosterWindowController = storyboard.instantiateController(withIdentifier: "RosterWindowController") as! NSWindowController;
@@ -140,6 +149,90 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
     }
     
+    @available(OSX 10.14, *)
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [response.notification.request.identifier]);
+        
+        let userInfo = response.notification.request.content.userInfo;
+        guard let id = userInfo["id"] as? String else {
+            return;
+        }
+        
+        switch id {
+        case "authentication-failure":
+            guard let _ = BareJID(userInfo["account"] as? String) else {
+                break;
+            }
+            guard let windowController = NSApplication.shared.windows.map({ (window) -> NSWindowController? in
+                return window.windowController;
+            }).filter({ (controller) -> Bool in
+                return controller != nil
+            }).first(where: { (controller) -> Bool in
+                return (controller?.contentViewController as? NSTabViewController) != nil
+            }) ?? mainWindowController?.storyboard?.instantiateController(withIdentifier: "PreferencesWindowController") as? NSWindowController else {
+                break;
+            }
+            (windowController.contentViewController as? NSTabViewController)?.selectedTabViewItemIndex = 1;
+            windowController.showWindow(self);
+        case "room-join-error":
+            guard let accountStr = userInfo["account"] as? String, let roomJidStr = userInfo["roomJid"] as? String, let nickname = userInfo["nickname"] as? String else {
+                break;
+            }
+            let storyboard = NSStoryboard(name: "Main", bundle: nil);
+            guard let windowController = storyboard.instantiateController(withIdentifier: "OpenGroupchatController") as? NSWindowController else {
+                break;
+            }
+            guard let openRoomController = windowController.contentViewController as? OpenGroupchatController else {
+                break;
+            }
+            let roomJid = BareJID(roomJidStr);
+            openRoomController.searchField.stringValue = roomJidStr;
+            openRoomController.mucJids = [BareJID(roomJid.domain)];
+            openRoomController.account = BareJID(accountStr);
+            openRoomController.nicknameField.stringValue = nickname;
+            guard let window = self.mainWindowController?.window else {
+                break;
+            }
+            window.windowController?.showWindow(self);
+            window.beginSheet(windowController.window!, completionHandler: nil);
+        case "message-new":
+            guard let account = BareJID(userInfo["account"] as? String), let jid = BareJID(userInfo["jid"] as? String) else {
+                break;
+            }
+            NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: nil, userInfo: ["account": account, "jid": jid]);
+        default:
+            break;
+        }
+        
+        completionHandler();
+    }
+    
+    @available(OSX 10.14, *)
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        
+        if let account = notification.request.content.userInfo["account"] as? String, let jid = notification.request.content.userInfo["jid"] as? String {
+            guard let window = NSApp.windows.first(where: { w -> Bool in
+                return w.windowController is ChatsWindowController
+            }) else {
+                completionHandler([.sound, .alert]);
+                return;
+            }
+            
+            guard let chatViewController = (window.contentViewController as? NSSplitViewController)?.splitViewItems.last?.viewController as? AbstractChatViewController else {
+                completionHandler([.sound, .alert]);
+                return;
+            }
+            
+            if (chatViewController.account?.stringValue ?? "") != account || (chatViewController.chat?.jid.stringValue ?? "") != jid {
+                completionHandler([.sound, .alert]);
+                return;
+            }
+        } else {
+            completionHandler([.sound, .alert]);
+        }
+    }
+    
     func userNotificationCenter(_ center: NSUserNotificationCenter, shouldPresent notification: NSUserNotification) -> Bool {
         if let account = notification.userInfo?["account"] as? String, let jid = notification.userInfo?["jid"] as? String {
             guard let window = NSApp.windows.first(where: { w -> Bool in
@@ -164,49 +257,97 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
      
         let id = "authenticationError.\(accountName.stringValue)";
         
-        // invalidate old auth error notification if there is any
-        NSUserNotificationCenter.default.deliveredNotifications.filter { (n) -> Bool in
-            return n.identifier == id;
-            }.forEach { (n) in
-                NSUserNotificationCenter.default.removeDeliveredNotification(n);
+        if #available(OSX 10.14, *) {
+            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [id]);
+            
+            let content = UNMutableNotificationContent();
+            content.title = accountName.stringValue;
+            content.subtitle = "Authentication failure";
+            switch error {
+            case .aborted, .temporary_auth_failure:
+                content.body = "Temporary authetnication failure, will retry..";
+            case .invalid_mechanism:
+                content.body = "Required authentication mechanism not supported";
+            case .mechanism_too_weak:
+                content.body = "Authentication mechanism is too weak for authentication";
+            case .incorrect_encoding, .invalid_authzid, .not_authorized:
+                content.body = "Invalid password for account";
+            case .server_not_trusted:
+                content.body = "It was not possible to verify that server is trusted";
+            }
+            content.sound = UNNotificationSound.defaultCritical;
+            content.userInfo = ["account": accountName.stringValue, "id": "authentication-failure"];
+            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
+            UNUserNotificationCenter.current().add(request) { (error) in
+                print("could not show notification:", error as Any);
+            }
+        } else {
+            // invalidate old auth error notification if there is any
+            NSUserNotificationCenter.default.deliveredNotifications.filter { (n) -> Bool in
+                return n.identifier == id;
+                }.forEach { (n) in
+                    NSUserNotificationCenter.default.removeDeliveredNotification(n);
+            }
+            
+            let notification = NSUserNotification();
+            notification.identifier = UUID().uuidString;
+            notification.title = accountName.stringValue;
+            notification.subtitle = "Authentication failure";
+            switch error {
+            case .aborted, .temporary_auth_failure:
+                notification.informativeText = "Temporary authetnication failure, will retry..";
+            case .invalid_mechanism:
+                notification.informativeText = "Required authentication mechanism not supported";
+            case .mechanism_too_weak:
+                notification.informativeText = "Authentication mechanism is too weak for authentication";
+            case .incorrect_encoding, .invalid_authzid, .not_authorized:
+                notification.informativeText = "Invalid password for account";
+            case .server_not_trusted:
+                notification.informativeText = "It was not possible to verify that server is trusted";
+            }
+            notification.soundName = NSUserNotificationDefaultSoundName;
+            notification.userInfo = ["account": accountName.stringValue, "id": "authentication-failure"];
+            NSUserNotificationCenter.default.deliver(notification);
         }
-        
-        let notification = NSUserNotification();
-        notification.identifier = UUID().uuidString;
-        notification.title = accountName.stringValue;
-        notification.subtitle = "Authentication failure";
-        switch error {
-        case .aborted, .temporary_auth_failure:
-            notification.informativeText = "Temporary authetnication failure, will retry..";
-        case .invalid_mechanism:
-            notification.informativeText = "Required authentication mechanism not supported";
-        case .mechanism_too_weak:
-            notification.informativeText = "Authentication mechanism is too weak for authentication";
-        case .incorrect_encoding, .invalid_authzid, .not_authorized:
-            notification.informativeText = "Invalid password for account";
-        case .server_not_trusted:
-            notification.informativeText = "It was not possible to verify that server is trusted";
-        }
-        notification.soundName = NSUserNotificationDefaultSoundName;
-        notification.userInfo = ["account": accountName.stringValue, "id": "authentication-failure"];
-        NSUserNotificationCenter.default.deliver(notification);
     }
     
     @objc func chatUpdated(_ notification: Notification) {
         guard let chat = notification.object as? DBChatProtocol, chat.unread == 0 else {
             return;
         }
-        NSUserNotificationCenter.default.deliveredNotifications.forEach { (n) in
-            guard let id = n.userInfo?["id"] as? String, id == "message-new" else {
-                return;
+        
+        if #available(OSX 10.14, *) {
+            UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
+                let identifiers = notifications.filter({ (n) -> Bool in
+                    let userInfo = n.request.content.userInfo;
+                    guard let id = userInfo["id"] as? String, id == "message-new" else {
+                        return false;
+                    }
+                    guard let account = BareJID(userInfo["account"] as? String), let jid = BareJID(userInfo["jid"] as?    String) else {
+                        return false;
+                    }
+                    guard chat.account == account && chat.jid.bareJid == jid else {
+                        return false;
+                    }
+                    return true;
+                }).map({ (n) -> String in
+                    return n.request.identifier;
+                });
+                UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: identifiers);
             }
-            guard let account = BareJID(n.userInfo?["account"] as? String), let jid = BareJID(n.userInfo?["jid"] as? String) else {
-                return;
+        } else {
+            NSUserNotificationCenter.default.deliveredNotifications.forEach { (n) in
+                guard let id = n.userInfo?["id"] as? String, id == "message-new" else {
+                    return;
+                }
+                guard let account = BareJID(n.userInfo?["account"] as? String), let jid = BareJID(n.userInfo?["jid"] as?    String) else {
+                    return;
+                }
+                guard chat.account == account && chat.jid.bareJid == jid else {
+                    return;
+                }
+                NSUserNotificationCenter.default.removeDeliveredNotification(n);
             }
-            guard chat.account == account && chat.jid.bareJid == jid else {
-                return;
-            }
-            NSUserNotificationCenter.default.removeDeliveredNotification(n);
         }
     }
 
@@ -226,25 +367,57 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             guard item.message.contains(room.nickname) else {
                 return;
             }
-
-            let notification = NSUserNotification();
-            notification.identifier = UUID().uuidString;
-            notification.title = item.jid.stringValue;
-            notification.subtitle = item.authorNickname;
-//            notification.deliveryDate = item.timestamp;
-            notification.informativeText = item.message;
-            notification.soundName = NSUserNotificationDefaultSoundName;
-            notification.userInfo = ["account": item.account.stringValue, "jid": item.jid.stringValue, "id": "message-new"];
-            NSUserNotificationCenter.default.deliver(notification);
+            
+            if #available(OSX 10.14, *) {
+                let content = UNMutableNotificationContent();
+                content.title = item.jid.stringValue;
+                content.subtitle = item.authorNickname ?? "";
+                content.body = item.message;
+                content.sound = UNNotificationSound.default
+                content.userInfo = ["account": item.account.stringValue, "jid": item.jid.stringValue, "id": "message-new"];
+                let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
+                UNUserNotificationCenter.current().add(request) { (error) in
+                    print("could not show notification:", error as Any);
+                }
+            } else {
+                let notification = NSUserNotification();
+                notification.identifier = UUID().uuidString;
+                notification.title = item.jid.stringValue;
+                notification.subtitle = item.authorNickname;
+                //            notification.deliveryDate = item.timestamp;
+                notification.informativeText = item.message;
+                notification.soundName = NSUserNotificationDefaultSoundName;
+                notification.userInfo = ["account": item.account.stringValue, "jid": item.jid.stringValue, "id": "message-new"];
+                NSUserNotificationCenter.default.deliver(notification);
+            }
         } else {
-            let notification = NSUserNotification();
-            notification.identifier = UUID().uuidString;
-            notification.title = XmppService.instance.getClient(for: item.account)?.rosterStore?.get(for: JID(item.jid))?.name ?? item.jid.stringValue;
-//            notification.deliveryDate = item.timestamp;
-            notification.informativeText = item.message;
-            notification.soundName = NSUserNotificationDefaultSoundName;
-            notification.userInfo = ["account": item.account.stringValue, "jid": item.jid.stringValue, "id": "message-new"];
-            NSUserNotificationCenter.default.deliver(notification);
+            let rosterItem = XmppService.instance.getClient(for: item.account)?.rosterStore?.get(for: JID(item.jid));
+            guard rosterItem != nil || Settings.notificationsFromUnknownSenders.bool() else {
+                return;
+            }
+            
+            if #available(OSX 10.14, *) {
+                let content = UNMutableNotificationContent();
+                content.title = rosterItem?.name ?? item.jid.stringValue;
+                content.body = item.message;
+                content.sound = UNNotificationSound.default
+                content.userInfo = ["account": item.account.stringValue, "jid": item.jid.stringValue, "id": "message-new"];
+                let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
+                UNUserNotificationCenter.current().add(request) { (error) in
+                    print("could not show notification:", error as Any);
+                }
+            } else {
+                let notification = NSUserNotification();
+                notification.identifier = UUID().uuidString;
+                notification.title = rosterItem?.name ?? item.jid.stringValue;
+                //            notification.deliveryDate = item.timestamp;
+                notification.informativeText = item.message;
+                notification.soundName = NSUserNotificationDefaultSoundName;
+                notification.userInfo = ["account": item.account.stringValue, "jid": item.jid.stringValue, "id": "message-new"];
+                NSUserNotificationCenter.default.deliver(notification);
+                
+                print("presented:", notification.isPresented);
+            };
         }
     }
     
@@ -271,13 +444,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             return;
         }
         
-        let notification = NSUserNotification();
-        notification.identifier = UUID().uuidString;
-        notification.title = "Unknown SSL certificate";
-        notification.subtitle = "SSL certificate could not be verified.";
-        notification.informativeText = "Account \(accountName) was disabled.";
-        notification.soundName = NSUserNotificationDefaultSoundName;
-        NSUserNotificationCenter.default.deliver(notification);
+        if #available(OSX 10.14, *) {
+            let content = UNMutableNotificationContent();
+            content.title = "Unknown SSL certificate";
+            content.subtitle = "SSL certificate could not be verified.";
+            content.body = "Account \(accountName) was disabled.";
+            content.sound = UNNotificationSound.defaultCritical;
+            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
+            UNUserNotificationCenter.current().add(request) { (error) in
+                print("could not show notification:", error as Any);
+            }
+        } else {
+            let notification = NSUserNotification();
+            notification.identifier = UUID().uuidString;
+            notification.title = "Unknown SSL certificate";
+            notification.subtitle = "SSL certificate could not be verified.";
+            notification.informativeText = "Account \(accountName) was disabled.";
+            notification.soundName = NSUserNotificationDefaultSoundName;
+            NSUserNotificationCenter.default.deliver(notification);
+        }
         
         DispatchQueue.main.async {
             guard let windowController = NSStoryboard(name: "Main", bundle: nil).instantiateController(withIdentifier: "ServerCertificateErrorWindowController") as? NSWindowController else {
