@@ -363,6 +363,11 @@ class XmppService: EventHandler {
         
         SslCertificateValidator.registerSslCertificateValidator(client.sessionObject);
         
+        client.sessionObject.setUserProperty(SoftwareVersionModule.NAME_KEY, value: Bundle.main.infoDictionary!["CFBundleName"]);
+        let version = "\(Bundle.main.infoDictionary!["CFBundleShortVersionString"] as! String) b\(Bundle.main.infoDictionary!["CFBundleVersion"] as! String)";
+        client.sessionObject.setUserProperty(SoftwareVersionModule.VERSION_KEY, value: version);
+        client.sessionObject.setUserProperty(SoftwareVersionModule.OS_KEY, value: "macOS");
+        
         return client;
     }
 
