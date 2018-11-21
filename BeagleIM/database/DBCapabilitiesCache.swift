@@ -21,6 +21,7 @@ class DBCapabilitiesCache: CapabilitiesCache {
     fileprivate var insertFeatureStmt: DBStatement;
     fileprivate var insertIdentityStmt: DBStatement;
     fileprivate var nodeIsCached: DBStatement;
+    fileprivate var featureIsSupported: DBStatement;
 
     fileprivate var features = [String: [String]]();
     fileprivate var identities: [String: DiscoveryModule.Identity] = [:];
@@ -32,6 +33,7 @@ class DBCapabilitiesCache: CapabilitiesCache {
         insertFeatureStmt = try! DBConnection.main.prepareStatement("INSERT INTO caps_features (node, feature) VALUES (:node, :feature)");
         insertIdentityStmt = try! DBConnection.main.prepareStatement("INSERT INTO caps_identities (node, name, category, type) VALUES (:node, :name, :category, :type)");
         nodeIsCached = try! DBConnection.main.prepareStatement("SELECT count(feature) FROM caps_features WHERE node = :node");
+        featureIsSupported = try! DBConnection.main.prepareStatement("SELECT count(feature) FROM caps_features WHERE node = :node AND feature = :feature");
         dispatcher = QueueDispatcher(label: "DBCapabilitiesCache");
     }
 
@@ -76,6 +78,10 @@ class DBCapabilitiesCache: CapabilitiesCache {
         dispatcher.async {
             handler(self.isCached(node: node));
         }
+    }
+    
+    open func isSupported(for node: String, feature: String) -> Bool {
+        return getFeatures(for: node)?.contains(feature) ?? false;
     }
     
     open func store(node: String, identity: DiscoveryModule.Identity?, features: [String]) {
