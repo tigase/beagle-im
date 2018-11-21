@@ -80,9 +80,11 @@ class Markdown {
 
                     msg.applyFontTraits([.fixedPitchFontMask, .unboldFontMask, .unitalicFontMask], range: NSRange(codeStart!.encodedOffset...idx.encodedOffset));
                     
-                    let clearRange = NSRange(message.index(after: codeStart!).encodedOffset...message.index(before: idx).encodedOffset);
-                    msg.removeAttribute(.foregroundColor, range: clearRange);
-                    msg.removeAttribute(.underlineStyle, range: clearRange);
+                    if message.distance(from: codeStart!, to: idx) > 1 {
+                        let clearRange = NSRange(message.index(after: codeStart!).encodedOffset...message.index(before: idx).encodedOffset);
+                        msg.removeAttribute(.foregroundColor, range: clearRange);
+                        msg.removeAttribute(.underlineStyle, range: clearRange);
+                    }
                     codeStart = nil;
                 }
                 canStart = true;
