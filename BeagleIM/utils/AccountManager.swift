@@ -163,6 +163,31 @@ open class AccountManager {
             }
         }
         
+        open var resourceType: ResourceType {
+            get {
+                guard let val = data["resourceType"] as? String, let r = ResourceType(rawValue: val) else {
+                    return .automatic;
+                }
+                return r;
+            }
+            set {
+                data["resourceType"] = newValue.rawValue;
+            }
+        }
+        
+        open var resourceName: String? {
+            get {
+                return data["resourceName"] as? String;
+            }
+            set {
+                if newValue == nil {
+                    data.removeValue(forKey: "resourceName")
+                } else {
+                    data["resourceName"] = newValue;
+                }
+            }
+        }
+        
         open var serverCertificate: ServerCertificateInfo? {
             get {
                 return data["serverCertificateInfo"] as? ServerCertificateInfo;
@@ -201,6 +226,11 @@ open class AccountManager {
                 
             return String(data: data, encoding: .utf8);
         }
-        
+     
+        enum ResourceType: String {
+            case automatic
+            case hostname
+            case custom
+        }
     }
 }

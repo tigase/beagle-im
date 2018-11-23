@@ -255,6 +255,16 @@ class XmppService: EventHandler {
         client.connectionConfiguration.setUserPassword(account.password);
         SslCertificateValidator.setAcceptedSslCertificate(client.sessionObject, fingerprint: (account.serverCertificate?.accepted ?? false) ? account.serverCertificate?.details.fingerprintSha1 : nil);
 
+        switch account.resourceType {
+        case .automatic:
+            client.sessionObject.setUserProperty(SessionObject.RESOURCE, value: nil);
+        case .hostname:
+            client.sessionObject.setUserProperty(SessionObject.RESOURCE, value: Host.current().localizedName);
+        case .custom:
+            let val = account.resourceName;
+            client.sessionObject.setUserProperty(SessionObject.RESOURCE, value: (val == nil || val!.isEmpty) ? nil : val)
+        }
+        
         client.login();
     }
     

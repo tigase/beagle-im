@@ -1216,18 +1216,65 @@ Gw
                                     <action selector="activeStateChanged:" target="KHn-QE-OFW" id="jH7-Pv-wbD"/>
                                 </connections>
                             </button>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kPF-BT-DM8">
+                                <rect key="frame" x="18" y="81" width="104" height="17"/>
+                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Resource" id="QbC-PO-xuW">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="hPn-zm-Pax">
+                                <rect key="frame" x="127" y="76" width="206" height="25"/>
+                                <popUpButtonCell key="cell" type="push" title="Item" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" pullsDown="YES" selectedItem="xNG-jT-iku" id="VQs-tD-5Jk">
+                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="menu"/>
+                                    <menu key="menu" id="KYq-CV-vfd">
+                                        <items>
+                                            <menuItem title="Item" hidden="YES" id="xNG-jT-iku">
+                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                            </menuItem>
+                                            <menuItem title="Automatic" state="on" id="xRa-Ah-yOh"/>
+                                            <menuItem title="Hostname" id="fi3-ad-8sY"/>
+                                            <menuItem title="Custom" id="iJW-tt-3CA"/>
+                                        </items>
+                                    </menu>
+                                </popUpButtonCell>
+                                <connections>
+                                    <action selector="resourceTypeChanged:" target="KHn-QE-OFW" id="PDX-hY-7Nd"/>
+                                </connections>
+                            </popUpButton>
+                            <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2Nj-aQ-VKd">
+                                <rect key="frame" x="130" y="53" width="200" height="22"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" enabled="NO" sendsActionOnEndEditing="YES" borderStyle="bezel" placeholderString="Enter resource to use..." drawsBackground="YES" id="ohL-vr-Yel">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                                <connections>
+                                    <action selector="resourceNameChanged:" target="KHn-QE-OFW" id="k6M-Hh-b12"/>
+                                </connections>
+                            </textField>
                         </subviews>
                         <constraints>
+                            <constraint firstItem="kPF-BT-DM8" firstAttribute="width" secondItem="5kj-hd-Fg1" secondAttribute="width" id="060-wY-bs4"/>
                             <constraint firstItem="bIL-k0-niu" firstAttribute="trailing" secondItem="Eey-Rx-z92" secondAttribute="trailing" id="0BY-Yf-s2S"/>
+                            <constraint firstItem="2Nj-aQ-VKd" firstAttribute="trailing" secondItem="hPn-zm-Pax" secondAttribute="trailing" id="0FC-NR-9EL"/>
+                            <constraint firstItem="2Nj-aQ-VKd" firstAttribute="leading" secondItem="hPn-zm-Pax" secondAttribute="leading" id="0Xs-zM-Qdy"/>
                             <constraint firstItem="wyp-c3-LVw" firstAttribute="leading" secondItem="tSb-4d-23Q" secondAttribute="leading" id="198-GV-bFu"/>
                             <constraint firstItem="tSb-4d-23Q" firstAttribute="leading" secondItem="1eP-dw-zkn" secondAttribute="trailing" constant="10" id="6oM-4m-iNe"/>
                             <constraint firstItem="1eP-dw-zkn" firstAttribute="leading" secondItem="h0n-zH-X1a" secondAttribute="leading" constant="20" id="7Ts-TA-c5P"/>
+                            <constraint firstItem="hPn-zm-Pax" firstAttribute="leading" secondItem="bIL-k0-niu" secondAttribute="leading" id="8PM-2c-GEV"/>
+                            <constraint firstItem="hPn-zm-Pax" firstAttribute="centerY" secondItem="kPF-BT-DM8" secondAttribute="centerY" id="AX8-u6-dZw"/>
+                            <constraint firstItem="kPF-BT-DM8" firstAttribute="leading" secondItem="5kj-hd-Fg1" secondAttribute="leading" id="Alz-2M-htd"/>
                             <constraint firstItem="tSb-4d-23Q" firstAttribute="width" secondItem="1eP-dw-zkn" secondAttribute="width" multiplier="2" id="C2R-Dq-4a8"/>
-                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="bIL-k0-niu" secondAttribute="bottom" constant="20" id="HsX-ZO-U9W"/>
+                            <constraint firstItem="hPn-zm-Pax" firstAttribute="width" secondItem="bIL-k0-niu" secondAttribute="width" id="Fob-9o-bfx"/>
                             <constraint firstItem="Eey-Rx-z92" firstAttribute="width" secondItem="tSb-4d-23Q" secondAttribute="width" id="IpP-xJ-ohZ"/>
+                            <constraint firstItem="hPn-zm-Pax" firstAttribute="trailing" secondItem="bIL-k0-niu" secondAttribute="trailing" id="JKX-lx-Em9"/>
                             <constraint firstItem="bIL-k0-niu" firstAttribute="top" secondItem="Eey-Rx-z92" secondAttribute="bottom" constant="10" id="Kov-Vc-Sug"/>
                             <constraint firstItem="wyp-c3-LVw" firstAttribute="trailing" secondItem="tSb-4d-23Q" secondAttribute="trailing" id="Rh2-QY-cnO"/>
                             <constraint firstAttribute="trailing" secondItem="Eey-Rx-z92" secondAttribute="trailing" constant="20" id="SY0-ko-CT7"/>
+                            <constraint firstItem="hPn-zm-Pax" firstAttribute="top" secondItem="bIL-k0-niu" secondAttribute="bottom" constant="10" id="TS2-u2-mZy"/>
                             <constraint firstItem="tSb-4d-23Q" firstAttribute="top" secondItem="h0n-zH-X1a" secondAttribute="top" constant="20" id="ak3-fc-EcC"/>
                             <constraint firstItem="Eey-Rx-z92" firstAttribute="leading" secondItem="P3F-L6-pBj" secondAttribute="trailing" constant="10" id="b8O-9R-IyW"/>
                             <constraint firstItem="Eey-Rx-z92" firstAttribute="top" secondItem="wyp-c3-LVw" secondAttribute="bottom" constant="10" id="dXt-7V-pG1"/>
@@ -1235,12 +1282,17 @@ Gw
                             <constraint firstItem="P3F-L6-pBj" firstAttribute="leading" secondItem="h0n-zH-X1a" secondAttribute="leading" constant="20" id="fU4-xb-5Tm"/>
                             <constraint firstItem="5kj-hd-Fg1" firstAttribute="width" secondItem="P3F-L6-pBj" secondAttribute="width" id="hx6-AS-qb4"/>
                             <constraint firstItem="bIL-k0-niu" firstAttribute="width" secondItem="Eey-Rx-z92" secondAttribute="width" id="j3d-vL-Axw"/>
+                            <constraint firstItem="2Nj-aQ-VKd" firstAttribute="width" secondItem="hPn-zm-Pax" secondAttribute="width" id="k3Y-yg-iZL"/>
                             <constraint firstItem="Eey-Rx-z92" firstAttribute="centerY" secondItem="P3F-L6-pBj" secondAttribute="centerY" id="kAp-Hz-dRd"/>
                             <constraint firstItem="bIL-k0-niu" firstAttribute="leading" secondItem="5kj-hd-Fg1" secondAttribute="trailing" constant="10" id="l8X-pz-2uN"/>
+                            <constraint firstItem="2Nj-aQ-VKd" firstAttribute="top" secondItem="hPn-zm-Pax" secondAttribute="bottom" constant="4" id="n01-yt-OXn"/>
+                            <constraint firstAttribute="bottom" secondItem="2Nj-aQ-VKd" secondAttribute="bottom" constant="53" id="n9F-2Z-PUR"/>
                             <constraint firstAttribute="trailing" secondItem="tSb-4d-23Q" secondAttribute="trailing" constant="20" id="nAE-Vc-t0E"/>
                             <constraint firstItem="P3F-L6-pBj" firstAttribute="width" secondItem="1eP-dw-zkn" secondAttribute="width" id="oEx-ic-vkW"/>
                             <constraint firstItem="bIL-k0-niu" firstAttribute="centerY" secondItem="5kj-hd-Fg1" secondAttribute="centerY" id="viw-Jv-euA"/>
                             <constraint firstItem="tSb-4d-23Q" firstAttribute="centerY" secondItem="1eP-dw-zkn" secondAttribute="centerY" id="wIv-cn-9Sm"/>
+                            <constraint firstItem="hPn-zm-Pax" firstAttribute="leading" secondItem="kPF-BT-DM8" secondAttribute="trailing" constant="10" id="xuq-bo-1LD"/>
+                            <constraint firstItem="kPF-BT-DM8" firstAttribute="trailing" secondItem="5kj-hd-Fg1" secondAttribute="trailing" id="yem-mC-vA8"/>
                             <constraint firstItem="5kj-hd-Fg1" firstAttribute="leading" secondItem="P3F-L6-pBj" secondAttribute="leading" id="zU1-2q-QGI"/>
                         </constraints>
                     </view>
@@ -1248,12 +1300,14 @@ Gw
                         <outlet property="active" destination="wyp-c3-LVw" id="Ndm-QO-Jzv"/>
                         <outlet property="nickname" destination="bIL-k0-niu" id="aJL-8O-oJ2"/>
                         <outlet property="password" destination="Eey-Rx-z92" id="a2Y-4m-86h"/>
+                        <outlet property="resourceName" destination="2Nj-aQ-VKd" id="3ow-By-jOH"/>
+                        <outlet property="resourceType" destination="hPn-zm-Pax" id="gJs-a4-YgI"/>
                         <outlet property="username" destination="tSb-4d-23Q" id="gLw-mo-hwe"/>
                     </connections>
                 </viewController>
                 <customObject id="yCC-C5-PXJ" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3070" y="-518"/>
+            <point key="canvasLocation" x="3070" y="-518.5"/>
         </scene>
         <!--Chats List View Controller-->
         <scene sceneID="wom-Ld-4GJ">
