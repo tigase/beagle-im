@@ -136,6 +136,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
             progressIndicator.startAnimation(self);
             guard let client = XmppService.instance.getClient(for: account), client.state == .connected, let vcard4Module: VCard4Module = client.modulesManager.getModule(VCard4Module.ID) else {
                 onFailure?("Account is not connected");
+                progressIndicator.stopAnimation(self);
                 return;
             }
             vcard4Module.retrieveVCard(onSuccess: { (vcard) in

@@ -69,6 +69,8 @@ open class DBChatStore {
     static let CHAT_CLOSED = Notification.Name("CHAT_CLOSED");
     static let CHAT_UPDATED = Notification.Name("CHAT_UPDATED");
     
+    static let UNREAD_MESSAGES_COUNT_CHANGED = Notification.Name("UNREAD_NOTIFICATIONS_COUNT_CHANGED");
+    
     fileprivate static let OPEN_CHAT = "INSERT INTO chats (account, jid, timestamp, type) VALUES (:account, :jid, :timestamp, :type)";
     fileprivate static let OPEN_ROOM = "INSERT INTO chats (account, jid, timestamp, type, nickname, password) VALUES (:account, :jid, :timestamp, :type, :nickname, :password)";
     fileprivate static let CLOSE_CHAT = "DELETE FROM chats WHERE id = :id";
@@ -88,11 +90,7 @@ open class DBChatStore {
         didSet {
             let value = self.unreadMessagesCount;
             DispatchQueue.main.async {
-                if value > 0 {
-                    NSApplication.shared.dockTile.badgeLabel = "\(value)";
-                } else {
-                    NSApplication.shared.dockTile.badgeLabel = nil;
-                }
+                NotificationCenter.default.post(name: DBChatStore.UNREAD_MESSAGES_COUNT_CHANGED, object: value);
             }
         }
     }

@@ -39,6 +39,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         return f;
     })();
     
+    fileprivate var statusItem: NSStatusItem?;
     fileprivate(set) var mainWindowController: NSWindowController?;
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
@@ -62,6 +63,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 //        window.titlebarAppearsTransparent = true;
 //        window.titleVisibility = .hidden;
         
+        NotificationCenter.default.addObserver(self, selector: #selector(settingsChanged), name: Settings.CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(updateStatusItem(_:)), name: XmppService.STATUS_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(unreadMessagesCountChanged), name: DBChatStore.UNREAD_MESSAGES_COUNT_CHANGED, object: nil);
+        
         self.mainWindowController = NSApplication.shared.windows[0].windowController;
         
         if #available(OSX 10.14, *) {
@@ -79,6 +84,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 //        rosterWindowController.showWindow(self);
         _ = XmppService.instance;
         
+        if Settings.systemMenuIcon.bool() {
+            self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength);
+            self.updateStatusItem();
+        }
+        
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receivedSleepNotification), name: NSWorkspace.willSleepNotification, object: nil);
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receivedWakeNotification), name: NSWorkspace.didWakeNotification, object: nil);
         
@@ -91,6 +101,62 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         XmppService.instance.disconnectClients();
     }
 
+    @objc func updateStatusItem(_ notification: Notification) {
+        updateStatusItem();
+    }
+    
+    func updateStatusItem() {
+        if let statusItem = self.statusItem {
+            let connected = XmppService.instance.currentStatus.show != nil;
+            let hasUnread = DBChatStore.instance.unreadMessagesCount > 0;
+            let statusItemImage = NSImage(named: hasUnread ? NSImage.applicationIconName : (connected ? "MenuBarOnline" : "MenuBarOffline"));
+            statusItemImage?.resizingMode = .tile;
+            let size = min(statusItem.button!.frame.height, statusItem.button!.frame.height);
+            statusItemImage?.size = NSSize(width: size, height: size);
+            statusItem.button?.image = statusItemImage;
+            statusItem.action = #selector(makeMainWindowKey);
+        }
+    }
+    
+    @objc func makeMainWindowKey() {
+        self.mainWindowController?.showWindow(self);
+    }
+    
+    @objc func unreadMessagesCountChanged(_ notification: Notification) {
+        guard let value = notification.object as? Int else {
+            return;
+        }
+        if value > 0 {
+            NSApplication.shared.dockTile.badgeLabel = "\(value)";
+        } else {
+            NSApplication.shared.dockTile.badgeLabel = nil;
+        }
+        updateStatusItem();
+    }
+    
+    @objc func settingsChanged(_ notification: Notification) {
+        guard let setting = notification.object as? Settings else {
+            return;
+        }
+        
+        switch setting {
+        case .systemMenuIcon:
+            if (setting.bool()) {
+                if (self.statusItem == nil) {
+                    self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength);
+                }
+                updateStatusItem();
+            } else {
+                if let item = self.statusItem {
+                    self.statusItem = nil;
+                    NSStatusBar.system.removeStatusItem(item);
+                }
+            }
+        default:
+            break;
+        }
+    }
+    
     func userNotificationCenter(_ center: NSUserNotificationCenter, didDeliver notification: NSUserNotification) {
         
     }
