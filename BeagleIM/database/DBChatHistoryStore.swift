@@ -35,7 +35,13 @@ class DBChatHistoryStore {
         dispatcher = QueueDispatcher(label: "chat_history_store");
     }
     
-    open func appendItem(for account: BareJID, with jid: BareJID, state: MessageState, authorNickname: String? = nil, authorJid: BareJID? = nil, type: ItemType = .message, timestamp: Date, stanzaId: String?, data: String, errorCondition: ErrorCondition? = nil, errorMessage: String? = nil, completionHandler: ((Int) -> Void)?) {
+    open func process(chatState: ChatState, for account: BareJID, with jid: BareJID) {
+        dispatcher.async {
+            DBChatStore.instance.process(chatState: chatState, for: account, with: jid);
+        }
+    }
+    
+    open func appendItem(for account: BareJID, with jid: BareJID, state: MessageState, authorNickname: String? = nil, authorJid: BareJID? = nil, type: ItemType = .message, timestamp: Date, stanzaId: String?, data: String, chatState: ChatState? = nil, errorCondition: ErrorCondition? = nil, errorMessage: String? = nil, completionHandler: ((Int) -> Void)?) {
         dispatcher.async {
             guard !state.isError || stanzaId == nil || !self.processOutgoingError(for: account, with: jid, stanzaId: stanzaId!, errorCondition: errorCondition, errorMessage: errorMessage) else {
                 return;
@@ -53,8 +59,7 @@ class DBChatHistoryStore {
             
             let item = ChatMessage(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, message: data, authorNickname: authorNickname, authorJid: authorJid);
             NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: item);
-            
-            DBChatStore.instance.newMessage(for: account, with: jid, timestamp: timestamp, message: data, state: state);
+            DBChatStore.instance.newMessage(for: account, with: jid, timestamp: timestamp, message: data, state: state, remoteChatState: state.direction == .incoming ? chatState : nil);
         }
     }
     

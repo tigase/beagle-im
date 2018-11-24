@@ -196,12 +196,24 @@ open class DBChatStore {
         }
     }
     
-    func newMessage(for account: BareJID, with jid: BareJID, timestamp: Date, message: String?, state: MessageState) {
+    func process(chatState remoteChatState: ChatState, for account: BareJID, with jid: BareJID) {
+        dispatcher.async {
+            if let chat = self.getChat(for: account, with: jid) {
+                (chat as? DBChat)?.remoteChatState = remoteChatState;
+                NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: chat);
+            }
+        }
+    }
+    
+    func newMessage(for account: BareJID, with jid: BareJID, timestamp: Date, message: String?, state: MessageState, remoteChatState: ChatState? = nil) {
         dispatcher.async {
             if let chat = self.getChat(for: account, with: jid) {
                 if chat.updateLastMessage(message, timestamp: timestamp, isUnread: state.isUnread) {
                     if state.isUnread {
                         self.unreadMessagesCount = self.unreadMessagesCount + 1;
+                    }
+                    if remoteChatState != nil {
+                        (chat as? DBChat)?.remoteChatState = remoteChatState;
                     }
                     NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: chat);
                 }
@@ -217,6 +229,15 @@ open class DBChatStore {
                     self.unreadMessagesCount = self.unreadMessagesCount - unread;
                     NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: chat);
                 }
+            }
+        }
+    }
+    
+    func resetChatStates(for account: BareJID) {
+        dispatcher.async {
+            self.getChats(for: account)?.items.forEach { chat in
+                (chat as? DBChat)?.remoteChatState = nil;
+                (chat as? DBChat)?.localChatState = .active;
             }
         }
     }
@@ -376,6 +397,9 @@ open class DBChatStore {
         var lastMessage: String? = nil;
         var unread: Int;
         
+        fileprivate var localChatState: ChatState = .active;
+        var remoteChatState: ChatState? = nil;
+        
         override var jid: JID {
             get {
                 return super.jid;
@@ -401,10 +425,10 @@ open class DBChatStore {
             guard self.lastMessage == nil || self.timestamp.compare(timestamp) == .orderedAscending else {
                 return isUnread;
             }
-            
-            self.lastMessage = message;
-            self.timestamp = timestamp;
-            
+            if message != nil {
+                self.lastMessage = message;
+                self.timestamp = timestamp;
+            }
             return true;
         }
         
@@ -416,9 +440,26 @@ open class DBChatStore {
             return true
         }
         
+        func changeChatState(state: ChatState) -> Message? {
+            guard localChatState != state else {
+                return nil;
+            }
+            self.localChatState = state;
+            if (remoteChatState != nil) {
+                let msg = Message();
+                msg.to = jid;
+                msg.type = StanzaType.chat;
+                msg.chatState = state;
+                return msg;
+            }
+            return nil;
+        }
+        
         override func createMessage(_ body: String, type: StanzaType, subject: String?, additionalElements: [Element]?) -> Message {
             let stanza = super.createMessage(body, type: type, subject: subject, additionalElements: additionalElements);
             stanza.id = UUID().uuidString;
+            self.localChatState = .active;
+            stanza.chatState = ChatState.active;
             return stanza;
         }
     }

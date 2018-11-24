@@ -39,6 +39,8 @@ class ChatCellView: NSTableCellView {
     
     var closeFunction: (()->Void)?;
     
+    fileprivate var chatState: ChatState = .active;
+    
     @IBAction func closeClicked(_ sender: ChatsCellViewCloseButton) {
         closeFunction?();
     }
@@ -52,18 +54,33 @@ class ChatCellView: NSTableCellView {
     }
     
     func set(lastMessage: String?, ts: Date?) {
-        if lastMessage == nil {
-            self.lastMessage?.stringValue = "";
-        } else {
-            let msg = NSMutableAttributedString(string: lastMessage!);
-            if Settings.enableMarkdownFormatting.bool() {
-                Markdown.applyStyling(attributedString: msg);
+        if chatState != .composing {
+            if lastMessage == nil {
+                self.lastMessage?.stringValue = "";
+            } else {
+                let msg = NSMutableAttributedString(string: lastMessage!);
+                if Settings.enableMarkdownFormatting.bool() {
+                    Markdown.applyStyling(attributedString: msg);
+                }
+                self.lastMessage?.attributedStringValue = msg;
             }
-            self.lastMessage?.attributedStringValue = msg;
+            self.lastMessage?.maximumNumberOfLines = 3;
+        } else {
+            self.lastMessage?.stringValue = "";
         }
-        self.lastMessage?.maximumNumberOfLines = 3;
         //self.lastMessage?.preferredMaxLayoutWidth = self.lastMessage!.frame.width;
         self.lastMessageTs?.stringValue = ts != nil ? formatTimestamp(ts!) : "";
+    }
+    
+    func set(chatState: ChatState) {
+        self.chatState = chatState;
+        if chatState == .composing {
+            self.lastMessage?.stringValue = "";
+            self.lastMessage?.startAnimating();
+        } else {
+            self.lastMessage?.stringValue = "";
+            self.lastMessage?.stopAnimating();
+        }
     }
     
     func set(unread: Int) {
@@ -95,6 +112,9 @@ class ChatCellView: NSTableCellView {
     func update(from item: ChatItemProtocol) {
         self.set(name: item.name);
         self.set(unread: item.unread);
+        if let chat = item.chat as? DBChatStore.DBChat {
+            self.set(chatState: chat.remoteChatState ?? .active);
+        }
         self.set(lastMessage: item.lastMessageText, ts: item.lastMessageTs);
 //        self.set(avatar: AvatarManager.instance.avatar(for: item.chat.jid.bareJid, on: item.chat.account));
         if item.chat is Chat {

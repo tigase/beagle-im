@@ -57,12 +57,20 @@ class MessageEventHandler: XmppServiceEventHandler {
     func handle(event: Event) {
         switch event {
         case let e as MessageModule.MessageReceivedEvent:
-            guard let from = e.message.from, let account = e.sessionObject.userBareJid, let body = MessageEventHandler.prepareBody(message: e.message) else {
+            guard let from = e.message.from, let account = e.sessionObject.userBareJid else {
                 return;
             }
+            
+            guard let body = MessageEventHandler.prepareBody(message: e.message) else {
+                if (e.message.type ?? .normal) != .error, let chatState = e.message.chatState {
+                    DBChatHistoryStore.instance.process(chatState: chatState, for: account, with: from.bareJid);
+                }
+                return;
+            }
+            
             let timestamp = e.message.delay?.stamp ?? Date();
             let state: MessageState = ((e.message.type ?? .chat) == .error) ? .incoming_error_unread : .incoming_unread;
-            DBChatHistoryStore.instance.appendItem(for: account, with: from.bareJid, state: state, type: .message, timestamp: timestamp, stanzaId: e.message.id, data: body, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, completionHandler: nil);
+            DBChatHistoryStore.instance.appendItem(for: account, with: from.bareJid, state: state, type: .message, timestamp: timestamp, stanzaId: e.message.id, data: body, chatState: e.message.chatState, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, completionHandler: nil);
         case let e as MessageDeliveryReceiptsModule.ReceiptEvent:
             guard let from = e.message.from?.bareJid, let account = e.sessionObject.userBareJid else {
                 return;

@@ -16,6 +16,9 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     @IBOutlet var buddyJidLabel: NSTextFieldCell!
     @IBOutlet var buddyStatusLabel: NSTextFieldCell!;
     
+    fileprivate var lastTextChange: Date = Date();
+    fileprivate var lastTextChangeTimer: Foundation.Timer?;
+    
     override var chat: DBChatProtocol! {
         didSet {
             if let sessionObject = XmppService.instance.getClient(for: account)?.sessionObject {
@@ -47,6 +50,34 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         buddyStatusLabel.title = presenceModule?.presenceStore.getBestPresence(for: jid)?.status ?? "";
         
         super.viewWillAppear();
+        lastTextChangeTimer = Foundation.Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true, block: { (timer) in
+            if self.lastTextChange.timeIntervalSinceNow < -10.0 {
+                self.change(chatState: .active);
+            }
+        });
+    }
+    
+    override func viewWillDisappear() {
+        super.viewWillDisappear();
+        lastTextChangeTimer?.invalidate();
+        lastTextChangeTimer = nil;
+        change(chatState: .active);
+    }
+    
+    fileprivate func change(chatState: ChatState) {
+        guard let message = (self.chat as? DBChatStore.DBChat)?.changeChatState(state: chatState) else {
+            return;
+        }
+        guard let messageModule: MessageModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageModule.ID) else {
+            return;
+        }
+        messageModule.context.writer?.write(message);
+    }
+    
+    override func textDidChange(_ notification: Notification) {
+        super.textDidChange(notification);
+        lastTextChange = Date();
+        self.change(chatState: .composing);
     }
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {

@@ -231,6 +231,7 @@ class XmppService: EventHandler {
             guard self.status.show != nil || !self.isNetworkAvailable else {
                 return;
             }
+            DBChatStore.instance.resetChatStates(for: accountName);
             if let client = self.getClient(for: accountName) {
                 let retry = client.retryNo;
                 client.retryNo = retry + 1;
