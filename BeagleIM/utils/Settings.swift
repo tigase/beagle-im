@@ -25,6 +25,7 @@ enum Settings: String {
     case enableMarkdownFormatting
     case notificationsFromUnknownSenders
     case systemMenuIcon
+    case spellchecking
     
     public static let CHANGED = Notification.Name("settingChanged");
     
@@ -40,7 +41,8 @@ enum Settings: String {
             "markMessageCarbonsAsRead": true,
             "enableMarkdownFormatting": true,
             "notificationsFromUnknownSenders": false,
-            "systemMenuIcon": false
+            "systemMenuIcon": false,
+            "spellchecking": true
         ];
         UserDefaults.standard.register(defaults: defaults);
     }

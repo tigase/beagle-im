@@ -25,6 +25,7 @@ class GeneralSettingsController: NSViewController {
     fileprivate var systemMenuIcon: NSButton!;
     
     fileprivate var markdownFormatting: NSButton!;
+    fileprivate var spellchecking: NSButton!;
     
     override func viewDidLoad() {
         autoconnect = formView.addRow(label: "Account status:", field: NSButton(checkboxWithTitle: "Connect after start", target: self, action: #selector(checkboxChanged)))
@@ -42,6 +43,8 @@ class GeneralSettingsController: NSViewController {
         
         markdownFormatting = formView.addRow(label: "Message formatting", field: NSButton(checkboxWithTitle: "Markdown", target: self, action: #selector(checkboxChanged(_:))));
         
+        spellchecking = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Spellchecking", target: self, action: #selector(checkboxChanged(_:))));
+        
         self.preferredContentSize = NSSize(width: self.view.frame.size.width, height: self.view.frame.size.height);
     }
     
@@ -56,6 +59,8 @@ class GeneralSettingsController: NSViewController {
         messageCarbonsMarkAsReadButton.isEnabled = Settings.enableMessageCarbons.bool();
         notificationsFromUnknownSenders.state = Settings.notificationsFromUnknownSenders.bool() ? .on : .off;
         markdownFormatting.state = Settings.enableMarkdownFormatting.bool() ? .on : .off;
+        systemMenuIcon.state = Settings.systemMenuIcon.bool() ? .on : .off;
+        spellchecking.state = Settings.spellchecking.bool() ? .on : .off;
     }
     
     @objc func checkboxChanged(_ sender: NSButton) {
@@ -86,6 +91,8 @@ class GeneralSettingsController: NSViewController {
             Settings.systemMenuIcon.set(value: sender.state == .on);
         case markdownFormatting:
             Settings.enableMarkdownFormatting.set(value: sender.state == .on);
+        case spellchecking:
+            Settings.spellchecking.set(value: sender.state == .on);
         default:
             break;
         }

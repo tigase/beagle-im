@@ -38,6 +38,8 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         self.dataSource.delegate = self;
         self.tableView.dataSource = self;
         self.messageField.delegate = self;
+        self.messageField.isContinuousSpellCheckingEnabled = Settings.spellchecking.bool();
+        self.messageField.isGrammarCheckingEnabled = Settings.spellchecking.bool();
         NotificationCenter.default.addObserver(self, selector: #selector(didBecomeKeyWindow), name: NSWindow.didBecomeKeyNotification, object: nil);
     }
     
