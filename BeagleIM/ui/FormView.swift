@@ -24,7 +24,7 @@ class FormView: NSStackView {
         let label = createLabel(text: text);
         let row = RowView(views: [label, field]);
         self.addView(row, in: .bottom);
-        label.widthAnchor.constraint(equalTo: row.widthAnchor, multiplier: 0.3).isActive = true;
+        label.widthAnchor.constraint(equalTo: row.widthAnchor, multiplier: 0.32).isActive = true;
         label.widthAnchor.constraint(lessThanOrEqualToConstant: 250).isActive = true;
         row.widthAnchor.constraint(equalTo: self.widthAnchor, multiplier: 1.0).isActive = true;
         field.trailingAnchor.constraint(equalTo: row.trailingAnchor).isActive = true;
