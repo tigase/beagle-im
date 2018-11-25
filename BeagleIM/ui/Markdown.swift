@@ -84,6 +84,7 @@ class Markdown {
                         let clearRange = NSRange(message.index(after: codeStart!).encodedOffset...message.index(before: idx).encodedOffset);
                         msg.removeAttribute(.foregroundColor, range: clearRange);
                         msg.removeAttribute(.underlineStyle, range: clearRange);
+                        msg.addAttribute(.foregroundColor, value: NSColor.textColor, range: clearRange);
                     }
                     codeStart = nil;
                 }

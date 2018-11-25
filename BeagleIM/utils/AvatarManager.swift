@@ -15,7 +15,9 @@ class AvatarManager {
     public static let instance = AvatarManager();
     
     public let store = AvatarStore();
-    public let defaultAvatar = NSImage(named: NSImage.userName)!;
+    public var defaultAvatar: NSImage {
+        return NSImage(named: NSImage.userName)!;
+    }
 
     fileprivate var dispatcher = QueueDispatcher(label: "avatar_manager", attributes: .concurrent);
     fileprivate var cache: [BareJID: AccountAvatars] = [:];

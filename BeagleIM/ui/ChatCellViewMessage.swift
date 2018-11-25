@@ -60,8 +60,8 @@ class ChatCellViewMessage: NSTextField {
         
         if blured && !isHighlighted {
             
-            let startingColor = isHighlighted ? NSColor(calibratedWhite: 0.82, alpha: 0.15) : NSColor.selectedKnobColor.withAlphaComponent(0.0);
-            let endingColor = isHighlighted ? NSColor(calibratedWhite: 0.82, alpha: 0.15) : NSColor.selectedKnobColor.withAlphaComponent(1.0);
+            let startingColor = isHighlighted ? NSColor(calibratedWhite: 0.82, alpha: 0.15) : NSColor(named: "sidebarBackgroundColor")!.withAlphaComponent(0.0);
+            let endingColor = isHighlighted ? NSColor(calibratedWhite: 0.82, alpha: 0.15) : NSColor(named: "sidebarBackgroundColor")!.withAlphaComponent(1.0);
             let gradient = NSGradient(starting: startingColor, ending: endingColor);
         
             let rect = NSRect(x: dirtyRect.origin.x + dirtyRect.width/2, y: dirtyRect.origin.y, width: dirtyRect.width/2, height: dirtyRect.height);

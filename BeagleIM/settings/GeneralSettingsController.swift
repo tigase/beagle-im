@@ -12,6 +12,7 @@ class GeneralSettingsController: NSViewController {
     
     @IBOutlet var formView: FormView!;
     
+    fileprivate var appearance: NSPopUpButton?;
     fileprivate var autoconnect: NSButton!;
     fileprivate var automaticStatus: NSButton!;
     fileprivate var rememberLastStatusButton: NSButton!;
@@ -28,6 +29,11 @@ class GeneralSettingsController: NSViewController {
     fileprivate var spellchecking: NSButton!;
     
     override func viewDidLoad() {
+        if #available(macOS 10.14, *) {
+            appearance = formView.addRow(label: "Appearance:", field: NSPopUpButton(frame: .zero, pullsDown: false));
+            appearance?.target = self;
+            appearance?.action = #selector(checkboxChanged(_:));
+        }
         autoconnect = formView.addRow(label: "Account status:", field: NSButton(checkboxWithTitle: "Connect after start", target: self, action: #selector(checkboxChanged)))
         automaticStatus = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Automatic status", target: self, action: #selector(checkboxChanged)));
         rememberLastStatusButton = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Remember last status", target: self, action: #selector(checkboxChanged)));
@@ -38,10 +44,10 @@ class GeneralSettingsController: NSViewController {
         enableMessageCarbonsButton = formView.addRow(label: "Message carbons:", field: NSButton(checkboxWithTitle: "Enable", target: self, action: #selector(checkboxChanged(_:))));
         messageCarbonsMarkAsReadButton = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Mark carbon messages as read", target: self, action: #selector(checkboxChanged(_:))));
         
-        notificationsFromUnknownSenders = formView.addRow(label: "Notifications", field: NSButton(checkboxWithTitle: "Show for messages from unknown senders", target: self, action: #selector(checkboxChanged(_:))));
+        notificationsFromUnknownSenders = formView.addRow(label: "Notifications:", field: NSButton(checkboxWithTitle: "Show for messages from unknown senders", target: self, action: #selector(checkboxChanged(_:))));
         systemMenuIcon = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show system menu icon", target: self, action: #selector(checkboxChanged(_:))));
         
-        markdownFormatting = formView.addRow(label: "Message formatting", field: NSButton(checkboxWithTitle: "Markdown", target: self, action: #selector(checkboxChanged(_:))));
+        markdownFormatting = formView.addRow(label: "Message formatting:", field: NSButton(checkboxWithTitle: "Markdown", target: self, action: #selector(checkboxChanged(_:))));
         
         spellchecking = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Spellchecking", target: self, action: #selector(checkboxChanged(_:))));
         
@@ -49,6 +55,19 @@ class GeneralSettingsController: NSViewController {
     }
     
     override func viewWillAppear() {
+        if #available(macOS 10.14, *) {
+            appearance?.removeAllItems();
+            appearance?.addItems(withTitles: ["Automatic", "Light", "Dark"]);
+            switch Appearance(rawValue: Settings.appearance.string() ?? "auto")! {
+            case .auto:
+                appearance?.selectItem(at: 0);
+            case .light:
+                appearance?.selectItem(at: 1);
+            case .dark:
+                appearance?.selectItem(at: 2);
+            }
+        }
+
         autoconnect.state = Settings.automaticallyConnectAfterStart.bool() ? .on : .off;
         automaticStatus.state = Settings.enableAutomaticStatus.bool() ? .on : .off;
         rememberLastStatusButton.state = Settings.rememberLastStatus.bool() ? .on : .off;
@@ -94,6 +113,13 @@ class GeneralSettingsController: NSViewController {
         case spellchecking:
             Settings.spellchecking.set(value: sender.state == .on);
         default:
+            if #available(macOS 10.14, *) {
+                if let appearance = self.appearance, appearance == sender {
+                    let idx = appearance.indexOfSelectedItem;
+                    let app: Appearance = idx == 1 ? .light : (idx == 2 ? .dark : .auto);
+                    Settings.appearance.set(value: app.rawValue);
+                }
+            }
             break;
         }
     }

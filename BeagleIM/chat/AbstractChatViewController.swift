@@ -33,8 +33,6 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     
     override func viewDidLoad() {
         super.viewDidLoad();
-        self.view.wantsLayer = true;
-        self.view.layer?.backgroundColor = NSColor.white.cgColor;
         self.dataSource.delegate = self;
         self.tableView.dataSource = self;
         self.messageField.delegate = self;

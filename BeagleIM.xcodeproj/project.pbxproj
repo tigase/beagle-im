@@ -66,6 +66,7 @@
 		FEC5DC8221552D8300AA3E4F /* ChatViewItemProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC5DC8121552D8300AA3E4F /* ChatViewItemProtocol.swift */; };
 		FEC5DC8421553A7500AA3E4F /* AbstractChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC5DC8321553A7500AA3E4F /* AbstractChatViewController.swift */; };
 		FEC5DC8621553F4700AA3E4F /* GroupchatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC5DC8521553F4700AA3E4F /* GroupchatViewController.swift */; };
+		FEC661F821AABFB0004FDE1E /* NSViewWithTextBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC661F721AABFB0004FDE1E /* NSViewWithTextBackground.swift */; };
 		FED2ECF42066B01C00F506A5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED2ECF32066B01C00F506A5 /* AppDelegate.swift */; };
 		FED2ECF82066B01C00F506A5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FED2ECF72066B01C00F506A5 /* Assets.xcassets */; };
 		FED2ECFB2066B01C00F506A5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FED2ECF92066B01C00F506A5 /* Main.storyboard */; };
@@ -178,6 +179,7 @@
 		FEC5DC8121552D8300AA3E4F /* ChatViewItemProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewItemProtocol.swift; sourceTree = "<group>"; };
 		FEC5DC8321553A7500AA3E4F /* AbstractChatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractChatViewController.swift; sourceTree = "<group>"; };
 		FEC5DC8521553F4700AA3E4F /* GroupchatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupchatViewController.swift; sourceTree = "<group>"; };
+		FEC661F721AABFB0004FDE1E /* NSViewWithTextBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSViewWithTextBackground.swift; sourceTree = "<group>"; };
 		FED2ECF02066B01C00F506A5 /* BeagleIM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BeagleIM.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FED2ECF32066B01C00F506A5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FED2ECF72066B01C00F506A5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -274,6 +276,7 @@
 				FEB4EAFD2163714300F8A9E2 /* RoundedScrollView.swift */,
 				FE2809842169FB74002F5BD0 /* Alert.swift */,
 				FEF844732173B9DC0067B005 /* Markdown.swift */,
+				FEC661F721AABFB0004FDE1E /* NSViewWithTextBackground.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -631,6 +634,7 @@
 				FE41FB3B215CD7F300AD86D3 /* XmppServiceEventHandler.swift in Sources */,
 				FE30D8B1214CE93600670BEC /* FormView.swift in Sources */,
 				FE30D8B3214CF15700670BEC /* AddContactController.swift in Sources */,
+				FEC661F821AABFB0004FDE1E /* NSViewWithTextBackground.swift in Sources */,
 				FE3AA0CF215406D1001667A9 /* ChatsListGroupChat.swift in Sources */,
 				FE6E6BF921384D5F003B1696 /* AvatarView.swift in Sources */,
 				FE6E6C0821384DF1003B1696 /* ChatCellView.swift in Sources */,

@@ -22,8 +22,12 @@ class RoundedScrollView: NSScrollView {
         let context = NSGraphicsContext.current!;
         context.saveGraphicsState();
         
-        NSColor.lightGray.setStroke();
-        NSColor.textBackgroundColor.setFill();
+        if NSApp.isDarkMode {
+            NSColor.darkGray.setStroke();
+        } else {
+            NSColor.lightGray.setStroke();
+        }
+        NSColor(named: "chatBackgroundColor")!.setFill();
         let rect = NSRect(x: dirtyRect.origin.x + 1, y: dirtyRect.origin.y + 1, width: dirtyRect.width - 2, height: dirtyRect.height - 2);
         let ellipse = NSBezierPath.init(roundedRect: rect, xRadius: cornerRadius, yRadius: cornerRadius);
         ellipse.lineWidth = 1;

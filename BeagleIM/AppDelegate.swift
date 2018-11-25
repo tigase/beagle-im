@@ -20,6 +20,16 @@ extension DBConnection {
     
 }
 
+extension NSApplication {
+    var isDarkMode: Bool {
+        if #available(macOS 10.14, *) {
+            return NSAppearance.current.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua;
+        } else {
+            return false;
+        }
+    }
+}
+
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDelegate, UNUserNotificationCenterDelegate {
 
@@ -43,10 +53,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     fileprivate(set) var mainWindowController: NSWindowController?;
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        if #available(OSX 10.14, *) {
-            NSApp.appearance = NSAppearance(named: .aqua)
-        };
         Settings.initialize();
+        
+        if #available(macOS 10.14, *) {
+            updateAppearance();
+        }
+        
         NotificationCenter.default.addObserver(self, selector: #selector(authenticationFailure), name: XmppService.AUTHENTICATION_ERROR, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(serverCertificateError(_:)), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
@@ -101,6 +113,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         XmppService.instance.disconnectClients();
     }
 
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        mainWindowController?.showWindow(self);
+        return false;
+    }
+    
     @objc func updateStatusItem(_ notification: Notification) {
         updateStatusItem();
     }
@@ -152,8 +169,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     NSStatusBar.system.removeStatusItem(item);
                 }
             }
+        case .appearance:
+            if #available(macOS 10.14, *) {
+                updateAppearance();
+            }
         default:
             break;
+        }
+    }
+    
+    @available(OSX 10.14, *)
+    fileprivate func updateAppearance() {
+        let appearance: Appearance = Appearance(rawValue: Settings.appearance.string() ?? "") ??  .auto;
+        switch appearance {
+        case .dark:
+            NSApp.appearance = NSAppearance(named: .darkAqua);
+        case .light:
+            NSApp.appearance = NSAppearance(named: .aqua);
+        default:
+            NSApp.appearance = nil;
         }
     }
     

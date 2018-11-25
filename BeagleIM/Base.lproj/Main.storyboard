@@ -3,6 +3,7 @@
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14460.31"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -1313,7 +1314,7 @@ Gw
         <scene sceneID="wom-Ld-4GJ">
             <objects>
                 <viewController id="Mca-Bg-gzo" customClass="ChatsListViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" id="RTr-dw-Qh8">
+                    <view key="view" id="RTr-dw-Qh8" customClass="NSViewWithTextBackground" customModule="BeagleIM" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="306" height="600"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
@@ -1327,7 +1328,7 @@ Gw
                                             <rect key="frame" x="0.0" y="0.0" width="300" height="600"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <size key="intercellSpacing" width="2" height="0.0"/>
-                                            <color key="backgroundColor" name="selectedKnobColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="sidebarBackgroundColor"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                             <tableColumns>
                                                 <tableColumn identifier="ITEM1" editable="NO" width="298" minWidth="40" maxWidth="1000" id="DEA-O0-PQ6">
@@ -1352,6 +1353,7 @@ Gw
                                                                     <rect key="frame" x="6" y="2" width="267" height="17"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="KoE-gC-vJV">
                                                                         <font key="font" metaFont="system"/>
+                                                                        <color key="textColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
                                                                 </textField>
@@ -1368,6 +1370,7 @@ Gw
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                         <font key="font" metaFont="cellTitle"/>
                                                                     </buttonCell>
+                                                                    <color key="contentTintColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                     <connections>
                                                                         <action selector="openNewChatClicked:" target="Mca-Bg-gzo" id="z5V-tg-1VH"/>
                                                                     </connections>
@@ -1401,6 +1404,7 @@ Gw
                                                                     <rect key="frame" x="52" y="25" width="146" height="17"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="30Y-0J-enL">
                                                                         <font key="font" metaFont="systemMedium" size="13"/>
+                                                                        <color key="textColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
                                                                 </textField>
@@ -1408,7 +1412,7 @@ Gw
                                                                     <rect key="frame" x="218" y="25" width="74" height="17"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Timestamp" id="uIX-uL-LSO">
                                                                         <font key="font" metaFont="systemMedium" size="13"/>
-                                                                        <color key="textColor" name="controlHighlightColor" catalog="System" colorSpace="catalog"/>
+                                                                        <color key="textColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
                                                                 </textField>
@@ -1416,7 +1420,7 @@ Gw
                                                                     <rect key="frame" x="52" y="5" width="240" height="19"/>
                                                                     <textFieldCell key="cell" truncatesLastVisibleLine="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" title="Label" id="9cl-cN-VXM">
                                                                         <font key="font" metaFont="system"/>
-                                                                        <color key="textColor" name="controlHighlightColor" catalog="System" colorSpace="catalog"/>
+                                                                        <color key="textColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                         <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
                                                                 </textField>
@@ -1497,6 +1501,11 @@ Gw
                             <constraint firstItem="LSz-a8-0g1" firstAttribute="top" secondItem="RTr-dw-Qh8" secondAttribute="top" constant="22" id="e92-b5-5U4"/>
                             <constraint firstAttribute="trailing" secondItem="LSz-a8-0g1" secondAttribute="trailing" id="eRx-FU-h13"/>
                         </constraints>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="color" keyPath="backgroundColor">
+                                <color key="value" name="sidebarBackgroundColor"/>
+                            </userDefinedRuntimeAttribute>
+                        </userDefinedRuntimeAttributes>
                     </view>
                     <connections>
                         <outlet property="outlineView" destination="RNd-7b-gdr" id="t9M-0v-ddp"/>
@@ -1524,7 +1533,7 @@ Gw
             <objects>
                 <customObject id="cos-hr-f7j" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <viewController identifier="ChatViewController" storyboardIdentifier="ChatViewController" id="bJ4-ee-HmU" customClass="ChatViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" id="XWz-tH-btE">
+                    <view key="view" id="XWz-tH-btE" customClass="NSViewWithTextBackground" customModule="BeagleIM" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="313" height="364"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
@@ -1545,7 +1554,7 @@ Gw
                                             <rect key="frame" x="159" y="37" width="93" height="14"/>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="kobit@tigase.org" id="gde-5T-n8j">
                                                 <font key="font" metaFont="smallSystem"/>
-                                                <color key="textColor" name="systemGrayColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
                                         </textField>
@@ -1566,7 +1575,7 @@ AAAAAAEGA
                                             </animations>
                                             <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="justified" title="Label" id="BoY-8I-sGR">
                                                 <font key="font" metaFont="smallSystem"/>
-                                                <color key="textColor" white="0.29344345463646782" alpha="1" colorSpace="calibratedWhite"/>
+                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
                                         </textField>
@@ -1599,10 +1608,11 @@ AAAAAAEGA
                                         <constraint firstItem="e8A-Bq-pPZ" firstAttribute="leading" secondItem="e5M-IJ-MSL" secondAttribute="leading" constant="8" id="mLh-fI-NqO"/>
                                     </constraints>
                                 </view>
+                                <color key="fillColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                             </box>
                             <scrollView verticalHuggingPriority="249" borderType="none" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AeQ-nG-KTC">
                                 <rect key="frame" x="0.0" y="30" width="313" height="262"/>
-                                <clipView key="contentView" drawsBackground="NO" id="Qze-b0-z36">
+                                <clipView key="contentView" copiesOnScroll="NO" id="Qze-b0-z36">
                                     <rect key="frame" x="0.0" y="0.0" width="313" height="262"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
@@ -1610,7 +1620,7 @@ AAAAAAEGA
                                             <rect key="frame" x="0.0" y="0.0" width="313" height="262"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <size key="intercellSpacing" width="3" height="2"/>
-                                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="chatBackgroundColor"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                             <tableColumns>
                                                 <tableColumn editable="NO" width="310" minWidth="40" maxWidth="1000" id="HqM-Ei-35M">
@@ -1622,7 +1632,7 @@ AAAAAAEGA
                                                     <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" enabled="NO" refusesFirstResponder="YES" title="Text Cell" id="V09-w9-2Lv">
                                                         <font key="font" metaFont="system"/>
                                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                        <color key="backgroundColor" name="chatBackgroundColor"/>
                                                     </textFieldCell>
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
                                                     <prototypeCellViews>
@@ -1658,7 +1668,7 @@ AAAAAAEGA
                                                                     <rect key="frame" x="388" y="28" width="58" height="14"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="20:31:03" id="l7p-zy-GtB">
                                                                         <font key="font" metaFont="smallSystem"/>
-                                                                        <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="calibratedWhite"/>
+                                                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
                                                                 </textField>
@@ -1691,7 +1701,7 @@ AAAAAAEGA
                                             </tableColumns>
                                         </tableView>
                                     </subviews>
-                                    <nil key="backgroundColor"/>
+                                    <color key="backgroundColor" name="chatBackgroundColor"/>
                                 </clipView>
                                 <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="fzR-hw-zlO">
                                     <rect key="frame" x="1" y="245" width="311" height="16"/>
@@ -1725,7 +1735,7 @@ AAAAAAEGA
                                             <rect key="frame" x="0.0" y="0.0" width="258" height="16"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
-                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="chatBackgroundColor"/>
                                             <size key="minSize" width="258" height="14"/>
                                             <size key="maxSize" width="280" height="10000000"/>
                                             <attributedString key="textStorage">
@@ -1740,12 +1750,13 @@ AAAAAAEGA
                                             <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                         </textView>
                                     </subviews>
+                                    <color key="backgroundColor" name="chatBackgroundColor"/>
                                 </clipView>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="22" id="cVy-3f-LmV"/>
                                 </constraints>
                                 <edgeInsets key="contentInsets" left="11" right="11" top="4" bottom="4"/>
-                                <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="GoE-Qo-ht3">
+                                <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="GoE-Qo-ht3">
                                     <rect key="frame" x="253" y="4" width="16" height="14"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
@@ -1769,6 +1780,11 @@ AAAAAAEGA
                             <constraint firstItem="FiK-DK-gMw" firstAttribute="leading" secondItem="XWz-tH-btE" secondAttribute="leading" constant="4" id="y8V-Mp-vge"/>
                             <constraint firstAttribute="trailing" secondItem="FRG-k1-QUa" secondAttribute="trailing" id="zRg-xX-6hh"/>
                         </constraints>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="color" keyPath="backgroundColor">
+                                <color key="value" name="chatBackgroundColor"/>
+                            </userDefinedRuntimeAttribute>
+                        </userDefinedRuntimeAttributes>
                     </view>
                     <connections>
                         <outlet property="buddyAvatarView" destination="e8A-Bq-pPZ" id="fbx-O7-4LQ"/>
@@ -3036,7 +3052,7 @@ Gw
             <objects>
                 <customObject id="lca-E5-bXu" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <viewController identifier="GroupchatViewController" storyboardIdentifier="GroupchatViewController" id="vht-52-XAK" customClass="GroupchatViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" id="4Im-fO-8dU">
+                    <view key="view" id="4Im-fO-8dU" customClass="NSViewWithTextBackground" customModule="BeagleIM" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="400" height="365"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
@@ -3057,7 +3073,7 @@ Gw
                                             <rect key="frame" x="159" y="37" width="93" height="14"/>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="kobit@tigase.org" id="txK-sv-wuj">
                                                 <font key="font" metaFont="smallSystem"/>
-                                                <color key="textColor" name="systemGrayColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
                                         </textField>
@@ -3078,7 +3094,7 @@ AAAAAAEGA
                                             </animations>
                                             <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="justified" title="Label" id="yE1-5x-RKG">
                                                 <font key="font" metaFont="smallSystem"/>
-                                                <color key="textColor" white="0.29344345459999999" alpha="1" colorSpace="calibratedWhite"/>
+                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
                                         </textField>
@@ -3173,7 +3189,7 @@ AAAAAAEGA
                             </box>
                             <scrollView verticalHuggingPriority="249" borderType="none" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xEj-nj-qPf">
                                 <rect key="frame" x="0.0" y="30" width="199" height="263"/>
-                                <clipView key="contentView" drawsBackground="NO" id="ZEQ-Qr-EIY">
+                                <clipView key="contentView" id="ZEQ-Qr-EIY">
                                     <rect key="frame" x="0.0" y="0.0" width="199" height="263"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
@@ -3181,7 +3197,7 @@ AAAAAAEGA
                                             <rect key="frame" x="0.0" y="0.0" width="199" height="263"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <size key="intercellSpacing" width="3" height="2"/>
-                                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="chatBackgroundColor"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                             <tableColumns>
                                                 <tableColumn width="196" minWidth="40" maxWidth="1000" id="cHm-zQ-BsZ">
@@ -3229,7 +3245,7 @@ AAAAAAEGA
                                                                     <rect key="frame" x="388" y="28" width="58" height="14"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="20:31:03" id="h7Y-Uw-IWw">
                                                                         <font key="font" metaFont="smallSystem"/>
-                                                                        <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="calibratedWhite"/>
+                                                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
                                                                 </textField>
@@ -3262,7 +3278,7 @@ AAAAAAEGA
                                             </tableColumns>
                                         </tableView>
                                     </subviews>
-                                    <nil key="backgroundColor"/>
+                                    <color key="backgroundColor" name="chatBackgroundColor"/>
                                 </clipView>
                                 <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="bYi-Hx-diG">
                                     <rect key="frame" x="0.0" y="246" width="199" height="16"/>
@@ -3283,7 +3299,7 @@ AAAAAAEGA
                                             <rect key="frame" x="0.0" y="0.0" width="345" height="16"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
-                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="chatBackgroundColor"/>
                                             <size key="minSize" width="345" height="14"/>
                                             <size key="maxSize" width="370" height="10000000"/>
                                             <attributedString key="textStorage">
@@ -3298,6 +3314,7 @@ AAAAAAEGA
                                             <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                         </textView>
                                     </subviews>
+                                    <color key="backgroundColor" name="chatBackgroundColor"/>
                                 </clipView>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="22" id="PDn-K3-Q21"/>
@@ -3313,7 +3330,7 @@ AAAAAAEGA
                             </box>
                             <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="40" horizontalPageScroll="10" verticalLineScroll="40" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qPg-RH-BHf">
                                 <rect key="frame" x="200" y="30" width="200" height="263"/>
-                                <clipView key="contentView" drawsBackground="NO" id="KfR-1C-rOz">
+                                <clipView key="contentView" id="KfR-1C-rOz">
                                     <rect key="frame" x="0.0" y="0.0" width="200" height="263"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
@@ -3321,7 +3338,7 @@ AAAAAAEGA
                                             <rect key="frame" x="0.0" y="0.0" width="200" height="263"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <size key="intercellSpacing" width="2" height="2"/>
-                                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="chatBackgroundColor"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                             <tableColumns>
                                                 <tableColumn width="198" minWidth="40" maxWidth="1000" id="0qr-P7-0PU">
@@ -3376,7 +3393,7 @@ AAAAAAEGA
                                             </tableColumns>
                                         </tableView>
                                     </subviews>
-                                    <nil key="backgroundColor"/>
+                                    <color key="backgroundColor" name="chatBackgroundColor"/>
                                 </clipView>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="200" id="t1y-Xs-ouH"/>
@@ -3428,6 +3445,11 @@ AAAAAAEGA
                             <constraint firstItem="FRz-b3-39X" firstAttribute="bottom" secondItem="xEj-nj-qPf" secondAttribute="bottom" id="wNt-zS-aPh"/>
                             <constraint firstItem="0O6-Pu-tW4" firstAttribute="top" secondItem="4Im-fO-8dU" secondAttribute="top" id="xGB-mZ-BXp"/>
                         </constraints>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="color" keyPath="backgroundColor">
+                                <color key="value" name="chatBackgroundColor"/>
+                            </userDefinedRuntimeAttribute>
+                        </userDefinedRuntimeAttributes>
                     </view>
                     <connections>
                         <outlet property="avatarView" destination="zzQ-jt-v2u" id="SYJ-vL-Iuv"/>
@@ -3801,7 +3823,7 @@ Gw
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="oun-fH-mxB">
-                                <rect key="frame" x="409.5" y="451" width="21" height="23"/>
+                                <rect key="frame" x="409" y="451" width="21" height="23"/>
                                 <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSAddTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="tKH-3S-aYl">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -3830,7 +3852,7 @@ Gw
                                 </textFieldCell>
                             </textField>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="pU3-9e-Cyp">
-                                <rect key="frame" x="409.5" y="413" width="21" height="23"/>
+                                <rect key="frame" x="409" y="413" width="21" height="23"/>
                                 <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSAddTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="CuA-us-iNI">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -3851,7 +3873,7 @@ Gw
                                 </textFieldCell>
                             </textField>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="el4-xE-2yN">
-                                <rect key="frame" x="409.5" y="375" width="21" height="23"/>
+                                <rect key="frame" x="409" y="375" width="21" height="23"/>
                                 <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSAddTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="NHe-Ed-7tW">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -4077,5 +4099,11 @@ Gw
         <image name="NSStopProgressTemplate" width="11" height="11"/>
         <image name="NSUser" width="128" height="128"/>
         <image name="NSUserAccounts" width="128" height="128"/>
+        <namedColor name="chatBackgroundColor">
+            <color name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+        </namedColor>
+        <namedColor name="sidebarBackgroundColor">
+            <color red="0.40000000000000002" green="0.40000000000000002" blue="0.59999999999999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

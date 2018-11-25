@@ -59,7 +59,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     override func viewWillAppear() {
         super.viewWillAppear();
         sidebarWidthConstraint.constant = Settings.showRoomDetailsSidebar.bool() ? 200 : 0;
-        avatarView.backgroundColor = NSColor.white;
+        avatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
         let cgRef = infoButton.image!.cgImage(forProposedRect: nil, context: nil, hints: nil);
         let representation = NSBitmapImageRep(cgImage: cgRef!);
         let newRep = representation.converting(to: .genericGray, renderingIntent: .default);
@@ -253,7 +253,7 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
         if let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("GroupchatParticipantCellView"), owner: self) as? GroupchatParticipantCellView {
             
             view.avatar.avatar = participant.jid != nil ? AvatarManager.instance.avatar(for: participant.jid!.bareJid, on: room!.account) : NSImage(named: NSImage.userName);
-            view.avatar.backgroundColor = NSColor.white;
+            view.avatar.backgroundColor = NSColor(named: "chatBackgroundColor")!;
             view.avatar.status = participant.presence.show;
             view.label.stringValue = participant.nickname + "" + roleToEmoji(participant.role);
             

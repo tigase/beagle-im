@@ -545,7 +545,8 @@ class RosterContactView: NSTableCellView {
         let status = presenceModule.presenceStore.getBestPresence(for: self.item.jid)?.status;
         if status != nil && !status!.isEmpty {
             label.append(NSAttributedString(string: "\n"));
-            label.append(NSAttributedString(string: status!, attributes: [NSAttributedString.Key.font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize), NSAttributedString.Key.foregroundColor: (darkBackground ? NSColor.lightGray : NSColor.darkGray)]));
+//            label.append(NSAttributedString(string: status!, attributes: [NSAttributedString.Key.font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize), NSAttributedString.Key.foregroundColor: (darkBackground ? NSColor.lightGray : NSColor.darkGray)]));
+            label.append(NSAttributedString(string: status!, attributes: [NSAttributedString.Key.font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize), NSAttributedString.Key.foregroundColor: NSColor.secondaryLabelColor]));
         }
         
         nameAndStatus.attributedStringValue = label;

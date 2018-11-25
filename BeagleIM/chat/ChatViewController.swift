@@ -44,7 +44,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     override func viewWillAppear() {
         buddyNameLabel.title = buddyName;
         buddyJidLabel.title = jid.stringValue;
-        buddyAvatarView.backgroundColor = NSColor.white;
+        buddyAvatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
         buddyAvatarView.update(for: jid, on: account);
         let presenceModule: PresenceModule? = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PresenceModule.ID);
         buddyStatusLabel.title = presenceModule?.presenceStore.getBestPresence(for: jid)?.status ?? "";

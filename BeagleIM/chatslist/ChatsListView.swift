@@ -88,7 +88,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     
     override func viewWillAppear() {
 //        self.view.window!.acceptsMouseMovedEvents = true;
-        self.view.layer?.backgroundColor = outlineView.backgroundColor.cgColor;
+        self.view.layer?.backgroundColor = NSColor(named: "sidebarBackgroundColor")!.cgColor;
     }
     
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
@@ -296,7 +296,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
             return view;
         } else if let chat = item as? ChatItemProtocol {
             let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("ChatCell"), owner: self) as? ChatCellView;
-            view?.avatar.backgroundColor = NSColor.selectedKnobColor;
+            view?.avatar.backgroundColor = NSColor(named: "sidebarBackgroundColor");
             view?.update(from: chat);
             view?.lastMessage.preferredMaxLayoutWidth = self.outlineView.outlineTableColumn!.width - 80;
             view?.closeFunction = {

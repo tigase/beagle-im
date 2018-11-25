@@ -197,7 +197,7 @@ class Open1On1ChatItemView: NSTableCellView {
     @IBOutlet var jid: NSTextField!
     
     func update(from item: Open1On1ChatController.Item) {
-        self.avatar.backgroundColor = NSColor.white;
+        self.avatar.backgroundColor = NSColor.textBackgroundColor;
         self.jid.stringValue = item.jid.stringValue;
         self.name.stringValue = item.name ?? "";
         self.avatar.update(for: item.jid, on: item.account);

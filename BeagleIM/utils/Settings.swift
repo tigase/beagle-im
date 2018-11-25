@@ -27,6 +27,8 @@ enum Settings: String {
     case systemMenuIcon
     case spellchecking
     
+    case appearance
+    
     public static let CHANGED = Notification.Name("settingChanged");
     
     fileprivate static var observers: [Settings: [UUID: (Settings, Any?)->Void]] = [:];
@@ -42,7 +44,8 @@ enum Settings: String {
             "enableMarkdownFormatting": true,
             "notificationsFromUnknownSenders": false,
             "systemMenuIcon": false,
-            "spellchecking": true
+            "spellchecking": true,
+            "appearance": Appearance.auto.rawValue
         ];
         UserDefaults.standard.register(defaults: defaults);
     }
@@ -93,6 +96,12 @@ enum Settings: String {
     fileprivate func valueChanged() {
         NotificationCenter.default.post(name: Settings.CHANGED, object: self);
     }
+}
+
+enum Appearance: String {
+    case auto
+    case light
+    case dark
 }
 
 enum AccountSettings {
