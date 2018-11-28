@@ -71,6 +71,7 @@ class ChatMessageCellView: NSTableCellView {
         } else {
             self.timestamp.attributedStringValue = NSMutableAttributedString(string: timestamp != nil ? formatTimestamp(timestamp!) : "");
         }
+        self.toolTip = timestamp == nil ? nil : ChatMessageCellView.tooltipFormatter.string(from: timestamp!);
     }
 
     fileprivate func formatTimestamp(_ ts: Date) -> String {
@@ -122,4 +123,13 @@ class ChatMessageCellView: NSTableCellView {
         //        f.timeStyle = .NoStyle;
         return f;
     })();
+    
+    fileprivate static let tooltipFormatter = ({()-> DateFormatter in
+        var f = DateFormatter();
+        f.locale = NSLocale.current;
+        f.dateStyle = .medium
+        f.timeStyle = .medium;
+        return f;
+    })();
+
 }
