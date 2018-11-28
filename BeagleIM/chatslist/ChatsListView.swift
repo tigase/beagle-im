@@ -88,6 +88,8 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     
     override func viewWillAppear() {
 //        self.view.window!.acceptsMouseMovedEvents = true;
+        super.viewWillAppear();
+        outlineView.expandItem(nil, expandChildren: true);
         self.view.layer?.backgroundColor = NSColor(named: "sidebarBackgroundColor")!.cgColor;
     }
     
@@ -115,7 +117,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     func outlineView(_ outlineView: NSOutlineView, shouldSelectItem item: Any) -> Bool {
         if item is ChatsListGroupProtocol {
             if outlineView.isItemExpanded(item) {
-                outlineView.collapseItem(item);
+//                outlineView.collapseItem(item);
             } else {
                 outlineView.expandItem(item);
             }
