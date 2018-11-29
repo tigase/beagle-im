@@ -96,17 +96,23 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
                 return false;
             }
             
+            if let idx = messageView.message.characterIndexFor(event: event) {
+                if messageView.message.attributedStringValue.attribute(.link, at: idx, effectiveRange: nil) != nil {
+                    return false;
+                }
+            }
+            
             self.currentSession = SelectionSession(messageView: messageView, event: event);
             
             return currentSession != nil;
         case .leftMouseUp:
-            guard let session =  currentSession else {
+            guard currentSession != nil else {
                 return false;
             }
 
             return true;
         case .leftMouseDragged:
-            guard let contentView = event.window?.contentView, let session = self.currentSession else {
+            guard let session = self.currentSession else {
                 return false;
             }
             

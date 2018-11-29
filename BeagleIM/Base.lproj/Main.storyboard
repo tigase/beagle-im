@@ -1756,7 +1756,7 @@ AAAAAAEGA
                                     <constraint firstAttribute="height" constant="22" id="cVy-3f-LmV"/>
                                 </constraints>
                                 <edgeInsets key="contentInsets" left="11" right="11" top="4" bottom="4"/>
-                                <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="GoE-Qo-ht3">
+                                <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="GoE-Qo-ht3">
                                     <rect key="frame" x="253" y="4" width="16" height="14"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
@@ -3823,7 +3823,7 @@ Gw
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="oun-fH-mxB">
-                                <rect key="frame" x="409" y="451" width="21" height="23"/>
+                                <rect key="frame" x="409.5" y="451" width="21" height="23"/>
                                 <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSAddTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="tKH-3S-aYl">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -3852,7 +3852,7 @@ Gw
                                 </textFieldCell>
                             </textField>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="pU3-9e-Cyp">
-                                <rect key="frame" x="409" y="413" width="21" height="23"/>
+                                <rect key="frame" x="409.5" y="413" width="21" height="23"/>
                                 <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSAddTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="CuA-us-iNI">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -3873,7 +3873,7 @@ Gw
                                 </textFieldCell>
                             </textField>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="el4-xE-2yN">
-                                <rect key="frame" x="409" y="375" width="21" height="23"/>
+                                <rect key="frame" x="409.5" y="375" width="21" height="23"/>
                                 <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSAddTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="NHe-Ed-7tW">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
