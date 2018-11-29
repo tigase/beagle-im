@@ -181,6 +181,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             }
             
             let senderJid = item.state.direction == .incoming ? (item.authorJid ?? item.jid) : item.account;
+            cell.id = item.id;
             cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
             cell.set(senderName: item.authorNickname ?? "From \(item.jid.stringValue)");
             cell.set(message: item.message, timestamp: item.timestamp, state: item.state);

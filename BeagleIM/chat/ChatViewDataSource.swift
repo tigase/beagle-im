@@ -32,6 +32,30 @@ class ChatViewDataSource {
         return items[row];
     }
     
+    func getItems(fromId: Int, toId: Int) -> [ChatViewItemProtocol] {
+        let edges = getItems(withIds: [fromId, toId]);
+        guard !edges.isEmpty else {
+            return [];
+        }
+        let start = edges[0].timestamp;
+        let end = edges.count == 1 ? start : edges[1].timestamp;
+        return items.filter { (i) -> Bool in
+            (i.timestamp.compare(start) != .orderedAscending)
+            &&
+            (i.timestamp.compare(end) != .orderedDescending)
+            }.sorted { (i1, i2) -> Bool in
+                return i1.timestamp.compare(i2.timestamp) == .orderedAscending;
+        }
+    }
+    
+    func getItems(withIds: [Int] ) -> [ChatViewItemProtocol] {
+        return items.filter { (item) -> Bool in
+            return withIds.contains(item.id);
+            }.sorted { (i1, i2) -> Bool in
+                return i1.timestamp.compare(i2.timestamp) == .orderedAscending;
+        };
+    }
+    
     func add(item: ChatViewItemProtocol) {
         add(items: [item]);
     }

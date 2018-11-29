@@ -91,6 +91,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             }
             
             let senderJid = item.state.direction == .incoming ? item.jid : item.account;
+            cell.id = item.id;
             cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
             cell.set(senderName: item.state.direction == .incoming ? buddyName : "Me");
             cell.set(message: item.message, timestamp: item.timestamp, state: item.state);

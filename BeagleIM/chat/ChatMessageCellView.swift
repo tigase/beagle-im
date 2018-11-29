@@ -10,6 +10,8 @@ import AppKit
 
 class ChatMessageCellView: NSTableCellView {
 
+    var id: Int = 0;
+    
     @IBOutlet var avatar: AvatarView!
     @IBOutlet var senderName: NSTextField!
     @IBOutlet var timestamp: NSTextField!
