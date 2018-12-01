@@ -89,25 +89,30 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
             currentSession = nil;
         
             guard event.clickCount == 1 else {
-                return false;
+                //return false;
+                return true;
             }
             
             guard let messageView = messageViewFor(event: event) else {
-                return false;
-            }
-            
-            if let idx = messageView.message.characterIndexFor(event: event) {
-                if messageView.message.attributedStringValue.attribute(.link, at: idx, effectiveRange: nil) != nil {
-                    return false;
-                }
+                return isInMesageView(event: event);
             }
             
             self.currentSession = SelectionSession(messageView: messageView, event: event);
             
-            return currentSession != nil;
+            return true;//currentSession != nil;
         case .leftMouseUp:
-            guard currentSession != nil else {
-                return false;
+            guard let session = currentSession else {
+                return true;
+            }
+
+            guard let messageView = messageViewFor(event: event) else {
+                return true;
+            }
+            
+            if let idx = messageView.message.characterIndexFor(event: event), idx != 0 && session.position == idx && session.messageId == messageView.id {
+                if let link = messageView.message.attributedStringValue.attribute(.link, at: idx, effectiveRange: nil) as? URL {
+                    NSWorkspace.shared.open(link);
+                }
             }
 
             return true;
@@ -212,8 +217,8 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
                     let from = item.message.index(item.message.startIndex, offsetBy: startOffset);
                     text.append(String(item.message[from..<item.message.endIndex]));
                 } else if pos == (selected.count - 1) {
-                    let to = item.message.index(item.message.startIndex, offsetBy: endOffset);
-                    text.append(String(item.message[item.message.startIndex...to]));
+                    let to = item.message.count > (endOffset + 1) ? item.message.index(item.message.startIndex, offsetBy: endOffset + 1) : item.message.endIndex;
+                    text.append(String(item.message[item.message.startIndex..<to]));
                 } else {
                     text.append(item.message);
                 }
@@ -259,6 +264,14 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
             return nil;
         }
         return view;
+    }
+    
+    func isInMesageView(event: NSEvent) -> Bool {
+        guard let contentView = event.window?.contentView else {
+            return false;
+        }
+        let point = contentView.convert(event.locationInWindow, to: nil);
+        return contentView.hitTest(point) is ChatMessageCellView;
     }
     
     @objc func didBecomeKeyWindow(_ notification: Notification) {
@@ -367,6 +380,11 @@ extension NSTextField {
         textStorage.setAttributedString(self.attributedStringValue);
         textStorage.endEditing();
         
-        return layoutManager.characterIndex(for: textPoint, in: textContainer, fractionOfDistanceBetweenInsertionPoints: nil);
+        var distance: CGFloat = 0;
+        let idx = layoutManager.characterIndex(for: textPoint, in: textContainer, fractionOfDistanceBetweenInsertionPoints: &distance);
+        guard distance < 1.0 && distance > -1.0 else {
+            return nil;
+        }
+        return idx;
     }
 }

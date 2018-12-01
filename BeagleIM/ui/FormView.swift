@@ -22,6 +22,10 @@ class FormView: NSStackView {
     
     func addRow<T: NSView>(label text: String, field: T) -> T {
         let label = createLabel(text: text);
+        return addRow(label: label, field: field);
+    }
+    
+    func addRow<T: NSView>(label: NSTextField, field: T) -> T {
         let row = RowView(views: [label, field]);
         self.addView(row, in: .bottom);
         label.widthAnchor.constraint(equalTo: row.widthAnchor, multiplier: 0.32).isActive = true;

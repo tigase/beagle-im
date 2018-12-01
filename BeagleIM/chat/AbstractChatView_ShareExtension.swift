@@ -95,8 +95,9 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
 
         let attributes = try! FileManager.default.attributesOfItem(atPath: url.path);
         let filesize = attributes[FileAttributeKey.size] as! UInt64;
-            
-        uploadModule.requestUploadSlot(componentJid: component.jid, filename: url.lastPathComponent, size: Int(filesize), contentType: nil, onSuccess: { (slot) in
+        
+        let contentType = guessContentType(of: url);
+        uploadModule.requestUploadSlot(componentJid: component.jid, filename: url.lastPathComponent, size: Int(filesize), contentType: contentType, onSuccess: { (slot) in
             DispatchQueue.main.async {
                 self.sharingProgressBar.isHidden = false;
             }
@@ -104,6 +105,9 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
             slot.putHeaders.forEach({ (k,v) in
                 request.addValue(v, forHTTPHeaderField: k);
             });
+            if contentType != nil {
+                request.addValue(contentType!, forHTTPHeaderField: "Content-Type")
+            }
             request.httpMethod = "PUT";
             request.httpBody = try! Data(contentsOf: url);
                 
@@ -127,6 +131,37 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         })
     }
 
+    func guessContentType(of url: URL) -> String? {
+        guard let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, url.pathExtension as CFString, nil)?.takeRetainedValue() else {
+            return nil;
+        }
+        
+        if UTTypeConformsTo(uti, kUTTypeImage) {
+            if UTTypeConformsTo(uti, kUTTypePNG) {
+                return "image/png";
+            }
+            if UTTypeConformsTo(uti, kUTTypeJPEG) || UTTypeConformsTo(uti, kUTTypeJPEG2000) {
+                return "image/jpeg";
+            }
+            if UTTypeConformsTo(uti, kUTTypeGIF) {
+                return "image/gif";
+            }
+        }
+        if UTTypeConformsTo(uti, kUTTypeMovie) || UTTypeConformsTo(uti, kUTTypeVideo) {
+            if UTTypeConformsTo(uti, kUTTypeMPEG2Video) {
+                return "video/mpeg";
+            }
+            if UTTypeConformsTo(uti, kUTTypeMPEG4) {
+                return "video/mp4";
+            }
+            if UTTypeConformsTo(uti, kUTTypeAVIMovie) {
+                return "video/x-msvideo";
+            }
+        }
+        
+        return nil;
+    }
+    
     func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
         DispatchQueue.main.async {
             self.sharingProgressBar.minValue = 0;

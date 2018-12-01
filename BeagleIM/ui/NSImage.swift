@@ -34,20 +34,71 @@ extension NSImage {
         return NSImage(cgImage: composedImage, size: size);
     }
 
-    func scaledToPng(to size: NSSize) -> Data? {
-        guard let cgImage = self.cgImage else {
+    func scaled(to size: NSSize, format: NSBitmapImageRep.FileType, properties: [NSBitmapImageRep.PropertyKey:Any] = [:]) -> Data? {
+//        guard let cgImage = self.cgImage else {
+//            return nil;
+//        }
+//        let newRep = NSBitmapImageRep(cgImage: cgImage);
+//        newRep.size = size;
+//        return newRep.representation(using: format, properties: properties);
+        let small = NSImage(size: size);
+        small.lockFocus();
+        NSGraphicsContext.current?.imageInterpolation = .high;
+        
+        let transform = NSAffineTransform();
+        transform.scaleX(by: size.width/self.size.width, yBy: size.height/self.size.height);
+        transform.concat();
+        draw(at: .zero, from: NSRect(origin: .zero, size: self.size), operation: .sourceOver, fraction: 1.0);
+        small.unlockFocus();
+        guard let cgImage = small.cgImage else {
             return nil;
         }
-        let newRep = NSBitmapImageRep(cgImage: cgImage);
-        newRep.size = size;
-        return newRep.representation(using: .png, properties: [:]);
+        return NSBitmapImageRep(cgImage: cgImage).representation(using: format, properties: properties);
     }
-
-    func scaledToPng(to maxWidthOrHeight: CGFloat) -> Data? {
+    
+    func scaled(maxWidthOrHeight: CGFloat, format: NSBitmapImageRep.FileType, properties: [NSBitmapImageRep.PropertyKey: Any] = [:]) -> Data? {
         let maxDimmension = max(self.size.height, self.size.width);
         let scale = maxDimmension / maxWidthOrHeight;
         let expSize = NSSize(width: self.size.width / scale, height: self.size.height / scale);
-        return scaledToPng(to: size);
+        return scaled(to: expSize, format: format);
+    }
+    
+    func scaledToPng(to size: NSSize) -> Data? {
+        return scaled(to: size, format: .png);
+    }
+
+    func scaledToPng(to maxWidthOrHeight: CGFloat) -> Data? {
+        return scaled(maxWidthOrHeight: maxWidthOrHeight, format: .png);
+    }
+    
+    func scaledAndFlipped(maxWidth: CGFloat, maxHeight: CGFloat, flipX: Bool, flipY: Bool) -> NSImage {
+        var scale: CGFloat = 1.0;
+        if self.size.width > self.size.height {
+            scale = max(self.size.width / maxWidth, 1.0);
+        } else {
+            scale = max(self.size.height / maxHeight, 1.0);
+        }
+//        let maxDimmension = max(self.size.height, self.size.width);
+//        let scale = max(maxDimmension / maxWidthOrHeight, 1.0);
+        //let expSize = NSSize(width: size.width, height: size.height);//NSSize(width: self.size.width / scale, height: self.size.height / scale);
+        
+        let expSize = self.size.height > self.size.width ? NSSize(width: self.size.width / scale, height: self.size.height / scale) : NSSize(width: self.size.width / scale, height: self.size.height / scale);
+        
+        print("expected size:", expSize);
+        let flipped = NSImage(size: expSize);
+        flipped.lockFocus();
+        NSGraphicsContext.current?.imageInterpolation = .high;
+
+        let transform = NSAffineTransform();
+        transform.translateX(by: 0.0, yBy: expSize.height);
+//        transform.translateX(by: expSize.width, yBy: expSize.height);
+        //transform.scaleX(by: (flipX ? -1.0 : 1.0)/scale, yBy: (flipY ? -1.0 : 1.0)/scale);
+        //transform.scaleX(by: flipX ? -1.0 : 1.0, yBy: flipY ? -1.0 : 1.0);
+        transform.scaleX(by: 1.0 / scale, yBy: -1.0 / scale);
+        transform.concat();
+        draw(at: .zero, from: NSRect(origin: .zero, size: size), operation: .sourceOver, fraction: 1.0);
+        flipped.unlockFocus();
+        return flipped;
     }
 }
 

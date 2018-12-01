@@ -19,6 +19,7 @@
 		FE30D8BA214ED28A00670BEC /* OpenGroupchatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8B9214ED28A00670BEC /* OpenGroupchatController.swift */; };
 		FE34BBD12157901100775B07 /* JabberDataFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE34BBD02157901100775B07 /* JabberDataFormView.swift */; };
 		FE34BBD52157DDF200775B07 /* MucModule_RoomError_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE34BBD42157DDF200775B07 /* MucModule_RoomError_extension.swift */; };
+		FE380ADA21B15720008717FA /* DownloadCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE380AD921B15720008717FA /* DownloadCache.swift */; };
 		FE3AA0C92154062F001667A9 /* ChatsListGroupProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0C82154062F001667A9 /* ChatsListGroupProtocol.swift */; };
 		FE3AA0CB21540669001667A9 /* ChatItemProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0CA21540669001667A9 /* ChatItemProtocol.swift */; };
 		FE3AA0CD2154069D001667A9 /* ChatsListGroupGroupchat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0CC2154069D001667A9 /* ChatsListGroupGroupchat.swift */; };
@@ -133,6 +134,7 @@
 		FE30D8B9214ED28A00670BEC /* OpenGroupchatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenGroupchatController.swift; sourceTree = "<group>"; };
 		FE34BBD02157901100775B07 /* JabberDataFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JabberDataFormView.swift; sourceTree = "<group>"; };
 		FE34BBD42157DDF200775B07 /* MucModule_RoomError_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MucModule_RoomError_extension.swift; sourceTree = "<group>"; };
+		FE380AD921B15720008717FA /* DownloadCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadCache.swift; sourceTree = "<group>"; };
 		FE3AA0C82154062F001667A9 /* ChatsListGroupProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListGroupProtocol.swift; sourceTree = "<group>"; };
 		FE3AA0CA21540669001667A9 /* ChatItemProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatItemProtocol.swift; sourceTree = "<group>"; };
 		FE3AA0CC2154069D001667A9 /* ChatsListGroupGroupchat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListGroupGroupchat.swift; sourceTree = "<group>"; };
@@ -292,6 +294,7 @@
 				FE30D8B6214D4BCD00670BEC /* Settings.swift */,
 				FE34BBD42157DDF200775B07 /* MucModule_RoomError_extension.swift */,
 				FE41FB30215AB32200AD86D3 /* ServerCertificateInfo.swift */,
+				FE380AD921B15720008717FA /* DownloadCache.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -619,6 +622,7 @@
 				FED7AEC521417328001E164B /* AvatarStore.swift in Sources */,
 				FE6E6BFA21384D5F003B1696 /* AccountManager.swift in Sources */,
 				FEC5DC8621553F4700AA3E4F /* GroupchatViewController.swift in Sources */,
+				FE380ADA21B15720008717FA /* DownloadCache.swift in Sources */,
 				FEF844742173B9DC0067B005 /* Markdown.swift in Sources */,
 				FE6E6C0221384D5F003B1696 /* DBChatHistoryStore.swift in Sources */,
 				FE4E8DDC215F72130010D88E /* AbstractChatView_ShareExtension.swift in Sources */,

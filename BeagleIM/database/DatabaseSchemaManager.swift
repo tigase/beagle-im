@@ -20,7 +20,7 @@ public class DBSchemaManager {
     }
     
     open func upgradeSchema() throws {
-        var version = 0;//try! getSchemaVersion();
+        var version = try! getSchemaVersion();
         while (version < DBSchemaManager.CURRENT_VERSION) {
             try loadSchemaFile(fileName: "/db-schema-\(version + 1).sql");
             version = try! getSchemaVersion();

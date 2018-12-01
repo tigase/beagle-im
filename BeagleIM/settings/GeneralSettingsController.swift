@@ -28,6 +28,9 @@ class GeneralSettingsController: NSViewController {
     fileprivate var markdownFormatting: NSButton!;
     fileprivate var spellchecking: NSButton!;
     
+    fileprivate var imagePreviewMaxSizeLabel: NSTextField!;
+    fileprivate var imagePreviewMaxSize: NSSlider!;
+    
     override func viewDidLoad() {
         if #available(macOS 10.14, *) {
             appearance = formView.addRow(label: "Appearance:", field: NSPopUpButton(frame: .zero, pullsDown: false));
@@ -46,6 +49,10 @@ class GeneralSettingsController: NSViewController {
         
         notificationsFromUnknownSenders = formView.addRow(label: "Notifications:", field: NSButton(checkboxWithTitle: "Show for messages from unknown senders", target: self, action: #selector(checkboxChanged(_:))));
         systemMenuIcon = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show system menu icon", target: self, action: #selector(checkboxChanged(_:))));
+        
+        imagePreviewMaxSizeLabel = formView.createLabel(text: "");
+        imagePreviewMaxSize = formView.addRow(label: imagePreviewMaxSizeLabel, field: NSSlider(value: Double(Settings.imageDownloadSizeLimit.integer()), minValue: 0, maxValue: 50 * 1024 * 1024, target: self, action: #selector(sliderChanged)));
+        updateImagePreviewMaxSizeLabel();
         
         markdownFormatting = formView.addRow(label: "Message formatting:", field: NSButton(checkboxWithTitle: "Markdown", target: self, action: #selector(checkboxChanged(_:))));
         
@@ -124,4 +131,34 @@ class GeneralSettingsController: NSViewController {
         }
     }
     
+    @objc func sliderChanged(_ sender: NSSlider) {
+        switch sender {
+        case imagePreviewMaxSize:
+            print("selected value:", sender.integerValue);
+            Settings.imageDownloadSizeLimit.set(value: sender.integerValue);
+            updateImagePreviewMaxSizeLabel();
+            break;
+        default:
+            break;
+        }
+    }
+
+    fileprivate func updateImagePreviewMaxSizeLabel() {
+        self.imagePreviewMaxSizeLabel.stringValue = "Image preview size limit \(string(filesize: Settings.imageDownloadSizeLimit.integer()))";
+    }
+    
+    fileprivate func string(filesize: Int) -> String {
+        var unit = "B";
+        var val = Double(filesize) / 1024.0;
+        if val > 0 {
+            unit = "KB";
+            if val > 1024 {
+                val = val / 1024;
+                unit = "MB";
+            }
+        } else {
+            val = Double(filesize);
+        }
+        return String(format: "%.1f\(unit)", val);
+    }
 }

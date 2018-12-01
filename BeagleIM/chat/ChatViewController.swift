@@ -94,7 +94,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             cell.id = item.id;
             cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
             cell.set(senderName: item.state.direction == .incoming ? buddyName : "Me");
-            cell.set(message: item.message, timestamp: item.timestamp, state: item.state);
+            cell.set(message: item);
             
             return cell;
         }
@@ -201,8 +201,9 @@ class ChatMessage: ChatViewItemProtocol {
     let state: MessageState;
     let authorNickname: String?;
     let authorJid: BareJID?;
+    let preview: [String:String]?;
     
-    init(id: Int, timestamp: Date, account: BareJID, jid: BareJID, state: MessageState, message: String, authorNickname: String?, authorJid: BareJID?) {
+    init(id: Int, timestamp: Date, account: BareJID, jid: BareJID, state: MessageState, message: String, authorNickname: String?, authorJid: BareJID?, preview: [String:String]? = nil) {
         self.id = id;
         self.timestamp = timestamp;
         self.account = account;
@@ -211,6 +212,7 @@ class ChatMessage: ChatViewItemProtocol {
         self.state = state;
         self.authorNickname = authorNickname;
         self.authorJid = authorJid;
+        self.preview = preview;
     }
     
 }

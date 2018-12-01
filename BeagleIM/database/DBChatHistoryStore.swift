@@ -20,6 +20,7 @@ class DBChatHistoryStore {
     fileprivate let checkItemAlreadyAddedStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND timestamp BETWEEN :ts_from AND :ts_to AND item_type = :item_type AND data = :data AND (:stanza_id IS NULL OR (stanza_id IS NOT NULL AND stanza_id = :stanza_id)) AND (state % 2 == :direction) AND (:author_nickname is null OR author_nickname = :author_nickname)");
     fileprivate let markAsReadStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET state = case state when \(MessageState.incoming_error_unread.rawValue) then \(MessageState.incoming_error.rawValue) when \(MessageState.outgoing_error_unread.rawValue) then \(MessageState.outgoing_error.rawValue) else \(MessageState.incoming.rawValue) end WHERE account = :account AND jid = :jid AND state in (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))");
     fileprivate let updateItemStateStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET state = :newState WHERE id = :id AND (:oldState IS NULL OR state = :oldState)");
+    fileprivate let updateItemStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET preview = coalesce(:preview, preview) WHERE id = :id");
     fileprivate let markAsErrorStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET state = :state, error = :error WHERE id = :id");
     
     fileprivate let getItemIdByStanzaId: DBStatement = try! DBConnection.main.prepareStatement("SELECT id FROM chat_history WHERE account = :account AND jid = :jid AND stanza_id = :stanza_id ORDER BY timestamp DESC");
@@ -124,6 +125,21 @@ class DBChatHistoryStore {
         }
     }
     
+    open func updateItem(for account: BareJID, with jid: BareJID, id: Int, preview: [String:String]? = nil) {
+        dispatcher.async {
+            var params: [String: Any?] = ["id": id];
+            let test = Dictionary<String, String>(minimumCapacity: 2);
+            if preview != nil {
+                params["preview"] = preview!.map({ (k,v) -> String in
+                    return "\(k)\t\(v)";
+                }).joined(separator: "\n");
+            }
+            if try! self.updateItemStmt.update(params) > 0 {
+                self.itemUpdated(withId: id, for: account, with: jid);
+            }
+        }
+    }
+    
     fileprivate func itemUpdated(withId id: Int, for account: BareJID, with jid: BareJID) {
         dispatcher.async {
             let params: [String: Any?] = ["id": id]
@@ -183,7 +199,16 @@ class DBChatHistoryStore {
         let message: String = cursor["data"]!;
         let authorNickname: String? = cursor["author_nickname"];
         let authorJid: BareJID? = cursor["author_jid"];
-        return ChatMessage(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, message: message, authorNickname: authorNickname, authorJid: authorJid);
+        
+        var preview: [String: String]? = nil;
+        if let previewStr: String = cursor["preview"] {
+            preview = [:];
+            previewStr.split(separator: "\n").forEach { (line) in
+                let tmp = line.split(separator: "\t");
+                preview?[String(tmp[0])] = String(tmp[1]);
+            }
+        }
+        return ChatMessage(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, message: message, authorNickname: authorNickname, authorJid: authorJid, preview: preview);
     }
 }
 

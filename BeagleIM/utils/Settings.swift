@@ -21,6 +21,7 @@ enum Settings: String {
     
     case enableMessageCarbons
     case markMessageCarbonsAsRead
+    case imageDownloadSizeLimit
     
     case enableMarkdownFormatting
     case notificationsFromUnknownSenders
@@ -45,7 +46,8 @@ enum Settings: String {
             "notificationsFromUnknownSenders": false,
             "systemMenuIcon": false,
             "spellchecking": true,
-            "appearance": Appearance.auto.rawValue
+            "appearance": Appearance.auto.rawValue,
+            "imageDownloadSizeLimit": (10*1024*1024)
         ];
         UserDefaults.standard.register(defaults: defaults);
     }
@@ -57,6 +59,14 @@ enum Settings: String {
     
     func bool() -> Bool {
         return UserDefaults.standard.bool(forKey: self.rawValue);
+    }
+    
+    func integer() -> Int {
+        return UserDefaults.standard.integer(forKey: self.rawValue);
+    }
+    
+    func set(value: Int) {
+        UserDefaults.standard.set(value, forKey: self.rawValue);
     }
     
     func set(value: String?) {
