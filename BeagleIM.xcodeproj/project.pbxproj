@@ -59,6 +59,7 @@
 		FE6E6C0521384D5F003B1696 /* DBChatStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BF521384D5E003B1696 /* DBChatStore.swift */; };
 		FE6E6C0621384D5F003B1696 /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BF621384D5E003B1696 /* Database.swift */; };
 		FE6E6C0821384DF1003B1696 /* ChatCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6C0721384DF1003B1696 /* ChatCellView.swift */; };
+		FE8C9F5421B3F6BD00BE8332 /* container-migration.plist in Resources */ = {isa = PBXBuildFile; fileRef = FE8C9F5321B3F6BD00BE8332 /* container-migration.plist */; };
 		FEA8941F2156625E004C3B51 /* ConfigureRoomViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8941E2156625E004C3B51 /* ConfigureRoomViewController.swift */; };
 		FEB4EAFC2162A3DC00F8A9E2 /* AutoresizineTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB4EAFB2162A3DC00F8A9E2 /* AutoresizineTextView.swift */; };
 		FEB4EAFE2163714300F8A9E2 /* RoundedScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB4EAFD2163714300F8A9E2 /* RoundedScrollView.swift */; };
@@ -173,6 +174,7 @@
 		FE6E6BF521384D5E003B1696 /* DBChatStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBChatStore.swift; sourceTree = "<group>"; };
 		FE6E6BF621384D5E003B1696 /* Database.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Database.swift; sourceTree = "<group>"; };
 		FE6E6C0721384DF1003B1696 /* ChatCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatCellView.swift; sourceTree = "<group>"; };
+		FE8C9F5321B3F6BD00BE8332 /* container-migration.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "container-migration.plist"; sourceTree = "<group>"; };
 		FEA8941E2156625E004C3B51 /* ConfigureRoomViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigureRoomViewController.swift; sourceTree = "<group>"; };
 		FEB4EAFB2162A3DC00F8A9E2 /* AutoresizineTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoresizineTextView.swift; sourceTree = "<group>"; };
 		FEB4EAFD2163714300F8A9E2 /* RoundedScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundedScrollView.swift; sourceTree = "<group>"; };
@@ -397,6 +399,7 @@
 				FED2ECFC2066B01C00F506A5 /* Info.plist */,
 				FED2ECFD2066B01C00F506A5 /* BeagleIM.entitlements */,
 				FEF9CE1C2082765000B09B6C /* db-schema-1.sql */,
+				FE8C9F5321B3F6BD00BE8332 /* container-migration.plist */,
 			);
 			path = BeagleIM;
 			sourceTree = "<group>";
@@ -524,6 +527,11 @@
 						CreatedOnToolsVersion = 9.2;
 						LastSwiftMigration = 1000;
 						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.Sandbox = {
+								enabled = 1;
+							};
+						};
 					};
 					FED2ED012066B01C00F506A5 = {
 						CreatedOnToolsVersion = 9.2;
@@ -565,6 +573,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FEF9CE1D2082765000B09B6C /* db-schema-1.sql in Resources */,
+				FE8C9F5421B3F6BD00BE8332 /* container-migration.plist in Resources */,
 				FED2ECF82066B01C00F506A5 /* Assets.xcassets in Resources */,
 				FED2ECFB2066B01C00F506A5 /* Main.storyboard in Resources */,
 			);

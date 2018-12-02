@@ -31,6 +31,8 @@
 	</dict>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2018 Tigase, Inc. All rights reserved.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSMainStoryboardFile</key>
 	<string>Main</string>
 	<key>NSPrincipalClass</key>
