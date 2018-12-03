@@ -62,6 +62,9 @@ class DBChatHistoryStore {
             }
             
             guard !self.checkItemAlreadyAdded(for: account, with: jid, authorNickname: authorNickname, type: type, timestamp: timestamp, direction: state.direction, stanzaId: stanzaId, data: data) else {
+                if chatState != nil {
+                    DBChatStore.instance.process(chatState: chatState!, for: account, with: jid);
+                }
                 return;
             }
             

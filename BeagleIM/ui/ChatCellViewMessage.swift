@@ -91,6 +91,9 @@ class ChatCellViewMessage: NSTextField {
     }
 
     func startAnimating() {
+        guard dotLayers.isEmpty else {
+            return;
+        }
         var offset: TimeInterval = 0.0;
         setupLayers();
         dotLayers.forEach { (layer) in

@@ -75,7 +75,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             }
             
             guard let body = MessageEventHandler.prepareBody(message: e.message) else {
-                if (e.message.type ?? .normal) != .error, let chatState = e.message.chatState {
+                if (e.message.type ?? .normal) != .error, let chatState = e.message.chatState, e.message.delay == nil {
                     DBChatHistoryStore.instance.process(chatState: chatState, for: account, with: from.bareJid);
                 }
                 return;
