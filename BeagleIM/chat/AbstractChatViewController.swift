@@ -258,7 +258,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         let rosterStore = XmppService.instance.getClient(for: account)?.rosterStore;
         
         let text = selected.map { (item) -> String in
-            let name: String = rosterStore?.get(for: chat.jid.withoutResource)?.name ?? chat.jid.localPart ?? chat.jid.domain;
+            let name: String = item.state.direction == .incoming ? (rosterStore?.get(for: chat.jid.withoutResource)?.name ?? chat.jid.localPart ?? chat.jid.domain) : "Me";
             return "[\(dateFormatter.string(from: item.timestamp))] <\(item.authorNickname ?? name)> \(item.message)";
         };
         
