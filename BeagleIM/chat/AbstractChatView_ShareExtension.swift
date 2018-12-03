@@ -69,7 +69,7 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
                     return;
                 }
                 DispatchQueue.main.async {
-                    _ = self.sendMessage(url: uploadedUrl);
+                    _ = self.sendMessage(url: uploadedUrl?.absoluteString);
                 }
             }
         }
@@ -94,7 +94,7 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         }
     }
     
-    func uploadFileToHttpServer(url: URL, completionHandler: @escaping (String?, ErrorCondition?, String?)->Void) {
+    func uploadFileToHttpServer(url: URL, completionHandler: @escaping (URL?, ErrorCondition?, String?)->Void) {
         print("selected file:", url);
         guard let uploadModule: HttpFileUploadModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(HttpFileUploadModule.ID) else {
             completionHandler(nil, ErrorCondition.feature_not_implemented, "HttpFileUploadModule not enabled!");
@@ -114,7 +114,7 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
             DispatchQueue.main.async {
                 self.sharingProgressBar.isHidden = false;
             }
-            var request = URLRequest(url: URL(string: slot.putUri)!);
+            var request = URLRequest(url: slot.putUri);
             slot.putHeaders.forEach({ (k,v) in
                 request.addValue(v, forHTTPHeaderField: k);
             });
