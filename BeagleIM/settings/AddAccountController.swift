@@ -41,6 +41,35 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
         passwordField.delegate = self;
     }
     
+    func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+        if commandSelector == #selector(NSResponder.insertNewline(_:)) || commandSelector == #selector(NSResponder.insertTab(_:)) {
+            control.resignFirstResponder();
+            
+            guard var idx = self.stackView.views.firstIndex(where: { (view) -> Bool in
+                view.subviews[1] == control;
+            }) else {
+                return false;
+            }
+            
+            var responder: NSResponder? = nil;
+            repeat {
+                idx = idx + 1;
+                if idx >= self.stackView.views.count {
+                    idx = 0;
+                }
+                responder = self.stackView.views[idx].subviews[1];
+                if !(responder?.acceptsFirstResponder ?? false) {
+                    responder = nil;
+                }
+            } while responder == nil;
+            
+            self.view.window?.makeFirstResponder(responder);
+            
+            return true;
+        }
+        return false;
+    }
+    
     func controlTextDidChange(_ obj: Notification) {
         logInButton.isEnabled = !(usernameField.stringValue.isEmpty || passwordField.stringValue.isEmpty);
     }

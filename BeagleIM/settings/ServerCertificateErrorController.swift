@@ -62,13 +62,13 @@ class ServerCertificateErrorController: NSViewController {
     }
     
     @IBAction func acceptCliecked(_ sender: NSButton) {
-        let jid = account!;
         self.view.window?.close();
 
         if let handler = completionHandler {
             completionHandler = nil;
-            handler(false);
+            handler(true);
         } else {
+            let jid = account!;
             guard let account = AccountManager.getAccount(for: jid) else {
                 return;
             }

@@ -205,4 +205,5 @@ class JabberDataFormView: FormView {
         _ = self.addRow(label: "", field: NSTextField(labelWithString: ""));
         return optionFields;
     }
+        
 }

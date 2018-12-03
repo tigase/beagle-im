@@ -53,7 +53,6 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         self.messageField.delegate = self;
         self.messageField.isContinuousSpellCheckingEnabled = Settings.spellchecking.bool();
         self.messageField.isGrammarCheckingEnabled = Settings.spellchecking.bool();
-        NotificationCenter.default.addObserver(self, selector: #selector(didBecomeKeyWindow), name: NSWindow.didBecomeKeyNotification, object: nil);
     }
     
     override func viewWillAppear() {
@@ -68,11 +67,13 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         mouseMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseDragged, .leftMouseUp, .rightMouseDown]) { (event) -> NSEvent? in
             self.handleMouse(event: event) ? nil : event;
         }
+        NotificationCenter.default.addObserver(self, selector: #selector(didBecomeKeyWindow), name: NSWindow.didBecomeKeyNotification, object: nil);
     }
     
     override func viewWillDisappear() {
         super.viewWillDisappear();
         NSEvent.removeMonitor(mouseMonitor);
+        NotificationCenter.default.removeObserver(self, name: NSWindow.didBecomeKeyNotification, object: nil);
     }
     
     override func viewDidAppear() {

@@ -1062,7 +1062,7 @@ Gw
                             </textField>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ccw-GE-zCA">
                                 <rect key="frame" x="20" y="208" width="440" height="22"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" placeholderString="Enter domain name..." drawsBackground="YES" id="6dU-W8-3jO">
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" placeholderString="Enter domain name..." drawsBackground="YES" id="6dU-W8-3jO">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -2267,7 +2267,7 @@ Gw
         <!--Server Certificate Error Controller-->
         <scene sceneID="aum-Fg-hCL">
             <objects>
-                <viewController id="kQl-bn-9PH" customClass="ServerCertificateErrorController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController identifier="ServerCertificateErrorController" storyboardIdentifier="ServerCertificateErrorController" id="kQl-bn-9PH" customClass="ServerCertificateErrorController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="Pa2-Dc-FFU">
                         <rect key="frame" x="0.0" y="0.0" width="480" height="243"/>
                         <autoresizingMask key="autoresizingMask"/>

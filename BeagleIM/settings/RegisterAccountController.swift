@@ -50,15 +50,17 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
         domainField.delegate = self;
         domainField.isAutomaticTextCompletionEnabled = true;
         domainFieldHeightConstraint = domainField.heightAnchor.constraint(equalToConstant: 0);
+        domainField.target = self;
+        domainField.action = #selector(submitClicked(_:));
     }
     
     @IBAction func cancelClicked(_ sender: NSButton) {
         dismissView();
     }
     
-    @IBAction func submitClicked(_ sender: NSButton) {
+    @IBAction func submitClicked(_ sender: Any) {
         guard task != nil && form?.form != nil else {
-            guard domainField.stringValue.count > 0 else {
+            guard domainField.stringValue.count > 0 && (self.submitButton?.isEnabled ?? false) else {
                 return;
             }
             
@@ -154,20 +156,22 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
     }
     
     fileprivate func onCertificateError(certData: SslCertificateInfo, accepted: @escaping ()->Void) {
-        guard let controller = self.storyboard?.instantiateController(withIdentifier: "ServerCertificateErrorController") as? ServerCertificateErrorController else {
-            return;
-        }
-        
-        let window = NSWindow(contentViewController: controller);
-        controller.certficateInfo = certData;
-        controller.completionHandler = { result in
-            if result == true {
-                accepted();
-            } else {
-                self.dismissView();
+        DispatchQueue.main.async {
+            guard let controller = self.storyboard?.instantiateController(withIdentifier: "ServerCertificateErrorController") as? ServerCertificateErrorController else {
+                return;
             }
-        };
-        self.view.window?.beginSheet(window, completionHandler: nil);
+            
+            let window = NSWindow(contentViewController: controller);
+            controller.certficateInfo = certData;
+            controller.completionHandler = { result in
+                if result == true {
+                    accepted();
+                } else {
+                    self.dismissView();
+                }
+            };
+            self.view.window?.beginSheet(window, completionHandler: nil);
+        }
     }
     
     fileprivate func retrieveRegistrationForm(domain: String, completion: @escaping (JabberDataElement?)->Void) {
