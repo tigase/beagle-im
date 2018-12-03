@@ -112,10 +112,44 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
             guard selectedRow >= 0 && selectedRow < self.accounts.count else {
                 return;
             }
-            if let account = AccountManager.getAccount(for: accounts[selectedRow]) {
-                _ = AccountManager.delete(account: account);
-            }
             
+            let jid = accounts[selectedRow];
+            
+            let alert = NSAlert();
+            alert.messageText = "Account removal";
+            alert.informativeText = "Should the account be removed from the server as well?";
+            alert.addButton(withTitle: "Remove from server")
+            alert.addButton(withTitle: "Remove from application")
+            alert.addButton(withTitle: "Cancel");
+            alert.beginSheetModal(for: self.view.window!) { (response) in
+                switch response {
+                case .alertFirstButtonReturn:
+                    // remove from the server
+                    guard let client = XmppService.instance.getClient(for: jid), client.state == .connected else {
+                        let alert = NSAlert();
+                        alert.messageText = "Account removal failure";
+                        alert.informativeText = "Account needs to be active and connected to remove the acocunt from the server";
+                        alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
+                        return;
+                    }
+                    
+                    let regModule = client.modulesManager.register(InBandRegistrationModule());
+                    regModule.unregister({ (result) in
+                        if let account = AccountManager.getAccount(for: jid) {
+                            _ = AccountManager.delete(account: account);
+                        }
+                    })
+                    break;
+                case .alertSecondButtonReturn:
+                    // remove from the application
+                    if let account = AccountManager.getAccount(for: jid) {
+                        _ = AccountManager.delete(account: account);
+                    }
+                default:
+                    // cancel
+                    break;
+                }
+            }
             break;
         default:
             break;

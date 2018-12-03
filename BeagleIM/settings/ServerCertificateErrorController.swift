@@ -30,6 +30,8 @@ class ServerCertificateErrorController: NSViewController {
     @IBOutlet var issuerName: NSTextField!;
     @IBOutlet var issuesFingerprint: NSTextField!;
 
+    var completionHandler: ((Bool)->Void)?;
+    
     var account: BareJID? {
         didSet {
             guard let domain = account?.domain else {
@@ -39,7 +41,7 @@ class ServerCertificateErrorController: NSViewController {
             self.certficateInfo = AccountManager.getAccount(for: account!)?.serverCertificate;
         }
     }
-    var certficateInfo: ServerCertificateInfo? {
+    var certficateInfo: SslCertificateInfo? {
         didSet {
             guard let info = certficateInfo else {
                 return;
@@ -53,17 +55,26 @@ class ServerCertificateErrorController: NSViewController {
     
     @IBAction func cancelClicked(_ sender: NSButton) {
         self.view.window?.close();
+        if let handler = completionHandler {
+            completionHandler = nil;
+            handler(false);
+        }
     }
     
     @IBAction func acceptCliecked(_ sender: NSButton) {
         let jid = account!;
         self.view.window?.close();
-        
-        guard let account = AccountManager.getAccount(for: jid) else {
-            return;
+
+        if let handler = completionHandler {
+            completionHandler = nil;
+            handler(false);
+        } else {
+            guard let account = AccountManager.getAccount(for: jid) else {
+                return;
+            }
+            account.serverCertificate?.accepted = true;
+            account.active = true;
+            _ = AccountManager.save(account: account);
         }
-        account.serverCertificate?.accepted = true;
-        account.active = true;
-        _ = AccountManager.save(account: account);
     }
 }

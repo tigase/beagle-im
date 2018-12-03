@@ -990,6 +990,16 @@ Gw
                                     <action selector="cancelClicked:" target="jzI-bB-zwf" id="cWk-bO-iaa"/>
                                 </connections>
                             </button>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2Nz-OH-U4x">
+                                <rect key="frame" x="14" y="13" width="90" height="32"/>
+                                <buttonCell key="cell" type="push" title="Register" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="heh-y3-2kR">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="registerClicked:" target="jzI-bB-zwf" id="XWd-z9-fhR"/>
+                                </connections>
+                            </button>
                             <stackView distribution="fill" orientation="vertical" alignment="leading" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Dsq-QJ-knO">
                                 <rect key="frame" x="20" y="136" width="440" height="0.0"/>
                             </stackView>
@@ -1007,21 +1017,120 @@ Gw
                             <constraint firstItem="hap-zP-6dd" firstAttribute="leading" secondItem="Ep4-3f-GIz" secondAttribute="trailing" constant="8" id="Vla-a2-9GV"/>
                             <constraint firstItem="Dsq-QJ-knO" firstAttribute="top" secondItem="vrn-ZY-Drz" secondAttribute="bottom" constant="8" id="aGB-6f-jQY"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="hap-zP-6dd" secondAttribute="trailing" constant="20" id="cbi-Az-Igj"/>
+                            <constraint firstItem="N3f-BE-RQY" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="2Nz-OH-U4x" secondAttribute="trailing" constant="20" id="dgS-Lq-P6y"/>
                             <constraint firstAttribute="bottom" secondItem="N3f-BE-RQY" secondAttribute="bottom" constant="20" id="giG-lx-uJR"/>
+                            <constraint firstItem="2Nz-OH-U4x" firstAttribute="leading" secondItem="kdC-rd-324" secondAttribute="leading" constant="20" id="hvt-bm-as5"/>
                             <constraint firstItem="vrn-ZY-Drz" firstAttribute="leading" secondItem="kdC-rd-324" secondAttribute="leading" constant="20" id="iQf-No-B2V"/>
-                            <constraint firstItem="N3f-BE-RQY" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="kdC-rd-324" secondAttribute="leading" constant="100" id="mzf-Iv-Edy"/>
                             <constraint firstItem="1AL-aQ-dF9" firstAttribute="leading" secondItem="N3f-BE-RQY" secondAttribute="trailing" constant="13" id="spO-FB-ExH"/>
                             <constraint firstItem="Dsq-QJ-knO" firstAttribute="leading" secondItem="kdC-rd-324" secondAttribute="leading" constant="20" id="tSR-fM-Drc"/>
+                            <constraint firstItem="2Nz-OH-U4x" firstAttribute="centerY" secondItem="N3f-BE-RQY" secondAttribute="centerY" id="tjT-F8-V6A"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="logInButton" destination="1AL-aQ-dF9" id="KOD-YL-APs"/>
+                        <outlet property="registerButton" destination="2Nz-OH-U4x" id="lU0-RA-g15"/>
                         <outlet property="stackView" destination="Dsq-QJ-knO" id="ty7-wd-Clz"/>
                     </connections>
                 </viewController>
                 <customObject id="pXO-Yd-J7O" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2540" y="443"/>
+        </scene>
+        <!--Register Account Controller-->
+        <scene sceneID="f2c-iQ-QEK">
+            <objects>
+                <viewController identifier="RegisterAccountController" storyboardIdentifier="RegisterAccountController" id="KTt-N4-KO7" customClass="RegisterAccountController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="gus-3h-wHE">
+                        <rect key="frame" x="0.0" y="0.0" width="480" height="300"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Com-25-e0g">
+                                <rect key="frame" x="20" y="240" width="40" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="40" id="0zg-Ym-nMu"/>
+                                    <constraint firstAttribute="width" constant="40" id="tuZ-ej-Kkg"/>
+                                </constraints>
+                                <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSUserAccounts" id="RgY-SZ-uFI"/>
+                            </imageView>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gMB-YK-C3E">
+                                <rect key="frame" x="66" y="251" width="172" height="19"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Register XMPP account" id="j5C-9D-w4O">
+                                    <font key="font" metaFont="systemSemibold" size="15"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ccw-GE-zCA">
+                                <rect key="frame" x="20" y="208" width="440" height="22"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" placeholderString="Enter domain name..." drawsBackground="YES" id="6dU-W8-3jO">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" maxValue="100" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="rOi-tc-VZu">
+                                <rect key="frame" x="30" y="204" width="32" height="32"/>
+                            </progressIndicator>
+                            <stackView distribution="fill" orientation="vertical" alignment="leading" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fD7-VX-LdR" customClass="JabberDataFormView" customModule="BeagleIM" customModuleProvider="target">
+                                <rect key="frame" x="20" y="51" width="440" height="147"/>
+                            </stackView>
+                            <button verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lXD-a4-V79">
+                                <rect key="frame" x="384" y="13" width="83" height="32"/>
+                                <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="fYG-1W-E0t">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="submitClicked:" target="KTt-N4-KO7" id="WNq-Ju-UVo"/>
+                                </connections>
+                            </button>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="5ap-te-hA4">
+                                <rect key="frame" x="301" y="13" width="82" height="32"/>
+                                <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="hR3-qS-JXb">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="cancelClicked:" target="KTt-N4-KO7" id="NOF-iY-fLK"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="fD7-VX-LdR" firstAttribute="leading" secondItem="ccw-GE-zCA" secondAttribute="leading" id="4FV-sx-sIO"/>
+                            <constraint firstItem="fD7-VX-LdR" firstAttribute="top" secondItem="ccw-GE-zCA" secondAttribute="bottom" constant="10" id="7vk-2C-pMi"/>
+                            <constraint firstAttribute="bottom" secondItem="lXD-a4-V79" secondAttribute="bottom" constant="20" id="8wQ-m5-hO9"/>
+                            <constraint firstItem="fD7-VX-LdR" firstAttribute="trailing" secondItem="ccw-GE-zCA" secondAttribute="trailing" id="NHt-CD-f2k"/>
+                            <constraint firstItem="gMB-YK-C3E" firstAttribute="leading" secondItem="Com-25-e0g" secondAttribute="trailing" constant="8" id="Oec-QD-8EP"/>
+                            <constraint firstItem="lXD-a4-V79" firstAttribute="trailing" secondItem="fD7-VX-LdR" secondAttribute="trailing" id="PUi-cQ-gik"/>
+                            <constraint firstItem="rOi-tc-VZu" firstAttribute="centerY" secondItem="gus-3h-wHE" secondAttribute="centerY" id="R7m-0U-mx8"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="gMB-YK-C3E" secondAttribute="trailing" constant="20" id="S8s-hC-aN9"/>
+                            <constraint firstItem="gMB-YK-C3E" firstAttribute="centerY" secondItem="Com-25-e0g" secondAttribute="centerY" id="Sxp-0I-Fql"/>
+                            <constraint firstItem="Com-25-e0g" firstAttribute="leading" secondItem="gus-3h-wHE" secondAttribute="leading" constant="20" id="db9-Iv-0Lt"/>
+                            <constraint firstItem="ccw-GE-zCA" firstAttribute="leading" secondItem="Com-25-e0g" secondAttribute="leading" id="fjq-91-iwp"/>
+                            <constraint firstAttribute="trailing" secondItem="ccw-GE-zCA" secondAttribute="trailing" constant="20" id="kGp-Oj-O4u"/>
+                            <constraint firstItem="rOi-tc-VZu" firstAttribute="centerX" secondItem="gus-3h-wHE" secondAttribute="centerX" id="mOt-Be-S6a"/>
+                            <constraint firstItem="5ap-te-hA4" firstAttribute="top" secondItem="fD7-VX-LdR" secondAttribute="bottom" constant="10" id="mTJ-0F-Zfz"/>
+                            <constraint firstItem="5ap-te-hA4" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="gus-3h-wHE" secondAttribute="leading" constant="20" id="qX3-4i-UcT"/>
+                            <constraint firstItem="Com-25-e0g" firstAttribute="top" secondItem="gus-3h-wHE" secondAttribute="top" constant="20" id="sBc-kK-1wm"/>
+                            <constraint firstItem="5ap-te-hA4" firstAttribute="centerY" secondItem="lXD-a4-V79" secondAttribute="centerY" id="uQ8-uG-PAO"/>
+                            <constraint firstItem="lXD-a4-V79" firstAttribute="leading" secondItem="5ap-te-hA4" secondAttribute="trailing" constant="12" id="wbh-hv-5vj"/>
+                            <constraint firstItem="ccw-GE-zCA" firstAttribute="top" secondItem="Com-25-e0g" secondAttribute="bottom" constant="10" id="yJ8-DC-ZFl"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="cancelButton" destination="5ap-te-hA4" id="wWA-AG-F4e"/>
+                        <outlet property="domainField" destination="ccw-GE-zCA" id="WMd-Bo-oKL"/>
+                        <outlet property="form" destination="fD7-VX-LdR" id="sqm-YC-I2L"/>
+                        <outlet property="progressIndicator" destination="rOi-tc-VZu" id="bov-Tu-vab"/>
+                        <outlet property="submitButton" destination="lXD-a4-V79" id="acJ-os-CoO"/>
+                    </connections>
+                </viewController>
+                <customObject id="PpC-vt-HSX" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2540" y="766"/>
         </scene>
         <!--Tab View Controller-->
         <scene sceneID="hQO-l9-qU2">

@@ -101,7 +101,7 @@ class JabberDataFormView: FormView {
     }
     
     fileprivate func create(field formField: Field) -> Any? {
-        let label = formField.label ?? formField.name;
+        let label = formField.label ?? (formField.name.prefix(1).uppercased() + formField.name.dropFirst());
         switch formField {
         case let f as BooleanField:
             return addCheckbox(label: label, value: f.value);

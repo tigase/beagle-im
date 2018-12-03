@@ -31,6 +31,11 @@ class ServerCertificateInfo: SslCertificateInfo {
         super.init(trust: trust);
     }
     
+    init(sslCertificateInfo: SslCertificateInfo, accepted: Bool) {
+        self.accepted = accepted;
+        super.init(sslCertificateInfo: sslCertificateInfo);
+    }
+    
     required init?(coder aDecoder: NSCoder) {
         accepted = aDecoder.decodeBool(forKey: "accepted");
         super.init(coder: aDecoder);

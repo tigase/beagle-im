@@ -26,6 +26,7 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
     
     @IBOutlet var logInButton: NSButton!;
     @IBOutlet var stackView: NSStackView!
+    @IBOutlet var registerButton: NSButton!;
     
     var usernameField: NSTextField!;
     var passwordField: NSSecureTextField!;
@@ -54,6 +55,18 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
         account.password = passwordField.stringValue;
         _ = AccountManager.save(account: account);
         self.view.window?.sheetParent?.endSheet(self.view.window!);
+    }
+    
+    @IBAction func registerClicked(_ button: NSButton) {
+        guard let registerAccountController = self.storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier("RegisterAccountController")) as? RegisterAccountController else {
+            self.view.window?.sheetParent?.endSheet(self.view.window!);
+            return;
+        }
+        
+        let window = NSWindow(contentViewController: registerAccountController);
+        self.view.window?.beginSheet(window, completionHandler: { (reponse) in
+            self.view.window?.sheetParent?.endSheet(self.view.window!);
+        })
     }
     
     func addRow<T: NSView>(label text: String, field: T) -> T {
