@@ -109,6 +109,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 //        rosterWindowController.showWindow(self);
         _ = XmppService.instance;
         
+        if AccountManager.getAccounts().isEmpty {
+            let alert = Alert();
+            alert.messageText = "No account";
+            alert.informativeText = "To use BeagleIM you need to have the XMPP account configured. Would you like to add one now?";
+            alert.addButton(withTitle: "Yes");
+            alert.addButton(withTitle: "Not now");
+            
+            alert.run { (response) in
+                switch response {
+                case .alertFirstButtonReturn:
+                    // open settings window
+                    guard let preferencesWindowController = self.preferencesWindowController else {
+                        return;
+                    }
+                    (preferencesWindowController.contentViewController as? NSTabViewController)?.selectedTabViewItemIndex = 1;
+                    preferencesWindowController.showWindow(self);
+                default:
+                    // do nothing..
+                    break;
+                }
+            };
+        }
+        
         if Settings.systemMenuIcon.bool() {
             self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength);
             self.updateStatusItem();
@@ -208,6 +231,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
     }
     
+    var preferencesWindowController: NSWindowController? {
+        return NSApplication.shared.windows.map({ (window) -> NSWindowController? in
+            return window.windowController;
+        }).filter({ (controller) -> Bool in
+            return controller != nil
+        }).first(where: { (controller) -> Bool in
+            return (controller?.contentViewController as? NSTabViewController) != nil
+        }) ?? mainWindowController?.storyboard?.instantiateController(withIdentifier: "PreferencesWindowController") as? NSWindowController;
+    }
+    
     func userNotificationCenter(_ center: NSUserNotificationCenter, didActivate notification: NSUserNotification) {
         center.removeDeliveredNotification(notification);
         
@@ -220,13 +253,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             guard let _ = BareJID(notification.userInfo?["account"] as? String) else {
                 return;
             }
-            guard let windowController = NSApplication.shared.windows.map({ (window) -> NSWindowController? in
-                return window.windowController;
-            }).filter({ (controller) -> Bool in
-                return controller != nil
-            }).first(where: { (controller) -> Bool in
-                return (controller?.contentViewController as? NSTabViewController) != nil
-            }) ?? mainWindowController?.storyboard?.instantiateController(withIdentifier: "PreferencesWindowController") as? NSWindowController else {
+            guard let windowController = preferencesWindowController else {
                 return;
             }
             (windowController.contentViewController as? NSTabViewController)?.selectedTabViewItemIndex = 1;
@@ -277,13 +304,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             guard let _ = BareJID(userInfo["account"] as? String) else {
                 break;
             }
-            guard let windowController = NSApplication.shared.windows.map({ (window) -> NSWindowController? in
-                return window.windowController;
-            }).filter({ (controller) -> Bool in
-                return controller != nil
-            }).first(where: { (controller) -> Bool in
-                return (controller?.contentViewController as? NSTabViewController) != nil
-            }) ?? mainWindowController?.storyboard?.instantiateController(withIdentifier: "PreferencesWindowController") as? NSWindowController else {
+            guard let windowController = preferencesWindowController else {
                 break;
             }
             (windowController.contentViewController as? NSTabViewController)?.selectedTabViewItemIndex = 1;
