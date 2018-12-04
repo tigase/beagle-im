@@ -198,8 +198,8 @@ class VCardEditorViewController: NSViewController, AccountAware {
             if response == .OK, let url = openFile.url {
                 let image = NSImage(contentsOf: url);
                 self.avatarView.image = image ?? NSImage(named: NSImage.userName);
-                let data = image?.scaledToPng(to: 512);
-                self.vcard.photos = data == nil ? [] : [ VCard.Photo(uri: nil, type: "image/png", binval: data!.base64EncodedString(options: []), types: [.home]) ];
+                let data = image?.scaled(maxWidthOrHeight: 512, format: .jpeg, properties: [.compressionFactor: 0.8]);
+                self.vcard.photos = data == nil ? [] : [ VCard.Photo(uri: nil, type: "image/jpeg", binval: data!.base64EncodedString(options: []), types: [.home]) ];
                 
                 if data != nil {
                     guard let account = self.account, let avatarModule: PEPUserAvatarModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PEPUserAvatarModule.ID), avatarModule.isPepAvailable else {
@@ -254,10 +254,12 @@ class VCardEditorViewController: NSViewController, AccountAware {
 
     @IBAction func submitClicked(_ sender: NSButton) {
         if isEnabled {
+            sender.isEnabled = false;
             self.view.window?.makeFirstResponder(sender);
 
             guard let account = self.account, let vcard4Module: VCard4Module = XmppService.instance.getClient(for: account)?.modulesManager.getModule(VCard4Module.ID) else {
                 self.handleError(title: "Publication of new version of VCard failed", message: "Account is not connected");
+                sender.isEnabled = true;
                 return;
             }
             self.progressIndicator.startAnimation(self);
@@ -265,15 +267,19 @@ class VCardEditorViewController: NSViewController, AccountAware {
                 DBVCardStore.instance.updateVCard(for: account, on: account, vcard: self.vcard);
                 DispatchQueue.main.async {
                     self.isEnabled = false;
+                    sender.isEnabled = true;
                     self.progressIndicator.stopAnimation(self);
                 }
             }, onError: { error in
                 self.progressIndicator.stopAnimation(self);
+                sender.isEnabled = true;
                 self.handleError(title: "Publication of new version of VCard failed", message: "Server returned an error: \(error ?? ErrorCondition.remote_server_timeout)");
             });
         } else {
+            sender.isEnabled = false;
             refreshVCard(onSuccess: {
                 DispatchQueue.main.async {
+                    sender.isEnabled = true;
                     self.isEnabled = true;
                 }
             }, onFailure: { error in

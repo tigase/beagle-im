@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
     <dependencies>
-        <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14460.31"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -783,7 +782,7 @@ CA
             <objects>
                 <viewController title="Accounts" id="Yzz-sO-CKA" userLabel="Accounts list" customClass="AccountsListController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="iXV-Wj-J3c">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="300"/>
+                        <rect key="frame" x="0.0" y="0.0" width="710" height="300"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <scrollView autohidesScrollers="YES" horizontalLineScroll="42" horizontalPageScroll="10" verticalLineScroll="42" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DzT-UD-yaR">
@@ -859,7 +858,7 @@ CA
                                     <nil key="backgroundColor"/>
                                 </clipView>
                                 <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="pT4-vZ-ink">
-                                    <rect key="frame" x="1" y="224" width="158" height="16"/>
+                                    <rect key="frame" x="1" y="224" width="218" height="16"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="g83-au-1Yf">
@@ -896,7 +895,7 @@ CA
                                 </textFieldCell>
                             </textField>
                             <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="LND-SU-u8v">
-                                <rect key="frame" x="413" y="17" width="170" height="25"/>
+                                <rect key="frame" x="468" y="17" width="225" height="25"/>
                                 <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="Rgb-A8-Kua">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="menu"/>
@@ -914,6 +913,7 @@ CA
                             <constraint firstAttribute="trailing" secondItem="LND-SU-u8v" secondAttribute="trailing" constant="20" id="FQX-Es-0OX"/>
                             <constraint firstAttribute="bottom" secondItem="wnw-0k-2Te" secondAttribute="bottom" constant="20" id="FsS-ag-0NF"/>
                             <constraint firstAttribute="trailing" secondItem="AJc-NH-RSy" secondAttribute="trailing" constant="20" id="Ilu-kG-cMi"/>
+                            <constraint firstItem="DzT-UD-yaR" firstAttribute="width" secondItem="AJc-NH-RSy" secondAttribute="width" multiplier="0.5" id="Ljg-ea-Hn1"/>
                             <constraint firstItem="nOm-Tm-1vK" firstAttribute="leading" secondItem="DzT-UD-yaR" secondAttribute="trailing" constant="10" id="M9P-rb-KHY"/>
                             <constraint firstItem="LND-SU-u8v" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="nOm-Tm-1vK" secondAttribute="trailing" constant="10" id="MLM-gl-0aa"/>
                             <constraint firstItem="wnw-0k-2Te" firstAttribute="top" secondItem="DzT-UD-yaR" secondAttribute="bottom" id="S3u-64-bhH"/>
@@ -1141,6 +1141,7 @@ Gw
                         <tabViewItem label="Message archiving" id="1Og-DA-y8T"/>
                         <tabViewItem id="52h-lG-uy8"/>
                     </tabViewItems>
+                    <viewControllerTransitionOptions key="transitionOptions" allowUserInteraction="YES"/>
                     <tabView key="tabView" controlSize="small" id="Bn2-US-gYa">
                         <rect key="frame" x="0.0" y="0.0" width="450" height="300"/>
                         <autoresizingMask key="autoresizingMask"/>
