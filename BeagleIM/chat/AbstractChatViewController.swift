@@ -65,7 +65,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         self.updateMessageFieldSize();
         
         mouseMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseDragged, .leftMouseUp, .rightMouseDown]) { (event) -> NSEvent? in
-            self.handleMouse(event: event) ? nil : event;
+            return self.handleMouse(event: event) ? nil : event;
         }
         NotificationCenter.default.addObserver(self, selector: #selector(didBecomeKeyWindow), name: NSWindow.didBecomeKeyNotification, object: nil);
     }
@@ -104,7 +104,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         
             guard event.clickCount == 1 else {
                 //return false;
-                return true;
+                return false;
             }
             
             guard let messageView = messageViewFor(event: event) else {
@@ -116,11 +116,11 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
             return true;//currentSession != nil;
         case .leftMouseUp:
             guard let session = currentSession else {
-                return true;
+                return false;
             }
 
             guard let messageView = messageViewFor(event: event) else {
-                return true;
+                return isInMesageView(event: event);
             }
             
             if let idx = messageView.message.characterIndexFor(event: event), idx != 0 && session.position == idx && session.messageId == messageView.id {

@@ -59,8 +59,6 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
         
         statusButton.setTitle(statusButton.itemTitle(at: 1));
         
-        self.contactsTableView.doubleAction = #selector(contactDoubleClicked);
-        
         updateContactsFilterSelector();
         
         reloadData();
@@ -170,7 +168,7 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
         return self.items[at];
     }
     
-    @objc func contactDoubleClicked(_ sender: NSTableView) {
+    @IBAction func contactDoubleClicked(_ sender: NSTableView) {
         let selected = self.items[sender.clickedRow];
         
         guard let messageModule: MessageModule = XmppService.instance.getClient(for: selected.account)?.modulesManager.getModule(MessageModule.ID) else {
@@ -203,6 +201,10 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
         return items.count;
     }
 
+    func tableView(_ tableView: NSTableView, shouldEdit tableColumn: NSTableColumn?, row: Int) -> Bool {
+        return false;
+    }
+    
     func tableView(_ tableView: NSTableView, objectValueFor tableColumn: NSTableColumn?, row: Int) -> Any? {
         return items[row];
     }
