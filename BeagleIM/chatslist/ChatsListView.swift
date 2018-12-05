@@ -85,7 +85,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     static let CHAT_SELECTED = Notification.Name("chatSelected");
     static let CLOSE_SELECTED_CHAT = Notification.Name("chatSelectedClose");
     
-    @IBOutlet var outlineView: NSOutlineView!;
+    @IBOutlet var outlineView: ChatsListView!;
     
     var groups: [ChatsListGroupProtocol] = [];
 
@@ -317,6 +317,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
             view?.closeFunction = {
                 self.close(chat: chat);
             }
+            view?.setMouseHovers(false);
             view?.layout();
             return view;
         }
@@ -479,9 +480,28 @@ class ChatsListView: NSOutlineView {
         }
     }
     
+    override func insertItems(at indexes: IndexSet, inParent parent: Any?, withAnimation animationOptions: NSTableView.AnimationOptions = []) {
+        super.insertItems(at: indexes, inParent: parent, withAnimation: animationOptions);
+        updateMouseOver(at: NSEvent.mouseLocation);
+    }
+    
+    override func removeItems(at indexes: IndexSet, inParent parent: Any?, withAnimation animationOptions: NSTableView.AnimationOptions = []) {
+        super.removeItems(at: indexes, inParent: parent, withAnimation: animationOptions);
+        updateMouseOver(at: NSEvent.mouseLocation);
+    }
+    
+    override func moveItem(at fromIndex: Int, inParent oldParent: Any?, to toIndex: Int, inParent newParent: Any?) {
+        super.moveItem(at: fromIndex, inParent: oldParent, to: toIndex, inParent: newParent);
+        updateMouseOver(at: NSEvent.mouseLocation);
+    }
+    
     fileprivate func updateMouseOver(from event: NSEvent) {
+        updateMouseOver(at: event.locationInWindow);
+    }
+    
+    fileprivate func updateMouseOver(at point: NSPoint, force: Bool = false) {
         let prevMouseOverRow = self.mouseOverRow;
-        self.mouseOverRow = self.row(at: self.convert(event.locationInWindow, from: nil));
+        self.mouseOverRow = self.row(at: self.convert(point, from: nil));
         guard mouseOverRow != prevMouseOverRow else {
             return;
         }
