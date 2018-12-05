@@ -167,6 +167,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
                         if row == end {
                             let s1 = min(session.position, idx);
                             let s2 = max(session.position, idx);
+                            //print("s1:", s1, "s2:", s2, "length:", (s2-s1) + 1);
                             str.addAttribute(.backgroundColor, value: NSColor.selectedTextBackgroundColor, range: NSRange(location: s1, length: (s2 - s1) + 1));
                         } else {
                             let start = begin == startRow ? session.position : idx;
@@ -386,9 +387,12 @@ extension NSTextField {
         let textStorage:NSTextStorage = NSTextStorage.init()
         layoutManager.addTextContainer(textContainer);
         textStorage.addLayoutManager(layoutManager);
-        
+
         layoutManager.typesetterBehavior = .latestBehavior;
-        textContainer.containerSize = (self.cell as! NSTextFieldCell).controlView!.bounds.size;
+        textContainer.lineFragmentPadding = 0;
+        textContainer.maximumNumberOfLines = self.maximumNumberOfLines;
+        textContainer.lineBreakMode = self.lineBreakMode;
+        textContainer.size = (self.cell as! NSTextFieldCell).controlView!.bounds.size;
         
         textStorage.beginEditing();
         textStorage.setAttributedString(self.attributedStringValue);
@@ -396,7 +400,11 @@ extension NSTextField {
         
         var distance: CGFloat = 0;
         let idx = layoutManager.characterIndex(for: textPoint, in: textContainer, fractionOfDistanceBetweenInsertionPoints: &distance);
-        guard distance < 1.0 && distance > -1.0 else {
+        //guard distance < 1.0 && distance > -1.0 else {
+        //    return nil;
+        //}
+        let rect = layoutManager.boundingRect(forGlyphRange: NSRange(location: idx, length: 1), in: textContainer);
+        guard rect.contains(NSPoint(x: textPoint.x, y: textPoint.y)) else {
             return nil;
         }
         return idx;
