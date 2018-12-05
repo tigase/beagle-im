@@ -345,7 +345,8 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
 
             let item = items[currIdx];
             
-            if (name == nil && item.name == nil) || (name != nil && name! == item.name!) {
+            if (name ?? "") == (item.name ?? "") {
+            //if (name == nil && item.name == nil) || (name != nil && name! == item.name!) {
                 // here we are not changing position
                 item.status = status;
                 
