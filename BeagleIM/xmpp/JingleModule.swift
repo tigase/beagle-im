@@ -47,13 +47,19 @@ class JingleModule: XmppModule, ContextAware {
             return content!;
         });
         
+        let bundle = jingle.findChild(name: "group", xmlns: "urn:xmpp:jingle:apps:grouping:0")?.mapChildren(transform: { (el) -> String? in
+            return el.getAttribute("name");
+        }, filter: { (el) -> Bool in
+            return el.name == "content" && el.getAttribute("name") != nil;
+        });
+        
 //        guard let session = action == .sessionInitiate ? sessionManager.getOrCreate(account: context.sessionObject.userBareJid!, jid: stanza.from!, sid: sid, initiator: initiator) : sessionManager.get(account: context.sessionObject.userBareJid!, jid: stanza.from!, sid: sid) else {
 //            throw ErrorCondition.item_not_found;
 //        }
         
         do {
 //            try session.handle(action: action, contents: contents);
-            context.eventBus.fire(JingleEvent(sessionObject: context.sessionObject, jid: stanza.from!, action: action, initiator: initiator, sid: sid, contents: contents));//, session: session));
+            context.eventBus.fire(JingleEvent(sessionObject: context.sessionObject, jid: stanza.from!, action: action, initiator: initiator, sid: sid, contents: contents, bundle: bundle));//, session: session));
 //        } catch let err as Jingle.JingleError {
 //            let reason = Element(name: "reason", children: [Element(name: err.rawValue)]);
 //            terminateSession(with: stanza.from!, sid: sid, reason: reason);
@@ -63,7 +69,7 @@ class JingleModule: XmppModule, ContextAware {
         }
     }
     
-    func initiateSession(to jid: JID, sid: String, initiator: JID, contents: [Jingle.Content], callback: @escaping (ErrorCondition?)->Void) {
+    func initiateSession(to jid: JID, sid: String, initiator: JID, contents: [Jingle.Content], bundle: [String]?, callback: @escaping (ErrorCondition?)->Void) {
         let iq = Iq();
         iq.to = jid;
         iq.type = StanzaType.set;
@@ -79,6 +85,15 @@ class JingleModule: XmppModule, ContextAware {
             jingle.addChild(content.toElement());
         }
         
+        if bundle != nil {
+            let group = Element(name: "group", xmlns: "urn:xmpp:jingle:apps:grouping:0");
+            group.setAttribute("semantics", value: "BUNDLE");
+            bundle?.forEach({ (name) in
+                group.addChild(Element(name: "content", attributes: ["name": name]));
+            })
+            jingle.addChild(group);
+        }
+        
         context.writer?.write(iq, callback: { (response) in
             let error = response == nil ? ErrorCondition.remote_server_timeout : response!.errorCondition;
 //            if error != nil {
@@ -88,7 +103,7 @@ class JingleModule: XmppModule, ContextAware {
         });
     }
     
-    func acceptSession(with jid: JID, sid: String, initiator: JID, contents: [Jingle.Content], callback: @escaping (ErrorCondition?)->Void) {
+    func acceptSession(with jid: JID, sid: String, initiator: JID, contents: [Jingle.Content], bundle: [String]?, callback: @escaping (ErrorCondition?)->Void) {
         let iq = Iq();
         iq.to = jid;
         iq.type = StanzaType.set;
@@ -102,6 +117,15 @@ class JingleModule: XmppModule, ContextAware {
         
         contents.forEach { (content) in
             jingle.addChild(content.toElement());
+        }
+        
+        if bundle != nil {
+            let group = Element(name: "group", xmlns: "urn:xmpp:jingle:apps:grouping:0");
+            group.setAttribute("semantics", value: "BUNDLE");
+            bundle?.forEach({ (name) in
+                group.addChild(Element(name: "content", attributes: ["name": name]));
+            })
+            jingle.addChild(group);
         }
         
         context.writer?.write(iq, callback: { (response) in
@@ -164,6 +188,7 @@ class JingleModule: XmppModule, ContextAware {
         let initiator: JID!;
         let sid: String!;
         let contents: [Jingle.Content];
+        let bundle: [String]?;
 //        let session: Jingle.Session!;
         
         init() {
@@ -173,16 +198,18 @@ class JingleModule: XmppModule, ContextAware {
             self.initiator = nil;
             self.sid = nil;
             self.contents = [];
+            self.bundle = nil;
 //            self.session = nil;
         }
         
-        init(sessionObject: SessionObject, jid: JID, action: Jingle.Action, initiator: JID, sid: String, contents: [Jingle.Content]) {//}, session: Jingle.Session) {
+        init(sessionObject: SessionObject, jid: JID, action: Jingle.Action, initiator: JID, sid: String, contents: [Jingle.Content], bundle: [String]?) {//}, session: Jingle.Session) {
             self.sessionObject = sessionObject;
             self.jid = jid;
             self.action = action;
             self.initiator = initiator;
             self.sid = sid;
             self.contents = contents;
+            self.bundle = bundle;
 //            self.session = session;
         }
         
@@ -235,13 +262,20 @@ class Jingle {
             
             let payloadIds = line[3..<line.count];
             let payloads = payloadIds.map { (id) -> Jingle.RTP.Description.Payload in
-                let prefix = "a=rtpmap:\(id) ";
+                var prefix = "a=rtpmap:\(id) ";
                 let l = sdp.first(where: { (s) -> Bool in
                     return s.starts(with: prefix)
                 })?.dropFirst(prefix.count).components(separatedBy: "/");
+                prefix = "a=fmtp:\(id) ";
+                let params = sdp.first(where: { (s) -> Bool in
+                    return s.starts(with: prefix);
+                })?.dropFirst(prefix.count).components(separatedBy: ";").map({ (s) -> Jingle.RTP.Description.Payload.Parameter in
+                    let parts = s.components(separatedBy: "=");
+                    return Jingle.RTP.Description.Payload.Parameter(name: parts[0], value: parts.count > 1 ? parts[1] : "");
+                });
                 let clockrate = l?[1];
                 let channels = ((l?.count ?? 0) > 2) ? l![2] : nil;
-                return Jingle.RTP.Description.Payload(id: UInt8(id)!, name: l?[0], clockrate: clockrate != nil ? UInt(clockrate!) : nil, channels: (channels != nil ? Int(channels!) : nil) ?? 1);
+                return Jingle.RTP.Description.Payload(id: UInt8(id)!, name: l?[0], clockrate: clockrate != nil ? UInt(clockrate!) : nil, channels: (channels != nil ? Int(channels!) : nil) ?? 1, parameters: params);
             }
             
             let encryptions = sdp.filter { (l) -> Bool in
@@ -372,6 +406,12 @@ class Jingle {
                     }
                     sdp.append(line);
                     
+                    if !(payload.parameters?.isEmpty ?? true) {
+                        let value = payload.parameters!.map({ (p) -> String in
+                            return "\(p.name)=\(p.value)";
+                        }).joined(separator: ";");
+                        sdp.append("a=fmtp:\(payload.id) \(value)");
+                    }
                     // add support for payload parameters..
                     // add support for payload feedback..
                 }
@@ -798,21 +838,27 @@ extension Jingle {
                 let name: String?;
                 let ptime: UInt?;
                 
+                let parameters: [Parameter]?;
+                
                 convenience init?(from el: Element) {
                     guard el.name == "payload-type", let idStr = el.getAttribute("id"), let id = UInt8(idStr) else {
                         return nil;
                     }
+                    let parameters = el.mapChildren(transform: { (el) -> Parameter? in
+                        return Parameter(from: el);
+                    });
                     let channels = Int(el.getAttribute("channels") ?? "") ?? 1;
-                    self.init(id: id, name: el.getAttribute("name"), clockrate: UInt(el.getAttribute("clockrate") ?? ""), channels: channels, ptime: UInt(el.getAttribute("ptime") ?? ""), maxptime: UInt(el.getAttribute("maxptime") ?? ""));
+                    self.init(id: id, name: el.getAttribute("name"), clockrate: UInt(el.getAttribute("clockrate") ?? ""), channels: channels, ptime: UInt(el.getAttribute("ptime") ?? ""), maxptime: UInt(el.getAttribute("maxptime") ?? ""), parameters: parameters);
                 }
                 
-                init(id: UInt8, name: String? = nil, clockrate: UInt? = nil, channels: Int = 1, ptime: UInt? = nil, maxptime: UInt? = nil) {
+                init(id: UInt8, name: String? = nil, clockrate: UInt? = nil, channels: Int = 1, ptime: UInt? = nil, maxptime: UInt? = nil, parameters: [Parameter]?) {
                     self.id = id;
                     self.name = name;
                     self.clockrate = clockrate;
                     self.channels = channels;
                     self.ptime = ptime;
                     self.maxptime = maxptime;
+                    self.parameters = parameters;
                 }
                 
                 func toElement() -> Element {
@@ -836,7 +882,33 @@ extension Jingle {
                         el.setAttribute("maxptime", value: String(maxptime));
                     }
                     
+                    parameters?.forEach { param in
+                        el.addChild(param.toElement());
+                    }
+                    
                     return el;
+                }
+                
+                class Parameter {
+                    
+                    let name: String;
+                    let value: String;
+                    
+                    convenience init?(from el: Element) {
+                        guard el.name == "parameter" &&  (el.xmlns == "urn:xmpp:jingle:apps:rtp:1" || el.xmlns == nil), let name = el.getAttribute("name"), let value = el.getAttribute("value") else {
+                            return nil;
+                        }
+                        self.init(name: name, value: value);
+                    }
+                    
+                    init(name: String, value: String) {
+                        self.name = name;
+                        self.value = value;
+                    }
+                    
+                    func toElement() -> Element {
+                        return Element(name: "parameter", attributes: ["name": name, "value": value, "xmlns": "urn:xmpp:jingle:apps:rtp:1"]);
+                    }
                 }
             }
             
@@ -1136,11 +1208,13 @@ class SDP {
     let id: String;
     let sid: String;
     let contents: [Jingle.Content];
+    let bundle: [String]?;
     
-    init(sid: String, contents: [Jingle.Content]) {
+    init(sid: String, contents: [Jingle.Content], bundle: [String]?) {
         self.id = "\(Date().timeIntervalSince1970)";
         self.sid = sid;
         self.contents = contents;
+        self.bundle = bundle;
     }
     
     init?(from sdp: String, creator: Jingle.Content.Creator) {
@@ -1150,7 +1224,9 @@ class SDP {
         }
         media[media.count-1] = String(media[media.count-1].dropLast(2));
         
-        guard let sessionLine = media.remove(at: 0).components(separatedBy: "\r\n").first(where: { (line) -> Bool in
+        let sessionLines = media.remove(at: 0).components(separatedBy: "\r\n");
+        
+        guard let sessionLine = sessionLines.first(where: { (line) -> Bool in
             return line.starts(with: "o=");
         })?.components(separatedBy: " "), sessionLine.count > 3 else {
             return nil;
@@ -1158,6 +1234,10 @@ class SDP {
         
         self.sid = sessionLine[1];
         self.id = sessionLine[2];
+        let groupParts = sessionLines.first(where: { s -> Bool in
+            return s.starts(with: "a=group:BUNDLE ");
+        })?.split(separator: " ") ?? [ "" ];
+        self.bundle = groupParts[0] == "a=group:BUNDLE" ? groupParts.dropFirst().map({ s -> String in return String(s); }) : nil;
         
         self.contents = media.map({ m -> Jingle.Content? in
             return Jingle.Content(fromSDP: m, creator: creator);
@@ -1172,6 +1252,12 @@ class SDP {
         var sdp = [
             "v=0", "o=- \(sid) \(id) IN IP4 0.0.0.0", "s=-", "t=0 0"
         ];
+        
+        if bundle != nil {
+            var t = [ "a=group:BUNDLE" ];
+            t.append(contentsOf: self.bundle!);
+            sdp.append(t.joined(separator: " "));
+        }
         
         let contents: [String] = self.contents.map({ c -> String in
             return c.toSDP();

@@ -35,6 +35,8 @@
 	<string>Copyright © 2018 Tigase, Inc. All rights reserved.</string>
 	<key>NSMainStoryboardFile</key>
 	<string>Main</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Uses camera for VoIP calls</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Uses microphone for VoIP calls</string>
 	<key>NSPrincipalClass</key>

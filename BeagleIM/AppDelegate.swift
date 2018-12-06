@@ -152,6 +152,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 if granted {
                 }
             })
+            AVCaptureDevice.requestAccess(for: .video, completionHandler: { granted in
+                print("permission granted: \(granted)");
+                if granted {
+                }
+            })
         } else {
             // Fallback on earlier versions
         }
