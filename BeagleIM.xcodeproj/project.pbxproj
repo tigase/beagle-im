@@ -876,11 +876,9 @@
 				);
 				INFOPLIST_FILE = BeagleIM/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.BeagleIM;
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				OTHER_LDFLAGS = "-v";
-				PRODUCT_BUNDLE_IDENTIFIER = eu.hilow.BeagleIM;
+				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.BeagleIM;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_INCLUDE_PATHS = "$(SDK_DIR)/usr/include/libxml2/** $(SRCROT)/jrtplib/**";
@@ -904,11 +902,9 @@
 				);
 				INFOPLIST_FILE = BeagleIM/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.BeagleIM;
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				OTHER_LDFLAGS = "-v";
-				PRODUCT_BUNDLE_IDENTIFIER = eu.hilow.BeagleIM;
+				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.BeagleIM;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_INCLUDE_PATHS = "$(SDK_DIR)/usr/include/libxml2/** $(SRCROT)/jrtplib/**";
