@@ -273,9 +273,16 @@ class Jingle {
                     let parts = s.components(separatedBy: "=");
                     return Jingle.RTP.Description.Payload.Parameter(name: parts[0], value: parts.count > 1 ? parts[1] : "");
                 });
+                prefix = "a=rtcp-fb:\(id) ";
+                let rtcpFb = sdp.first(where: { (s) -> Bool in
+                    return s.starts(with: prefix);
+                })?.dropFirst(prefix.count).components(separatedBy: ";").map({ (s) -> Jingle.RTP.Description.Payload.RtcpFeedback in
+                    let parts = s.components(separatedBy: " ");
+                    return Jingle.RTP.Description.Payload.RtcpFeedback(type: parts[0], subtype: parts.count > 1 ? parts[1] : nil);
+                });
                 let clockrate = l?[1];
                 let channels = ((l?.count ?? 0) > 2) ? l![2] : nil;
-                return Jingle.RTP.Description.Payload(id: UInt8(id)!, name: l?[0], clockrate: clockrate != nil ? UInt(clockrate!) : nil, channels: (channels != nil ? Int(channels!) : nil) ?? 1, parameters: params);
+                return Jingle.RTP.Description.Payload(id: UInt8(id)!, name: l?[0], clockrate: clockrate != nil ? UInt(clockrate!) : nil, channels: (channels != nil ? Int(channels!) : nil) ?? 1, parameters: params, rtcpFeedbacks: rtcpFb);
             }
             
             let encryptions = sdp.filter { (l) -> Bool in
@@ -412,6 +419,13 @@ class Jingle {
                         }).joined(separator: ";");
                         sdp.append("a=fmtp:\(payload.id) \(value)");
                     }
+                    payload.rtcpFeedbacks?.forEach({ (rtcpFb) in
+                        if rtcpFb.subtype == nil {
+                            sdp.append("a=rtcp-fb:\(payload.id) \(rtcpFb.type)");
+                        } else {
+                            sdp.append("a=rtcp-fb:\(payload.id) \(rtcpFb.type) \(rtcpFb.subtype!)");
+                        }
+                    })
                     // add support for payload parameters..
                     // add support for payload feedback..
                 }
@@ -839,6 +853,7 @@ extension Jingle {
                 let ptime: UInt?;
                 
                 let parameters: [Parameter]?;
+                let rtcpFeedbacks: [RtcpFeedback]?;
                 
                 convenience init?(from el: Element) {
                     guard el.name == "payload-type", let idStr = el.getAttribute("id"), let id = UInt8(idStr) else {
@@ -847,11 +862,14 @@ extension Jingle {
                     let parameters = el.mapChildren(transform: { (el) -> Parameter? in
                         return Parameter(from: el);
                     });
+                    let rtcpFb = el.mapChildren(transform: { (el) -> RtcpFeedback? in
+                        return RtcpFeedback(from: el);
+                    });
                     let channels = Int(el.getAttribute("channels") ?? "") ?? 1;
-                    self.init(id: id, name: el.getAttribute("name"), clockrate: UInt(el.getAttribute("clockrate") ?? ""), channels: channels, ptime: UInt(el.getAttribute("ptime") ?? ""), maxptime: UInt(el.getAttribute("maxptime") ?? ""), parameters: parameters);
+                    self.init(id: id, name: el.getAttribute("name"), clockrate: UInt(el.getAttribute("clockrate") ?? ""), channels: channels, ptime: UInt(el.getAttribute("ptime") ?? ""), maxptime: UInt(el.getAttribute("maxptime") ?? ""), parameters: parameters, rtcpFeedbacks: rtcpFb);
                 }
                 
-                init(id: UInt8, name: String? = nil, clockrate: UInt? = nil, channels: Int = 1, ptime: UInt? = nil, maxptime: UInt? = nil, parameters: [Parameter]?) {
+                init(id: UInt8, name: String? = nil, clockrate: UInt? = nil, channels: Int = 1, ptime: UInt? = nil, maxptime: UInt? = nil, parameters: [Parameter]?, rtcpFeedbacks: [RtcpFeedback]?) {
                     self.id = id;
                     self.name = name;
                     self.clockrate = clockrate;
@@ -859,6 +877,7 @@ extension Jingle {
                     self.ptime = ptime;
                     self.maxptime = maxptime;
                     self.parameters = parameters;
+                    self.rtcpFeedbacks = rtcpFeedbacks;
                 }
                 
                 func toElement() -> Element {
@@ -885,6 +904,9 @@ extension Jingle {
                     parameters?.forEach { param in
                         el.addChild(param.toElement());
                     }
+                    rtcpFeedbacks?.forEach({ (rtcpFb) in
+                        el.addChild(rtcpFb.toElement());
+                    })
                     
                     return el;
                 }
@@ -908,6 +930,31 @@ extension Jingle {
                     
                     func toElement() -> Element {
                         return Element(name: "parameter", attributes: ["name": name, "value": value, "xmlns": "urn:xmpp:jingle:apps:rtp:1"]);
+                    }
+                }
+                
+                class RtcpFeedback {
+                    
+                    let type: String;
+                    let subtype: String?;
+                    
+                    convenience init?(from el: Element) {
+                        guard el.name == "rtcp-fb" && el.xmlns == "urn:xmpp:jingle:apps:rtp:rtcp-fb:0", let type = el.getAttribute("type") else {
+                            return nil;
+                        }
+                        self.init(type: type, subtype: el.getAttribute("subtype"));
+                    }
+                    
+                    init(type: String, subtype: String? = nil) {
+                        self.type = type;
+                        self.subtype = subtype;
+                    }
+                    
+                    func toElement() -> Element {
+                        let el = Element(name: "rtcp-fb", xmlns: "urn:xmpp:jingle:apps:rtp:rtcp-fb:0");
+                        el.setAttribute("type", value: type);
+                        el.setAttribute("subtype", value: subtype);
+                        return el;
                     }
                 }
             }
