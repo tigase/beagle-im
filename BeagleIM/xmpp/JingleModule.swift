@@ -292,7 +292,9 @@ class Jingle {
                     return Jingle.RTP.Description.Encryption(cryptoSuite: parts[0], keyParams: parts[1], tag: parts[2], sessionParams: parts.count > 3 ? parts[3] : nil);
             }
             
-            let description = Jingle.RTP.Description(media: mediaName, ssrc: nil, payloads: payloads, bandwidth: nil, encryption: encryptions, rtcpMux: sdp.firstIndex(of: "a=rtcp-mux") != nil);
+            let ssrcs: [Jingle.RTP.Description.SSRC] = Jingle.RTP.Description.SSRC.parse(sdpLines: sdp);
+            let ssrcGroups: [Jingle.RTP.Description.SSRCGroup] = Jingle.RTP.Description.SSRCGroup.parse(sdpLines: sdp);
+            let description = Jingle.RTP.Description(media: mediaName, ssrc: nil, payloads: payloads, bandwidth: nil, encryption: encryptions, rtcpMux: sdp.firstIndex(of: "a=rtcp-mux") != nil, ssrcs: ssrcs, ssrcGroups: ssrcGroups);
 
             guard let pwd = sdp.first(where: { (l) -> Bool in
                 return l.starts(with: "a=ice-pwd:");
@@ -429,6 +431,14 @@ class Jingle {
                     // add support for payload parameters..
                     // add support for payload feedback..
                 }
+                
+                desc.ssrcGroups.forEach { (group) in
+                    sdp.append(group.toSDP());
+                }
+                desc.ssrcs.forEach { (ssrc) in
+                    sdp.append(contentsOf: ssrc.toSDP());
+                }
+                
                 // add suppprt fpr desc feedback...
             }
             
@@ -627,12 +637,48 @@ extension Jingle {
                         return nil
                     }
                     let ip = parts[4];
-                    let relAddr = parts.count >= 14 ? parts[9] : nil;
-                    let relPort = parts.count >= 14 ? parts[11] : nil;
-                    guard let generation = UInt8(parts[parts.count >= 14 ? 13 : 9]) else {
+                    
+                    var relAddr: String?;
+                    var relPort: String?;
+                    var generation: UInt8?;
+                    var tcptype: String?;
+                    var networkId: String?;
+                    var networkCost: String?;
+                    
+                    var i = 8;
+                    while parts.count >= i + 2 {
+                        let key = parts[i];
+                        let val = parts[i + 1];
+                        switch key {
+                        case "tcptype":
+                            tcptype = val;
+                        case "generation":
+                            generation = UInt8(val);
+                        case "network-id":
+                            networkId = val;
+                        case "network-cost":
+                            networkCost = val;
+                        case "raddr":
+                            relAddr = val;
+                        case "rport":
+                            relPort = val;
+                        default:
+                            i = i + 1;
+                            continue;
+                        }
+                        i = i + 2;
+                    }
+                    
+//                    let relAddr = (parts.count >= 14 && type != .host) ? parts[9] : nil;
+//                    let relPort = (parts.count >= 14 && type != .host) ? parts[11] : nil;
+//                    guard let generation = UInt8(parts[(parts.count >= 14 && type != .host) ? 13 : 9]) else {
+//                        return nil;
+//                    }
+                    guard generation != nil else {
                         return nil;
                     }
-                    self.init(component: component, foundation: foundation, generation: generation, id: UUID().uuidString, ip: ip, network: 0, port: port, priority: priority, protocolType: protoType, relAddr: relAddr, relPort: relPort == nil ? nil : UInt16(relPort!), type: type);
+                    
+                    self.init(component: component, foundation: foundation, generation: generation!, id: UUID().uuidString, ip: ip, network: 0, port: port, priority: priority, protocolType: protoType, relAddr: relAddr, relPort: relPort == nil ? nil : UInt16(relPort!), type: type);
                 }
                 
                 init(component: UInt8, foundation: UInt, generation: UInt8, id: String, ip: String, network: UInt8 = 0, port: UInt16, priority: UInt, protocolType: ProtocolType, relAddr: String? = nil, relPort: UInt16? = nil, type: CandidateType?) {
@@ -794,6 +840,8 @@ extension Jingle {
             let bandwidth: String?;
             let rtcpMux: Bool;
             let encryption: [Encryption];
+            let ssrcs: [SSRC];
+            let ssrcGroups: [SSRCGroup];
             
             required convenience init?(from el: Element) {
                 guard el.name == "description" && el.xmlns == "urn:xmpp:jingle:apps:rtp:1" else {
@@ -806,16 +854,25 @@ extension Jingle {
                 let payloads = el.mapChildren(transform: { e1 in return Payload(from: e1) });
                 let encryption: [Encryption] = el.findChild(name: "encryption")?.mapChildren(transform: { e1 in return Encryption(from: e1) }) ?? [];
                 
-                self.init(media: media, ssrc: el.getAttribute("ssrc"), payloads: payloads, bandwidth: el.findChild(name: "bandwidth")?.getAttribute("type"), encryption: encryption, rtcpMux: el.findChild(name: "rtcp-mux") != nil);
+                let ssrcs = el.mapChildren(transform: { (source) -> SSRC? in
+                    return SSRC(from: source);
+                });
+                let ssrcGroups = el.mapChildren(transform: { (group) -> SSRCGroup? in
+                    return SSRCGroup(from: group);
+                });
+                
+                self.init(media: media, ssrc: el.getAttribute("ssrc"), payloads: payloads, bandwidth: el.findChild(name: "bandwidth")?.getAttribute("type"), encryption: encryption, rtcpMux: el.findChild(name: "rtcp-mux") != nil, ssrcs: ssrcs, ssrcGroups: ssrcGroups);
             }
             
-            init(media: String, ssrc: String? = nil, payloads: [Payload], bandwidth: String? = nil, encryption: [Encryption] = [], rtcpMux: Bool = false) {
+            init(media: String, ssrc: String? = nil, payloads: [Payload], bandwidth: String? = nil, encryption: [Encryption] = [], rtcpMux: Bool = false, ssrcs: [SSRC], ssrcGroups: [SSRCGroup]) {
                 self.media = media;
                 self.ssrc = ssrc;
                 self.payloads = payloads;
                 self.bandwidth = bandwidth;
                 self.encryption = encryption;
                 self.rtcpMux = rtcpMux;
+                self.ssrcs = ssrcs;
+                self.ssrcGroups = ssrcGroups;
             }
             
             func toElement() -> Element {
@@ -834,7 +891,12 @@ extension Jingle {
                     }
                     el.addChild(encEl);
                 }
-                
+                ssrcGroups.forEach { (group) in
+                    el.addChild(group.toElement());
+                }
+                ssrcs.forEach({ (ssrc) in
+                    el.addChild(ssrc.toElement());
+                })
                 if bandwidth != nil {
                     el.addChild(Element(name: "bandwidth", attributes: ["type": bandwidth!]));
                 }
@@ -991,6 +1053,151 @@ extension Jingle {
                 }
                 
             }
+            
+            class SSRCGroup {
+                let semantics: String;
+                let sources: [String];
+                
+                convenience init?(from el: Element) {
+                    guard el.name == "ssrc-group", el.xmlns == "urn:xmpp:jingle:apps:rtp:ssma:0", let semantics = el.getAttribute("semantics") else {
+                        return nil;
+                    }
+
+                    let sources = el.mapChildren(transform: { (s) -> String? in
+                        return s.name == "source" ? s.getAttribute("ssrc") : nil;
+                    });
+                    guard !sources.isEmpty else {
+                        return nil;
+                    }
+                    self.init(semantics: semantics, sources: sources);
+                }
+                
+                init(semantics: String, sources: [String]) {
+                    self.semantics = semantics;
+                    self.sources = sources;
+                }
+                
+                func toElement() -> Element {
+                    let el = Element(name: "ssrc-group", xmlns: "urn:xmpp:jingle:apps:rtp:ssma:0");
+                    el.setAttribute("semantics", value: semantics);
+                    sources.forEach { (source) in
+                        let sel = Element(name: "source");
+                        sel.setAttribute("ssrc", value: source);
+                        el.addChild(sel);
+                    }
+                    return el;
+                }
+                
+                func toSDP() -> String {
+                    return "a=ssrc-group:\(semantics) \(sources.joined(separator: " "))";
+                }
+                
+                static func parse(sdpLines: [String.SubSequence]) -> [SSRCGroup] {
+                    let ssrcGroupLines = sdpLines.filter { (line) -> Bool in
+                        return line.starts(with: "a=ssrc-group:");
+                        }.map { (s) -> Substring in
+                            return s.dropFirst("a=ssrc-group:".count);
+                    };
+                    return ssrcGroupLines.map { (line) -> [Substring] in
+                        return line.split(separator: " ");
+                        }.filter { (parts) -> Bool in
+                            return parts.count >= 2;
+                        }.map { (parts) -> SSRCGroup in
+                            return SSRCGroup(semantics: String(parts.first!), sources: parts.dropFirst().map({ (source) -> String in
+                                return String(source);
+                            }));
+                    }
+                }
+            }
+            
+            class SSRC {
+                
+                let ssrc: String;
+                let parameters: [Parameter];
+                
+                init?(from el: Element) {
+                    guard el.name == "source" && el.xmlns == "urn:xmpp:jingle:apps:rtp:ssma:0", let ssrc = el.getAttribute("ssrc") else {
+                        return nil;
+                    }
+                    self.ssrc = ssrc;
+                    self.parameters = el.mapChildren(transform: { (p) -> Parameter? in
+                        guard p.name == "parameter", let key = p.getAttribute("name") else {
+                            return nil;
+                        }
+                        return Parameter(key: key, value: p.getAttribute("value"));
+                    });
+                }
+                
+                init(ssrc: String, parameters: [Parameter]) {
+                    self.ssrc = ssrc;
+                    self.parameters = parameters;
+                }
+                
+                func toElement() -> Element {
+                    let el = Element(name: "source", xmlns: "urn:xmpp:jingle:apps:rtp:ssma:0");
+                    el.setAttribute("ssrc", value: ssrc);
+                    parameters.forEach { (param) in
+                        let p = Element(name: "parameter");
+                        p.setAttribute("name", value: param.key);
+                        if param.value != nil {
+                            p.setAttribute("value", value: param.value);
+                        }
+                        el.addChild(p);
+                    }
+                    return el;
+                }
+                
+                func toSDP() -> [String] {
+                    return parameters.map({ (param) -> String in
+                        return "a=ssrc:\(ssrc) \(param.toSDP())";
+                    })
+                }
+                
+                static func parse(sdpLines: [String.SubSequence]) -> [SSRC] {
+                    let ssrcLines = sdpLines.filter { (line) -> Bool in
+                        return line.starts(with: "a=ssrc:");
+                    }
+                    return Set(ssrcLines.map({ (line) -> String in
+                        String(line.dropFirst("a=ssrc:".count).split(separator: " ").first!)
+                    })).map { (ssrc) in
+                        let prefix = "a=ssrc:\(ssrc) ";
+                        let params = ssrcLines.filter({ (line) -> Bool in
+                            return line.starts(with: prefix);
+                        }).map({ line -> Parameter? in
+                            let parts = line.dropFirst(prefix.count).split(separator: ":");
+                            if let key = parts.first, !key.isEmpty {
+                                return Parameter(key: String(key), value: parts.count == 1 ? nil : String(parts.dropFirst().joined(separator: ":")));
+                            } else {
+                                return nil;
+                            }
+                        }).filter({ param -> Bool in
+                            return param != nil;
+                        }).map({ param -> Parameter in
+                            return param!;
+                        })
+                        return SSRC(ssrc: ssrc, parameters: params);
+                    }
+                }
+                
+                class Parameter {
+                    
+                    let key: String;
+                    let value: String?;
+                    
+                    init(key: String, value: String?) {
+                        self.key = key;
+                        self.value = value;
+                    }
+                    
+                    func toSDP() -> String {
+                        guard value != nil else {
+                            return key;
+                        }
+                        return "\(key):\(value!)";
+                    }
+                }
+            }
+
         }
     }
 }

@@ -16,7 +16,7 @@ class JingleManager: XmppServiceEventHandler {
     
     fileprivate var videoCapturer: RTCCameraVideoCapturer?;
     
-    fileprivate let connectionFactory = { () -> RTCPeerConnectionFactory in
+    let connectionFactory = { () -> RTCPeerConnectionFactory in
         RTCPeerConnectionFactory.initialize();
         return RTCPeerConnectionFactory();
     }();
@@ -25,6 +25,8 @@ class JingleManager: XmppServiceEventHandler {
     
     fileprivate var connections: [Session] = [];
     
+//    // value list needs to be an object!!!
+//    fileprivate var estabishingMultisession: [BareJID: MultiSession] = [:];
     fileprivate let dispatcher = QueueDispatcher(label: "jingleEventHandler");
     
     func session(for account: BareJID, with jid: JID, sid: String) -> Session? {
@@ -43,7 +45,7 @@ class JingleManager: XmppServiceEventHandler {
         }
     }
 
-    fileprivate func open(for account: BareJID, with jid: JID, sid: String, role: Jingle.Content.Creator) -> Session {
+    func open(for account: BareJID, with jid: JID, sid: String?, role: Jingle.Content.Creator) -> Session {
         return dispatcher.sync {
             let session = Session(account: account, jid: jid, sid: sid, role: role);
             self.connections.append(session);
@@ -89,8 +91,12 @@ class JingleManager: XmppServiceEventHandler {
                 switch e.action! {
                 case .sessionInitiate:
                     self.sessionInitiated(event: e);
+                case .sessionAccept:
+                    self.sessionAccepted(event: e);
                 case .transportInfo:
                     self.transportInfo(event: e);
+                case .sessionTerminate:
+                    self.sessionTerminated(event: e);
                 default:
                     break;
                 }
@@ -101,31 +107,86 @@ class JingleManager: XmppServiceEventHandler {
         }
     }
     
-    func initiateSession(for account: BareJID, with jid: JID, withAudio: Bool, withVideo: Bool, completionHandler: @escaping (Session?, Error?)->Void) {
-        let configuration = RTCConfiguration();
-        configuration.iceServers = [ RTCIceServer(urlStrings: ["stun://64.233.161.127:19302"]) ];
-
-        let session = Session(account: account, jid: jid, role: .initiator);
-        let callConstraints = RTCMediaConstraints(mandatoryConstraints: [kRTCMediaConstraintsOfferToReceiveAudio: "true", kRTCMediaConstraintsOfferToReceiveVideo: "false"], optionalConstraints: nil);
-        let peerConnection = self.connectionFactory.peerConnection(with: configuration, constraints: callConstraints, delegate: session);
-        let localStream = self.createLocalStream(audio: withAudio, video: withVideo);
-        peerConnection.add(localStream);
-        
-        peerConnection.offer(for: callConstraints, completionHandler: { (sdp, error) in
-            if let error = error {
-                completionHandler(nil, error);
-            } else {
-                let tmp = SDP(from: sdp!.sdp, creator: .initiator);
-                session.peerConnection = peerConnection;
-                if (session.initiate(sid: tmp!.sid, contents: tmp!.contents, bundle: tmp!.bundle)) {
-                    self.connections.append(session);
-                    completionHandler(session, nil);
-                } else {
-                    completionHandler(nil, nil);
-                }
-            }
-        })
+    enum ContentType {
+        case audio
+        case video
+        case filetransfer
     }
+    
+    func support(for jid: JID, on account: BareJID) -> Set<ContentType> {
+        guard let client = XmppService.instance.getClient(for: account), let presenceStore = client.presenceStore else {
+            return [];
+        }
+        
+        return Set([.audio, .video]);
+        
+        var features: [String] = [];
+        
+        if jid.resource == nil {
+            presenceStore.getPresences(for: jid.bareJid)?.values.forEach({ (p) in
+                guard let node = p.capsNode, let f = DBCapabilitiesCache.instance.getFeatures(for: node) else {
+                    return;
+                }
+                features.append(contentsOf: f);
+            })
+        } else {
+            guard let node = presenceStore.getPresence(for: jid)?.capsNode, let f = DBCapabilitiesCache.instance.getFeatures(for: node) else {
+                return [];
+            }
+            features.append(contentsOf: f);
+        }
+        
+        var support: [ContentType] = [];
+        
+        // check jingle and supported transports...
+        guard features.contains("urn:xmpp:jingle:1") && features.contains("urn:xmpp:jingle:transports:ice-udp:1") && features.contains("urn:xmpp:jingle:apps:dtls:0") && features.contains("urn:xmpp:jingle:apps:rtp:1") else {
+            return Set(support);
+        }
+        
+        if features.contains("urn:xmpp:jingle:apps:rtp:audio") {
+            support.append(.audio);
+        }
+        
+        if features.contains("urn:xmpp:jingle:apps:rtp:video") {
+            support.append(.video);
+        }
+        
+        if features.contains("urn:xmpp:jingle:apps:file-transfer:3") {
+            support.append(.filetransfer);
+        }
+        
+        return Set(support);
+    }
+        
+//    func initiateSession(for account: BareJID, with jid: JID, withAudio: Bool, withVideo: Bool, completionHandler: @escaping (Session?, Error?)->Void) {
+//        let configuration = RTCConfiguration();
+//        configuration.iceServers = [ RTCIceServer(urlStrings: ["stun://64.233.161.127:19302"]) ];
+//
+//        let session = open(for: account, with: jid, sid: nil, role: .initiator);
+//        let callConstraints = RTCMediaConstraints(mandatoryConstraints: [kRTCMediaConstraintsOfferToReceiveAudio: "true", kRTCMediaConstraintsOfferToReceiveVideo: "false"], optionalConstraints: nil);
+//        let peerConnection = self.connectionFactory.peerConnection(with: configuration, constraints: callConstraints, delegate: session);
+//
+//        // this is not compiant with unified plan!!!
+//        let localStream = self.createLocalStream(audio: withAudio, video: withVideo);
+//        peerConnection.add(localStream);
+//
+//        peerConnection.offer(for: callConstraints, completionHandler: { (sdp, error) in
+//            if let error = error {
+//                self.close(session: session);
+//                completionHandler(nil, error);
+//            } else {
+//                let tmp = SDP(from: sdp!.sdp, creator: .initiator);
+//                session.peerConnection = peerConnection;
+//                if (session.initiate(sid: tmp!.sid, contents: tmp!.contents, bundle: tmp!.bundle)) {
+//                    self.connections.append(session);
+//                    completionHandler(session, nil);
+//                } else {
+//                    self.close(session: session);
+//                    completionHandler(nil, nil);
+//                }
+//            }
+//        })
+//    }
     
     func sessionInitiated(event e: JingleModule.JingleEvent) {
         guard let content = e.contents.first, let description = content.description as? Jingle.RTP.Description else {
@@ -134,81 +195,12 @@ class JingleManager: XmppServiceEventHandler {
         
         let session = open(for: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid, role: .responder);
         
-        guard let client = session.client else {
-            close(session: session);
-            return;
-        }
-        
         DispatchQueue.main.async {
-            let name = client.rosterStore?.get(for: e.initiator!.withoutResource)?.name ?? e.initiator!.bareJid.stringValue;
-            
-            let alert = Alert();
-            alert.messageText = "Incoming call from \(name)";
-            //alert.icon = NSImage(named: NSImage.)
-            alert.informativeText = "Do you want to accept this call?"
-            
-            alert.addButton(withTitle: "Accept");
-            alert.addButton(withTitle: "Deny");
-            
-            //alert.styleMask = [NSWindow.StyleMask.borderless, NSWindow.StyleMask.hudWindow ];
-            
-            alert.run(completionHandler: { (response) in
-                let accept = response == NSApplication.ModalResponse.alertFirstButtonReturn;
-                
-                if accept {
-                    session.initiated();
-                    let configuration = RTCConfiguration();
-                    configuration.iceServers = [ RTCIceServer(urlStrings: ["stun://64.233.161.127:19302"]) ];
-                    configuration.bundlePolicy = .maxBundle;
-                    configuration.rtcpMuxPolicy = .require;
-                    
-                    let callConstraints = RTCMediaConstraints(mandatoryConstraints: [kRTCMediaConstraintsOfferToReceiveAudio: "true", kRTCMediaConstraintsOfferToReceiveVideo: "true"], optionalConstraints: nil);
-                    session.peerConnection = self.connectionFactory.peerConnection(with: configuration, constraints: callConstraints, delegate: session);
-                    
-                    let localStream = self.createLocalStream(audio: true, video: true);
-                    session.peerConnection?.add(localStream);
-                    
-                    // add support for groups directly in jingle element...
-//                    <group semantics='BUNDLE' xmlns='urn:xmpp:jingle:apps:grouping:0'>
-//                    <content name='audio'/>
-//                    </group>
-                    
-                    let offer = SDP(sid: e.sid!, contents: e.contents, bundle: e.bundle).toString();
-                    let sessDesc = RTCSessionDescription(type: .offer, sdp: offer);
-                    session.peerConnection?.setRemoteDescription(sessDesc, completionHandler: { (error) in
-                        guard error == nil else {
-                            self.close(session: session);
-                            print("closed due to invalid offer:", error, ", ", offer);
-                            return;
-                        }
-                        
-                        // add remote ice candidates???
-                        
-                        // implement the rest of the handling process...
-                        // or is it done??
-                        session.remoteDescriptionSet();
-                        
-                        session.peerConnection?.answer(for: callConstraints, completionHandler: { (sdpAnswer, error) in
-                            guard error == nil else {
-                                self.close(session: session);
-                                return;
-                            }
-                            session.peerConnection?.setLocalDescription(sdpAnswer!, completionHandler: { [weak self] (error) in
-                                guard error == nil else {
-                                    self?.close(session: session);
-                                    return;
-                                }
-                            });
-                            
-                            let sdp = SDP(from: sdpAnswer!.sdp, creator: content.creator);
-                            _  = session.accept(contents: sdp!.contents, bundle: sdp!.bundle);
-                        })
-                    });
-                } else {
-                    _ = session.decline();
-                    self.close(session: session);
-                }
-            })
+            let windowController = NSStoryboard(name: "VoIP", bundle: nil).instantiateController(withIdentifier: "VideoCallWindowController") as! NSWindowController;
+            session.delegate = windowController.contentViewController as? VideoCallController;
+            windowController.showWindow(nil);
+            (windowController.contentViewController as? VideoCallController)?.accept(session: session, sdpOffer: SDP(sid: e.sid!, contents: e.contents, bundle: e.bundle));
+
         }
     }
     
@@ -217,22 +209,13 @@ class JingleManager: XmppServiceEventHandler {
             return;
         }
         
-        let sessDesc = RTCSessionDescription(type: .offer, sdp: SDP(sid: e.sid!, contents: e.contents, bundle: e.bundle).toString());
-        session.peerConnection?.setRemoteDescription(sessDesc, completionHandler: { (error) in
-            guard error == nil else {
-                // for now we are closing but maybe we should send content-remove or content-modify instead....
-                self.close(session: session);
-                return;
-            }
-            session.remoteDescriptionSet();
-            session.accepted();
-        });
+        session.accepted(sdpAnswer: SDP(sid: e.sid!, contents: e.contents, bundle: e.bundle));
     }
     
     func sessionTerminated(event e: JingleModule.JingleEvent) {
-        guard let session = close(for: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid) else {
+        guard let session = session(for: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid) else {
             return;
-        }
+        }        
     }
     
     func transportInfo(event e: JingleModule.JingleEvent) {
@@ -252,39 +235,42 @@ class JingleManager: XmppServiceEventHandler {
         }
     }
     
-    func createLocalStream(audio: Bool, video: Bool) -> RTCMediaStream {
-        let localStream = self.connectionFactory.mediaStream(withStreamId: "RTCmS");
-        if video {
-            let videoSource = self.connectionFactory.videoSource();
-            if self.videoCapturer == nil {
-                self.videoCapturer = RTCCameraVideoCapturer(delegate: videoSource);
-                //if let device = AVCaptureDevice.default(for: .video) {
-                if let device = RTCCameraVideoCapturer.captureDevices().first {
-                    var bestFormat: AVCaptureDevice.Format? = nil;
-                    var bestFrameRate: AVFrameRateRange? = nil;
-                    device.formats.forEach({ (format) in
-                        if CMFormatDescriptionGetMediaSubType(format.formatDescription) == videoCapturer!.preferredOutputPixelFormat() {
-                            format.videoSupportedFrameRateRanges.forEach({ (range) in
-                                if (bestFrameRate == nil || bestFrameRate!.maxFrameRate < range.maxFrameRate) {
-                                    bestFrameRate = range;
-                                    bestFormat = format;
-                                }
-                            });
-                        }
-                    });
-                    
-                    self.videoCapturer!.startCapture(with: device, format: bestFormat!, fps: Int(fmin(bestFrameRate!.maxFrameRate, 30.0)));
-                }
-            }
-            let videoTrack = self.connectionFactory.videoTrack(with: videoSource, trackId: "RTCvS0");
-            videoTrack.isEnabled = true;
-            localStream.addVideoTrack(videoTrack);
-        }
-        if audio {
-            localStream.addAudioTrack(self.connectionFactory.audioTrack(withTrackId: "RTCaS0"));
-        }
-        return localStream;
-    }
+//    func createLocalStream(audio: Bool, video: Bool) -> RTCMediaStream {
+//        let localStream = self.connectionFactory.mediaStream(withStreamId: "RTCmS");
+//        if video {
+//            let videoSource = self.connectionFactory.videoSource();
+//            if self.videoCapturer == nil {
+//                // it looks like it is not reusable - after stopping call and starting new one we have no video input!!
+//                self.videoCapturer = RTCCameraVideoCapturer(delegate: videoSource);
+//                //if let device = AVCaptureDevice.default(for: .video) {
+//                if let device = RTCCameraVideoCapturer.captureDevices().first {
+//                    var bestFormat: AVCaptureDevice.Format? = nil;
+//                    var bestFrameRate: AVFrameRateRange? = nil;
+//                    device.formats.forEach({ (format) in
+//                        let size = CMVideoFormatDescriptionGetDimensions(format.formatDescription);
+//                        print("checking format:", size.width, "x", size.height, ", type:", CMFormatDescriptionGetMediaSubType(format.formatDescription), "expected:", videoCapturer!.preferredOutputPixelFormat());
+//                        if CMFormatDescriptionGetMediaSubType(format.formatDescription) == videoCapturer!.preferredOutputPixelFormat() {
+//                            format.videoSupportedFrameRateRanges.forEach({ (range) in
+//                                if (bestFrameRate == nil || bestFrameRate!.maxFrameRate < range.maxFrameRate) {
+//                                    bestFrameRate = range;
+//                                    bestFormat = format;
+//                                }
+//                            });
+//                        }
+//                    });
+//                    
+//                    self.videoCapturer!.startCapture(with: device, format: bestFormat!, fps: Int(fmin(bestFrameRate!.maxFrameRate, 30.0)));
+//                }
+//            }
+//            let videoTrack = self.connectionFactory.videoTrack(with: videoSource, trackId: "RTCvS0");
+//            videoTrack.isEnabled = true;
+//            localStream.addVideoTrack(videoTrack);
+//        }
+//        if audio {
+//            localStream.addAudioTrack(self.connectionFactory.audioTrack(withTrackId: "RTCaS0"));
+//        }
+//        return localStream;
+//    }
  
     class Session: NSObject, RTCPeerConnectionDelegate {
         
@@ -305,11 +291,12 @@ class JingleManager: XmppServiceEventHandler {
         let account: BareJID;
         let jid: JID;
         var peerConnection: RTCPeerConnection?;
+        weak var delegate: VideoCallController?;
         fileprivate(set) var sid: String;
         let role: Jingle.Content.Creator;
         
         var remoteCandidates: [[String]] = [];
-        
+                
         init(account: BareJID, jid: JID, sid: String? = nil, role: Jingle.Content.Creator) {
             self.account = account;
             self.client = XmppService.instance.getClient(for: account);
@@ -354,8 +341,22 @@ class JingleManager: XmppServiceEventHandler {
             return true;
         }
         
-        func accepted() {
+        func accepted(sdpAnswer: SDP) {
             self.state = .connecting;
+            delegate?.sessionAccepted(session: self);
+
+            print("setting remote description:", sdpAnswer.toString());
+            let sessDesc = RTCSessionDescription(type: .answer, sdp: sdpAnswer.toString());
+            peerConnection?.setRemoteDescription(sessDesc, completionHandler: { (error) in
+                guard error == nil else {
+                    // for now we are closing but maybe we should send content-remove or content-modify instead....
+                    print("sdp offset:", self.peerConnection?.localDescription!.sdp);
+                    print("failed to set sdp answer:", sdpAnswer.toString());
+                    _ = self.terminate();
+                    return;
+                }
+                self.remoteDescriptionSet();
+            });
         }
         
         func decline() -> Bool {
@@ -383,6 +384,11 @@ class JingleManager: XmppServiceEventHandler {
             }
             
             jingleModule.terminateSession(with: jid, sid: sid);
+            
+            self.delegate?.sessionTerminated(session: self);
+            peerConnection = nil;
+            
+            JingleManager.instance.close(session: self);
             return true;
         }
         
@@ -409,8 +415,20 @@ class JingleManager: XmppServiceEventHandler {
         }
         
         fileprivate func addCandidate(sdp: String, for contentName: String) {
-            guard let idx = peerConnection?.remoteDescription?.sdp.split(separator: "\r\n").firstIndex(where: { (s) -> Bool in
-                return s.starts(with: "m=\(contentName) ");
+            guard let lines = peerConnection?.remoteDescription?.sdp.split(separator: "\r\n").map({ (s) -> String in
+                return String(s);
+            }) else {
+                return;
+            }
+            
+            guard let midIdx = lines.firstIndex(of: "a=mid:\(contentName)") else {
+                return;
+            }
+            
+            let sublines = lines[0...midIdx];
+            
+            guard let idx = sublines.lastIndex(where: { (s) -> Bool in
+                return s.starts(with: "m=");
             }) else {
                 return;
             }
@@ -422,9 +440,32 @@ class JingleManager: XmppServiceEventHandler {
         }
         
         func peerConnection(_ peerConnection: RTCPeerConnection, didAdd stream: RTCMediaStream) {
+            if stream.videoTracks.count > 0 {
+                self.delegate?.didAdd(remoteVideoTrack: stream.videoTracks[0]);
+            }
         }
         
         func peerConnection(_ peerConnection: RTCPeerConnection, didRemove stream: RTCMediaStream) {
+        }
+        
+        func peerConnection(_ peerConnection: RTCPeerConnection, didStartReceivingOn transceiver: RTCRtpTransceiver) {
+            if transceiver.direction == .recvOnly || transceiver.direction == .sendRecv {
+                if transceiver.mediaType == .video {
+                    print("got video transceiver");
+                    guard let track = transceiver.receiver.track as? RTCVideoTrack else {
+                        return;
+                    }
+                    self.delegate?.didAdd(remoteVideoTrack: track)
+                }
+            }
+            if transceiver.direction == .sendOnly || transceiver.direction == .sendRecv {
+                if transceiver.mediaType == .video {
+                    guard let track = transceiver.sender.track as? RTCVideoTrack else {
+                        return;
+                    }
+                    self.delegate?.didAdd(localVideoTrack: track);
+                }
+            }
         }
         
         func peerConnectionShouldNegotiate(_ peerConnection: RTCPeerConnection) {

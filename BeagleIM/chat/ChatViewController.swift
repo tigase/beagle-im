@@ -32,6 +32,9 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     fileprivate var lastTextChange: Date = Date();
     fileprivate var lastTextChangeTimer: Foundation.Timer?;
     
+    @IBOutlet var audioCall: NSButton!
+    @IBOutlet var videoCall: NSButton!
+    
     override var chat: DBChatProtocol! {
         didSet {
             if let sessionObject = XmppService.instance.getClient(for: account)?.sessionObject {
@@ -49,6 +52,9 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         
         super.viewDidLoad();
         
+        audioCall.isHidden = true;
+        videoCall.isHidden = true;
+        
         NotificationCenter.default.addObserver(self, selector: #selector(rosterItemUpdated), name: DBRosterStore.ITEM_UPDATED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(contactPresenceChanged), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
@@ -61,6 +67,8 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         buddyAvatarView.update(for: jid, on: account);
         let presenceModule: PresenceModule? = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PresenceModule.ID);
         buddyStatusLabel.title = presenceModule?.presenceStore.getBestPresence(for: jid)?.status ?? "";
+        
+        self.updateCapabilities();
         
         super.viewWillAppear();
         lastTextChangeTimer = Foundation.Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true, block: { (timer) in
@@ -176,6 +184,8 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
 //                }, completionHandler: nil);
 //            });
         }
+        
+        self.updateCapabilities();
     }
     
     override func sendMessage(body: String? = nil, url: String? = nil) -> Bool {
@@ -202,6 +212,23 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
 
         return true;
     }
+    
+    fileprivate func updateCapabilities() {
+        let supported = JingleManager.instance.support(for: JID(jid), on: account);
+        DispatchQueue.main.async {
+            self.audioCall.isHidden = !supported.contains(.audio);
+            self.videoCall.isHidden = !supported.contains(.video);
+        }
+    }
+    
+    @IBAction func audioCallClicked(_ sender: Any) {
+        VideoCallController.call(jid: jid, from: account, withAudio: true, withVideo: false);
+    }
+    
+    @IBAction func videoCallClicked(_ sender: NSButton) {
+        VideoCallController.call(jid: jid, from: account, withAudio: true, withVideo: true);
+    }
+    
 }
 
 class ChatMessage: ChatViewItemProtocol {
