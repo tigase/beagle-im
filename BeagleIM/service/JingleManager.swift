@@ -189,6 +189,7 @@ class JingleManager: XmppServiceEventHandler {
 //    }
     
     func sessionInitiated(event e: JingleModule.JingleEvent) {
+        
         guard let content = e.contents.first, let description = content.description as? Jingle.RTP.Description else {
             return;
         }
@@ -215,24 +216,37 @@ class JingleManager: XmppServiceEventHandler {
     func sessionTerminated(event e: JingleModule.JingleEvent) {
         guard let session = session(for: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid) else {
             return;
-        }        
+        }
+        session.terminate();
     }
     
     func transportInfo(event e: JingleModule.JingleEvent) {
         print("processing transport info");
-        
-        // add support for multiple contents...
-        guard let content = e.contents.first, let transport = content.transports.first as? Jingle.Transport.ICEUDPTransport else {
-            return;
-        }
-        
         guard let session = self.session(for: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid) else {
             return;
         }
         
-        transport.candidates.forEach { (candidate) in
-            session.addCandidate(candidate, for: content.name);
+        e.contents.forEach { (content) in
+            content.transports.forEach({ (trans) in
+                if let transport = trans as? Jingle.Transport.ICEUDPTransport {
+                    transport.candidates.forEach({ (candidate) in
+                        session.addCandidate(candidate, for: content.name);
+                    })
+                }
+            })
         }
+//        // add support for multiple contents...
+//        guard let content = e.contents.first, let transport = content.transports.first as? Jingle.Transport.ICEUDPTransport else {
+//            return;
+//        }
+//
+//        guard let session = self.session(for: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid) else {
+//            return;
+//        }
+//
+//        transport.candidates.forEach { (candidate) in
+//            session.addCandidate(candidate, for: content.name);
+//        }
     }
     
 //    func createLocalStream(audio: Bool, video: Bool) -> RTCMediaStream {
@@ -295,7 +309,8 @@ class JingleManager: XmppServiceEventHandler {
         fileprivate(set) var sid: String;
         let role: Jingle.Content.Creator;
         
-        var remoteCandidates: [[String]] = [];
+        var remoteCandidates: [[String]]? = [];
+        var localCandidates: [RTCIceCandidate]? = [];
                 
         init(account: BareJID, jid: JID, sid: String? = nil, role: Jingle.Content.Creator) {
             self.account = account;
@@ -343,20 +358,7 @@ class JingleManager: XmppServiceEventHandler {
         
         func accepted(sdpAnswer: SDP) {
             self.state = .connecting;
-            delegate?.sessionAccepted(session: self);
-
-            print("setting remote description:", sdpAnswer.toString());
-            let sessDesc = RTCSessionDescription(type: .answer, sdp: sdpAnswer.toString());
-            peerConnection?.setRemoteDescription(sessDesc, completionHandler: { (error) in
-                guard error == nil else {
-                    // for now we are closing but maybe we should send content-remove or content-modify instead....
-                    print("sdp offset:", self.peerConnection?.localDescription!.sdp);
-                    print("failed to set sdp answer:", sdpAnswer.toString());
-                    _ = self.terminate();
-                    return;
-                }
-                self.remoteDescriptionSet();
-            });
+            delegate?.sessionAccepted(session: self, sdpAnswer: sdpAnswer);
         }
         
         func decline() -> Bool {
@@ -366,6 +368,10 @@ class JingleManager: XmppServiceEventHandler {
             }
             
             jingleModule.declineSession(with: jid, sid: sid);
+            
+            self.delegate?.sessionTerminated(session: self);
+            peerConnection?.close();
+            peerConnection = nil;
             return true;
         }
         
@@ -386,6 +392,7 @@ class JingleManager: XmppServiceEventHandler {
             jingleModule.terminateSession(with: jid, sid: sid);
             
             self.delegate?.sessionTerminated(session: self);
+            peerConnection?.close();
             peerConnection = nil;
             
             JingleManager.instance.close(session: self);
@@ -395,18 +402,21 @@ class JingleManager: XmppServiceEventHandler {
         func addCandidate(_ candidate: Jingle.Transport.ICEUDPTransport.Candidate, for contentName: String) {
             let sdp = candidate.toSDP();
 
-            guard let remoteDesc = peerConnection?.remoteDescription else {
-                self.remoteCandidates.append([contentName, sdp]);
-                return;
+            if remoteCandidates != nil {
+                remoteCandidates?.append([contentName, sdp]);
+            } else {
+                self.addCandidate(sdp: sdp, for: contentName);
             }
-            self.addCandidate(sdp: sdp, for: contentName);
         }
         
         func remoteDescriptionSet() {
-            let tmp = remoteCandidates;
-            remoteCandidates.removeAll();
-            tmp.forEach { (arr) in
-                self.addCandidate(sdp: arr[1], for: arr[0]);
+            JingleManager.instance.dispatcher.async {
+                if let tmp = self.remoteCandidates {
+                    self.remoteCandidates = nil;
+                    tmp.forEach { (arr) in
+                        self.addCandidate(sdp: arr[1], for: arr[0]);
+                    }
+                }
             }
         }
         
@@ -415,34 +425,48 @@ class JingleManager: XmppServiceEventHandler {
         }
         
         fileprivate func addCandidate(sdp: String, for contentName: String) {
-            guard let lines = peerConnection?.remoteDescription?.sdp.split(separator: "\r\n").map({ (s) -> String in
-                return String(s);
-            }) else {
-                return;
+            DispatchQueue.main.async {
+                guard let lines = self.peerConnection?.remoteDescription?.sdp.split(separator: "\r\n").map({ (s) -> String in
+                    return String(s);
+                }) else {
+                    return;
+                }
+                
+                let contents = lines.filter { (line) -> Bool in
+                    return line.starts(with: "a=mid:");
+                };
+                
+                let idx = contents.firstIndex(of: "a=mid:\(contentName)") ?? lines.filter({ (line) -> Bool in
+                    return line.starts(with: "m=")
+                }).firstIndex(where: { (line) -> Bool in
+                    return line.starts(with: "m=\(contentName) ");
+                }) ?? 0;
+                
+                //            guard let midIdx = lines.firstIndex(of: "a=mid:\(contentName)") else {
+                //                return;
+                //            }
+                //
+                //            let sublines = lines[0...midIdx];
+                //
+                //            guard let idx = sublines.lastIndex(where: { (s) -> Bool in
+                //                return s.starts(with: "m=");
+                //            }) else {
+                //                return;
+                //            }
+                // if peer connection is nil we should queue those candidates...
+                print("adding candidate for:", idx, "name:", contentName, "sdp:", sdp)
+                self.peerConnection?.add(RTCIceCandidate(sdp: sdp, sdpMLineIndex: Int32(idx), sdpMid: contentName));
             }
-            
-            guard let midIdx = lines.firstIndex(of: "a=mid:\(contentName)") else {
-                return;
-            }
-            
-            let sublines = lines[0...midIdx];
-            
-            guard let idx = sublines.lastIndex(where: { (s) -> Bool in
-                return s.starts(with: "m=");
-            }) else {
-                return;
-            }
-            // if peer connection is nil we should queue those candidates...
-            peerConnection?.add(RTCIceCandidate(sdp: sdp, sdpMLineIndex: Int32(idx), sdpMid: contentName));
         }
 
         func peerConnection(_ peerConnection: RTCPeerConnection, didChange stateChanged: RTCSignalingState) {
+            print("signaling state:", stateChanged.rawValue);
         }
         
         func peerConnection(_ peerConnection: RTCPeerConnection, didAdd stream: RTCMediaStream) {
-            if stream.videoTracks.count > 0 {
-                self.delegate?.didAdd(remoteVideoTrack: stream.videoTracks[0]);
-            }
+//            if stream.videoTracks.count > 0 {
+//                self.delegate?.didAdd(remoteVideoTrack: stream.videoTracks[0]);
+//            }
         }
         
         func peerConnection(_ peerConnection: RTCPeerConnection, didRemove stream: RTCMediaStream) {
@@ -472,6 +496,7 @@ class JingleManager: XmppServiceEventHandler {
         }
         
         func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceConnectionState) {
+            print("ice connection state:", newState.rawValue);
             if newState == .connected {
                 self.state = .connected;
             } else if (state == .connected && (newState == .disconnected || newState == .failed)) {
@@ -484,7 +509,36 @@ class JingleManager: XmppServiceEventHandler {
         }
         
         func peerConnection(_ peerConnection: RTCPeerConnection, didGenerate candidate: RTCIceCandidate) {
-            guard let jingleCandidate = Jingle.Transport.ICEUDPTransport.Candidate(fromSDP: candidate.sdp) else {
+            print("generated candidate for:", candidate.sdpMid, ", index:", candidate.sdpMLineIndex, "full SDP:", (peerConnection.localDescription?.sdp ?? ""));
+
+            JingleManager.instance.dispatcher.async {
+                if self.localCandidates == nil {
+                    self.sendLocalCandidate(candidate);
+                } else {
+                    self.localCandidates?.append(candidate);
+                }
+            }
+
+//            if (!transportInfo(contentName: mid, creator: role, transport: Jingle.Transport.ICEUDPTransport(pwd: transport.pwd, ufrag: transport.ufrag, candidates: [jingleCandidate]))) {
+//                self.onError(.remote_server_timeout);
+//            }
+        }
+        
+        func localDescriptionSet() {
+            JingleManager.instance.dispatcher.async {
+                if let tmp = self.localCandidates {
+                    self.localCandidates = nil;
+                    tmp.forEach({ (candidate) in
+                        self.sendLocalCandidate(candidate);
+                    })
+                }
+            }
+        }
+        
+        fileprivate func sendLocalCandidate(_ candidate: RTCIceCandidate) {
+            print("sending candidate for:", candidate.sdpMid, ", index:", candidate.sdpMLineIndex, "full SDP:", (self.peerConnection?.localDescription?.sdp ?? ""));
+           
+            guard let jingleCandidate = Jingle.Transport.ICEUDPTransport.Candidate(fromSDP: candidate.sdp), let peerConnection = self.peerConnection else {
                 return;
             }
             guard let mid = candidate.sdpMid else {
@@ -503,8 +557,10 @@ class JingleManager: XmppServiceEventHandler {
                 return;
             }
             
-            if (!transportInfo(contentName: mid, creator: role, transport: Jingle.Transport.ICEUDPTransport(pwd: transport.pwd, ufrag: transport.ufrag, candidates: [jingleCandidate]))) {
-                self.onError(.remote_server_timeout);
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
+                if (!self.transportInfo(contentName: mid, creator: self.role, transport: Jingle.Transport.ICEUDPTransport(pwd: transport.pwd, ufrag: transport.ufrag, candidates: [jingleCandidate]))) {
+                    self.onError(.remote_server_timeout);
+                }
             }
         }
         

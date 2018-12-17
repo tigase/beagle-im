@@ -378,7 +378,10 @@ class Jingle {
             }
             
             sdp.append("c=IN IP4 0.0.0.0");
-            sdp.append("a=rtcp:1 IN IP4 0.0.0.0");
+
+            if description?.media == "audio" || description?.media == "video" {
+                sdp.append("a=rtcp:1 IN IP4 0.0.0.0");
+            }
             
             if let t = transport {
                 sdp.append("a=ice-ufrag:\(t.ufrag)");
@@ -396,7 +399,7 @@ class Jingle {
             sdp.append("a=sendrecv");
             sdp.append("a=mid:\(name)")
             
-            if let desc = self.description as? Jingle.RTP.Description {
+            if let desc = self.description as? Jingle.RTP.Description, description?.media == "audio" || description?.media == "video" {
                 if desc.rtcpMux {
                     sdp.append("a=rtcp-mux");
                 }
@@ -464,6 +467,8 @@ class Jingle {
 
 protocol JingleDescription {
 
+    var media: String { get };
+    
     init?(from el: Element);
     
     func toElement() -> Element;
@@ -618,6 +623,7 @@ extension Jingle {
                 let relAddr: String?;
                 let relPort: UInt16?;
                 let type: CandidateType?;
+                let tcpType: String?;
                 
                 convenience init?(from el: Element) {
                     guard el.name == "candidate", let foundation = UInt(el.getAttribute("foundation") ?? ""), let component = UInt8(el.getAttribute("component") ?? ""), let generation = UInt8(el.getAttribute("generation") ?? ""), let id = el.getAttribute("id"), let ip = el.getAttribute("ip"), let port = UInt16(el.getAttribute("port") ?? ""), let priority = UInt(el.getAttribute("priority") ?? "0"), let proto = ProtocolType(rawValue: el.getAttribute("protocol") ?? "") else {
@@ -625,7 +631,7 @@ extension Jingle {
                     }
                     
                     let type = CandidateType(rawValue: el.getAttribute("type") ?? "");
-                    self.init(component: component, foundation: foundation, generation: generation, id: id, ip: ip, network: 0, port: port, priority: priority, protocolType: proto, type: type);
+                    self.init(component: component, foundation: foundation, generation: generation, id: id, ip: ip, network: 0, port: port, priority: priority, protocolType: proto, type: type, tcpType: el.getAttribute("tcptype"));
                 }
                 
                 convenience init?(fromSDP l: String) {
@@ -678,10 +684,10 @@ extension Jingle {
                         return nil;
                     }
                     
-                    self.init(component: component, foundation: foundation, generation: generation!, id: UUID().uuidString, ip: ip, network: 0, port: port, priority: priority, protocolType: protoType, relAddr: relAddr, relPort: relPort == nil ? nil : UInt16(relPort!), type: type);
+                    self.init(component: component, foundation: foundation, generation: generation!, id: UUID().uuidString, ip: ip, network: 0, port: port, priority: priority, protocolType: protoType, relAddr: relAddr, relPort: relPort == nil ? nil : UInt16(relPort!), type: type, tcpType: tcptype);
                 }
                 
-                init(component: UInt8, foundation: UInt, generation: UInt8, id: String, ip: String, network: UInt8 = 0, port: UInt16, priority: UInt, protocolType: ProtocolType, relAddr: String? = nil, relPort: UInt16? = nil, type: CandidateType?) {
+                init(component: UInt8, foundation: UInt, generation: UInt8, id: String, ip: String, network: UInt8 = 0, port: UInt16, priority: UInt, protocolType: ProtocolType, relAddr: String? = nil, relPort: UInt16? = nil, type: CandidateType?, tcpType: String?) {
                     self.component = component;
                     self.foundation = foundation;
                     self.generation = generation;
@@ -694,6 +700,7 @@ extension Jingle {
                     self.relAddr = relAddr;
                     self.relPort = relPort;
                     self.type = type;
+                    self.tcpType = tcpType;
                 }
                 
                 func toElement() -> Element {
@@ -715,7 +722,7 @@ extension Jingle {
                         el.setAttribute("rel-port", value: String(relPort!));
                     }
                     el.setAttribute("type", value: type?.rawValue);
-                    
+                    el.setAttribute("tcptype", value: tcpType);
                     return el;
                 }
                 
@@ -726,8 +733,10 @@ extension Jingle {
                             sdp.append(" raddr \(relAddr!) rport \(relPort!)");
                         }
                     }
-                    
-                    // support for TCP? (TCP??)
+
+                    if protocolType == .tcp && tcpType != nil {
+                        sdp.append(" tcptype \(tcpType!)");
+                    }
                     
                     sdp.append(" generation \(generation)");
                     return sdp;
