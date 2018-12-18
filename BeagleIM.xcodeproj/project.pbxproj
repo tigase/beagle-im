@@ -39,6 +39,8 @@
 		FE41FB41215CDA6000AD86D3 /* MessageEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB40215CDA6000AD86D3 /* MessageEventHandler.swift */; };
 		FE41FB43215CDAF900AD86D3 /* XMPPClient_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB42215CDAF900AD86D3 /* XMPPClient_extension.swift */; };
 		FE41FB45215E426400AD86D3 /* MessageArchivingSetttingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB44215E426400AD86D3 /* MessageArchivingSetttingsViewController.swift */; };
+		FE421B4721C928B00022DF77 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = FE421B4621C928B00022DF77 /* Credits.rtf */; };
+		FE421B4921C92FBF0022DF77 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = FE421B4821C92FBF0022DF77 /* LICENSE */; };
 		FE455B20217906A50046255C /* JingleModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE455B1F217906A50046255C /* JingleModule.swift */; };
 		FE4E8DDA215EA4860010D88E /* HttpFileUploadEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4E8DD9215EA4860010D88E /* HttpFileUploadEventHandler.swift */; };
 		FE4E8DDC215F72130010D88E /* AbstractChatView_ShareExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4E8DDB215F72130010D88E /* AbstractChatView_ShareExtension.swift */; };
@@ -164,6 +166,8 @@
 		FE41FB40215CDA6000AD86D3 /* MessageEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEventHandler.swift; sourceTree = "<group>"; };
 		FE41FB42215CDAF900AD86D3 /* XMPPClient_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMPPClient_extension.swift; sourceTree = "<group>"; };
 		FE41FB44215E426400AD86D3 /* MessageArchivingSetttingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageArchivingSetttingsViewController.swift; sourceTree = "<group>"; };
+		FE421B4621C928B00022DF77 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
+		FE421B4821C92FBF0022DF77 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		FE455B1F217906A50046255C /* JingleModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleModule.swift; sourceTree = "<group>"; };
 		FE4E8DD9215EA4860010D88E /* HttpFileUploadEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HttpFileUploadEventHandler.swift; sourceTree = "<group>"; };
 		FE4E8DDB215F72130010D88E /* AbstractChatView_ShareExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractChatView_ShareExtension.swift; sourceTree = "<group>"; };
@@ -393,6 +397,7 @@
 		FED2ECE72066B01C00F506A5 = {
 			isa = PBXGroup;
 			children = (
+				FE421B4821C92FBF0022DF77 /* LICENSE */,
 				FEA77CD121C7C47000E955A8 /* WebRTC.framework */,
 				FED2ECF22066B01C00F506A5 /* BeagleIM */,
 				FED2ED052066B01C00F506A5 /* BeagleIMTests */,
@@ -434,6 +439,7 @@
 				FEF9CE1C2082765000B09B6C /* db-schema-1.sql */,
 				FE8C9F5321B3F6BD00BE8332 /* container-migration.plist */,
 				FE9D88B3217652DF006CF0D9 /* BeagleIM-Bridging-Header.h */,
+				FE421B4621C928B00022DF77 /* Credits.rtf */,
 			);
 			path = BeagleIM;
 			sourceTree = "<group>";
@@ -614,6 +620,8 @@
 				FEF9CE1D2082765000B09B6C /* db-schema-1.sql in Resources */,
 				FE4073A721BACA2D009CE335 /* VoIP.storyboard in Resources */,
 				FE8C9F5421B3F6BD00BE8332 /* container-migration.plist in Resources */,
+				FE421B4921C92FBF0022DF77 /* LICENSE in Resources */,
+				FE421B4721C928B00022DF77 /* Credits.rtf in Resources */,
 				FED2ECF82066B01C00F506A5 /* Assets.xcassets in Resources */,
 				FED2ECFB2066B01C00F506A5 /* Main.storyboard in Resources */,
 			);
