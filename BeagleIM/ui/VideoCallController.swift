@@ -161,6 +161,8 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         DispatchQueue.main.async {
             let name = session.client?.rosterStore?.get(for: session.jid.withoutResource)?.name ?? session.jid.bareJid.stringValue;
             
+            self.view.window?.title = "Call with \(name)"
+            
             let alert = NSAlert();
             alert.messageText = "Incoming call from \(name)";
             //alert.icon = NSImage(named: NSImage.)
@@ -262,6 +264,9 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     }
     
     func call(jid: BareJID, from account: BareJID, withAudio: Bool, withVideo: Bool) {
+        let name = XmppService.instance.getClient(for: account)?.rosterStore?.get(for: JID(jid))?.name ?? jid.stringValue;
+        self.view.window?.title = "Call with \(name)";
+        
         guard let presences = XmppService.instance.getClient(for: account)?.presenceStore?.getPresences(for: jid)?.keys, !presences.isEmpty
             else {
                 let alert = NSAlert();

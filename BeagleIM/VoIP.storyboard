@@ -9,7 +9,7 @@
         <scene sceneID="rUk-qx-NcE">
             <objects>
                 <windowController storyboardIdentifier="VideoCallWindowController" id="Ze2-4F-BGX" sceneMemberID="viewController">
-                    <window key="window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" titlebarAppearsTransparent="YES" id="DSZ-Qv-ByR">
+                    <window key="window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" visibleAtLaunch="NO" appearanceType="darkAqua" frameAutosaveName="" animationBehavior="default" titlebarAppearsTransparent="YES" id="DSZ-Qv-ByR">
                         <windowStyleMask key="styleMask" titled="YES" miniaturizable="YES" resizable="YES" utility="YES" HUD="YES" fullSizeContentView="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="-2135" y="470" width="640" height="520"/>
