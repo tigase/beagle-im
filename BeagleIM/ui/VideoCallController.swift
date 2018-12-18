@@ -10,21 +10,43 @@ import AppKit
 import WebRTC
 import TigaseSwift
 
-class VideoCallController: NSViewController {
+class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
-    public static func call(jid: BareJID, from account: BareJID, withAudio: Bool, withVideo: Bool) {
+    public static func accept(session: JingleManager.Session, sdpOffer: SDP) -> Bool {
+        guard !sdpOffer.contents.filter({ (content) -> Bool in
+            return (content.description?.media == "audio") || (content.description?.media == "video");
+        }).isEmpty else {
+            return false;
+        }
+        open { (windowController) in
+            (windowController.contentViewController as? VideoCallController)?.accept(session: session, sdpOffer: sdpOffer);
+        }
+        return true;
+    }
+    
+    public static func open(completionHandler: @escaping (NSWindowController)->Void) {
         DispatchQueue.main.async {
             let windowController = NSStoryboard(name: "VoIP", bundle: nil).instantiateController(withIdentifier: "VideoCallWindowController") as! NSWindowController;
             windowController.showWindow(nil);
             DispatchQueue.main.async {
-                (windowController.contentViewController as? VideoCallController)?.call(jid: jid, from: account, withAudio: withAudio, withVideo: withVideo);
+                windowController.window?.makeKey();
+                completionHandler(windowController);
+                NSApp.activate(ignoringOtherApps: true);
             }
         }
     }
     
-    // TODO: add delegates??
+    public static func call(jid: BareJID, from account: BareJID, withAudio: Bool, withVideo: Bool) {
+        open { (windowController) in
+            (windowController.contentViewController as? VideoCallController)?.call(jid: jid, from: account, withAudio: withAudio, withVideo: withVideo);
+        }
+    }
+    
     @IBOutlet var remoteVideoView: RTCMTLNSVideoView!
     @IBOutlet var localVideoView: RTCMTLNSVideoView!;
+    
+    var remoteVideoViewAspect: NSLayoutConstraint?
+    var localVideoViewAspect: NSLayoutConstraint?
     
     var session: JingleManager.Session? {
         didSet {
@@ -89,6 +111,17 @@ class VideoCallController: NSViewController {
         localVideoView.wantsLayer = true;
         //videoView.translatesAutoresizingMaskIntoConstraints = false;
         localVideoView.layer?.transform = CATransform3DMakeScale(1.0, -1.0, 1.0);
+
+        remoteVideoView.heightAnchor.constraint(greaterThanOrEqualTo: localVideoView.heightAnchor, multiplier: 4).isActive = true;
+        remoteVideoView.heightAnchor.constraint(lessThanOrEqualTo: localVideoView.heightAnchor, multiplier: 5).isActive = true;
+        localVideoViewAspect = localVideoView.widthAnchor.constraint(equalTo: localVideoView.heightAnchor, multiplier: 640.0/480.0);
+        localVideoViewAspect?.isActive = true;
+        
+        remoteVideoViewAspect = remoteVideoView.widthAnchor.constraint(equalTo: remoteVideoView.heightAnchor, multiplier: 640.0/480.0);
+        remoteVideoViewAspect?.isActive = true;
+        
+        localVideoView.delegate = self;
+        remoteVideoView.delegate = self;
     }
     
     override func viewWillAppear() {
@@ -104,16 +137,27 @@ class VideoCallController: NSViewController {
         }
     }
     
+    func videoView(_ videoView: RTCVideoRenderer, didChangeVideoSize size: CGSize) {
+        DispatchQueue.main.async {
+            if videoView === self.localVideoView! {
+                self.localVideoViewAspect?.isActive = false;
+                self.localVideoView.removeConstraint(self.localVideoViewAspect!);
+                self.localVideoViewAspect = self.localVideoView.widthAnchor.constraint(equalTo: self.localVideoView.heightAnchor, multiplier: size.width / size.height);
+                self.localVideoViewAspect?.isActive = true;
+                print("local frame:", self.localVideoView!.frame);
+            } else if videoView === self.remoteVideoView! {
+                self.remoteVideoViewAspect?.isActive = false;
+                self.remoteVideoView.removeConstraint(self.remoteVideoViewAspect!);
+                self.remoteVideoViewAspect = self.remoteVideoView.widthAnchor.constraint(equalTo: self.remoteVideoView.heightAnchor, multiplier: size.width / size.height);
+                self.remoteVideoViewAspect?.isActive = true;
+                print("remote frame:", self.localVideoView!.frame);
+            }
+        }
+    }
+
     fileprivate var sessionsInProgress: [JingleManager.Session] = [];
     
     func accept(session: JingleManager.Session, sdpOffer: SDP) {
-        if 1 == 1 {
-            DispatchQueue.main.async {
-                self.accept(session: session, sdpOffer: sdpOffer, withAudio: true, withVideo: true);
-            }
-            return;
-        }
-        
         DispatchQueue.main.async {
             let name = session.client?.rosterStore?.get(for: session.jid.withoutResource)?.name ?? session.jid.bareJid.stringValue;
             
@@ -122,17 +166,19 @@ class VideoCallController: NSViewController {
             //alert.icon = NSImage(named: NSImage.)
             alert.informativeText = "Do you want to accept this call?"
             
-            alert.addButton(withTitle: "Accept");
+            alert.addButton(withTitle: "Accept video");
+            alert.addButton(withTitle: "Accept audio")
             alert.addButton(withTitle: "Deny");
             
             alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
-                let accept = response == NSApplication.ModalResponse.alertFirstButtonReturn;
-                
-                if accept {
+                switch response {
+                case .alertFirstButtonReturn:
                     self.accept(session: session, sdpOffer: sdpOffer, withAudio: true, withVideo: true);
-                } else {
+                case .alertSecondButtonReturn:
+                    self.accept(session: session, sdpOffer: sdpOffer, withAudio: true, withVideo: false);
+                default:
                     _ = session.decline();
-                     self.closeWindow();
+                    self.closeWindow();
                 }
             });
         }
@@ -140,6 +186,7 @@ class VideoCallController: NSViewController {
     
     fileprivate func accept(session: JingleManager.Session, sdpOffer: SDP, withAudio: Bool, withVideo: Bool) {
         self.session = session;
+        session.delegate = self;
         session.initiated();
         
         session.peerConnection = self.initiatePeerConnection();
@@ -182,7 +229,7 @@ class VideoCallController: NSViewController {
                             print("set local description:", session.peerConnection?.localDescription?.sdp);
                             
                             let sdp = SDP(from: sdpAnswer!.sdp, creator: session.role);
-                            _  = session.accept(contents: sdp!.contents, bundle: sdp!.bundle);                            
+                            _  = session.accept(contents: sdp!.contents, bundle: sdp!.bundle);
                         })
                     })
                 }
@@ -423,16 +470,6 @@ class VideoCallController: NSViewController {
                 
                 print("setting remote description:", sdpAnswer.toString());
                 let sessDesc = RTCSessionDescription(type: .answer, sdp: sdpAnswer.toString());
-//                session.peerConnection?.setRemoteDescription(sessDesc, completionHandler: { (error) in
-//                    guard error == nil else {
-//                        // for now we are closing but maybe we should send content-remove or content-modify instead....
-//                        print("sdp offset:", session.peerConnection?.localDescription!.sdp);
-//                        print("failed to set sdp answer:", sdpAnswer.toString());
-//                        _ = session.terminate();
-//                        return;
-//                    }
-//                    session.remoteDescriptionSet();
-//                });
                 self.setRemoteSessionDescription(sessDesc, onSuccess: {
                     print("remote session description set");
                 })
