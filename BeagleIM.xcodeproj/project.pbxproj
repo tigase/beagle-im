@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FE1A8BA321C96C1B00604141 /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA221C96C1B00604141 /* RoundButton.swift */; };
 		FE28097D21652A7C002F5BD0 /* VCardEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */; };
 		FE28097F2166892D002F5BD0 /* AccountDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */; };
 		FE2809852169FB75002F5BD0 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2809842169FB74002F5BD0 /* Alert.swift */; };
@@ -134,6 +135,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		FE1A8BA221C96C1B00604141 /* RoundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
 		FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VCardEditorViewController.swift; sourceTree = "<group>"; };
 		FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDetailsViewController.swift; sourceTree = "<group>"; };
 		FE2809842169FB74002F5BD0 /* Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
@@ -314,6 +316,7 @@
 				FEC661F721AABFB0004FDE1E /* NSViewWithTextBackground.swift */,
 				FE4073A821BACC50009CE335 /* VideoCallController.swift */,
 				FE9486B121BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift */,
+				FE1A8BA221C96C1B00604141 /* RoundButton.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -705,6 +708,7 @@
 				FE6E6BF921384D5F003B1696 /* AvatarView.swift in Sources */,
 				FE6E6C0821384DF1003B1696 /* ChatCellView.swift in Sources */,
 				FE41FB3D215CD82500AD86D3 /* PresenceRosterEventHandler.swift in Sources */,
+				FE1A8BA321C96C1B00604141 /* RoundButton.swift in Sources */,
 				FEC5DC8421553A7500AA3E4F /* AbstractChatViewController.swift in Sources */,
 				FEC5DC8221552D8300AA3E4F /* ChatViewItemProtocol.swift in Sources */,
 				FEC5DC7E21552A3300AA3E4F /* ChatViewDataSourceDelegate.swift in Sources */,

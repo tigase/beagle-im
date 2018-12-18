@@ -45,6 +45,8 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     @IBOutlet var remoteVideoView: RTCMTLNSVideoView!
     @IBOutlet var localVideoView: RTCMTLNSVideoView!;
     
+    @IBOutlet var remoteAvatarView: NSImageView!;
+    
     var remoteVideoViewAspect: NSLayoutConstraint?
     var localVideoViewAspect: NSLayoutConstraint?
     
@@ -106,6 +108,16 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         }
     }
     
+    var state: JingleManager.Session.State = .created {
+        didSet {
+            if state == .connected {
+                DispatchQueue.main.async {
+                    self.remoteAvatarView.isHidden = (self.remoteVideoTrack?.isEnabled ?? false) && ((self.remoteVideoTrack?.source.state ?? .ended) != .ended);
+                }
+            }
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad();
         localVideoView.wantsLayer = true;
@@ -160,6 +172,8 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     func accept(session: JingleManager.Session, sdpOffer: SDP) {
         DispatchQueue.main.async {
             let name = session.client?.rosterStore?.get(for: session.jid.withoutResource)?.name ?? session.jid.bareJid.stringValue;
+            
+            self.remoteAvatarView.image = AvatarManager.instance.avatar(for: session.jid.bareJid, on: session.account);
             
             self.view.window?.title = "Call with \(name)"
             
@@ -240,12 +254,12 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     }
 
     func setAudioEnabled(value: Bool) {
-        guard let videoTracks = self.session?.peerConnection?.senders.compactMap({ (sender) -> RTCAudioTrack? in
+        guard let audioTracks = self.session?.peerConnection?.senders.compactMap({ (sender) -> RTCAudioTrack? in
             return sender.track as? RTCAudioTrack;
         }) else {
             return;
         }
-        videoTracks.forEach { (track) in
+        audioTracks.forEach { (track) in
             print("audio is enbled:", track, track.isEnabled);
             track.isEnabled = value;
         }
@@ -263,9 +277,21 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         }
     }
     
+    var muted: Bool = false;
+    
+    @IBAction func muteClicked(_ sender: RoundButton) {
+        muted = !muted;
+        sender.backgroundColor = muted ? NSColor.red : NSColor.white;
+        sender.contentTintColor = muted ? NSColor.white : NSColor.black;
+        
+        setAudioEnabled(value: !muted);
+        setVideoEnabled(value: !muted);
+    }
+    
     func call(jid: BareJID, from account: BareJID, withAudio: Bool, withVideo: Bool) {
         let name = XmppService.instance.getClient(for: account)?.rosterStore?.get(for: JID(jid))?.name ?? jid.stringValue;
         self.view.window?.title = "Call with \(name)";
+        self.remoteAvatarView.image = AvatarManager.instance.avatar(for: jid, on: account);
         
         guard let presences = XmppService.instance.getClient(for: account)?.presenceStore?.getPresences(for: jid)?.keys, !presences.isEmpty
             else {

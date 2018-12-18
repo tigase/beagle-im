@@ -199,6 +199,7 @@ class JingleManager: XmppServiceEventHandler {
         fileprivate(set) var state: State = .created {
             didSet {
                 print("RTPSession:", self, "state:", state);
+                delegate?.state = state;
             }
         }
 
