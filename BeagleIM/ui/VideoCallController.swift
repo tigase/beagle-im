@@ -74,6 +74,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                             }
                         }
                     }
+                    self.state = self.session?.state ?? .disconnected;
                 }
             }
         }
@@ -108,12 +109,30 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         }
     }
     
+    @IBOutlet var stateLabel: NSTextField!;
+    
     var state: JingleManager.Session.State = .created {
         didSet {
             if state == .connected {
                 DispatchQueue.main.async {
                     self.remoteAvatarView.isHidden = (self.remoteVideoTrack?.isEnabled ?? false) && ((self.remoteVideoTrack?.source.state ?? .ended) != .ended);
                 }
+            }
+            DispatchQueue.main.async {
+                switch self.state {
+                case .created:
+                    self.stateLabel.stringValue = "";
+                case .disconnected:
+                    self.stateLabel.stringValue = "Disconnected";
+                case .negotiating:
+                    self.stateLabel.stringValue = "Connecting...";
+                case .connecting:
+                    self.stateLabel.stringValue = "Connecting...";
+                case .connected:
+                    self.stateLabel.stringValue = "Connected";
+                }
+                self.stateLabel.isHidden = self.state == .connected;
+                print("controller state:", self.state, " ", self.stateLabel.stringValue);
             }
         }
     }
@@ -205,7 +224,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         session.delegate = self;
         session.initiated();
         
-        session.peerConnection = self.initiatePeerConnection();
+        session.peerConnection = self.initiatePeerConnection(for: session);
         
         let sessDesc = RTCSessionDescription(type: .offer, sdp: sdpOffer.toString());
 
@@ -332,7 +351,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
             
             session.delegate = self;
             
-            session.peerConnection = self.initiatePeerConnection();
+            session.peerConnection = self.initiatePeerConnection(for: session);
             self.initializeMedia(for: session, audio: withAudio, video: withVideo) {
                 session.peerConnection?.offer(for: self.defaultCallConstraints, completionHandler: { (sdp, error) in
                     if sdp != nil && error == nil {
@@ -362,7 +381,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
     fileprivate var defaultCallConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil);
     
-    func initiatePeerConnection() -> RTCPeerConnection {
+    func initiatePeerConnection(for session: JingleManager.Session) -> RTCPeerConnection {
         let configuration = RTCConfiguration();
         configuration.sdpSemantics = .unifiedPlan;
         configuration.iceServers = [ RTCIceServer(urlStrings: ["stun:stun1.l.google.com:19302"]), RTCIceServer(urlStrings: ["stun:stunserver.org:3478"]) ];

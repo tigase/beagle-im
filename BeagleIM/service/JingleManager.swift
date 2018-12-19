@@ -257,7 +257,7 @@ class JingleManager: XmppServiceEventHandler {
                 if (error != nil) {
                     self.onError(error!);
                 } else {
-                    self.state = .connecting;
+//                    self.state = .connecting;
                 }
             }
             
@@ -300,8 +300,10 @@ class JingleManager: XmppServiceEventHandler {
             jingleModule.terminateSession(with: jid, sid: sid);
             
             self.delegate?.sessionTerminated(session: self);
-            peerConnection?.close();
-            peerConnection = nil;
+            if let peerConnection = self.peerConnection {
+                self.peerConnection = nil;
+                peerConnection.close();
+            }
             
             JingleManager.instance.close(session: self);
             return true;
@@ -393,11 +395,13 @@ class JingleManager: XmppServiceEventHandler {
         
         func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceConnectionState) {
             print("ice connection state:", newState.rawValue);
-            if newState == .connected {
+            if newState == .connected || newState == .completed {
                 self.state = .connected;
-            } else if (state == .connected && (newState == .disconnected || newState == .failed)) {
+            } else if (state == .connected && (newState == .disconnected || newState == .failed || newState == .closed)) {
                 self.state = .disconnected;
                 _ = self.terminate();
+            } else {
+                self.state = .connecting;
             }
         }
         

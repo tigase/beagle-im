@@ -274,9 +274,11 @@ class Jingle {
                     return Jingle.RTP.Description.Payload.Parameter(name: parts[0], value: parts.count > 1 ? parts[1] : "");
                 });
                 prefix = "a=rtcp-fb:\(id) ";
-                let rtcpFb = sdp.first(where: { (s) -> Bool in
+                let rtcpFb = sdp.filter({ (s) -> Bool in
                     return s.starts(with: prefix);
-                })?.dropFirst(prefix.count).components(separatedBy: ";").map({ (s) -> Jingle.RTP.Description.Payload.RtcpFeedback in
+                }).map({ s -> Substring in
+                    return s.dropFirst(prefix.count);
+                }).map({ (s) -> Jingle.RTP.Description.Payload.RtcpFeedback in
                     let parts = s.components(separatedBy: " ");
                     return Jingle.RTP.Description.Payload.RtcpFeedback(type: parts[0], subtype: parts.count > 1 ? parts[1] : nil);
                 });
