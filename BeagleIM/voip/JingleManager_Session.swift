@@ -1,197 +1,16 @@
 //
-//  JingleManager
+//  JingleManager_Session.swift
 //  BeagleIM
 //
-//  Created by Andrzej Wójcik on 19/10/2018.
+//  Created by Andrzej Wójcik on 19/12/2018.
 //  Copyright © 2018 HI-LOW. All rights reserved.
 //
 
-import AppKit
+import Foundation
 import TigaseSwift
 import WebRTC
 
-class JingleManager: XmppServiceEventHandler {
-
-    static let instance = JingleManager();
-    
-    fileprivate var videoCapturer: RTCCameraVideoCapturer?;
-    
-    let connectionFactory = { () -> RTCPeerConnectionFactory in
-        RTCPeerConnectionFactory.initialize();
-        return RTCPeerConnectionFactory();
-    }();
-    
-    let events: [Event] = [JingleModule.JingleEvent.TYPE];
-    
-    fileprivate var connections: [Session] = [];
-    
-    fileprivate let dispatcher = QueueDispatcher(label: "jingleEventHandler");
-    
-    func session(for account: BareJID, with jid: JID, sid: String) -> Session? {
-        return dispatcher.sync {
-            return connections.first(where: {(sess) -> Bool in
-                return sess.sid == sid && sess.account == account && sess.jid == jid;
-            });
-        }
-    }
-    
-    fileprivate func session(peerConnection: RTCPeerConnection) -> Session? {
-        return dispatcher.sync {
-            return connections.first(where: {(sess) -> Bool in
-                return sess.peerConnection == peerConnection;
-            })
-        }
-    }
-
-    func open(for account: BareJID, with jid: JID, sid: String?, role: Jingle.Content.Creator) -> Session {
-        return dispatcher.sync {
-            let session = Session(account: account, jid: jid, sid: sid, role: role);
-            self.connections.append(session);
-            return session;
-        }
-    }
-    
-    fileprivate func close(for account: BareJID, with jid: JID, sid: String) -> Session? {
-        return dispatcher.sync {
-            guard let idx = self.connections.firstIndex(where: { sess -> Bool in
-                return sess.sid == sid && sess.account == account && sess.jid == jid;
-            }) else {
-                return nil;
-            }
-            let session =  self.connections.remove(at: idx);
-            session.terminate();
-            return session;
-        }
-    }
-    
-    fileprivate func close(session: Session) {
-        dispatcher.async {
-            guard let idx = self.connections.firstIndex(of: session) else {
-                return;
-            }
-            let session = self.connections.remove(at: idx);
-            session.terminate();
-        }
-    }
-    
-    func handle(event: Event) {
-        dispatcher.async {
-            switch event {
-            case let e as JingleModule.JingleEvent:
-                switch e.action! {
-                case .sessionInitiate:
-                    self.sessionInitiated(event: e);
-                case .sessionAccept:
-                    self.sessionAccepted(event: e);
-                case .transportInfo:
-                    self.transportInfo(event: e);
-                case .sessionTerminate:
-                    self.sessionTerminated(event: e);
-                default:
-                    break;
-                }
-                break;
-            default:
-                break;
-            }
-        }
-    }
-    
-    enum ContentType {
-        case audio
-        case video
-        case filetransfer
-    }
-    
-    func support(for jid: JID, on account: BareJID) -> Set<ContentType> {
-        guard let client = XmppService.instance.getClient(for: account), let presenceStore = client.presenceStore else {
-            return [];
-        }
-        
-        return Set([.audio, .video]);
-        
-        var features: [String] = [];
-        
-        if jid.resource == nil {
-            presenceStore.getPresences(for: jid.bareJid)?.values.forEach({ (p) in
-                guard let node = p.capsNode, let f = DBCapabilitiesCache.instance.getFeatures(for: node) else {
-                    return;
-                }
-                features.append(contentsOf: f);
-            })
-        } else {
-            guard let node = presenceStore.getPresence(for: jid)?.capsNode, let f = DBCapabilitiesCache.instance.getFeatures(for: node) else {
-                return [];
-            }
-            features.append(contentsOf: f);
-        }
-        
-        var support: [ContentType] = [];
-        
-        // check jingle and supported transports...
-        guard features.contains("urn:xmpp:jingle:1") && features.contains("urn:xmpp:jingle:transports:ice-udp:1") && features.contains("urn:xmpp:jingle:apps:dtls:0") && features.contains("urn:xmpp:jingle:apps:rtp:1") else {
-            return Set(support);
-        }
-        
-        if features.contains("urn:xmpp:jingle:apps:rtp:audio") {
-            support.append(.audio);
-        }
-        
-        if features.contains("urn:xmpp:jingle:apps:rtp:video") {
-            support.append(.video);
-        }
-        
-        if features.contains("urn:xmpp:jingle:apps:file-transfer:3") {
-            support.append(.filetransfer);
-        }
-        
-        return Set(support);
-    }
-    
-    func sessionInitiated(event e: JingleModule.JingleEvent) {
-        
-        guard let content = e.contents.first, let description = content.description as? Jingle.RTP.Description else {
-            return;
-        }
-        
-        let session = open(for: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid, role: .responder);
-        
-        if !VideoCallController.accept(session: session, sdpOffer: SDP(sid: e.sid!, contents: e.contents, bundle: e.bundle)) {
-            session.terminate();
-        }
-    }
-    
-    func sessionAccepted(event e: JingleModule.JingleEvent) {
-        guard let session = session(for: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid) else {
-            return;
-        }
-        
-        session.accepted(sdpAnswer: SDP(sid: e.sid!, contents: e.contents, bundle: e.bundle));
-    }
-    
-    func sessionTerminated(event e: JingleModule.JingleEvent) {
-        guard let session = session(for: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid) else {
-            return;
-        }
-        session.terminate();
-    }
-    
-    func transportInfo(event e: JingleModule.JingleEvent) {
-        print("processing transport info");
-        guard let session = self.session(for: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid) else {
-            return;
-        }
-        
-        e.contents.forEach { (content) in
-            content.transports.forEach({ (trans) in
-                if let transport = trans as? Jingle.Transport.ICEUDPTransport {
-                    transport.candidates.forEach({ (candidate) in
-                        session.addCandidate(candidate, for: content.name);
-                    })
-                }
-            })
-        }
-    }
+extension JingleManager {
     
     class Session: NSObject, RTCPeerConnectionDelegate {
         
@@ -202,7 +21,7 @@ class JingleManager: XmppServiceEventHandler {
                 delegate?.state = state;
             }
         }
-
+        
         fileprivate var jingleModule: JingleModule? {
             guard let client = self.client, client.state == .connected else {
                 return nil;
@@ -219,7 +38,7 @@ class JingleManager: XmppServiceEventHandler {
         
         var remoteCandidates: [[String]]? = [];
         var localCandidates: [RTCIceCandidate]? = [];
-                
+        
         init(account: BareJID, jid: JID, sid: String? = nil, role: Jingle.Content.Creator) {
             self.account = account;
             self.client = XmppService.instance.getClient(for: account);
@@ -257,7 +76,7 @@ class JingleManager: XmppServiceEventHandler {
                 if (error != nil) {
                     self.onError(error!);
                 } else {
-//                    self.state = .connecting;
+                    //                    self.state = .connecting;
                 }
             }
             
@@ -291,7 +110,7 @@ class JingleManager: XmppServiceEventHandler {
             jingleModule.transportInfo(with: jid, sid: sid, contents: [Jingle.Content(name: contentName, creator: creator, description: nil, transports: [transport])]);
             return true;
         }
-
+        
         func terminate() -> Bool {
             guard let jingleModule: JingleModule = self.jingleModule else {
                 return false;
@@ -311,7 +130,7 @@ class JingleManager: XmppServiceEventHandler {
         
         func addCandidate(_ candidate: Jingle.Transport.ICEUDPTransport.Candidate, for contentName: String) {
             let sdp = candidate.toSDP();
-
+            
             if remoteCandidates != nil {
                 remoteCandidates?.append([contentName, sdp]);
             } else {
@@ -356,15 +175,15 @@ class JingleManager: XmppServiceEventHandler {
                 self.peerConnection?.add(RTCIceCandidate(sdp: sdp, sdpMLineIndex: Int32(idx), sdpMid: contentName));
             }
         }
-
+        
         func peerConnection(_ peerConnection: RTCPeerConnection, didChange stateChanged: RTCSignalingState) {
             print("signaling state:", stateChanged.rawValue);
         }
         
         func peerConnection(_ peerConnection: RTCPeerConnection, didAdd stream: RTCMediaStream) {
-//            if stream.videoTracks.count > 0 {
-//                self.delegate?.didAdd(remoteVideoTrack: stream.videoTracks[0]);
-//            }
+            //            if stream.videoTracks.count > 0 {
+            //                self.delegate?.didAdd(remoteVideoTrack: stream.videoTracks[0]);
+            //            }
         }
         
         func peerConnection(_ peerConnection: RTCPeerConnection, didRemove stream: RTCMediaStream) {
@@ -410,7 +229,7 @@ class JingleManager: XmppServiceEventHandler {
         
         func peerConnection(_ peerConnection: RTCPeerConnection, didGenerate candidate: RTCIceCandidate) {
             print("generated candidate for:", candidate.sdpMid, ", index:", candidate.sdpMLineIndex, "full SDP:", (peerConnection.localDescription?.sdp ?? ""));
-
+            
             JingleManager.instance.dispatcher.async {
                 if self.localCandidates == nil {
                     self.sendLocalCandidate(candidate);
@@ -433,7 +252,7 @@ class JingleManager: XmppServiceEventHandler {
         
         fileprivate func sendLocalCandidate(_ candidate: RTCIceCandidate) {
             print("sending candidate for:", candidate.sdpMid, ", index:", candidate.sdpMLineIndex, "full SDP:", (self.peerConnection?.localDescription?.sdp ?? ""));
-           
+            
             guard let jingleCandidate = Jingle.Transport.ICEUDPTransport.Candidate(fromSDP: candidate.sdp), let peerConnection = self.peerConnection else {
                 return;
             }
@@ -465,7 +284,7 @@ class JingleManager: XmppServiceEventHandler {
         
         func peerConnection(_ peerConnection: RTCPeerConnection, didOpen dataChannel: RTCDataChannel) {
         }
-
+        
         enum State {
             case created
             case negotiating
@@ -474,11 +293,5 @@ class JingleManager: XmppServiceEventHandler {
             case disconnected
         }
     }
-}
-
-extension String {
-    static func randomString(length: Int) -> String {
-        let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        return String((0...length-1).map{ _ in letters.randomElement()! });
-    }
+    
 }

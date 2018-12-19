@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		FE1A8BA321C96C1B00604141 /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA221C96C1B00604141 /* RoundButton.swift */; };
+		FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */; };
+		FE1A8BA821CAAB6200604141 /* SDP.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA721CAAB6200604141 /* SDP.swift */; };
+		FE1A8BAA21CAAD7700604141 /* Jingle.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA921CAAD7700604141 /* Jingle.swift */; };
 		FE28097D21652A7C002F5BD0 /* VCardEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */; };
 		FE28097F2166892D002F5BD0 /* AccountDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */; };
 		FE2809852169FB75002F5BD0 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2809842169FB74002F5BD0 /* Alert.swift */; };
@@ -136,6 +139,9 @@
 
 /* Begin PBXFileReference section */
 		FE1A8BA221C96C1B00604141 /* RoundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
+		FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager_Session.swift; sourceTree = "<group>"; };
+		FE1A8BA721CAAB6200604141 /* SDP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDP.swift; sourceTree = "<group>"; };
+		FE1A8BA921CAAD7700604141 /* Jingle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Jingle.swift; sourceTree = "<group>"; };
 		FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VCardEditorViewController.swift; sourceTree = "<group>"; };
 		FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDetailsViewController.swift; sourceTree = "<group>"; };
 		FE2809842169FB74002F5BD0 /* Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
@@ -266,6 +272,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		FE1A8BA421CA880100604141 /* voip */ = {
+			isa = PBXGroup;
+			children = (
+				FE83E362217A3809001DEF09 /* JingleManager.swift */,
+				FE4073A821BACC50009CE335 /* VideoCallController.swift */,
+				FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */,
+				FE1A8BA721CAAB6200604141 /* SDP.swift */,
+			);
+			path = voip;
+			sourceTree = "<group>";
+		};
 		FE30D8B8214ED1DE00670BEC /* groupchat */ = {
 			isa = PBXGroup;
 			children = (
@@ -293,6 +310,7 @@
 			isa = PBXGroup;
 			children = (
 				FE455B1F217906A50046255C /* JingleModule.swift */,
+				FE1A8BA921CAAD7700604141 /* Jingle.swift */,
 			);
 			path = xmpp;
 			sourceTree = "<group>";
@@ -314,7 +332,6 @@
 				FE2809842169FB74002F5BD0 /* Alert.swift */,
 				FEF844732173B9DC0067B005 /* Markdown.swift */,
 				FEC661F721AABFB0004FDE1E /* NSViewWithTextBackground.swift */,
-				FE4073A821BACC50009CE335 /* VideoCallController.swift */,
 				FE9486B121BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift */,
 				FE1A8BA221C96C1B00604141 /* RoundButton.swift */,
 			);
@@ -348,7 +365,6 @@
 				FE41FB40215CDA6000AD86D3 /* MessageEventHandler.swift */,
 				FE41FB42215CDAF900AD86D3 /* XMPPClient_extension.swift */,
 				FE4E8DD9215EA4860010D88E /* HttpFileUploadEventHandler.swift */,
-				FE83E362217A3809001DEF09 /* JingleManager.swift */,
 			);
 			path = service;
 			sourceTree = "<group>";
@@ -423,6 +439,7 @@
 		FED2ECF22066B01C00F506A5 /* BeagleIM */ = {
 			isa = PBXGroup;
 			children = (
+				FE1A8BA421CA880100604141 /* voip */,
 				FE455B1E217904F30046255C /* xmpp */,
 				FE30D8B8214ED1DE00670BEC /* groupchat */,
 				FEDE6AFA21455A0E0019170A /* roster */,
@@ -653,6 +670,7 @@
 			files = (
 				FE6E6BFC21384D5F003B1696 /* OutlineGroupItemButton.swift in Sources */,
 				FE41FB31215AB32200AD86D3 /* ServerCertificateInfo.swift in Sources */,
+				FE1A8BAA21CAAD7700604141 /* Jingle.swift in Sources */,
 				FE6E6BFE21384D5F003B1696 /* ChatMessageCellView.swift in Sources */,
 				FE2809852169FB75002F5BD0 /* Alert.swift in Sources */,
 				FE3AA0CB21540669001667A9 /* ChatItemProtocol.swift in Sources */,
@@ -664,6 +682,7 @@
 				FE6E6C0321384D5F003B1696 /* DBRosterStore.swift in Sources */,
 				FE34BBD52157DDF200775B07 /* MucModule_RoomError_extension.swift in Sources */,
 				FEDE6AFC21455A2B0019170A /* RosterViewController.swift in Sources */,
+				FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */,
 				FE41FB3F215CD95D00AD86D3 /* AvatarEventHandler.swift in Sources */,
 				FE30D8B7214D4BCD00670BEC /* Settings.swift in Sources */,
 				FEDE6AF32142DC590019170A /* AvatarViewWithStatus.swift in Sources */,
@@ -683,6 +702,7 @@
 				FE30D8AF214C3B7600670BEC /* NSImage.swift in Sources */,
 				FE6E6C0421384D5F003B1696 /* DatabaseSchemaManager.swift in Sources */,
 				FE3AA0CD2154069D001667A9 /* ChatsListGroupGroupchat.swift in Sources */,
+				FE1A8BA821CAAB6200604141 /* SDP.swift in Sources */,
 				FED7AEC521417328001E164B /* AvatarStore.swift in Sources */,
 				FE6E6BFA21384D5F003B1696 /* AccountManager.swift in Sources */,
 				FEC5DC8621553F4700AA3E4F /* GroupchatViewController.swift in Sources */,

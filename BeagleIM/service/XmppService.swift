@@ -384,10 +384,8 @@ class XmppService: EventHandler {
         client.modulesManager.register(MucModule()).roomsManager = DBRoomsManager();
         
         let jingleModule = client.modulesManager.register(JingleModule());
-        
-        jingleModule.supportedTransports.append(Jingle.Transport.RawUDPTransport.self);
-        jingleModule.supportedTransports.append(Jingle.Transport.ICEUDPTransport.self);
-        jingleModule.supportedDescriptions.append(Jingle.RTP.Description.self);
+        jingleModule.register(transport: Jingle.Transport.ICEUDPTransport.self, features: [Jingle.Transport.ICEUDPTransport.XMLNS, "urn:xmpp:jingle:apps:dtls:0"]);
+        jingleModule.register(description: Jingle.RTP.Description.self, features: ["urn:xmpp:jingle:apps:rtp:1", "urn:xmpp:jingle:apps:rtp:audio", "urn:xmpp:jingle:apps:rtp:video"]);
         
         client.modulesManager.initIfRequired();
         
