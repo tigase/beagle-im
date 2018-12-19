@@ -44,6 +44,8 @@ class GeneralSettingsController: NSViewController {
     fileprivate var imagePreviewMaxSizeLabel: NSTextField!;
     fileprivate var imagePreviewMaxSize: NSSlider!;
     
+    fileprivate var ignoreJingleSupportCheck: NSButton!;
+    
     override func viewDidLoad() {
         if #available(macOS 10.14, *) {
             appearance = formView.addRow(label: "Appearance:", field: NSPopUpButton(frame: .zero, pullsDown: false));
@@ -70,6 +72,8 @@ class GeneralSettingsController: NSViewController {
         markdownFormatting = formView.addRow(label: "Message formatting:", field: NSButton(checkboxWithTitle: "Markdown", target: self, action: #selector(checkboxChanged(_:))));
         
         spellchecking = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Spellchecking", target: self, action: #selector(checkboxChanged(_:))));
+        
+        ignoreJingleSupportCheck = formView.addRow(label: "Experimental", field: NSButton(checkboxWithTitle: "Ignore VoIP support check", target: self, action: #selector(checkboxChanged(_:))));
         
         self.preferredContentSize = NSSize(width: self.view.frame.size.width, height: self.view.frame.size.height);
     }
@@ -100,6 +104,7 @@ class GeneralSettingsController: NSViewController {
         markdownFormatting.state = Settings.enableMarkdownFormatting.bool() ? .on : .off;
         systemMenuIcon.state = Settings.systemMenuIcon.bool() ? .on : .off;
         spellchecking.state = Settings.spellchecking.bool() ? .on : .off;
+        ignoreJingleSupportCheck.state = Settings.ignoreJingleSupportCheck.bool() ? .on : .off;
     }
     
     @objc func checkboxChanged(_ sender: NSButton) {
@@ -132,6 +137,8 @@ class GeneralSettingsController: NSViewController {
             Settings.enableMarkdownFormatting.set(value: sender.state == .on);
         case spellchecking:
             Settings.spellchecking.set(value: sender.state == .on);
+        case ignoreJingleSupportCheck:
+            Settings.ignoreJingleSupportCheck.set(value: sender.state == .on);
         default:
             if #available(macOS 10.14, *) {
                 if let appearance = self.appearance, appearance == sender {

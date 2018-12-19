@@ -216,8 +216,8 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     fileprivate func updateCapabilities() {
         let supported = JingleManager.instance.support(for: JID(jid), on: account);
         DispatchQueue.main.async {
-            self.audioCall.isHidden = !supported.contains(.audio);
-            self.videoCall.isHidden = !supported.contains(.video);
+            self.audioCall.isHidden = !(VideoCallController.hasAudioSupport && (supported.contains(.audio) || Settings.ignoreJingleSupportCheck.bool()));
+            self.videoCall.isHidden = !(VideoCallController.hasAudioSupport && VideoCallController.hasVideoSupport && (supported.contains(.video) || Settings.ignoreJingleSupportCheck.bool()));
         }
     }
     

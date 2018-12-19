@@ -12,12 +12,25 @@ import TigaseSwift
 
 class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
+    public static var hasAudioSupport: Bool {
+        return AVCaptureDevice.authorizationStatus(for: .audio) == .authorized;
+    }
+    
+    public static var hasVideoSupport: Bool {
+        return AVCaptureDevice.authorizationStatus(for: .video) == .authorized;
+    }
+    
     public static func accept(session: JingleManager.Session, sdpOffer: SDP) -> Bool {
         guard !sdpOffer.contents.filter({ (content) -> Bool in
             return (content.description?.media == "audio") || (content.description?.media == "video");
         }).isEmpty else {
             return false;
         }
+        
+        guard VideoCallController.hasAudioSupport else {
+            return false;
+        }
+
         open { (windowController) in
             (windowController.contentViewController as? VideoCallController)?.accept(session: session, sdpOffer: sdpOffer);
         }
@@ -158,13 +171,15 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     override func viewWillAppear() {
         super.viewWillAppear();
 
-        self.localAudioTrack = JingleManager.instance.connectionFactory.audioTrack(withTrackId: "audio0");
-        self.localVideoSource = JingleManager.instance.connectionFactory.videoSource();
-        self.localVideoCapturer = RTCCameraVideoCapturer(delegate: self.localVideoSource!);
-        self.localVideoTrack = JingleManager.instance.connectionFactory.videoTrack(with: self.localVideoSource!, trackId: "video-" + UUID().uuidString);
+        if VideoCallController.hasVideoSupport {
+            self.localAudioTrack = JingleManager.instance.connectionFactory.audioTrack(withTrackId: "audio0");
+            self.localVideoSource = JingleManager.instance.connectionFactory.videoSource();
+            self.localVideoCapturer = RTCCameraVideoCapturer(delegate: self.localVideoSource!);
+            self.localVideoTrack = JingleManager.instance.connectionFactory.videoTrack(with: self.localVideoSource!, trackId: "video-" + UUID().uuidString);
         
-        self.startVideoCapture(videoCapturer: self.localVideoCapturer!) {
-            print("started!");
+            self.startVideoCapture(videoCapturer: self.localVideoCapturer!) {
+                print("started!");
+            }
         }
     }
     
@@ -201,19 +216,34 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
             //alert.icon = NSImage(named: NSImage.)
             alert.informativeText = "Do you want to accept this call?"
             
-            alert.addButton(withTitle: "Accept video");
+            let isVideo = VideoCallController.hasVideoSupport && sdpOffer.contents.first(where: { (content) -> Bool in
+                return content.description?.media == "video"
+            }) != nil;
+            if isVideo {
+                alert.addButton(withTitle: "Accept video");
+            }
             alert.addButton(withTitle: "Accept audio")
             alert.addButton(withTitle: "Deny");
             
             alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
-                switch response {
-                case .alertFirstButtonReturn:
-                    self.accept(session: session, sdpOffer: sdpOffer, withAudio: true, withVideo: true);
-                case .alertSecondButtonReturn:
-                    self.accept(session: session, sdpOffer: sdpOffer, withAudio: true, withVideo: false);
-                default:
-                    _ = session.decline();
-                    self.closeWindow();
+                if isVideo {
+                    switch response {
+                    case .alertFirstButtonReturn:
+                        self.accept(session: session, sdpOffer: sdpOffer, withAudio: true, withVideo: true);
+                    case .alertSecondButtonReturn:
+                        self.accept(session: session, sdpOffer: sdpOffer, withAudio: true, withVideo: false);
+                    default:
+                        _ = session.decline();
+                        self.closeWindow();
+                    }
+                } else {
+                    switch response {
+                    case .alertFirstButtonReturn:
+                        self.accept(session: session, sdpOffer: sdpOffer, withAudio: true, withVideo: false);
+                    default:
+                        _ = session.decline();
+                        self.closeWindow();
+                    }
                 }
             });
         }
