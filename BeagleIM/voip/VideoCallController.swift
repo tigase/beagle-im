@@ -152,12 +152,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad();
-        localVideoView.wantsLayer = true;
-        //videoView.translatesAutoresizingMaskIntoConstraints = false;
-        localVideoView.layer?.transform = CATransform3DMakeScale(1.0, -1.0, 1.0);
 
-        remoteVideoView.heightAnchor.constraint(greaterThanOrEqualTo: localVideoView.heightAnchor, multiplier: 4).isActive = true;
-        remoteVideoView.heightAnchor.constraint(lessThanOrEqualTo: localVideoView.heightAnchor, multiplier: 5).isActive = true;
         localVideoViewAspect = localVideoView.widthAnchor.constraint(equalTo: localVideoView.heightAnchor, multiplier: 640.0/480.0);
         localVideoViewAspect?.isActive = true;
         
@@ -200,7 +195,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
             }
         }
     }
-
+    
     fileprivate var sessionsInProgress: [JingleManager.Session] = [];
     
     func accept(session: JingleManager.Session, sdpOffer: SDP) {
