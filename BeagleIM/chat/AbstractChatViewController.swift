@@ -379,9 +379,6 @@ extension NSTextField {
             return nil;
         }
         
-        let point = contentView.convert(event.locationInWindow, from: nil);
-        let textPoint = convert(point, from: contentView);
-        
         let textContainer:NSTextContainer = NSTextContainer.init()
         let layoutManager:NSLayoutManager = NSLayoutManager.init()
         let textStorage:NSTextStorage = NSTextStorage.init()
@@ -392,19 +389,24 @@ extension NSTextField {
         textContainer.lineFragmentPadding = 0;
         textContainer.maximumNumberOfLines = self.maximumNumberOfLines;
         textContainer.lineBreakMode = self.lineBreakMode;
-        textContainer.size = (self.cell as! NSTextFieldCell).controlView!.bounds.size;
+        
+        textContainer.size = self.intrinsicContentSize;
         
         textStorage.beginEditing();
         textStorage.setAttributedString(self.attributedStringValue);
+        textStorage.addAttribute(.font, value: self.font!, range: NSRange(location: 0, length: textStorage.length));
         textStorage.endEditing();
+        
+        layoutManager.glyphRange(for: textContainer);
+        
+        let point = contentView.convert(event.locationInWindow, from: nil);
+        let textPoint1 = convert(point, from: contentView);
+        let textPoint = NSPoint(x: textPoint1.x - 5, y: textPoint1.y / 1.0666);
         
         var distance: CGFloat = 0;
         let idx = layoutManager.characterIndex(for: textPoint, in: textContainer, fractionOfDistanceBetweenInsertionPoints: &distance);
-        //guard distance < 1.0 && distance > -1.0 else {
-        //    return nil;
-        //}
         let rect = layoutManager.boundingRect(forGlyphRange: NSRange(location: idx, length: 1), in: textContainer);
-        guard rect.contains(NSPoint(x: textPoint.x, y: textPoint.y)) else {
+        guard rect.contains(textPoint) else {
             return nil;
         }
         return idx;
