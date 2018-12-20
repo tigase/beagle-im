@@ -16,7 +16,8 @@ class JingleManager: XmppServiceEventHandler {
     
     let connectionFactory = { () -> RTCPeerConnectionFactory in
         RTCPeerConnectionFactory.initialize();
-        return RTCPeerConnectionFactory();
+        return RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(),
+                                        decoderFactory: RTCDefaultVideoDecoderFactory());
     }();
     
     let events: [Event] = [JingleModule.JingleEvent.TYPE];

@@ -153,10 +153,10 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad();
 
-        localVideoViewAspect = localVideoView.widthAnchor.constraint(equalTo: localVideoView.heightAnchor, multiplier: 640.0/480.0);
+        localVideoViewAspect = localVideoView.widthAnchor.constraint(equalTo: localVideoView.heightAnchor, multiplier: 1.0);
         localVideoViewAspect?.isActive = true;
         
-        remoteVideoViewAspect = remoteVideoView.widthAnchor.constraint(equalTo: remoteVideoView.heightAnchor, multiplier: 640.0/480.0);
+        remoteVideoViewAspect = remoteVideoView.widthAnchor.constraint(equalTo: remoteVideoView.heightAnchor, multiplier: 1.0);
         remoteVideoViewAspect?.isActive = true;
         
         localVideoView.delegate = self;
@@ -191,7 +191,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                 self.remoteVideoView.removeConstraint(self.remoteVideoViewAspect!);
                 self.remoteVideoViewAspect = self.remoteVideoView.widthAnchor.constraint(equalTo: self.remoteVideoView.heightAnchor, multiplier: size.width / size.height);
                 self.remoteVideoViewAspect?.isActive = true;
-                print("remote frame:", self.localVideoView!.frame);
+                print("remote frame:", self.remoteVideoView!.frame);
             }
         }
     }
@@ -409,9 +409,10 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     func initiatePeerConnection(for session: JingleManager.Session) -> RTCPeerConnection {
         let configuration = RTCConfiguration();
         configuration.sdpSemantics = .unifiedPlan;
-        configuration.iceServers = [ RTCIceServer(urlStrings: ["stun:stun1.l.google.com:19302"]), RTCIceServer(urlStrings: ["stun:stunserver.org:3478"]) ];
+        configuration.iceServers = [ RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:stun2.l.google.com:19302","stun:stun3.l.google.com:19302","stun:stun4.l.google.com:19302"]), RTCIceServer(urlStrings: ["stun:stunserver.org:3478"]) ];
         configuration.bundlePolicy = .maxBundle;
         configuration.rtcpMuxPolicy = .require;
+        configuration.iceCandidatePoolSize = 3;
         
         return JingleManager.instance.connectionFactory.peerConnection(with: configuration, constraints: self.defaultCallConstraints, delegate: session);
     }
@@ -448,24 +449,31 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
             var bestFrameRate: AVFrameRateRange? = nil;
             RTCCameraVideoCapturer.supportedFormats(for: device).forEach({ (format) in
                 let size = CMVideoFormatDescriptionGetDimensions(format.formatDescription);
-                print("checking format:", size.width, "x", size.height, ", type:", CMFormatDescriptionGetMediaSubType(format.formatDescription), "expected:", videoCapturer.preferredOutputPixelFormat());
+                print("checking format:", size.width, "x", size.height, ", fps:", format.videoSupportedFrameRateRanges.map({ (range) -> Float64 in
+                    return range.maxFrameRate;
+                }).max() ?? 0, ", type:", CMFormatDescriptionGetMediaSubType(format.formatDescription), "expected:", videoCapturer.preferredOutputPixelFormat());
                 // larger size causes issues during encoding...
 //                if (size.width > 640) {
 //                    return;
 //                }
+                let currSize = bestFormat == nil ? nil : CMVideoFormatDescriptionGetDimensions(bestFormat!.formatDescription);
+                let currRating = currSize == nil ? nil : (currSize!.width * currSize!.height);
+                let rating = size.width * size.height;
                 
                 format.videoSupportedFrameRateRanges.forEach({ (range) in
                     if (bestFrameRate == nil || bestFrameRate!.maxFrameRate < range.maxFrameRate) {
                         bestFrameRate = range;
                         bestFormat = format;
-                    } else if (bestFrameRate != nil && bestFrameRate!.maxFrameRate == range.maxFrameRate && CMFormatDescriptionGetMediaSubType(format.formatDescription) == videoCapturer.preferredOutputPixelFormat()) {
+                    } else if (bestFrameRate != nil && bestFrameRate!.maxFrameRate == range.maxFrameRate && (
+                        (currRating! < rating)
+                        || (CMFormatDescriptionGetMediaSubType(format.formatDescription)) == videoCapturer.preferredOutputPixelFormat())) {
                         bestFormat = format;
                     }
                 });
             });
             
             if bestFormat != nil && bestFrameRate != nil {
-                videoCapturer.startCapture(with: device, format: bestFormat!, fps: Int(bestFrameRate!.maxFrameRate*0.86), completionHandler: { error in
+                videoCapturer.startCapture(with: device, format: bestFormat!, fps: Int(bestFrameRate!.maxFrameRate), completionHandler: { error in
                     
                     // takes too long to initialize?
                     //print("video capturer started:", error);

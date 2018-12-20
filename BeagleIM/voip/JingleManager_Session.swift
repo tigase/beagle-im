@@ -218,7 +218,9 @@ extension JingleManager {
                 self.state = .connected;
             } else if (state == .connected && (newState == .disconnected || newState == .failed || newState == .closed)) {
                 self.state = .disconnected;
-                _ = self.terminate();
+                DispatchQueue.main.async {
+                    _ = self.terminate();
+                }
             } else {
                 self.state = .connecting;
             }
