@@ -213,27 +213,25 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
     func accept(session: JingleManager.Session, sdpOffer: SDP) {
         DispatchQueue.main.async {
+            self.session = session;
+            session.delegate = self;
+            
             let name = session.client?.rosterStore?.get(for: session.jid.withoutResource)?.name ?? session.jid.bareJid.stringValue;
             
             self.remoteAvatarView.image = AvatarManager.instance.avatar(for: session.jid.bareJid, on: session.account);
             
             self.view.window?.title = "Call with \(name)"
             
-            let alert = NSAlert();
-            alert.messageText = "Incoming call from \(name)";
-            //alert.icon = NSImage(named: NSImage.)
-            alert.informativeText = "Do you want to accept this call?"
-            
             let isVideo = VideoCallController.hasVideoSupport && sdpOffer.contents.first(where: { (content) -> Bool in
                 return content.description?.media == "video"
             }) != nil;
-            if isVideo {
-                alert.addButton(withTitle: "Accept video");
-            }
-            alert.addButton(withTitle: "Accept audio")
-            alert.addButton(withTitle: "Deny");
             
-            alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
+            var buttons = [ "Accept audio", "Deny" ];
+            if isVideo {
+                buttons.insert("Accept video", at: 0);
+            }
+            
+            self.showAlert(title: "Incoming call from \(name)", message: "Do you want to accept this call?", buttons: buttons, completionHandler: { (response) in
                 if isVideo {
                     switch response {
                     case .alertFirstButtonReturn:
@@ -258,8 +256,6 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     }
     
     fileprivate func accept(session: JingleManager.Session, sdpOffer: SDP, withAudio: Bool, withVideo: Bool) {
-        self.session = session;
-        session.delegate = self;
         session.initiated();
         
         session.peerConnection = self.initiatePeerConnection(for: session);
@@ -286,15 +282,10 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                         guard error == nil else {
                             _ = session.decline();
                             
-                            DispatchQueue.main.async {
-                                let alert = NSAlert();
-                                alert.icon = NSImage(named: NSImage.infoName);
-                                alert.messageText = "Call failed";
-                                alert.informativeText = "Negotiation of the call failed";
-                                alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
-                                    self.closeWindow();
-                                })
-                            }
+                            self.showAlert(title: "Call failed!", message: "Negotiation of the call failed", icon: NSImage(named: NSImage.infoName), buttons: ["OK"], completionHandler: { (reponse) in
+                                self.closeWindow();
+                            })
+
                             return;
                         }
                         print("generated local description:", sdpAnswer!.sdp, sdpAnswer!.type);
@@ -352,14 +343,9 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         
         guard let presences = XmppService.instance.getClient(for: account)?.presenceStore?.getPresences(for: jid)?.keys, !presences.isEmpty
             else {
-                let alert = NSAlert();
-                alert.messageText = "Call failed";
-                alert.informativeText = "It was not possible to establish connection. Recipient is unavailable.";
-                alert.icon = NSImage(named: NSImage.cautionName);
-                alert.addButton(withTitle: "OK");
-                alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
-                     self.closeWindow();
-                });
+                self.showAlert(title: "Call failed", message: "It was not possible to establish the connection. Recipient is unavailable.", icon: NSImage(named: NSImage.cautionName), buttons: ["OK"]) { (response) in
+                    self.closeWindow();
+                };
                 return;
         }
         
@@ -372,14 +358,9 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
             DispatchQueue.main.async {
                 waitingFor = waitingFor - 1;
                 if waitingFor == 0 && that.sessionsInProgress.isEmpty {
-                    let alert = NSAlert();
-                    alert.messageText = "Call failed";
-                    alert.informativeText = "It was not possible to establish connection.";
-                    alert.icon = NSImage(named: NSImage.cautionName);
-                    alert.addButton(withTitle: "OK");
-                    alert.beginSheetModal(for: that.view.window!, completionHandler: { (response) in
+                    that.showAlert(title: "Call failed", message: "It was not possible to establish the connection.", icon: NSImage(named: NSImage.cautionName), buttons: ["OK"]) { (response) in
                         that.closeWindow();
-                    });
+                    };
                 }
             }
         }
@@ -389,6 +370,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
             
             session.delegate = self;
             
+            print("creating peer connection for:", session.jid);
             session.peerConnection = self.initiatePeerConnection(for: session);
             self.initializeMedia(for: session, audio: withAudio, video: withVideo) {
                 session.peerConnection?.offer(for: self.defaultCallConstraints, completionHandler: { (sdp, error) in
@@ -514,42 +496,70 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     }
     
     @IBAction func closeClicked(_ sender: Any) {
-        _ = session?.terminate();
+        if let session = self.session {
+            session.delegate = nil;
+            _ = session.terminate();
+        }
         self.sessionsInProgress.forEach { sess in
+            sess.delegate = nil;
             _ = sess.terminate();
         }
+        self.closeWindow();
     }
 
+    fileprivate var alertWindow: NSWindow?;
+    
+    fileprivate func hideAlert() {
+        DispatchQueue.main.async {
+            if let window = self.alertWindow {
+                self.alertWindow = nil;
+                self.view.window?.endSheet(window);
+            }
+        }
+    }
+    
+    fileprivate func showAlert(title: String, message: String = "", icon: NSImage? = nil, buttons: [String], completionHandler: @escaping (NSApplication.ModalResponse)->Void) {
+        hideAlert();
+        DispatchQueue.main.async {
+            let alert = NSAlert();
+            alert.messageText = title;
+            alert.informativeText = message;
+            if icon != nil {
+                alert.icon = icon!;
+            }
+            buttons.forEach { (button) in
+                alert.addButton(withTitle: button);
+            }
+            alert.beginSheetModal(for: self.view.window!, completionHandler: { (result) in
+                self.alertWindow = nil;
+                completionHandler(result);
+            });
+            self.alertWindow = alert.window;
+        }
+    }
+    
     func sessionTerminated(session: JingleManager.Session) {
         DispatchQueue.main.async {
             if let idx = self.sessionsInProgress.firstIndex(of: session) {
                 self.sessionsInProgress.remove(at: idx);
                 if self.session == nil && self.sessionsInProgress.isEmpty {
-                    let alert = NSAlert();
-                    alert.messageText = "Call rejected!";
-                    alert.informativeText = "Call was rejected by the recipient.";
-                    alert.icon = NSImage(named: NSImage.infoName);
-                    alert.addButton(withTitle: "OK");
-                    alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
-                         self.closeWindow();
-                    });
+                    self.showAlert(title: "Call rejected!", message: "Call was rejected by the recipient.", icon: NSImage(named: NSImage.infoName), buttons: ["OK"], completionHandler: { (response) in
+                        self.closeWindow();
+                    })
                 }
             } else if let sess = self.session {
                 if sess.sid == session.sid && sess.jid == session.jid && sess.account == session.account {
                     self.session = nil;
-
                     if let videoCapturer = self.localVideoCapturer {
                         videoCapturer.stopCapture(completionHandler: nil);
                     }
-                    
-                    let alert = NSAlert();
-                    alert.messageText = "Call ended!";
-                    alert.informativeText = "Call ended.";
-                    alert.icon = NSImage(named: NSImage.infoName);
-                    alert.addButton(withTitle: "OK");
-                    alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
-                        self.closeWindow();
-                    });
+                    if self.state == .created {
+                        self.hideAlert();
+                    } else {
+                        self.showAlert(title: "Call ended!", message: "Call ended.", icon: NSImage(named: NSImage.infoName), buttons: ["OK"], completionHandler: { (response) in
+                            self.closeWindow();
+                        });
+                    }
                 }
             }
         }
@@ -597,23 +607,17 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                     
                     _ = session.decline();
                     
-                    DispatchQueue.main.async {
-                        let alert = NSAlert();
-                        alert.icon = NSImage(named: NSImage.infoName);
-                        alert.messageText = "Call failed";
-                        alert.informativeText = "Negotiation of the call failed";
-                        alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
-                            self.closeWindow();
-                        })
-                    }
+                    self.showAlert(title: "Call failed!", message: "Negotiation of the call failed", icon: NSImage(named: NSImage.infoName), buttons: ["OK"], completionHandler: { (reponse) in
+                        self.closeWindow();
+                    })
                     return;
                 }
                 
                 
+                onSuccess();
+
                 session.localDescriptionSet();
             });
-            
-            onSuccess();
         }
     }
     
@@ -627,15 +631,9 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
             guard error == nil else {
                 session.decline();
                 
-                DispatchQueue.main.async {
-                    let alert = NSAlert();
-                    alert.icon = NSImage(named: NSImage.infoName);
-                    alert.messageText = "Call failed";
-                    alert.informativeText = "Negotiation of the call failed";
-                    alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
-                        self.closeWindow();
-                    })
-                }
+                self.showAlert(title: "Call failed!", message: "Negotiation of the call failed", icon: NSImage(named: NSImage.infoName), buttons: ["OK"], completionHandler: { (reponse) in
+                    self.closeWindow();
+                })
                 return;
             }
 

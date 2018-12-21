@@ -137,8 +137,8 @@ extension Jingle.Content {
                 return Jingle.RTP.Description.Encryption(cryptoSuite: parts[0], keyParams: parts[1], tag: parts[2], sessionParams: parts.count > 3 ? parts[3] : nil);
         }
         
-        let ssrcs: [Jingle.RTP.Description.SSRC] = Jingle.RTP.Description.SSRC.parse(sdpLines: sdp);
-        let ssrcGroups: [Jingle.RTP.Description.SSRCGroup] = Jingle.RTP.Description.SSRCGroup.parse(sdpLines: sdp);
+        let ssrcs: [Jingle.RTP.Description.SSRC] = [];//Jingle.RTP.Description.SSRC.parse(sdpLines: sdp);
+        let ssrcGroups: [Jingle.RTP.Description.SSRCGroup] = [];//Jingle.RTP.Description.SSRCGroup.parse(sdpLines: sdp);
         let description = Jingle.RTP.Description(media: mediaName, ssrc: nil, payloads: payloads, bandwidth: nil, encryption: encryptions, rtcpMux: sdp.firstIndex(of: "a=rtcp-mux") != nil, ssrcs: ssrcs, ssrcGroups: ssrcGroups);
         
         guard let pwd = sdp.first(where: { (l) -> Bool in
@@ -220,6 +220,7 @@ extension Jingle.Content {
         // RTP senders always both...
         sdp.append("a=sendrecv");
         sdp.append("a=mid:\(name)")
+        sdp.append("a=ice-options:trickle");
         
         if let desc = self.description as? Jingle.RTP.Description, description?.media == "audio" || description?.media == "video" {
             if desc.rtcpMux {
