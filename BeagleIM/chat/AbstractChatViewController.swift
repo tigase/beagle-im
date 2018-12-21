@@ -57,6 +57,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     
     override func viewWillAppear() {
         super.viewWillAppear();
+        self.messageField?.placeholderAttributedString = account != nil ? NSAttributedString(string: "from \(account.stringValue)...", attributes: [.foregroundColor: NSColor.placeholderTextColor]) : nil;
         self.tableView.reloadData();
         print("scrolling to", self.tableView.numberOfRows - 1)
         self.tableView.scrollRowToVisible(self.tableView.numberOfRows - 1);
@@ -64,7 +65,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         self.dataSource.refreshData();
         self.updateMessageFieldSize();
         
-        mouseMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseDragged, .leftMouseUp, .rightMouseDown]) { (event) -> NSEvent? in
+        mouseMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseDragged, .leftMouseUp, .rightMouseDown, .mouseMoved]) { (event) -> NSEvent? in
             return self.handleMouse(event: event) ? nil : event;
         }
         NotificationCenter.default.addObserver(self, selector: #selector(didBecomeKeyWindow), name: NSWindow.didBecomeKeyNotification, object: nil);
@@ -89,6 +90,25 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     
     func handleMouse(event: NSEvent) -> Bool {
         switch event.type {
+        case .mouseMoved:
+            if currentSession == nil {
+                guard let messageView = messageViewFor(event: event) else {
+                    NSCursor.pointingHand.pop();
+                    return isInMesageView(event: event);
+                }
+                if let idx = messageView.message.characterIndexFor(event: event), idx != 0 {
+                    if (messageView.message.attributedStringValue.attribute(.link, at: idx, effectiveRange: nil) as? URL) != nil {
+                        if NSCursor.current != NSCursor.pointingHand {
+                            NSCursor.pointingHand.push();
+                        }
+                    } else {
+                        NSCursor.pointingHand.pop();
+                    }
+                } else {
+                    NSCursor.pointingHand.pop();
+                }
+            }
+            return false;
         case .leftMouseDown:
             if currentSession != nil {
                 let visibleRows = self.tableView.rows(in: self.tableView.visibleRect);
@@ -115,6 +135,8 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
             
             return true;//currentSession != nil;
         case .leftMouseUp:
+            NSCursor.pointingHand.pop();
+            
             guard let session = currentSession else {
                 return false;
             }
@@ -123,9 +145,12 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
                 return isInMesageView(event: event);
             }
             
-            if let idx = messageView.message.characterIndexFor(event: event), idx != 0 && session.position == idx && session.messageId == messageView.id {
+            if let idx = messageView.message.characterIndexFor(event: event), idx != 0 {
                 if let link = messageView.message.attributedStringValue.attribute(.link, at: idx, effectiveRange: nil) as? URL {
-                    NSWorkspace.shared.open(link);
+                    if session.position == idx && session.messageId == messageView.id {
+                        NSWorkspace.shared.open(link);
+                    }
+                    NSCursor.pointingHand.push();
                 }
             }
 
@@ -134,6 +159,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
             guard let session = self.currentSession else {
                 return false;
             }
+            NSCursor.pointingHand.pop();
             
             let point = self.tableView.convert(event.locationInWindow, from: nil);
             let currRow = self.tableView.row(at: point);
@@ -379,9 +405,6 @@ extension NSTextField {
             return nil;
         }
         
-        let point = contentView.convert(event.locationInWindow, from: nil);
-        let textPoint = convert(point, from: contentView);
-        
         let textContainer:NSTextContainer = NSTextContainer.init()
         let layoutManager:NSLayoutManager = NSLayoutManager.init()
         let textStorage:NSTextStorage = NSTextStorage.init()
@@ -392,19 +415,24 @@ extension NSTextField {
         textContainer.lineFragmentPadding = 0;
         textContainer.maximumNumberOfLines = self.maximumNumberOfLines;
         textContainer.lineBreakMode = self.lineBreakMode;
-        textContainer.size = (self.cell as! NSTextFieldCell).controlView!.bounds.size;
+        
+        textContainer.size = self.intrinsicContentSize;
         
         textStorage.beginEditing();
         textStorage.setAttributedString(self.attributedStringValue);
+        textStorage.addAttribute(.font, value: self.font!, range: NSRange(location: 0, length: textStorage.length));
         textStorage.endEditing();
+        
+        layoutManager.glyphRange(for: textContainer);
+        
+        let point = contentView.convert(event.locationInWindow, from: nil);
+        let textPoint1 = convert(point, from: contentView);
+        let textPoint = NSPoint(x: textPoint1.x - 5, y: textPoint1.y);// y: textPoint1.y / 1.0666);
         
         var distance: CGFloat = 0;
         let idx = layoutManager.characterIndex(for: textPoint, in: textContainer, fractionOfDistanceBetweenInsertionPoints: &distance);
-        //guard distance < 1.0 && distance > -1.0 else {
-        //    return nil;
-        //}
         let rect = layoutManager.boundingRect(forGlyphRange: NSRange(location: idx, length: 1), in: textContainer);
-        guard rect.contains(NSPoint(x: textPoint.x, y: textPoint.y)) else {
+        guard rect.contains(textPoint) else {
             return nil;
         }
         return idx;
