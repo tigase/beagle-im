@@ -65,7 +65,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         self.dataSource.refreshData();
         self.updateMessageFieldSize();
         
-        mouseMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseDragged, .leftMouseUp, .rightMouseDown]) { (event) -> NSEvent? in
+        mouseMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseDragged, .leftMouseUp, .rightMouseDown, .mouseMoved]) { (event) -> NSEvent? in
             return self.handleMouse(event: event) ? nil : event;
         }
         NotificationCenter.default.addObserver(self, selector: #selector(didBecomeKeyWindow), name: NSWindow.didBecomeKeyNotification, object: nil);
@@ -90,6 +90,25 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     
     func handleMouse(event: NSEvent) -> Bool {
         switch event.type {
+        case .mouseMoved:
+            if currentSession == nil {
+                guard let messageView = messageViewFor(event: event) else {
+                    NSCursor.pointingHand.pop();
+                    return isInMesageView(event: event);
+                }
+                if let idx = messageView.message.characterIndexFor(event: event), idx != 0 {
+                    if (messageView.message.attributedStringValue.attribute(.link, at: idx, effectiveRange: nil) as? URL) != nil {
+                        if NSCursor.current != NSCursor.pointingHand {
+                            NSCursor.pointingHand.push();
+                        }
+                    } else {
+                        NSCursor.pointingHand.pop();
+                    }
+                } else {
+                    NSCursor.pointingHand.pop();
+                }
+            }
+            return false;
         case .leftMouseDown:
             if currentSession != nil {
                 let visibleRows = self.tableView.rows(in: self.tableView.visibleRect);
@@ -116,6 +135,8 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
             
             return true;//currentSession != nil;
         case .leftMouseUp:
+            NSCursor.pointingHand.pop();
+            
             guard let session = currentSession else {
                 return false;
             }
@@ -124,9 +145,12 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
                 return isInMesageView(event: event);
             }
             
-            if let idx = messageView.message.characterIndexFor(event: event), idx != 0 && session.position == idx && session.messageId == messageView.id {
+            if let idx = messageView.message.characterIndexFor(event: event), idx != 0 {
                 if let link = messageView.message.attributedStringValue.attribute(.link, at: idx, effectiveRange: nil) as? URL {
-                    NSWorkspace.shared.open(link);
+                    if session.position == idx && session.messageId == messageView.id {
+                        NSWorkspace.shared.open(link);
+                    }
+                    NSCursor.pointingHand.push();
                 }
             }
 
@@ -135,6 +159,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
             guard let session = self.currentSession else {
                 return false;
             }
+            NSCursor.pointingHand.pop();
             
             let point = self.tableView.convert(event.locationInWindow, from: nil);
             let currRow = self.tableView.row(at: point);
