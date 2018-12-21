@@ -23,6 +23,8 @@ import AppKit
 
 class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
   
+    @objc var placeholderAttributedString: NSAttributedString?;
+    
     override func awakeFromNib() {
         self.font = NSFont.systemFont(ofSize: NSFont.systemFontSize(for: .regular));
         self.textStorage?.delegate = self;

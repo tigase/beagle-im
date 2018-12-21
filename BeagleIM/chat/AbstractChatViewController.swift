@@ -57,6 +57,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     
     override func viewWillAppear() {
         super.viewWillAppear();
+        self.messageField?.placeholderAttributedString = account != nil ? NSAttributedString(string: "from \(account.stringValue)...", attributes: [.foregroundColor: NSColor.placeholderTextColor]) : nil;
         self.tableView.reloadData();
         print("scrolling to", self.tableView.numberOfRows - 1)
         self.tableView.scrollRowToVisible(self.tableView.numberOfRows - 1);
