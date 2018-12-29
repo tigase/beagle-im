@@ -266,7 +266,13 @@ class ChatMessageCellView: NSTableCellView {
                             }
                             return;
                         }
-                        if mimeType?.hasPrefix("image/") ?? false, let size = length {
+                        var isImage = (mimeType?.hasPrefix("image/") ?? false);
+                        if !isImage {
+                            if let fileExtension = url.lastPathComponent.split(separator: ".").last {
+                                isImage = fileExtension == "jpg" || fileExtension == "jpeg" || fileExtension == "png";
+                            }
+                        }
+                        if isImage, let size = length {
                             if size < Int64(Settings.imageDownloadSizeLimit.integer()) {
                                 ChatMessageCellView.downloadPreviewImage(session: session, url: url, completion: { (url, previewId) in
                                     finisher(url, previewId);
