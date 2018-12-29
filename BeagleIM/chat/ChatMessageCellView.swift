@@ -49,10 +49,30 @@ class ChatMessageCellView: NSTableCellView {
         var previewsToRetrive: [URL] = [];
         var previewCounter = 0;
         var previewsToLoad: [(URL,String)] = [];
+        var errors: [String] = [];
         matches.forEach { match in
             if let url = match.url {
-                if let previewId = item.preview?[url.absoluteString], "NONE" != previewId {
-                    previewsToLoad.append((url, previewId));
+                if let previewId = item.preview?[url.absoluteString] {
+                    if previewId.starts(with: "ERROR") {
+                        var error = "";
+                        if previewId.contains(":") {
+                            switch previewId.dropFirst("ERROR:".count) {
+                            case "NSURLErrorServerCertificateUntrusted":
+                                error = "Could not retrieve preview - invalid SSL certificate!";
+                            case "SizeExceeded":
+                                error = "Could not retrieve preview - file size exceeded!";
+                            default:
+                                error = "Could not retrieve preview - an error occurred";
+                            }
+                        } else {
+                            error = "Could not retrieve preview - an error occurred";
+                        }
+                        if !errors.contains(error) {
+                            errors.append(error);
+                        }
+                    } else if "NONE" != previewId {
+                        previewsToLoad.append((url, previewId));
+                    }
                 }
                 msg.addAttribute(.link, value: url, range: match.range);
                 
@@ -98,7 +118,7 @@ class ChatMessageCellView: NSTableCellView {
         } else {
             self.timestamp.attributedStringValue = NSMutableAttributedString(string: formatTimestamp(item.timestamp));
         }
-        self.toolTip = ChatMessageCellView.tooltipFormatter.string(from: item.timestamp);
+        self.toolTip = ChatMessageCellView.tooltipFormatter.string(from: item.timestamp) + (errors.isEmpty ? "" : "\n" + errors.joined(separator: "\n"));
     
         if previewsToLoad.isEmpty {
             ChatMessageCellView.downloadPreviews(for: item, urls: previewsToRetrive);
@@ -237,11 +257,23 @@ class ChatMessageCellView: NSTableCellView {
                     finisher(url, previewId);
                     return;
                 } else {
-                    ChatMessageCellView.downloadPreviewGetHeaders(session: session, url: url, completion: { (statusCode, mimeType, length) in
-                        if mimeType?.hasPrefix("image/") ?? false, let size = length, size < Int64(Settings.imageDownloadSizeLimit.integer()) {
-                            ChatMessageCellView.downloadPreviewImage(session: session, url: url, completion: { (url, previewId) in
-                                finisher(url, previewId);
-                            });
+                    ChatMessageCellView.downloadPreviewGetHeaders(session: session, url: url, completion: { (statusCode, error, mimeType, length) in
+                        guard error == nil else {
+                            if (error!._code == -1202 && error!._domain == "NSURLErrorDomain") {
+                                finisher(url, "ERROR:NSURLErrorServerCertificateUntrusted");
+                            } else {
+                                finisher(url, "ERROR");
+                            }
+                            return;
+                        }
+                        if mimeType?.hasPrefix("image/") ?? false, let size = length {
+                            if size < Int64(Settings.imageDownloadSizeLimit.integer()) {
+                                ChatMessageCellView.downloadPreviewImage(session: session, url: url, completion: { (url, previewId) in
+                                    finisher(url, previewId);
+                                })
+                            } else {
+                                finisher(url, "ERROR:SizeExceeeded");
+                            }
                         } else {
                             finisher(url, "NONE");
                         }
@@ -263,6 +295,15 @@ class ChatMessageCellView: NSTableCellView {
                     completion(url, "NONE");
                 }
             } else {
+                guard error == nil else {
+                    if (error!._code == -1202 && error!._domain == "NSURLErrorDomain") {
+                        completion(url, "ERROR:NSURLErrorServerCertificateUntrusted");
+                    } else {
+                        completion(url, "ERROR");
+                    }
+                    return;
+                }
+
                 //print("could not download file:", error?.localizedDescription);
                 completion(url, "NONE");
             }
@@ -270,12 +311,12 @@ class ChatMessageCellView: NSTableCellView {
         task.resume();
     }
     
-    fileprivate static func downloadPreviewGetHeaders(session: URLSession, url: URL, completion: @escaping (Int, String?, Int64?)->Void) {
+    fileprivate static func downloadPreviewGetHeaders(session: URLSession, url: URL, completion: @escaping (Int, Error?, String?, Int64?)->Void) {
         var request = URLRequest(url: url);
         request.httpMethod = "HEAD";
         session.dataTask(with: request) { (data, resp, error) in
             let response = resp as? HTTPURLResponse;
-            completion(response?.statusCode ?? 500, response?.mimeType, response?.expectedContentLength);
+            completion(response?.statusCode ?? 500, error, response?.mimeType, response?.expectedContentLength);
             }.resume();
     }
     

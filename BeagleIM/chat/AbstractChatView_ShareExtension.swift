@@ -130,7 +130,7 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
                 guard error == nil && code == 201 else {
                     print("received HTTP error response", error as Any, code);
                     self.sharingProgressBar.isHidden = true;
-                    completionHandler(nil, ErrorCondition.internal_server_error, "Could not upload data to the HTTP server");
+                    completionHandler(nil, ErrorCondition.internal_server_error, "Could not upload data to the HTTP server" + (error == nil ? "" : (":\n" + error!.localizedDescription)));
                     return;
                 }
                     
@@ -173,6 +173,32 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         }
         
         return nil;
+    }
+    
+    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust, let trust = challenge.protectionSpace.serverTrust {
+            let info = SslCertificateInfo(trust: trust);
+
+            DispatchQueue.main.async {
+                let alert = NSAlert();
+                alert.icon = NSImage(named: NSImage.cautionName);
+                alert.messageText = "Invalid SSL certificate";
+                alert.informativeText = "HTTP File Upload server presented invalid SSL certificate for \(challenge.protectionSpace.host).\nReceived certificate \(info.details.name) (\(info.details.fingerprintSha1))" + (info.issuer == nil ? " is self-signed!" : " issued by \(info.issuer!.name).") + "\n\nWould you like to connect to the server anyway?";
+                alert.addButton(withTitle: "Yes");
+                alert.addButton(withTitle: "No");
+                alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
+                    switch response {
+                    case .alertFirstButtonReturn:
+                        let credential = URLCredential(trust: trust);
+                        completionHandler(URLSession.AuthChallengeDisposition.useCredential, credential);
+                    default:
+                        completionHandler(URLSession.AuthChallengeDisposition.performDefaultHandling, nil);
+                    }
+                })
+            }
+        } else {
+            completionHandler(URLSession.AuthChallengeDisposition.performDefaultHandling, nil);
+        }
     }
     
     func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
