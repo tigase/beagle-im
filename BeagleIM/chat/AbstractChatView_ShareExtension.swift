@@ -177,8 +177,16 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
     
     func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust, let trust = challenge.protectionSpace.serverTrust {
-            let info = SslCertificateInfo(trust: trust);
+            var trustResult: SecTrustResultType = .invalid;
+            if SecTrustGetTrustResult(trust, &trustResult) == noErr {
+                if trustResult == .proceed || trustResult == .unspecified {
+                     let credential = URLCredential(trust: trust);
+                    completionHandler(URLSession.AuthChallengeDisposition.performDefaultHandling, credential);
+                    return;
+                }
+            }
 
+            let info = SslCertificateInfo(trust: trust);
             DispatchQueue.main.async {
                 let alert = NSAlert();
                 alert.icon = NSImage(named: NSImage.cautionName);
