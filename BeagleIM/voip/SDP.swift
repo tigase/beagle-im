@@ -206,8 +206,12 @@ extension Jingle.Content {
         }
         
         if let t = transport {
-            sdp.append("a=ice-ufrag:\(t.ufrag)");
-            sdp.append("a=ice-pwd:\(t.pwd)");
+            if t.ufrag != nil {
+                sdp.append("a=ice-ufrag:\(t.ufrag!)");
+            }
+            if t.pwd != nil {
+                sdp.append("a=ice-pwd:\(t.pwd!)");
+            }
             
             if t.fingerprint != nil {
                 sdp.append("a=fingerprint:\(t.fingerprint!.hash) \(t.fingerprint!.value)");

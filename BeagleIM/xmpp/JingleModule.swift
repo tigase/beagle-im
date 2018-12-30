@@ -85,7 +85,8 @@ class JingleModule: XmppModule, ContextAware {
         
         let jingle = stanza.findChild(name: "jingle", xmlns: JingleModule.XMLNS)!;
         
-        guard let action = Jingle.Action(rawValue: jingle.getAttribute("action") ?? ""), let sid = jingle.getAttribute("sid"), let initiator = JID(jingle.getAttribute("initiator")) ?? stanza.from else {
+        // sid is required but Movim is not sending it so we are adding another workaround!
+        guard let action = Jingle.Action(rawValue: jingle.getAttribute("action") ?? ""), let from = stanza.from, let sid = jingle.getAttribute("sid") ?? JingleManager.instance.session(for: context.sessionObject.userBareJid!, with: from, sid: nil)?.sid, let initiator = JID(jingle.getAttribute("initiator")) ?? stanza.from else {
             throw ErrorCondition.bad_request;
         }
         
@@ -107,7 +108,7 @@ class JingleModule: XmppModule, ContextAware {
             return el.name == "content" && el.getAttribute("name") != nil;
         });
         
-        context.eventBus.fire(JingleEvent(sessionObject: context.sessionObject, jid: stanza.from!, action: action, initiator: initiator, sid: sid, contents: contents, bundle: bundle));//, session: session));
+        context.eventBus.fire(JingleEvent(sessionObject: context.sessionObject, jid: from, action: action, initiator: initiator, sid: sid, contents: contents, bundle: bundle));//, session: session));
     }
     
     func initiateSession(to jid: JID, sid: String, initiator: JID, contents: [Jingle.Content], bundle: [String]?, callback: @escaping (ErrorCondition?)->Void) {

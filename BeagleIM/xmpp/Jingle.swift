@@ -132,8 +132,8 @@ extension Jingle {
             
             let xmlns = XMLNS;
             
-            let pwd: String;
-            let ufrag: String;
+            let pwd: String?;
+            let ufrag: String?;
             let candidates: [Candidate];
             let fingerprint: Fingerprint?;
             
@@ -141,9 +141,9 @@ extension Jingle {
                 guard el.name == "transport" && el.xmlns == ICEUDPTransport.XMLNS else {
                     return nil;
                 }
-                guard let pwd = el.getAttribute("pwd"), let ufrag = el.getAttribute("ufrag") else {
-                    return nil;
-                }
+                let pwd = el.getAttribute("pwd");
+                let ufrag = el.getAttribute("ufrag");
+                
                 self.init(pwd: pwd, ufrag: ufrag, candidates: el.mapChildren(transform: { (child) -> Candidate? in
                     return Candidate(from: child);
                 }, filter: { el -> Bool in
@@ -151,7 +151,7 @@ extension Jingle {
                 }), fingerprint: Fingerprint(from: el.findChild(name: "fingerprint", xmlns: "urn:xmpp:jingle:apps:dtls:0")));
             }
             
-            init(pwd: String, ufrag: String, candidates: [Candidate], fingerprint: Fingerprint? = nil) {
+            init(pwd: String?, ufrag: String?, candidates: [Candidate], fingerprint: Fingerprint? = nil) {
                 self.pwd = pwd;
                 self.ufrag = ufrag;
                 self.candidates = candidates;
@@ -222,7 +222,11 @@ extension Jingle {
                 let tcpType: String?;
                 
                 convenience init?(from el: Element) {
-                    guard el.name == "candidate", let foundation = UInt(el.getAttribute("foundation") ?? ""), let component = UInt8(el.getAttribute("component") ?? ""), let generation = UInt8(el.getAttribute("generation") ?? ""), let id = el.getAttribute("id"), let ip = el.getAttribute("ip"), let port = UInt16(el.getAttribute("port") ?? ""), let priority = UInt(el.getAttribute("priority") ?? "0"), let proto = ProtocolType(rawValue: el.getAttribute("protocol") ?? "") else {
+                    let generation = UInt8(el.getAttribute("generation") ?? "") ?? 0;
+                    // workaround for Movim!
+                    let id = el.getAttribute("id") ?? UUID().uuidString;
+                    
+                    guard el.name == "candidate", let foundation = UInt(el.getAttribute("foundation") ?? ""), let component = UInt8(el.getAttribute("component") ?? ""), let ip = el.getAttribute("ip"), let port = UInt16(el.getAttribute("port") ?? ""), let priority = UInt(el.getAttribute("priority") ?? "0"), let proto = ProtocolType(rawValue: el.getAttribute("protocol") ?? "") else {
                         return nil;
                     }
                     
@@ -503,7 +507,10 @@ extension Jingle {
                         el.addChild(param.toElement());
                     }
                     rtcpFeedbacks?.forEach({ (rtcpFb) in
-                        el.addChild(rtcpFb.toElement());
+                        let rtcpFbEl = rtcpFb.toElement();
+                        // workaround for Movim!
+                        rtcpFbEl.setAttribute("id", value: String(id));
+                        el.addChild(rtcpFbEl);
                     })
                     
                     return el;
@@ -631,7 +638,7 @@ extension Jingle {
                 let parameters: [Parameter];
                 
                 init?(from el: Element) {
-                    guard el.name == "source" && el.xmlns == "urn:xmpp:jingle:apps:rtp:ssma:0", let ssrc = el.getAttribute("ssrc") else {
+                    guard el.name == "source" && el.xmlns == "urn:xmpp:jingle:apps:rtp:ssma:0", let ssrc = el.getAttribute("ssrc") ?? el.getAttribute("id") else {
                         return nil;
                     }
                     self.ssrc = ssrc;
@@ -651,6 +658,7 @@ extension Jingle {
                 func toElement() -> Element {
                     let el = Element(name: "source", xmlns: "urn:xmpp:jingle:apps:rtp:ssma:0");
                     el.setAttribute("ssrc", value: ssrc);
+                    el.setAttribute("id", value: ssrc);
                     parameters.forEach { (param) in
                         let p = Element(name: "parameter");
                         p.setAttribute("name", value: param.key);

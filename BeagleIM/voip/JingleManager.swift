@@ -39,10 +39,10 @@ class JingleManager: XmppServiceEventHandler {
     
     let dispatcher = QueueDispatcher(label: "jingleEventHandler");
     
-    func session(for account: BareJID, with jid: JID, sid: String) -> Session? {
+    func session(for account: BareJID, with jid: JID, sid: String?) -> Session? {
         return dispatcher.sync {
             return connections.first(where: {(sess) -> Bool in
-                return sess.sid == sid && sess.account == account && sess.jid == jid;
+                return (sid == nil || sess.sid == sid) && sess.account == account && sess.jid == jid;
             });
         }
     }

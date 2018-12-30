@@ -376,9 +376,9 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                 session.peerConnection?.offer(for: self.defaultCallConstraints, completionHandler: { (sdp, error) in
                     if sdp != nil && error == nil {
                         print("setting local description:", sdp!.sdp);
-                        
-                        self.setLocalSessionDescription(sdp!, for: session, onError: finisher, onSuccess: {
-                            let sdpOffer = SDP(from: sdp!.sdp, creator: .initiator)!;
+                        let tmp = RTCSessionDescription(type: sdp!.type, sdp: sdp!.sdp.replacingOccurrences(of: "a=mid:0", with: "a=mid:m0").replacingOccurrences(of: "a=group:BUNDLE 0", with: "a=group:BUNDLE m0"));
+                        self.setLocalSessionDescription(tmp, for: session, onError: finisher, onSuccess: {
+                            let sdpOffer = SDP(from: tmp.sdp, creator: .initiator)!;
                             
                             if session.initiate(sid: sdpOffer.sid, contents: sdpOffer.contents, bundle: sdpOffer.bundle) {
                                 DispatchQueue.main.async {
@@ -405,7 +405,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         let configuration = RTCConfiguration();
         configuration.sdpSemantics = .unifiedPlan;
         configuration.iceServers = [ RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:stun2.l.google.com:19302","stun:stun3.l.google.com:19302","stun:stun4.l.google.com:19302"]), RTCIceServer(urlStrings: ["stun:stunserver.org:3478"]) ];
-        configuration.bundlePolicy = .maxBundle;
+        configuration.bundlePolicy = .maxCompat;
         configuration.rtcpMuxPolicy = .require;
         configuration.iceCandidatePoolSize = 3;
         
@@ -613,10 +613,9 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                     return;
                 }
                 
-                
-                onSuccess();
-
                 session.localDescriptionSet();
+
+                onSuccess();
             });
         }
     }
