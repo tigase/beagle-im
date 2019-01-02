@@ -65,7 +65,14 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         self.dataSource.refreshData();
         self.updateMessageFieldSize();
         
-        mouseMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseDragged, .leftMouseUp, .rightMouseDown, .mouseMoved]) { (event) -> NSEvent? in
+        mouseMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseDragged, .leftMouseUp, .rightMouseDown, .mouseMoved, .keyDown]) { (event) -> NSEvent? in
+            guard event.type != .keyDown else {
+                if self.currentSession != nil {
+                    self.copySelectedText(self);
+                    return nil;
+                }
+                return event;
+            }
             return self.handleMouse(event: event) ? nil : event;
         }
         NotificationCenter.default.addObserver(self, selector: #selector(didBecomeKeyWindow), name: NSWindow.didBecomeKeyNotification, object: nil);
@@ -96,7 +103,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
                     NSCursor.pointingHand.pop();
                     return isInMesageView(event: event);
                 }
-                if let idx = messageView.message.characterIndexFor(event: event), idx != 0 {
+                if let idx = messageView.message.characterIndexFor(event: event)?.location, idx != 0 {
                     if (messageView.message.attributedStringValue.attribute(.link, at: idx, effectiveRange: nil) as? URL) != nil {
                         if NSCursor.current != NSCursor.pointingHand {
                             NSCursor.pointingHand.push();
@@ -145,9 +152,9 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
                 return isInMesageView(event: event);
             }
             
-            if let idx = messageView.message.characterIndexFor(event: event), idx != 0 {
+            if let idx = messageView.message.characterIndexFor(event: event)?.location, idx != 0 {
                 if let link = messageView.message.attributedStringValue.attribute(.link, at: idx, effectiveRange: nil) as? URL {
-                    if session.position == idx && session.messageId == messageView.id {
+                    if session.position.location == idx && session.messageId == messageView.id {
                         NSWorkspace.shared.open(link);
                     }
                     NSCursor.pointingHand.push();
@@ -194,14 +201,15 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
                             let s1 = min(session.position, idx);
                             let s2 = max(session.position, idx);
                             //print("s1:", s1, "s2:", s2, "length:", (s2-s1) + 1);
-                            str.addAttribute(.backgroundColor, value: NSColor.selectedTextBackgroundColor, range: NSRange(location: s1, length: (s2 - s1) + 1));
+                            str.addAttribute(.backgroundColor, value: NSColor.selectedTextBackgroundColor, range: NSRange(location: s1.location, length: (s2.upperBound - s1.location)));
+                            print("str:", str, s1, s2, idx.length, str.length, str.string.last);
                         } else {
                             let start = begin == startRow ? session.position : idx;
-                            str.addAttribute(.backgroundColor, value: NSColor.selectedTextBackgroundColor, range: NSRange(location: start, length: (str.length - start)));
+                            str.addAttribute(.backgroundColor, value: NSColor.selectedTextBackgroundColor, range: NSRange(location: start.location, length: (str.length - start.location)));
                         }
                     } else if row == end {
                         let start = end == startRow ? session.position : idx;
-                        str.addAttribute(.backgroundColor, value: NSColor.selectedTextBackgroundColor, range: NSRange(location: 0, length: start + 1));
+                        str.addAttribute(.backgroundColor, value: NSColor.selectedTextBackgroundColor, range: NSRange(location: 0, length: start.upperBound));
                     } else {
                         str.addAttribute(.backgroundColor, value: NSColor.selectedTextBackgroundColor, range:   NSRange(location: 0, length: str.length));
                     }
@@ -214,9 +222,15 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
                 }.map { (item) -> ChatMessage in
                     return item as! ChatMessage;
             }
-            let inverted = (selected.first?.id ?? 0) != session.messageId;
+            if selected.count == 1 {
+                let s1 = min(session.position, idx);
+                let s2 = max(session.position, idx);
+                session.selection(selected, startOffset: s1.lowerBound, endOffset: s2.upperBound);
+            } else {
+                let inverted = (selected.first?.id ?? 0) != session.messageId;
             
-            session.selection(selected, startOffset: inverted ? idx : session.position, endOffset: inverted ? session.position : idx);
+                session.selection(selected, startOffset: (inverted ? idx : session.position).lowerBound, endOffset: (inverted ? session.position : idx).upperBound);
+            }
             return true;
         case .rightMouseDown:
             guard let messageView = messageViewFor(event: event) else {
@@ -249,19 +263,17 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         var text: [String] = [];
         if selected.count == 1 {
             let item = selected[0];
-            let from = item.message.index(item.message.startIndex, offsetBy: min(startOffset, endOffset))
-            let to = item.message.index(item.message.startIndex, offsetBy: max(startOffset, endOffset));
-            text.append(String(item.message[from...to]));
+            let message = NSAttributedString(string: item.message.emojify());
+            text.append(message.attributedSubstring(from: NSRange(location: startOffset, length: endOffset-startOffset)).string);
         } else {
             for (pos, item) in selected.enumerated() {
+                let message = NSAttributedString(string: item.message.emojify());
                 if pos == 0 {
-                    let from = item.message.index(item.message.startIndex, offsetBy: startOffset);
-                    text.append(String(item.message[from..<item.message.endIndex]));
+                    text.append(message.attributedSubstring(from: NSRange(location: startOffset, length: message.length-startOffset)).string);
                 } else if pos == (selected.count - 1) {
-                    let to = item.message.count > (endOffset + 1) ? item.message.index(item.message.startIndex, offsetBy: endOffset + 1) : item.message.endIndex;
-                    text.append(String(item.message[item.message.startIndex..<to]));
+                    text.append(message.attributedSubstring(from: NSRange(location: 0, length: endOffset)).string);
                 } else {
-                    text.append(item.message);
+                    text.append(message.string);
                 }
             }
         }
@@ -287,7 +299,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         
         let text = selected.map { (item) -> String in
             let name: String = item.state.direction == .incoming ? (rosterStore?.get(for: chat.jid.withoutResource)?.name ?? chat.jid.localPart ?? chat.jid.domain) : "Me";
-            return "[\(dateFormatter.string(from: item.timestamp))] <\(item.authorNickname ?? name)> \(item.message)";
+            return "[\(dateFormatter.string(from: item.timestamp))] <\(item.authorNickname ?? name)> \(item.message.emojify())";
         };
         
         NSPasteboard.general.setString(text.joined(separator: "\n"), forType: .string);
@@ -374,7 +386,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     class SelectionSession {
         
         let messageId: Int;
-        let position: Int;
+        let position: NSTextField.CharacterRange;
         let point: NSPoint;
         
         fileprivate(set) var selected: [ChatMessage]?;
@@ -400,7 +412,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
 
 extension NSTextField {
  
-    func characterIndexFor(event: NSEvent) -> Int? {
+    func characterIndexFor(event: NSEvent) -> CharacterRange? {
         guard let contentView = event.window?.contentView else {
             return nil;
         }
@@ -427,14 +439,64 @@ extension NSTextField {
         
         let point = contentView.convert(event.locationInWindow, from: nil);
         let textPoint1 = convert(point, from: contentView);
-        let textPoint = NSPoint(x: textPoint1.x - 5, y: textPoint1.y);// y: textPoint1.y / 1.0666);
+        let textPoint = NSPoint(x: textPoint1.x, y: textPoint1.y);// y: textPoint1.y / 1.0666);
         
         var distance: CGFloat = 0;
-        let idx = layoutManager.characterIndex(for: textPoint, in: textContainer, fractionOfDistanceBetweenInsertionPoints: &distance);
+        //let idx = layoutManager.characterIndex(for: textPoint, in: textContainer, fractionOfDistanceBetweenInsertionPoints: &distance);
+        let idx = layoutManager.glyphIndex(for: textPoint, in: textContainer, fractionOfDistanceThroughGlyph: &distance);
         let rect = layoutManager.boundingRect(forGlyphRange: NSRange(location: idx, length: 1), in: textContainer);
         guard rect.contains(textPoint) else {
             return nil;
         }
-        return idx;
+        let charIdx = layoutManager.characterIndexForGlyph(at: idx);
+        
+        var nextIdx = idx;
+        while nextIdx < layoutManager.numberOfGlyphs - 1 {
+            nextIdx = nextIdx + 1;
+            let nextRect = layoutManager.boundingRect(forGlyphRange: NSRange(location: nextIdx, length: 1), in: textContainer);
+            if !nextRect.equalTo(rect) {
+                let nextCharIdx = layoutManager.characterIndexForGlyph(at: nextIdx);
+                return CharacterRange(location: charIdx, length: nextCharIdx - charIdx);
+            }
+        }
+        
+        return CharacterRange(location: charIdx, length: self.attributedStringValue.length - charIdx);
+//        var nextIdx = idx;
+//
+//        if idx < layoutManager.numberOfGlyphs - 1 {
+//            let nextCharIdx = layoutManager.characterIndexForGlyph(at: idx + 1);
+//            let str = self.attributedStringValue;
+//            let tmp = str.attributedSubstring(from: NSRange(location: charIdx, length: nextCharIdx - charIdx));
+//            print("char:", charIdx, "next:", nextCharIdx, "tmp:", tmp);
+//            return (charIdx, nextCharIdx - charIdx);
+//        } else {
+//            return (charIdx, self.attributedStringValue.length - charIdx);
+//        }
     }
+    
+    class CharacterRange: Comparable {
+        
+        let location: Int;
+        let length: Int;
+        var lowerBound: Int {
+            return location;
+        }
+        var upperBound: Int {
+            return location + length;
+        }
+        
+        init(location: Int, length: Int) {
+            self.location = location;
+            self.length = length;
+        }
+        
+    }
+}
+
+func < (lhs: NSTextField.CharacterRange, rhs: NSTextField.CharacterRange) -> Bool {
+    return lhs.location < rhs.location;
+}
+
+func == (lhs: NSTextField.CharacterRange, rhs: NSTextField.CharacterRange) -> Bool {
+    return lhs.location == rhs.location;
 }

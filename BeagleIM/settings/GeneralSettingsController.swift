@@ -39,6 +39,7 @@ class GeneralSettingsController: NSViewController {
     fileprivate var systemMenuIcon: NSButton!;
     
     fileprivate var markdownFormatting: NSButton!;
+    fileprivate var showEmoticons: NSButton!;
     fileprivate var spellchecking: NSButton!;
     
     fileprivate var imagePreviewMaxSizeLabel: NSTextField!;
@@ -70,6 +71,7 @@ class GeneralSettingsController: NSViewController {
         updateImagePreviewMaxSizeLabel();
         
         markdownFormatting = formView.addRow(label: "Message formatting:", field: NSButton(checkboxWithTitle: "Markdown", target: self, action: #selector(checkboxChanged(_:))));
+        showEmoticons = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show emoticons", target: self, action: #selector(checkboxChanged(_:))))
         
         spellchecking = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Spellchecking", target: self, action: #selector(checkboxChanged(_:))));
         
@@ -102,6 +104,8 @@ class GeneralSettingsController: NSViewController {
         messageCarbonsMarkAsReadButton.isEnabled = Settings.enableMessageCarbons.bool();
         notificationsFromUnknownSenders.state = Settings.notificationsFromUnknownSenders.bool() ? .on : .off;
         markdownFormatting.state = Settings.enableMarkdownFormatting.bool() ? .on : .off;
+        showEmoticons.state = Settings.showEmoticons.bool() ? .on : .off;
+        showEmoticons.isEnabled = Settings.enableMarkdownFormatting.bool()
         systemMenuIcon.state = Settings.systemMenuIcon.bool() ? .on : .off;
         spellchecking.state = Settings.spellchecking.bool() ? .on : .off;
         ignoreJingleSupportCheck.state = Settings.ignoreJingleSupportCheck.bool() ? .on : .off;
@@ -135,10 +139,13 @@ class GeneralSettingsController: NSViewController {
             Settings.systemMenuIcon.set(value: sender.state == .on);
         case markdownFormatting:
             Settings.enableMarkdownFormatting.set(value: sender.state == .on);
+            showEmoticons.isEnabled = sender.state == .on;
         case spellchecking:
             Settings.spellchecking.set(value: sender.state == .on);
         case ignoreJingleSupportCheck:
             Settings.ignoreJingleSupportCheck.set(value: sender.state == .on);
+        case showEmoticons:
+            Settings.showEmoticons.set(value: sender.state == .on);
         default:
             if #available(macOS 10.14, *) {
                 if let appearance = self.appearance, appearance == sender {

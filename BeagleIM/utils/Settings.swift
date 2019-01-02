@@ -37,6 +37,7 @@ enum Settings: String {
     case imageDownloadSizeLimit
     
     case enableMarkdownFormatting
+    case showEmoticons
     case notificationsFromUnknownSenders
     case systemMenuIcon
     case spellchecking
@@ -58,6 +59,7 @@ enum Settings: String {
             "enableAutomaticStatus": true,
             "markMessageCarbonsAsRead": true,
             "enableMarkdownFormatting": true,
+            "showEmoticons": true,
             "notificationsFromUnknownSenders": false,
             "systemMenuIcon": false,
             "spellchecking": true,

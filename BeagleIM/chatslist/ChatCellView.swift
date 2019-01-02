@@ -73,7 +73,7 @@ class ChatCellView: NSTableCellView {
             } else {
                 let msg = NSMutableAttributedString(string: lastMessage!);
                 if Settings.enableMarkdownFormatting.bool() {
-                    Markdown.applyStyling(attributedString: msg);
+                    Markdown.applyStyling(attributedString: msg, showEmoticons: Settings.showEmoticons.bool());
                 }
                 self.lastMessage?.attributedStringValue = msg;
             }

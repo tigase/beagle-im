@@ -88,10 +88,10 @@ class ChatMessageCellView: NSTableCellView {
                 msg.addAttribute(.link, value: URL(string: "http://maps.apple.com/?q=\(query!)")!, range: match.range);
             }
         }
-        msg.addAttribute(NSAttributedString.Key.font, value: self.message.font!, range: NSMakeRange(0, item.message.utf16.count));
+        msg.addAttribute(NSAttributedString.Key.font, value: self.message.font!, range: NSMakeRange(0, msg.length));
         
         if Settings.enableMarkdownFormatting.bool() {
-            Markdown.applyStyling(attributedString: msg);
+            Markdown.applyStyling(attributedString: msg, showEmoticons: Settings.showEmoticons.bool());
         }
             
 //        } else {

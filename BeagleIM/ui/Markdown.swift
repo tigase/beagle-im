@@ -23,7 +23,7 @@ import AppKit
 
 class Markdown {
     
-    static func applyStyling(attributedString msg: NSMutableAttributedString) {
+    static func applyStyling(attributedString msg: NSMutableAttributedString, showEmoticons: Bool) {
         let stylingColor = NSColor(calibratedWhite: 0.5, alpha: 1.0);
         
         let message = msg.string;
@@ -35,6 +35,8 @@ class Markdown {
         var idx = message.startIndex;
         
         var canStart = true;
+        
+        var wordIdx: String.Index? = showEmoticons ? message.startIndex : nil;
         
         while idx != message.endIndex {
             let c = message[idx];
@@ -86,6 +88,7 @@ class Markdown {
                 if codeStart == nil {
                     if canStart {
                         codeStart = idx;
+                        wordIdx = nil;
                     }
                 } else {
                     msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(codeStart!.encodedOffset...codeStart!.encodedOffset));
@@ -97,12 +100,24 @@ class Markdown {
                         let clearRange = NSRange(message.index(after: codeStart!).encodedOffset...message.index(before: idx).encodedOffset);
                         msg.removeAttribute(.foregroundColor, range: clearRange);
                         msg.removeAttribute(.underlineStyle, range: clearRange);
-                        msg.addAttribute(.foregroundColor, value: NSColor.textColor, range: clearRange);
+                        //msg.addAttribute(.foregroundColor, value: textColor ?? NSColor.textColor, range: clearRange);
                     }
+                    
                     codeStart = nil;
+                    wordIdx = message.index(after: idx);
                 }
                 canStart = true;
-            case "\n", " ":
+            case "\r", "\n", " ":
+                if showEmoticons {
+                    if wordIdx != nil && wordIdx! != idx {
+                        if let emoji = String.emojis[String(message[wordIdx!..<idx])] {
+                            msg.replaceCharacters(in: NSRange(wordIdx!.encodedOffset..<idx.encodedOffset), with: emoji);
+                        }
+                    }
+                    if codeStart == nil {
+                        wordIdx = message.index(after: idx);
+                    }
+                }
                 canStart = true;
             default:
                 canStart = false;
@@ -110,6 +125,47 @@ class Markdown {
             }
             idx = message.index(after: idx);
         }
+
+        if showEmoticons && wordIdx != nil && wordIdx! != idx {
+            if let emoji = String.emojis[String(message[wordIdx!..<idx])] {
+                msg.replaceCharacters(in: NSRange(wordIdx!.encodedOffset..<idx.encodedOffset), with: emoji);
+            }
+        }
     }
+ 
+}
+
+extension String {
     
+    static let emojisList = [
+        "😳": ["O.o"],
+        "☺️": [":-$", ":$"],
+        "😄": [":-D", ":D", ":-d", ":d", ":->", ":>"],
+        "😉": [";-)", ";)"],
+        "😊": [":-)", ":)"],
+        "😡": [":-@", ":@"],
+        "😕": [":-S", ":S", ":-s", ":s", ":-/", ":/"],
+        "😭": [";-(", ";("],
+        "😮": [":-O", ":O", ":-o", ":o"],
+        "😎": ["B-)", "B)"],
+        "😐": [":-|", ":|"],
+        "😛": [":-P", ":P", ":-p", ":p"],
+        "😟": [":-(", ":("]
+    ];
+    
+    static var emojis: [String:String] = Dictionary(uniqueKeysWithValues: String.emojisList.flatMap({ (arg0) -> [(String,String)] in
+        let (k, list) = arg0
+        return list.map { v in return (v, k)};
+    }));
+    
+    func emojify() -> String {
+        var result = self;
+        let words = components(separatedBy: " ").filter({ s in !s.isEmpty});
+        for word in words {
+            if let emoji = String.emojis[word] {
+                result = result.replacingOccurrences(of: word, with: emoji);
+            }
+        }
+        return result;
+    }
 }

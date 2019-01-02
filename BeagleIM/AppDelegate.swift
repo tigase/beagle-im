@@ -527,7 +527,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 let content = UNMutableNotificationContent();
                 content.title = item.jid.stringValue;
                 content.subtitle = item.authorNickname ?? "";
-                content.body = item.message;
+                content.body = (item.message.contains("`") || !Settings.enableMarkdownFormatting.bool() || !Settings.showEmoticons.bool()) ? item.message : item.message.emojify();
                 content.sound = UNNotificationSound.default
                 content.userInfo = ["account": item.account.stringValue, "jid": item.jid.stringValue, "id": "message-new"];
                 let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
@@ -540,7 +540,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 notification.title = item.jid.stringValue;
                 notification.subtitle = item.authorNickname;
                 //            notification.deliveryDate = item.timestamp;
-                notification.informativeText = item.message;
+                notification.informativeText = (item.message.contains("`") || !Settings.enableMarkdownFormatting.bool() || !Settings.showEmoticons.bool()) ? item.message : item.message.emojify();
                 notification.soundName = NSUserNotificationDefaultSoundName;
                 notification.userInfo = ["account": item.account.stringValue, "jid": item.jid.stringValue, "id": "message-new"];
                 NSUserNotificationCenter.default.deliver(notification);
@@ -554,7 +554,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             if #available(OSX 10.14, *) {
                 let content = UNMutableNotificationContent();
                 content.title = rosterItem?.name ?? item.jid.stringValue;
-                content.body = item.message;
+                content.body = (item.message.contains("`") || !Settings.enableMarkdownFormatting.bool() || !Settings.showEmoticons.bool()) ? item.message : item.message.emojify();
                 content.sound = UNNotificationSound.default
                 content.userInfo = ["account": item.account.stringValue, "jid": item.jid.stringValue, "id": "message-new"];
                 let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
@@ -566,7 +566,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 notification.identifier = UUID().uuidString;
                 notification.title = rosterItem?.name ?? item.jid.stringValue;
                 //            notification.deliveryDate = item.timestamp;
-                notification.informativeText = item.message;
+                notification.informativeText = (item.message.contains("`") || !Settings.enableMarkdownFormatting.bool() || !Settings.showEmoticons.bool()) ? item.message : item.message.emojify();
                 notification.soundName = NSUserNotificationDefaultSoundName;
                 notification.userInfo = ["account": item.account.stringValue, "jid": item.jid.stringValue, "id": "message-new"];
                 NSUserNotificationCenter.default.deliver(notification);

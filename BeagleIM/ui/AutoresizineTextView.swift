@@ -52,7 +52,7 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
         textStorage.addAttributes([.foregroundColor: NSColor.textColor], range: fullRange);
         
         if Settings.enableMarkdownFormatting.bool() {
-            Markdown.applyStyling(attributedString: textStorage);
+            Markdown.applyStyling(attributedString: textStorage, showEmoticons: false);
         }
     }
 }
