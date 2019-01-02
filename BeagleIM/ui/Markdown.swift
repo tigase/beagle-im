@@ -26,7 +26,7 @@ class Markdown {
     static func applyStyling(attributedString msg: NSMutableAttributedString, showEmoticons: Bool) {
         let stylingColor = NSColor(calibratedWhite: 0.5, alpha: 1.0);
         
-        let message = msg.string;
+        var message = msg.string;
         
         var boldStart: String.Index? = nil;
         var italicStart: String.Index? = nil;
@@ -112,11 +112,17 @@ class Markdown {
                     if wordIdx != nil && wordIdx! != idx {
                         if let emoji = String.emojis[String(message[wordIdx!..<idx])] {
                             msg.replaceCharacters(in: NSRange(wordIdx!.encodedOffset..<idx.encodedOffset), with: emoji);
+                            message.replaceSubrange(wordIdx!..<idx, with: emoji);
                         }
                     }
                     if codeStart == nil {
                         wordIdx = message.index(after: idx);
                     }
+                }
+                if "\n" == c {
+                    boldStart = nil;
+                    underlineStart = nil;
+                    italicStart = nil
                 }
                 canStart = true;
             default:
@@ -129,6 +135,7 @@ class Markdown {
         if showEmoticons && wordIdx != nil && wordIdx! != idx {
             if let emoji = String.emojis[String(message[wordIdx!..<idx])] {
                 msg.replaceCharacters(in: NSRange(wordIdx!.encodedOffset..<idx.encodedOffset), with: emoji);
+                message.replaceSubrange(wordIdx!..<idx, with: emoji);
             }
         }
     }
