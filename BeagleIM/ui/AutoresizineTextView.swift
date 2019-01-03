@@ -25,6 +25,8 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
   
     @objc var placeholderAttributedString: NSAttributedString?;
     
+    var dragHandler: NSDraggingDestination? = nil;
+    
     override func awakeFromNib() {
         self.font = NSFont.systemFont(ofSize: NSFont.systemFontSize(for: .regular));
         self.textStorage?.delegate = self;
@@ -54,5 +56,9 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
         if Settings.enableMarkdownFormatting.bool() {
             Markdown.applyStyling(attributedString: textStorage, showEmoticons: false);
         }
+    }
+    
+    override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        return (dragHandler?.performDragOperation?(sender) ?? false) || super.performDragOperation(sender);
     }
 }

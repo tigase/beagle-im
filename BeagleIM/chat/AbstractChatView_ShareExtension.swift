@@ -22,7 +22,7 @@
 import AppKit
 import TigaseSwift
 
-class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSessionTaskDelegate {
+class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSessionTaskDelegate, NSDraggingDestination {
 
     @IBOutlet var sharingProgressBar: NSProgressIndicator!;
     @IBOutlet var sharingButton: NSButton!;
@@ -37,11 +37,24 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
     override func viewDidLoad() {
         super.viewDidLoad();
         NotificationCenter.default.addObserver(self, selector: #selector(sharingSupportChanged), name: HttpFileUploadEventHandler.UPLOAD_SUPPORT_CHANGED, object: nil);
+        messageField.dragHandler = self;
     }
     
     override func viewWillAppear() {
         super.viewWillAppear();
         self.sharingButton.isEnabled = self.isSharingAvailable;
+    }
+    
+    func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        if self.sharingButton.isEnabled, let urls = sender.draggingPasteboard.readObjects(forClasses: [NSURL.self], options: nil) as? [URL], urls.count == 1, let url = urls.first, url.isFileURL {
+            self.uploadFileToHttpServer(url: url, onSuccess: { (uploadedUrl) in
+                DispatchQueue.main.async {
+                    _ = self.sendMessage(url: uploadedUrl.absoluteString);
+                }
+            });
+            return true;
+        }
+        return false;
     }
     
     @objc func sharingSupportChanged(_ notification: Notification) {
@@ -58,20 +71,11 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
     
     @IBAction func attachFile(_ sender: NSButton) {
         self.selectFile { (url) in
-            self.uploadFileToHttpServer(url: url) { (uploadedUrl, errorCondition, errorMessage) in
-                guard errorCondition == nil else {
-                    let alert = NSAlert();
-                    alert.icon = NSImage(named: NSImage.cautionName);
-                    alert.messageText = "Upload error";
-                    alert.informativeText = errorMessage ?? "Received an error: \(errorCondition!.rawValue)";
-                    alert.addButton(withTitle: "OK");
-                    alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
-                    return;
-                }
+            self.uploadFileToHttpServer(url: url, onSuccess: { (uploadedUrl) in
                 DispatchQueue.main.async {
-                    _ = self.sendMessage(url: uploadedUrl?.absoluteString);
+                    _ = self.sendMessage(url: uploadedUrl.absoluteString);
                 }
-            }
+            });
         }
     }
     
@@ -90,6 +94,23 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
             print("got response", response.rawValue);
             if response == .OK, let url = openFile.url {
                 completionHandler(url);
+            }
+        }
+    }
+    
+    fileprivate func uploadFileToHttpServer(url: URL, onSuccess: @escaping (URL)->Void) {
+        uploadFileToHttpServer(url: url) { (uploadedUrl, errorCondition, errorMessage) in
+            guard errorCondition == nil else {
+                let alert = NSAlert();
+                alert.icon = NSImage(named: NSImage.cautionName);
+                alert.messageText = "Upload error";
+                alert.informativeText = errorMessage ?? "Received an error: \(errorCondition!.rawValue)";
+                alert.addButton(withTitle: "OK");
+                alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
+                return;
+            }
+            DispatchQueue.main.async {
+                onSuccess(uploadedUrl!);
             }
         }
     }
