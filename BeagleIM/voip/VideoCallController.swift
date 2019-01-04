@@ -521,6 +521,10 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     fileprivate func showAlert(title: String, message: String = "", icon: NSImage? = nil, buttons: [String], completionHandler: @escaping (NSApplication.ModalResponse)->Void) {
         hideAlert();
         DispatchQueue.main.async {
+            guard let window = self.view.window else {
+                self.closeWindow();
+                return;
+            }
             let alert = NSAlert();
             alert.messageText = title;
             alert.informativeText = message;
@@ -530,7 +534,8 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
             buttons.forEach { (button) in
                 alert.addButton(withTitle: button);
             }
-            alert.beginSheetModal(for: self.view.window!, completionHandler: { (result) in
+            // window for some reason is nil already!!
+            alert.beginSheetModal(for: window, completionHandler: { (result) in
                 self.alertWindow = nil;
                 completionHandler(result);
             });
