@@ -48,6 +48,8 @@ extension NSApplication {
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDelegate, UNUserNotificationCenterDelegate {
+    
+    public static let HOUR_CHANGED = Notification.Name("hourChanged");
 
     fileprivate let stampFormatter = ({()-> DateFormatter in
         var f = DateFormatter();
@@ -162,11 +164,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         } else {
             // Fallback on earlier versions
         }
+        
+        scheduleHourlyTimer();
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
         XmppService.instance.disconnectClients();
+        descheduleHourlyTimer();
         RTCCleanupSSL();
     }
 
@@ -637,6 +642,31 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     @IBAction func closeChat(_ sender: Any) {
         NotificationCenter.default.post(name: ChatsListViewController.CLOSE_SELECTED_CHAT, object: nil);
+    }
+    
+    fileprivate var hourlyTimer: Foundation.Timer? = nil;
+    
+    func descheduleHourlyTimer() {
+        if let timer = self.hourlyTimer {
+            self.hourlyTimer = nil;
+            timer.invalidate();
+        }
+    }
+    
+    @objc func hourlyTimerTriggered() {
+        NotificationCenter.default.post(name: AppDelegate.HOUR_CHANGED, object: self);
+    }
+    
+    func scheduleHourlyTimer() {
+        guard hourlyTimer == nil else {
+            return;
+        }
+        let next = Calendar.current.date(bySetting: .second, value: 1, of: Calendar.current.date(bySetting: .minute, value: 0, of: Date())!)!;
+
+        print("scheduling hourly timer for:", next, "current:", Date());
+        
+        self.hourlyTimer = Foundation.Timer(fireAt: next, interval: 3600.0, target: self, selector: #selector(hourlyTimerTriggered), userInfo: nil, repeats: true);
+        RunLoop.current.add(self.hourlyTimer!, forMode: .common);
     }
 }
 

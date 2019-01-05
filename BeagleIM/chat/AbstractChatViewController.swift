@@ -76,6 +76,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
             return self.handleMouse(event: event) ? nil : event;
         }
         NotificationCenter.default.addObserver(self, selector: #selector(didBecomeKeyWindow), name: NSWindow.didBecomeKeyNotification, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(hourChanged), name: AppDelegate.HOUR_CHANGED, object: nil);
     }
     
     override func viewWillDisappear() {
@@ -381,6 +382,12 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     func updateMessageFieldSize() {
         let height = min(max(messageField.intrinsicContentSize.height, 14), 100) + self.messageFieldScroller.contentInsets.top + self.messageFieldScroller.contentInsets.bottom;
         self.messageFieldScrollerHeight.constant = height;
+    }
+    
+    @objc func hourChanged(_ notification: Notification) {
+        DispatchQueue.main.async {
+            self.tableView.reloadData(forRowIndexes: IndexSet(integersIn: 0..<self.dataSource.count), columnIndexes: [0]);
+        }
     }
     
     class SelectionSession {

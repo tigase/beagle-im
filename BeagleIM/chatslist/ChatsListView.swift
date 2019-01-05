@@ -97,6 +97,8 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         
         NotificationCenter.default.addObserver(self, selector: #selector(chatSelected), name: ChatsListViewController.CHAT_SELECTED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(closeSelectedChat), name: ChatsListViewController.CLOSE_SELECTED_CHAT, object: nil);
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(hourChanged), name: AppDelegate.HOUR_CHANGED, object: nil);
     }
     
     override func viewWillAppear() {
@@ -287,6 +289,16 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
             }
         }
     }
+
+    @objc func hourChanged(_ notification: Notification) {
+        DispatchQueue.main.async {
+            for i in 0..<self.outlineView.numberOfRows {
+                if let item = self.outlineView.item(atRow: i) {
+                    self.itemChanged(item: item);
+                }
+            }
+        }
+    }
     
 }
 
@@ -398,7 +410,7 @@ class ChatsListView: NSOutlineView {
 
         updateMouseOver(from: event);
     }
-
+    
     enum SelectionDirection {
         case up
         case down
