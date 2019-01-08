@@ -20,6 +20,7 @@
 //
 
 import Foundation
+import TigaseSwift
 
 class SDP {
     

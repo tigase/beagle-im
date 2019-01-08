@@ -10,7 +10,6 @@
 		FE1A8BA321C96C1B00604141 /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA221C96C1B00604141 /* RoundButton.swift */; };
 		FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */; };
 		FE1A8BA821CAAB6200604141 /* SDP.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA721CAAB6200604141 /* SDP.swift */; };
-		FE1A8BAA21CAAD7700604141 /* Jingle.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA921CAAD7700604141 /* Jingle.swift */; };
 		FE28097D21652A7C002F5BD0 /* VCardEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */; };
 		FE28097F2166892D002F5BD0 /* AccountDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */; };
 		FE2809852169FB75002F5BD0 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2809842169FB74002F5BD0 /* Alert.swift */; };
@@ -45,7 +44,6 @@
 		FE41FB45215E426400AD86D3 /* MessageArchivingSetttingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB44215E426400AD86D3 /* MessageArchivingSetttingsViewController.swift */; };
 		FE421B4721C928B00022DF77 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = FE421B4621C928B00022DF77 /* Credits.rtf */; };
 		FE421B4921C92FBF0022DF77 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = FE421B4821C92FBF0022DF77 /* LICENSE */; };
-		FE455B20217906A50046255C /* JingleModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE455B1F217906A50046255C /* JingleModule.swift */; };
 		FE4E8DDA215EA4860010D88E /* HttpFileUploadEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4E8DD9215EA4860010D88E /* HttpFileUploadEventHandler.swift */; };
 		FE4E8DDC215F72130010D88E /* AbstractChatView_ShareExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4E8DDB215F72130010D88E /* AbstractChatView_ShareExtension.swift */; };
 		FE4E8DE12160E7AA0010D88E /* TigaseSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FEF9D12A2082804E00B09B6C /* TigaseSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -141,7 +139,6 @@
 		FE1A8BA221C96C1B00604141 /* RoundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
 		FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager_Session.swift; sourceTree = "<group>"; };
 		FE1A8BA721CAAB6200604141 /* SDP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDP.swift; sourceTree = "<group>"; };
-		FE1A8BA921CAAD7700604141 /* Jingle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Jingle.swift; sourceTree = "<group>"; };
 		FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VCardEditorViewController.swift; sourceTree = "<group>"; };
 		FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDetailsViewController.swift; sourceTree = "<group>"; };
 		FE2809842169FB74002F5BD0 /* Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
@@ -176,7 +173,6 @@
 		FE41FB44215E426400AD86D3 /* MessageArchivingSetttingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageArchivingSetttingsViewController.swift; sourceTree = "<group>"; };
 		FE421B4621C928B00022DF77 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
 		FE421B4821C92FBF0022DF77 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
-		FE455B1F217906A50046255C /* JingleModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleModule.swift; sourceTree = "<group>"; };
 		FE4E8DD9215EA4860010D88E /* HttpFileUploadEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HttpFileUploadEventHandler.swift; sourceTree = "<group>"; };
 		FE4E8DDB215F72130010D88E /* AbstractChatView_ShareExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractChatView_ShareExtension.swift; sourceTree = "<group>"; };
 		FE5BE64B213AC3EA00463183 /* ChatsCellViewCloseButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsCellViewCloseButton.swift; sourceTree = "<group>"; };
@@ -306,15 +302,6 @@
 			path = groups;
 			sourceTree = "<group>";
 		};
-		FE455B1E217904F30046255C /* xmpp */ = {
-			isa = PBXGroup;
-			children = (
-				FE455B1F217906A50046255C /* JingleModule.swift */,
-				FE1A8BA921CAAD7700604141 /* Jingle.swift */,
-			);
-			path = xmpp;
-			sourceTree = "<group>";
-		};
 		FE6E6BE121384D5E003B1696 /* ui */ = {
 			isa = PBXGroup;
 			children = (
@@ -440,7 +427,6 @@
 			isa = PBXGroup;
 			children = (
 				FE1A8BA421CA880100604141 /* voip */,
-				FE455B1E217904F30046255C /* xmpp */,
 				FE30D8B8214ED1DE00670BEC /* groupchat */,
 				FEDE6AFA21455A0E0019170A /* roster */,
 				FE6E6BE921384D5E003B1696 /* chat */,
@@ -670,7 +656,6 @@
 			files = (
 				FE6E6BFC21384D5F003B1696 /* OutlineGroupItemButton.swift in Sources */,
 				FE41FB31215AB32200AD86D3 /* ServerCertificateInfo.swift in Sources */,
-				FE1A8BAA21CAAD7700604141 /* Jingle.swift in Sources */,
 				FE6E6BFE21384D5F003B1696 /* ChatMessageCellView.swift in Sources */,
 				FE2809852169FB75002F5BD0 /* Alert.swift in Sources */,
 				FE3AA0CB21540669001667A9 /* ChatItemProtocol.swift in Sources */,
@@ -689,7 +674,6 @@
 				FE4073A921BACC50009CE335 /* VideoCallController.swift in Sources */,
 				FED7AEC12140569E001E164B /* AddAccountController.swift in Sources */,
 				FE41FB39215CD51700AD86D3 /* MucEventHandler.swift in Sources */,
-				FE455B20217906A50046255C /* JingleModule.swift in Sources */,
 				FE6E6BFF21384D5F003B1696 /* ChatViewController.swift in Sources */,
 				FE28097D21652A7C002F5BD0 /* VCardEditorViewController.swift in Sources */,
 				FEDE6AF52143D8130019170A /* ChatsListTableRowView.swift in Sources */,

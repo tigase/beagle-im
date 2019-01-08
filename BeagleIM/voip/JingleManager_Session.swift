@@ -25,7 +25,7 @@ import WebRTC
 
 extension JingleManager {
     
-    class Session: NSObject, RTCPeerConnectionDelegate {
+    class Session: NSObject, RTCPeerConnectionDelegate, JingleSession {
         
         fileprivate(set) weak var client: XMPPClient?;
         fileprivate(set) var state: State = .created {
@@ -52,7 +52,7 @@ extension JingleManager {
         var remoteCandidates: [[String]]? = [];
         var localCandidates: [RTCIceCandidate]? = [];
         
-        init(account: BareJID, jid: JID, sid: String? = nil, role: Jingle.Content.Creator) {
+        required init(account: BareJID, jid: JID, sid: String? = nil, role: Jingle.Content.Creator) {
             self.account = account;
             self.client = XmppService.instance.getClient(for: account);
             self.jid = jid;

@@ -23,7 +23,7 @@ import AppKit
 import TigaseSwift
 import WebRTC
 
-class JingleManager: XmppServiceEventHandler {
+class JingleManager: JingleSessionManager, XmppServiceEventHandler {
 
     static let instance = JingleManager();
     
@@ -39,6 +39,10 @@ class JingleManager: XmppServiceEventHandler {
     
     let dispatcher = QueueDispatcher(label: "jingleEventHandler");
     
+    func activeSessionSid(for account: BareJID, with jid: JID) -> String? {
+        return session(for: account, with: jid, sid: nil)?.sid;
+    }
+
     func session(for account: BareJID, with jid: JID, sid: String?) -> Session? {
         return dispatcher.sync {
             return connections.first(where: {(sess) -> Bool in
