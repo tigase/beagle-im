@@ -33,7 +33,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                                         decoderFactory: RTCDefaultVideoDecoderFactory());
     }();
     
-    let events: [Event] = [JingleModule.JingleEvent.TYPE];
+    let events: [Event] = [JingleModule.JingleEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE];
     
     fileprivate var connections: [Session] = [];
     
@@ -107,6 +107,15 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                     break;
                 }
                 break;
+            case let e as PresenceModule.ContactPresenceChanged:
+                if e.availabilityChanged && (e.presence.type ?? .available) == .unavailable, let account = e.sessionObject.userBareJid, let from = e.presence.from {
+                    let toClose = self.connections.filter({ (session) in
+                        return session.jid == from && session.account == account;
+                    });
+                    toClose.forEach({ (session) in
+                        self.close(session: session);
+                    })
+                }
             default:
                 break;
             }
@@ -127,14 +136,16 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
         var features: [String] = [];
         
         if jid.resource == nil {
-            presenceStore.getPresences(for: jid.bareJid)?.values.forEach({ (p) in
+            client.presenceStore?.getPresences(for: jid.bareJid)?.values.filter({ (p) -> Bool in
+                return (p.type ?? .available) == .available;
+            }).forEach({ (p) in
                 guard let node = p.capsNode, let f = DBCapabilitiesCache.instance.getFeatures(for: node) else {
                     return;
                 }
                 features.append(contentsOf: f);
             })
         } else {
-            guard let node = presenceStore.getPresence(for: jid)?.capsNode, let f = DBCapabilitiesCache.instance.getFeatures(for: node) else {
+            guard let p = client.presenceStore?.getPresence(for: jid), (p.type ?? .available) == .available, let node = p.capsNode, let f = DBCapabilitiesCache.instance.getFeatures(for: node) else {
                 return [];
             }
             features.append(contentsOf: f);
