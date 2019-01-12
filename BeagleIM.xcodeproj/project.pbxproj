@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		FE1A8BA321C96C1B00604141 /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA221C96C1B00604141 /* RoundButton.swift */; };
 		FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */; };
-		FE1A8BA821CAAB6200604141 /* SDP.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA721CAAB6200604141 /* SDP.swift */; };
 		FE28097D21652A7C002F5BD0 /* VCardEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */; };
 		FE28097F2166892D002F5BD0 /* AccountDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */; };
 		FE2809852169FB75002F5BD0 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2809842169FB74002F5BD0 /* Alert.swift */; };
@@ -138,7 +137,6 @@
 /* Begin PBXFileReference section */
 		FE1A8BA221C96C1B00604141 /* RoundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
 		FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager_Session.swift; sourceTree = "<group>"; };
-		FE1A8BA721CAAB6200604141 /* SDP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDP.swift; sourceTree = "<group>"; };
 		FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VCardEditorViewController.swift; sourceTree = "<group>"; };
 		FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDetailsViewController.swift; sourceTree = "<group>"; };
 		FE2809842169FB74002F5BD0 /* Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
@@ -274,7 +272,6 @@
 				FE83E362217A3809001DEF09 /* JingleManager.swift */,
 				FE4073A821BACC50009CE335 /* VideoCallController.swift */,
 				FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */,
-				FE1A8BA721CAAB6200604141 /* SDP.swift */,
 			);
 			path = voip;
 			sourceTree = "<group>";
@@ -686,7 +683,6 @@
 				FE30D8AF214C3B7600670BEC /* NSImage.swift in Sources */,
 				FE6E6C0421384D5F003B1696 /* DatabaseSchemaManager.swift in Sources */,
 				FE3AA0CD2154069D001667A9 /* ChatsListGroupGroupchat.swift in Sources */,
-				FE1A8BA821CAAB6200604141 /* SDP.swift in Sources */,
 				FED7AEC521417328001E164B /* AvatarStore.swift in Sources */,
 				FE6E6BFA21384D5F003B1696 /* AccountManager.swift in Sources */,
 				FEC5DC8621553F4700AA3E4F /* GroupchatViewController.swift in Sources */,

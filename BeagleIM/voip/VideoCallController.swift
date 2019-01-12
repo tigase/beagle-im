@@ -200,8 +200,14 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                 self.localVideoViewAspect?.isActive = true;
                 print("local frame:", self.localVideoView!.frame);
             } else if videoView === self.remoteVideoView! {
+                let currSize = self.remoteVideoView.frame.size;
+                
+                let newHeight = sqrt((currSize.width * currSize.height)/(size.width/size.height));
+                let newWidth = newHeight * (size.width/size.height);
+                
                 self.remoteVideoViewAspect?.isActive = false;
                 self.remoteVideoView.removeConstraint(self.remoteVideoViewAspect!);
+                self.view.window?.setContentSize(NSSize(width: newWidth, height: newHeight));
                 self.remoteVideoViewAspect = self.remoteVideoView.widthAnchor.constraint(equalTo: self.remoteVideoView.heightAnchor, multiplier: size.width / size.height);
                 self.remoteVideoViewAspect?.isActive = true;
                 print("remote frame:", self.remoteVideoView!.frame);
