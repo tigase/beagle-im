@@ -128,70 +128,6 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         }
         return true;
     }
-
-    func outlineView(_ outlineView: NSOutlineView, shouldSelectItem item: Any) -> Bool {
-        if item is ChatsListGroupProtocol {
-            if outlineView.isItemExpanded(item) {
-//                outlineView.collapseItem(item);
-            } else {
-                outlineView.expandItem(item);
-            }
-            return false;
-        }
-        if item is ChatItem {
-            return true;
-        }
-        if item is GroupchatItem {
-            return true;
-        }
-        return false;
-    }
-    
-    func outlineView(_ outlineView: NSOutlineView, isGroupItem item: Any) -> Bool {
-        return item is ChatsListGroupProtocol;
-    }
-    
-    func outlineView(_ outlineView: NSOutlineView, rowViewForItem item: Any) -> NSTableRowView? {
-        return ChatsListTableRowView(frame: NSRect.zero);
-    }
-    
-    func outlineViewSelectionDidChange(_ notification: Notification) {
-        if self.outlineView.selectedRowIndexes.count <= 1 {
-            (self.outlineView as? ChatsListView)?.selectionDirection = .unknown;
-        }
-        
-        let selected = self.outlineView.selectedRow;
-        print("selected row:", selected);
-        let item = self.outlineView.selectedRowIndexes.count == 1 ? self.outlineView.item(atRow: selected) : nil;
-        if let splitController = self.outlineView.window?.contentViewController as? NSSplitViewController {
-            if let chat = item as? ChatItem {
-                print("selected chat item:", chat.name);
-                let chatController = self.storyboard!.instantiateController(withIdentifier: "ChatViewController") as! ChatViewController;
-                chatController.chat = chat.chat;
-                let item = NSSplitViewItem(viewController: chatController);
-                if splitController.splitViewItems.count == 1 {
-                    splitController.addSplitViewItem(item);
-                } else {
-                    splitController.removeSplitViewItem(splitController.splitViewItems[1]);
-                    splitController.addSplitViewItem(item);
-                }
-            } else if let room = item as? GroupchatItem {
-                let roomController = self.storyboard?.instantiateController(withIdentifier: "GroupchatViewController") as! GroupchatViewController;
-                roomController.room = (room.chat as! DBChatStore.DBRoom);
-                let item = NSSplitViewItem(viewController: roomController);
-                if splitController.splitViewItems.count == 1 {
-                    splitController.addSplitViewItem(item);
-                } else {
-                    splitController.removeSplitViewItem(splitController.splitViewItems[1]);
-                    splitController.addSplitViewItem(item);
-                }
-            } else if item == nil {
-                let controller = self.storyboard!.instantiateController(withIdentifier: "EmptyViewController") as! NSViewController;
-                splitController.removeSplitViewItem(splitController.splitViewItems[1]);
-                splitController.addSplitViewItem(NSSplitViewItem(viewController: controller));
-            }
-        }
-    }
     
     func reload() {
         outlineView.reloadData();
@@ -304,6 +240,70 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
 
 extension ChatsListViewController: NSOutlineViewDelegate {
     
+    func outlineView(_ outlineView: NSOutlineView, shouldSelectItem item: Any) -> Bool {
+        if item is ChatsListGroupProtocol {
+            if outlineView.isItemExpanded(item) {
+                //                outlineView.collapseItem(item);
+            } else {
+                outlineView.expandItem(item);
+            }
+            return false;
+        }
+        if item is ChatItem {
+            return true;
+        }
+        if item is GroupchatItem {
+            return true;
+        }
+        return false;
+    }
+    
+    func outlineView(_ outlineView: NSOutlineView, isGroupItem item: Any) -> Bool {
+        return item is ChatsListGroupProtocol;
+    }
+    
+    func outlineView(_ outlineView: NSOutlineView, rowViewForItem item: Any) -> NSTableRowView? {
+        return ChatsListTableRowView(frame: NSRect.zero);
+    }
+
+    func outlineViewSelectionDidChange(_ notification: Notification) {
+        if self.outlineView.selectedRowIndexes.count <= 1 {
+            self.outlineView.selectionDirection = .unknown;
+        }
+        
+        let selected = self.outlineView.selectedRow;
+        print("selected row:", selected);
+        let item = self.outlineView.selectedRowIndexes.count == 1 ? self.outlineView.item(atRow: selected) : nil;
+        if let splitController = self.outlineView.window?.contentViewController as? NSSplitViewController {
+            if let chat = item as? ChatItem {
+                print("selected chat item:", chat.name);
+                let chatController = self.storyboard!.instantiateController(withIdentifier: "ChatViewController") as! ChatViewController;
+                chatController.chat = chat.chat;
+                let item = NSSplitViewItem(viewController: chatController);
+                if splitController.splitViewItems.count == 1 {
+                    splitController.addSplitViewItem(item);
+                } else {
+                    splitController.removeSplitViewItem(splitController.splitViewItems[1]);
+                    splitController.addSplitViewItem(item);
+                }
+            } else if let room = item as? GroupchatItem {
+                let roomController = self.storyboard?.instantiateController(withIdentifier: "GroupchatViewController") as! GroupchatViewController;
+                roomController.room = (room.chat as! DBChatStore.DBRoom);
+                let item = NSSplitViewItem(viewController: roomController);
+                if splitController.splitViewItems.count == 1 {
+                    splitController.addSplitViewItem(item);
+                } else {
+                    splitController.removeSplitViewItem(splitController.splitViewItems[1]);
+                    splitController.addSplitViewItem(item);
+                }
+            } else if item == nil {
+                let controller = self.storyboard!.instantiateController(withIdentifier: "EmptyViewController") as! NSViewController;
+                splitController.removeSplitViewItem(splitController.splitViewItems[1]);
+                splitController.addSplitViewItem(NSSplitViewItem(viewController: controller));
+            }
+        }
+    }
+
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
         //var view: NSTableCellView?
 //        guard tableColumn?.identifier.rawValue == "ITEM1" else {

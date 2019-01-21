@@ -39,7 +39,7 @@ class NSButtonNoSizeWhenHidden: NSButton {
     
     override func awakeFromNib() {
         widthConstraint = self.widthAnchor.constraint(equalToConstant: 0);
-        heightConstraint = self.widthAnchor.constraint(equalToConstant: 0);
+        heightConstraint = self.heightAnchor.constraint(equalToConstant: 0);
         widthConstraint?.isActive = isHidden;
         heightConstraint?.isActive = isHidden;
     }
