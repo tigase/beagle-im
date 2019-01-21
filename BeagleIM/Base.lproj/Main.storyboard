@@ -611,7 +611,7 @@ CA
                                         <menuItem isSeparatorItem="YES" id="eu3-7i-yIM"/>
                                         <menuItem title="Chats" keyEquivalent="1" allowsKeyEquivalentWhenHidden="YES" id="ZfF-gv-Ucr">
                                             <connections>
-                                                <segue destination="B8D-0N-5wS" kind="show" id="KuL-b2-THh"/>
+                                                <segue destination="B8D-0N-5wS" kind="custom" customClass="ShowMainWindowSegue" customModule="BeagleIM" customModuleProvider="target" id="KuL-b2-THh"/>
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Contacts" keyEquivalent="2" allowsKeyEquivalentWhenHidden="YES" id="1rU-qU-qAY">

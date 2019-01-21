@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FE137A4621F5FE05006B7F7C /* ShowMainWindowSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4521F5FE05006B7F7C /* ShowMainWindowSegue.swift */; };
 		FE1A8BA321C96C1B00604141 /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA221C96C1B00604141 /* RoundButton.swift */; };
 		FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */; };
 		FE28097D21652A7C002F5BD0 /* VCardEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */; };
@@ -135,6 +136,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		FE137A4521F5FE05006B7F7C /* ShowMainWindowSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowMainWindowSegue.swift; sourceTree = "<group>"; };
 		FE1A8BA221C96C1B00604141 /* RoundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
 		FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager_Session.swift; sourceTree = "<group>"; };
 		FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VCardEditorViewController.swift; sourceTree = "<group>"; };
@@ -318,6 +320,7 @@
 				FEC661F721AABFB0004FDE1E /* NSViewWithTextBackground.swift */,
 				FE9486B121BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift */,
 				FE1A8BA221C96C1B00604141 /* RoundButton.swift */,
+				FE137A4521F5FE05006B7F7C /* ShowMainWindowSegue.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -694,6 +697,7 @@
 				FE9486B221BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift in Sources */,
 				FE34BBD12157901100775B07 /* JabberDataFormView.swift in Sources */,
 				FE30D8B5214D39A700670BEC /* GeneralSettingsController.swift in Sources */,
+				FE137A4621F5FE05006B7F7C /* ShowMainWindowSegue.swift in Sources */,
 				FE28097F2166892D002F5BD0 /* AccountDetailsViewController.swift in Sources */,
 				FE30D8AD214C2D7100670BEC /* RosterViewController_ContextMenu.swift in Sources */,
 				FE6E6C0121384D5F003B1696 /* ChatsWindowController.swift in Sources */,
