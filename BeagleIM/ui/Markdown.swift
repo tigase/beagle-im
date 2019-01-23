@@ -104,7 +104,11 @@ class Markdown {
                     }
                     
                     codeStart = nil;
-                    wordIdx = message.index(after: idx);
+                    if idx == message.endIndex {
+                        wordIdx = message.endIndex;
+                    } else {
+                        wordIdx = message.index(after: idx);
+                    }
                 }
                 canStart = true;
             case "\r", "\n", " ":
@@ -116,7 +120,11 @@ class Markdown {
                         }
                     }
                     if codeStart == nil {
-                        wordIdx = message.index(after: idx);
+                        if idx != message.endIndex {
+                            wordIdx = message.index(after: idx);
+                        } else {
+                            wordIdx = message.endIndex;
+                        }
                     }
                 }
                 if "\n" == c {
@@ -129,7 +137,9 @@ class Markdown {
                 canStart = false;
                 break;
             }
-            idx = message.index(after: idx);
+            if idx != message.endIndex {
+                idx = message.index(after: idx);
+            }
         }
 
         if showEmoticons && wordIdx != nil && wordIdx! != idx {
