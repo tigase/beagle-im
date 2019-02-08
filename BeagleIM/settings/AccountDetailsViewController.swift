@@ -87,7 +87,10 @@ class AccountDetailsViewController: NSViewController, AccountAware {
     }
     
     func save() {
-        let account = AccountManager.getAccount(for: self.account!)!;
+        guard let jid = self.account, let account = AccountManager.getAccount(for: jid) else {
+            // do not save if we cannot find the account
+            return;
+        }
         account.password = password.stringValue;
         account.nickname = nickname.stringValue;
         account.active = active.state == .on;
