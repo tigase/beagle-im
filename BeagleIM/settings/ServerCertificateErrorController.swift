@@ -24,12 +24,21 @@ import TigaseSwift
 
 class ServerCertificateErrorController: NSViewController {
     
+    @IBOutlet var windowTitle: NSTextField!
     @IBOutlet var message: NSTextField!;
     @IBOutlet var certificateName: NSTextField!;
+    @IBOutlet var certificateValidPeriod: NSTextField!;
     @IBOutlet var certificateFingerprint: NSTextField!;
     @IBOutlet var issuerName: NSTextField!;
     @IBOutlet var issuesFingerprint: NSTextField!;
 
+    let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter();
+        formatter.dateStyle = .medium;
+        formatter.timeStyle = .short;
+        return formatter;
+    }();
+    
     var completionHandler: ((Bool)->Void)?;
     
     var account: BareJID? {
@@ -37,6 +46,7 @@ class ServerCertificateErrorController: NSViewController {
             guard let domain = account?.domain else {
                 return;
             }
+            windowTitle.stringValue = "SSL certificate of \(domain) could not be verified";
             message.stringValue = "It is not possible to automatically verify server certificate for \(domain). Please review certificate details:"
             self.certficateInfo = AccountManager.getAccount(for: account!)?.serverCertificate;
         }
@@ -47,6 +57,12 @@ class ServerCertificateErrorController: NSViewController {
                 return;
             }
             certificateName.stringValue = info.details.name;
+            if info.details.validFrom != nil && info.details.validTo != nil {
+                let color: NSColor = ((Date() > info.details.validTo!) ? NSColor.systemRed : NSColor.textColor);
+                certificateValidPeriod.attributedStringValue = NSAttributedString(string: "From \(dateFormatter.string(for: info.details.validFrom!)!) until \(dateFormatter.string(for: info.details.validTo!)!)", attributes: [.foregroundColor: color]);
+            } else {
+                certificateValidPeriod.attributedStringValue = NSAttributedString(string: "Unknown", attributes: [.foregroundColor: NSColor.systemOrange]);
+            }
             certificateFingerprint.stringValue = info.details.fingerprintSha1;
             issuerName.stringValue = info.issuer?.name ?? "Self-Signed";
             issuesFingerprint.stringValue = info.issuer?.fingerprintSha1 ?? "";

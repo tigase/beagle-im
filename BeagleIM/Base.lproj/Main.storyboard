@@ -2295,11 +2295,11 @@ Gw
             <objects>
                 <viewController identifier="ServerCertificateErrorController" storyboardIdentifier="ServerCertificateErrorController" id="kQl-bn-9PH" customClass="ServerCertificateErrorController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="Pa2-Dc-FFU">
-                        <rect key="frame" x="0.0" y="0.0" width="480" height="243"/>
+                        <rect key="frame" x="0.0" y="0.0" width="486" height="255"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Dfz-Lb-frz">
-                                <rect key="frame" x="20" y="183" width="40" height="40"/>
+                                <rect key="frame" x="20" y="195" width="40" height="40"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="40" id="pmR-4R-l3J"/>
                                     <constraint firstAttribute="width" constant="40" id="xI0-ja-J0z"/>
@@ -2307,7 +2307,7 @@ Gw
                                 <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSCaution" id="oCV-9a-Kke"/>
                             </imageView>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="MWW-12-KLv">
-                                <rect key="frame" x="66" y="206" width="313" height="17"/>
+                                <rect key="frame" x="66" y="218" width="313" height="17"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="SSL certificate of test.com could not be verified" id="azs-oZ-e2C">
                                     <font key="font" metaFont="systemBold"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -2315,79 +2315,15 @@ Gw
                                 </textFieldCell>
                             </textField>
                             <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="PVg-8T-5qZ">
-                                <rect key="frame" x="66" y="166" width="396" height="32"/>
+                                <rect key="frame" x="66" y="178" width="402" height="32"/>
                                 <textFieldCell key="cell" selectable="YES" title="It is not possible to automatically verify server certificate for test.com. Please review following certiciate details." id="Wxz-bh-twp">
                                     <font key="font" metaFont="cellTitle"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="G7d-3z-I2c">
-                                <rect key="frame" x="66" y="133" width="124" height="17"/>
-                                <textFieldCell key="cell" lineBreakMode="clipping" title="Certificate name:" id="vQs-EJ-86s">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <textField verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dcc-gM-k6w">
-                                <rect key="frame" x="216" y="158" width="250" height="17"/>
-                                <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="sfI-Td-iUq">
-                                    <font key="font" metaFont="cellTitle"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="pVf-kZ-Ara">
-                                <rect key="frame" x="66" y="134" width="124" height="17"/>
-                                <textFieldCell key="cell" lineBreakMode="clipping" title="Fingerprint:" id="ZLa-eK-ZZz">
-                                    <font key="font" metaFont="cellTitle"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="def-pZ-Bbx">
-                                <rect key="frame" x="216" y="134" width="246" height="17"/>
-                                <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="Dmx-hJ-hXv">
-                                    <font key="font" metaFont="cellTitle"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ap1-Ug-nhj">
-                                <rect key="frame" x="66" y="85" width="124" height="16"/>
-                                <textFieldCell key="cell" lineBreakMode="clipping" title="Issued by:" id="0BK-38-f0S">
-                                    <font key="font" metaFont="cellTitle"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="V7s-ww-GPg">
-                                <rect key="frame" x="216" y="85" width="246" height="16"/>
-                                <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="Toq-W6-Bi6">
-                                    <font key="font" metaFont="cellTitle"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gko-B7-Baa">
-                                <rect key="frame" x="66" y="61" width="124" height="16"/>
-                                <textFieldCell key="cell" lineBreakMode="clipping" title="Fingerprint:" id="wmG-Ai-yUK">
-                                    <font key="font" metaFont="cellTitle"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ARy-Kq-eaC">
-                                <rect key="frame" x="216" y="61" width="246" height="16"/>
-                                <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="bgM-PY-KWL">
-                                    <font key="font" metaFont="cellTitle"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="vQW-Vt-NL2">
-                                <rect key="frame" x="388" y="13" width="83" height="32"/>
+                                <rect key="frame" x="394" y="13" width="83" height="32"/>
                                 <buttonCell key="cell" type="push" title="Accept" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="b1a-jM-Vaa">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -2397,7 +2333,7 @@ Gw
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Kqj-ZH-IoG">
-                                <rect key="frame" x="307" y="13" width="79" height="32"/>
+                                <rect key="frame" x="313" y="13" width="79" height="32"/>
                                 <buttonCell key="cell" type="push" title="Reject" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="4bC-Ca-NCQ">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -2406,55 +2342,152 @@ Gw
                                     <action selector="cancelClicked:" target="kQl-bn-9PH" id="5tj-Zz-aeM"/>
                                 </connections>
                             </button>
+                            <gridView xPlacement="leading" yPlacement="bottom" rowAlignment="none" translatesAutoresizingMaskIntoConstraints="NO" id="X7B-Go-apw">
+                                <rect key="frame" x="68" y="61" width="398" height="109"/>
+                                <rows>
+                                    <gridRow height="17" id="dUN-Em-Inp"/>
+                                    <gridRow height="17" id="FMZ-Kw-1Gg"/>
+                                    <gridRow height="17" id="8SU-Hy-DL6"/>
+                                    <gridRow height="17" id="pmd-Ck-bzp"/>
+                                    <gridRow height="17" id="Jrx-HA-jVy"/>
+                                </rows>
+                                <columns>
+                                    <gridColumn width="140" trailingPadding="20" id="jzQ-Hh-2oo"/>
+                                    <gridColumn id="Y0A-03-BzC"/>
+                                </columns>
+                                <gridCells>
+                                    <gridCell row="dUN-Em-Inp" column="jzQ-Hh-2oo" id="11g-dS-Eb8">
+                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="G7d-3z-I2c">
+                                            <rect key="frame" x="-2" y="92" width="104" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Certificate name:" id="vQs-EJ-86s">
+                                                <font key="font" metaFont="systemMedium" size="12"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="dUN-Em-Inp" column="Y0A-03-BzC" id="xDc-Xp-GTD">
+                                        <textField key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="dcc-gM-k6w">
+                                            <rect key="frame" x="164" y="92" width="35" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="sfI-Td-iUq">
+                                                <font key="font" metaFont="cellTitle"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="FMZ-Kw-1Gg" column="jzQ-Hh-2oo" id="qLf-DG-037">
+                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="bms-dT-gW8">
+                                            <rect key="frame" x="-2" y="69" width="77" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Valid period:" id="VFO-Qh-k6S">
+                                                <font key="font" metaFont="systemMedium" size="12"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="FMZ-Kw-1Gg" column="Y0A-03-BzC" id="MPN-pd-Jyh">
+                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gtx-0b-jdu">
+                                            <rect key="frame" x="164" y="69" width="35" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="5cb-bY-3Nb">
+                                                <font key="font" metaFont="system" size="12"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="8SU-Hy-DL6" column="jzQ-Hh-2oo" id="EwI-PH-1uz">
+                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="pVf-kZ-Ara">
+                                            <rect key="frame" x="-2" y="46" width="72" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Fingerprint:" id="ZLa-eK-ZZz">
+                                                <font key="font" metaFont="systemMedium" size="12"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="8SU-Hy-DL6" column="Y0A-03-BzC" id="bOY-9S-sVM">
+                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="def-pZ-Bbx">
+                                            <rect key="frame" x="164" y="46" width="35" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="Dmx-hJ-hXv">
+                                                <font key="font" metaFont="cellTitle"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="pmd-Ck-bzp" column="jzQ-Hh-2oo" id="ciU-6M-1eR">
+                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ap1-Ug-nhj">
+                                            <rect key="frame" x="-2" y="23" width="64" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Issued by:" id="0BK-38-f0S">
+                                                <font key="font" metaFont="systemMedium" size="12"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="pmd-Ck-bzp" column="Y0A-03-BzC" id="Bb0-oq-2h0">
+                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="V7s-ww-GPg">
+                                            <rect key="frame" x="164" y="23" width="35" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="Toq-W6-Bi6">
+                                                <font key="font" metaFont="cellTitle"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="Jrx-HA-jVy" column="jzQ-Hh-2oo" id="ghG-KK-aYC">
+                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gko-B7-Baa">
+                                            <rect key="frame" x="-2" y="0.0" width="72" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Fingerprint:" id="wmG-Ai-yUK">
+                                                <font key="font" metaFont="systemMedium" size="12"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="Jrx-HA-jVy" column="Y0A-03-BzC" id="yHz-US-fUL">
+                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ARy-Kq-eaC">
+                                            <rect key="frame" x="164" y="0.0" width="35" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="bgM-PY-KWL">
+                                                <font key="font" metaFont="cellTitle"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                </gridCells>
+                            </gridView>
                         </subviews>
                         <constraints>
-                            <constraint firstItem="def-pZ-Bbx" firstAttribute="centerY" secondItem="pVf-kZ-Ara" secondAttribute="centerY" id="2rB-pp-W81"/>
                             <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="Dfz-Lb-frz" secondAttribute="bottom" constant="20" id="8dY-Jd-SdT"/>
-                            <constraint firstItem="pVf-kZ-Ara" firstAttribute="width" secondItem="G7d-3z-I2c" secondAttribute="width" id="8hs-Iu-z79"/>
-                            <constraint firstItem="G7d-3z-I2c" firstAttribute="top" secondItem="PVg-8T-5qZ" secondAttribute="bottom" constant="16" id="94x-9I-m6f"/>
-                            <constraint firstItem="pVf-kZ-Ara" firstAttribute="leading" secondItem="G7d-3z-I2c" secondAttribute="leading" id="9Ip-sD-BY5"/>
+                            <constraint firstItem="X7B-Go-apw" firstAttribute="top" secondItem="PVg-8T-5qZ" secondAttribute="bottom" constant="8" id="9Ma-Lg-Nbp"/>
                             <constraint firstItem="Kqj-ZH-IoG" firstAttribute="centerY" secondItem="vQW-Vt-NL2" secondAttribute="centerY" id="CQH-SG-Kni"/>
-                            <constraint firstAttribute="trailing" secondItem="ARy-Kq-eaC" secondAttribute="trailing" constant="20" id="DZC-sl-TSK"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="PVg-8T-5qZ" secondAttribute="trailing" constant="20" id="GWp-HM-Kj1"/>
                             <constraint firstAttribute="trailing" secondItem="vQW-Vt-NL2" secondAttribute="trailing" constant="15" id="Itq-0N-tfZ"/>
-                            <constraint firstItem="G7d-3z-I2c" firstAttribute="width" secondItem="Pa2-Dc-FFU" secondAttribute="width" multiplier="0.25" id="LcX-1H-E3C"/>
-                            <constraint firstItem="ARy-Kq-eaC" firstAttribute="centerY" secondItem="gko-B7-Baa" secondAttribute="centerY" id="Mco-pr-Ocg"/>
-                            <constraint firstItem="def-pZ-Bbx" firstAttribute="leading" secondItem="pVf-kZ-Ara" secondAttribute="trailing" constant="30" id="PmJ-54-i1T"/>
                             <constraint firstItem="PVg-8T-5qZ" firstAttribute="leading" secondItem="MWW-12-KLv" secondAttribute="leading" id="R7r-bf-Dj8"/>
-                            <constraint firstAttribute="trailing" secondItem="dcc-gM-k6w" secondAttribute="trailing" constant="20" id="SM8-G0-s9J"/>
                             <constraint firstItem="MWW-12-KLv" firstAttribute="top" secondItem="Dfz-Lb-frz" secondAttribute="top" id="SfA-BF-HYY"/>
-                            <constraint firstItem="dcc-gM-k6w" firstAttribute="leading" secondItem="G7d-3z-I2c" secondAttribute="trailing" constant="30" id="TLc-5Y-7Yc"/>
                             <constraint firstItem="Dfz-Lb-frz" firstAttribute="top" secondItem="Pa2-Dc-FFU" secondAttribute="top" constant="20" id="UQG-NU-KsC"/>
-                            <constraint firstAttribute="trailing" secondItem="V7s-ww-GPg" secondAttribute="trailing" constant="20" id="W7X-DP-gyi"/>
                             <constraint firstItem="PVg-8T-5qZ" firstAttribute="top" secondItem="MWW-12-KLv" secondAttribute="bottom" constant="8" id="WSW-ZX-OVX"/>
-                            <constraint firstItem="gko-B7-Baa" firstAttribute="width" secondItem="Ap1-Ug-nhj" secondAttribute="width" id="Zku-5M-seV"/>
-                            <constraint firstItem="vQW-Vt-NL2" firstAttribute="top" secondItem="gko-B7-Baa" secondAttribute="bottom" constant="20" id="Zpl-ek-kmq"/>
-                            <constraint firstItem="V7s-ww-GPg" firstAttribute="leading" secondItem="Ap1-Ug-nhj" secondAttribute="trailing" constant="30" id="ak0-Y3-Ky6"/>
+                            <constraint firstItem="Kqj-ZH-IoG" firstAttribute="top" secondItem="X7B-Go-apw" secondAttribute="bottom" constant="20" id="X1b-Ud-2OO"/>
                             <constraint firstItem="MWW-12-KLv" firstAttribute="leading" secondItem="Dfz-Lb-frz" secondAttribute="trailing" constant="8" id="cTc-Kr-FEb"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="MWW-12-KLv" secondAttribute="trailing" constant="20" id="dFo-C5-3E5"/>
-                            <constraint firstItem="dcc-gM-k6w" firstAttribute="centerY" secondItem="G7d-3z-I2c" secondAttribute="centerY" id="efH-na-wF3"/>
-                            <constraint firstItem="G7d-3z-I2c" firstAttribute="leading" secondItem="PVg-8T-5qZ" secondAttribute="leading" id="fEB-is-PDe"/>
                             <constraint firstItem="Dfz-Lb-frz" firstAttribute="leading" secondItem="Pa2-Dc-FFU" secondAttribute="leading" constant="20" id="fzZ-GP-zMb"/>
-                            <constraint firstItem="Ap1-Ug-nhj" firstAttribute="top" secondItem="pVf-kZ-Ara" secondAttribute="bottom" constant="8" id="ghK-qB-5yb"/>
-                            <constraint firstItem="Ap1-Ug-nhj" firstAttribute="width" secondItem="pVf-kZ-Ara" secondAttribute="width" id="i5J-kv-K4e"/>
                             <constraint firstAttribute="bottom" secondItem="vQW-Vt-NL2" secondAttribute="bottom" constant="20" id="jn1-CO-GgI"/>
-                            <constraint firstItem="Ap1-Ug-nhj" firstAttribute="leading" secondItem="pVf-kZ-Ara" secondAttribute="leading" id="lPO-56-iMi"/>
-                            <constraint firstItem="pVf-kZ-Ara" firstAttribute="top" secondItem="G7d-3z-I2c" secondAttribute="bottom" constant="8" id="lXv-k4-ZKS"/>
-                            <constraint firstItem="gko-B7-Baa" firstAttribute="leading" secondItem="Ap1-Ug-nhj" secondAttribute="leading" id="nAZ-pT-iHg"/>
-                            <constraint firstAttribute="trailing" secondItem="def-pZ-Bbx" secondAttribute="trailing" constant="20" id="nEL-jX-R5F"/>
                             <constraint firstItem="Kqj-ZH-IoG" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Pa2-Dc-FFU" secondAttribute="leading" constant="20" id="t7d-Fs-eJN"/>
-                            <constraint firstItem="V7s-ww-GPg" firstAttribute="centerY" secondItem="Ap1-Ug-nhj" secondAttribute="centerY" id="tCE-DE-ipK"/>
-                            <constraint firstItem="ARy-Kq-eaC" firstAttribute="leading" secondItem="gko-B7-Baa" secondAttribute="trailing" constant="30" id="wnc-su-et2"/>
+                            <constraint firstAttribute="trailing" secondItem="X7B-Go-apw" secondAttribute="trailing" constant="20" id="tp8-0o-OYc"/>
+                            <constraint firstItem="X7B-Go-apw" firstAttribute="leading" secondItem="PVg-8T-5qZ" secondAttribute="leading" id="yOQ-43-fzw"/>
                             <constraint firstItem="vQW-Vt-NL2" firstAttribute="leading" secondItem="Kqj-ZH-IoG" secondAttribute="trailing" constant="14" id="ybM-Kk-KGx"/>
-                            <constraint firstItem="gko-B7-Baa" firstAttribute="top" secondItem="Ap1-Ug-nhj" secondAttribute="bottom" constant="8" id="zgg-Ry-2Fo"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="certificateFingerprint" destination="def-pZ-Bbx" id="1RK-LI-Pq5"/>
                         <outlet property="certificateName" destination="dcc-gM-k6w" id="py2-4I-uR7"/>
+                        <outlet property="certificateValidPeriod" destination="gtx-0b-jdu" id="5J4-XY-rVV"/>
                         <outlet property="issuerName" destination="V7s-ww-GPg" id="t56-pu-eld"/>
                         <outlet property="issuesFingerprint" destination="ARy-Kq-eaC" id="hRZ-B9-e1F"/>
                         <outlet property="message" destination="PVg-8T-5qZ" id="baz-xj-D7g"/>
+                        <outlet property="windowTitle" destination="MWW-12-KLv" id="srx-a2-iIR"/>
                     </connections>
                 </viewController>
                 <customObject id="KOg-dD-PNc" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
