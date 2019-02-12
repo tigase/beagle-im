@@ -84,8 +84,7 @@ class ServerCertificateErrorController: NSViewController {
             completionHandler = nil;
             handler(true);
         } else {
-            let jid = account!;
-            guard let account = AccountManager.getAccount(for: jid) else {
+            guard let jid = self.account, let account = AccountManager.getAccount(for: jid) else {
                 return;
             }
             account.serverCertificate?.accepted = true;
