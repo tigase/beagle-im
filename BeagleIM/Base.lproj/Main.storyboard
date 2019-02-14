@@ -2390,7 +2390,7 @@ Gw
                                         <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gtx-0b-jdu">
                                             <rect key="frame" x="164" y="69" width="35" height="16"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="5cb-bY-3Nb">
-                                                <font key="font" metaFont="system" size="12"/>
+                                                <font key="font" metaFont="cellTitle"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
