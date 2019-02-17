@@ -35,6 +35,8 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     @IBOutlet var audioCall: NSButton!
     @IBOutlet var videoCall: NSButton!
     
+    @IBOutlet var scriptsButton: NSPopUpButton!;
+    
     override var chat: DBChatProtocol! {
         didSet {
             if let sessionObject = XmppService.instance.getClient(for: account)?.sessionObject {
@@ -54,6 +56,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         
         audioCall.isHidden = true;
         videoCall.isHidden = true;
+        scriptsButton.isHidden = true;
         
         NotificationCenter.default.addObserver(self, selector: #selector(rosterItemUpdated), name: DBRosterStore.ITEM_UPDATED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
@@ -68,6 +71,21 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         let presenceModule: PresenceModule? = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PresenceModule.ID);
         buddyStatusLabel.title = presenceModule?.presenceStore.getBestPresence(for: jid)?.status ?? "";
         
+        let itemsCount = self.scriptsButton.menu?.items.count ?? 0;
+        if itemsCount > 1 {
+            for i in 1..<itemsCount {
+                self.scriptsButton.menu?.removeItem(at: 1)
+            }
+        }
+        if let scripts = ScriptsManager.instance.contactScripts() {
+            scripts.forEach { (script) in
+                let item = NSMenuItem(title: script.name, action: #selector(scriptActivated(sender:)), keyEquivalent: "");
+                item.target = self;
+                self.scriptsButton.menu?.addItem(item);
+            }
+        }
+        self.scriptsButton.isHidden = ScriptsManager.instance.contactScripts() == nil;
+        
         self.updateCapabilities();
         
         super.viewWillAppear();
@@ -76,6 +94,12 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
                 self.change(chatState: .active);
             }
         });
+    }
+    
+    @objc func scriptActivated(sender: NSMenuItem) {
+        ScriptsManager.instance.contactScripts()?.first(where: { (item) -> Bool in
+            return item.name == sender.title;
+        })?.execute(account: self.account, jid: JID(self.jid));
     }
     
     override func viewWillDisappear() {

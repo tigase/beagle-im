@@ -49,6 +49,8 @@
 		FE4E8DE12160E7AA0010D88E /* TigaseSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FEF9D12A2082804E00B09B6C /* TigaseSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE5BE64C213AC3EA00463183 /* ChatsCellViewCloseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5BE64B213AC3EA00463183 /* ChatsCellViewCloseButton.swift */; };
 		FE5BE64E213AD19A00463183 /* ChatCellViewMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5BE64D213AD19A00463183 /* ChatCellViewMessage.swift */; };
+		FE5CAF982215BCD600FABD46 /* ScriptsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5CAF972215BCD600FABD46 /* ScriptsManager.swift */; };
+		FE5CAF9A2216EEF200FABD46 /* NSPopupButtonNoSizeWhenHidden.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5CAF992216EEF200FABD46 /* NSPopupButtonNoSizeWhenHidden.swift */; };
 		FE6E6BF721384D5F003B1696 /* AutoresizingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */; };
 		FE6E6BF821384D5F003B1696 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE321384D5E003B1696 /* ViewController.swift */; };
 		FE6E6BF921384D5F003B1696 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE421384D5E003B1696 /* AvatarView.swift */; };
@@ -177,6 +179,8 @@
 		FE4E8DDB215F72130010D88E /* AbstractChatView_ShareExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractChatView_ShareExtension.swift; sourceTree = "<group>"; };
 		FE5BE64B213AC3EA00463183 /* ChatsCellViewCloseButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsCellViewCloseButton.swift; sourceTree = "<group>"; };
 		FE5BE64D213AD19A00463183 /* ChatCellViewMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatCellViewMessage.swift; sourceTree = "<group>"; };
+		FE5CAF972215BCD600FABD46 /* ScriptsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptsManager.swift; sourceTree = "<group>"; };
+		FE5CAF992216EEF200FABD46 /* NSPopupButtonNoSizeWhenHidden.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSPopupButtonNoSizeWhenHidden.swift; sourceTree = "<group>"; };
 		FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoresizingTextField.swift; sourceTree = "<group>"; };
 		FE6E6BE321384D5E003B1696 /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		FE6E6BE421384D5E003B1696 /* AvatarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
@@ -321,6 +325,7 @@
 				FE9486B121BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift */,
 				FE1A8BA221C96C1B00604141 /* RoundButton.swift */,
 				FE137A4521F5FE05006B7F7C /* ShowMainWindowSegue.swift */,
+				FE5CAF992216EEF200FABD46 /* NSPopupButtonNoSizeWhenHidden.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -337,6 +342,7 @@
 				FE34BBD42157DDF200775B07 /* MucModule_RoomError_extension.swift */,
 				FE41FB30215AB32200AD86D3 /* ServerCertificateInfo.swift */,
 				FE380AD921B15720008717FA /* DownloadCache.swift */,
+				FE5CAF972215BCD600FABD46 /* ScriptsManager.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -665,6 +671,7 @@
 				FE3AA0C92154062F001667A9 /* ChatsListGroupProtocol.swift in Sources */,
 				FED7AEC721418B83001E164B /* VCardManager.swift in Sources */,
 				FE6E6C0321384D5F003B1696 /* DBRosterStore.swift in Sources */,
+				FE5CAF982215BCD600FABD46 /* ScriptsManager.swift in Sources */,
 				FE34BBD52157DDF200775B07 /* MucModule_RoomError_extension.swift in Sources */,
 				FEDE6AFC21455A2B0019170A /* RosterViewController.swift in Sources */,
 				FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */,
@@ -692,6 +699,7 @@
 				FE380ADA21B15720008717FA /* DownloadCache.swift in Sources */,
 				FEF844742173B9DC0067B005 /* Markdown.swift in Sources */,
 				FE6E6C0221384D5F003B1696 /* DBChatHistoryStore.swift in Sources */,
+				FE5CAF9A2216EEF200FABD46 /* NSPopupButtonNoSizeWhenHidden.swift in Sources */,
 				FE4E8DDC215F72130010D88E /* AbstractChatView_ShareExtension.swift in Sources */,
 				FE6E6BF821384D5F003B1696 /* ViewController.swift in Sources */,
 				FE9486B221BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift in Sources */,

@@ -657,7 +657,7 @@ CA
         <scene sceneID="R2V-B0-nI4">
             <objects>
                 <windowController showSeguePresentationStyle="single" id="B8D-0N-5wS" userLabel="Chats Window" customClass="ChatsWindowController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
-                    <window key="window" title="Chats" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" titlebarAppearsTransparent="YES" id="IQv-IB-iLA" userLabel="Chats">
+                    <window key="window" title="Chats" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" titlebarAppearsTransparent="YES" titleVisibility="hidden" id="IQv-IB-iLA" userLabel="Chats">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" fullSizeContentView="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="196" y="240" width="800" height="600"/>
@@ -1701,7 +1701,7 @@ AAAAAAEGA
                                             </textFieldCell>
                                         </textField>
                                         <button translatesAutoresizingMaskIntoConstraints="NO" id="Qwi-MG-iw4" customClass="NSButtonNoSizeWhenHidden" customModule="BeagleIM" customModuleProvider="target">
-                                            <rect key="frame" x="307" y="34" width="20" height="20"/>
+                                            <rect key="frame" x="272" y="34" width="20" height="20"/>
                                             <constraints>
                                                 <constraint firstAttribute="width" constant="20" id="1Xs-C1-KSf"/>
                                                 <constraint firstAttribute="height" constant="20" id="VTc-IQ-JYD"/>
@@ -1715,7 +1715,7 @@ AAAAAAEGA
                                             </connections>
                                         </button>
                                         <button translatesAutoresizingMaskIntoConstraints="NO" id="ssk-lx-sxG" customClass="NSButtonNoSizeWhenHidden" customModule="BeagleIM" customModuleProvider="target">
-                                            <rect key="frame" x="331" y="34" width="20" height="20"/>
+                                            <rect key="frame" x="296" y="34" width="20" height="20"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="20" id="Xjb-6G-aLp"/>
                                                 <constraint firstAttribute="width" constant="20" id="tVz-Vy-90I"/>
@@ -1728,6 +1728,24 @@ AAAAAAEGA
                                                 <action selector="videoCallClicked:" target="bJ4-ee-HmU" id="Vnd-wZ-TQi"/>
                                             </connections>
                                         </button>
+                                        <popUpButton translatesAutoresizingMaskIntoConstraints="NO" id="a3Q-Lk-9ws" customClass="NSPopupButtonNoSizeWhenHidden" customModule="BeagleIM" customModuleProvider="target">
+                                            <rect key="frame" x="316" y="34" width="35" height="20"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="20" id="H6d-MS-gds"/>
+                                                <constraint firstAttribute="width" constant="35" id="YlP-P0-Kea"/>
+                                            </constraints>
+                                            <popUpButtonCell key="cell" type="square" title="Scripts" bezelStyle="shadowlessSquare" imagePosition="only" alignment="left" lineBreakMode="truncatingTail" state="on" imageScaling="proportionallyDown" inset="2" pullsDown="YES" selectedItem="yUL-qX-nrr" id="Ars-Y9-ISx">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="menu"/>
+                                                <menu key="menu" id="pYZ-o7-267">
+                                                    <items>
+                                                        <menuItem title="Scripts" state="on" image="NSListViewTemplate" hidden="YES" id="yUL-qX-nrr">
+                                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                                        </menuItem>
+                                                    </items>
+                                                </menu>
+                                            </popUpButtonCell>
+                                        </popUpButton>
                                     </subviews>
                                     <constraints>
                                         <constraint firstItem="Qwi-MG-iw4" firstAttribute="top" secondItem="e8A-Bq-pPZ" secondAttribute="top" id="0tq-H9-7jX"/>
@@ -1735,7 +1753,6 @@ AAAAAAEGA
                                         <constraint firstItem="ssk-lx-sxG" firstAttribute="leading" secondItem="Qwi-MG-iw4" secondAttribute="trailing" constant="4" id="4cM-a1-nix"/>
                                         <constraint firstItem="dWl-2m-reJ" firstAttribute="leading" secondItem="e8A-Bq-pPZ" secondAttribute="trailing" constant="10" id="5Ea-NG-SnQ"/>
                                         <constraint firstItem="e8A-Bq-pPZ" firstAttribute="top" secondItem="e5M-IJ-MSL" secondAttribute="top" constant="18" id="5sI-hF-FlU"/>
-                                        <constraint firstAttribute="trailing" secondItem="ssk-lx-sxG" secondAttribute="trailing" constant="10" id="8nY-zl-hVi"/>
                                         <constraint firstAttribute="bottom" secondItem="wc2-40-Sj9" secondAttribute="bottom" id="HGA-To-AYl"/>
                                         <constraint firstItem="ssk-lx-sxG" firstAttribute="top" secondItem="e8A-Bq-pPZ" secondAttribute="top" id="HTP-pg-Igz"/>
                                         <constraint firstItem="wc2-40-Sj9" firstAttribute="width" secondItem="e5M-IJ-MSL" secondAttribute="width" id="Lvb-yZ-KAq"/>
@@ -1745,9 +1762,12 @@ AAAAAAEGA
                                         <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="e8A-Bq-pPZ" secondAttribute="bottom" constant="6" id="Zan-IL-xul"/>
                                         <constraint firstItem="c6x-4d-M5h" firstAttribute="leading" secondItem="Ep5-O8-NQN" secondAttribute="trailing" constant="8" id="f1L-jE-xXc"/>
                                         <constraint firstItem="Ep5-O8-NQN" firstAttribute="top" secondItem="e5M-IJ-MSL" secondAttribute="top" constant="18" id="f7Q-SS-k4Q"/>
+                                        <constraint firstAttribute="trailing" secondItem="a3Q-Lk-9ws" secondAttribute="trailing" constant="10" id="g0q-pu-qYL"/>
                                         <constraint firstItem="dWl-2m-reJ" firstAttribute="top" secondItem="Ep5-O8-NQN" secondAttribute="bottom" constant="4" id="ggZ-Ot-b75"/>
                                         <constraint firstItem="c6x-4d-M5h" firstAttribute="baseline" secondItem="Ep5-O8-NQN" secondAttribute="baseline" id="hWX-df-OaR"/>
                                         <constraint firstItem="e8A-Bq-pPZ" firstAttribute="leading" secondItem="e5M-IJ-MSL" secondAttribute="leading" constant="8" id="mLh-fI-NqO"/>
+                                        <constraint firstItem="a3Q-Lk-9ws" firstAttribute="leading" secondItem="ssk-lx-sxG" secondAttribute="trailing" id="q4v-CD-7PV"/>
+                                        <constraint firstItem="a3Q-Lk-9ws" firstAttribute="top" secondItem="e8A-Bq-pPZ" secondAttribute="top" id="uny-Zd-9bg"/>
                                     </constraints>
                                 </view>
                                 <color key="fillColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
@@ -1928,6 +1948,7 @@ AAAAAAEGA
                         <outlet property="messageField" destination="55A-ac-2fc" id="Qm4-k2-jg1"/>
                         <outlet property="messageFieldScroller" destination="eQY-WT-lv4" id="WW0-y6-aFH"/>
                         <outlet property="messageFieldScrollerHeight" destination="cVy-3f-LmV" id="tIw-Ll-M6s"/>
+                        <outlet property="scriptsButton" destination="a3Q-Lk-9ws" id="lHf-cz-65Z"/>
                         <outlet property="sharingButton" destination="FiK-DK-gMw" id="UCP-ja-dhS"/>
                         <outlet property="sharingProgressBar" destination="xMh-bV-LhL" id="Z0j-a3-Q85"/>
                         <outlet property="tableView" destination="N1B-Tt-jcO" id="rYb-EL-DnJ"/>
@@ -4249,6 +4270,7 @@ Gw
         <image name="NSCaution" width="32" height="32"/>
         <image name="NSEveryone" width="32" height="32"/>
         <image name="NSInfo" width="32" height="32"/>
+        <image name="NSListViewTemplate" width="14" height="10"/>
         <image name="NSPreferencesGeneral" width="32" height="32"/>
         <image name="NSRefreshTemplate" width="11" height="15"/>
         <image name="NSRemoveTemplate" width="11" height="11"/>
