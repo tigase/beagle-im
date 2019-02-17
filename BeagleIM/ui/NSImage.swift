@@ -97,7 +97,7 @@ extension NSImage {
         
         let expSize = self.size.height > self.size.width ? NSSize(width: self.size.width / scale, height: self.size.height / scale) : NSSize(width: self.size.width / scale, height: self.size.height / scale);
         
-        print("expected size:", expSize);
+//        print("expected size:", expSize);
         let flipped = NSImage(size: expSize);
         flipped.lockFocus();
         NSGraphicsContext.current?.imageInterpolation = .high;

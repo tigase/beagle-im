@@ -23,6 +23,8 @@ import AppKit
 
 class NSButtonNoSizeWhenHidden: NSButton {
     
+    fileprivate var widthOriginalConstraint: NSLayoutConstraint?;
+    fileprivate var heightOriginalConstraint: NSLayoutConstraint?;
     fileprivate var widthConstraint: NSLayoutConstraint?;
     fileprivate var heightConstraint: NSLayoutConstraint?;
     
@@ -32,16 +34,29 @@ class NSButtonNoSizeWhenHidden: NSButton {
         }
         set {
             super.isHidden = newValue;
-            widthConstraint?.isActive = isHidden;
-            heightConstraint?.isActive = isHidden;
+            if newValue {
+                self.widthOriginalConstraint?.isActive = !isHidden;
+                self.heightOriginalConstraint?.isActive = !isHidden;
+                widthConstraint?.isActive = isHidden;
+                heightConstraint?.isActive = isHidden;
+            } else {
+                widthConstraint?.isActive = isHidden;
+                heightConstraint?.isActive = isHidden;
+                self.widthOriginalConstraint?.isActive = !isHidden;
+                self.heightOriginalConstraint?.isActive = !isHidden;
+            }
         }
     }
     
     override func awakeFromNib() {
+        self.heightOriginalConstraint = self.constraints.first(where: { (constraint) -> Bool in
+            return constraint.relation == .equal && constraint.firstAnchor == self.heightAnchor;
+        });
+        self.widthOriginalConstraint = self.constraints.first(where: { (constraint) -> Bool in
+            return constraint.relation == .equal && constraint.firstAnchor == self.widthAnchor;
+        });
         widthConstraint = self.widthAnchor.constraint(equalToConstant: 0);
         heightConstraint = self.heightAnchor.constraint(equalToConstant: 0);
-        widthConstraint?.isActive = isHidden;
-        heightConstraint?.isActive = isHidden;
     }
     
 }

@@ -81,8 +81,12 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     
     override func viewWillDisappear() {
         super.viewWillDisappear();
-        NSEvent.removeMonitor(mouseMonitor);
+        if let mouseMonitor = self.mouseMonitor {
+            self.mouseMonitor = nil;
+            NSEvent.removeMonitor(mouseMonitor);
+        }
         NotificationCenter.default.removeObserver(self, name: NSWindow.didBecomeKeyNotification, object: nil);
+        NotificationCenter.default.removeObserver(self, name: AppDelegate.HOUR_CHANGED, object: nil);
     }
     
     override func viewDidAppear() {

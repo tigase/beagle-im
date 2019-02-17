@@ -25,7 +25,7 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
   
     @objc var placeholderAttributedString: NSAttributedString?;
     
-    var dragHandler: NSDraggingDestination? = nil;
+    weak var dragHandler: NSDraggingDestination? = nil;
     
     override func awakeFromNib() {
         self.font = NSFont.systemFont(ofSize: NSFont.systemFontSize(for: .regular));

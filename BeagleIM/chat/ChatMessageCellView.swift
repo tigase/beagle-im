@@ -186,7 +186,7 @@ class ChatMessageCellView: NSTableCellView {
         let image = origImage.scaledAndFlipped(maxWidth: 250.0, maxHeight: 200.0, flipX: false, flipY: true);
         att.image = image;
         //ten bounds wypadałoby dostosowywać w zależności od zmiany szerokości okna!!
-        print("W:", image.size.width, "H:", image.size.height);
+        //print("W:", image.size.width, "H:", image.size.height);
         att.bounds = NSRect(x: att.bounds.origin.x, y: att.bounds.origin.y, width: image.size.width, height: image.size.height);
         if first {
             msg.append(NSAttributedString(string: "\n"));

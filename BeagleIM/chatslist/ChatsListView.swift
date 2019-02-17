@@ -567,6 +567,17 @@ class ChatsListView: NSOutlineView {
                 //NotificationCenter.default.post(name: NSOutlineView.selectionDidChangeNotification, object: nil);
             }
         } else {
+            
+            if let isKey = self.window?.isKeyWindow, !isKey {
+                print("mouse down event!", event, self.window, "list", NSApplication.shared.windows, "key:", self.window?.isKeyWindow, "can:", self.window?.canBecomeKey, "main:", self.window?.isMainWindow, "can:", self.window?.canBecomeMain, "isActive:", NSApp.isActive, "isRunning:", NSApp.isRunning, "isHidden:", NSApp.isHidden);
+                NSApplication.shared.windows.forEach { (win) in
+                    print("win:", win, "isMain:", win.isMainWindow, win.canBecomeMain, "isKey:", win.isKeyWindow, win.canBecomeKey, "sheet:", win.isSheet, "visible:", win.isVisible, "title:", win.title, "modal:", NSApp.modalWindow)
+                }
+                
+                NSApp.activate(ignoringOtherApps: true);
+                self.window?.makeKey();
+            }
+
             super.mouseDown(with: event);
         }
     }
