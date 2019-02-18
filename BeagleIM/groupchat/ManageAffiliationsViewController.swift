@@ -60,12 +60,6 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
                     count = count - 1;
                     if count <= 0 {
                         self.progressIndicator.stopAnimation(nil);
-                    }
-                }
-                guard affiliations != nil else {
-                    print("got error", error as Any);
-                    errors = errors + 1;
-                    DispatchQueue.main.async {
                         if errors > 0 {
                             let alert = NSAlert();
                             alert.icon = NSImage(named: NSImage.cautionName);
@@ -77,6 +71,10 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
                             });
                         }
                     }
+                }
+                guard affiliations != nil else {
+                    print("got error", error as Any);
+                    errors = errors + 1;
                     return;
                 }
                 DispatchQueue.main.async {
