@@ -298,7 +298,9 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 }
             } else if item == nil {
                 let controller = self.storyboard!.instantiateController(withIdentifier: "EmptyViewController") as! NSViewController;
-                splitController.removeSplitViewItem(splitController.splitViewItems[1]);
+                if splitController.splitViewItems.count > 1 {
+                    splitController.removeSplitViewItem(splitController.splitViewItems[1]);
+                }
                 splitController.addSplitViewItem(NSSplitViewItem(viewController: controller));
             }
         }
