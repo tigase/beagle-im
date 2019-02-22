@@ -67,6 +67,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         
         NotificationCenter.default.addObserver(self, selector: #selector(roomStatusChanged), name: MucEventHandler.ROOM_STATUS_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(roomOccupantsChanged), name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(roomStatusChanged(_:)), name: MucEventHandler.ROOM_NAME_CHANGED, object: nil);
     }
     
     override func viewWillAppear() {
@@ -107,7 +108,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     fileprivate func refreshRoomDetails() {
         avatarView.avatar = NSImage(named: NSImage.userGroupName);
         avatarView.status = room.state == .joined ? .online : (room.state == .requested ? .away : nil);
-        titleView.stringValue = room.roomJid.localPart ?? "";
+        titleView.stringValue = room.name ?? room.roomJid.localPart ?? "";
         jidView.stringValue = room.roomJid.stringValue;
         subjectView.stringValue = room.subject ?? "";
         

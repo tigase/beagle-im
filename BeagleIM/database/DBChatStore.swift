@@ -87,15 +87,16 @@ open class DBChatStore {
     fileprivate static let OPEN_CHAT = "INSERT INTO chats (account, jid, timestamp, type) VALUES (:account, :jid, :timestamp, :type)";
     fileprivate static let OPEN_ROOM = "INSERT INTO chats (account, jid, timestamp, type, nickname, password) VALUES (:account, :jid, :timestamp, :type, :nickname, :password)";
     fileprivate static let CLOSE_CHAT = "DELETE FROM chats WHERE id = :id";
-    fileprivate static let LOAD_CHATS = "SELECT c.id, c.type, c.jid, c.nickname, c.password, c.timestamp as creation_timestamp, last.timestamp as timestamp, (SELECT data FROM chat_history ch1 WHERE ch1.account = c.account AND ch1.jid = c.jid AND ch1.timestamp = last.timestamp) as data, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))) as unread FROM chats c LEFT JOIN (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account GROUP BY ch.account, ch.jid) last ON c.jid = last.jid AND c.account = last.account WHERE c.account = :account";
+    fileprivate static let LOAD_CHATS = "SELECT c.id, c.type, c.jid, c.name, c.nickname, c.password, c.timestamp as creation_timestamp, last.timestamp as timestamp, (SELECT data FROM chat_history ch1 WHERE ch1.account = c.account AND ch1.jid = c.jid AND ch1.timestamp = last.timestamp) as data, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))) as unread FROM chats c LEFT JOIN (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account GROUP BY ch.account, ch.jid) last ON c.jid = last.jid AND c.account = last.account WHERE c.account = :account";
     fileprivate static let GET_LAST_MESSAGE = "SELECT last.timestamp as timestamp, (SELECT data FROM chat_history ch1 WHERE ch1.account = last.account AND ch1.jid = last.jid AND ch1.timestamp = last.timestamp) as data, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))) as unread FROM (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.jid = :jid GROUP BY ch.account, ch.jid) last";
-
+    fileprivate static let UPDATE_CHAT_NAME = "UPDATE chats SET name = :name WHERE account = :account AND jid = :jid";
     public let dispatcher: QueueDispatcher;
 
     fileprivate let closeChatStmt: DBStatement;
     fileprivate let openChatStmt: DBStatement;
     fileprivate let openRoomStmt: DBStatement;
     fileprivate let getLastMessageStmt: DBStatement;
+    fileprivate let updateChatNameStmt: DBStatement;
     
     fileprivate var chats = [BareJID: AccountChats]();
     
@@ -115,6 +116,7 @@ open class DBChatStore {
         openRoomStmt = try! DBConnection.main.prepareStatement(DBChatStore.OPEN_ROOM);
         closeChatStmt = try! DBConnection.main.prepareStatement(DBChatStore.CLOSE_CHAT);
         getLastMessageStmt = try! DBConnection.main.prepareStatement(DBChatStore.GET_LAST_MESSAGE);
+        updateChatNameStmt = try! DBConnection.main.prepareStatement(DBChatStore.UPDATE_CHAT_NAME);
     }
  
     func count(for account: BareJID) -> Int {
@@ -246,6 +248,19 @@ open class DBChatStore {
         }
     }
     
+    func updateChatName(for account: BareJID, with jid: BareJID, name: String?) {
+        dispatcher.async {
+            if let chat = self.getChat(for: account, with: jid) {
+                if let room = chat as? DBRoom, room.name != name {
+                    room.name = name;
+                    if try! self.updateChatNameStmt.update(["account": account, "jid": jid, "name": name] as [String: Any?]) > 0 {
+                        NotificationCenter.default.post(name: MucEventHandler.ROOM_NAME_CHANGED, object: chat);
+                    }
+                }
+            }
+        }
+    }
+    
     func resetChatStates(for account: BareJID) {
         dispatcher.async {
             self.getChats(for: account)?.items.forEach { chat in
@@ -267,7 +282,7 @@ open class DBChatStore {
         case let r as Room:
             let params: [String: Any?] = [ "account": account, "jid": r.roomJid, "timestamp": Date(), "type": 1, "nickname": r.nickname, "password": r.password];
             let id = try! self.openRoomStmt.insert(params);
-            return DBRoom(id: id!, context: r.context, account: account, roomJid: r.roomJid, nickname: r.nickname, password: r.password, timestamp: Date(), lastMessage: getLastMessage(for: account, jid: chat.jid.bareJid), unread: 0);
+            return DBRoom(id: id!, context: r.context, account: account, roomJid: r.roomJid, name: nil, nickname: r.nickname, password: r.password, timestamp: Date(), lastMessage: getLastMessage(for: account, jid: chat.jid.bareJid), unread: 0);
         default:
             return nil;
         }
@@ -309,8 +324,9 @@ open class DBChatStore {
                 case 1:
                     let nickname: String = cursor["nickname"]!;
                     let password: String? = cursor["password"];
+                    let name: String? = cursor["name"];
             
-                    let room = DBRoom(id: id, context: context, account: account, roomJid: jid, nickname: nickname, password: password, timestamp: timestamp, lastMessage: lastMessage, unread: unread);
+                    let room = DBRoom(id: id, context: context, account: account, roomJid: jid, name: name, nickname: nickname, password: password, timestamp: timestamp, lastMessage: lastMessage, unread: unread);
                     if lastMessage != nil {
                         room.lastMessageDate = timestamp;
                     }
@@ -485,19 +501,25 @@ open class DBChatStore {
         var lastMessage: String? = nil;
         var subject: String? = nil;
         var unread: Int;
+        var name: String? = nil;
 
-        init(id: Int, context: Context, account: BareJID, roomJid: BareJID, nickname: String, password: String?, timestamp: Date, lastMessage: String?, unread: Int) {
+        init(id: Int, context: Context, account: BareJID, roomJid: BareJID, name: String?, nickname: String, password: String?, timestamp: Date, lastMessage: String?, unread: Int) {
             self.id = id;
             self.account = account;
             self.timestamp = timestamp;
             self.lastMessage = lastMessage;
             self.unread = unread;
+            self.name = name;
             super.init(context: context, roomJid: roomJid, nickname: nickname);
             setPassword(password);
         }
         
         fileprivate func setPassword(_ pass: String?) {
             self.password = pass;
+        }
+        
+        func updateRoom(name: String?) {
+            self.name = name;
         }
         
         func updateLastMessage(_ message: String?, timestamp: Date, isUnread: Bool) -> Bool {

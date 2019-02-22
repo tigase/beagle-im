@@ -26,6 +26,7 @@ import UserNotifications
 class MucEventHandler: XmppServiceEventHandler {
     
     static let ROOM_STATUS_CHANGED = Notification.Name("roomStatusChanged");
+    static let ROOM_NAME_CHANGED = Notification.Name("roomNameChanged");
     static let ROOM_OCCUPANTS_CHANGED = Notification.Name("roomOccupantsChanged");
 
     let events: [Event] = [ SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE, MucModule.OccupantChangedNickEvent.TYPE, MucModule.OccupantChangedPresenceEvent.TYPE, MucModule.OccupantLeavedEvent.TYPE, MucModule.OccupantComesEvent.TYPE, MucModule.PresenceErrorEvent.TYPE, MucModule.InvitationReceivedEvent.TYPE, MucModule.InvitationDeclinedEvent.TYPE ];
@@ -45,6 +46,7 @@ class MucEventHandler: XmppServiceEventHandler {
             }
             NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
             NotificationCenter.default.post(name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: room.presences[room.nickname]);
+            updateRoomName(room: room);
         case let e as MucModule.RoomClosedEvent:
             guard let room = e.room as? DBChatStore.DBRoom else {
                 return;
@@ -58,6 +60,12 @@ class MucEventHandler: XmppServiceEventHandler {
             if e.message.findChild(name: "subject") != nil {
                 room.subject = e.message.subject;
                 NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
+            }
+            
+            if let xUser = XMucUserElement.extract(from: e.message) {
+                if xUser.statuses.contains(104) {
+                    self.updateRoomName(room: room);
+                }
             }
             
             guard let body = e.message.body else {
@@ -180,4 +188,17 @@ class MucEventHandler: XmppServiceEventHandler {
         }
     }
     
+    fileprivate func updateRoomName(room: DBChatStore.DBRoom) {
+        guard let client = XmppService.instance.getClient(for: room.account), let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID) else {
+            return;
+        }
+        
+        discoModule.getInfo(for: room.jid, onInfoReceived: { (node, identities, features) in
+            let newName = identities.first(where: { (identity) -> Bool in
+                return identity.category == "conference";
+            })?.name?.trimmingCharacters(in: .whitespacesAndNewlines);
+            
+            DBChatStore.instance.updateChatName(for: room.account, with: room.roomJid, name: newName);
+        }, onError: nil);
+    }
 }

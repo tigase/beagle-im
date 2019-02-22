@@ -680,7 +680,7 @@ CA
                 <splitViewController id="OlR-LD-Pas" sceneMemberID="viewController">
                     <splitViewItems>
                         <splitViewItem holdingPriority="255" behavior="contentList" id="GS7-Di-2kN"/>
-                        <splitViewItem id="gL4-0l-F41"/>
+                        <splitViewItem holdingPriority="200" id="gL4-0l-F41"/>
                     </splitViewItems>
                     <splitView key="splitView" dividerStyle="thin" vertical="YES" id="u0Z-sZ-seg">
                         <rect key="frame" x="0.0" y="0.0" width="450" height="300"/>
@@ -1660,9 +1660,9 @@ Gw
                                                 <constraint firstAttribute="width" constant="48" id="piD-qs-r8e"/>
                                             </constraints>
                                         </view>
-                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="c6x-4d-M5h">
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="249" translatesAutoresizingMaskIntoConstraints="NO" id="c6x-4d-M5h">
                                             <rect key="frame" x="159" y="37" width="93" height="14"/>
-                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="kobit@tigase.org" id="gde-5T-n8j">
+                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="kobit@tigase.org" id="gde-5T-n8j">
                                                 <font key="font" metaFont="smallSystem"/>
                                                 <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -1692,9 +1692,9 @@ AAAAAAEGA
                                         <box verticalHuggingPriority="750" ambiguous="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="wc2-40-Sj9">
                                             <rect key="frame" x="0.0" y="-2" width="313" height="5"/>
                                         </box>
-                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ep5-O8-NQN">
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="Ep5-O8-NQN">
                                             <rect key="frame" x="64" y="37" width="91" height="17"/>
-                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Artur Hefczyc" id="yXg-0b-XTX">
+                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Artur Hefczyc" id="yXg-0b-XTX">
                                                 <font key="font" metaFont="systemMedium" size="13"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -3259,9 +3259,9 @@ Gw
                                                 <constraint firstAttribute="width" constant="48" id="uLU-4S-6dT"/>
                                             </constraints>
                                         </view>
-                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="pxt-na-aFe">
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="249" translatesAutoresizingMaskIntoConstraints="NO" id="pxt-na-aFe">
                                             <rect key="frame" x="159" y="37" width="93" height="14"/>
-                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="kobit@tigase.org" id="txK-sv-wuj">
+                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="kobit@tigase.org" id="txK-sv-wuj">
                                                 <font key="font" metaFont="smallSystem"/>
                                                 <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -3291,9 +3291,9 @@ AAAAAAEGA
                                         <box verticalHuggingPriority="750" ambiguous="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="mMG-Ae-wje">
                                             <rect key="frame" x="0.0" y="-2" width="313" height="5"/>
                                         </box>
-                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ZD0-29-6Ph">
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="ZD0-29-6Ph">
                                             <rect key="frame" x="64" y="37" width="91" height="17"/>
-                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Artur Hefczyc" id="h3R-C3-JJr">
+                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Artur Hefczyc" id="h3R-C3-JJr">
                                                 <font key="font" metaFont="systemMedium" size="13"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>

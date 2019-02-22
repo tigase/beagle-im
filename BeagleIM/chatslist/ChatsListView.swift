@@ -62,7 +62,7 @@ class ChatItem: AbstractChatItem {
 class GroupchatItem: AbstractChatItem {
 
     init(chat: DBChatProtocol) {
-        super.init(chat: chat, name: chat.jid.stringValue);
+        super.init(chat: chat, name: (chat as? DBChatStore.DBRoom)?.name ?? chat.jid.stringValue);
     }
     
 }
@@ -350,7 +350,23 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 return;
             }
             
-            mucModule.leave(room: r);
+            if r.presences[r.nickname]?.affiliation == .owner {
+                let alert = NSAlert();
+                alert.alertStyle = .warning;
+                alert.messageText = "Delete conference?"
+                alert.informativeText = "You are leaving the conference. Would you like to finish it?";
+                alert.addButton(withTitle: "Yes")
+                alert.addButton(withTitle: "No")
+                alert.beginSheetModal(for: self.view.window!) { (response) in
+                    if (response == .alertFirstButtonReturn) {
+                        mucModule.destroy(room: r);
+                    } else {
+                        mucModule.leave(room: r);
+                    }
+                };
+            } else {
+                mucModule.leave(room: r);
+            }
         default:
             print("unknown type of chat!");
         }
