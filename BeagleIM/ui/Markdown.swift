@@ -117,6 +117,8 @@ class Markdown {
                         if let emoji = String.emojis[String(message[wordIdx!..<idx])] {
                             msg.replaceCharacters(in: NSRange(wordIdx!.encodedOffset..<idx.encodedOffset), with: emoji);
                             message.replaceSubrange(wordIdx!..<idx, with: emoji);
+                            // we are changing offset as length is changing!!
+                            idx = message.index(wordIdx!, offsetBy: emoji.endIndex.encodedOffset);
                         }
                     }
                     if codeStart == nil {
