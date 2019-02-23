@@ -354,7 +354,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 let alert = NSAlert();
                 alert.alertStyle = .warning;
                 alert.messageText = "Delete conference?"
-                alert.informativeText = "You are leaving the conference. Would you like to finish it?";
+                alert.informativeText = "You are leaving the group chat. Would you like to finish it?";
                 alert.addButton(withTitle: "Yes")
                 alert.addButton(withTitle: "No")
                 alert.beginSheetModal(for: self.view.window!) { (response) in
