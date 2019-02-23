@@ -353,7 +353,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
             if r.presences[r.nickname]?.affiliation == .owner {
                 let alert = NSAlert();
                 alert.alertStyle = .warning;
-                alert.messageText = "Delete conference?"
+                alert.messageText = "Delete group chat?"
                 alert.informativeText = "You are leaving the group chat. Would you like to finish it?";
                 alert.addButton(withTitle: "Yes")
                 alert.addButton(withTitle: "No")
