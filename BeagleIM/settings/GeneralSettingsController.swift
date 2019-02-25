@@ -46,6 +46,7 @@ class GeneralSettingsController: NSViewController {
     fileprivate var imagePreviewMaxSize: NSSlider!;
     
     fileprivate var ignoreJingleSupportCheck: NSButton!;
+    fileprivate var enableBookmarksSync: NSButton!;
     
     override func viewDidLoad() {
         if #available(macOS 10.14, *) {
@@ -76,6 +77,8 @@ class GeneralSettingsController: NSViewController {
         spellchecking = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Spellchecking", target: self, action: #selector(checkboxChanged(_:))));
         
         ignoreJingleSupportCheck = formView.addRow(label: "Experimental", field: NSButton(checkboxWithTitle: "Ignore VoIP support check", target: self, action: #selector(checkboxChanged(_:))));
+        
+        enableBookmarksSync = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Enable groupchat bookmarks sync", target: self, action: #selector(checkboxChanged(_:))));
         
         self.preferredContentSize = NSSize(width: self.view.frame.size.width, height: self.view.frame.size.height);
     }
@@ -109,6 +112,7 @@ class GeneralSettingsController: NSViewController {
         systemMenuIcon.state = Settings.systemMenuIcon.bool() ? .on : .off;
         spellchecking.state = Settings.spellchecking.bool() ? .on : .off;
         ignoreJingleSupportCheck.state = Settings.ignoreJingleSupportCheck.bool() ? .on : .off;
+        enableBookmarksSync.state = Settings.enableBookmarksSync.bool() ? .on : .off;
     }
     
     @objc func checkboxChanged(_ sender: NSButton) {
@@ -146,6 +150,8 @@ class GeneralSettingsController: NSViewController {
             Settings.ignoreJingleSupportCheck.set(value: sender.state == .on);
         case showEmoticons:
             Settings.showEmoticons.set(value: sender.state == .on);
+        case enableBookmarksSync:
+            Settings.enableBookmarksSync.set(value: sender.state == .on);
         default:
             if #available(macOS 10.14, *) {
                 if let appearance = self.appearance, appearance == sender {

@@ -361,6 +361,7 @@ class XmppService: EventHandler {
         client.modulesManager.register(CapabilitiesModule()).cache = DBCapabilitiesCache.instance;
         _ = client.modulesManager.register(PubSubModule());
         _ = client.modulesManager.register(PEPUserAvatarModule());
+        _ = client.modulesManager.register(PEPBookmarksModule());
         
         let messageModule = MessageModule();
         let chatStoreWrapper = DBChatStoreWrapper(sessionObject: client.context.sessionObject);

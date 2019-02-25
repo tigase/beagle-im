@@ -29,7 +29,7 @@ class MucEventHandler: XmppServiceEventHandler {
     static let ROOM_NAME_CHANGED = Notification.Name("roomNameChanged");
     static let ROOM_OCCUPANTS_CHANGED = Notification.Name("roomOccupantsChanged");
 
-    let events: [Event] = [ SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE, MucModule.OccupantChangedNickEvent.TYPE, MucModule.OccupantChangedPresenceEvent.TYPE, MucModule.OccupantLeavedEvent.TYPE, MucModule.OccupantComesEvent.TYPE, MucModule.PresenceErrorEvent.TYPE, MucModule.InvitationReceivedEvent.TYPE, MucModule.InvitationDeclinedEvent.TYPE ];
+    let events: [Event] = [ SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE, MucModule.OccupantChangedNickEvent.TYPE, MucModule.OccupantChangedPresenceEvent.TYPE, MucModule.OccupantLeavedEvent.TYPE, MucModule.OccupantComesEvent.TYPE, MucModule.PresenceErrorEvent.TYPE, MucModule.InvitationReceivedEvent.TYPE, MucModule.InvitationDeclinedEvent.TYPE, PEPBookmarksModule.BookmarksChangedEvent.TYPE ];
     
     func handle(event: Event) {
         switch event {
@@ -143,6 +143,8 @@ class MucEventHandler: XmppServiceEventHandler {
                     if response == NSApplication.ModalResponse.alertFirstButtonReturn {
                         let nickname = AccountManager.getAccount(for: e.sessionObject.userBareJid!)?.nickname ?? e.sessionObject.userBareJid!.localPart!;
                         _ = mucModule.join(roomName: roomName, mucServer: e.invitation.roomJid.domain, nickname: nickname, password: e.invitation.password);
+                        
+                        PEPBookmarksModule.updateOrAdd(for: e.sessionObject.userBareJid!, bookmark: Bookmarks.Conference(name: roomName, jid: JID(BareJID(localPart: roomName, domain: e.invitation.roomJid.domain)), autojoin: true, nick: nickname, password: e.invitation.password));
                     } else {
                         mucModule.decline(invitation: e.invitation, reason: nil);
                     }
@@ -183,6 +185,19 @@ class MucEventHandler: XmppServiceEventHandler {
                 notification.contentImage = NSImage(named: NSImage.userGroupName);
                 NSUserNotificationCenter.default.deliver(notification);
             }
+        case let e as PEPBookmarksModule.BookmarksChangedEvent:
+            guard let client = XmppService.instance.getClient(for: e.sessionObject.userBareJid!), let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID), Settings.enableBookmarksSync.bool() else {
+                return;
+            }
+            
+            e.bookmarks?.items.filter { bookmark in bookmark is Bookmarks.Conference }.map { bookmark in bookmark as! Bookmarks.Conference }.filter { bookmark in
+                return !mucModule.roomsManager.contains(roomJid: bookmark.jid.bareJid);
+                }.forEach({ (bookmark) in
+                    guard let nick = bookmark.nick, bookmark.autojoin else {
+                        return;
+                    }
+                    _ = mucModule.join(roomName: bookmark.jid.localPart!, mucServer: bookmark.jid.domain, nickname: nick, password: bookmark.password);
+                });
         default:
             break;
         }
@@ -198,7 +213,7 @@ class MucEventHandler: XmppServiceEventHandler {
                 return identity.category == "conference";
             })?.name?.trimmingCharacters(in: .whitespacesAndNewlines);
             
-            DBChatStore.instance.updateChatName(for: room.account, with: room.roomJid, name: newName);
+            DBChatStore.instance.updateChatName(for: room.account, with: room.roomJid, name: (newName?.isEmpty ?? true) ? nil : newName);
         }, onError: nil);
     }
 }

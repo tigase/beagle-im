@@ -237,6 +237,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                     return;
                 }
                 _ = mucModule.join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname);
+                PEPBookmarksModule.updateOrAdd(for: self.account, bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: true, nick: nickname, password: nil));
                 DispatchQueue.main.async {
                     self.close();
                 }
@@ -259,6 +260,8 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                                 return;
                             }
                             _ = mucModule.join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname, password: password);
+                            
+                            PEPBookmarksModule.updateOrAdd(for: self.account, bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: true, nick: nickname, password: password));
                             self.close();
                         }
                     })

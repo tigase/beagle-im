@@ -360,12 +360,15 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 alert.beginSheetModal(for: self.view.window!) { (response) in
                     if (response == .alertFirstButtonReturn) {
                         mucModule.destroy(room: r);
+                        PEPBookmarksModule.remove(from: r.account, bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: r.jid, autojoin: false));
                     } else {
                         mucModule.leave(room: r);
+                        PEPBookmarksModule.remove(from: r.account, bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: r.jid, autojoin: false));
                     }
                 };
             } else {
                 mucModule.leave(room: r);
+                PEPBookmarksModule.remove(from: r.account, bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: r.jid, autojoin: false));
             }
         default:
             print("unknown type of chat!");

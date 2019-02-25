@@ -34,6 +34,7 @@ enum Settings: String {
     
     case enableMessageCarbons
     case markMessageCarbonsAsRead
+    case enableBookmarksSync
     case imageDownloadSizeLimit
     
     case enableMarkdownFormatting
