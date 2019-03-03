@@ -39,6 +39,7 @@ class ChatMessageCellView: NSTableCellView {
  
     func set(senderName: String?) {
         self.senderName.stringValue = senderName!;
+        self.avatar?.name = senderName;
     }
     
     func set(message item: ChatMessage) {

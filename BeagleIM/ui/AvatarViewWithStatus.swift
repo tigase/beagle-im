@@ -24,9 +24,17 @@ import TigaseSwift
 
 class AvatarViewWithStatus: NSView {
 
-    fileprivate var avatarView: AvatarView!;
+    fileprivate(set) var avatarView: AvatarView!;
     fileprivate var statusView: StatusView!;
     
+    var name: String? {
+        get {
+            return avatarView.name;
+        }
+        set {
+            avatarView.name = newValue;
+        }
+    }
     var avatar: NSImage? {
         get {
             return avatarView.image;

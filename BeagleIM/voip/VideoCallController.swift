@@ -224,7 +224,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
             
             let name = session.client?.rosterStore?.get(for: session.jid.withoutResource)?.name ?? session.jid.bareJid.stringValue;
             
-            self.remoteAvatarView.image = AvatarManager.instance.avatar(for: session.jid.bareJid, on: session.account);
+            self.remoteAvatarView.image = AvatarManager.instance.avatar(for: session.jid.bareJid, on: session.account) ?? AvatarManager.instance.defaultAvatar;
             
             self.view.window?.title = "Call with \(name)"
             
@@ -345,7 +345,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     func call(jid: BareJID, from account: BareJID, withAudio: Bool, withVideo: Bool) {
         let name = XmppService.instance.getClient(for: account)?.rosterStore?.get(for: JID(jid))?.name ?? jid.stringValue;
         self.view.window?.title = "Call with \(name)";
-        self.remoteAvatarView.image = AvatarManager.instance.avatar(for: jid, on: account);
+        self.remoteAvatarView.image = AvatarManager.instance.avatar(for: jid, on: account) ?? AvatarManager.instance.defaultAvatar;
         
         guard let presences = XmppService.instance.getClient(for: account)?.presenceStore?.getPresences(for: jid)?.keys, !presences.isEmpty
             else {

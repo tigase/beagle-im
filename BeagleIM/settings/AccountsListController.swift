@@ -65,7 +65,7 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
 
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("AccountCellView"), owner: self) as! AccountCellView;
-        view.avatar?.image = AvatarManager.instance.avatar(for: accounts[row], on: accounts[row]);
+        view.avatar?.image = AvatarManager.instance.avatar(for: accounts[row], on: accounts[row]) ?? AvatarManager.instance.defaultAvatar;
         view.label?.textColor = tableView.isRowSelected(row) ? NSColor.selectedTextColor : NSColor.textColor;
         view.label?.stringValue = accounts[row].stringValue;
         return view;

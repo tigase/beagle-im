@@ -40,7 +40,7 @@ class AvatarManager {
         NotificationCenter.default.addObserver(self, selector: #selector(accountChanged), name: AccountManager.ACCOUNT_CHANGED, object: nil);
     }
     
-    open func avatar(for jid: BareJID, on account: BareJID) -> NSImage {
+    open func avatar(for jid: BareJID, on account: BareJID) -> NSImage? {
         return dispatcher.sync(flags: .barrier) {
             return self.avatars(on: account).avatar(for: jid, on: account);
         }
@@ -189,9 +189,9 @@ class AvatarManager {
         
         fileprivate var avatars: [BareJID: NSImage] = [:];
         
-        func avatar(for jid: BareJID, on account: BareJID) -> NSImage {
+        func avatar(for jid: BareJID, on account: BareJID) -> NSImage? {
             if let image = AvatarManager.instance.dispatcher.sync(execute: { self.avatars[jid] }) {
-                return image;
+                return image === AvatarManager.instance.defaultAvatar ? nil : image;
             }
             
             let image = AvatarManager.instance.loadAvatar(for: jid, on: account) ?? AvatarManager.instance.defaultAvatar;
@@ -199,7 +199,7 @@ class AvatarManager {
                 self.avatars[jid] = image;
             }
             
-            return image;
+            return image === AvatarManager.instance.defaultAvatar ? nil : image;
         }
         
         fileprivate func invalidateAvatar(for jid: BareJID, on account: BareJID) {

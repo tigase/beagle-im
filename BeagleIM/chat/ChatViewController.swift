@@ -67,6 +67,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         buddyNameLabel.title = buddyName;
         buddyJidLabel.title = jid.stringValue;
         buddyAvatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
+        buddyAvatarView.name = buddyName;
         buddyAvatarView.update(for: jid, on: account);
         let presenceModule: PresenceModule? = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PresenceModule.ID);
         buddyStatusLabel.title = presenceModule?.presenceStore.getBestPresence(for: jid)?.status ?? "";
@@ -163,6 +164,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             
             self.buddyName = ((e.action != .removed) ? item.name : nil) ?? self.jid.stringValue;
             self.buddyNameLabel.title = self.buddyName;
+            self.buddyAvatarView.name = self.buddyName;
             self.itemsReloaded();
         }
     }

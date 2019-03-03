@@ -558,6 +558,8 @@ class RosterContactView: NSTableCellView {
         
         let label = NSMutableAttributedString(string: name, attributes: [NSAttributedString.Key.font: NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium), NSAttributedString.Key.foregroundColor: (darkBackground ? NSColor.alternateSelectedControlTextColor : NSColor.textColor)]);
         
+        avatar.name = name;
+        
         let status = presenceModule.presenceStore.getBestPresence(for: self.item.jid)?.status;
         if status != nil && !status!.isEmpty {
             label.append(NSAttributedString(string: "\n"));

@@ -43,7 +43,11 @@ class ChatCellView: NSTableCellView {
         return f;
     })();
     
-    @IBOutlet weak var avatar: AvatarViewWithStatus!;
+    @IBOutlet weak var avatar: AvatarViewWithStatus! {
+        didSet {
+            self.avatar?.avatarView?.appearance = NSAppearance(named: .darkAqua);
+        }
+    }
     @IBOutlet weak var label: NSTextField!;
     @IBOutlet weak var lastMessage: ChatCellViewMessage!;
     @IBOutlet weak var lastMessageTs: NSTextField!;
@@ -64,6 +68,7 @@ class ChatCellView: NSTableCellView {
     
     func set(name: String?) {
         self.label?.stringValue = name ?? "";
+        self.avatar?.name = name;
     }
     
     func set(lastMessage: String?, ts: Date?) {
@@ -129,7 +134,6 @@ class ChatCellView: NSTableCellView {
             self.set(chatState: chat.remoteChatState ?? .active);
         }
         self.set(lastMessage: item.lastMessageText, ts: item.lastMessageTs);
-//        self.set(avatar: AvatarManager.instance.avatar(for: item.chat.jid.bareJid, on: item.chat.account));
         if item.chat is Chat {
             self.avatar.update(for: item.chat.jid.bareJid, on: item.chat.account);
         } else if let room  = item.chat as? Room {

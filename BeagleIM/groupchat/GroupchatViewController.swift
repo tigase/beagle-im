@@ -267,10 +267,13 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
         let participant = participants[row];
         if let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("GroupchatParticipantCellView"), owner: self) as? GroupchatParticipantCellView {
             
-            view.avatar.avatar = participant.jid != nil ? AvatarManager.instance.avatar(for: participant.jid!.bareJid, on: room!.account) : NSImage(named: NSImage.userName);
+            let name = participant.nickname + "" + roleToEmoji(participant.role);
+            
+            view.avatar.name = name;
+            view.avatar.avatar = participant.jid != nil ? AvatarManager.instance.avatar(for: participant.jid!.bareJid, on: room!.account) : nil;
             view.avatar.backgroundColor = NSColor(named: "chatBackgroundColor")!;
             view.avatar.status = participant.presence.show;
-            view.label.stringValue = participant.nickname + "" + roleToEmoji(participant.role);
+            view.label.stringValue = name;
             
             return view;
         }
