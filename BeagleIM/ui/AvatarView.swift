@@ -28,7 +28,7 @@ class AvatarView: NSImageView {
             if let parts = name?.uppercased().components(separatedBy: CharacterSet.letters.inverted) {
                 let first = parts.first?.first;
                 let last = parts.count > 1 ? parts.last?.first : nil;
-                self.initials = last == nil ? (first == nil ? nil : "\(first!)") : "\(first!)\(last!)";
+                self.initials = (last == nil || first == nil) ? (first == nil ? nil : "\(first!)") : "\(first!)\(last!)";
             } else {
                 self.initials = nil;
             }
