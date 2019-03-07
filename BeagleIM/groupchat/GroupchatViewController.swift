@@ -234,6 +234,33 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         room.context.writer?.write(message);
         return true;
     }
+    
+    override func textDidChange(_ obj: Notification) {
+        super.textDidChange(obj);
+        self.messageField.complete(nil);
+    }
+    
+    func textView(_ textView: NSTextView, completions words: [String], forPartialWordRange charRange: NSRange, indexOfSelectedItem index: UnsafeMutablePointer<Int>?) -> [String] {
+        
+        let tmp = textView.string;
+        let start = tmp.index(tmp.startIndex, offsetBy: charRange.lowerBound);
+        let end = tmp.index(tmp.startIndex, offsetBy: charRange.upperBound);
+        let query = textView.string[start..<end];
+        index?.initialize(to: -1);
+        
+        print("tmp:", tmp, "start:", start, "end:", end, "query:", query);
+        
+        guard start != tmp.startIndex, tmp[tmp.index(before: start)] == "@" else {
+            return [];
+        }
+        
+        let suggestions = self.room?.presences.keys.filter({ (key) -> Bool in
+            return key.contains(query);
+        }).sorted() ?? [];
+        
+        return suggestions.map({ name in "\(name) "});
+    }
+
 }
 
 class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableViewDataSource {
