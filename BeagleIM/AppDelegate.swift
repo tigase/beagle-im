@@ -70,7 +70,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     fileprivate var statusItem: NSStatusItem?;
     fileprivate(set) var mainWindowController: NSWindowController?;
     
-    func applicationDidFinishLaunching(_ aNotification: Notification) {
+    func applicationDidFinishLaunching(_ aNotification: Notification) {       
         Settings.initialize();
         RTCInitializeSSL();
         
@@ -193,7 +193,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             let size = min(statusItem.button!.frame.height, statusItem.button!.frame.height);
             statusItemImage?.size = NSSize(width: size, height: size);
             statusItem.button?.image = statusItemImage;
-            statusItem.action = #selector(makeMainWindowKey);
+            statusItem.button?.action = #selector(makeMainWindowKey);
         }
     }
     

@@ -48,7 +48,6 @@ class ChatMessageCellView: NSTableCellView {
         let matches = detector.matches(in: item.message, range: NSMakeRange(0, item.message.utf16.count));
         let msg = NSMutableAttributedString(string: item.message);
         var previewsToRetrive: [URL] = [];
-        var previewCounter = 0;
         var previewsToLoad: [(URL,String)] = [];
         var errors: [String] = [];
         matches.forEach { match in
@@ -297,7 +296,7 @@ class ChatMessageCellView: NSTableCellView {
                 do {
                     let previewId = try DownloadCache.instance.addImage(url: tempLocalUrl, maxWidthOrHeight: 300, previewFor: url);
                     completion(url, previewId);
-                } catch let writeError {
+                } catch _ {
                     //print("could not copy downloaded file!", writeError);
                     completion(url, "NONE");
                 }

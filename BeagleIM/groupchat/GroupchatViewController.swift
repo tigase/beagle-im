@@ -383,7 +383,7 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
             DispatchQueue.main.async {
                 var tmp = self.participants;
                 guard let idx = tmp.firstIndex(where: { (i) -> Bool in
-                    i.nickname == e.occupant.nickname ?? "";
+                    i.nickname == e.occupant.nickname;
                 }) else {
                     return;
                 }

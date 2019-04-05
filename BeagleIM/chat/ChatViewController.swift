@@ -74,7 +74,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         
         let itemsCount = self.scriptsButton.menu?.items.count ?? 0;
         if itemsCount > 1 {
-            for i in 1..<itemsCount {
+            for _ in 1..<itemsCount {
                 self.scriptsButton.menu?.removeItem(at: 1)
             }
         }

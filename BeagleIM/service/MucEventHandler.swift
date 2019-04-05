@@ -81,7 +81,7 @@ class MucEventHandler: XmppServiceEventHandler {
             guard let error = MucModule.RoomError.from(presence: e.presence), e.nickname == nil || e.nickname! == e.room.nickname else {
                 return;
             }
-            print("received error from room:", e.room, ", error:", error)
+            print("received error from room:", e.room as Any, ", error:", error)
             
             if #available(OSX 10.14, *) {
                 let content = UNMutableNotificationContent();

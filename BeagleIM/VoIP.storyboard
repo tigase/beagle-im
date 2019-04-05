@@ -35,7 +35,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="480" height="480"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <customView identifier="VideoCallController" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0JM-uv-ZnY" customClass="RTCMTLNSVideoView">
+                            <customView identifier="VideoCallView" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0JM-uv-ZnY" customClass="RTCMTLNSVideoView">
                                 <rect key="frame" x="0.0" y="0.0" width="560" height="560"/>
                             </customView>
                             <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="5C7-CN-gUK">

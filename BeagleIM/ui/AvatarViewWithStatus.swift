@@ -99,20 +99,20 @@ class AvatarViewWithStatus: NSView {
         self.avatarView.imageScaling = .scaleProportionallyUpOrDown;
         addSubview(avatarView);
         
-        NSLayoutConstraint(item: self.avatarView, attribute: .top, relatedBy: .equal, toItem: self, attribute: .top, multiplier: 1, constant: 0).isActive = true;
-        NSLayoutConstraint(item: self.avatarView, attribute: .left, relatedBy: .equal, toItem: self, attribute: .left, multiplier: 1, constant: 0).isActive = true;
-        NSLayoutConstraint(item: self.avatarView, attribute: .right, relatedBy: .equal, toItem: self, attribute: .right, multiplier: 1, constant: 0).isActive = true;
-        NSLayoutConstraint(item: self.avatarView, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1, constant: 0).isActive = true;
-        NSLayoutConstraint(item: self.avatarView, attribute: .width, relatedBy: .equal, toItem: self, attribute: .width, multiplier: 1, constant: 0).isActive = true;
-        NSLayoutConstraint(item: self.avatarView, attribute: .height, relatedBy: .equal, toItem: self, attribute: .height, multiplier: 1, constant: 0).isActive = true;
+        NSLayoutConstraint(item: self.avatarView!, attribute: .top, relatedBy: .equal, toItem: self, attribute: .top, multiplier: 1, constant: 0).isActive = true;
+        NSLayoutConstraint(item: self.avatarView!, attribute: .left, relatedBy: .equal, toItem: self, attribute: .left, multiplier: 1, constant: 0).isActive = true;
+        NSLayoutConstraint(item: self.avatarView!, attribute: .right, relatedBy: .equal, toItem: self, attribute: .right, multiplier: 1, constant: 0).isActive = true;
+        NSLayoutConstraint(item: self.avatarView!, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1, constant: 0).isActive = true;
+        NSLayoutConstraint(item: self.avatarView!, attribute: .width, relatedBy: .equal, toItem: self, attribute: .width, multiplier: 1, constant: 0).isActive = true;
+        NSLayoutConstraint(item: self.avatarView!, attribute: .height, relatedBy: .equal, toItem: self, attribute: .height, multiplier: 1, constant: 0).isActive = true;
 
         self.statusView = StatusView(frame: self.frame);
         self.statusView.translatesAutoresizingMaskIntoConstraints = false;
         addSubview(statusView, positioned: NSWindow.OrderingMode.above, relativeTo: self.avatarView);
-        NSLayoutConstraint(item: self.statusView, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1, constant: 0).isActive = true;
-        NSLayoutConstraint(item: self.statusView, attribute: .right, relatedBy: .equal, toItem: self, attribute: .right, multiplier: 1, constant: 0).isActive = true;
-        NSLayoutConstraint(item: self.statusView, attribute: .width, relatedBy: .equal, toItem: self, attribute: .width, multiplier: 0.30, constant: 0).isActive = true;
-        NSLayoutConstraint(item: self.statusView, attribute: .height, relatedBy: .equal, toItem: self, attribute: .height, multiplier: 0.30, constant: 0).isActive = true;
+        NSLayoutConstraint(item: self.statusView!, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1, constant: 0).isActive = true;
+        NSLayoutConstraint(item: self.statusView!, attribute: .right, relatedBy: .equal, toItem: self, attribute: .right, multiplier: 1, constant: 0).isActive = true;
+        NSLayoutConstraint(item: self.statusView!, attribute: .width, relatedBy: .equal, toItem: self, attribute: .width, multiplier: 0.30, constant: 0).isActive = true;
+        NSLayoutConstraint(item: self.statusView!, attribute: .height, relatedBy: .equal, toItem: self, attribute: .height, multiplier: 0.30, constant: 0).isActive = true;
         
         statusView.image = NSImage(named: NSImage.statusAvailableName);
         statusView.imageScaling = .scaleProportionallyUpOrDown;

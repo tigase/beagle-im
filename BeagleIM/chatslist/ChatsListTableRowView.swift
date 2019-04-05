@@ -37,7 +37,7 @@ class ChatsListTableRowView: NSTableRowView {
     override func drawSelection(in dirtyRect: NSRect) {
         highlightColor = (isSelected ? NSColor(named: "sidebarBackgroundColor")!.blended(withFraction: 0.15, of: NSColor(calibratedWhite: 0.82, alpha: 1.0))! : NSColor(named: "sidebarBackgroundColor")!);
         if self.selectionHighlightStyle != .none {
-            let selectionRect = dirtyRect;//NSInsetRect(self.bounds, 2.5, 2.5)
+            //let selectionRect = dirtyRect;//NSInsetRect(self.bounds, 2.5, 2.5)
             NSColor(calibratedWhite: 0.65, alpha: 0.15).setStroke();
             highlightColor.setFill();
             dirtyRect.fill();

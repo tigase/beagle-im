@@ -80,7 +80,7 @@ class ScriptsManager {
                 let event = NSAppleEventDescriptor(eventClass: AEEventClass(kASAppleScriptSuite), eventID: AEEventID(kASSubroutineEvent), targetDescriptor: NSAppleEventDescriptor.null(), returnID: AEReturnID(kAutoGenerateReturnID), transactionID: AETransactionID(kAnyTransactionID));
                 event.setDescriptor(function, forKeyword: AEKeyword(keyASSubroutineName));
                 event.setDescriptor(params, forKeyword: AEKeyword(keyDirectObject));
-                task.execute(withAppleEvent: event) { [weak self] (desc, error) in
+                task.execute(withAppleEvent: event) { (desc, error) in
                     print("task", desc as Any, "executed with jid:", jid, "result:", error as Any);
                 }
             }

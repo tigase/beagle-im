@@ -129,7 +129,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
     }
     
     func support(for jid: JID, on account: BareJID) -> Set<ContentType> {
-        guard let client = XmppService.instance.getClient(for: account), let presenceStore = client.presenceStore else {
+        guard let client = XmppService.instance.getClient(for: account), let _ = client.presenceStore else {
             return [];
         }
         
@@ -175,7 +175,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
     
     fileprivate func sessionInitiated(event e: JingleModule.JingleEvent) {
         
-        guard let content = e.contents.first, let description = content.description as? Jingle.RTP.Description else {
+        guard let content = e.contents.first, let _ = content.description as? Jingle.RTP.Description else {
             return;
         }
         

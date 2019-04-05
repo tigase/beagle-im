@@ -191,8 +191,8 @@ open class DBStatement {
             case let v as [UInt8]:
                 r = sqlite3_bind_blob(handle, pos, v, Int32(v.count), SQLITE_TRANSIENT);
             case let v as Data:
-                v.withUnsafeBytes() {
-                    r = sqlite3_bind_blob(handle, pos,$0, Int32(v.count), SQLITE_TRANSIENT);
+                r = v.withUnsafeBytes { (bytes) -> Int32 in
+                    return sqlite3_bind_blob(handle, pos, bytes.baseAddress!, Int32(v.count), SQLITE_TRANSIENT);
                 }
             case let v as Double:
                 r = sqlite3_bind_double(handle, pos, v);
@@ -505,7 +505,7 @@ open class DBCursor {
         //            print("for \(column), position \($0) got \(v)")
         //            return v;
         //        }
-        if let idx = columnNames.index(of: column) {
+        if let idx = columnNames.firstIndex(of: column) {
             return self[idx];
         }
         return nil;
@@ -554,7 +554,7 @@ open class DBCursor {
     }
     
     fileprivate func forColumn<T>(_ column:String, exec:(Int)->T?) -> T? {
-        if let idx = columnNames.index(of: column) {
+        if let idx = columnNames.firstIndex(of: column) {
             return exec(idx);
         }
         return nil;

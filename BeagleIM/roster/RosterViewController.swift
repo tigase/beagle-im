@@ -251,7 +251,7 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
         dispatcher.async {
             let items = DispatchQueue.main.sync { return self.items };
             
-            guard let currIdx = items.index(where: { i -> Bool in
+            guard let currIdx = items.firstIndex(where: { i -> Bool in
                 return i.jid == jid && i.account == account;
             }) else {
                 return;
@@ -315,7 +315,7 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
         dispatcher.async {
             var items = DispatchQueue.main.sync { return self.items };
             
-            guard let currIdx = items.index(where: { i -> Bool in
+            guard let currIdx = items.firstIndex(where: { i -> Bool in
                 return i.jid == jid && i.account == account;
             }) else {
                 guard !self.showOnlyOnline || status != nil else {
@@ -378,7 +378,7 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
     fileprivate func removeItem(for jid: BareJID, on account: BareJID) {
         dispatcher.async {
             var items = DispatchQueue.main.sync { return self.items; };
-            guard let currIdx = items.index(where: { i -> Bool in
+            guard let currIdx = items.firstIndex(where: { i -> Bool in
                 return i.jid == jid && i.account == account;
             }) else {
                 return;
@@ -394,7 +394,7 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
     
     func findPositionForName(items: [Item], jid: BareJID, name: String?) -> Int {
         let newName = name ?? jid.stringValue;
-        return items.index(where: { (i) -> Bool in
+        return items.firstIndex(where: { (i) -> Bool in
             let n = i.name ?? i.jid.stringValue;
             switch newName.localizedCaseInsensitiveCompare(n) {
             case .orderedDescending:

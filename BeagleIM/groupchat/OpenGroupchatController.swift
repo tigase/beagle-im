@@ -231,7 +231,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
         let nickname = self.nicknameField.stringValue;
         
         discoModule.getInfo(for: JID(room), node: nil, onInfoReceived: { node, identities, features in
-            let requiresPassword = features.index(of: "muc_passwordprotected") != nil;
+            let requiresPassword = features.firstIndex(of: "muc_passwordprotected") != nil;
             if !requiresPassword {
                 guard let mucModule: MucModule = XmppService.instance.getClient(for: self.account)?.modulesManager.getModule(MucModule.ID) else {
                     return;
@@ -335,7 +335,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
             items.forEach({ item in
                 discoModule.getInfo(for: item.jid, node: item.node, onInfoReceived: { node, identities, features in
                     DispatchQueue.main.async {
-                        let idx = features.index(of: "http://jabber.org/protocol/muc");
+                        let idx = features.firstIndex(of: "http://jabber.org/protocol/muc");
                         if idx != nil {
                             mucJids.append(item.jid.bareJid);
                         }

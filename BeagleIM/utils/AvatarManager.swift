@@ -153,7 +153,7 @@ class AvatarManager {
             completionHandler(Data(base64Encoded: data, options: Data.Base64DecodingOptions.ignoreUnknownCharacters));
         } else if let uri = photo.uri {
             if uri.hasPrefix("data:image") && uri.contains(";base64,") {
-                let idx = uri.index(uri.index(of: ",")!, offsetBy: 1);
+                let idx = uri.index(uri.firstIndex(of: ",")!, offsetBy: 1);
                 let data = String(uri[idx...]);
                 print("got avatar:", data);
                 completionHandler(Data(base64Encoded: data, options: Data.Base64DecodingOptions.ignoreUnknownCharacters));

@@ -49,10 +49,12 @@ class Markdown {
                             boldStart = idx;
                         }
                     } else {
-                        msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(boldStart!.encodedOffset...message.index(after: boldStart!).encodedOffset));
-                        msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(idx.encodedOffset...nidx.encodedOffset));
+                        msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(boldStart!...message.index(after: boldStart!), in: message));
+//                        msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(boldStart!.encodedOffset...message.index(after: boldStart!).encodedOffset));
+                        msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(idx...nidx, in: message));
+//                        msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(idx.encodedOffset...nidx.encodedOffset));
                         
-                        msg.applyFontTraits(.boldFontMask, range: NSRange(boldStart!.encodedOffset...nidx.encodedOffset));
+                        msg.applyFontTraits(.boldFontMask, range: NSRange(boldStart!...nidx, in: message));
                         boldStart = nil;
                     }
                     canStart = true;
@@ -63,10 +65,10 @@ class Markdown {
                             italicStart = idx;
                         }
                     } else {
-                        msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(italicStart!.encodedOffset...italicStart!.encodedOffset));
-                        msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(idx.encodedOffset...idx.encodedOffset));
+                        msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(italicStart!...italicStart!, in: message));
+                        msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(idx...idx, in: message));
                         
-                        msg.applyFontTraits(.italicFontMask, range: NSRange(italicStart!.encodedOffset...idx.encodedOffset));
+                        msg.applyFontTraits(.italicFontMask, range: NSRange(italicStart!...idx, in: message));
                         italicStart = nil;
                     }
                     canStart = true;
@@ -77,10 +79,10 @@ class Markdown {
                         underlineStart = idx;
                     }
                 } else {
-                    msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(underlineStart!.encodedOffset...underlineStart!.encodedOffset));
-                    msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(idx.encodedOffset...idx.encodedOffset));
+                    msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(underlineStart!...underlineStart!, in: message));
+                    msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(idx...idx, in: message));
                     
-                    msg.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: NSRange(underlineStart!.encodedOffset...idx.encodedOffset));
+                    msg.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: NSRange(underlineStart!...idx, in: message));
                     underlineStart = nil;
                 }
                 canStart = true;
@@ -91,13 +93,13 @@ class Markdown {
                         wordIdx = nil;
                     }
                 } else {
-                    msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(codeStart!.encodedOffset...codeStart!.encodedOffset));
-                    msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(idx.encodedOffset...idx.encodedOffset));
+                    msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(codeStart!...codeStart!, in: message));
+                    msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(idx...idx, in: message));
 
-                    msg.applyFontTraits([.fixedPitchFontMask, .unboldFontMask, .unitalicFontMask], range: NSRange(codeStart!.encodedOffset...idx.encodedOffset));
+                    msg.applyFontTraits([.fixedPitchFontMask, .unboldFontMask, .unitalicFontMask], range: NSRange(codeStart!...idx, in: message));
                     
                     if message.distance(from: codeStart!, to: idx) > 1 {
-                        let clearRange = NSRange(message.index(after: codeStart!).encodedOffset...message.index(before: idx).encodedOffset);
+                        let clearRange = NSRange(message.index(after: codeStart!)...message.index(before: idx), in: message);
                         msg.removeAttribute(.foregroundColor, range: clearRange);
                         msg.removeAttribute(.underlineStyle, range: clearRange);
                         //msg.addAttribute(.foregroundColor, value: textColor ?? NSColor.textColor, range: clearRange);
@@ -114,11 +116,14 @@ class Markdown {
             case "\r", "\n", " ":
                 if showEmoticons {
                     if wordIdx != nil && wordIdx! != idx {
+                        // something is wrong, it looks like IDX points to replaced value!
                         if let emoji = String.emojis[String(message[wordIdx!..<idx])] {
-                            msg.replaceCharacters(in: NSRange(wordIdx!.encodedOffset..<idx.encodedOffset), with: emoji);
+                            msg.replaceCharacters(in: NSRange(wordIdx!..<idx, in: message), with: emoji);
+                            let distance = message.distance(from: message.startIndex, to: wordIdx!);
                             message.replaceSubrange(wordIdx!..<idx, with: emoji);
                             // we are changing offset as length is changing!!
-                            idx = message.index(wordIdx!, offsetBy: emoji.endIndex.encodedOffset);
+//                            idx = message.index(wordIdx!, offsetBy: emoji.lengthOfBytes(using: .utf8)-3);
+                            idx = message.index(after: message.index(message.startIndex, offsetBy: distance));
                         }
                     }
                     if codeStart == nil {
@@ -146,7 +151,7 @@ class Markdown {
 
         if showEmoticons && wordIdx != nil && wordIdx! != idx {
             if let emoji = String.emojis[String(message[wordIdx!..<idx])] {
-                msg.replaceCharacters(in: NSRange(wordIdx!.encodedOffset..<idx.encodedOffset), with: emoji);
+                msg.replaceCharacters(in: NSRange(wordIdx!..<idx, in: message), with: emoji);
                 message.replaceSubrange(wordIdx!..<idx, with: emoji);
             }
         }

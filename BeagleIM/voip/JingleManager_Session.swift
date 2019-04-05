@@ -243,7 +243,7 @@ extension JingleManager {
         }
         
         func peerConnection(_ peerConnection: RTCPeerConnection, didGenerate candidate: RTCIceCandidate) {
-            print("generated candidate for:", candidate.sdpMid, ", index:", candidate.sdpMLineIndex, "full SDP:", (peerConnection.localDescription?.sdp ?? ""));
+            print("generated candidate for:", candidate.sdpMid as Any, ", index:", candidate.sdpMLineIndex, "full SDP:", (peerConnection.localDescription?.sdp ?? ""));
             
             JingleManager.instance.dispatcher.async {
                 if self.localCandidates == nil {
@@ -266,7 +266,7 @@ extension JingleManager {
         }
         
         fileprivate func sendLocalCandidate(_ candidate: RTCIceCandidate) {
-            print("sending candidate for:", candidate.sdpMid, ", index:", candidate.sdpMLineIndex, "full SDP:", (self.peerConnection?.localDescription?.sdp ?? ""));
+            print("sending candidate for:", candidate.sdpMid as Any, ", index:", candidate.sdpMLineIndex, "full SDP:", (self.peerConnection?.localDescription?.sdp ?? ""));
             
             guard let jingleCandidate = Jingle.Transport.ICEUDPTransport.Candidate(fromSDP: candidate.sdp), let peerConnection = self.peerConnection else {
                 return;

@@ -144,7 +144,6 @@ class DBChatHistoryStore {
     open func updateItem(for account: BareJID, with jid: BareJID, id: Int, preview: [String:String]? = nil) {
         dispatcher.async {
             var params: [String: Any?] = ["id": id];
-            let test = Dictionary<String, String>(minimumCapacity: 2);
             if preview != nil {
                 params["preview"] = preview!.map({ (k,v) -> String in
                     return "\(k)\t\(v)";

@@ -165,7 +165,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         
         print("clicked button for", group.name);
         
-        if groups.index(where: { it -> Bool in return it.name == group.name}) == 0 {
+        if groups.firstIndex(where: { it -> Bool in return it.name == group.name}) == 0 {
             guard let windowController = storyboard?.instantiateController(withIdentifier: "OpenGroupchatController") as? NSWindowController else {
                 return;
             }
@@ -590,9 +590,9 @@ class ChatsListView: NSOutlineView {
         } else {
             
             if let isKey = self.window?.isKeyWindow, !isKey {
-                print("mouse down event!", event, self.window, "list", NSApplication.shared.windows, "key:", self.window?.isKeyWindow, "can:", self.window?.canBecomeKey, "main:", self.window?.isMainWindow, "can:", self.window?.canBecomeMain, "isActive:", NSApp.isActive, "isRunning:", NSApp.isRunning, "isHidden:", NSApp.isHidden);
+                print("mouse down event!", event, self.window as Any, "list", NSApplication.shared.windows, "key:", self.window?.isKeyWindow as Any, "can:", self.window?.canBecomeKey as Any, "main:", self.window?.isMainWindow as Any, "can:", self.window?.canBecomeMain as Any, "isActive:", NSApp.isActive, "isRunning:", NSApp.isRunning, "isHidden:", NSApp.isHidden);
                 NSApplication.shared.windows.forEach { (win) in
-                    print("win:", win, "isMain:", win.isMainWindow, win.canBecomeMain, "isKey:", win.isKeyWindow, win.canBecomeKey, "sheet:", win.isSheet, "visible:", win.isVisible, "title:", win.title, "modal:", NSApp.modalWindow)
+                    print("win:", win, "isMain:", win.isMainWindow, win.canBecomeMain, "isKey:", win.isKeyWindow, win.canBecomeKey, "sheet:", win.isSheet, "visible:", win.isVisible, "title:", win.title, "modal:", NSApp.modalWindow as Any)
                 }
                 
                 NSApp.activate(ignoringOtherApps: true);

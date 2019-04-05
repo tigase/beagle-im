@@ -37,7 +37,7 @@ open class AccountManager {
     }
     
     static func getAccounts() -> [BareJID] {
-        let query: [String: Any] = [ kSecClass as String: kSecClassGenericPassword, kSecMatchLimit as String: kSecMatchLimitAll, kSecReturnAttributes as String: kCFBooleanTrue, kSecAttrService as String: "xmpp"];
+        let query: [String: Any] = [ kSecClass as String: kSecClassGenericPassword, kSecMatchLimit as String: kSecMatchLimitAll, kSecReturnAttributes as String: kCFBooleanTrue as Any, kSecAttrService as String: "xmpp"];
         var result: CFTypeRef?;
         
         guard SecItemCopyMatching(query as CFDictionary, &result) == noErr else {
@@ -62,7 +62,7 @@ open class AccountManager {
     }
     
     static func getAccount(for jid: BareJID) -> Account? {
-        let query: [String: Any] = [ kSecClass as String: kSecClassGenericPassword, kSecMatchLimit as String: kSecMatchLimitOne, kSecReturnAttributes as String: kCFBooleanTrue, kSecAttrService as String: "xmpp" as NSObject, kSecAttrAccount as String : jid.stringValue as NSObject ];
+        let query: [String: Any] = [ kSecClass as String: kSecClassGenericPassword, kSecMatchLimit as String: kSecMatchLimitOne, kSecReturnAttributes as String: kCFBooleanTrue as Any, kSecAttrService as String: "xmpp" as NSObject, kSecAttrAccount as String : jid.stringValue as NSObject ];
         
         var result: CFTypeRef?;
         
@@ -81,7 +81,7 @@ open class AccountManager {
     
     static func save(account: Account) -> Bool {
         var query: [String: Any] = [ kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "xmpp" as NSObject, kSecAttrAccount as String : account.name.stringValue as NSObject ];
-        var update: [String: Any] = [ kSecAttrGeneric as String: NSKeyedArchiver.archivedData(withRootObject: account.data), kSecAttrAccessible as String: kSecAttrAccessibleAlwaysThisDeviceOnly ];
+        var update: [String: Any] = [ kSecAttrGeneric as String: try! NSKeyedArchiver.archivedData(withRootObject: account.data, requiringSecureCoding: false), kSecAttrAccessible as String: kSecAttrAccessibleAlwaysThisDeviceOnly ];
         if let newPassword = account.newPassword {
             update[kSecValueData as String] = newPassword.data(using: .utf8)!;
         }
@@ -128,7 +128,7 @@ open class AccountManager {
             return nil;
         }
         
-        return NSKeyedUnarchiver.unarchiveObject(with: data!) as? [String: Any];
+        return try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data!) as? [String: Any];
     }
     
     static fileprivate func accountChanged(account: Account) {
@@ -225,7 +225,7 @@ open class AccountManager {
         }
         
         fileprivate func getPassword() -> String? {
-            let query: [String: Any] = [ kSecClass as String: kSecClassGenericPassword, kSecMatchLimit as String: kSecMatchLimitOne, kSecReturnData as String: kCFBooleanTrue, kSecAttrService as String: "xmpp" as NSObject, kSecAttrAccount as String : name.stringValue as NSObject ];
+            let query: [String: Any] = [ kSecClass as String: kSecClassGenericPassword, kSecMatchLimit as String: kSecMatchLimitOne, kSecReturnData as String: kCFBooleanTrue as Any, kSecAttrService as String: "xmpp" as NSObject, kSecAttrAccount as String : name.stringValue as NSObject ];
             var result: CFTypeRef?;
                 
             let r = SecItemCopyMatching(query as CFDictionary, &result);

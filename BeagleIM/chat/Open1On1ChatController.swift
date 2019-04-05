@@ -86,7 +86,7 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
         }
         
         DispatchQueue.main.async {
-            guard let idx = self.rows.index(where: { (item) -> Bool in
+            guard let idx = self.rows.firstIndex(where: { (item) -> Bool in
                 return item.account == account && item.jid == jid
             }) else {
                 return;

@@ -79,13 +79,13 @@ class ChatViewDataSource {
             var newRows = [Int]();
             //            var appendedItemsCounter = 0;
             newItems.forEach({ item in
-                guard items.index(where: { (it) -> Bool in
+                guard items.firstIndex(where: { (it) -> Bool in
                     it.id == item.id;
                 }) == nil else {
                     return;
                 }
                 
-                let idx = items.index(where: { it -> Bool in it.timestamp.compare(item.timestamp) == .orderedAscending });
+                let idx = items.firstIndex(where: { it -> Bool in it.timestamp.compare(item.timestamp) == .orderedAscending });
                 if idx != nil {
                     if (items[idx!].id == item.id) {
                         // we skip items which are already there
@@ -116,13 +116,13 @@ class ChatViewDataSource {
     func update(itemId: Int, data: [String:Any]) {
         queue.async {
             let items = DispatchQueue.main.sync { return self.items; }
-            guard let idx = items.index(where: { (it) -> Bool in
+            guard let idx = items.firstIndex(where: { (it) -> Bool in
                 it.id == itemId;
             }) else {
                 return;
             }
             // do something when item needs to be updated, ie. marked as delivered or read..
-            let item = items[idx];
+            //let item = items[idx];
             
             // notify that we finished
             DispatchQueue.main.async {
@@ -134,7 +134,7 @@ class ChatViewDataSource {
     func update(item: ChatViewItemProtocol) {
         queue.async {
             var items = DispatchQueue.main.sync { return self.items; }
-            guard let idx = items.index(where: { (it) -> Bool in
+            guard let idx = items.firstIndex(where: { (it) -> Bool in
                 it.id == item.id;
             }) else {
                 return;

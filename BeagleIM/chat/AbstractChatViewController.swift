@@ -207,7 +207,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
                             let s2 = max(session.position, idx);
                             //print("s1:", s1, "s2:", s2, "length:", (s2-s1) + 1);
                             str.addAttribute(.backgroundColor, value: NSColor.selectedTextBackgroundColor, range: NSRange(location: s1.location, length: (s2.upperBound - s1.location)));
-                            print("str:", str, s1, s2, idx.length, str.length, str.string.last);
+                            print("str:", str, s1, s2, idx.length, str.length, str.string.last as Any);
                         } else {
                             let start = begin == startRow ? session.position : idx;
                             str.addAttribute(.backgroundColor, value: NSColor.selectedTextBackgroundColor, range: NSRange(location: start.location, length: (str.length - start.location)));

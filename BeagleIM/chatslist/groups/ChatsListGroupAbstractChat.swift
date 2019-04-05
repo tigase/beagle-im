@@ -120,7 +120,7 @@ class ChatsListGroupAbstractChat<I: DBChatProtocol>: ChatsListGroupProtocol {
         
         dispatcher.async {
             var items = DispatchQueue.main.sync { return self.items };
-            guard let idx = items.index(where: { (item) -> Bool in
+            guard let idx = items.firstIndex(where: { (item) -> Bool in
                 item.chat.id == opened.id
             }) else {
                 return;
@@ -142,7 +142,7 @@ class ChatsListGroupAbstractChat<I: DBChatProtocol>: ChatsListGroupProtocol {
         
         dispatcher.async {
             var items = DispatchQueue.main.sync { return self.items };
-            guard let oldIdx = items.index(where: { (item) -> Bool in
+            guard let oldIdx = items.firstIndex(where: { (item) -> Bool in
                 item.chat.id == e.id;
             }) else {
                 return;
@@ -150,7 +150,7 @@ class ChatsListGroupAbstractChat<I: DBChatProtocol>: ChatsListGroupProtocol {
             
             let item = items.remove(at: oldIdx);
             
-            let newIdx = items.index(where: { (it) -> Bool in
+            let newIdx = items.firstIndex(where: { (it) -> Bool in
                 it.lastMessageTs.compare(item.lastMessageTs) == .orderedAscending;
             }) ?? items.count;
             items.insert(item, at: newIdx);
@@ -175,7 +175,7 @@ class ChatsListGroupAbstractChat<I: DBChatProtocol>: ChatsListGroupProtocol {
             
             var items = DispatchQueue.main.sync { return self.items };
             
-            guard items.index(where: { (item) -> Bool in
+            guard items.firstIndex(where: { (item) -> Bool in
                 item.chat.id == opened.id
             }) == nil else {
                 return;
@@ -184,7 +184,7 @@ class ChatsListGroupAbstractChat<I: DBChatProtocol>: ChatsListGroupProtocol {
             guard let item = self.newChatItem(chat: opened) else {
                 return;
             }
-            let idx = items.index(where: { (it) -> Bool in
+            let idx = items.firstIndex(where: { (it) -> Bool in
                 it.lastMessageTs.compare(item.lastMessageTs) == .orderedAscending;
             }) ?? items.count;
             items.insert(item, at: idx);
@@ -199,7 +199,7 @@ class ChatsListGroupAbstractChat<I: DBChatProtocol>: ChatsListGroupProtocol {
     func removeItem(for account: BareJID, jid: BareJID) {
         dispatcher.async {
             var items = DispatchQueue.main.sync { return self.items };
-            guard let idx = items.index(where: { (item) -> Bool in
+            guard let idx = items.firstIndex(where: { (item) -> Bool in
                 item.chat.account == account && item.chat.jid.bareJid == jid;
             }) else {
                 return;
@@ -217,7 +217,7 @@ class ChatsListGroupAbstractChat<I: DBChatProtocol>: ChatsListGroupProtocol {
     func updateItem(for account: BareJID, jid: BareJID, executeIfExists: ((ChatItemProtocol) -> Void)?, executeIfNotExists: (()->Void)?) {
         dispatcher.async {
             let items = DispatchQueue.main.sync { return self.items };
-            guard let idx = items.index(where: { (item) -> Bool in
+            guard let idx = items.firstIndex(where: { (item) -> Bool in
                 item.chat.account == account && item.chat.jid.bareJid == jid
             }) else {
                 executeIfNotExists?();
