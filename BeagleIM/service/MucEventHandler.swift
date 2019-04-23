@@ -74,7 +74,7 @@ class MucEventHandler: XmppServiceEventHandler {
             
             let authorJid = e.nickname == nil ? nil : room.presences[e.nickname!]?.jid?.bareJid;
             
-            DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: ((e.nickname == nil) || (room.nickname != e.nickname!)) ? .incoming_unread : .outgoing, authorNickname: e.nickname, authorJid: authorJid, type: .message, timestamp: e.timestamp, stanzaId: e.message.id, data: body, completionHandler: nil);
+            DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: ((e.nickname == nil) || (room.nickname != e.nickname!)) ? .incoming_unread : .outgoing, authorNickname: e.nickname, authorJid: authorJid, type: .message, timestamp: e.timestamp, stanzaId: e.message.id, data: body, encryption: MessageEncryption.none, encryptionFingerprint: nil, completionHandler: nil);
         case let e as MucModule.AbstractOccupantEvent:
             NotificationCenter.default.post(name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: e);
         case let e as MucModule.PresenceErrorEvent:

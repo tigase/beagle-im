@@ -30,7 +30,7 @@ class AvatarEventHandler: XmppServiceEventHandler {
         switch event {
         case let e as PresenceModule.ContactPresenceChanged:
             NotificationCenter.default.post(name: XmppService.CONTACT_PRESENCE_CHANGED, object: e);
-            guard let photoId = e.presence.vcardTempPhoto, let from = e.presence.from?.bareJid, let to = e.presence.to?.bareJid else {
+            guard let photoId = e.presence.vcardTempPhoto, let from = e.presence.from?.bareJid, let to = e.presence.to?.bareJid, e.presence.findChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") == nil else {
                 return;
             }
             AvatarManager.instance.avatarHashChanged(for: from, on: to, type: .vcardTemp, hash: photoId);

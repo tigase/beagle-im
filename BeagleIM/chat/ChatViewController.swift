@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import TigaseSwiftOMEMO
 
 class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDelegate {
 
@@ -34,8 +35,11 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     
     @IBOutlet var audioCall: NSButton!
     @IBOutlet var videoCall: NSButton!
+    @IBOutlet var infoButton: NSButton!;
     
     @IBOutlet var scriptsButton: NSPopUpButton!;
+    
+    @IBOutlet var encryptButton: NSPopUpButton!;
     
     override var chat: DBChatProtocol! {
         didSet {
@@ -58,9 +62,16 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         videoCall.isHidden = true;
         scriptsButton.isHidden = true;
         
+        let cgRef = infoButton.image!.cgImage(forProposedRect: nil, context: nil, hints: nil);
+        let representation = NSBitmapImageRep(cgImage: cgRef!);
+        let newRep = representation.converting(to: .genericGray, renderingIntent: .default);
+        infoButton.image = NSImage(cgImage: newRep!.cgImage!, size: infoButton.frame.size);
+        
         NotificationCenter.default.addObserver(self, selector: #selector(rosterItemUpdated), name: DBRosterStore.ITEM_UPDATED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(contactPresenceChanged), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(settingsChanged), name: Settings.CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(omemoAvailabilityChanged), name: MessageEventHandler.OMEMO_AVAILABILITY_CHANGED, object: nil);
     }
     
     override func viewWillAppear() {
@@ -95,6 +106,18 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
                 self.change(chatState: .active);
             }
         });
+        
+        refreshEncryptionStatus();
+    }
+    
+    @objc func omemoAvailabilityChanged(_ notification: Notification) {
+        guard let event = notification.object as? OMEMOModule.AvailabilityChangedEvent else {
+            return;
+        }
+        guard event.account == self.account && self.jid == event.jid else {
+            return;
+        }
+        refreshEncryptionStatus();
     }
     
     @objc func scriptActivated(sender: NSMenuItem) {
@@ -215,28 +238,102 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     }
     
     override func sendMessage(body: String? = nil, url: String? = nil) -> Bool {
-        guard let msg = body ?? url else {
-            return false;
+        let encryption = self.chat.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!;
+        if encryption == ChatEncryption.omemo {
+            return self.sendEncryptedMessage(body: body, url: url);
+        } else {
+            return self.sendUnencryptedMessage(body: body, url: url);
         }
+    }
+    
+    fileprivate func createMessage(body: String?, url: String?) -> (Message,MessageModule)? {
+        guard let msg = body ?? url else {
+            return nil;
+        }
+
         guard let messageModule: MessageModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageModule.ID) else {
-            return false;
+            return nil;
         }
         
         guard let chat = messageModule.chatManager.getChat(with: JID(jid), thread: nil) else {
+            return nil;
+        }
+        
+        let message = chat.createMessage(msg);
+        message.messageDelivery = MessageDeliveryReceiptEnum.request;
+        return (message, messageModule);
+    }
+    
+    fileprivate func sendUnencryptedMessage(body: String?, url: String?) -> Bool {
+        guard let (message, messageModule) = createMessage(body: body, url: url) else {
             return false;
         }
 
-        let message = chat.createMessage(msg);
+        let msg = message.body!;
         message.oob = url;
-        message.messageDelivery = MessageDeliveryReceiptEnum.request;
-        
         messageModule.context.writer?.write(message);
-        
         let stanzaId = message.id;
         
-        DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing, type: .message, timestamp: Date(), stanzaId: stanzaId, data: msg, completionHandler: nil);
-
+        DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing, type: .message, timestamp: Date(), stanzaId: stanzaId, data: msg, encryption: MessageEncryption.none, encryptionFingerprint: nil, completionHandler: nil);
+        
         return true;
+    }
+    
+    fileprivate func sendEncryptedMessage(body: String?, url: String?) -> Bool {
+        guard let (message, messageModule) = createMessage(body: body, url: url) else {
+            return false;
+        }
+        
+        let msg = message.body!;
+
+        guard let omemoModule: OMEMOModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(OMEMOModule.ID) else {
+            print("NO OMEMO MODULE!");
+            return false;
+        }
+        let account = self.account!;
+        let jid = self.jid!;
+        let completionHandler: ((EncryptionResult<Message, SignalError>)->Void)? = { (result) in
+            switch result {
+            case .failure(let error):
+                switch error {
+                case .noSession:
+                    let alert = NSAlert();
+                    alert.messageText = "Could not send message"
+                    alert.informativeText = "It was not possible to send encrypted message as there is no trusted device.\n\nWould you like to disable encryption for this chat and send a message?"
+                    alert.addButton(withTitle: "No")
+                    alert.addButton(withTitle: "Yes")
+                    alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
+                        switch response {
+                        case .alertSecondButtonReturn:
+                            DBChatStore.instance.changeChatEncryption(for: account, with: jid, to: ChatEncryption.none, completionHandler: {
+                                DispatchQueue.main.async {
+                                    self.refreshEncryptionStatus();
+                                    self.sendUnencryptedMessage(body: body, url: url);
+                                }
+                            })
+                        default:
+                            return;
+                        }
+                    })
+                default:
+                    let alert = NSAlert();
+                    alert.messageText = "Could not send message"
+                    alert.informativeText = "It was not possible to send encrypted message due to encryption error";
+                    alert.addButton(withTitle: "OK")
+                    alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
+                    break;
+                }
+                break;
+            case .successMessage(let encryptedMessage, let fingerprint):
+                self.messageField.reset();
+                self.updateMessageFieldSize();
+                let stanzaId = message.id;
+                
+                DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing, type: .message, timestamp: Date(), stanzaId: stanzaId, data: msg, encryption: .decrypted, encryptionFingerprint: fingerprint, completionHandler: nil);
+            }
+        };
+        
+        return omemoModule.send(message: message, completionHandler: completionHandler!);
     }
     
     fileprivate func updateCapabilities() {
@@ -255,6 +352,66 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         VideoCallController.call(jid: jid, from: account, withAudio: true, withVideo: true);
     }
     
+    @IBAction func encryptionChanged(_ sender: NSPopUpButton) {
+        var encryption: ChatEncryption? = nil;
+        switch sender.indexOfSelectedItem {
+        case 2:
+            encryption = ChatEncryption.none;
+        case 3:
+            encryption = ChatEncryption.omemo;
+        default:
+            encryption = nil;
+        }
+        
+        DBChatStore.instance.changeChatEncryption(for: account, with: jid, to: encryption) {
+            DispatchQueue.main.async {
+                self.refreshEncryptionStatus();
+            }
+        }
+    }
+    
+    @objc func settingsChanged(_ notification: Notification) {
+        guard let setting = notification.object as? Settings else {
+            return;
+        }
+        
+        if setting == Settings.messageEncryption {
+            refreshEncryptionStatus();
+        }
+    }
+    
+    fileprivate func refreshEncryptionStatus() {
+        DispatchQueue.main.async {
+            guard let account = self.account, let jid = self.jid else {
+                return;
+            }
+            let omemoModule: OMEMOModule? = XmppService.instance.getClient(for: account)?.modulesManager.getModule(OMEMOModule.ID);
+            self.encryptButton.isEnabled = omemoModule?.isAvailable(for: jid) ?? false//!DBOMEMOStore.instance.allDevices(forAccount: account!, andName: jid!.stringValue, activeAndTrusted: false).isEmpty;
+            if !self.encryptButton.isEnabled {
+                self.encryptButton.item(at: 0)?.image = NSImage(named: NSImage.lockUnlockedTemplateName);
+            } else {
+                let encryption = self.chat.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!;
+                let locked = encryption == ChatEncryption.omemo;
+                self.encryptButton.item(at: 0)?.image = locked ? NSImage(named: NSImage.lockLockedTemplateName) : NSImage(named: NSImage.lockUnlockedTemplateName);
+            }
+        }
+    }
+    
+    @IBAction func showInfoClicked(_ sender: NSButton) {
+        guard let viewController = storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier("ContactDetailsViewController")) as? ContactDetailsViewController else {
+            return;
+        }
+        viewController.account = self.account;
+        viewController.jid = self.jid;
+        
+        let popover = NSPopover();
+        popover.contentViewController = viewController;
+        popover.behavior = .semitransient;
+        popover.animates = true;
+        let rect = sender.convert(sender.bounds, to: self.view.window!.contentView!);
+        popover.show(relativeTo: rect, of: self.view.window!.contentView!, preferredEdge: .minY);
+    }
+    
 }
 
 class ChatMessage: ChatViewItemProtocol {
@@ -269,7 +426,10 @@ class ChatMessage: ChatViewItemProtocol {
     let authorJid: BareJID?;
     let preview: [String:String]?;
     
-    init(id: Int, timestamp: Date, account: BareJID, jid: BareJID, state: MessageState, message: String, authorNickname: String?, authorJid: BareJID?, preview: [String:String]? = nil) {
+    let encryption: MessageEncryption;
+    let encryptionFingerprint: String?;
+    
+    init(id: Int, timestamp: Date, account: BareJID, jid: BareJID, state: MessageState, message: String, authorNickname: String?, authorJid: BareJID?, encryption: MessageEncryption, encryptionFingerprint: String?, preview: [String:String]? = nil) {
         self.id = id;
         self.timestamp = timestamp;
         self.account = account;
@@ -279,6 +439,8 @@ class ChatMessage: ChatViewItemProtocol {
         self.authorNickname = authorNickname;
         self.authorJid = authorJid;
         self.preview = preview;
+        self.encryption = encryption;
+        self.encryptionFingerprint = encryptionFingerprint;
     }
     
 }

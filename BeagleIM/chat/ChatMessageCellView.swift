@@ -45,8 +45,10 @@ class ChatMessageCellView: NSTableCellView {
     func set(message item: ChatMessage) {
         //if item.message != nil {
         let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
-        let matches = detector.matches(in: item.message, range: NSMakeRange(0, item.message.utf16.count));
-        let msg = NSMutableAttributedString(string: item.message);
+        
+        let messageBody = self.messageBody(item: item);
+        let matches = detector.matches(in: messageBody, range: NSMakeRange(0, messageBody.utf16.count));
+        let msg = NSMutableAttributedString(string: messageBody);
         var previewsToRetrive: [URL] = [];
         var previewsToLoad: [(URL,String)] = [];
         var errors: [String] = [];
@@ -106,14 +108,27 @@ class ChatMessageCellView: NSTableCellView {
         case .incoming_error, .incoming_error_unread:
             self.message.textColor = NSColor.red;
         case .outgoing_delivered:
-            timestampStr = NSMutableAttributedString(string: "\u{2713} ");
+            timestampStr = NSMutableAttributedString(string: "\u{2713}");
         case .outgoing_error, .outgoing_error_unread:
-            timestampStr = NSMutableAttributedString(string: "Not delivered\u{203c} ", attributes: [.foregroundColor: NSColor.red]);
+            timestampStr = NSMutableAttributedString(string: "Not delivered\u{203c}", attributes: [.foregroundColor: NSColor.red]);
         default:
             break;
         }
+
+        switch item.encryption {
+        case .decrypted, .notForThisDevice, .decryptionFailed:
+            let secured = NSMutableAttributedString(string: "\u{1F512}");
+            if timestampStr != nil {
+                timestampStr?.append(secured);
+            } else {
+                timestampStr = secured;
+            }
+        default:
+            break;
+        }
+        
         if timestampStr != nil {
-            timestampStr!.append(NSMutableAttributedString(string: formatTimestamp(item.timestamp)));
+            timestampStr!.append(NSMutableAttributedString(string: " " + formatTimestamp(item.timestamp)));
             self.timestamp.attributedStringValue = timestampStr!;
         } else {
             self.timestamp.attributedStringValue = NSMutableAttributedString(string: formatTimestamp(item.timestamp));
@@ -179,6 +194,10 @@ class ChatMessageCellView: NSTableCellView {
 //            }
         }
         self.message.attributedStringValue = msg;
+    }
+    
+    fileprivate func messageBody(item: ChatMessage) -> String {
+        return item.encryption.message() ?? item.message;
     }
     
     fileprivate func appendPreview(message msg: NSMutableAttributedString, url: URL, image origImage: NSImage, first: Bool) {

@@ -39,6 +39,7 @@ enum Settings: String {
     
     case enableMarkdownFormatting
     case showEmoticons
+    case messageEncryption
     case notificationsFromUnknownSenders
     case systemMenuIcon
     case spellchecking
@@ -58,6 +59,7 @@ enum Settings: String {
             "allowPresenceSubscription": true,
             "enableMessageCarbons": true,
             "enableAutomaticStatus": true,
+            "messageEncryption": "none",
             "markMessageCarbonsAsRead": true,
             "enableMarkdownFormatting": true,
             "showEmoticons": true,
@@ -135,6 +137,8 @@ enum Appearance: String {
 enum AccountSettings {
     case messageSyncAuto(BareJID)
     case messageSyncPeriod(BareJID)
+    case omemoRegistrationId(BareJID)
+//    case omemoCurrentPreKeyId(BareJID)
     
     public static let CHANGED = Notification.Name("accountSettingChanged");
     
@@ -158,6 +162,10 @@ enum AccountSettings {
             return account;
         case .messageSyncPeriod(let account):
             return account;
+        case .omemoRegistrationId(let account):
+            return account;
+//        case .omemoCurrentPreKeyId(let account):
+//            return account;
         }
     }
     
@@ -167,6 +175,10 @@ enum AccountSettings {
             return "messageSyncAuto";
         case .messageSyncPeriod(_):
             return "messageSyncPeriod";
+        case .omemoRegistrationId(_):
+            return "omemoRegistrationId";
+//        case .omemoCurrentPreKeyId(_):
+//            return "omemoCurrentPreKeyId";
         }
     }
     
@@ -191,6 +203,13 @@ enum AccountSettings {
         return UserDefaults.standard.double(forKey: key);
     }
     
+    func uint32() -> UInt32? {
+        guard let tmp = UserDefaults.standard.string(forKey: key) else {
+            return nil;
+        }
+        return UInt32(tmp);
+    }
+        
     func set(value: Double) {
         UserDefaults.standard.set(value, forKey: key);
         valueChanged();
@@ -204,6 +223,14 @@ enum AccountSettings {
     func set(value: Date) {
         UserDefaults.standard.set(value.timeIntervalSince1970, forKey: key);
         valueChanged();
+    }
+    
+    func set(value: UInt32?) {
+        if value != nil {
+            UserDefaults.standard.set(String(value!), forKey: key)
+        } else {
+            UserDefaults.standard.set(nil, forKey: key);
+        }
     }
     
     fileprivate func valueChanged() {

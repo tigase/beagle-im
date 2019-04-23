@@ -1,8 +1,8 @@
 //
-// ChatViewItemProtocol.swift
+// MessageEncryption.swift
 //
 // BeagleIM
-// Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2019 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,14 +20,21 @@
 //
 
 import Foundation
-import TigaseSwift
 
-protocol ChatViewItemProtocol: class {
-    var id: Int { get };
-    var account: BareJID { get }
-    var jid: BareJID { get }
-    var timestamp: Date { get };
-    var state: MessageState { get };
-    var encryption: MessageEncryption { get }
-    var encryptionFingerprint: String? { get };
+public enum MessageEncryption: Int {
+    case none = 0
+    case decrypted = 1
+    case decryptionFailed = 2
+    case notForThisDevice = 3
+    
+    func message() -> String? {
+        switch self {
+        case .none, .decrypted:
+            return nil;
+        case .decryptionFailed:
+            return "Message decryption failed!";
+        case .notForThisDevice:
+            return "Message was not encrypted for this devices";
+        }
+    }
 }

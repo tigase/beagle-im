@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import TigaseSwiftOMEMO
 
 class XmppService: EventHandler {
     
@@ -387,6 +388,11 @@ class XmppService: EventHandler {
         let jingleModule = client.modulesManager.register(JingleModule(sessionManager: JingleManager.instance));
         jingleModule.register(transport: Jingle.Transport.ICEUDPTransport.self, features: [Jingle.Transport.ICEUDPTransport.XMLNS, "urn:xmpp:jingle:apps:dtls:0"]);
         jingleModule.register(description: Jingle.RTP.Description.self, features: ["urn:xmpp:jingle:apps:rtp:1", "urn:xmpp:jingle:apps:rtp:audio", "urn:xmpp:jingle:apps:rtp:video"]);
+        
+        let signalStorage = OMEMOStoreWrapper(context: client.context);
+        let signalContext = SignalContext(withStorage: signalStorage)!;
+        signalStorage.setup(withContext: signalContext);
+        client.modulesManager.register(OMEMOModule(aesGCMEngine: OpenSSL_AES_GCM_Engine(), signalContext: signalContext, signalStorage: signalStorage));
         
         client.modulesManager.initIfRequired();
         

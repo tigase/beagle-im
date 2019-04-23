@@ -64,8 +64,14 @@ class AvatarManager {
         }
         self.store.hasAvatarFor(hash: hash, completionHandler: { (result) in
             if result {
-                DispatchQueue.global().async {
-                    NotificationCenter.default.post(name: AvatarManager.AVATAR_CHANGED, object: self, userInfo: ["account": account, "jid": jid]);
+                self.store.updateAvatarHash(for: jid, on: account, type: type, hash: hash) {
+                    self.dispatcher.async(flags: .barrier) {
+                        let avatars = self.avatars(on: account);
+                        avatars.invalidateAvatar(for: jid, on: account);
+                    }
+                    DispatchQueue.global().async {
+                        NotificationCenter.default.post(name: AvatarManager.AVATAR_CHANGED, object: self, userInfo: ["account": account, "jid": jid]);
+                    }
                 }
             } else {
                 switch type {

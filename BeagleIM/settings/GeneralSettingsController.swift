@@ -42,6 +42,8 @@ class GeneralSettingsController: NSViewController {
     fileprivate var showEmoticons: NSButton!;
     fileprivate var spellchecking: NSButton!;
     
+    fileprivate var encryptionButton: NSPopUpButton!;
+    
     fileprivate var imagePreviewMaxSizeLabel: NSTextField!;
     fileprivate var imagePreviewMaxSize: NSSlider!;
     
@@ -63,6 +65,10 @@ class GeneralSettingsController: NSViewController {
         
         enableMessageCarbonsButton = formView.addRow(label: "Message carbons:", field: NSButton(checkboxWithTitle: "Enable", target: self, action: #selector(checkboxChanged(_:))));
         messageCarbonsMarkAsReadButton = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Mark carbon messages as read", target: self, action: #selector(checkboxChanged(_:))));
+        
+        encryptionButton = formView.addRow(label: "Default encryption:", field: NSPopUpButton(frame: .zero, pullsDown: false));
+        encryptionButton?.target = self;
+        encryptionButton?.action = #selector(checkboxChanged(_:));
         
         notificationsFromUnknownSenders = formView.addRow(label: "Notifications:", field: NSButton(checkboxWithTitle: "Show for messages from unknown senders", target: self, action: #selector(checkboxChanged(_:))));
         systemMenuIcon = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show system menu icon", target: self, action: #selector(checkboxChanged(_:))));
@@ -113,6 +119,10 @@ class GeneralSettingsController: NSViewController {
         spellchecking.state = Settings.spellchecking.bool() ? .on : .off;
         ignoreJingleSupportCheck.state = Settings.ignoreJingleSupportCheck.bool() ? .on : .off;
         enableBookmarksSync.state = Settings.enableBookmarksSync.bool() ? .on : .off;
+        
+        encryptionButton.removeAllItems();
+        encryptionButton.addItems(withTitles: ["None", "OMEMO"]);
+        encryptionButton.selectItem(at: ChatEncryption(rawValue: Settings.messageEncryption.string() ?? "none") == ChatEncryption.omemo ? 1 : 0);
     }
     
     @objc func checkboxChanged(_ sender: NSButton) {
@@ -152,6 +162,9 @@ class GeneralSettingsController: NSViewController {
             Settings.showEmoticons.set(value: sender.state == .on);
         case enableBookmarksSync:
             Settings.enableBookmarksSync.set(value: sender.state == .on);
+        case encryptionButton:
+            let encryption: ChatEncryption = encryptionButton.indexOfSelectedItem == 1 ? .omemo : .none;
+            Settings.messageEncryption.set(value: encryption.rawValue);
         default:
             if #available(macOS 10.14, *) {
                 if let appearance = self.appearance, appearance == sender {
