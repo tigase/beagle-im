@@ -47,6 +47,8 @@ class MessageEventHandler: XmppServiceEventHandler {
                     if let from = message.from?.bareJid, DBChatHistoryStore.instance.checkItemAlreadyAdded(for: account, with: from, authorNickname: nil, type: .message, timestamp: message.delay?.stamp ?? Date(), direction: account == from ? .outgoing : .incoming, stanzaId: message.getAttribute("id"), data: nil) {
                         return (nil, .none, nil);
                     }
+                case .notEncrypted:
+                    encryption = .none;
                 default:
                     encryption = .decryptionFailed;
                 }
@@ -100,9 +102,6 @@ class MessageEventHandler: XmppServiceEventHandler {
         switch event {
         case let e as MessageModule.MessageReceivedEvent:
             guard let from = e.message.from, let account = e.sessionObject.userBareJid else {
-                return;
-            }
-            if e.message.findChild(name: "encrypted") != nil {
                 return;
             }
             

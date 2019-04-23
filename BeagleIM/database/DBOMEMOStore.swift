@@ -102,10 +102,16 @@ class DBOMEMOStore {
         let fingerprint: String = publicKeyData.map { (byte) -> String in
             return String(format: "%02x", byte)
             }.joined();
-        let params: [String: Any?] = ["account": account, "name": identity.name, "deviceId": identity.deviceId, "key": key!.serialized(), "fingerprint": fingerprint, "own": (own ? 1 : 0), "status": 0];
+        var params: [String: Any?] = ["account": account, "name": identity.name, "deviceId": identity.deviceId, "key": key!.serialized(), "fingerprint": fingerprint, "own": (own ? 1 : 0)];
+        
+        defer {
+            _ = self.setStatus(.verifiedActive, forIdentity: identity, andAccount: account);
+        }
         if try! updateKeyPairStmt.update(params) == 0 {
+            params["status"] = IdentityStatus.verifiedActive.rawValue;
             return try! insertKeyPairStmt.insert(params) != 0;
         }
+        
         return true;
     }
 
@@ -401,11 +407,12 @@ class OMEMOStoreWrapper: SignalStorage {
             DBOMEMOStore.instance.wipe(forAccount: context!.sessionObject.userBareJid!);
         }
 
-        if wipe || identityKeyStore.localRegistrationId() == 0 {
+        let hasKeyPair = identityKeyStore.keyPair() != nil;
+        if wipe || identityKeyStore.localRegistrationId() == 0 || !hasKeyPair {
             let regId: UInt32 = signalContext.generateRegistrationId();
             AccountSettings.omemoRegistrationId(context!.sessionObject.userBareJid!).set(value: regId);
         }
-        if identityKeyStore.keyPair() == nil {
+        if !hasKeyPair {
             print("no identity key pair! generating new one!");
             let keyPair = SignalIdentityKeyPair.generateKeyPair(context: signalContext);
             if !identityKeyStore.save(identity: SignalAddress(name: context!.sessionObject.userBareJid!.stringValue, deviceId: Int32(identityKeyStore.localRegistrationId())), key: keyPair) {

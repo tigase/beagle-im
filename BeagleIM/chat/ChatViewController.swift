@@ -298,7 +298,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
                 switch error {
                 case .noSession:
                     let alert = NSAlert();
-                    alert.messageText = "Could not send message"
+                    alert.messageText = "Could not send a message"
                     alert.informativeText = "It was not possible to send encrypted message as there is no trusted device.\n\nWould you like to disable encryption for this chat and send a message?"
                     alert.addButton(withTitle: "No")
                     alert.addButton(withTitle: "Yes")
