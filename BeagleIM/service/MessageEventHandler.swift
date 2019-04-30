@@ -31,6 +31,7 @@ class MessageEventHandler: XmppServiceEventHandler {
         var encryption: MessageEncryption = .none;
         var fingerprint: String? = nil;
         
+        var encryptionErrorBody: String?;
         if let omemoModule: OMEMOModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(OMEMOModule.ID) {
             switch omemoModule.decode(message: message) {
             case .successMessage(let decodedMessage, let keyFingerprint):
@@ -42,6 +43,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             case .failure(let error):
                 switch error {
                 case .invalidMessage:
+                    encryptionErrorBody = "Message was not encrypted for this device.";
                     encryption = .notForThisDevice;
                 case .duplicateMessage:
                     if let from = message.from?.bareJid, DBChatHistoryStore.instance.checkItemAlreadyAdded(for: account, with: from, authorNickname: nil, type: .message, timestamp: message.delay?.stamp ?? Date(), direction: account == from ? .outgoing : .incoming, stanzaId: message.getAttribute("id"), data: nil) {
@@ -50,13 +52,14 @@ class MessageEventHandler: XmppServiceEventHandler {
                 case .notEncrypted:
                     encryption = .none;
                 default:
+                    encryptionErrorBody = "Message decryption failed!";
                     encryption = .decryptionFailed;
                 }
                 break;
             }
         }
         
-        guard let body = message.body ?? message.oob else {
+        guard let body = message.body ?? message.oob ?? encryptionErrorBody else {
             return (nil, encryption, nil);
         }
         guard (message.type ?? .chat) != .error else {
