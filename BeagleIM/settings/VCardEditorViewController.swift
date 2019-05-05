@@ -286,12 +286,15 @@ class VCardEditorViewController: NSViewController, AccountAware {
     
     fileprivate func handleError(title: String, message msg: String) {
         DispatchQueue.main.async {
+            guard let window = self.view.window else {
+                return;
+            }
             let alert = NSAlert();
             alert.messageText = title;
             alert.informativeText = msg;
             alert.addButton(withTitle: "OK");
             alert.icon = NSImage(named: NSImage.cautionName);
-            alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
+            alert.beginSheetModal(for: window, completionHandler: nil);
         }
     }
 
