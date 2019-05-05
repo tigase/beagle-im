@@ -30,23 +30,19 @@ class VCardEditorViewController: NSViewController, AccountAware {
                 return;
             }
             if account == nil {
-                self.vcard = nil;
+                self.vcard = VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"))!;
             } else {
                 DBVCardStore.instance.vcard(for: account!) { (vcard) in
                     DispatchQueue.main.async {
-                        self.vcard = vcard;
+                        self.vcard = vcard ?? VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"))!;
                     }
                 }
             }
         }
     }
     
-    var vcard: VCard! = VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0")) {
+    var vcard: VCard = VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"))! {
         didSet {
-            if vcard == nil {
-                vcard = VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"));
-            }
-            
             counter = 0;
             
             let uri = vcard.photos.first?.uri;
@@ -134,11 +130,11 @@ class VCardEditorViewController: NSViewController, AccountAware {
         super.viewWillAppear();
         isEnabled = false;
         if account == nil {
-            self.vcard = nil;
+            self.vcard = VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"))!;
         } else {
             DBVCardStore.instance.vcard(for: account!) { (vcard) in
                 DispatchQueue.main.async {
-                    self.vcard = vcard;
+                    self.vcard = vcard ?? VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"))!;
                 }
             }
         }
