@@ -185,9 +185,12 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     }
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "MucMessageCellView"), owner: nil) as? ChatMessageCellView {
+        let item = dataSource.getItem(at: row) as! ChatMessage;
+        let prevItem = row >= 0 && (row + 1) < dataSource.count ? dataSource.getItem(at: row + 1) : nil;
+        let continuation = prevItem != nil && item.isMergeable(with: prevItem!);
+        
+        if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "MucMessageContinuationCellView" : "MucMessageCellView"), owner: nil) as? BaseChatMessageCellView {
             
-            let item = dataSource.getItem(at: row) as! ChatMessage;
             if (row == dataSource.count-1) {
                 DispatchQueue.main.async {
                     self.dataSource.loadItems(before: item.id, limit: 20)
@@ -196,8 +199,10 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             
             let senderJid = item.state.direction == .incoming ? (item.authorJid ?? item.jid) : item.account;
             cell.id = item.id;
-            cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-            cell.set(senderName: item.authorNickname ?? "From \(item.jid.stringValue)");
+            if let c = cell as? ChatMessageCellView {
+                c.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
+                c.set(senderName: item.authorNickname ?? "From \(item.jid.stringValue)");
+            }
             cell.set(message: item);
             
             return cell;

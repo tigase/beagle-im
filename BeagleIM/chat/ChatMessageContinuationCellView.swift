@@ -1,8 +1,8 @@
 //
-// ChatViewItemProtocol.swift
+// ChatMessageContinuationCellView.swift
 //
 // BeagleIM
-// Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2019 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,17 +19,8 @@
 // If not, see https://www.gnu.org/licenses/.
 //
 
-import Foundation
-import TigaseSwift
+import AppKit
 
-protocol ChatViewItemProtocol: class {
-    var id: Int { get };
-    var account: BareJID { get }
-    var jid: BareJID { get }
-    var timestamp: Date { get };
-    var state: MessageState { get };
-    var encryption: MessageEncryption { get }
-    var encryptionFingerprint: String? { get };
+class ChatMessageContinuationCellView: BaseChatMessageCellView {
     
-    func isMergeable(with item: ChatViewItemProtocol) -> Bool;
 }

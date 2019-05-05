@@ -1115,8 +1115,8 @@ AAAAAAEGA
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
                                                                 </textField>
-                                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="b0k-Ke-dFq">
-                                                                    <rect key="frame" x="42" y="4" width="308" height="16"/>
+                                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="b0k-Ke-dFq">
+                                                                    <rect key="frame" x="40" y="4" width="312" height="16"/>
                                                                     <textFieldCell key="cell" selectable="YES" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="Some message to display from this person" allowsEditingTextAttributes="YES" id="b8k-ei-9Sv">
                                                                         <font key="font" metaFont="cellTitle"/>
                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -1150,9 +1150,33 @@ AAAAAAEGA
                                                             <accessibility identifier="ChatMessageCellView"/>
                                                             <connections>
                                                                 <outlet property="avatar" destination="8Ev-ze-rIj" id="7ZW-Mp-IjJ"/>
-                                                                <outlet property="message" destination="b0k-Ke-dFq" id="Wd4-uh-WIf"/>
+                                                                <outlet property="message" destination="b0k-Ke-dFq" id="9Iv-gP-g1Z"/>
                                                                 <outlet property="senderName" destination="PwX-lh-NbT" id="kaO-ws-EC2"/>
                                                                 <outlet property="timestamp" destination="neR-86-zgW" id="lgm-sJ-PGs"/>
+                                                            </connections>
+                                                        </tableCellView>
+                                                        <tableCellView identifier="ChatMessageContinuationCellView" id="RGu-j8-zvz" customClass="ChatMessageContinuationCellView" customModule="BeagleIM" customModuleProvider="target">
+                                                            <rect key="frame" x="1" y="42" width="358" height="20"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                            <subviews>
+                                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="iOv-H1-1lh">
+                                                                    <rect key="frame" x="40" y="4" width="312" height="16"/>
+                                                                    <textFieldCell key="cell" selectable="YES" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="Some message to display from this person" allowsEditingTextAttributes="YES" id="G0N-t6-ElQ">
+                                                                        <font key="font" metaFont="cellTitle"/>
+                                                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                                    </textFieldCell>
+                                                                </textField>
+                                                            </subviews>
+                                                            <constraints>
+                                                                <constraint firstAttribute="trailing" secondItem="iOv-H1-1lh" secondAttribute="trailing" constant="8" id="1ev-BH-TOk"/>
+                                                                <constraint firstItem="iOv-H1-1lh" firstAttribute="top" secondItem="RGu-j8-zvz" secondAttribute="top" id="FnT-fZ-HML"/>
+                                                                <constraint firstAttribute="bottom" secondItem="iOv-H1-1lh" secondAttribute="bottom" constant="4" id="ao2-D5-ppS"/>
+                                                                <constraint firstItem="iOv-H1-1lh" firstAttribute="leading" secondItem="RGu-j8-zvz" secondAttribute="leading" constant="42" id="mDa-iz-4c4"/>
+                                                            </constraints>
+                                                            <accessibility identifier="ChatMessageCellView"/>
+                                                            <connections>
+                                                                <outlet property="message" destination="iOv-H1-1lh" id="C2y-Dp-aPG"/>
                                                             </connections>
                                                         </tableCellView>
                                                     </prototypeCellViews>
@@ -2901,7 +2925,7 @@ AAAAAAEGA
                                                                     </textFieldCell>
                                                                 </textField>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="KLp-tb-nar">
-                                                                    <rect key="frame" x="42" y="4" width="241" height="16"/>
+                                                                    <rect key="frame" x="40" y="4" width="150" height="16"/>
                                                                     <textFieldCell key="cell" selectable="YES" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="Some message to display from this person" allowsEditingTextAttributes="YES" id="Kyv-An-dNw">
                                                                         <font key="font" metaFont="cellTitle"/>
                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -2938,6 +2962,30 @@ AAAAAAEGA
                                                                 <outlet property="message" destination="KLp-tb-nar" id="VbV-DT-QjZ"/>
                                                                 <outlet property="senderName" destination="6Id-pF-VjS" id="Wf8-x2-nku"/>
                                                                 <outlet property="timestamp" destination="tzr-nh-91W" id="GBd-Xc-Jys"/>
+                                                            </connections>
+                                                        </tableCellView>
+                                                        <tableCellView identifier="MucMessageContinuationCellView" misplaced="YES" id="32D-I6-QCJ" customClass="ChatMessageContinuationCellView" customModule="BeagleIM" customModuleProvider="target">
+                                                            <rect key="frame" x="1" y="42" width="196" height="20"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                            <subviews>
+                                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0bv-n8-ogt">
+                                                                    <rect key="frame" x="40" y="4" width="150" height="16"/>
+                                                                    <textFieldCell key="cell" selectable="YES" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="Some message to display from this person" allowsEditingTextAttributes="YES" id="Iv5-RH-ZKr">
+                                                                        <font key="font" metaFont="cellTitle"/>
+                                                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                                    </textFieldCell>
+                                                                </textField>
+                                                            </subviews>
+                                                            <constraints>
+                                                                <constraint firstItem="0bv-n8-ogt" firstAttribute="leading" secondItem="32D-I6-QCJ" secondAttribute="leading" constant="42" id="9Hf-gS-06Z"/>
+                                                                <constraint firstItem="0bv-n8-ogt" firstAttribute="top" secondItem="32D-I6-QCJ" secondAttribute="top" id="Mng-rv-dRI"/>
+                                                                <constraint firstAttribute="bottom" secondItem="0bv-n8-ogt" secondAttribute="bottom" constant="4" id="b7J-fm-AWS"/>
+                                                                <constraint firstAttribute="trailing" secondItem="0bv-n8-ogt" secondAttribute="trailing" constant="8" id="yUj-hg-RTB"/>
+                                                            </constraints>
+                                                            <accessibility identifier="MucMessageCellView"/>
+                                                            <connections>
+                                                                <outlet property="message" destination="0bv-n8-ogt" id="hXm-Za-3R3"/>
                                                             </connections>
                                                         </tableCellView>
                                                     </prototypeCellViews>
