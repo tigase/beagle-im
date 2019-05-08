@@ -5,18 +5,18 @@
 // Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License,
-// or (at your option) any later version.
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
+// GNU General Public License for more details.
 //
-// You should have received a copy of the GNU Affero General Public License
+// You should have received a copy of the GNU General Public License
 // along with this program. Look for COPYING file in the top folder.
-// If not, see http://www.gnu.org/licenses/.
+// If not, see https://www.gnu.org/licenses/.
 //
 
 import AppKit
@@ -185,9 +185,12 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     }
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "MucMessageCellView"), owner: nil) as? ChatMessageCellView {
+        let item = dataSource.getItem(at: row) as! ChatMessage;
+        let prevItem = row >= 0 && (row + 1) < dataSource.count ? dataSource.getItem(at: row + 1) : nil;
+        let continuation = prevItem != nil && item.isMergeable(with: prevItem!);
+        
+        if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "MucMessageContinuationCellView" : "MucMessageCellView"), owner: nil) as? BaseChatMessageCellView {
             
-            let item = dataSource.getItem(at: row) as! ChatMessage;
             if (row == dataSource.count-1) {
                 DispatchQueue.main.async {
                     self.dataSource.loadItems(before: item.id, limit: 20)
@@ -196,8 +199,10 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             
             let senderJid = item.state.direction == .incoming ? (item.authorJid ?? item.jid) : item.account;
             cell.id = item.id;
-            cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-            cell.set(senderName: item.authorNickname ?? "From \(item.jid.stringValue)");
+            if let c = cell as? ChatMessageCellView {
+                c.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
+                c.set(senderName: item.authorNickname ?? "From \(item.jid.stringValue)");
+            }
             cell.set(message: item);
             
             return cell;

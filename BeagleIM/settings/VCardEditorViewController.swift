@@ -5,18 +5,18 @@
 // Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License,
-// or (at your option) any later version.
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
+// GNU General Public License for more details.
 //
-// You should have received a copy of the GNU Affero General Public License
+// You should have received a copy of the GNU General Public License
 // along with this program. Look for COPYING file in the top folder.
-// If not, see http://www.gnu.org/licenses/.
+// If not, see https://www.gnu.org/licenses/.
 //
 
 import AppKit
@@ -30,23 +30,19 @@ class VCardEditorViewController: NSViewController, AccountAware {
                 return;
             }
             if account == nil {
-                self.vcard = nil;
+                self.vcard = VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"))!;
             } else {
                 DBVCardStore.instance.vcard(for: account!) { (vcard) in
                     DispatchQueue.main.async {
-                        self.vcard = vcard;
+                        self.vcard = vcard ?? VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"))!;
                     }
                 }
             }
         }
     }
     
-    var vcard: VCard! = VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0")) {
+    var vcard: VCard = VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"))! {
         didSet {
-            if vcard == nil {
-                vcard = VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"));
-            }
-            
             counter = 0;
             
             let uri = vcard.photos.first?.uri;
@@ -134,11 +130,11 @@ class VCardEditorViewController: NSViewController, AccountAware {
         super.viewWillAppear();
         isEnabled = false;
         if account == nil {
-            self.vcard = nil;
+            self.vcard = VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"))!;
         } else {
             DBVCardStore.instance.vcard(for: account!) { (vcard) in
                 DispatchQueue.main.async {
-                    self.vcard = vcard;
+                    self.vcard = vcard ?? VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"))!;
                 }
             }
         }
@@ -290,12 +286,15 @@ class VCardEditorViewController: NSViewController, AccountAware {
     
     fileprivate func handleError(title: String, message msg: String) {
         DispatchQueue.main.async {
+            guard let window = self.view.window else {
+                return;
+            }
             let alert = NSAlert();
             alert.messageText = title;
             alert.informativeText = msg;
             alert.addButton(withTitle: "OK");
             alert.icon = NSImage(named: NSImage.cautionName);
-            alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
+            alert.beginSheetModal(for: window, completionHandler: nil);
         }
     }
 

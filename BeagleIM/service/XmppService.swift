@@ -5,22 +5,23 @@
 // Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License,
-// or (at your option) any later version.
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
+// GNU General Public License for more details.
 //
-// You should have received a copy of the GNU Affero General Public License
+// You should have received a copy of the GNU General Public License
 // along with this program. Look for COPYING file in the top folder.
-// If not, see http://www.gnu.org/licenses/.
+// If not, see https://www.gnu.org/licenses/.
 //
 
 import AppKit
 import TigaseSwift
+import TigaseSwiftOMEMO
 
 class XmppService: EventHandler {
     
@@ -387,6 +388,11 @@ class XmppService: EventHandler {
         let jingleModule = client.modulesManager.register(JingleModule(sessionManager: JingleManager.instance));
         jingleModule.register(transport: Jingle.Transport.ICEUDPTransport.self, features: [Jingle.Transport.ICEUDPTransport.XMLNS, "urn:xmpp:jingle:apps:dtls:0"]);
         jingleModule.register(description: Jingle.RTP.Description.self, features: ["urn:xmpp:jingle:apps:rtp:1", "urn:xmpp:jingle:apps:rtp:audio", "urn:xmpp:jingle:apps:rtp:video"]);
+        
+        let signalStorage = OMEMOStoreWrapper(context: client.context);
+        let signalContext = SignalContext(withStorage: signalStorage)!;
+        signalStorage.setup(withContext: signalContext);
+        client.modulesManager.register(OMEMOModule(aesGCMEngine: OpenSSL_AES_GCM_Engine(), signalContext: signalContext, signalStorage: signalStorage));
         
         client.modulesManager.initIfRequired();
         

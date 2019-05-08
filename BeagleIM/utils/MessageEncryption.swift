@@ -1,8 +1,8 @@
 //
-// NSViewWithTextBackground.swift
+// MessageEncryption.swift
 //
 // BeagleIM
-// Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2019 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,25 +19,22 @@
 // If not, see https://www.gnu.org/licenses/.
 //
 
-import AppKit
+import Foundation
 
-class NSViewWithTextBackground: NSView {
+public enum MessageEncryption: Int {
+    case none = 0
+    case decrypted = 1
+    case decryptionFailed = 2
+    case notForThisDevice = 3
     
-    @IBInspectable
-    public var backgroundColor: NSColor = NSColor(named: "chatBackgroundColor")!;
-    
-    public override init(frame frameRect: NSRect) {
-        super.init(frame: frameRect);
+    func message() -> String? {
+        switch self {
+        case .none, .decrypted:
+            return nil;
+        case .decryptionFailed:
+            return "Message decryption failed!";
+        case .notForThisDevice:
+            return "Message was not encrypted for this devices";
+        }
     }
-    
-    public required init?(coder decoder: NSCoder) {
-        super.init(coder: decoder);
-    }
-        
-    override func draw(_ dirtyRect: NSRect) {
-        backgroundColor.setFill();
-        dirtyRect.fill();
-        super.draw(dirtyRect);
-    }
-    
 }

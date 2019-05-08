@@ -5,18 +5,18 @@
 // Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License,
-// or (at your option) any later version.
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
+// GNU General Public License for more details.
 //
-// You should have received a copy of the GNU Affero General Public License
+// You should have received a copy of the GNU General Public License
 // along with this program. Look for COPYING file in the top folder.
-// If not, see http://www.gnu.org/licenses/.
+// If not, see https://www.gnu.org/licenses/.
 //
 
 import AppKit
@@ -39,6 +39,7 @@ enum Settings: String {
     
     case enableMarkdownFormatting
     case showEmoticons
+    case messageEncryption
     case notificationsFromUnknownSenders
     case systemMenuIcon
     case spellchecking
@@ -58,6 +59,7 @@ enum Settings: String {
             "allowPresenceSubscription": true,
             "enableMessageCarbons": true,
             "enableAutomaticStatus": true,
+            "messageEncryption": "none",
             "markMessageCarbonsAsRead": true,
             "enableMarkdownFormatting": true,
             "showEmoticons": true,
@@ -135,6 +137,8 @@ enum Appearance: String {
 enum AccountSettings {
     case messageSyncAuto(BareJID)
     case messageSyncPeriod(BareJID)
+    case omemoRegistrationId(BareJID)
+//    case omemoCurrentPreKeyId(BareJID)
     
     public static let CHANGED = Notification.Name("accountSettingChanged");
     
@@ -158,6 +162,10 @@ enum AccountSettings {
             return account;
         case .messageSyncPeriod(let account):
             return account;
+        case .omemoRegistrationId(let account):
+            return account;
+//        case .omemoCurrentPreKeyId(let account):
+//            return account;
         }
     }
     
@@ -167,6 +175,10 @@ enum AccountSettings {
             return "messageSyncAuto";
         case .messageSyncPeriod(_):
             return "messageSyncPeriod";
+        case .omemoRegistrationId(_):
+            return "omemoRegistrationId";
+//        case .omemoCurrentPreKeyId(_):
+//            return "omemoCurrentPreKeyId";
         }
     }
     
@@ -191,6 +203,13 @@ enum AccountSettings {
         return UserDefaults.standard.double(forKey: key);
     }
     
+    func uint32() -> UInt32? {
+        guard let tmp = UserDefaults.standard.string(forKey: key) else {
+            return nil;
+        }
+        return UInt32(tmp);
+    }
+        
     func set(value: Double) {
         UserDefaults.standard.set(value, forKey: key);
         valueChanged();
@@ -204,6 +223,14 @@ enum AccountSettings {
     func set(value: Date) {
         UserDefaults.standard.set(value.timeIntervalSince1970, forKey: key);
         valueChanged();
+    }
+    
+    func set(value: UInt32?) {
+        if value != nil {
+            UserDefaults.standard.set(String(value!), forKey: key)
+        } else {
+            UserDefaults.standard.set(nil, forKey: key);
+        }
     }
     
     fileprivate func valueChanged() {

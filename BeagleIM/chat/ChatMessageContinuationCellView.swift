@@ -1,8 +1,8 @@
 //
-// NSViewWithTextBackground.swift
+// ChatMessageContinuationCellView.swift
 //
 // BeagleIM
-// Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2019 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,23 +21,6 @@
 
 import AppKit
 
-class NSViewWithTextBackground: NSView {
-    
-    @IBInspectable
-    public var backgroundColor: NSColor = NSColor(named: "chatBackgroundColor")!;
-    
-    public override init(frame frameRect: NSRect) {
-        super.init(frame: frameRect);
-    }
-    
-    public required init?(coder decoder: NSCoder) {
-        super.init(coder: decoder);
-    }
-        
-    override func draw(_ dirtyRect: NSRect) {
-        backgroundColor.setFill();
-        dirtyRect.fill();
-        super.draw(dirtyRect);
-    }
+class ChatMessageContinuationCellView: BaseChatMessageCellView {
     
 }

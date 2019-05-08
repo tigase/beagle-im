@@ -5,18 +5,18 @@
 // Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License,
-// or (at your option) any later version.
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
+// GNU General Public License for more details.
 //
-// You should have received a copy of the GNU Affero General Public License
+// You should have received a copy of the GNU General Public License
 // along with this program. Look for COPYING file in the top folder.
-// If not, see http://www.gnu.org/licenses/.
+// If not, see https://www.gnu.org/licenses/.
 //
 
 import Foundation
@@ -196,6 +196,10 @@ open class DBStatement {
                 }
             case let v as Double:
                 r = sqlite3_bind_double(handle, pos, v);
+            case let v as UInt32:
+                r = sqlite3_bind_int(handle, pos, Int32(bitPattern: v));
+            case let v as Int32:
+                r = sqlite3_bind_int(handle, pos, v);
             case let v as Int:
                 r = sqlite3_bind_int64(handle, pos, Int64(v));
             case let v as Bool:
@@ -440,7 +444,11 @@ open class DBCursor {
     subscript(index: Int) -> Int {
         return Int(sqlite3_column_int64(handle, Int32(index)));
     }
-    
+
+    subscript(index: Int) -> Int32 {
+        return sqlite3_column_int(handle, Int32(index));
+    }
+
     subscript(index: Int) -> String? {
         let ptr = sqlite3_column_text(handle, Int32(index));
         if ptr == nil {
@@ -511,6 +519,18 @@ open class DBCursor {
         return nil;
     }
     
+    subscript(column: String) -> Int32? {
+        //        return forColumn(column) {
+        //            let v:Int? = self[$0];
+        //            print("for \(column), position \($0) got \(v)")
+        //            return v;
+        //        }
+        if let idx = columnNames.firstIndex(of: column) {
+            return self[idx];
+        }
+        return nil;
+    }
+
     subscript(column: String) -> String? {
         return forColumn(column) {
             return self[$0];

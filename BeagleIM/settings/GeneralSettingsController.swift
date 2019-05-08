@@ -5,18 +5,18 @@
 // Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License,
-// or (at your option) any later version.
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
+// GNU General Public License for more details.
 //
-// You should have received a copy of the GNU Affero General Public License
+// You should have received a copy of the GNU General Public License
 // along with this program. Look for COPYING file in the top folder.
-// If not, see http://www.gnu.org/licenses/.
+// If not, see https://www.gnu.org/licenses/.
 //
 
 import AppKit
@@ -42,6 +42,8 @@ class GeneralSettingsController: NSViewController {
     fileprivate var showEmoticons: NSButton!;
     fileprivate var spellchecking: NSButton!;
     
+    fileprivate var encryptionButton: NSPopUpButton!;
+    
     fileprivate var imagePreviewMaxSizeLabel: NSTextField!;
     fileprivate var imagePreviewMaxSize: NSSlider!;
     
@@ -63,6 +65,10 @@ class GeneralSettingsController: NSViewController {
         
         enableMessageCarbonsButton = formView.addRow(label: "Message carbons:", field: NSButton(checkboxWithTitle: "Enable", target: self, action: #selector(checkboxChanged(_:))));
         messageCarbonsMarkAsReadButton = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Mark carbon messages as read", target: self, action: #selector(checkboxChanged(_:))));
+        
+        encryptionButton = formView.addRow(label: "Default encryption:", field: NSPopUpButton(frame: .zero, pullsDown: false));
+        encryptionButton?.target = self;
+        encryptionButton?.action = #selector(checkboxChanged(_:));
         
         notificationsFromUnknownSenders = formView.addRow(label: "Notifications:", field: NSButton(checkboxWithTitle: "Show for messages from unknown senders", target: self, action: #selector(checkboxChanged(_:))));
         systemMenuIcon = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show system menu icon", target: self, action: #selector(checkboxChanged(_:))));
@@ -113,6 +119,10 @@ class GeneralSettingsController: NSViewController {
         spellchecking.state = Settings.spellchecking.bool() ? .on : .off;
         ignoreJingleSupportCheck.state = Settings.ignoreJingleSupportCheck.bool() ? .on : .off;
         enableBookmarksSync.state = Settings.enableBookmarksSync.bool() ? .on : .off;
+        
+        encryptionButton.removeAllItems();
+        encryptionButton.addItems(withTitles: ["None", "OMEMO"]);
+        encryptionButton.selectItem(at: ChatEncryption(rawValue: Settings.messageEncryption.string() ?? "none") == ChatEncryption.omemo ? 1 : 0);
     }
     
     @objc func checkboxChanged(_ sender: NSButton) {
@@ -152,6 +162,9 @@ class GeneralSettingsController: NSViewController {
             Settings.showEmoticons.set(value: sender.state == .on);
         case enableBookmarksSync:
             Settings.enableBookmarksSync.set(value: sender.state == .on);
+        case encryptionButton:
+            let encryption: ChatEncryption = encryptionButton.indexOfSelectedItem == 1 ? .omemo : .none;
+            Settings.messageEncryption.set(value: encryption.rawValue);
         default:
             if #available(macOS 10.14, *) {
                 if let appearance = self.appearance, appearance == sender {

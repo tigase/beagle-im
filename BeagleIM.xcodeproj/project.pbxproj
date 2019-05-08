@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FE02DD11225B8D1100FA08EB /* db-schema-3.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE02DD10225B8D1100FA08EB /* db-schema-3.sql */; };
+		FE02DD13225BC33F00FA08EB /* DBOMEMOStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE02DD12225BC33F00FA08EB /* DBOMEMOStore.swift */; };
 		FE0C817F2257B48400948C41 /* Settings.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEDC03172257B2B400F24BF4 /* Settings.storyboard */; };
 		FE137A4621F5FE05006B7F7C /* ShowMainWindowSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4521F5FE05006B7F7C /* ShowMainWindowSegue.swift */; };
 		FE1A8BA321C96C1B00604141 /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA221C96C1B00604141 /* RoundButton.swift */; };
@@ -50,6 +52,8 @@
 		FE4E8DDA215EA4860010D88E /* HttpFileUploadEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4E8DD9215EA4860010D88E /* HttpFileUploadEventHandler.swift */; };
 		FE4E8DDC215F72130010D88E /* AbstractChatView_ShareExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4E8DDB215F72130010D88E /* AbstractChatView_ShareExtension.swift */; };
 		FE4E8DE12160E7AA0010D88E /* TigaseSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FEF9D12A2082804E00B09B6C /* TigaseSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FE5202D5227F330E00644C12 /* ChatMessageContinuationCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5202D4227F330E00644C12 /* ChatMessageContinuationCellView.swift */; };
+		FE5202D7227F339D00644C12 /* BaseChatMessageCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5202D6227F339D00644C12 /* BaseChatMessageCellView.swift */; };
 		FE5BE64C213AC3EA00463183 /* ChatsCellViewCloseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5BE64B213AC3EA00463183 /* ChatsCellViewCloseButton.swift */; };
 		FE5BE64E213AD19A00463183 /* ChatCellViewMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5BE64D213AD19A00463183 /* ChatCellViewMessage.swift */; };
 		FE5CAF982215BCD600FABD46 /* ScriptsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5CAF972215BCD600FABD46 /* ScriptsManager.swift */; };
@@ -76,6 +80,7 @@
 		FE8C9F5421B3F6BD00BE8332 /* container-migration.plist in Resources */ = {isa = PBXBuildFile; fileRef = FE8C9F5321B3F6BD00BE8332 /* container-migration.plist */; };
 		FE8C9F5621B40F9000BE8332 /* RegisterAccountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8C9F5521B40F9000BE8332 /* RegisterAccountController.swift */; };
 		FE9486B221BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9486B121BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift */; };
+		FE9CDF0D2269E282001039C3 /* MessageEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9CDF0C2269E282001039C3 /* MessageEncryption.swift */; };
 		FEA77CD221C7C47000E955A8 /* WebRTC.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FEA77CD121C7C47000E955A8 /* WebRTC.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FEA8941F2156625E004C3B51 /* ConfigureRoomViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8941E2156625E004C3B51 /* ConfigureRoomViewController.swift */; };
 		FEB4EAFC2162A3DC00F8A9E2 /* AutoresizineTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB4EAFB2162A3DC00F8A9E2 /* AutoresizineTextView.swift */; };
@@ -101,6 +106,14 @@
 		FEDE6AF52143D8130019170A /* ChatsListTableRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE6AF42143D8130019170A /* ChatsListTableRowView.swift */; };
 		FEDE6AF921440AEF0019170A /* StatusHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE6AF821440AEF0019170A /* StatusHelper.swift */; };
 		FEDE6AFC21455A2B0019170A /* RosterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE6AFB21455A2B0019170A /* RosterViewController.swift */; };
+		FEEF25322264A80500202B28 /* OMEMOController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25312264A80500202B28 /* OMEMOController.swift */; };
+		FEEF25362266303A00202B28 /* OMEMOIdentititesTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25352266303A00202B28 /* OMEMOIdentititesTableView.swift */; };
+		FEEF25392266528E00202B28 /* ContactDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25382266528E00202B28 /* ContactDetailsViewController.swift */; };
+		FEF5C3D92260893800889863 /* TigaseSwiftOMEMO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF5C3D82260893800889863 /* TigaseSwiftOMEMO.framework */; };
+		FEF5C3DA2260893800889863 /* TigaseSwiftOMEMO.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FEF5C3D82260893800889863 /* TigaseSwiftOMEMO.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FEF5C3FA22632C0000889863 /* OpenSSL_AES_GCM_Engine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF5C3F922632C0000889863 /* OpenSSL_AES_GCM_Engine.swift */; };
+		FEF5C3FF22632CDE00889863 /* openssl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF5C3FE22632CDE00889863 /* openssl.framework */; };
+		FEF5C40022632CDE00889863 /* openssl.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FEF5C3FE22632CDE00889863 /* openssl.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FEF844742173B9DC0067B005 /* Markdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF844732173B9DC0067B005 /* Markdown.swift */; };
 		FEF8BED2216A6761001DA755 /* InviteToGroupchatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF8BED1216A6761001DA755 /* InviteToGroupchatController.swift */; };
 		FEF9CE1D2082765000B09B6C /* db-schema-1.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEF9CE1C2082765000B09B6C /* db-schema-1.sql */; };
@@ -128,11 +141,13 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		FE4E8DE22160E7AA0010D88E /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
+			buildActionMask = 12;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
 				FEA77CD221C7C47000E955A8 /* WebRTC.framework in Embed Frameworks */,
+				FEF5C40022632CDE00889863 /* openssl.framework in Embed Frameworks */,
+				FEF5C3DA2260893800889863 /* TigaseSwiftOMEMO.framework in Embed Frameworks */,
 				FE4E8DE12160E7AA0010D88E /* TigaseSwift.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -141,6 +156,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		FE02DD10225B8D1100FA08EB /* db-schema-3.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-3.sql"; sourceTree = "<group>"; };
+		FE02DD12225BC33F00FA08EB /* DBOMEMOStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBOMEMOStore.swift; sourceTree = "<group>"; };
 		FE137A4521F5FE05006B7F7C /* ShowMainWindowSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowMainWindowSegue.swift; sourceTree = "<group>"; };
 		FE1A8BA221C96C1B00604141 /* RoundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
 		FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager_Session.swift; sourceTree = "<group>"; };
@@ -182,6 +199,8 @@
 		FE4D21372223FEE70058B662 /* PEPBookmarksModule_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PEPBookmarksModule_extension.swift; sourceTree = "<group>"; };
 		FE4E8DD9215EA4860010D88E /* HttpFileUploadEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HttpFileUploadEventHandler.swift; sourceTree = "<group>"; };
 		FE4E8DDB215F72130010D88E /* AbstractChatView_ShareExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractChatView_ShareExtension.swift; sourceTree = "<group>"; };
+		FE5202D4227F330E00644C12 /* ChatMessageContinuationCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageContinuationCellView.swift; sourceTree = "<group>"; };
+		FE5202D6227F339D00644C12 /* BaseChatMessageCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseChatMessageCellView.swift; sourceTree = "<group>"; };
 		FE5BE64B213AC3EA00463183 /* ChatsCellViewCloseButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsCellViewCloseButton.swift; sourceTree = "<group>"; };
 		FE5BE64D213AD19A00463183 /* ChatCellViewMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatCellViewMessage.swift; sourceTree = "<group>"; };
 		FE5CAF972215BCD600FABD46 /* ScriptsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptsManager.swift; sourceTree = "<group>"; };
@@ -208,6 +227,7 @@
 		FE8C9F5321B3F6BD00BE8332 /* container-migration.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "container-migration.plist"; sourceTree = "<group>"; };
 		FE8C9F5521B40F9000BE8332 /* RegisterAccountController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterAccountController.swift; sourceTree = "<group>"; };
 		FE9486B121BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSButtonNoSizeWhenHidden.swift; sourceTree = "<group>"; };
+		FE9CDF0C2269E282001039C3 /* MessageEncryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEncryption.swift; sourceTree = "<group>"; };
 		FE9D88B3217652DF006CF0D9 /* BeagleIM-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BeagleIM-Bridging-Header.h"; sourceTree = "<group>"; };
 		FEA77CD121C7C47000E955A8 /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
 		FEA8941E2156625E004C3B51 /* ConfigureRoomViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigureRoomViewController.swift; sourceTree = "<group>"; };
@@ -242,6 +262,12 @@
 		FEDE6AF42143D8130019170A /* ChatsListTableRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListTableRowView.swift; sourceTree = "<group>"; };
 		FEDE6AF821440AEF0019170A /* StatusHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusHelper.swift; sourceTree = "<group>"; };
 		FEDE6AFB21455A2B0019170A /* RosterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RosterViewController.swift; sourceTree = "<group>"; };
+		FEEF25312264A80500202B28 /* OMEMOController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OMEMOController.swift; sourceTree = "<group>"; };
+		FEEF25352266303A00202B28 /* OMEMOIdentititesTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OMEMOIdentititesTableView.swift; sourceTree = "<group>"; };
+		FEEF25382266528E00202B28 /* ContactDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactDetailsViewController.swift; sourceTree = "<group>"; };
+		FEF5C3D82260893800889863 /* TigaseSwiftOMEMO.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TigaseSwiftOMEMO.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FEF5C3F922632C0000889863 /* OpenSSL_AES_GCM_Engine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OpenSSL_AES_GCM_Engine.swift; sourceTree = "<group>"; };
+		FEF5C3FE22632CDE00889863 /* openssl.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = openssl.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FEF844732173B9DC0067B005 /* Markdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Markdown.swift; sourceTree = "<group>"; };
 		FEF8BED1216A6761001DA755 /* InviteToGroupchatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteToGroupchatController.swift; sourceTree = "<group>"; };
 		FEF9CE1C2082765000B09B6C /* db-schema-1.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-1.sql"; sourceTree = "<group>"; };
@@ -255,7 +281,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FEF5C3FF22632CDE00889863 /* openssl.framework in Frameworks */,
 				FE83E365217B0F89001DEF09 /* AVFoundation.framework in Frameworks */,
+				FEF5C3D92260893800889863 /* TigaseSwiftOMEMO.framework in Frameworks */,
 				FEF9D12B2082804E00B09B6C /* TigaseSwift.framework in Frameworks */,
 				FEF9CE2220827F0000B09B6C /* libsqlite3.0.tbd in Frameworks */,
 			);
@@ -332,6 +360,7 @@
 				FE1A8BA221C96C1B00604141 /* RoundButton.swift */,
 				FE137A4521F5FE05006B7F7C /* ShowMainWindowSegue.swift */,
 				FE5CAF992216EEF200FABD46 /* NSPopupButtonNoSizeWhenHidden.swift */,
+				FEEF25352266303A00202B28 /* OMEMOIdentititesTableView.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -339,6 +368,7 @@
 		FE6E6BE521384D5E003B1696 /* utils */ = {
 			isa = PBXGroup;
 			children = (
+				FEF5C3F922632C0000889863 /* OpenSSL_AES_GCM_Engine.swift */,
 				FE6E6BE621384D5E003B1696 /* AccountManager.swift */,
 				FED7AEC221415CB8001E164B /* AvatarManager.swift */,
 				FED7AEC421417328001E164B /* AvatarStore.swift */,
@@ -349,6 +379,7 @@
 				FE41FB30215AB32200AD86D3 /* ServerCertificateInfo.swift */,
 				FE380AD921B15720008717FA /* DownloadCache.swift */,
 				FE5CAF972215BCD600FABD46 /* ScriptsManager.swift */,
+				FE9CDF0C2269E282001039C3 /* MessageEncryption.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -374,12 +405,14 @@
 			children = (
 				FE6E6BEB21384D5E003B1696 /* Open1On1ChatController.swift */,
 				FE6E6BEC21384D5E003B1696 /* ChatMessageCellView.swift */,
+				FE5202D4227F330E00644C12 /* ChatMessageContinuationCellView.swift */,
 				FE6E6BED21384D5E003B1696 /* ChatViewController.swift */,
 				FEC5DC7D21552A3300AA3E4F /* ChatViewDataSourceDelegate.swift */,
 				FEC5DC7F21552A9B00AA3E4F /* ChatViewDataSource.swift */,
 				FEC5DC8121552D8300AA3E4F /* ChatViewItemProtocol.swift */,
 				FEC5DC8321553A7500AA3E4F /* AbstractChatViewController.swift */,
 				FE4E8DDB215F72130010D88E /* AbstractChatView_ShareExtension.swift */,
+				FE5202D6227F339D00644C12 /* BaseChatMessageCellView.swift */,
 			);
 			path = chat;
 			sourceTree = "<group>";
@@ -409,6 +442,7 @@
 				FED7AEC821418FA9001E164B /* DBVCardStore.swift */,
 				FE3AA0D2215409B8001667A9 /* DBRoomsManager.swift */,
 				FE41FB36215BBFC800AD86D3 /* DBCapabilitiesCache.swift */,
+				FE02DD12225BC33F00FA08EB /* DBOMEMOStore.swift */,
 			);
 			path = database;
 			sourceTree = "<group>";
@@ -416,6 +450,8 @@
 		FED2ECE72066B01C00F506A5 = {
 			isa = PBXGroup;
 			children = (
+				FEF5C3FE22632CDE00889863 /* openssl.framework */,
+				FEF5C3D82260893800889863 /* TigaseSwiftOMEMO.framework */,
 				FE421B4821C92FBF0022DF77 /* LICENSE */,
 				FEA77CD121C7C47000E955A8 /* WebRTC.framework */,
 				FED2ECF22066B01C00F506A5 /* BeagleIM */,
@@ -439,6 +475,7 @@
 		FED2ECF22066B01C00F506A5 /* BeagleIM */ = {
 			isa = PBXGroup;
 			children = (
+				FEEF25372266528500202B28 /* contact */,
 				FE1A8BA421CA880100604141 /* voip */,
 				FE30D8B8214ED1DE00670BEC /* groupchat */,
 				FEDE6AFA21455A0E0019170A /* roster */,
@@ -461,6 +498,7 @@
 				FE8C9F5321B3F6BD00BE8332 /* container-migration.plist */,
 				FE9D88B3217652DF006CF0D9 /* BeagleIM-Bridging-Header.h */,
 				FE421B4621C928B00022DF77 /* Credits.rtf */,
+				FE02DD10225B8D1100FA08EB /* db-schema-3.sql */,
 			);
 			path = BeagleIM;
 			sourceTree = "<group>";
@@ -494,6 +532,7 @@
 				FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */,
 				FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */,
 				FE8C9F5521B40F9000BE8332 /* RegisterAccountController.swift */,
+				FEEF25312264A80500202B28 /* OMEMOController.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -506,6 +545,14 @@
 				FE30D8B2214CF15700670BEC /* AddContactController.swift */,
 			);
 			path = roster;
+			sourceTree = "<group>";
+		};
+		FEEF25372266528500202B28 /* contact */ = {
+			isa = PBXGroup;
+			children = (
+				FEEF25382266528E00202B28 /* ContactDetailsViewController.swift */,
+			);
+			path = contact;
 			sourceTree = "<group>";
 		};
 		FEF9CE2020827F0000B09B6C /* Frameworks */ = {
@@ -527,6 +574,7 @@
 			buildConfigurationList = FED2ED162066B01C00F506A5 /* Build configuration list for PBXNativeTarget "BeagleIM" */;
 			buildPhases = (
 				FED2ECEC2066B01C00F506A5 /* Sources */,
+				FEB15617225FA973009B0709 /* ShellScript */,
 				FED2ECED2066B01C00F506A5 /* Frameworks */,
 				FED2ECEE2066B01C00F506A5 /* Resources */,
 				FE4E8DE22160E7AA0010D88E /* Embed Frameworks */,
@@ -643,6 +691,7 @@
 				FEF9CE1D2082765000B09B6C /* db-schema-1.sql in Resources */,
 				FE4073A721BACA2D009CE335 /* VoIP.storyboard in Resources */,
 				FE8C9F5421B3F6BD00BE8332 /* container-migration.plist in Resources */,
+				FE02DD11225B8D1100FA08EB /* db-schema-3.sql in Resources */,
 				FE421B4921C92FBF0022DF77 /* LICENSE in Resources */,
 				FE421B4721C928B00022DF77 /* Credits.rtf in Resources */,
 				FED2ECF82066B01C00F506A5 /* Assets.xcassets in Resources */,
@@ -666,6 +715,26 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		FEB15617225FA973009B0709 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nfor f in $(find $CODESIGNING_FOLDER_PATH -name \"*.framework\")\ndo\necho \"$f\"\ncodesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY_NAME}\" --preserve-metadata=identifier,entitlements --timestamp=none \"$f\"\ndone\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		FED2ECEC2066B01C00F506A5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -674,6 +743,7 @@
 				FE6E6BFC21384D5F003B1696 /* OutlineGroupItemButton.swift in Sources */,
 				FE41FB31215AB32200AD86D3 /* ServerCertificateInfo.swift in Sources */,
 				FE6E6BFE21384D5F003B1696 /* ChatMessageCellView.swift in Sources */,
+				FEF5C3FA22632C0000889863 /* OpenSSL_AES_GCM_Engine.swift in Sources */,
 				FE2809852169FB75002F5BD0 /* Alert.swift in Sources */,
 				FE3AA0CB21540669001667A9 /* ChatItemProtocol.swift in Sources */,
 				FE4E8DDA215EA4860010D88E /* HttpFileUploadEventHandler.swift in Sources */,
@@ -683,6 +753,7 @@
 				FE3AA0C92154062F001667A9 /* ChatsListGroupProtocol.swift in Sources */,
 				FED7AEC721418B83001E164B /* VCardManager.swift in Sources */,
 				FE6E6C0321384D5F003B1696 /* DBRosterStore.swift in Sources */,
+				FE5202D5227F330E00644C12 /* ChatMessageContinuationCellView.swift in Sources */,
 				FE5CAF982215BCD600FABD46 /* ScriptsManager.swift in Sources */,
 				FE34BBD52157DDF200775B07 /* MucModule_RoomError_extension.swift in Sources */,
 				FEDE6AFC21455A2B0019170A /* RosterViewController.swift in Sources */,
@@ -700,6 +771,7 @@
 				FE41FB41215CDA6000AD86D3 /* MessageEventHandler.swift in Sources */,
 				FE8C9F5621B40F9000BE8332 /* RegisterAccountController.swift in Sources */,
 				FE5BE64E213AD19A00463183 /* ChatCellViewMessage.swift in Sources */,
+				FE5202D7227F339D00644C12 /* BaseChatMessageCellView.swift in Sources */,
 				FED7AEC921418FA9001E164B /* DBVCardStore.swift in Sources */,
 				FEA8941F2156625E004C3B51 /* ConfigureRoomViewController.swift in Sources */,
 				FE30D8AF214C3B7600670BEC /* NSImage.swift in Sources */,
@@ -707,6 +779,7 @@
 				FE3AA0CD2154069D001667A9 /* ChatsListGroupGroupchat.swift in Sources */,
 				FED7AEC521417328001E164B /* AvatarStore.swift in Sources */,
 				FE6E6BFA21384D5F003B1696 /* AccountManager.swift in Sources */,
+				FEEF25322264A80500202B28 /* OMEMOController.swift in Sources */,
 				FEC5DC8621553F4700AA3E4F /* GroupchatViewController.swift in Sources */,
 				FE380ADA21B15720008717FA /* DownloadCache.swift in Sources */,
 				FEF844742173B9DC0067B005 /* Markdown.swift in Sources */,
@@ -720,6 +793,7 @@
 				FE137A4621F5FE05006B7F7C /* ShowMainWindowSegue.swift in Sources */,
 				FE28097F2166892D002F5BD0 /* AccountDetailsViewController.swift in Sources */,
 				FE30D8AD214C2D7100670BEC /* RosterViewController_ContextMenu.swift in Sources */,
+				FE02DD13225BC33F00FA08EB /* DBOMEMOStore.swift in Sources */,
 				FE6E6C0121384D5F003B1696 /* ChatsWindowController.swift in Sources */,
 				FE3AA0D3215409B8001667A9 /* DBRoomsManager.swift in Sources */,
 				FE5BE64C213AC3EA00463183 /* ChatsCellViewCloseButton.swift in Sources */,
@@ -730,6 +804,8 @@
 				FEC661F821AABFB0004FDE1E /* NSViewWithTextBackground.swift in Sources */,
 				FE3AA0CF215406D1001667A9 /* ChatsListGroupChat.swift in Sources */,
 				FE6E6BF921384D5F003B1696 /* AvatarView.swift in Sources */,
+				FEEF25392266528E00202B28 /* ContactDetailsViewController.swift in Sources */,
+				FE9CDF0D2269E282001039C3 /* MessageEncryption.swift in Sources */,
 				FE6E6C0821384DF1003B1696 /* ChatCellView.swift in Sources */,
 				FE41FB3D215CD82500AD86D3 /* PresenceRosterEventHandler.swift in Sources */,
 				FE1A8BA321C96C1B00604141 /* RoundButton.swift in Sources */,
@@ -746,6 +822,7 @@
 				FE41FB45215E426400AD86D3 /* MessageArchivingSetttingsViewController.swift in Sources */,
 				FE6E6C0021384D5F003B1696 /* ChatsListView.swift in Sources */,
 				FE6E6C0621384D5F003B1696 /* Database.swift in Sources */,
+				FEEF25362266303A00202B28 /* OMEMOIdentititesTableView.swift in Sources */,
 				FEB4EAFC2162A3DC00F8A9E2 /* AutoresizineTextView.swift in Sources */,
 				FEB4EAFE2163714300F8A9E2 /* RoundedScrollView.swift in Sources */,
 				FEC5DC8021552A9B00AA3E4F /* ChatViewDataSource.swift in Sources */,
@@ -924,7 +1001,7 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = BeagleIM/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				OTHER_LDFLAGS = "-v";
 				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.BeagleIM;
@@ -950,7 +1027,7 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = BeagleIM/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				OTHER_LDFLAGS = "-v";
 				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.BeagleIM;
