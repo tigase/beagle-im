@@ -619,6 +619,9 @@ CA
                                                 <segue destination="qEo-e6-sLy" kind="show" id="1M4-fh-sMA"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem title="XML Console" id="UNA-Ak-Afx">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                        </menuItem>
                                         <menuItem isSeparatorItem="YES" id="M2u-cQ-PVY"/>
                                         <menuItem title="Bring All to Front" id="LE2-aR-0XJ">
                                             <modifierMask key="keyEquivalentModifierMask"/>

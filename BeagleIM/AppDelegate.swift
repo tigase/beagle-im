@@ -47,7 +47,7 @@ extension NSApplication {
 }
 
 @NSApplicationMain
-class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDelegate, UNUserNotificationCenterDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDelegate, UNUserNotificationCenterDelegate, NSMenuDelegate {
     
     public static let HOUR_CHANGED = Notification.Name("hourChanged");
 
@@ -70,7 +70,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     fileprivate var statusItem: NSStatusItem?;
     fileprivate(set) var mainWindowController: NSWindowController?;
     
-    func applicationDidFinishLaunching(_ aNotification: Notification) {       
+    func applicationDidFinishLaunching(_ aNotification: Notification) {
         Settings.initialize();
         RTCInitializeSSL();
         
@@ -165,7 +165,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             // Fallback on earlier versions
         }
         
+        NSApp.mainMenu?.item(withTitle: "Window")?.submenu?.delegate = self;
+        
         scheduleHourlyTimer();
+    }
+    
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        if let xmlConsoleItem = menu.item(withTitle: "XML Console") {
+            xmlConsoleItem.isHidden = !NSEvent.modifierFlags.contains(.option);
+            let accountsMenu = NSMenu(title: "XML Console");
+            
+            AccountManager.getAccounts().forEach { (accountJid) in
+                accountsMenu.addItem(withTitle: accountJid.stringValue, action: #selector(showXmlConsole), keyEquivalent: "").target = self;
+            }
+            
+            menu.item(withTitle: "XML Console")?.submenu = accountsMenu;
+        }
+    }
+    
+    @objc func showXmlConsole(_ sender: NSMenuItem) {
+        let accountJid = BareJID(sender.title);
+        
+        print("xml console for:", accountJid);
+        XMLConsoleViewController.open(for: accountJid);
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {

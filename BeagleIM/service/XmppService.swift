@@ -403,6 +403,8 @@ class XmppService: EventHandler {
         client.sessionObject.setUserProperty(SoftwareVersionModule.VERSION_KEY, value: version);
         client.sessionObject.setUserProperty(SoftwareVersionModule.OS_KEY, value: "macOS");
         
+        XMLConsoleViewController.configureLogging(for: client);
+        
         return client;
     }
 
