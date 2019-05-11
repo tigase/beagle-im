@@ -2456,6 +2456,9 @@ Gw
                                     <font key="font" metaFont="menu"/>
                                     <menu key="menu" id="Cc4-NV-tcP"/>
                                 </popUpButtonCell>
+                                <connections>
+                                    <action selector="accountSelectionChanged:" target="9v4-02-9CS" id="M7s-gS-h0o"/>
+                                </connections>
                             </popUpButton>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gJ1-SK-jBO">
                                 <rect key="frame" x="20" y="375" width="444" height="22"/>
@@ -2494,19 +2497,19 @@ Gw
                                                     </textFieldCell>
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
                                                     <prototypeCellViews>
-                                                        <tableCellView identifier="Open1On1ChatItemView" id="kJJ-cr-DKB" customClass="Open1On1ChatItemView" customModule="BeagleIM" customModuleProvider="target">
+                                                        <tableCellView identifier="Open1On1ChatItemView" misplaced="YES" id="kJJ-cr-DKB" customClass="Open1On1ChatItemView" customModule="BeagleIM" customModuleProvider="target">
                                                             <rect key="frame" x="1" y="1" width="479" height="35"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <view horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="svP-Fz-ERm" customClass="AvatarViewWithStatus" customModule="BeagleIM" customModuleProvider="target">
-                                                                    <rect key="frame" x="8" y="3" width="30" height="30"/>
+                                                                    <rect key="frame" x="8" y="2" width="30" height="30"/>
                                                                     <constraints>
                                                                         <constraint firstAttribute="width" constant="30" id="4BI-eK-pwm"/>
                                                                         <constraint firstAttribute="height" constant="30" id="y4t-T0-K7X"/>
                                                                     </constraints>
                                                                 </view>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="74s-4J-XXh">
-                                                                    <rect key="frame" x="46" y="16" width="427" height="17"/>
+                                                                    <rect key="frame" x="46" y="15" width="427" height="17"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Username" id="Ikd-Py-8pj">
                                                                         <font key="font" metaFont="systemMedium" size="13"/>
                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -2514,16 +2517,26 @@ Gw
                                                                     </textFieldCell>
                                                                 </textField>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="bzV-jx-BVK">
-                                                                    <rect key="frame" x="46" y="2" width="427" height="14"/>
+                                                                    <rect key="frame" x="46" y="2" width="94" height="13"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="user@domain.com" id="VGT-gv-U2i">
-                                                                        <font key="font" metaFont="smallSystem"/>
+                                                                        <font key="font" metaFont="system" size="10"/>
                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
                                                                 </textField>
+                                                                <textField horizontalHuggingPriority="252" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="LHG-c9-M39">
+                                                                    <rect key="frame" x="395" y="2" width="78" height="13"/>
+                                                                    <textFieldCell key="cell" lineBreakMode="truncatingMiddle" title="using account" id="ROY-5k-SBe">
+                                                                        <font key="font" metaFont="system" size="10"/>
+                                                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                    </textFieldCell>
+                                                                </textField>
                                                             </subviews>
                                                             <constraints>
+                                                                <constraint firstAttribute="trailing" secondItem="LHG-c9-M39" secondAttribute="trailing" constant="8" id="0J5-Gi-u1g"/>
                                                                 <constraint firstItem="svP-Fz-ERm" firstAttribute="top" secondItem="kJJ-cr-DKB" secondAttribute="top" constant="2" id="1Gn-aa-ROd"/>
+                                                                <constraint firstItem="LHG-c9-M39" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="bzV-jx-BVK" secondAttribute="trailing" constant="10" id="5FR-Ne-dhb"/>
                                                                 <constraint firstItem="bzV-jx-BVK" firstAttribute="leading" secondItem="svP-Fz-ERm" secondAttribute="trailing" constant="10" id="6cs-iI-dRe"/>
                                                                 <constraint firstItem="svP-Fz-ERm" firstAttribute="leading" secondItem="kJJ-cr-DKB" secondAttribute="leading" constant="8" id="Daj-Zb-MIU"/>
                                                                 <constraint firstItem="bzV-jx-BVK" firstAttribute="top" secondItem="74s-4J-XXh" secondAttribute="bottom" id="G8d-z8-31w"/>
@@ -2531,10 +2544,12 @@ Gw
                                                                 <constraint firstItem="74s-4J-XXh" firstAttribute="leading" secondItem="svP-Fz-ERm" secondAttribute="trailing" constant="10" id="dBQ-at-deg"/>
                                                                 <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="svP-Fz-ERm" secondAttribute="bottom" constant="2" id="flJ-gl-2Bd"/>
                                                                 <constraint firstAttribute="trailing" secondItem="74s-4J-XXh" secondAttribute="trailing" constant="8" id="oqw-aO-KMq"/>
-                                                                <constraint firstAttribute="trailing" secondItem="bzV-jx-BVK" secondAttribute="trailing" constant="8" id="usk-ra-saa"/>
+                                                                <constraint firstItem="LHG-c9-M39" firstAttribute="top" secondItem="74s-4J-XXh" secondAttribute="bottom" id="tjt-7V-Nsa"/>
+                                                                <constraint firstAttribute="bottom" secondItem="LHG-c9-M39" secondAttribute="bottom" constant="2" id="vkF-sS-dCE"/>
                                                                 <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="bzV-jx-BVK" secondAttribute="bottom" constant="2" id="ykv-jq-i6p"/>
                                                             </constraints>
                                                             <connections>
+                                                                <outlet property="account" destination="LHG-c9-M39" id="VDb-Zk-DEg"/>
                                                                 <outlet property="avatar" destination="svP-Fz-ERm" id="71Q-Mr-DL4"/>
                                                                 <outlet property="jid" destination="bzV-jx-BVK" id="grv-Sz-eLv"/>
                                                                 <outlet property="name" destination="74s-4J-XXh" id="KSv-bB-dt3"/>
@@ -2626,7 +2641,7 @@ Gw
                 </viewController>
                 <customObject id="zs1-cz-9Hm" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-109" y="2318"/>
+            <point key="canvasLocation" x="-109" y="2317.5"/>
         </scene>
         <!--Add contact controller-->
         <scene sceneID="U4R-1G-afL">

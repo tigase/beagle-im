@@ -103,6 +103,7 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
     func showDisclosure(_ state: Bool) {
         accountField.isHidden = !state;
         accountHeightConstraint.isActive = !state;
+        updateItems();
     }
     
     func controlTextDidChange(_ obj: Notification) {
@@ -160,7 +161,11 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
     
     fileprivate func updateItems() {
         var rows: [Item] = [];
+        let accountFilter: BareJID? = (!self.accountField.isHidden) ? BareJID(self.accountField.titleOfSelectedItem) : nil;
         XmppService.instance.clients.forEach { (account, client) in
+            guard accountFilter == nil || account == accountFilter else {
+                return;
+            }
             guard let roster = (RosterModule.getRosterStore(client.sessionObject) as? DBRosterStoreWrapper) else {
                 return;
             }
@@ -186,6 +191,10 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
         self.contactsView.reloadData();
     }
     
+    @IBAction func accountSelectionChanged(_ sender: Any) {
+        self.updateItems();
+    }
+    
     class Item {
         
         let jid: BareJID;
@@ -208,11 +217,13 @@ class Open1On1ChatItemView: NSTableCellView {
     @IBOutlet var avatar: AvatarViewWithStatus!
     @IBOutlet var name: NSTextField!
     @IBOutlet var jid: NSTextField!
+    @IBOutlet var account: NSTextField!
     
     func update(from item: Open1On1ChatController.Item) {
         self.avatar.backgroundColor = NSColor.textBackgroundColor;
         self.jid.stringValue = item.jid.stringValue;
         self.name.stringValue = item.name ?? "";
+        self.account.stringValue = "using \(item.account)";
         self.avatar.update(for: item.jid, on: item.account);
     }
     
