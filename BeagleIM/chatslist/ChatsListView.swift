@@ -584,7 +584,9 @@ class ChatsListView: NSOutlineView {
                 let row = self.row(at: self.convert(event.locationInWindow, from: nil));
 
                 print("changing selection!");
-                self.updateRowSelection(IndexSet(integersIn: row...row), byExtendingSelection: false);
+                if row != -1 {
+                    self.updateRowSelection(IndexSet(integersIn: row...row), byExtendingSelection: false);
+                }
                 //NotificationCenter.default.post(name: NSOutlineView.selectionDidChangeNotification, object: nil);
             }
         } else {

@@ -907,10 +907,10 @@ CA
             </objects>
             <point key="canvasLocation" x="665" y="660"/>
         </scene>
-        <!--View Controller-->
+        <!--Empty View Controller-->
         <scene sceneID="oZv-Pr-mto">
             <objects>
-                <viewController identifier="EmptyViewController" storyboardIdentifier="EmptyViewController" id="qkD-qi-kwG" sceneMemberID="viewController">
+                <viewController identifier="EmptyViewController" storyboardIdentifier="EmptyViewController" id="qkD-qi-kwG" customClass="EmptyViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="ul4-e4-Q2S">
                         <rect key="frame" x="0.0" y="0.0" width="450" height="300"/>
                         <autoresizingMask key="autoresizingMask"/>

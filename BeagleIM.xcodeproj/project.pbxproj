@@ -32,6 +32,7 @@
 		FE3AA0CF215406D1001667A9 /* ChatsListGroupChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0CE215406D1001667A9 /* ChatsListGroupChat.swift */; };
 		FE3AA0D12154077D001667A9 /* ChatsListGroupAbstractChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0D02154077D001667A9 /* ChatsListGroupAbstractChat.swift */; };
 		FE3AA0D3215409B8001667A9 /* DBRoomsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0D2215409B8001667A9 /* DBRoomsManager.swift */; };
+		FE3F2AF2228813E200737D51 /* EmptyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3F2AF1228813E200737D51 /* EmptyViewController.swift */; };
 		FE4073A721BACA2D009CE335 /* VoIP.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE4073A621BACA2D009CE335 /* VoIP.storyboard */; };
 		FE4073A921BACC50009CE335 /* VideoCallController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4073A821BACC50009CE335 /* VideoCallController.swift */; };
 		FE41FB2F215A822700AD86D3 /* ManageAffiliationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB2E215A822700AD86D3 /* ManageAffiliationsViewController.swift */; };
@@ -183,6 +184,7 @@
 		FE3AA0CE215406D1001667A9 /* ChatsListGroupChat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListGroupChat.swift; sourceTree = "<group>"; };
 		FE3AA0D02154077D001667A9 /* ChatsListGroupAbstractChat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListGroupAbstractChat.swift; sourceTree = "<group>"; };
 		FE3AA0D2215409B8001667A9 /* DBRoomsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBRoomsManager.swift; sourceTree = "<group>"; };
+		FE3F2AF1228813E200737D51 /* EmptyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyViewController.swift; sourceTree = "<group>"; };
 		FE4073A621BACA2D009CE335 /* VoIP.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = VoIP.storyboard; sourceTree = "<group>"; };
 		FE4073A821BACC50009CE335 /* VideoCallController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCallController.swift; sourceTree = "<group>"; };
 		FE41FB2E215A822700AD86D3 /* ManageAffiliationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageAffiliationsViewController.swift; sourceTree = "<group>"; };
@@ -433,6 +435,7 @@
 				FE6E6C0721384DF1003B1696 /* ChatCellView.swift */,
 				FEDE6AF42143D8130019170A /* ChatsListTableRowView.swift */,
 				FE3AA0CA21540669001667A9 /* ChatItemProtocol.swift */,
+				FE3F2AF1228813E200737D51 /* EmptyViewController.swift */,
 			);
 			path = chatslist;
 			sourceTree = "<group>";
@@ -838,6 +841,7 @@
 				FED2ECF42066B01C00F506A5 /* AppDelegate.swift in Sources */,
 				FE30D8BA214ED28A00670BEC /* OpenGroupchatController.swift in Sources */,
 				FE41FB33215B8D5A00AD86D3 /* ServerCertificateErrorController.swift in Sources */,
+				FE3F2AF2228813E200737D51 /* EmptyViewController.swift in Sources */,
 				FEDE6AF921440AEF0019170A /* StatusHelper.swift in Sources */,
 				FE41FB45215E426400AD86D3 /* MessageArchivingSetttingsViewController.swift in Sources */,
 				FE6E6C0021384D5F003B1696 /* ChatsListView.swift in Sources */,
