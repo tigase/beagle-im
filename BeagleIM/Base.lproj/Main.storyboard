@@ -723,7 +723,7 @@ CA
                                             <color key="backgroundColor" name="sidebarBackgroundColor"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                             <tableColumns>
-                                                <tableColumn identifier="ITEM1" editable="NO" width="304" minWidth="40" maxWidth="1000" id="DEA-O0-PQ6">
+                                                <tableColumn identifier="ITEM1" editable="NO" width="304" minWidth="40" maxWidth="4000" id="DEA-O0-PQ6">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="justified">
                                                         <font key="font" metaFont="smallSystem"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1085,7 +1085,7 @@ AAAAAAEGA
                                             <color key="backgroundColor" name="chatBackgroundColor"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                             <tableColumns>
-                                                <tableColumn editable="NO" width="358" minWidth="40" maxWidth="1000" id="HqM-Ei-35M">
+                                                <tableColumn editable="NO" width="358" minWidth="40" maxWidth="4000" id="HqM-Ei-35M">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" enabled="NO" borderStyle="border">
                                                         <font key="font" metaFont="smallSystem"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1127,7 +1127,7 @@ AAAAAAEGA
                                                                     </textFieldCell>
                                                                 </textField>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="neR-86-zgW">
-                                                                    <rect key="frame" x="303" y="22" width="47" height="17"/>
+                                                                    <rect key="frame" x="305" y="22" width="47" height="17"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="20:31:03" id="l7p-zy-GtB">
                                                                         <font key="font" metaFont="smallSystem"/>
                                                                         <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
@@ -2909,7 +2909,7 @@ AAAAAAEGA
                                             <color key="backgroundColor" name="chatBackgroundColor"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                             <tableColumns>
-                                                <tableColumn width="196" minWidth="40" maxWidth="1000" id="cHm-zQ-BsZ">
+                                                <tableColumn width="196" minWidth="40" maxWidth="4000" id="cHm-zQ-BsZ">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" enabled="NO" borderStyle="border">
                                                         <font key="font" metaFont="smallSystem"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
