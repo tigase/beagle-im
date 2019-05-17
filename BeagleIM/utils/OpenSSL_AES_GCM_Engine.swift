@@ -60,7 +60,7 @@ class OpenSSL_AES_GCM_Engine: AES_GCM_Engine {
         return true;
     }
     
-    func decrypt(iv: Data, key: Data, encoded: Data, auth tag: Data?, output: UnsafeMutablePointer<Data>?) -> Bool {
+    func decrypt(iv: Data, key: Data, encoded payload: Data, auth tag: Data?, output: UnsafeMutablePointer<Data>?) -> Bool {
         
         let ctx = EVP_CIPHER_CTX_new();
         EVP_DecryptInit_ex(ctx, EVP_aes_128_gcm(), nil, nil, nil);
@@ -72,6 +72,13 @@ class OpenSSL_AES_GCM_Engine: AES_GCM_Engine {
         })
         EVP_CIPHER_CTX_set_padding(ctx, 1);
         
+        var auth = tag;
+        var encoded = payload;
+        if auth == nil {
+            auth = payload.subdata(in: (payload.count - 16)..<payload.count);
+            encoded = payload.subdata(in: 0..<(payload.count-16));
+        }
+        
         var outbuf = Array(repeating: UInt8(0), count: encoded.count);
         var outbufLen: Int32 = 0;
         let decoded = encoded.withUnsafeBytes({ (bytes) -> Data in
@@ -79,7 +86,6 @@ class OpenSSL_AES_GCM_Engine: AES_GCM_Engine {
             return Data(bytes: &outbuf, count: Int(outbufLen));
         });
         
-        var auth = tag;
         if auth != nil {
             auth!.withUnsafeMutableBytes({ [count = auth!.count] (bytes: UnsafeMutableRawBufferPointer) -> Void in
                 EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_SET_TAG, Int32(count), bytes.baseAddress!.assumingMemoryBound(to: UInt8.self));
@@ -88,7 +94,7 @@ class OpenSSL_AES_GCM_Engine: AES_GCM_Engine {
         
         let ret = EVP_DecryptFinal_ex(ctx, &outbuf, &outbufLen);
         EVP_CIPHER_CTX_free(ctx);
-        guard ret > 0 else {
+        guard ret >= 0 else {
             print("authentication of encrypted message failed:", ret);
             return false;
         }
