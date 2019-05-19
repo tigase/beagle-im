@@ -22,188 +22,392 @@
 import AppKit
 import TigaseSwift
 
-class JabberDataFormView: FormView {
+class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegate {
     
+    @IBInspectable var labelsToRight: Bool = false;
+    
+    fileprivate var visibleFields: [String] = [];
     fileprivate var namedFieldViews: [String: Any] = [:];
+    
     var form: JabberDataElement? {
         didSet {
-            update();
+            visibleFields = form?.visibleFieldNames ?? [];
+            self.reloadData();
+
+            var estHeight = self.numberOfRows == 0 ? 0 : self.rect(ofRow: self.numberOfRows - 1).maxY;
+            if self.numberOfRows < 20 {
+                estHeight = 0;
+                for i in 0..<self.numberOfRows {
+                    let label = self.extractLabel(from: form!.getField(named: visibleFields[i])!);
+                    
+                    let textStorage = NSTextStorage(string: label);
+                    textStorage.addAttribute(.font, value: NSFont.systemFont(ofSize: NSFont.systemFontSize), range: NSRange(0..<textStorage.length));
+                    let layoutManager = NSLayoutManager()
+                    let containerSize = CGSize(width: self.tableColumns[0].width - self.intercellSpacing.width,
+                                               height: .greatestFiniteMagnitude);
+                    let container = NSTextContainer(size: containerSize)
+                    container.widthTracksTextView = true
+                    layoutManager.addTextContainer(container)
+                    textStorage.addLayoutManager(layoutManager)
+                    layoutManager.glyphRange(for: container);
+                    let c1Size = layoutManager.usedRect(for: container).size;
+                    
+                    let c2 = self.tableView(self, viewFor: self.tableColumns[1], row: i);
+                    let c2Size = c2?.fittingSize;
+
+                    estHeight += max(c1Size.height + 4, (c2Size?.height ?? 0.0) + 4);
+                }
+            }
+            NSAnimationContext.runAnimationGroup { (context) in
+                context.duration = 0.25;
+                context.allowsImplicitAnimation = true;
+                if heightConstraint != nil {
+                    heightConstraint?.animator().isActive = false;
+                    self.enclosingScrollView!.removeConstraint(heightConstraint!);
+                    heightConstraint = nil;
+                }
+                heightConstraint = self.enclosingScrollView?.heightAnchor.constraint(equalToConstant: min(estHeight + 10, 600));
+                heightConstraint?.animator().isActive = true;
+            }
         }
+    }
+    
+    var heightConstraint: NSLayoutConstraint?;
+    
+    override func viewDidMoveToSuperview() {
+        self.heightConstraint = self.enclosingScrollView?.heightAnchor.constraint(equalToConstant: 0.0);
+    }
+    
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect);
+        self.delegate = self;
+        self.dataSource = self;
+        self.intercellSpacing = NSSize(width: 3, height: 8);
+        self.translatesAutoresizingMaskIntoConstraints = false;
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        self.delegate = self;
+        self.dataSource = self;
+        self.intercellSpacing = NSSize(width: 3, height: 8);
+        self.translatesAutoresizingMaskIntoConstraints = false;
     }
     
     func synchronize() {
-        form?.visibleFieldNames.forEach { fieldName in
-            synchronize(field: form!.getField(named: fieldName)!);
-        }
+        self.window?.makeFirstResponder(nil);
     }
     
-    func update() {
-        let subviews = self.subviews;
-        subviews.forEach { view in
-            view.removeFromSuperview();
-        }
-        namedFieldViews.removeAll();
-        
-        guard form != nil else {
-            return;
-        }
-        
-        form?.visibleFieldNames.forEach { fieldName in
-            let f = form!.getField(named: fieldName)!;
-            register(field: f);
-        }
+    func numberOfRows(in tableView: NSTableView) -> Int {
+        return visibleFields.count;
     }
     
-    fileprivate func synchronize(field formField: Field) {
-        let formView = self.namedFieldViews[formField.name];
-        switch formField {
-        case let f as BooleanField:
-            f.value = (formView as! NSButton).state == .on;
-        case let f as TextSingleField:
-            let v = (formView as! NSTextField).stringValue;
-            f.value = v.isEmpty ? nil : v;
-        case let f as TextPrivateField:
-            let v = (formView as! NSSecureTextField).stringValue;
-            f.value = v.isEmpty ? nil : v;
-        case let f as TextMultiField:
-            let v = (formView as! NSTextView).string;
-            f.value = v.isEmpty ? [] : v.split(separator: "\n").map({s -> String in return String(s)});
-        case let f as JidSingleField:
-            let v = (formView as! NSTextField).stringValue;
-            f.value = v.isEmpty ? nil : JID(v);
-        case let f as JidMultiField:
-            let v = (formView as! NSTextView).string;
-            f.value = v.isEmpty ? [] : v.split(separator: "\n").filter { s -> Bool in
-                return !s.isEmpty }.map{s -> String in
-                    return String(s)}.map {s -> JID in
-                        return JID(s)};
-        case let f as ListSingleField:
-            let v = (formView as! NSPopUpButton).indexOfSelectedItem;
-            f.value = v == -1 ? nil : f.options[v-1].value;
-        case let f as ListMultiField:
-            let values = formView as! [String: NSButton];
-            let v: [String] = values.filter { (k, v)  -> Bool in
-                return v.state == .on;
-                }.map { (k, v) -> String in
-                    return k;
-            };
-            f.value = v;
-        default:
-            break
-        }
+    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+        if tableColumn != nil {
+            let horizontalSpacing = self.intercellSpacing.width / 2;
+            let field = form?.getField(named: visibleFields[row]);
+            if tableView.column(withIdentifier: tableColumn!.identifier) == 0 {
+                if field is BooleanField {
+                    return nil;
+                }
+                let view = NSTextField(labelWithString: extractLabel(from: field!));
+                view.alignment = labelsToRight ? .right : .left;
+                view.lineBreakMode = .byWordWrapping;
+                view.cell?.lineBreakMode = .byWordWrapping;
+                (view.cell as? NSTextFieldCell)
+                view.isEditable = false;
+                view.isSelectable = false;
+                view.translatesAutoresizingMaskIntoConstraints = false;
+                view.setContentCompressionResistancePriority(.fittingSizeCompression, for: .horizontal);
+                view.setContentHuggingPriority(.defaultLow, for: .horizontal);
+                view.setContentHuggingPriority(.defaultLow, for: .vertical);
+                view.setContentCompressionResistancePriority(.required, for: .vertical);
+
+                let cellView = NSTableCellView(frame: .zero);
+                cellView.addSubview(view);
+                NSLayoutConstraint.activate([
+                    view.leadingAnchor.constraint(equalTo: cellView.leadingAnchor, constant: horizontalSpacing),
+                    view.trailingAnchor.constraint(equalTo: cellView.trailingAnchor, constant: -1 * horizontalSpacing),
+                    view.topAnchor.constraint(equalTo: cellView.topAnchor, constant: 3.0),
+                    view.bottomAnchor.constraint(equalTo: cellView.bottomAnchor)]);
+
+                return cellView;
+            } else {
+                let view = create(row: row, field: field!);
+                view.translatesAutoresizingMaskIntoConstraints = false;
+                view.setContentHuggingPriority(.fittingSizeCompression, for: .horizontal);
+                view.setContentHuggingPriority(.fittingSizeCompression, for: .vertical);
+
+                if view is NSTextView {
+                    let cellView = NSTableCellViewForTextView(frame: .zero);
+                    cellView.addSubview(view);
+                    NSLayoutConstraint.activate([
+                        view.leadingAnchor.constraint(equalTo: cellView.leadingAnchor, constant: horizontalSpacing),
+                        view.trailingAnchor.constraint(equalTo: cellView.trailingAnchor, constant: -1 * horizontalSpacing),
+                        view.topAnchor.constraint(equalTo: cellView.topAnchor, constant: 3.0),
+                        view.bottomAnchor.constraint(lessThanOrEqualTo: cellView.bottomAnchor, constant: -3.0)]);
+                    return cellView;
+                } else {
+                    let cellView = NSTableCellView(frame: .zero);
+                    cellView.addSubview(view);
+                    NSLayoutConstraint.activate([
+                        view.leadingAnchor.constraint(equalTo: cellView.leadingAnchor, constant: horizontalSpacing),
+                        view.trailingAnchor.constraint(equalTo: cellView.trailingAnchor, constant: -1 * horizontalSpacing),
+                        view.topAnchor.constraint(equalTo: cellView.topAnchor, constant: ((view as? NSTextField)?.isEditable ?? false) ? 0.0 : 3.0),
+                        view.bottomAnchor.constraint(lessThanOrEqualTo: cellView.bottomAnchor)]);
+                    return cellView;
+                }
+            }
+       }
+        return nil;
     }
     
-    fileprivate func register(field formField: Field) {
-        guard let fieldView = create(field: formField) else {
-            return;
-        }
-        namedFieldViews[formField.name] = fieldView;
+    func tableView(_ tableView: NSTableView, shouldSelectRow row: Int) -> Bool {
+        return false;
     }
     
-    fileprivate func create(field formField: Field) -> Any? {
+    override func validateProposedFirstResponder(_ responder: NSResponder, for event: NSEvent?) -> Bool {
+        return true;
+    }
+    
+    fileprivate func extractLabel(from formField: Field) -> String {
+        return formField.label ?? (formField.name.prefix(1).uppercased() + formField.name.dropFirst());
+    }
+    
+    fileprivate func create(row: Int, field formField: Field) -> NSView {
         let label = formField.label ?? (formField.name.prefix(1).uppercased() + formField.name.dropFirst());
         switch formField {
         case let f as BooleanField:
-            return addCheckbox(label: label, value: f.value);
+            return addCheckbox(row: row, label: label, value: f.value);
         case let f as TextSingleField:
-            return addTextField(label: label, value: f.value);
+            return addTextField(row: row, label: label, value: f.value);
         case let f as TextPrivateField:
-            return addTextPrivateField(label: label, value: f.value);
+            return addTextPrivateField(row: row,label: label, value: f.value);
         case let f as TextMultiField:
-            return addTextMultiField(label: label, value: f.value);
+            return addTextMultiField(row: row, label: label, value: f.value);
         case let f as JidSingleField:
-            return addTextField(label: label, value: f.value?.stringValue);
+            return addTextField(row: row, label: label, value: f.value?.stringValue);
         case let f as JidMultiField:
-            return addTextMultiField(label: label, value: f.value.map({ j -> String in return j.stringValue}));
+            return addTextMultiField(row: row, label: label, value: f.value.map({ j -> String in return j.stringValue}));
         case let f as ListSingleField:
-            return addListSingleField(label: label, value: f.value, options: f.options);
+            return addListSingleField(row: row, label: label, value: f.value, options: f.options);
         case let f as ListMultiField:
-            return addListMultiField(label: label, value: f.value, options: f.options);
+            return addListMultiField(row: row, label: label, value: f.value, options: f.options);
+        case let f as FixedField:
+            return addFixedField(label: label, value: f.value);
         default:
-            return nil;
+            return NSView(frame: .zero);
         }
     }
     
-    fileprivate func addCheckbox(label: String, value: Bool) -> NSButton {
+    fileprivate func addCheckbox(row: Int, label: String, value: Bool) -> NSButton {
         let tooltip = String(label.drop(while: { (ch) -> Bool in
             ch != "(";
         }));
-        let field = NSButton(checkboxWithTitle: String(label.dropLast(tooltip.count)), target: nil, action: nil);
+        let field = NSButton(checkboxWithTitle: String(label.dropLast(tooltip.count)), target: self, action: #selector(fieldChanged(_:)));
+        field.tag = row;
         if !tooltip.isEmpty {
             field.toolTip = tooltip;
         }
         field.state = value ? .on : .off;
-        return addRow(label: "", field: field);
+        return field;
     }
     
-    fileprivate func addTextField(label: String, value: String?) -> NSTextField {
+    @objc fileprivate func fieldChanged(_ sender: NSView) {
+        let row = (sender as? MultiSelectField)?.row ?? sender.tag;
+        switch self.form?.getField(named: visibleFields[row])! {
+        case let f as BooleanField:
+            f.value = (sender as! NSButton).state == .on;
+        case let f as TextSingleField:
+            f.value = (sender as! NSTextField).stringValue;
+        case let f as TextPrivateField:
+            f.value = (sender as! NSTextField).stringValue;
+        case let f as JidSingleField:
+            let v = (sender as? NSTextField)?.stringValue.trimmingCharacters(in: .whitespaces);
+            f.value = (v?.isEmpty ?? true) ? nil : JID(v!);
+        case let f as ListMultiField:
+            let v = (sender as! MultiSelectField).value;
+            f.value = v;
+        default:
+            break;
+        }
+    }
+    
+    override func textDidChange(_ notification: Notification) {
+        guard let sender = (notification.object as? MyTextView) else {
+            return;
+        }
+        let row = sender.row;
+        
+        switch self.form?.getField(named: self.visibleFields[row])! {
+        case let f as TextMultiField:
+            let v = sender.string;
+            f.value = v.split(separator: "\n").map({ s in String(s) });
+        case let f as JidMultiField:
+            let v = sender.string.split(separator: "\n");
+            f.value = v.map({ s in String(s) }).map({ s in JID(s) });
+        default:
+            break;
+        }
+    }
+
+    fileprivate func addFixedField(label: String, value: String?) -> NSTextField {
         let field = NSTextField(string: value ?? "");
-        return addRow(label: label, field: field);
+        field.isEditable = false;
+        field.isEnabled = false;
+        return field;
+    }
+    
+    fileprivate func addTextField(row: Int, label: String, value: String?) -> NSTextField {
+        let field = NSTextField(string: value ?? "");
+        field.setContentCompressionResistancePriority(.required, for: .vertical);
+        field.isEditable = true;
+        field.tag = row;
+        field.target = self;
+        field.action = #selector(fieldChanged(_:))
+        return field;
     }
 
-    fileprivate func addTextPrivateField(label: String, value: String?) -> NSSecureTextField {
+    fileprivate func addTextPrivateField(row: Int, label: String, value: String?) -> NSSecureTextField {
         let field = NSSecureTextField(string: value ?? "");
-        return addRow(label: label, field: field);
+        field.isEditable = true;
+        field.tag = row;
+        field.target = self;
+        field.action = #selector(fieldChanged(_:))
+        return field;
     }
 
-    fileprivate func addTextMultiField(label: String, value: [String]) -> NSTextView {
-        let scroll = NSScrollView(frame: .zero);
-        scroll.autoresizingMask = [.width, .height];
-        scroll.hasHorizontalRuler = false;
-        scroll.heightAnchor.constraint(equalToConstant: 100);
+    fileprivate func addTextMultiField(row: Int, label: String, value: [String]) -> NSView {
+//        let scroll = NSScrollView(frame: .zero);
+//        scroll.autoresizingMask = [.width, .height];
+//        scroll.hasHorizontalRuler = false;
+//        scroll.heightAnchor.constraint(equalToConstant: 100);
         
-        let contentSize = scroll.contentSize;
+//        let contentSize = scroll.contentSize;
         
-        let field = NSTextView(frame: NSRect(x: 0, y:0, width: contentSize.width, height: contentSize.height));
-        field.minSize = NSSize(width: 0.0, height: contentSize.height);
+        let field = MyTextView(frame: .zero);//NSRect(x: 0, y:0, width: contentSize.width, height: contentSize.height));
+        field.row = row;
+        field.minSize = NSSize(width: 0.0, height: 100);//contentSize.height);
         field.maxSize = NSSize(width: Double.greatestFiniteMagnitude, height: Double.greatestFiniteMagnitude);
         field.isVerticallyResizable = true;
         field.isHorizontallyResizable = false;
         field.autoresizingMask = .width;
-        field.textContainer?.containerSize = NSSize(width: contentSize.width, height: CGFloat(Float.greatestFiniteMagnitude));
+//        field.textContainer?.containerSize = NSSize(width: contentSize.width, height: CGFloat(Float.greatestFiniteMagnitude));
         field.string = value.joined(separator: "\n");
         field.textContainer?.widthTracksTextView = true;
-        scroll.documentView = field;
         
-        _ = addRow(label: label, field: scroll);
+        field.delegate = self;
+        
+//        scroll.documentView = field;
+        
         return field;
     }
     
-    fileprivate func addListSingleField(label: String, value: String?, options: [ListFieldOption]) -> NSButton {
+    fileprivate func addListSingleField(row: Int, label: String, value: String?, options: [ListFieldOption]) -> NSButton {
         let field = NSPopUpButton(frame: .zero, pullsDown: true);
         field.addItem(withTitle: "");
         field.action = #selector(listSelectionChanged);
         field.target = self;
+        field.tag = row;
         field.addItems(withTitles: options.map { option in option.label ?? option.value });
-        if value != nil, let idx = options.firstIndex(where: { (option) -> Bool in
-            return value! == option.value;
+        if let idx = options.firstIndex(where: { (option) -> Bool in
+            return (value ?? "") == option.value;
         }) {
             field.selectItem(at: idx + 1);
             field.title = field.titleOfSelectedItem ?? "";
         }
-        _ = addRow(label: label, field: field);
         return field;
     }
     
     @objc fileprivate func listSelectionChanged(_ sender: NSPopUpButton) {
         sender.title = sender.titleOfSelectedItem ?? "";
+        switch self.form?.getField(named: self.visibleFields[sender.tag])! {
+        case let f as ListSingleField:
+            let v = sender.indexOfSelectedItem;
+            f.value = v == -1 ? nil : f.options[v-1].value;
+        default:
+            break;
+        }
     }
     
-    fileprivate func addListMultiField(label: String, value: [String], options: [ListFieldOption]) -> Any {
-        _ = self.addRow(label: "", field: NSTextField(labelWithString: ""));
-        let stackView = NSStackView();
-        stackView.alignment = .leading;
-        stackView.orientation = .vertical;
-        var optionFields: [String: NSButton] = [:];
-        options.forEach { option in
-            let field = NSButton(checkboxWithTitle: option.label ?? option.value, target: nil, action: nil);
-            field.state = value.contains(option.value) ? .on : .off;
-            optionFields[option.value] = field;
-            stackView.addView(field, in: .bottom);
-        }
-        _ = self.addRow(label: label, field: stackView);
-        _ = self.addRow(label: "", field: NSTextField(labelWithString: ""));
-        return optionFields;
+    fileprivate func addListMultiField(row: Int, label: String, value: [String], options: [ListFieldOption]) -> NSStackView {
+        let field = MultiSelectField(row: row, value: value, options: options);
+        field.action = #selector(fieldChanged(_:))
+        field.target = self;
+        return field;
     }
+ 
+    class MyTextView: NSTextView {
+        var row: Int = 0;
         
+        override var intrinsicContentSize: NSSize {
+            self.layoutManager!.ensureLayout(for: self.textContainer!);
+            let size = layoutManager!.usedRect(for: self.textContainer!).size;
+            if size.height < 100 {
+                return NSSize(width: size.width, height: 100);
+            }
+            return size;
+        }
+        
+        override func didChangeText() {
+            super.didChangeText();
+            self.invalidateIntrinsicContentSize();
+        }
+        
+    }
+
+    class MultiSelectField: NSStackView {
+        
+        let row: Int;
+        let options: [ListFieldOption];
+        var value: [String];
+        var action: Selector?;
+        weak var target: NSObject?;
+        
+        init(row: Int, value: [String], options: [ListFieldOption]) {
+            self.row = row;
+            self.options = options;
+            self.value = value;
+            super.init(frame: .zero);
+            self.alignment = .leading;
+            self.orientation = .vertical;
+            self.options.forEach { (option) in
+                let field = NSButton(checkboxWithTitle: option.label ?? option.value, target: self, action: #selector(checkboxChanged));
+                field.state = value.contains(option.value) ? .on : .off;
+                self.addView(field, in: .bottom);
+            }
+        }
+        
+        required init?(coder decoder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+        
+        @objc fileprivate func checkboxChanged(_ sender: NSButton) {
+            var newValue: [String] = [];
+            self.subviews.enumerated().forEach { (arg0) in
+                let (row, item) = arg0
+                let button = item as! NSButton;
+                if button.state == .on {
+                    newValue.append(self.options[row].value);
+                }
+            }
+            self.value = newValue;
+            if action != nil {
+                target?.performSelector(onMainThread: action!, with: self, waitUntilDone: true);
+            }
+        }
+    }
+    
+    class NSTableCellViewForTextView: NSTableCellView {
+        
+        override func draw(_ dirtyRect: NSRect) {
+            NSGraphicsContext.saveGraphicsState();
+            NSColor.textBackgroundColor.setFill();
+            self.bounds.fill();
+            NSColor.controlShadowColor.set();
+            self.bounds.frame();
+            NSGraphicsContext.restoreGraphicsState();
+        }
+        
+    }
 }

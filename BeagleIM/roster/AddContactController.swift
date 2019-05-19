@@ -58,10 +58,13 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
             accountSelector.menu?.addItem(NSMenuItem(title: account.stringValue, action: nil, keyEquivalent: ""));
         }
         _ = formView.addRow(label: "Add to:", field: accountSelector);
+        formView.groupItems(from: accountSelector, to: accountSelector);
+        
         jidField = formView.addRow(label: "XMPP JID:", field: NSTextField(string: ""));
         jidField.delegate = self;
         labelField = formView.addRow(label: "Contact name:", field: NSTextField(string: ""));
         //accountSelector.widthAnchor.constraint(equalTo: labelField.widthAnchor, multiplier: 1.0).isActive = true;
+        formView.groupItems(from: jidField, to: labelField);
         
         requestSubscriptionButton = disclosureView.addRow(label: "", field: NSButton(checkboxWithTitle: "Request presence subscription", target: nil, action: nil));
         allowSubscriptionButton = disclosureView.addRow(label: "", field: NSButton(checkboxWithTitle: "Allow presence subscription", target: nil, action: nil));

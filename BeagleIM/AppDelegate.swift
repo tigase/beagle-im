@@ -175,11 +175,28 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             xmlConsoleItem.isHidden = !NSEvent.modifierFlags.contains(.option);
             let accountsMenu = NSMenu(title: "XML Console");
             
-            AccountManager.getAccounts().forEach { (accountJid) in
+            AccountManager.getAccounts().sorted(by: { (a1, a2) -> Bool in
+                return a1.stringValue.compare(a2.stringValue) == .orderedAscending;
+            }).forEach { (accountJid) in
                 accountsMenu.addItem(withTitle: accountJid.stringValue, action: #selector(showXmlConsole), keyEquivalent: "").target = self;
             }
             
-            menu.item(withTitle: "XML Console")?.submenu = accountsMenu;
+            xmlConsoleItem.submenu = accountsMenu;
+        }
+
+        if let serviceDiscoveryItem = menu.item(withTitle: "Service Discovery") {
+            serviceDiscoveryItem.isHidden = !NSEvent.modifierFlags.contains(.option);
+            let accountsMenu = NSMenu(title: "Service Discovery");
+            
+            AccountManager.getAccounts().filter({ (a1) -> Bool in
+                return XmppService.instance.getClient(for: a1) != nil;
+            }).sorted(by: { (a1, a2) -> Bool in
+                return a1.stringValue.compare(a2.stringValue) == .orderedAscending;
+            }).forEach { (accountJid) in
+                accountsMenu.addItem(withTitle: accountJid.stringValue, action: #selector(showServiceDiscovery), keyEquivalent: "").target = self;
+            }
+            
+            serviceDiscoveryItem.submenu = accountsMenu;
         }
     }
     
@@ -189,7 +206,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         print("xml console for:", accountJid);
         XMLConsoleViewController.open(for: accountJid);
     }
-    
+
+    @objc func showServiceDiscovery(_ sender: NSMenuItem) {
+        let accountJid = BareJID(sender.title);
+        
+        print("service discovery for:", accountJid);
+        
+        guard let windowController = NSStoryboard(name: "ServiceDiscovery", bundle: nil).instantiateController(withIdentifier: "ServiceDiscoveryWindowController") as? NSWindowController else {
+            return;
+        }
+        
+        guard let controller = windowController.contentViewController as? ServiceDiscoveryViewController else {
+            return;
+        }
+        
+        controller.account = accountJid;
+        controller.jid = JID(accountJid.domain);
+        
+        windowController.showWindow(self);
+    }
+
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
         XmppService.instance.disconnectClients();

@@ -21,44 +21,57 @@
 
 import AppKit
 
-class FormView: NSStackView, NSTextFieldDelegate {
+class FormView: NSGridView, NSTextFieldDelegate {
     
     var moveToNextFieldOnEnter: Bool = true;
     
     override init(frame: NSRect) {
         super.init(frame: frame);
-        self.alignment = .centerX;
+        self.setContentHuggingPriority(.defaultHigh, for: .horizontal);
+        self.setContentHuggingPriority(.defaultHigh, for: .vertical);
+        self.column(at: 0).xPlacement = .trailing;
+        self.rowAlignment = .firstBaseline;
     }
     
     required init?(coder decoder: NSCoder) {
         super.init(coder: decoder);
-        self.alignment = .centerX;
+        self.setContentHuggingPriority(.defaultHigh, for: .horizontal);
+        self.setContentHuggingPriority(.defaultHigh, for: .vertical);
+        self.column(at: 0).xPlacement = .trailing;
+        self.rowAlignment = .firstBaseline;
     }
     
     func addRow<T: NSView>(label text: String, field: T) -> T {
-        let label = createLabel(text: text);
-        return addRow(label: label, field: field);
+        if moveToNextFieldOnEnter {
+            (field as? NSTextField)?.delegate = self;
+        }
+        let label: NSView = text.isEmpty ? NSGridCell.emptyContentView : createLabel(text: text);
+        self.addRow(with: [label, field]);
+        (label as? NSTextField)?.alignment = .right;
+        return field;
+    }
+    
+    func groupItems(from: NSView, to: NSView) {
+        self.cell(for: from)!.row!.topPadding = 5;
+        self.cell(for: to)!.row!.bottomPadding = 5;
     }
     
     func addRow<T: NSView>(label: NSTextField, field: T) -> T {
         if moveToNextFieldOnEnter {
             (field as? NSTextField)?.delegate = self;
         }
-        let row = RowView(views: [label, field]);
-        self.addView(row, in: .bottom);
-        label.widthAnchor.constraint(equalTo: row.widthAnchor, multiplier: 0.32).isActive = true;
-        label.widthAnchor.constraint(lessThanOrEqualToConstant: 250).isActive = true;
-        row.widthAnchor.constraint(equalTo: self.widthAnchor, multiplier: 1.0).isActive = true;
-        field.trailingAnchor.constraint(equalTo: row.trailingAnchor).isActive = true;
+        self.addRow(with: [label, field]);
+        (label as? NSTextField)?.alignment = .right;
+        self.column(at: 0).xPlacement = .trailing;
         return field;
     }
     
     func createLabel(text: String) -> NSTextField {
-        let label = NSTextField(wrappingLabelWithString: text);
+        let label = NSTextField(labelWithString: text);
         label.isEditable = false;
         label.isBordered = false;
+        label.setContentHuggingPriority(.defaultLow, for: .horizontal);
         label.drawsBackground = false;
-        label.alignment = .right;
         return label;
     }
     
@@ -66,24 +79,23 @@ class FormView: NSStackView, NSTextFieldDelegate {
         if commandSelector == #selector(NSResponder.insertNewline(_:)) || commandSelector == #selector(NSResponder.insertTab(_:)) {
             control.resignFirstResponder();
             
-            guard var idx = self.views.firstIndex(where: { (view) -> Bool in
-                view.subviews[1] == control;
-            }) else {
+            guard let row = self.cell(for: control)?.row else {
                 return false;
             }
+            var idx = self.index(of: row)
             
             var responder: NSResponder? = nil;
             repeat {
                 idx = idx + 1;
-                if idx >= views.count {
+                if idx >= self.numberOfRows {
                     idx = 0;
                 }
-                responder = views[idx].subviews[1];
+                responder = self.cell(atColumnIndex: 1, rowIndex: idx).contentView as? NSResponder;
                 if !(responder?.acceptsFirstResponder ?? false) {
                     responder = nil;
                 }
             } while responder == nil;
-            
+
             self.window?.makeFirstResponder(responder);
 
             return true;
@@ -91,6 +103,4 @@ class FormView: NSStackView, NSTextFieldDelegate {
         return false;
     }
     
-    class RowView: NSStackView {
-    }
 }

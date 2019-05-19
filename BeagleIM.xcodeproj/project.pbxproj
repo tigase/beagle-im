@@ -57,6 +57,11 @@
 		FE5202D7227F339D00644C12 /* BaseChatMessageCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5202D6227F339D00644C12 /* BaseChatMessageCellView.swift */; };
 		FE5BE64C213AC3EA00463183 /* ChatsCellViewCloseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5BE64B213AC3EA00463183 /* ChatsCellViewCloseButton.swift */; };
 		FE5BE64E213AD19A00463183 /* ChatCellViewMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5BE64D213AD19A00463183 /* ChatCellViewMessage.swift */; };
+		FE5C6B2422896B12003DAB30 /* ServiceDiscovery.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE5C6B2322896B12003DAB30 /* ServiceDiscovery.storyboard */; };
+		FE5C6B2722897F1B003DAB30 /* ServiceDiscoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5C6B2622897F1B003DAB30 /* ServiceDiscoveryViewController.swift */; };
+		FE5C6B29228B34B9003DAB30 /* SelectAdHocCommandController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5C6B28228B34B9003DAB30 /* SelectAdHocCommandController.swift */; };
+		FE5C6B2B228C119A003DAB30 /* ExecuteAdHocCommandController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5C6B2A228C119A003DAB30 /* ExecuteAdHocCommandController.swift */; };
+		FE5C6B2D22916C47003DAB30 /* JoinGroupchatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5C6B2C22916C47003DAB30 /* JoinGroupchatViewController.swift */; };
 		FE5CAF982215BCD600FABD46 /* ScriptsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5CAF972215BCD600FABD46 /* ScriptsManager.swift */; };
 		FE5CAF9A2216EEF200FABD46 /* NSPopupButtonNoSizeWhenHidden.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5CAF992216EEF200FABD46 /* NSPopupButtonNoSizeWhenHidden.swift */; };
 		FE6E6BF721384D5F003B1696 /* AutoresizingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */; };
@@ -208,6 +213,11 @@
 		FE5202D6227F339D00644C12 /* BaseChatMessageCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseChatMessageCellView.swift; sourceTree = "<group>"; };
 		FE5BE64B213AC3EA00463183 /* ChatsCellViewCloseButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsCellViewCloseButton.swift; sourceTree = "<group>"; };
 		FE5BE64D213AD19A00463183 /* ChatCellViewMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatCellViewMessage.swift; sourceTree = "<group>"; };
+		FE5C6B2322896B12003DAB30 /* ServiceDiscovery.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ServiceDiscovery.storyboard; sourceTree = "<group>"; };
+		FE5C6B2622897F1B003DAB30 /* ServiceDiscoveryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceDiscoveryViewController.swift; sourceTree = "<group>"; };
+		FE5C6B28228B34B9003DAB30 /* SelectAdHocCommandController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectAdHocCommandController.swift; sourceTree = "<group>"; };
+		FE5C6B2A228C119A003DAB30 /* ExecuteAdHocCommandController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExecuteAdHocCommandController.swift; sourceTree = "<group>"; };
+		FE5C6B2C22916C47003DAB30 /* JoinGroupchatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinGroupchatViewController.swift; sourceTree = "<group>"; };
 		FE5CAF972215BCD600FABD46 /* ScriptsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptsManager.swift; sourceTree = "<group>"; };
 		FE5CAF992216EEF200FABD46 /* NSPopupButtonNoSizeWhenHidden.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSPopupButtonNoSizeWhenHidden.swift; sourceTree = "<group>"; };
 		FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoresizingTextField.swift; sourceTree = "<group>"; };
@@ -345,6 +355,17 @@
 				FE3AA0D02154077D001667A9 /* ChatsListGroupAbstractChat.swift */,
 			);
 			path = groups;
+			sourceTree = "<group>";
+		};
+		FE5C6B2522897F0C003DAB30 /* servicedisco */ = {
+			isa = PBXGroup;
+			children = (
+				FE5C6B2622897F1B003DAB30 /* ServiceDiscoveryViewController.swift */,
+				FE5C6B28228B34B9003DAB30 /* SelectAdHocCommandController.swift */,
+				FE5C6B2A228C119A003DAB30 /* ExecuteAdHocCommandController.swift */,
+				FE5C6B2C22916C47003DAB30 /* JoinGroupchatViewController.swift */,
+			);
+			path = servicedisco;
 			sourceTree = "<group>";
 		};
 		FE6E6BE121384D5E003B1696 /* ui */ = {
@@ -493,6 +514,7 @@
 		FED2ECF22066B01C00F506A5 /* BeagleIM */ = {
 			isa = PBXGroup;
 			children = (
+				FE5C6B2522897F0C003DAB30 /* servicedisco */,
 				FE87C76D22834DFA00B0B64C /* xmlconsole */,
 				FEEF25372266528500202B28 /* contact */,
 				FE1A8BA421CA880100604141 /* voip */,
@@ -509,6 +531,7 @@
 				FED2ECF32066B01C00F506A5 /* AppDelegate.swift */,
 				FED2ECF92066B01C00F506A5 /* Main.storyboard */,
 				FE4073A621BACA2D009CE335 /* VoIP.storyboard */,
+				FE5C6B2322896B12003DAB30 /* ServiceDiscovery.storyboard */,
 				FEDC03172257B2B400F24BF4 /* Settings.storyboard */,
 				FE87C76B2283487300B0B64C /* XMLConsole.storyboard */,
 				FED2ECFC2066B01C00F506A5 /* Info.plist */,
@@ -713,6 +736,7 @@
 				FE8C9F5421B3F6BD00BE8332 /* container-migration.plist in Resources */,
 				FE02DD11225B8D1100FA08EB /* db-schema-3.sql in Resources */,
 				FE421B4921C92FBF0022DF77 /* LICENSE in Resources */,
+				FE5C6B2422896B12003DAB30 /* ServiceDiscovery.storyboard in Resources */,
 				FE87C76C2283487300B0B64C /* XMLConsole.storyboard in Resources */,
 				FE421B4721C928B00022DF77 /* Credits.rtf in Resources */,
 				FED2ECF82066B01C00F506A5 /* Assets.xcassets in Resources */,
@@ -798,6 +822,7 @@
 				FEA8941F2156625E004C3B51 /* ConfigureRoomViewController.swift in Sources */,
 				FE30D8AF214C3B7600670BEC /* NSImage.swift in Sources */,
 				FE6E6C0421384D5F003B1696 /* DatabaseSchemaManager.swift in Sources */,
+				FE5C6B2722897F1B003DAB30 /* ServiceDiscoveryViewController.swift in Sources */,
 				FE3AA0CD2154069D001667A9 /* ChatsListGroupGroupchat.swift in Sources */,
 				FED7AEC521417328001E164B /* AvatarStore.swift in Sources */,
 				FE6E6BFA21384D5F003B1696 /* AccountManager.swift in Sources */,
@@ -820,6 +845,7 @@
 				FE3AA0D3215409B8001667A9 /* DBRoomsManager.swift in Sources */,
 				FE5BE64C213AC3EA00463183 /* ChatsCellViewCloseButton.swift in Sources */,
 				FE3AA0D12154077D001667A9 /* ChatsListGroupAbstractChat.swift in Sources */,
+				FE5C6B2B228C119A003DAB30 /* ExecuteAdHocCommandController.swift in Sources */,
 				FE41FB3B215CD7F300AD86D3 /* XmppServiceEventHandler.swift in Sources */,
 				FE30D8B1214CE93600670BEC /* FormView.swift in Sources */,
 				FE30D8B3214CF15700670BEC /* AddContactController.swift in Sources */,
@@ -841,6 +867,7 @@
 				FED2ECF42066B01C00F506A5 /* AppDelegate.swift in Sources */,
 				FE30D8BA214ED28A00670BEC /* OpenGroupchatController.swift in Sources */,
 				FE41FB33215B8D5A00AD86D3 /* ServerCertificateErrorController.swift in Sources */,
+				FE5C6B2D22916C47003DAB30 /* JoinGroupchatViewController.swift in Sources */,
 				FE3F2AF2228813E200737D51 /* EmptyViewController.swift in Sources */,
 				FEDE6AF921440AEF0019170A /* StatusHelper.swift in Sources */,
 				FE41FB45215E426400AD86D3 /* MessageArchivingSetttingsViewController.swift in Sources */,
@@ -851,6 +878,7 @@
 				FEB4EAFE2163714300F8A9E2 /* RoundedScrollView.swift in Sources */,
 				FEC5DC8021552A9B00AA3E4F /* ChatViewDataSource.swift in Sources */,
 				FE41FB37215BBFC800AD86D3 /* DBCapabilitiesCache.swift in Sources */,
+				FE5C6B29228B34B9003DAB30 /* SelectAdHocCommandController.swift in Sources */,
 				FE6E6BFB21384D5F003B1696 /* XmppService.swift in Sources */,
 				FE6E6BF721384D5F003B1696 /* AutoresizingTextField.swift in Sources */,
 				FE41FB2F215A822700AD86D3 /* ManageAffiliationsViewController.swift in Sources */,

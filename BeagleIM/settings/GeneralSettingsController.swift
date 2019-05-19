@@ -55,36 +55,46 @@ class GeneralSettingsController: NSViewController {
             appearance = formView.addRow(label: "Appearance:", field: NSPopUpButton(frame: .zero, pullsDown: false));
             appearance?.target = self;
             appearance?.action = #selector(checkboxChanged(_:));
+            formView.groupItems(from: appearance!, to: appearance!);
         }
         autoconnect = formView.addRow(label: "Account status:", field: NSButton(checkboxWithTitle: "Connect after start", target: self, action: #selector(checkboxChanged)))
         automaticStatus = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Automatic status", target: self, action: #selector(checkboxChanged)));
         rememberLastStatusButton = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Remember last status", target: self, action: #selector(checkboxChanged)));
-
+        formView.groupItems(from: autoconnect, to: rememberLastStatusButton);
+        
         requestSubscriptionButton = formView.addRow(label: "Adding user:", field: NSButton(checkboxWithTitle: "Request presence subscription", target: self, action: #selector(checkboxChanged)));
         allowSubscriptionButton = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Allow presence subscription", target: self, action: #selector(checkboxChanged)));
+        formView.groupItems(from: requestSubscriptionButton, to: allowSubscriptionButton);
         
         enableMessageCarbonsButton = formView.addRow(label: "Message carbons:", field: NSButton(checkboxWithTitle: "Enable", target: self, action: #selector(checkboxChanged(_:))));
         messageCarbonsMarkAsReadButton = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Mark carbon messages as read", target: self, action: #selector(checkboxChanged(_:))));
+        formView.groupItems(from: enableMessageCarbonsButton, to: messageCarbonsMarkAsReadButton);
         
         encryptionButton = formView.addRow(label: "Default encryption:", field: NSPopUpButton(frame: .zero, pullsDown: false));
         encryptionButton?.target = self;
         encryptionButton?.action = #selector(checkboxChanged(_:));
+        formView.groupItems(from: encryptionButton, to: encryptionButton);
         
         notificationsFromUnknownSenders = formView.addRow(label: "Notifications:", field: NSButton(checkboxWithTitle: "Show for messages from unknown senders", target: self, action: #selector(checkboxChanged(_:))));
         systemMenuIcon = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show system menu icon", target: self, action: #selector(checkboxChanged(_:))));
+        formView.groupItems(from: notificationsFromUnknownSenders, to: systemMenuIcon);
         
-        imagePreviewMaxSizeLabel = formView.createLabel(text: "");
-        imagePreviewMaxSize = formView.addRow(label: imagePreviewMaxSizeLabel, field: NSSlider(value: Double(Settings.imageDownloadSizeLimit.integer()), minValue: 0, maxValue: 50 * 1024 * 1024, target: self, action: #selector(sliderChanged)));
+        imagePreviewMaxSize = formView.addRow(label: "Image preview size limit:", field: NSSlider(value: Double(Settings.imageDownloadSizeLimit.integer()), minValue: 0, maxValue: 50 * 1024 * 1024, target: self, action: #selector(sliderChanged)));
+        imagePreviewMaxSizeLabel = formView.addRow(label: "", field: formView.createLabel(text: "0.0B"));
+        imagePreviewMaxSizeLabel.alignment = .center;
+        formView.groupItems(from:imagePreviewMaxSize, to: imagePreviewMaxSizeLabel);
         updateImagePreviewMaxSizeLabel();
-        
+        formView.cell(for: imagePreviewMaxSizeLabel)!.xPlacement = .center;
+
         markdownFormatting = formView.addRow(label: "Message formatting:", field: NSButton(checkboxWithTitle: "Markdown", target: self, action: #selector(checkboxChanged(_:))));
         showEmoticons = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show emoticons", target: self, action: #selector(checkboxChanged(_:))))
-        
         spellchecking = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Spellchecking", target: self, action: #selector(checkboxChanged(_:))));
+        formView.groupItems(from:markdownFormatting, to: spellchecking);
         
         ignoreJingleSupportCheck = formView.addRow(label: "Experimental", field: NSButton(checkboxWithTitle: "Ignore VoIP support check", target: self, action: #selector(checkboxChanged(_:))));
         
         enableBookmarksSync = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Enable groupchat bookmarks sync", target: self, action: #selector(checkboxChanged(_:))));
+        formView.groupItems(from:ignoreJingleSupportCheck, to: enableBookmarksSync);
         
         self.preferredContentSize = NSSize(width: self.view.frame.size.width, height: self.view.frame.size.height);
     }
@@ -190,7 +200,7 @@ class GeneralSettingsController: NSViewController {
     }
 
     fileprivate func updateImagePreviewMaxSizeLabel() {
-        self.imagePreviewMaxSizeLabel.stringValue = "Image preview size limit \(string(filesize: Settings.imageDownloadSizeLimit.integer()))";
+        self.imagePreviewMaxSizeLabel.stringValue = "\(string(filesize: Settings.imageDownloadSizeLimit.integer()))";
     }
     
     fileprivate func string(filesize: Int) -> String {
