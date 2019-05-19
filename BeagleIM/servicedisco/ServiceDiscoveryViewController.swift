@@ -348,18 +348,30 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
         }
 
         self.progressIndicator.startAnimation(self);
-        discoModule.getInfo(for: jid, node: self.node, onInfoReceived: { (node, identities, features) in
+        discoModule.getInfo(for: jid, node: self.node, onInfoReceived: { [weak self] (node, identities, features) in
             let categories = identities.map({ (identity) -> String in
                 return identity.category;
             });
             DispatchQueue.main.async {
-                self.type = DisplayType.from(categories: categories);
-                self.discoItems(for: Item(jid: jid, node: node ?? self.node, name: nil), on: account);
+                self?.type = DisplayType.from(categories: categories);
+                self?.discoItems(for: Item(jid: jid, node: node ?? self?.node, name: nil), on: account);
             }
-        }) { (error) in
+        }) { [weak self] (error) in
             // FIXME: HANDLE IT SOMEHOW!
             DispatchQueue.main.async {
-                self.progressIndicator.stopAnimation(self);
+                self?.progressIndicator.stopAnimation(self);
+                var node = self?.node ?? "";
+                if !node.isEmpty {
+                    node = " and node \(node)";
+                }
+                let alert = Alert();
+                alert.icon = NSImage(named: NSImage.cautionName);
+                alert.messageText = "Service Discovery Failure!"
+                alert.informativeText = "It was not possible to retrieve disco#info details from \(jid)\(node): \(error?.rawValue ?? "unknown error")";
+                alert.addButton(withTitle: "OK");
+                alert.run(completionHandler: { (response) in
+                    // nothing to do..
+                })
             }
             print("error", error);
         }
@@ -378,25 +390,25 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
             }
             return;
         }
-        discoModule.getItems(for: parentItem.jid, node: parentItem.node, onItemsReceived: { (node, items) in
+        discoModule.getItems(for: parentItem.jid, node: parentItem.node, onItemsReceived: { [weak self] (node, items) in
             DispatchQueue.main.async {
                 parentItem.subitems = items.map({ (item) -> Item in
                     return Item(item);
                 }).sorted(by: { (i1, i2) -> Bool in
                     return (i1.name ?? i1.jid.stringValue).compare(i2.name ?? i2.jid.stringValue) == .orderedAscending;
                 })
-                if self.rootItem == nil {
-                    self.rootItem = parentItem;
-                    self.outlineView.reloadData();
+                if self?.rootItem == nil {
+                    self?.rootItem = parentItem;
+                    self?.outlineView.reloadData();
                 } else {
-                    self.outlineView.insertItems(at: IndexSet(0..<parentItem.subitems!.count), inParent: parentItem, withAnimation: .effectGap);
+                    self?.outlineView.insertItems(at: IndexSet(0..<parentItem.subitems!.count), inParent: parentItem, withAnimation: .effectGap);
                 }
             }
             var count = items.count;
             let finished = {
                 count = count - 1;
                 if count <= 0 {
-                    self.progressIndicator.stopAnimation(self);
+                    self?.progressIndicator.stopAnimation(self);
                 }
             }
             items.forEach({ (item) in
@@ -409,7 +421,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                         }
                         if let it = parentItem.subitems?[idx] {
                             it.update(identities: identities, features: features);
-                            self.outlineView.reloadItem(it);
+                            self?.outlineView.reloadItem(it);
                         }
                         finished();
                     }
@@ -426,11 +438,23 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                     finished();
                 }
             }
-        }, onError: { (error) in
+        }, onError: { [weak self] (error) in
             parentItem.subitems = [];
             // FIXME: HANDLE IT SOMEHOW!
             DispatchQueue.main.async {
-                self.progressIndicator.stopAnimation(self);
+                self?.progressIndicator.stopAnimation(self);
+                var node = parentItem.node ?? "";
+                if !node.isEmpty {
+                    node = " and node \(node)";
+                }
+                let alert = Alert();
+                alert.icon = NSImage(named: NSImage.cautionName);
+                alert.messageText = "Service Discovery Failure!"
+                alert.informativeText = "It was not possible to retrieve disco#items details from \(parentItem.jid)\(node): \(error?.rawValue ?? "unknown error")";
+                alert.addButton(withTitle: "OK");
+                alert.run(completionHandler: { (response) in
+                    // nothing to do..
+                });
             }
             print("error", error);
         });
