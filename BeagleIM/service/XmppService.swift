@@ -314,7 +314,7 @@ class XmppService: EventHandler {
         
         dispatcher.sync {
             if let client = self._clients[account.name] {
-                client.connectionConfiguration.setUserPassword(account.password!);
+                client.connectionConfiguration.setUserPassword(account.password);
                 client.disconnect();
             } else {
                 let client = self.register(client: self.initializeClient(jid: account.name)!, for: account.name);
