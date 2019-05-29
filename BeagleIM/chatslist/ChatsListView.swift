@@ -193,6 +193,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     @objc func chatSelected(_ notification: Notification) {
         guard let chat = notification.object as? DBChatProtocol else {
             guard let account = notification.userInfo?["account"] as? BareJID, let jid = notification.userInfo?["jid"] as? BareJID else {
+                self.outlineView.selectRowIndexes(IndexSet(), byExtendingSelection: false);
                 return;
             }
             self.groups.forEach { group in

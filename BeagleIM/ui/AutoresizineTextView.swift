@@ -47,6 +47,10 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
         self.invalidateIntrinsicContentSize();
     }
     
+    override func cancelOperation(_ sender: Any?) {
+        NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: nil);
+    }
+    
     func textStorage(_ textStorage: NSTextStorage, didProcessEditing editedMask: NSTextStorageEditActions, range editedRange: NSRange, changeInLength delta: Int) {
         let fullRange = NSRange(0..<textStorage.length);
         textStorage.fixAttributes(in: fullRange);
