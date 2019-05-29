@@ -98,7 +98,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         //}
     }
     
-    var currentSession: SelectionSession?;
+    var currentSession: BaseSelectionSession?;
     
     func handleMouse(event: NSEvent) -> Bool {
         switch event.type {
@@ -135,6 +135,58 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
             currentSession = nil;
         
             guard event.clickCount == 1 else {
+                if event.clickCount == 2 {
+                    guard let messageView = messageViewFor(event: event) else {
+                        return isInMesageView(event: event);
+                    }
+                    if let idx = messageView.message.characterIndexFor(event: event)?.location, idx != 0 {
+                        let str = messageView.message.stringValue;
+                        let clickIdx = str.index(str.startIndex, offsetBy: idx);
+                        let before = str[str.startIndex...clickIdx]
+                        let after = str[str.index(after: clickIdx)..<str.endIndex];
+                        let beforeIdx = before.lastIndex { (c) -> Bool in
+                            return !CharacterSet.alphanumerics.contains(c.unicodeScalars.first!);
+                        }
+                        let prefix = beforeIdx != nil ? before[before.index(after: beforeIdx!)..<before.endIndex] : before;
+                        let afterIdx = after.firstIndex { (c) -> Bool in
+                            return !CharacterSet.alphanumerics.contains(c.unicodeScalars.first!);
+                        }
+                        let suffix = (afterIdx != nil) ? ((afterIdx! != after.startIndex) ? after[after.startIndex...after.index(before: afterIdx!)] : nil) : after;
+                        print("got:", prefix, suffix, "\(String(prefix))\(String(suffix ?? ""))");
+                        let attrStr = NSMutableAttributedString(attributedString: messageView.message.attributedStringValue);
+                        let len = (prefix.count + (suffix?.count ?? 0));
+                        attrStr.addAttribute(.backgroundColor, value: NSColor.selectedTextBackgroundColor, range: NSRange(location: before.count - prefix.count,  length: len));
+                        messageView.message.attributedStringValue = attrStr;
+                        self.currentSession = TextSelectionSession(messageView: messageView, selected: "\(String(prefix))\(String(suffix ?? ""))");
+                        return true;
+                    }
+                }
+                if event.clickCount == 3 {
+                    guard let messageView = messageViewFor(event: event) else {
+                        return isInMesageView(event: event);
+                    }
+                    if let idx = messageView.message.characterIndexFor(event: event)?.location, idx != 0 {
+                        let str = messageView.message.stringValue;
+                        let clickIdx = str.index(str.startIndex, offsetBy: idx);
+                        let before = str[str.startIndex...clickIdx]
+                        let after = str[str.index(after: clickIdx)..<str.endIndex];
+                        let beforeIdx = before.lastIndex { (c) -> Bool in
+                            return CharacterSet.newlines.contains(c.unicodeScalars.first!);
+                        }
+                        let prefix = beforeIdx != nil ? before[before.index(after: beforeIdx!)..<before.endIndex] : before;
+                        let afterIdx = after.firstIndex { (c) -> Bool in
+                            return CharacterSet.newlines.contains(c.unicodeScalars.first!);
+                        }
+                        let suffix = (afterIdx != nil && (afterIdx! != after.startIndex)) ? after[after.startIndex...after.index(before: afterIdx!)] : after;
+                        print("got:", prefix, suffix, "\(String(prefix))\(String(suffix))");
+                        let attrStr = NSMutableAttributedString(attributedString: messageView.message.attributedStringValue);
+                        let len = (prefix.count + suffix.count);
+                        attrStr.addAttribute(.backgroundColor, value: NSColor.selectedTextBackgroundColor, range: NSRange(location: before.count - prefix.count,  length: len));
+                        messageView.message.attributedStringValue = attrStr;
+                        self.currentSession = TextSelectionSession(messageView: messageView, selected: "\(String(prefix))\(String(suffix))");
+                        return true;
+                    }
+                }
                 //return false;
                 return false;
             }
@@ -149,8 +201,11 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         case .leftMouseUp:
             NSCursor.pointingHand.pop();
             
-            guard let session = currentSession else {
+            guard let session = currentSession as? SelectionSession else {
                 return false;
+            }
+            if session.selected?.isEmpty ?? true {
+                currentSession = nil;
             }
 
             guard let messageView = messageViewFor(event: event) else {
@@ -168,7 +223,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
 
             return true;
         case .leftMouseDragged:
-            guard let session = self.currentSession else {
+            guard let session = self.currentSession as? SelectionSession else {
                 return false;
             }
             NSCursor.pointingHand.pop();
@@ -241,13 +296,23 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
             guard let messageView = messageViewFor(event: event) else {
                 return false;
             }
-
             let menu = NSMenu(title: "Actions");
-            var copy = menu.addItem(withTitle: "Copy text", action: #selector(copySelectedText), keyEquivalent: "");
-            copy.target = self;
-            copy = menu.addItem(withTitle: "Copy messages", action: #selector(copySelectedMessages), keyEquivalent: "");
-            copy.target = self;
-            NSMenu.popUpContextMenu(menu, with: event, for: messageView);
+            if currentSession != nil {
+                var copy = menu.addItem(withTitle: "Copy text", action: #selector(copySelectedText), keyEquivalent: "");
+                copy.target = self;
+                copy = menu.addItem(withTitle: "Copy messages", action: #selector(copySelectedMessages), keyEquivalent: "");
+                copy.target = self;
+            }
+            if let idx = messageView.message.characterIndexFor(event: event)?.location, idx != 0 {
+                if let link = messageView.message.attributedStringValue.attribute(.link, at: idx, effectiveRange: nil) as? URL {
+                    var copy = menu.addItem(withTitle: "Copy link", action: #selector(copySelectedText), keyEquivalent: "");
+                    copy.target = self;
+                    copy.representedObject = link;
+                }
+            }
+            if !menu.items.isEmpty {
+                NSMenu.popUpContextMenu(menu, with: event, for: messageView);
+            }
             return true;
         default:
             break;
@@ -257,7 +322,15 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     
     @objc func copySelectedText(_ sender: Any) {
         NSPasteboard.general.clearContents();
-        guard let session = self.currentSession else {
+        if let link = (sender as? NSMenuItem)?.representedObject as? URL {
+            NSPasteboard.general.setString(link.absoluteString, forType: .string);
+            return;
+        }
+        guard let session = self.currentSession as? SelectionSession else {
+            guard let selectedText = (self.currentSession as? TextSelectionSession)?.selected else {
+                return;
+            }
+            NSPasteboard.general.setString(selectedText, forType: .string);
             return;
         }
         
@@ -291,8 +364,18 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         guard let session = self.currentSession else {
             return;
         }
-        
-        guard let selected = session.selected, !selected.isEmpty else {
+        var selected: [ChatMessage] = (session as? SelectionSession)?.selected ?? [];
+        if selected.isEmpty {
+            if let messageId = (session as? TextSelectionSession)?.messageId {
+                selected = dataSource.getItems(fromId: messageId, toId: messageId).filter { (item) -> Bool in
+                    return item as? ChatMessage != nil;
+                    }.map { (item) -> ChatMessage in
+                        return item as! ChatMessage;
+                };
+            }
+        }
+
+        guard !selected.isEmpty else {
             return;
         }
         
@@ -394,9 +477,17 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         }
     }
     
-    class SelectionSession {
-        
+    class BaseSelectionSession {
+
         let messageId: Int;
+
+        init(messageId: Int) {
+            self.messageId = messageId;
+        }
+    }
+    
+    class SelectionSession: BaseSelectionSession {
+        
         let position: NSTextField.CharacterRange;
         let point: NSPoint;
         
@@ -405,18 +496,28 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         fileprivate(set) var endOffset: Int?;
         
         init?(messageView: BaseChatMessageCellView, event: NSEvent) {
-            self.messageId = messageView.id;
             guard let position = messageView.message!.characterIndexFor(event: event) else {
                 return nil;
             }
             self.position = position;
             self.point = event.locationInWindow;
+            super.init(messageId: messageView.id);
         }
         
         func selection(_ selected: [ChatMessage], startOffset: Int, endOffset: Int) {
             self.selected = selected;
             self.startOffset = startOffset;
             self.endOffset = endOffset;
+        }
+    }
+    
+    class TextSelectionSession: BaseSelectionSession {
+
+        let selected: String;
+
+        init(messageView: BaseChatMessageCellView, selected: String) {
+            self.selected = selected;
+            super.init(messageId: messageView.id);
         }
     }
 }
