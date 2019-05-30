@@ -239,12 +239,12 @@ open class DBChatStore {
         }
     }
     
-    func markAsRead(for account: BareJID, with jid: BareJID) {
+    func markAsRead(for account: BareJID, with jid: BareJID, count: Int? = nil) {
         dispatcher.async {
             if let chat = self.getChat(for: account, with: jid) {
                 let unread = chat.unread;
-                if chat.markAsRead() {
-                    self.unreadMessagesCount = self.unreadMessagesCount - unread;
+                if chat.markAsRead(count: count ?? unread) {
+                    self.unreadMessagesCount = self.unreadMessagesCount - (count ?? unread);
                     NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: chat);
                 }
             }
@@ -489,11 +489,11 @@ open class DBChatStore {
             return true;
         }
         
-        func markAsRead() -> Bool {
+        func markAsRead(count: Int) -> Bool {
             guard unread > 0 else {
                 return false;
             }
-            unread = 0;
+            unread = max(unread - count, 0);
             return true
         }
         
@@ -565,11 +565,11 @@ open class DBChatStore {
             return true;
         }
         
-        func markAsRead() -> Bool {
+        func markAsRead(count: Int) -> Bool {
             guard unread > 0 else {
                 return false;
             }
-            unread = 0;
+            unread = max(unread - count, 0);
             return true
         }
 
@@ -585,7 +585,7 @@ protocol DBChatProtocol: ChatProtocol {
     var unread: Int { get }
     var encryption: ChatEncryption? { get }
 
-    func markAsRead() -> Bool;
+    func markAsRead(count: Int) -> Bool;
     func updateLastMessage(_ message: String?, timestamp: Date, isUnread: Bool) -> Bool;
 
 }

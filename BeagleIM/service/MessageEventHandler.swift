@@ -152,6 +152,15 @@ class MessageEventHandler: XmppServiceEventHandler {
             }
             let (body, encryption,fingerprint) = MessageEventHandler.prepareBody(message: e.message, forAccount: account);
             guard body != nil else {
+                if Settings.markMessageDeliveredToOtherResourceAsRead.bool(), let delivery = e.message.messageDelivery, e.action == .sent {
+                    switch delivery {
+                    case .received(let msgId):
+                        DBChatHistoryStore.instance.markAsRead(for: from.bareJid, with: to.bareJid, messageId: msgId);
+                        break;
+                    default:
+                        break;
+                    }
+                }
                 return;
             }
             let jid = account == from.bareJid ? to.bareJid : from.bareJid;
