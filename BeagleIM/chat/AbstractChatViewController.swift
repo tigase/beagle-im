@@ -24,6 +24,8 @@ import TigaseSwift
 
 class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatViewDataSourceDelegate, NSTextViewDelegate {
     
+    static let SCROLL_TO_MESSAGE = Notification.Name("chatScrollToMessage");
+    
     @IBOutlet var tableView: NSTableView!;
     @IBOutlet var messageFieldScroller: NSScrollView!;
     @IBOutlet var messageField: AutoresizingTextView!;
@@ -50,6 +52,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         super.viewDidLoad();
         self.dataSource.delegate = self;
         self.tableView.dataSource = self;
+        self.tableView.enclosingScrollView?.contentView.postsBoundsChangedNotifications = true;
         self.messageField.delegate = self;
         self.messageField.isContinuousSpellCheckingEnabled = Settings.spellchecking.bool();
         self.messageField.isGrammarCheckingEnabled = Settings.spellchecking.bool();
@@ -77,6 +80,8 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         }
         NotificationCenter.default.addObserver(self, selector: #selector(didBecomeKeyWindow), name: NSWindow.didBecomeKeyNotification, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(hourChanged), name: AppDelegate.HOUR_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(scrollToMessage(_:)), name: AbstractChatViewController.SCROLL_TO_MESSAGE, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(boundsChange), name: NSView.boundsDidChangeNotification, object: self.tableView.enclosingScrollView?.contentView);
     }
     
     override func viewWillDisappear() {
@@ -101,6 +106,9 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     var currentSession: BaseSelectionSession?;
     
     func handleMouse(event: NSEvent) -> Bool {
+        guard self.view.window?.isKeyWindow ?? false else {
+            return false;
+        }
         switch event.type {
         case .mouseMoved:
             if currentSession == nil {
@@ -277,7 +285,8 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
                 }
             }
             
-            let selected = dataSource.getItems(fromId: session.messageId, toId: messageView.id).filter { (item) -> Bool in
+            let range = tableView.rows(in: tableView.visibleRect);
+            let selected = dataSource.getItems(fromId: session.messageId, toId: messageView.id, inRange: range).filter { (item) -> Bool in
                 return item as? ChatMessage != nil;
                 }.map { (item) -> ChatMessage in
                     return item as! ChatMessage;
@@ -366,8 +375,9 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         }
         var selected: [ChatMessage] = (session as? SelectionSession)?.selected ?? [];
         if selected.isEmpty {
+            let range = tableView.rows(in: tableView.visibleRect);
             if let messageId = (session as? TextSelectionSession)?.messageId {
-                selected = dataSource.getItems(fromId: messageId, toId: messageId).filter { (item) -> Bool in
+                selected = dataSource.getItems(fromId: messageId, toId: messageId, inRange: range).filter { (item) -> Bool in
                     return item as? ChatMessage != nil;
                     }.map { (item) -> ChatMessage in
                         return item as! ChatMessage;
@@ -393,6 +403,28 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         NSPasteboard.general.setString(text.joined(separator: "\n"), forType: .string);
     }
     
+    @objc func scrollToMessage(_ notification: Notification) {
+        guard let account = notification.userInfo?["account"] as? BareJID, let jid = notification.userInfo?["jid"] as? BareJID, let messageId = notification.userInfo?["messageId"] as? Int else {
+            return;
+        }
+     
+        guard self.account == account && self.jid == jid else {
+            return;
+        }
+        
+        let position = DBChatHistoryStore.instance.itemPosition(for: account, with: jid, msgId: messageId) ?? 0;
+        
+        print("found on position:", position);
+        self.dataSource.loadItems(limit: position + 20) {
+            DispatchQueue.main.async {
+                self.tableView.scrollRowToVisible(position);
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
+                    self.tableView.scrollRowToVisible(position);
+                }
+            }
+        }
+    }
+    
     func messageViewFor(event: NSEvent) -> BaseChatMessageCellView? {
         guard let contentView = event.window?.contentView else {
             return nil;
@@ -416,7 +448,13 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     }
     
     @objc func didBecomeKeyWindow(_ notification: Notification) {
-        if chat.unread > 0 {
+        if chat.unread > 0 && self.tableView.rows(in: self.tableView.visibleRect).contains(0) {
+            DBChatHistoryStore.instance.markAsRead(for: account, with: jid);
+        }
+    }
+    
+    @objc func boundsChange(_ notification: Notification) {
+        if chat.unread > 0 && self.tableView.rows(in: self.tableView.visibleRect).contains(0) {
             DBChatHistoryStore.instance.markAsRead(for: account, with: jid);
         }
     }
@@ -444,14 +482,23 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     }
     
     func itemAdded(at rows: IndexSet) {
+        let shouldScroll = rows.contains(0) && tableView.rows(in: self.tableView.visibleRect).contains(0)
         tableView.insertRows(at: rows, withAnimation: NSTableView.AnimationOptions.slideLeft)
-        if (rows.contains(0)) {
+        if (shouldScroll) {
             tableView.scrollRowToVisible(0);
         }
     }
     
     func itemUpdated(indexPath: IndexPath) {
         tableView.reloadData(forRowIndexes: [indexPath.item], columnIndexes: [0]);
+    }
+    
+    func itemsUpdated(forRowIndexes: IndexSet) {
+        tableView.reloadData(forRowIndexes: forRowIndexes, columnIndexes: [0])
+    }
+    
+    func itemsRemoved(at: IndexSet) {
+        tableView.removeRows(at: at, withAnimation: .slideUp);
     }
     
     func itemsReloaded() {

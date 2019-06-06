@@ -132,7 +132,8 @@ CA
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <menu key="submenu" title="Find" id="1b7-l0-nxx">
                                                 <items>
-                                                    <menuItem title="Find…" tag="1" keyEquivalent="f" id="Xz5-n4-O0W">
+                                                    <menuItem title="Find…" tag="1" id="Xz5-n4-O0W">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
                                                         <connections>
                                                             <action selector="performFindPanelAction:" target="Ady-hI-5gd" id="cD7-Qs-BN4"/>
                                                         </connections>
@@ -619,6 +620,11 @@ CA
                                                 <segue destination="qEo-e6-sLy" kind="show" id="1M4-fh-sMA"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem title="Search History" keyEquivalent="f" id="jPh-XA-Ma6">
+                                            <connections>
+                                                <action selector="showSeachHistory:" target="Voe-Tx-rLC" id="pNg-Jr-YIv"/>
+                                            </connections>
+                                        </menuItem>
                                         <menuItem title="Service Discovery" id="CO1-FX-RDv">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                         </menuItem>
@@ -1074,7 +1080,6 @@ AAAAAAEGA
                                     </constraints>
                                 </view>
                                 <color key="fillColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
-                                <font key="titleFont" metaFont="smallSystem"/>
                             </box>
                             <scrollView verticalHuggingPriority="249" borderType="none" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AeQ-nG-KTC">
                                 <rect key="frame" x="0.0" y="30" width="361" height="262"/>
@@ -1724,7 +1729,7 @@ Gw
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <size key="intercellSpacing" width="10" height="2"/>
                                             <tableColumns>
-                                                <tableColumn width="184" minWidth="10" maxWidth="3.4028234663852886e+38" id="jxK-vA-ssM">
+                                                <tableColumn width="186" minWidth="10" maxWidth="3.4028234663852886e+38" id="jxK-vA-ssM">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
                                                         <font key="font" metaFont="smallSystem"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1738,11 +1743,11 @@ Gw
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView id="Cqq-i6-T6d">
-                                                            <rect key="frame" x="5" y="1" width="184" height="17"/>
+                                                            <rect key="frame" x="5" y="1" width="186" height="17"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lmQ-tI-kgY">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="184" height="17"/>
+                                                                    <rect key="frame" x="0.0" y="0.0" width="186" height="17"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="faK-Zj-UW7">
                                                                         <font key="font" metaFont="system"/>
@@ -1757,7 +1762,7 @@ Gw
                                                         </tableCellView>
                                                     </prototypeCellViews>
                                                 </tableColumn>
-                                                <tableColumn width="284" minWidth="10" maxWidth="3.4028234663852886e+38" id="ieG-Fs-eCt">
+                                                <tableColumn width="286" minWidth="10" maxWidth="3.4028234663852886e+38" id="ieG-Fs-eCt">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
                                                         <font key="font" metaFont="smallSystem"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1771,11 +1776,11 @@ Gw
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView id="usK-pL-Eiu">
-                                                            <rect key="frame" x="199" y="1" width="284" height="17"/>
+                                                            <rect key="frame" x="201" y="1" width="286" height="17"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7jN-5U-yac">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="284" height="17"/>
+                                                                    <rect key="frame" x="0.0" y="0.0" width="286" height="17"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="TcJ-j5-9sd">
                                                                         <font key="font" metaFont="system"/>
@@ -2297,7 +2302,6 @@ Gw
                                         <constraint firstItem="le4-Zd-8yt" firstAttribute="leading" secondItem="XwR-lF-oY7" secondAttribute="leading" id="mfg-pF-hTN"/>
                                     </constraints>
                                 </view>
-                                <font key="titleFont" metaFont="smallSystem"/>
                             </box>
                             <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="46" horizontalPageScroll="10" verticalLineScroll="46" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JNa-ze-noh">
                                 <rect key="frame" x="0.0" y="33" width="362" height="364"/>
@@ -2423,7 +2427,6 @@ Gw
                                         <constraint firstAttribute="bottom" secondItem="C9G-Kb-Lne" secondAttribute="bottom" constant="6" id="vqC-v8-7iu"/>
                                     </constraints>
                                 </view>
-                                <font key="titleFont" metaFont="smallSystem"/>
                             </box>
                         </subviews>
                         <constraints>
@@ -2965,7 +2968,6 @@ AAAAAAEGA
                                         <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="zzQ-jt-v2u" secondAttribute="bottom" constant="6" id="yTQ-Ki-cOo"/>
                                     </constraints>
                                 </view>
-                                <font key="titleFont" metaFont="smallSystem"/>
                             </box>
                             <scrollView verticalHuggingPriority="249" borderType="none" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xEj-nj-qPf">
                                 <rect key="frame" x="0.0" y="30" width="199" height="263"/>

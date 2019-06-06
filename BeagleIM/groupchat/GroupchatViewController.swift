@@ -185,18 +185,14 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     }
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        let item = dataSource.getItem(at: row) as! ChatMessage;
+        guard let item = dataSource.getItem(at: row) as? ChatMessage else {
+            return nil;
+        }
         let prevItem = row >= 0 && (row + 1) < dataSource.count ? dataSource.getItem(at: row + 1) : nil;
         let continuation = prevItem != nil && item.isMergeable(with: prevItem!);
         
         if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "MucMessageContinuationCellView" : "MucMessageCellView"), owner: nil) as? BaseChatMessageCellView {
-            
-            if (row == dataSource.count-1) {
-                DispatchQueue.main.async {
-                    self.dataSource.loadItems(before: item.id, limit: 20)
-                }
-            }
-            
+                        
             let senderJid = item.state.direction == .incoming ? (item.authorJid ?? item.jid) : item.account;
             cell.id = item.id;
             if let c = cell as? ChatMessageCellView {

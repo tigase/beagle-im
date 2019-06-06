@@ -37,6 +37,7 @@ class DBChatHistoryStore {
     fileprivate let updateItemStateStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET state = :newState WHERE id = :id AND (:oldState IS NULL OR state = :oldState)");
     fileprivate let updateItemStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET preview = coalesce(:preview, preview) WHERE id = :id");
     fileprivate let markAsErrorStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET state = :state, error = :error WHERE id = :id");
+    fileprivate let countItemsStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid")
     
     fileprivate let getItemIdByStanzaId: DBStatement = try! DBConnection.main.prepareStatement("SELECT id FROM chat_history WHERE account = :account AND jid = :jid AND stanza_id = :stanza_id ORDER BY timestamp DESC");
     fileprivate let getChatMessagesStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint FROM chat_history WHERE account = :account AND jid = :jid ORDER BY timestamp DESC LIMIT :limit OFFSET :offset");
@@ -44,6 +45,8 @@ class DBChatHistoryStore {
 
     fileprivate let getChatMessagePosition: DBStatement = try! DBConnection.main.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND id <> :msgId AND timestamp > (SELECT timestamp FROM chat_history WHERE id = :msgId)")
     fileprivate let removeChatHistoryStmt: DBStatement = try! DBConnection.main.prepareStatement("DELETE FROM chat_history WHERE account = :account AND (:jid IS NULL OR jid = :jid)");
+    
+    fileprivate let searchHistoryStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT chat_history.id as id, chat_history.account as account, chat_history.jid as jid, author_nickname, author_jid, chat_history.timestamp as timestamp, item_type, chat_history.data as data, state, preview, chat_history.encryption as encryption, fingerprint FROM chat_history INNER JOIN chat_history_fts_index ON chat_history.id = chat_history_fts_index.rowid LEFT JOIN chats ON chats.account = chat_history.account AND chats.jid = chat_history.jid WHERE (chats.id IS NOT NULL OR chat_history.author_nickname is NULL) AND chat_history_fts_index MATCH :query AND (:account IS NULL OR chat_history.account = :account) AND (:jid IS NULL OR chat_history.jid = :jid) ORDER BY chat_history.timestamp DESC")
     
     fileprivate let dispatcher: QueueDispatcher;
     
@@ -136,6 +139,13 @@ class DBChatHistoryStore {
             return try! self.getItemIdByStanzaId.scalar(params);
         }
     }
+    
+    open func itemPosition(for account: BareJID, with jid: BareJID, msgId: Int) -> Int? {
+        return dispatcher.sync {
+            let params: [String: Any?] = ["account": account, "jid": jid, "msgId": msgId];
+            return try! self.getChatMessagePosition.scalar(params);
+        }
+    }
 
     open func updateItemState(for account: BareJID, with jid: BareJID, stanzaId: String, from oldState: MessageState, to newState: MessageState) {
         dispatcher.async {
@@ -203,6 +213,19 @@ class DBChatHistoryStore {
             } else {
                 return getHistory(for: account, jid: jid, offset: 0, limit: limit);
             }
+        }
+    }
+    
+    open func searchHistory(for account: BareJID? = nil, with jid: BareJID? = nil, search: String, completionHandler: @escaping ([ChatViewItemProtocol])->Void) {
+        dispatcher.async {
+            let params: [String: Any?] = ["account": account, "jid": jid, "query": search.replacingOccurrences(of: " ", with: ".").replacingOccurrences(of: "\"", with: ".")];
+            let items = (try? self.searchHistoryStmt.query(params, map: { (cursor) -> ChatViewItemProtocol? in
+                guard let account: BareJID = cursor["account"], let jid: BareJID = cursor["jid"] else {
+                    return nil;
+                }
+                return self.itemFrom(cursor: cursor, for: account, with: jid);
+            })) ?? [];
+            completionHandler(items);
         }
     }
     

@@ -225,6 +225,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         windowController.showWindow(self);
     }
+    
+    @IBAction func showSeachHistory(_ sender: NSMenuItem) {
+        mainWindowController?.showWindow(self);
+        DispatchQueue.main.async {
+            guard let windowController = NSStoryboard(name: "SearchHistory", bundle: nil).instantiateController(withIdentifier: "SearchHistoryWindowController") as? NSWindowController else {
+                return;
+            }
+            self.mainWindowController?.window?.beginSheet(windowController.window!, completionHandler: nil);
+        }
+    }
 
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application

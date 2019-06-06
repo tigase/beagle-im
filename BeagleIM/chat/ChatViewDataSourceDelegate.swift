@@ -30,8 +30,12 @@ protocol ChatViewDataSourceDelegate: class {
     var hasFocus: Bool { get }
     
     func itemAdded(at: IndexSet);
+
+    func itemsUpdated(forRowIndexes: IndexSet);
     
     func itemUpdated(indexPath: IndexPath);
+    
+    func itemsRemoved(at: IndexSet);
     
     func itemsReloaded();
 }

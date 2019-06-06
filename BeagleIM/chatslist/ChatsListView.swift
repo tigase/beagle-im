@@ -191,6 +191,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     }
     
     @objc func chatSelected(_ notification: Notification) {
+        let messageId = notification.userInfo?["messageId"] as? Int;
         guard let chat = notification.object as? DBChatProtocol else {
             guard let account = notification.userInfo?["account"] as? BareJID, let jid = notification.userInfo?["jid"] as? BareJID else {
                 self.outlineView.selectRowIndexes(IndexSet(), byExtendingSelection: false);
@@ -206,6 +207,11 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
                         self.view.window?.windowController?.showWindow(self);
 
                         self.outlineView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false);
+                        if messageId != nil {
+                            DispatchQueue.main.async {
+                                NotificationCenter.default.post(name: AbstractChatViewController.SCROLL_TO_MESSAGE, object: nil, userInfo: ["account": account, "jid": jid, "messageId": messageId!]);
+                            }
+                        }
                     }
                 }
             }
@@ -222,6 +228,11 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
                     self.view.window?.windowController?.showWindow(self);
                     
                     self.outlineView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false);
+                    if messageId != nil {
+                        DispatchQueue.main.async {
+                            NotificationCenter.default.post(name: AbstractChatViewController.SCROLL_TO_MESSAGE, object: nil, userInfo: ["account": item.chat.account, "jid": item.chat.jid.bareJid, "messageId": messageId!]);
+                        }
+                    }
                 }
             }
         }
