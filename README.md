@@ -5,4 +5,4 @@ XMPP client for macOS based on [TigaseSwift XMPP library](https://github.com/tig
 
 
 
-If you want to give as a feedback or report an issue you can do so using our [issue tracker](https://projects.tigase.net/issues/beagleim).
+If you want to give as a feedback or report an issue you can do so using our [issue tracker](http://help.tigase.net/).
