@@ -218,7 +218,14 @@ class DBChatHistoryStore {
     
     open func searchHistory(for account: BareJID? = nil, with jid: BareJID? = nil, search: String, completionHandler: @escaping ([ChatViewItemProtocol])->Void) {
         dispatcher.async {
-            let params: [String: Any?] = ["account": account, "jid": jid, "query": search.replacingOccurrences(of: " ", with: ".").replacingOccurrences(of: "\"", with: ".")];
+            let tokens = search.unicodeScalars.split(whereSeparator: { (c) -> Bool in
+                return CharacterSet.punctuationCharacters.contains(c) || CharacterSet.whitespacesAndNewlines.contains(c);
+            }).map({ (s) -> String in
+                return String(s) + "*";
+            });
+            let query = tokens.joined(separator: " + ");
+            print("searching for:", tokens, "query:", query);
+            let params: [String: Any?] = ["account": account, "jid": jid, "query": query];
             let items = (try? self.searchHistoryStmt.query(params, map: { (cursor) -> ChatViewItemProtocol? in
                 guard let account: BareJID = cursor["account"], let jid: BareJID = cursor["jid"] else {
                     return nil;
