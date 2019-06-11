@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  XMPP client for macOS
+  XMPP client for macOS <img src="https://github.com/tigaseinc/website-assets/blob/master/tigase/images/tigase-logo.png?raw=true" width="25px"/>
 </p>
 
 <p align="center">
@@ -52,7 +52,7 @@ After installing it, go to **Preferences** and add an account or register a new 
 
 # License
 
-<img alt="Tigase Tigase Logo" src="https://tigase.net/" width="25"/> This is official <a href="https://tigase.net/">Tigase</a> Repository.
+<img alt="Tigase Tigase Logo" src="https://github.com/tigaseinc/website-assets/blob/master/tigase/images/tigase-logo.png?raw=true" width="25"/> This is official <a href="https://tigase.net/">Tigase</a> Repository.
 Copyright (c) 2013-2019 Tigase, Inc.
 
 Licensed under GPL License Version 3. Other licensing options available upon request.
