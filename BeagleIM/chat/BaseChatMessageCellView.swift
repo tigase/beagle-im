@@ -87,7 +87,7 @@ class BaseChatMessageCellView: NSTableCellView {
         case .incoming_error, .incoming_error_unread:
             self.message.textColor = NSColor.red;
         default:
-            self.message.textColor = NSColor.textColor;
+            self.message.textColor = nil;//NSColor.textColor;
         }
 
         self.toolTip = BaseChatMessageCellView.tooltipFormatter.string(from: item.timestamp) + (errors.isEmpty ? "" : "\n" + errors.joined(separator: "\n"));

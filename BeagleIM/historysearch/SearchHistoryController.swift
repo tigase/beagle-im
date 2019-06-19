@@ -26,6 +26,7 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
  
     @IBOutlet var searchField: NSSearchField!
     @IBOutlet var tableView: NSTableView!;
+    @IBOutlet var goToButton: NSButton!;
     
     var items: [ChatViewItemProtocol] = [] {
         didSet {
@@ -57,7 +58,12 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
         return view;
     }
     
+    func tableViewSelectionDidChange(_ notification: Notification) {
+        goToButton.isEnabled = tableView.selectedRow >= 0;
+    }
+    
     @IBAction func search(_ sender: Any) {
+        goToButton.isEnabled = false;
         guard !searchField.stringValue.isEmpty else {
             return;
         }
@@ -68,12 +74,20 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
         }
     }
     
+    @IBAction func goToChatClicked(_ sender: Any) {
+        openChat(forRow: tableView.selectedRow);
+    }
+    
     @IBAction func closeClicked(_ sender: Any) {
         self.view.window?.sheetParent?.endSheet(self.view.window!)
     }
     
     @IBAction func openInChat(_ sender: Any) {
         let row = self.tableView.clickedRow;
+        openChat(forRow: row);
+    }
+    
+    func openChat(forRow row: Int) {
         guard row < items.count else {
             return;
         }

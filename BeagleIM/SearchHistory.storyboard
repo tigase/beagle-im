@@ -51,7 +51,7 @@
                                     <rect key="frame" x="1" y="1" width="399" height="315"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="none" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" rowHeight="43" usesAutomaticRowHeights="YES" viewBased="YES" id="2ct-hz-mXu">
+                                        <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" rowHeight="43" usesAutomaticRowHeights="YES" viewBased="YES" id="2ct-hz-mXu">
                                             <rect key="frame" x="0.0" y="0.0" width="399" height="315"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <size key="intercellSpacing" width="3" height="2"/>
@@ -154,7 +154,7 @@
                                 </scroller>
                             </scrollView>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="bcG-4L-O2t">
-                                <rect key="frame" x="352" y="3" width="75" height="32"/>
+                                <rect key="frame" x="256" y="3" width="75" height="32"/>
                                 <buttonCell key="cell" type="push" title="Close" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Omc-pD-3mY">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -163,13 +163,25 @@
                                     <action selector="closeClicked:" target="g40-LB-elH" id="TWA-ze-nIx"/>
                                 </connections>
                             </button>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fZ8-FY-L7q">
+                                <rect key="frame" x="329" y="3" width="104" height="32"/>
+                                <buttonCell key="cell" type="push" title="Go to chat" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="zD5-a3-lrl">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="goToChatClicked:" target="g40-LB-elH" id="Hb4-sZ-pin"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <constraints>
                             <constraint firstItem="Jee-AR-4WD" firstAttribute="top" secondItem="EOm-ws-D8B" secondAttribute="bottom" constant="8" id="2Wn-OV-KpC"/>
                             <constraint firstItem="EOm-ws-D8B" firstAttribute="top" secondItem="B31-QU-Ubi" secondAttribute="top" constant="10" id="3Jc-x5-0Ge"/>
+                            <constraint firstItem="fZ8-FY-L7q" firstAttribute="leading" secondItem="bcG-4L-O2t" secondAttribute="trailing" constant="10" id="8Jf-dU-IpD"/>
                             <constraint firstItem="bcG-4L-O2t" firstAttribute="top" secondItem="Jee-AR-4WD" secondAttribute="bottom" constant="10" id="BPp-QM-qRe"/>
-                            <constraint firstAttribute="trailing" secondItem="bcG-4L-O2t" secondAttribute="trailing" constant="20" id="Exa-VW-s6t"/>
                             <constraint firstItem="bcG-4L-O2t" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="B31-QU-Ubi" secondAttribute="leading" constant="20" id="IZ8-7x-9XV"/>
+                            <constraint firstItem="fZ8-FY-L7q" firstAttribute="centerY" secondItem="bcG-4L-O2t" secondAttribute="centerY" id="JP5-MA-lTP"/>
+                            <constraint firstAttribute="trailing" secondItem="fZ8-FY-L7q" secondAttribute="trailing" constant="14" id="asC-3V-65f"/>
                             <constraint firstItem="EOm-ws-D8B" firstAttribute="leading" secondItem="B31-QU-Ubi" secondAttribute="leading" constant="20" id="jVz-qJ-ylW"/>
                             <constraint firstAttribute="bottom" secondItem="bcG-4L-O2t" secondAttribute="bottom" constant="10" id="oZk-Cy-a2k"/>
                             <constraint firstAttribute="trailing" secondItem="EOm-ws-D8B" secondAttribute="trailing" constant="20" id="q4K-9y-Fn7"/>
@@ -178,6 +190,7 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="goToButton" destination="fZ8-FY-L7q" id="f5X-jp-YVw"/>
                         <outlet property="searchField" destination="EOm-ws-D8B" id="Eq9-No-O1x"/>
                         <outlet property="tableView" destination="2ct-hz-mXu" id="hhv-zj-5Ni"/>
                     </connections>
