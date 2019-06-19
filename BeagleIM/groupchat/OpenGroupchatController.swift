@@ -30,6 +30,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
     @IBOutlet var roomsTableView: NSTableView!;
     @IBOutlet var progressIndicator: NSProgressIndicator!;
     @IBOutlet var nicknameField: NSTextField!;
+    @IBOutlet var joinButton: NSButton!;
     
     fileprivate var accountHeightConstraint: NSLayoutConstraint!;
     fileprivate var nicknameHeightConstraint: NSLayoutConstraint!;
@@ -79,6 +80,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
     override func viewDidLoad() {
         self.searchField.delegate = self;
         self.mucJidField.delegate = self;
+        self.nicknameField.delegate = self;
         self.roomsTableView.dataSource = self;
         self.roomsTableView.delegate = self;
         
@@ -113,6 +115,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
             if nicknameField.stringValue.isEmpty {
                 showDisclosure(true);
             }
+            joinButton.isEnabled = !nicknameField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty;
         }
         if mucJid == nil {
             self.findMucComponent(at: account);
@@ -142,6 +145,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
         if nicknameField.stringValue.isEmpty {
             showDisclosure(true);
         }
+        joinButton.isEnabled = !nicknameField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty;
         self.findMucComponent(at: account);
     }
     
@@ -154,6 +158,8 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
         case searchField:
             updateItems();
             break;
+        case nicknameField:
+            joinButton.isEnabled = !nicknameField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty;
         default:
             break;
         }
@@ -229,7 +235,6 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
         }
         
         let nickname = self.nicknameField.stringValue;
-        
         discoModule.getInfo(for: JID(room), node: nil, onInfoReceived: { node, identities, features in
             let requiresPassword = features.firstIndex(of: "muc_passwordprotected") != nil;
             if !requiresPassword {

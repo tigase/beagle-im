@@ -1691,6 +1691,7 @@ Gw
                     </view>
                     <connections>
                         <outlet property="accountField" destination="UNN-jB-M1F" id="01x-3l-gUk"/>
+                        <outlet property="joinButton" destination="hBx-ct-NxP" id="Wyb-wL-XiZ"/>
                         <outlet property="mucJidField" destination="3xe-hD-Jl4" id="ZqA-bV-AfO"/>
                         <outlet property="nicknameField" destination="KiB-rI-rmC" id="xwo-i6-I2b"/>
                         <outlet property="progressIndicator" destination="kWE-uo-8q8" id="6vE-BO-RTo"/>
