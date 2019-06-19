@@ -54,17 +54,9 @@ open class DBRoomsManager: DefaultRoomsManager {
     }
     
     open override func getRooms() -> [Room] {
-        var result: [Room] = [];
-        guard let items = store.getChats(for: context.sessionObject.userBareJid!)?.items else {
-            return result;
-        }
-        items.forEach { (item) in
-            guard let room = item as? Room else {
-                return;
-            }
-            result.append(room);
-        }
-        return result;
+        return store.getChats(for: context.sessionObject.userBareJid!).filter({ (item) -> Bool in
+            return item is Room;
+        }).map({ item -> Room in item as! Room });
     }
     
     open override func register(room: Room) {

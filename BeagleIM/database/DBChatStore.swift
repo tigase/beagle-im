@@ -37,11 +37,11 @@ open class DBChatStoreWrapper: ChatStore {
     fileprivate let store = DBChatStore.instance;
     
     open var count: Int {
-        return store.getChats(for: sessionObject.userBareJid!)?.count ?? 0;
+        return store.count(for: sessionObject.userBareJid!);
     }
     
     open var items: [ChatProtocol] {
-        return store.getChats(for: sessionObject.userBareJid!)?.items ?? [];
+        return store.getChats(for: sessionObject.userBareJid!);
     }
     
     public init(sessionObject: SessionObject) {
@@ -54,7 +54,7 @@ open class DBChatStoreWrapper: ChatStore {
     }
     
     public func isFor(jid: BareJID) -> Bool {
-        return store.getChats(for: sessionObject.userBareJid!)?.isFor(jid: jid) ?? false;
+        return store.getChat(for: sessionObject.userBareJid!, with: jid) != nil;
     }
     
     public func open<T>(chat: ChatProtocol) -> T? {
@@ -100,7 +100,7 @@ open class DBChatStore {
     fileprivate let updateChatNameStmt: DBStatement;
     fileprivate let changeChatEncryptionStmt: DBStatement;
 
-    fileprivate var chats = [BareJID: AccountChats]();
+    fileprivate var accountChats = [BareJID: AccountChats]();
     
     var unreadMessagesCount: Int = 0 {
         didSet {
@@ -124,35 +124,41 @@ open class DBChatStore {
  
     func count(for account: BareJID) -> Int {
         return dispatcher.sync {
-            return chats[account]?.count ?? 0;
+            return self.accountChats[account]?.count ?? 0;
         }
     }
     
     func getChats() -> [DBChatProtocol] {
         return dispatcher.sync {
             var items: [DBChatProtocol] = [];
-            chats.values.forEach({ (accountChats) in
+            self.accountChats.values.forEach({ (accountChats) in
                 items.append(contentsOf: accountChats.items);
             });
             return items;
         }
     }
     
-    func getChats(for account: BareJID) -> AccountChats? {
+    func getChats(for account: BareJID) -> [DBChatProtocol] {
+        return mapChats(for: account, map: { (chats) in
+            return chats?.items ?? [];
+        });
+    }
+    
+    func mapChats<T>(for account: BareJID, map: (AccountChats?)->T) -> T {
         return dispatcher.sync {
-            return chats[account];
+            return map(accountChats[account]);
         }
     }
     
     func getChat(for account: BareJID, with jid: BareJID) -> DBChatProtocol? {
         return dispatcher.sync {
-            return chats[account]?.get(with: jid);
+            return accountChats[account]?.get(with: jid);
         }
     }
     
     func open<T>(for account: BareJID, chat: ChatProtocol) -> T? {
         return dispatcher.sync {
-            let accountChats = self.chats[account]!;
+            let accountChats = self.accountChats[account]!;
             guard let dbChat = accountChats.get(with: chat.jid.bareJid) else {
                 guard let dbChat = createChat(account: account, chat: chat) else {
                     return nil;
@@ -175,7 +181,7 @@ open class DBChatStore {
         }
         
         return dispatcher.sync {
-            guard let accountChats = chats[account] else {
+            guard let accountChats = self.accountChats[account] else {
                 return false;
             }
             
@@ -200,18 +206,17 @@ open class DBChatStore {
     
     func closeAll(for account: BareJID) {
         dispatcher.async {
-            if let items = self.getChats(for: account)?.items {
-                items.forEach { chat in
-                    _ = self.close(for: account, chat: chat);
-                }
+            let items = self.getChats(for: account)
+            items.forEach { chat in
+                _ = self.close(for: account, chat: chat);
             }
         }
     }
     
     func lastMessageTimestamp(for account: BareJID) -> Date {
-        return dispatcher.sync {
-            return self.getChats(for: account)?.lastMessageTimestamp() ?? Date(timeIntervalSince1970: 0);
-        }
+        return mapChats(for: account, map: { chats -> Date? in
+            return chats?.lastMessageTimestamp();
+        }) ?? Date(timeIntervalSince1970: 0);
     }
     
     func process(chatState remoteChatState: ChatState, for account: BareJID, with jid: BareJID) {
@@ -280,7 +285,7 @@ open class DBChatStore {
     
     func resetChatStates(for account: BareJID) {
         dispatcher.async {
-            self.getChats(for: account)?.items.forEach { chat in
+            self.getChats(for: account).forEach { chat in
                 (chat as? DBChat)?.remoteChatState = nil;
                 (chat as? DBChat)?.localChatState = .active;
             }
@@ -327,7 +332,7 @@ open class DBChatStore {
     
     func loadChats(for account: BareJID, context: Context) {
         dispatcher.async {
-            guard self.chats[account] == nil else {
+            guard self.accountChats[account] == nil else {
                 return;
             }
             
@@ -362,7 +367,7 @@ open class DBChatStore {
                 }
             }
             let accountChats = AccountChats(items: chats);
-            self.chats[account] = accountChats;
+            self.accountChats[account] = accountChats;
             
             var unread = 0;
             chats.forEach { item in
@@ -377,7 +382,7 @@ open class DBChatStore {
     
     func unloadChats(for account: BareJID) {
         dispatcher.async {
-            guard let accountChats = self.chats.removeValue(forKey: account) else {
+            guard let accountChats = self.accountChats.removeValue(forKey: account) else {
                 return;
             }
             
