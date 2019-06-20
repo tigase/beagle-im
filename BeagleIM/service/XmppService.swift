@@ -358,6 +358,7 @@ class XmppService: EventHandler {
         _ = client.modulesManager.register(SoftwareVersionModule());
         _ = client.modulesManager.register(VCardTempModule());
         _ = client.modulesManager.register(VCard4Module());
+        _ = client.modulesManager.register(PingModule());
         
         client.modulesManager.register(CapabilitiesModule()).cache = DBCapabilitiesCache.instance;
         _ = client.modulesManager.register(PubSubModule());
