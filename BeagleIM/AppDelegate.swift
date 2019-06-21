@@ -267,6 +267,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     @objc func makeMainWindowKey() {
         self.mainWindowController?.showWindow(self);
+        DispatchQueue.main.async {
+            NSApp.activate(ignoringOtherApps: true);
+        }
     }
     
     @objc func unreadMessagesCountChanged(_ notification: Notification) {
