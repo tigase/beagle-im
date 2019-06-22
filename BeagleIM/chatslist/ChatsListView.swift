@@ -366,9 +366,9 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 let alert = NSAlert();
                 alert.alertStyle = .warning;
                 alert.messageText = "Delete group chat?"
-                alert.informativeText = "You are leaving the group chat. Would you like to finish it?";
-                alert.addButton(withTitle: "Yes")
-                alert.addButton(withTitle: "No")
+                alert.informativeText = "You are leaving the group chat \(r.name ?? r.jid.bareJid.stringValue)";
+                alert.addButton(withTitle: "Delete chat")
+                alert.addButton(withTitle: "Leave chat")
                 alert.beginSheetModal(for: self.view.window!) { (response) in
                     if (response == .alertFirstButtonReturn) {
                         mucModule.destroy(room: r);
