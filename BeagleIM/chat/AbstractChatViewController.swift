@@ -61,7 +61,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     override func viewWillAppear() {
         super.viewWillAppear();
         self.messageField?.placeholderAttributedString = account != nil ? NSAttributedString(string: "from \(account.stringValue)...", attributes: [.foregroundColor: NSColor.placeholderTextColor]) : nil;
-        self.tableView.reloadData();
+//        self.tableView.reloadData();
         print("scrolling to", self.tableView.numberOfRows - 1)
         self.tableView.scrollRowToVisible(self.tableView.numberOfRows - 1);
         
@@ -415,7 +415,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         let position = DBChatHistoryStore.instance.itemPosition(for: account, with: jid, msgId: messageId) ?? 0;
         
         print("found on position:", position);
-        self.dataSource.loadItems(limit: position + 20) {
+        self.dataSource.loadItems(limit: position + 20, awaitIfInProgress: true) {
             DispatchQueue.main.async {
                 self.tableView.scrollRowToVisible(position);
                 DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {

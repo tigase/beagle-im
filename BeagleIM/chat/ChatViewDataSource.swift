@@ -190,25 +190,47 @@ class ChatViewDataSource {
     }
     
     func refreshData() {
-        DispatchQueue.main.async {
-            self.store = MessagesStore(items: []);
-            self.delegate?.itemsReloaded();
-        }
-        DispatchQueue.global().async {
-            self.loadItems(before: nil, limit: 100);
+        queue.async {
+            _ = DispatchQueue.main.sync { self.store };
+            DispatchQueue.main.async {
+                self.store = MessagesStore(items: []);
+                self.delegate?.itemsReloaded();
+            }
+            DispatchQueue.global().async {
+                self.loadItems(before: nil, limit: 100);
+            }
         }
     }
     
-    func loadItems(before: Int? = nil, limit: Int, completionHandler: (()->Void)? = nil) {
+    fileprivate var loadInProgress = false;
+    fileprivate var waitingToLoad: (()->Void)? = nil;
+    
+    func loadItems(before: Int? = nil, limit: Int, awaitIfInProgress: Bool = false, completionHandler: (()->Void)? = nil) {
         guard let account = delegate?.account, let jid = delegate?.jid else {
             return;
         }
+        guard !loadInProgress else {
+            if awaitIfInProgress {
+                waitingToLoad = { [weak self] in
+                    self?.loadItems(before: before, limit: limit, awaitIfInProgress: awaitIfInProgress, completionHandler: completionHandler);
+                }
+            }
+            return;
+        }
+        loadInProgress = true;
         
         self.queue.async {
             let start = Date();
             DBChatHistoryStore.instance.getHistory(for: account, jid: jid, before: before, limit: limit) { items in
                 print("load completed in:", Date().timeIntervalSince(start));
                 self.add(items: items, completionHandler: completionHandler);
+                DispatchQueue.main.async {
+                    self.loadInProgress = false;
+                    if self.waitingToLoad != nil {
+                        self.waitingToLoad!();
+                        self.waitingToLoad = nil;
+                    }
+                }
             }
         }
     }
