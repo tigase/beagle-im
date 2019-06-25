@@ -266,6 +266,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     @objc func makeMainWindowKey() {
+        NSApp.unhide(self);
         self.mainWindowController?.showWindow(self);
         DispatchQueue.main.async {
             NSApp.activate(ignoringOtherApps: true);
