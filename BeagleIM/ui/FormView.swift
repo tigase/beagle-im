@@ -70,6 +70,7 @@ class FormView: NSGridView, NSTextFieldDelegate {
         let label = NSTextField(labelWithString: text);
         label.isEditable = false;
         label.isBordered = false;
+        label.setContentHuggingPriority(.defaultLow, for: .vertical);
         label.setContentHuggingPriority(.defaultLow, for: .horizontal);
         label.drawsBackground = false;
         return label;

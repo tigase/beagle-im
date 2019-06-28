@@ -61,8 +61,10 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
         formView.groupItems(from: accountSelector, to: accountSelector);
         
         jidField = formView.addRow(label: "XMPP JID:", field: NSTextField(string: ""));
+        jidField.setContentHuggingPriority(.defaultLow, for: .vertical);
         jidField.delegate = self;
         labelField = formView.addRow(label: "Contact name:", field: NSTextField(string: ""));
+        labelField.setContentHuggingPriority(.defaultLow, for: .vertical);
         //accountSelector.widthAnchor.constraint(equalTo: labelField.widthAnchor, multiplier: 1.0).isActive = true;
         formView.groupItems(from: jidField, to: labelField);
         

@@ -2721,12 +2721,12 @@ Gw
         <scene sceneID="U4R-1G-afL">
             <objects>
                 <viewController identifier="AddContactController" storyboardIdentifier="AddContactController" id="1Mc-37-RK5" userLabel="Add contact controller" customClass="AddContactController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" id="Jlb-fQ-rgV">
-                        <rect key="frame" x="0.0" y="0.0" width="480" height="250"/>
+                    <view key="view" misplaced="YES" id="Jlb-fQ-rgV">
+                        <rect key="frame" x="0.0" y="0.0" width="250" height="177"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="kNa-qV-Ypj">
-                                <rect key="frame" x="20" y="190" width="40" height="40"/>
+                                <rect key="frame" x="20" y="117" width="40" height="40"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="40" id="H6p-3C-axa"/>
                                     <constraint firstAttribute="height" constant="40" id="lVK-At-b6X"/>
@@ -2734,7 +2734,7 @@ Gw
                                 <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSUserAccounts" id="Hjj-Qz-Kg9"/>
                             </imageView>
                             <textField horizontalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="jho-IP-XSr">
-                                <rect key="frame" x="66" y="201" width="91" height="19"/>
+                                <rect key="frame" x="66" y="128" width="91" height="19"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Add contact" id="FeE-SA-i2s">
                                     <font key="font" metaFont="systemSemibold" size="15"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -2742,15 +2742,27 @@ Gw
                                 </textFieldCell>
                             </textField>
                             <textField horizontalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="oBJ-L5-QGd">
-                                <rect key="frame" x="18" y="165" width="125" height="16"/>
+                                <rect key="frame" x="18" y="66" width="220" height="42"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Enter contact details:" id="Mye-bs-AKS">
                                     <font key="font" metaFont="cellTitle"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
+                            <gridView xPlacement="leading" yPlacement="bottom" rowAlignment="none" translatesAutoresizingMaskIntoConstraints="NO" id="1Mm-DU-dex" customClass="FormView" customModule="BeagleIM" customModuleProvider="target">
+                                <rect key="frame" x="20" y="56" width="0.0" height="0.0"/>
+                                <rows>
+                                    <gridRow id="x60-JW-0aF"/>
+                                </rows>
+                                <columns>
+                                    <gridColumn id="tLA-BW-9Be"/>
+                                </columns>
+                                <gridCells>
+                                    <gridCell row="x60-JW-0aF" column="tLA-BW-9Be" id="1XM-M2-bsU"/>
+                                </gridCells>
+                            </gridView>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="5hq-0w-vV5">
-                                <rect key="frame" x="401" y="13" width="65" height="32"/>
+                                <rect key="frame" x="177" y="13" width="65" height="32"/>
                                 <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Bxd-s2-fUx">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -2759,8 +2771,20 @@ Gw
                                     <action selector="addClicked:" target="1Mc-37-RK5" id="dJ0-yE-Jre"/>
                                 </connections>
                             </button>
+                            <gridView xPlacement="leading" yPlacement="bottom" rowAlignment="none" translatesAutoresizingMaskIntoConstraints="NO" id="9gj-uJ-X9t" customClass="FormView" customModule="BeagleIM" customModuleProvider="target">
+                                <rect key="frame" x="20" y="51" width="0.0" height="0.0"/>
+                                <rows>
+                                    <gridRow id="rnw-N9-c55"/>
+                                </rows>
+                                <columns>
+                                    <gridColumn id="i3a-Fy-OHh"/>
+                                </columns>
+                                <gridCells>
+                                    <gridCell row="rnw-N9-c55" column="i3a-Fy-OHh" id="dvS-4K-8wF"/>
+                                </gridCells>
+                            </gridView>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="TJY-Wn-T4t">
-                                <rect key="frame" x="318" y="13" width="82" height="32"/>
+                                <rect key="frame" x="94" y="13" width="82" height="32"/>
                                 <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="pjh-ib-Pfb">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -2772,11 +2796,11 @@ Gw
                                     <action selector="cancelClicked:" target="1Mc-37-RK5" id="oMX-tR-o1w"/>
                                 </connections>
                             </button>
-                            <stackView distribution="fill" orientation="vertical" alignment="leading" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" ambiguous="YES" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="teo-JH-lue" customClass="FormView" customModule="BeagleIM" customModuleProvider="target">
-                                <rect key="frame" x="20" y="69" width="399" height="0.0"/>
-                            </stackView>
-                            <button horizontalHuggingPriority="750" verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DK0-uD-mT2">
-                                <rect key="frame" x="436" y="66" width="27" height="26"/>
+                            <button horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="DK0-uD-mT2">
+                                <rect key="frame" x="27" y="60" width="212" height="21"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="16" id="Cim-uI-e1b"/>
+                                </constraints>
                                 <buttonCell key="cell" type="disclosure" bezelStyle="roundedDisclosure" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="xus-V8-THB">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES" changeBackground="YES" changeGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -2785,48 +2809,44 @@ Gw
                                     <action selector="disclosureClicked:" target="1Mc-37-RK5" id="Ggx-Vg-rqx"/>
                                 </connections>
                             </button>
-                            <stackView distribution="fill" orientation="vertical" alignment="leading" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" ambiguous="YES" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Swc-dT-Iez" customClass="FormView" customModule="BeagleIM" customModuleProvider="target">
-                                <rect key="frame" x="20" y="61" width="399" height="8"/>
-                                <edgeInsets key="edgeInsets" left="0.0" right="0.0" top="8" bottom="0.0"/>
-                            </stackView>
                         </subviews>
                         <constraints>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="jho-IP-XSr" secondAttribute="trailing" constant="20" id="2Jh-D5-35s"/>
                             <constraint firstItem="oBJ-L5-QGd" firstAttribute="top" secondItem="kNa-qV-Ypj" secondAttribute="bottom" constant="9" id="4Ro-C0-ru6"/>
                             <constraint firstItem="oBJ-L5-QGd" firstAttribute="leading" secondItem="Jlb-fQ-rgV" secondAttribute="leading" constant="20" id="4UL-wV-1Xd"/>
+                            <constraint firstItem="9gj-uJ-X9t" firstAttribute="leading" secondItem="Jlb-fQ-rgV" secondAttribute="leading" constant="20" id="4pf-oU-IC4"/>
                             <constraint firstAttribute="bottom" secondItem="TJY-Wn-T4t" secondAttribute="bottom" constant="20" id="7DO-R3-Quh"/>
                             <constraint firstItem="jho-IP-XSr" firstAttribute="centerY" secondItem="kNa-qV-Ypj" secondAttribute="centerY" id="Bx6-4m-Ovi"/>
+                            <constraint firstItem="TJY-Wn-T4t" firstAttribute="top" relation="greaterThanOrEqual" secondItem="DK0-uD-mT2" secondAttribute="bottom" constant="10" id="EWR-51-hqS"/>
+                            <constraint firstItem="DK0-uD-mT2" firstAttribute="bottom" secondItem="1Mm-DU-dex" secondAttribute="bottom" constant="-7" id="K3W-9h-KVc"/>
                             <constraint firstItem="TJY-Wn-T4t" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Jlb-fQ-rgV" secondAttribute="leading" constant="100" id="KX7-V7-pzR"/>
                             <constraint firstItem="jho-IP-XSr" firstAttribute="leading" secondItem="kNa-qV-Ypj" secondAttribute="trailing" constant="8" id="MeO-d1-8so"/>
-                            <constraint firstItem="DK0-uD-mT2" firstAttribute="leading" secondItem="Swc-dT-Iez" secondAttribute="trailing" constant="20" id="OYX-kf-cpN"/>
-                            <constraint firstItem="DK0-uD-mT2" firstAttribute="bottom" secondItem="teo-JH-lue" secondAttribute="bottom" id="Sch-p8-2XW"/>
-                            <constraint firstItem="DK0-uD-mT2" firstAttribute="leading" secondItem="teo-JH-lue" secondAttribute="trailing" constant="20" id="axt-w5-tWD"/>
-                            <constraint firstItem="Swc-dT-Iez" firstAttribute="top" secondItem="teo-JH-lue" secondAttribute="bottom" id="e7t-rk-b0C"/>
-                            <constraint firstItem="teo-JH-lue" firstAttribute="leading" secondItem="Jlb-fQ-rgV" secondAttribute="leading" constant="20" id="egM-lc-0V5"/>
+                            <constraint firstItem="9gj-uJ-X9t" firstAttribute="top" secondItem="1Mm-DU-dex" secondAttribute="bottom" constant="5" id="Rwg-Ge-RG9"/>
+                            <constraint firstItem="TJY-Wn-T4t" firstAttribute="top" secondItem="9gj-uJ-X9t" secondAttribute="bottom" constant="10" id="bOE-jX-gqW"/>
+                            <constraint firstItem="1Mm-DU-dex" firstAttribute="top" secondItem="oBJ-L5-QGd" secondAttribute="bottom" constant="10" id="fMp-6x-yUw"/>
                             <constraint firstItem="kNa-qV-Ypj" firstAttribute="leading" secondItem="Jlb-fQ-rgV" secondAttribute="leading" constant="20" id="fyf-d8-V7D"/>
                             <constraint firstItem="5hq-0w-vV5" firstAttribute="leading" secondItem="TJY-Wn-T4t" secondAttribute="trailing" constant="13" id="gMj-4e-g8x"/>
                             <constraint firstAttribute="trailing" secondItem="5hq-0w-vV5" secondAttribute="trailing" constant="20" id="ggO-Xx-2PP"/>
-                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="oBJ-L5-QGd" secondAttribute="trailing" constant="20" id="h8m-eG-Uxa"/>
+                            <constraint firstAttribute="trailing" secondItem="oBJ-L5-QGd" secondAttribute="trailing" constant="20" id="h8m-eG-Uxa"/>
+                            <constraint firstItem="DK0-uD-mT2" firstAttribute="leading" secondItem="9gj-uJ-X9t" secondAttribute="trailing" constant="10" id="hbX-3i-AKT"/>
                             <constraint firstAttribute="bottom" secondItem="5hq-0w-vV5" secondAttribute="bottom" constant="20" id="iJl-SK-00I"/>
-                            <constraint firstItem="TJY-Wn-T4t" firstAttribute="top" secondItem="Swc-dT-Iez" secondAttribute="bottom" constant="20" id="jnc-v8-ggr"/>
-                            <constraint firstItem="Swc-dT-Iez" firstAttribute="leading" secondItem="Jlb-fQ-rgV" secondAttribute="leading" constant="20" id="q7p-ym-e7l"/>
                             <constraint firstAttribute="trailing" secondItem="DK0-uD-mT2" secondAttribute="trailing" constant="20" id="rBh-r7-CQj"/>
                             <constraint firstItem="kNa-qV-Ypj" firstAttribute="top" secondItem="Jlb-fQ-rgV" secondAttribute="top" constant="20" id="rTa-eH-0Ef"/>
-                            <constraint firstItem="teo-JH-lue" firstAttribute="top" secondItem="oBJ-L5-QGd" secondAttribute="bottom" constant="8" id="zeO-Os-FE5"/>
+                            <constraint firstItem="1Mm-DU-dex" firstAttribute="leading" secondItem="Jlb-fQ-rgV" secondAttribute="leading" constant="20" id="sfa-gC-ahD"/>
+                            <constraint firstItem="9gj-uJ-X9t" firstAttribute="trailing" secondItem="1Mm-DU-dex" secondAttribute="trailing" id="ytS-8z-jkm"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="addButton" destination="5hq-0w-vV5" id="iAS-7I-NQA"/>
                         <outlet property="disclosureButton" destination="DK0-uD-mT2" id="QX8-Aq-iG7"/>
-                        <outlet property="disclosureView" destination="Swc-dT-Iez" id="pv7-qB-MkD"/>
-                        <outlet property="formView" destination="teo-JH-lue" id="LeC-lr-SbS"/>
+                        <outlet property="disclosureView" destination="9gj-uJ-X9t" id="u3Z-a9-NNe"/>
+                        <outlet property="formView" destination="1Mm-DU-dex" id="Bth-XF-BeJ"/>
                         <outlet property="imageView" destination="kNa-qV-Ypj" id="xoF-Hp-mjR"/>
-                        <outlet property="stackView" destination="teo-JH-lue" id="YDh-yZ-cfx"/>
                     </connections>
                 </viewController>
                 <customObject id="XA6-CA-zdV" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-165" y="3380"/>
+            <point key="canvasLocation" x="-165" y="3343.5"/>
         </scene>
         <!--Groupchat View Controller-->
         <scene sceneID="qxO-44-eTb">
