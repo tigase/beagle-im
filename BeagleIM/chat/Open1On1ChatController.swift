@@ -64,10 +64,14 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
         guard !self.searchField.stringValue.isEmpty else {
             return;
         }
+
+        guard let account = BareJID(accountField.titleOfSelectedItem) else {
+            return;
+        }
         
         let jid = JID(self.searchField.stringValue)
         
-        guard let messageModule: MessageModule = XmppService.instance.getClient(for: BareJID(accountField.titleOfSelectedItem!))?.modulesManager.getModule(MessageModule.ID) else {
+        guard let messageModule: MessageModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageModule.ID) else {
             self.close();
             return;
         }
