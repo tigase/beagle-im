@@ -189,7 +189,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             self.buddyName = ((e.action != .removed) ? item.name : nil) ?? self.jid.stringValue;
             self.buddyNameLabel.title = self.buddyName;
             self.buddyAvatarView.name = self.buddyName;
-            self.itemsReloaded();
+            self.dataSource.refreshDataNoReload();
         }
     }
     

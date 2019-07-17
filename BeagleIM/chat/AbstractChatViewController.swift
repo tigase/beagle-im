@@ -287,7 +287,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
             
             let range = tableView.rows(in: tableView.visibleRect);
             let selected = dataSource.getItems(fromId: session.messageId, toId: messageView.id, inRange: range).filter { (item) -> Bool in
-                return item as? ChatMessage != nil;
+                return item is ChatMessage;
                 }.map { (item) -> ChatMessage in
                     return item as! ChatMessage;
             }

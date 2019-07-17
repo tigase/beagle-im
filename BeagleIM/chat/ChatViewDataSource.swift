@@ -148,6 +148,16 @@ class ChatViewDataSource {
         }
     }
     
+    func refreshDataNoReload() {
+        queue.async {
+            var store = DispatchQueue.main.sync { return self.store; };
+            DispatchQueue.main.async {
+                self.store = store;
+                self.delegate?.itemsReloaded();
+            }
+        }
+    }
+    
     func trimStore() {
         guard store.count > 100 else {
             return;
