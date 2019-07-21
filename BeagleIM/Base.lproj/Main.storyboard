@@ -617,7 +617,7 @@ CA
                                         </menuItem>
                                         <menuItem title="Contacts" keyEquivalent="2" allowsKeyEquivalentWhenHidden="YES" id="1rU-qU-qAY">
                                             <connections>
-                                                <segue destination="qEo-e6-sLy" kind="show" id="1M4-fh-sMA"/>
+                                                <segue destination="qEo-e6-sLy" kind="custom" identifier="showRosterWindowSegue" customClass="ShowRosterWindowSegue" customModule="BeagleIM" customModuleProvider="target" id="1M4-fh-sMA"/>
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Search History" keyEquivalent="f" id="jPh-XA-Ma6">

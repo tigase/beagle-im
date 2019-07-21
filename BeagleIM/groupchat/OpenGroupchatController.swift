@@ -36,6 +36,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
     fileprivate var nicknameHeightConstraint: NSLayoutConstraint!;
     
     var account: BareJID!;
+    var password: String?;
     
     var allItems: [DiscoveryModule.Item] = [] {
         didSet {
@@ -237,12 +238,12 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
         let nickname = self.nicknameField.stringValue;
         discoModule.getInfo(for: JID(room), node: nil, onInfoReceived: { node, identities, features in
             let requiresPassword = features.firstIndex(of: "muc_passwordprotected") != nil;
-            if !requiresPassword {
+            if !requiresPassword || (requiresPassword && self.password != nil) {
                 guard let mucModule: MucModule = XmppService.instance.getClient(for: self.account)?.modulesManager.getModule(MucModule.ID) else {
                     return;
                 }
                 _ = mucModule.join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname);
-                PEPBookmarksModule.updateOrAdd(for: self.account, bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: true, nick: nickname, password: nil));
+                PEPBookmarksModule.updateOrAdd(for: self.account, bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: true, nick: nickname, password: self.password));
                 DispatchQueue.main.async {
                     self.close();
                 }

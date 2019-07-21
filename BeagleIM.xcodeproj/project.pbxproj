@@ -93,6 +93,7 @@
 		FE8C9F5621B40F9000BE8332 /* RegisterAccountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8C9F5521B40F9000BE8332 /* RegisterAccountController.swift */; };
 		FE9486B221BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9486B121BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift */; };
 		FE9CDF0D2269E282001039C3 /* MessageEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9CDF0C2269E282001039C3 /* MessageEncryption.swift */; };
+		FEA2F53522E46A2E009F2E88 /* ShowRosterWindowSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2F53422E46A2E009F2E88 /* ShowRosterWindowSegue.swift */; };
 		FEA77CD221C7C47000E955A8 /* WebRTC.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FEA77CD121C7C47000E955A8 /* WebRTC.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FEA8941F2156625E004C3B51 /* ConfigureRoomViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8941E2156625E004C3B51 /* ConfigureRoomViewController.swift */; };
 		FEB4EAFC2162A3DC00F8A9E2 /* AutoresizineTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB4EAFB2162A3DC00F8A9E2 /* AutoresizineTextView.swift */; };
@@ -253,6 +254,7 @@
 		FE9486B121BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSButtonNoSizeWhenHidden.swift; sourceTree = "<group>"; };
 		FE9CDF0C2269E282001039C3 /* MessageEncryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEncryption.swift; sourceTree = "<group>"; };
 		FE9D88B3217652DF006CF0D9 /* BeagleIM-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BeagleIM-Bridging-Header.h"; sourceTree = "<group>"; };
+		FEA2F53422E46A2E009F2E88 /* ShowRosterWindowSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowRosterWindowSegue.swift; sourceTree = "<group>"; };
 		FEA77CD121C7C47000E955A8 /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
 		FEA8941E2156625E004C3B51 /* ConfigureRoomViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigureRoomViewController.swift; sourceTree = "<group>"; };
 		FEB4EAFB2162A3DC00F8A9E2 /* AutoresizineTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoresizineTextView.swift; sourceTree = "<group>"; };
@@ -402,6 +404,7 @@
 				FE9486B121BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift */,
 				FE1A8BA221C96C1B00604141 /* RoundButton.swift */,
 				FE137A4521F5FE05006B7F7C /* ShowMainWindowSegue.swift */,
+				FEA2F53422E46A2E009F2E88 /* ShowRosterWindowSegue.swift */,
 				FE5CAF992216EEF200FABD46 /* NSPopupButtonNoSizeWhenHidden.swift */,
 				FEEF25352266303A00202B28 /* OMEMOIdentititesTableView.swift */,
 			);
@@ -839,6 +842,7 @@
 				FE5202D7227F339D00644C12 /* BaseChatMessageCellView.swift in Sources */,
 				FED7AEC921418FA9001E164B /* DBVCardStore.swift in Sources */,
 				FEA8941F2156625E004C3B51 /* ConfigureRoomViewController.swift in Sources */,
+				FEA2F53522E46A2E009F2E88 /* ShowRosterWindowSegue.swift in Sources */,
 				FE30D8AF214C3B7600670BEC /* NSImage.swift in Sources */,
 				FE6E6C0421384D5F003B1696 /* DatabaseSchemaManager.swift in Sources */,
 				FE5C6B2722897F1B003DAB30 /* ServiceDiscoveryViewController.swift in Sources */,

@@ -69,6 +69,63 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     fileprivate var statusItem: NSStatusItem?;
     fileprivate(set) var mainWindowController: NSWindowController?;
+    var rosterWindow: NSWindow {
+        get {
+            if let rosterWindow = NSApplication.shared.windows.first(where: { (window) -> Bool in
+                window.contentViewController is RosterViewController
+            }) {
+                return rosterWindow;
+            }
+            let rosterWindowController = mainWindowController?.storyboard?.instantiateController(withIdentifier: "RosterWindowController") as? NSWindowController;
+            rosterWindowController!.showWindow(self);
+            return rosterWindowController!.window!;
+        }
+    }
+    
+    struct XmppUri {
+        
+        let jid: JID;
+        let action: Action?;
+        let dict: [String: String]?;
+        
+        init?(url: URL?) {
+            guard url != nil else {
+                return nil;
+            }
+            
+            guard let components = URLComponents(url: url!, resolvingAgainstBaseURL: false) else {
+                return nil;
+            }
+            
+            guard components.host == nil else {
+                return nil;
+            }
+            self.jid = JID(components.path);
+            
+            if var pairs = components.query?.split(separator: ";").map({ (it: Substring) -> [Substring] in it.split(separator: "=") }) {
+                if let first = pairs.first, first.count == 1 {
+                    action = Action(rawValue: String(first.first!));
+                    pairs = Array(pairs.dropFirst());
+                } else {
+                    action = nil;
+                }
+                var dict: [String: String] = [:];
+                for pair in pairs {
+                    dict[String(pair[0])] = pair.count == 1 ? "" : String(pair[1]);
+                }
+                self.dict = dict;
+            } else {
+                self.action = nil;
+                self.dict = nil;
+            }
+        }
+        
+        enum Action: String {
+            case message
+            case join
+            case roster
+        }
+    }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         Settings.initialize();
@@ -77,10 +134,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if #available(macOS 10.14, *) {
             updateAppearance();
         }
-        
-        var items: [Int] = Array(0...99);
-        let removed = Array(100..<items.count);
-        items = Array(items[0..<100]);
         
         NotificationCenter.default.addObserver(self, selector: #selector(authenticationFailure), name: XmppService.AUTHENTICATION_ERROR, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(serverCertificateError(_:)), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
@@ -171,7 +224,89 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         NSApp.mainMenu?.item(withTitle: "Window")?.submenu?.delegate = self;
         
+        NSAppleEventManager.shared().setEventHandler(self, andSelector: #selector(self.handleAppleEvent(event:replyEvent:)), forEventClass: AEEventClass(kInternetEventClass), andEventID: AEEventID(kAEGetURL));
+        
         scheduleHourlyTimer();
+    }
+    
+    @objc func handleAppleEvent(event: NSAppleEventDescriptor, replyEvent: NSAppleEventDescriptor) {
+        guard let appleEventDescription = event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject)) else {
+            return
+        }
+        
+        guard let appleEventURLString = appleEventDescription.stringValue else {
+            return
+        }
+        
+        guard let uri = XmppUri(url: URL(string: appleEventURLString)) else {
+            return;
+        }
+       
+        if let action = uri.action {
+            handle(action: action, uri: uri);
+        } else {
+            DispatchQueue.main.async {
+                let alert = Alert();
+                alert.icon = NSImage(named: NSImage.infoName);
+                alert.messageText = "Open URL";
+                alert.informativeText = "What do you want to do with " + uri.jid.stringValue + "?";
+                alert.addButton(withTitle: "Open chat");
+                alert.addButton(withTitle: "Join room");
+                alert.addButton(withTitle: "Add to contacts");
+                alert.addButton(withTitle: "Ignore");
+                alert.run(completionHandler: { (response) in
+                    switch response {
+                    case .alertFirstButtonReturn:
+                        self.handle(action: .message, uri: uri);
+                    case .alertSecondButtonReturn:
+                        self.handle(action: .join, uri: uri);
+                    case .alertThirdButtonReturn:
+                        self.handle(action: .roster, uri: uri);
+                    default:
+                        break;
+                    }
+                })
+            }
+        }
+    }
+    
+    fileprivate func handle(action: XmppUri.Action, uri: XmppUri) {
+        switch action {
+        case .join:
+            DispatchQueue.main.async {
+                guard let windowController = self.mainWindowController?.storyboard?.instantiateController(withIdentifier: "OpenGroupchatController") as? NSWindowController else {
+                    return;
+                }
+                (windowController.contentViewController as? OpenGroupchatController)?.mucJidField.stringValue = uri.jid.domain;
+                (windowController.contentViewController as? OpenGroupchatController)?.mucJid = BareJID(uri.jid.domain);
+                (windowController.contentViewController as? OpenGroupchatController)?.searchField.stringValue = uri.jid.localPart ?? "";
+                (windowController.contentViewController as? OpenGroupchatController)?.password = uri.dict?["password"];
+                self.mainWindowController?.window?.beginSheet(windowController.window!, completionHandler: nil);
+            }
+        case .message:
+            DispatchQueue.main.async {
+                guard let windowController = self.mainWindowController?.storyboard?.instantiateController(withIdentifier: "Open1On1ChatController") as? NSWindowController else {
+                    return;
+                }
+                (windowController.contentViewController as? Open1On1ChatController)?.searchField.stringValue = uri.jid.bareJid.stringValue;
+                self.mainWindowController?.window?.beginSheet(windowController.window!, completionHandler: nil);
+            }
+        case .roster:
+            DispatchQueue.main.async {
+                print("uri:", uri.jid, "dict:", uri.dict);
+                let rosterWindow = self.rosterWindow;
+                rosterWindow.makeKeyAndOrderFront(self);
+                if let addContact = self.mainWindowController?.storyboard?.instantiateController(withIdentifier: "AddContactController") as? AddContactController {
+                    _ = addContact.view;
+                    addContact.jidField.stringValue = uri.jid.stringValue;
+                    addContact.labelField.stringValue = uri.dict?["name"] ?? "";
+                    rosterWindow.contentViewController?.presentAsSheet(addContact);
+                    addContact.verify();
+                } else {
+                    print("no add contact controller!");
+                }
+            }
+        }
     }
     
     func menuNeedsUpdate(_ menu: NSMenu) {
@@ -242,6 +377,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
+        NSAppleEventManager.shared().removeEventHandler(forEventClass: AEEventClass(kInternetEventClass), andEventID: AEEventID(kAEGetURL))
+        
         XmppService.instance.disconnectClients();
         descheduleHourlyTimer();
         RTCCleanupSSL();

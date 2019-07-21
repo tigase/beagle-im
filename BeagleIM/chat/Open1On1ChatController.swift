@@ -34,7 +34,6 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
     override func viewDidLoad() {
         super.viewDidLoad();
         NotificationCenter.default.addObserver(self, selector: #selector(contactPresenceChanged), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
-        updateItems();
     }
     
     override func viewWillAppear() {
@@ -54,6 +53,7 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
             self.accountField.selectItem(at: 1);
             self.accountField.title = self.accountField.itemTitle(at: 1);
         }
+        updateItems();
     }
     
     @IBAction func cancelButtonCliecked(_ sender: NSButton) {

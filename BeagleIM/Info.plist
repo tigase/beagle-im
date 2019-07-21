@@ -18,6 +18,19 @@
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>3.1</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLName</key>
+			<string>org.tigase.messenger.BeagleIM</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>xmpp</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>38</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
@@ -41,5 +54,9 @@
 	<string>Uses microphone for VoIP calls</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSServices</key>
+	<array>
+		<dict/>
+	</array>
 </dict>
 </plist>
