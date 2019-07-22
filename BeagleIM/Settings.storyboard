@@ -35,6 +35,7 @@
                     <tabViewItems>
                         <tabViewItem label="General" identifier="" image="NSPreferencesGeneral" id="9pN-Un-W2y"/>
                         <tabViewItem label="Accounts" identifier="" image="NSUserAccounts" id="Txt-RJ-fg8"/>
+                        <tabViewItem label="Advanced" image="NSAdvanced" id="cle-7R-i1Y"/>
                     </tabViewItems>
                     <viewControllerTransitionOptions key="transitionOptions" allowUserInteraction="YES"/>
                     <tabView key="tabView" misplaced="YES" type="noTabsNoBorder" id="rW0-L4-bZo">
@@ -49,6 +50,7 @@
                         <outlet property="tabView" destination="rW0-L4-bZo" id="UxQ-PM-YzH"/>
                         <segue destination="Z0Q-Gs-cLx" kind="relationship" relationship="tabItems" id="zRi-As-aVf"/>
                         <segue destination="Yzz-sO-CKA" kind="relationship" relationship="tabItems" id="wpO-cU-trZ"/>
+                        <segue destination="1ts-zj-dla" kind="relationship" relationship="tabItems" id="Kht-vq-bQM"/>
                     </connections>
                 </tabViewController>
                 <customObject id="j0P-RM-Dzr" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
@@ -1292,10 +1294,47 @@ Gw
             </objects>
             <point key="canvasLocation" x="3558" y="-455"/>
         </scene>
+        <!--Advanced Settings Controller-->
+        <scene sceneID="egO-Ih-q5F">
+            <objects>
+                <viewController id="1ts-zj-dla" customClass="AdvancedSettingsController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" misplaced="YES" id="sUJ-dS-OAI">
+                        <rect key="frame" x="0.0" y="0.0" width="400" height="150"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <gridView horizontalHuggingPriority="600" verticalHuggingPriority="600" xPlacement="leading" yPlacement="center" rowAlignment="firstBaseline" translatesAutoresizingMaskIntoConstraints="NO" id="vfQ-dK-vMd" customClass="FormView" customModule="BeagleIM" customModuleProvider="target">
+                                <rect key="frame" x="20" y="20" width="0.0" height="0.0"/>
+                                <rows>
+                                    <gridRow id="9nC-1t-5SV"/>
+                                </rows>
+                                <columns>
+                                    <gridColumn id="MEk-tC-LzV"/>
+                                </columns>
+                                <gridCells>
+                                    <gridCell row="9nC-1t-5SV" column="MEk-tC-LzV" id="Mg4-9J-6G3"/>
+                                </gridCells>
+                            </gridView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="vfQ-dK-vMd" secondAttribute="bottom" constant="20" id="CpF-K2-Mgk"/>
+                            <constraint firstItem="vfQ-dK-vMd" firstAttribute="top" secondItem="sUJ-dS-OAI" secondAttribute="top" constant="10" id="VAO-yI-v2j"/>
+                            <constraint firstAttribute="trailing" secondItem="vfQ-dK-vMd" secondAttribute="trailing" constant="20" id="cnT-0Y-Go2"/>
+                            <constraint firstItem="vfQ-dK-vMd" firstAttribute="leading" secondItem="sUJ-dS-OAI" secondAttribute="leading" constant="20" id="nzH-Cz-gad"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="formView" destination="vfQ-dK-vMd" id="hBb-Up-zvD"/>
+                    </connections>
+                </viewController>
+                <customObject id="eJB-UJ-jkt" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1245.5" y="324"/>
+        </scene>
     </scenes>
     <resources>
         <image name="NSActionTemplate" width="14" height="14"/>
         <image name="NSAddTemplate" width="11" height="11"/>
+        <image name="NSAdvanced" width="32" height="32"/>
         <image name="NSLockLockedTemplate" width="10" height="14"/>
         <image name="NSPreferencesGeneral" width="32" height="32"/>
         <image name="NSRefreshTemplate" width="11" height="15"/>

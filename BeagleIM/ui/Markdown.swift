@@ -23,6 +23,14 @@ import AppKit
 
 class Markdown {
     
+    static let quoteParagraphStyle: NSParagraphStyle = {
+        var paragraphStyle = NSMutableParagraphStyle();
+        paragraphStyle.headIndent = 20;
+        paragraphStyle.firstLineHeadIndent = 8;
+        paragraphStyle.alignment = .natural;
+        return paragraphStyle;
+    }();
+    
     static func applyStyling(attributedString msg: NSMutableAttributedString, showEmoticons: Bool) {
         let stylingColor = NSColor(calibratedWhite: 0.5, alpha: 1.0);
         
@@ -32,6 +40,7 @@ class Markdown {
         var italicStart: String.Index? = nil;
         var underlineStart: String.Index? = nil;
         var codeStart: String.Index? = nil;
+        var quoteStart: String.Index? = nil;
         var idx = message.startIndex;
         
         var canStart = true;
@@ -41,6 +50,13 @@ class Markdown {
         while idx != message.endIndex {
             let c = message[idx];
             switch c {
+            case ">":
+                let bidx = idx == message.startIndex ? nil : message.index(before: idx);
+                let aidx = message.index(after: idx);
+                if aidx != message.endIndex && (bidx == nil || message[bidx!] == "\n") && message[aidx] == " " {
+                    msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(idx...aidx, in: message));
+                    quoteStart = idx;
+                }
             case "*":
                 let nidx = message.index(after: idx);
                 if nidx != message.endIndex, message[nidx] == "*" {
@@ -138,6 +154,11 @@ class Markdown {
                     boldStart = nil;
                     underlineStart = nil;
                     italicStart = nil
+                    if (quoteStart != nil) {
+
+                        msg.addAttribute(.paragraphStyle, value: Markdown.quoteParagraphStyle, range: NSRange(quoteStart!..<idx, in: message));
+                        quoteStart = nil;
+                    }
                 }
                 canStart = true;
             default:
@@ -147,6 +168,11 @@ class Markdown {
             if idx != message.endIndex {
                 idx = message.index(after: idx);
             }
+        }
+
+        if (quoteStart != nil) {
+            msg.addAttribute(.paragraphStyle, value: Markdown.quoteParagraphStyle, range: NSRange(quoteStart!..<idx, in: message));
+            quoteStart = nil;
         }
 
         if showEmoticons && wordIdx != nil && wordIdx! != idx {

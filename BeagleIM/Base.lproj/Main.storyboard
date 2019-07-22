@@ -802,7 +802,7 @@ CA
                                                                     </constraints>
                                                                 </view>
                                                                 <textField verticalHuggingPriority="751" horizontalCompressionResistancePriority="450" translatesAutoresizingMaskIntoConstraints="NO" id="m3j-Rb-M6x">
-                                                                    <rect key="frame" x="52" y="25" width="152" height="17"/>
+                                                                    <rect key="frame" x="52" y="25" width="159" height="17"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="30Y-0J-enL">
                                                                         <font key="font" metaFont="systemMedium" size="13"/>
                                                                         <color key="textColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -810,9 +810,9 @@ CA
                                                                     </textFieldCell>
                                                                 </textField>
                                                                 <textField horizontalHuggingPriority="300" verticalHuggingPriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="PqR-oy-TGv">
-                                                                    <rect key="frame" x="224" y="25" width="74" height="17"/>
+                                                                    <rect key="frame" x="231" y="26" width="67" height="16"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Timestamp" id="uIX-uL-LSO">
-                                                                        <font key="font" metaFont="systemMedium" size="13"/>
+                                                                        <font key="font" metaFont="cellTitle"/>
                                                                         <color key="textColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
@@ -820,7 +820,7 @@ CA
                                                                 <textField verticalHuggingPriority="750" misplaced="YES" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ev0-pa-eYe" customClass="ChatCellViewMessage" customModule="BeagleIM" customModuleProvider="target">
                                                                     <rect key="frame" x="52" y="6" width="242" height="17"/>
                                                                     <textFieldCell key="cell" truncatesLastVisibleLine="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" title="Label" id="9cl-cN-VXM">
-                                                                        <font key="font" metaFont="system"/>
+                                                                        <font key="font" metaFont="systemLight" size="12"/>
                                                                         <color key="textColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                         <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
@@ -839,7 +839,7 @@ CA
                                                                     </connections>
                                                                 </button>
                                                                 <button horizontalHuggingPriority="350" verticalHuggingPriority="750" horizontalCompressionResistancePriority="350" translatesAutoresizingMaskIntoConstraints="NO" id="f5J-qG-57Z">
-                                                                    <rect key="frame" x="204" y="25" width="20" height="17"/>
+                                                                    <rect key="frame" x="211" y="25" width="20" height="17"/>
                                                                     <buttonCell key="cell" type="inline" title="0" bezelStyle="inline" alignment="center" enabled="NO" borderStyle="border" inset="2" id="UeY-XO-CZa">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                         <font key="font" metaFont="smallSystemBold"/>
@@ -1081,7 +1081,7 @@ AAAAAAEGA
                                 </view>
                                 <color key="fillColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                             </box>
-                            <scrollView verticalHuggingPriority="249" borderType="none" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AeQ-nG-KTC">
+                            <scrollView verticalHuggingPriority="249" borderType="none" autohidesScrollers="YES" horizontalLineScroll="17" horizontalPageScroll="10" verticalLineScroll="17" verticalPageScroll="10" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AeQ-nG-KTC">
                                 <rect key="frame" x="0.0" y="30" width="361" height="262"/>
                                 <clipView key="contentView" copiesOnScroll="NO" id="Qze-b0-z36">
                                     <rect key="frame" x="0.0" y="0.0" width="361" height="262"/>
@@ -1090,11 +1090,10 @@ AAAAAAEGA
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="none" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" enabled="NO" usesAutomaticRowHeights="YES" viewBased="YES" id="N1B-Tt-jcO" customClass="ChatViewTableView" customModule="BeagleIM" customModuleProvider="target">
                                             <rect key="frame" x="0.0" y="0.0" width="361" height="262"/>
                                             <autoresizingMask key="autoresizingMask"/>
-                                            <size key="intercellSpacing" width="3" height="2"/>
                                             <color key="backgroundColor" name="chatBackgroundColor"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                             <tableColumns>
-                                                <tableColumn editable="NO" width="358" minWidth="40" maxWidth="4000" id="HqM-Ei-35M">
+                                                <tableColumn editable="NO" width="361" minWidth="40" maxWidth="4000" id="HqM-Ei-35M">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" enabled="NO" borderStyle="border">
                                                         <font key="font" metaFont="smallSystem"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1107,12 +1106,12 @@ AAAAAAEGA
                                                     </textFieldCell>
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
                                                     <prototypeCellViews>
-                                                        <tableCellView identifier="ChatMessageCellView" id="hyQ-eL-afe" customClass="ChatMessageCellView" customModule="BeagleIM" customModuleProvider="target">
-                                                            <rect key="frame" x="1" y="1" width="358" height="39"/>
+                                                        <tableCellView identifier="ChatMessageCellView" misplaced="YES" id="hyQ-eL-afe" customClass="ChatMessageCellView" customModule="BeagleIM" customModuleProvider="target">
+                                                            <rect key="frame" x="0.0" y="0.0" width="361" height="39"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="8Ev-ze-rIj" customClass="AvatarView" customModule="BeagleIM" customModuleProvider="target">
-                                                                    <rect key="frame" x="8" y="9" width="30" height="30"/>
+                                                                    <rect key="frame" x="8" y="8" width="30" height="30"/>
                                                                     <constraints>
                                                                         <constraint firstAttribute="height" constant="30" id="JZX-EA-sF9"/>
                                                                         <constraint firstAttribute="width" constant="30" id="L22-Dx-h0G"/>
@@ -1120,7 +1119,7 @@ AAAAAAEGA
                                                                     <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="BQA-BR-0uu"/>
                                                                 </imageView>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="PwX-lh-NbT">
-                                                                    <rect key="frame" x="40" y="22" width="91" height="17"/>
+                                                                    <rect key="frame" x="40" y="21" width="91" height="17"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="Artur Hefczyc" placeholderString="Testing" id="A6u-yJ-Fv9">
                                                                         <font key="font" metaFont="systemMedium" size="13"/>
                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -1128,17 +1127,17 @@ AAAAAAEGA
                                                                     </textFieldCell>
                                                                 </textField>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="b0k-Ke-dFq">
-                                                                    <rect key="frame" x="40" y="4" width="312" height="16"/>
+                                                                    <rect key="frame" x="40" y="4" width="315" height="16"/>
                                                                     <textFieldCell key="cell" selectable="YES" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="Some message to display from this person" allowsEditingTextAttributes="YES" id="b8k-ei-9Sv">
-                                                                        <font key="font" metaFont="cellTitle"/>
+                                                                        <font key="font" metaFont="systemLight" size="12"/>
                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
                                                                 </textField>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="neR-86-zgW">
-                                                                    <rect key="frame" x="305" y="22" width="47" height="17"/>
+                                                                    <rect key="frame" x="305" y="18" width="47" height="17"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="20:31:03" id="l7p-zy-GtB">
-                                                                        <font key="font" metaFont="smallSystem"/>
+                                                                        <font key="font" metaFont="systemLight" size="11"/>
                                                                         <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
@@ -1146,16 +1145,16 @@ AAAAAAEGA
                                                             </subviews>
                                                             <constraints>
                                                                 <constraint firstAttribute="trailing" secondItem="neR-86-zgW" secondAttribute="trailing" constant="8" id="0Pd-of-GHt"/>
-                                                                <constraint firstItem="8Ev-ze-rIj" firstAttribute="top" secondItem="hyQ-eL-afe" secondAttribute="top" id="7Fs-2C-EPj"/>
-                                                                <constraint firstItem="b0k-Ke-dFq" firstAttribute="top" secondItem="neR-86-zgW" secondAttribute="bottom" constant="2" id="9cK-oT-2wh"/>
+                                                                <constraint firstItem="8Ev-ze-rIj" firstAttribute="top" secondItem="hyQ-eL-afe" secondAttribute="top" constant="5" id="7Fs-2C-EPj"/>
+                                                                <constraint firstItem="b0k-Ke-dFq" firstAttribute="top" secondItem="neR-86-zgW" secondAttribute="bottom" constant="1" id="9cK-oT-2wh"/>
                                                                 <constraint firstItem="neR-86-zgW" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="PwX-lh-NbT" secondAttribute="trailing" constant="8" id="OsK-kJ-9ZQ"/>
-                                                                <constraint firstItem="PwX-lh-NbT" firstAttribute="top" secondItem="hyQ-eL-afe" secondAttribute="top" id="RTJ-xL-i6t"/>
+                                                                <constraint firstItem="PwX-lh-NbT" firstAttribute="top" secondItem="hyQ-eL-afe" secondAttribute="top" constant="5" id="RTJ-xL-i6t"/>
                                                                 <constraint firstAttribute="bottom" secondItem="b0k-Ke-dFq" secondAttribute="bottom" constant="4" id="bnx-rR-v26"/>
                                                                 <constraint firstItem="8Ev-ze-rIj" firstAttribute="leading" secondItem="hyQ-eL-afe" secondAttribute="leading" constant="8" id="h3V-eb-OW6"/>
-                                                                <constraint firstItem="neR-86-zgW" firstAttribute="top" secondItem="hyQ-eL-afe" secondAttribute="top" id="oBh-Qq-SDx"/>
+                                                                <constraint firstItem="neR-86-zgW" firstAttribute="top" secondItem="hyQ-eL-afe" secondAttribute="top" constant="5" id="oBh-Qq-SDx"/>
                                                                 <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="8Ev-ze-rIj" secondAttribute="bottom" id="tX6-Q2-EPx"/>
                                                                 <constraint firstItem="PwX-lh-NbT" firstAttribute="leading" secondItem="8Ev-ze-rIj" secondAttribute="trailing" constant="4" id="wXh-OZ-ibk"/>
-                                                                <constraint firstItem="b0k-Ke-dFq" firstAttribute="top" secondItem="PwX-lh-NbT" secondAttribute="bottom" constant="2" id="wmi-DR-SRc"/>
+                                                                <constraint firstItem="b0k-Ke-dFq" firstAttribute="top" secondItem="PwX-lh-NbT" secondAttribute="bottom" constant="1" id="wmi-DR-SRc"/>
                                                                 <constraint firstAttribute="trailing" secondItem="b0k-Ke-dFq" secondAttribute="trailing" constant="8" id="xMn-EV-UA1"/>
                                                                 <constraint firstItem="b0k-Ke-dFq" firstAttribute="leading" secondItem="PwX-lh-NbT" secondAttribute="leading" id="y1Y-g4-fkK"/>
                                                             </constraints>
@@ -1168,13 +1167,13 @@ AAAAAAEGA
                                                             </connections>
                                                         </tableCellView>
                                                         <tableCellView identifier="ChatMessageContinuationCellView" id="RGu-j8-zvz" customClass="ChatMessageContinuationCellView" customModule="BeagleIM" customModuleProvider="target">
-                                                            <rect key="frame" x="1" y="42" width="358" height="20"/>
+                                                            <rect key="frame" x="0.0" y="39" width="361" height="20"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="iOv-H1-1lh">
-                                                                    <rect key="frame" x="40" y="4" width="312" height="16"/>
+                                                                    <rect key="frame" x="40" y="4" width="315" height="16"/>
                                                                     <textFieldCell key="cell" selectable="YES" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="Some message to display from this person" allowsEditingTextAttributes="YES" id="G0N-t6-ElQ">
-                                                                        <font key="font" metaFont="cellTitle"/>
+                                                                        <font key="font" metaFont="systemLight" size="12"/>
                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
@@ -1227,12 +1226,12 @@ AAAAAAEGA
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <textView drawsBackground="NO" importsGraphics="NO" richText="NO" verticallyResizable="YES" smartInsertDelete="YES" id="55A-ac-2fc" customClass="AutoresizingTextView" customModule="BeagleIM" customModuleProvider="target">
-                                            <rect key="frame" x="0.0" y="0.0" width="236" height="14"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="284" height="14"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" name="chatBackgroundColor"/>
-                                            <size key="minSize" width="236" height="14"/>
-                                            <size key="maxSize" width="328" height="10000000"/>
+                                            <size key="minSize" width="284" height="14"/>
+                                            <size key="maxSize" width="100000" height="10000000"/>
                                             <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                         </textView>
                                     </subviews>
@@ -2990,7 +2989,7 @@ AAAAAAEGA
                                     </constraints>
                                 </view>
                             </box>
-                            <scrollView verticalHuggingPriority="249" borderType="none" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xEj-nj-qPf">
+                            <scrollView verticalHuggingPriority="249" borderType="none" autohidesScrollers="YES" horizontalLineScroll="17" horizontalPageScroll="10" verticalLineScroll="17" verticalPageScroll="10" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xEj-nj-qPf">
                                 <rect key="frame" x="0.0" y="30" width="199" height="263"/>
                                 <clipView key="contentView" id="ZEQ-Qr-EIY">
                                     <rect key="frame" x="0.0" y="0.0" width="199" height="263"/>
@@ -2999,11 +2998,10 @@ AAAAAAEGA
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="none" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" enabled="NO" usesAutomaticRowHeights="YES" viewBased="YES" id="K6D-S9-WZN" customClass="ChatViewTableView" customModule="BeagleIM" customModuleProvider="target">
                                             <rect key="frame" x="0.0" y="0.0" width="199" height="263"/>
                                             <autoresizingMask key="autoresizingMask"/>
-                                            <size key="intercellSpacing" width="3" height="2"/>
                                             <color key="backgroundColor" name="chatBackgroundColor"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                             <tableColumns>
-                                                <tableColumn width="196" minWidth="40" maxWidth="4000" id="cHm-zQ-BsZ">
+                                                <tableColumn width="199" minWidth="40" maxWidth="4000" id="cHm-zQ-BsZ">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" enabled="NO" borderStyle="border">
                                                         <font key="font" metaFont="smallSystem"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -3017,11 +3015,11 @@ AAAAAAEGA
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView identifier="MucMessageCellView" misplaced="YES" id="KPw-UN-Rfg" customClass="ChatMessageCellView" customModule="BeagleIM" customModuleProvider="target">
-                                                            <rect key="frame" x="1" y="1" width="196" height="39"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="199" height="39"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="jQZ-2V-BzC" customClass="AvatarView" customModule="BeagleIM" customModuleProvider="target">
-                                                                    <rect key="frame" x="8" y="9" width="30" height="30"/>
+                                                                    <rect key="frame" x="8" y="8" width="30" height="30"/>
                                                                     <constraints>
                                                                         <constraint firstAttribute="height" constant="30" id="9Dd-NR-Vic"/>
                                                                         <constraint firstAttribute="width" constant="30" id="Zdr-38-EOM"/>
@@ -3029,7 +3027,7 @@ AAAAAAEGA
                                                                     <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="XlP-aH-dgL"/>
                                                                 </imageView>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="6Id-pF-VjS">
-                                                                    <rect key="frame" x="40" y="22" width="91" height="17"/>
+                                                                    <rect key="frame" x="40" y="21" width="91" height="17"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Artur Hefczyc" placeholderString="Testing" id="QLn-ai-Kxc">
                                                                         <font key="font" metaFont="systemMedium" size="13"/>
                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -3037,9 +3035,9 @@ AAAAAAEGA
                                                                     </textFieldCell>
                                                                 </textField>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="KLp-tb-nar">
-                                                                    <rect key="frame" x="40" y="4" width="150" height="16"/>
+                                                                    <rect key="frame" x="40" y="1" width="150" height="16"/>
                                                                     <textFieldCell key="cell" selectable="YES" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="Some message to display from this person" allowsEditingTextAttributes="YES" id="Kyv-An-dNw">
-                                                                        <font key="font" metaFont="cellTitle"/>
+                                                                        <font key="font" metaFont="systemLight" size="12"/>
                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
@@ -3047,7 +3045,7 @@ AAAAAAEGA
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="tzr-nh-91W">
                                                                     <rect key="frame" x="236" y="22" width="47" height="17"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="20:31:03" id="h7Y-Uw-IWw">
-                                                                        <font key="font" metaFont="smallSystem"/>
+                                                                        <font key="font" metaFont="systemLight" size="11"/>
                                                                         <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
@@ -3059,14 +3057,14 @@ AAAAAAEGA
                                                                 <constraint firstItem="KLp-tb-nar" firstAttribute="leading" secondItem="6Id-pF-VjS" secondAttribute="leading" id="Cud-rf-RlQ"/>
                                                                 <constraint firstItem="tzr-nh-91W" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="6Id-pF-VjS" secondAttribute="trailing" constant="8" id="Fh4-yZ-6BV"/>
                                                                 <constraint firstItem="6Id-pF-VjS" firstAttribute="leading" secondItem="jQZ-2V-BzC" secondAttribute="trailing" constant="4" id="IVm-nU-gzG"/>
-                                                                <constraint firstItem="jQZ-2V-BzC" firstAttribute="top" secondItem="KPw-UN-Rfg" secondAttribute="top" id="Lda-3M-qvI"/>
-                                                                <constraint firstItem="6Id-pF-VjS" firstAttribute="top" secondItem="KPw-UN-Rfg" secondAttribute="top" id="Ugr-yu-6YG"/>
+                                                                <constraint firstItem="jQZ-2V-BzC" firstAttribute="top" secondItem="KPw-UN-Rfg" secondAttribute="top" constant="5" id="Lda-3M-qvI"/>
+                                                                <constraint firstItem="6Id-pF-VjS" firstAttribute="top" secondItem="KPw-UN-Rfg" secondAttribute="top" constant="5" id="Ugr-yu-6YG"/>
                                                                 <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="jQZ-2V-BzC" secondAttribute="bottom" id="WTH-4t-sNL"/>
                                                                 <constraint firstAttribute="bottom" secondItem="KLp-tb-nar" secondAttribute="bottom" constant="4" id="Wga-ND-qtF"/>
                                                                 <constraint firstAttribute="trailing" secondItem="tzr-nh-91W" secondAttribute="trailing" constant="8" id="cxS-Xf-TZO"/>
-                                                                <constraint firstItem="KLp-tb-nar" firstAttribute="top" secondItem="tzr-nh-91W" secondAttribute="bottom" constant="2" id="fcL-YP-1FL"/>
-                                                                <constraint firstItem="tzr-nh-91W" firstAttribute="top" secondItem="KPw-UN-Rfg" secondAttribute="top" id="ifk-d1-M75"/>
-                                                                <constraint firstItem="KLp-tb-nar" firstAttribute="top" secondItem="6Id-pF-VjS" secondAttribute="bottom" constant="2" id="kfd-nE-gr2"/>
+                                                                <constraint firstItem="KLp-tb-nar" firstAttribute="top" secondItem="tzr-nh-91W" secondAttribute="bottom" constant="1" id="fcL-YP-1FL"/>
+                                                                <constraint firstItem="tzr-nh-91W" firstAttribute="top" secondItem="KPw-UN-Rfg" secondAttribute="top" constant="5" id="ifk-d1-M75"/>
+                                                                <constraint firstItem="KLp-tb-nar" firstAttribute="top" secondItem="6Id-pF-VjS" secondAttribute="bottom" constant="1" id="kfd-nE-gr2"/>
                                                             </constraints>
                                                             <accessibility identifier="MucMessageCellView"/>
                                                             <connections>
@@ -3077,13 +3075,13 @@ AAAAAAEGA
                                                             </connections>
                                                         </tableCellView>
                                                         <tableCellView identifier="MucMessageContinuationCellView" misplaced="YES" id="32D-I6-QCJ" customClass="ChatMessageContinuationCellView" customModule="BeagleIM" customModuleProvider="target">
-                                                            <rect key="frame" x="1" y="42" width="196" height="20"/>
+                                                            <rect key="frame" x="0.0" y="39" width="199" height="20"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0bv-n8-ogt">
-                                                                    <rect key="frame" x="40" y="4" width="150" height="16"/>
+                                                                    <rect key="frame" x="40" y="1" width="150" height="16"/>
                                                                     <textFieldCell key="cell" selectable="YES" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="Some message to display from this person" allowsEditingTextAttributes="YES" id="Iv5-RH-ZKr">
-                                                                        <font key="font" metaFont="cellTitle"/>
+                                                                        <font key="font" metaFont="systemLight" size="12"/>
                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>

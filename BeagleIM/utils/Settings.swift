@@ -49,6 +49,10 @@ enum Settings: String {
     
     case ignoreJingleSupportCheck
     
+    // new and highly experimental
+    case alternateMessageColoringBasedOnDirection
+    case messageGrouping
+    
     public static let CHANGED = Notification.Name("settingChanged");
     
     fileprivate static var observers: [Settings: [UUID: (Settings, Any?)->Void]] = [:];
@@ -68,7 +72,8 @@ enum Settings: String {
             "systemMenuIcon": false,
             "spellchecking": true,
             "appearance": Appearance.auto.rawValue,
-            "imageDownloadSizeLimit": (10*1024*1024)
+            "imageDownloadSizeLimit": (10*1024*1024),
+            "messageGrouping": "smart"
         ];
         UserDefaults.standard.register(defaults: defaults);
     }

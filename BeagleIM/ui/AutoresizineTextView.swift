@@ -28,12 +28,15 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
     weak var dragHandler: NSDraggingDestination? = nil;
     
     override func awakeFromNib() {
-        self.font = NSFont.systemFont(ofSize: NSFont.systemFontSize(for: .regular));
+        self.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1.0, weight: .light);
         self.textStorage?.delegate = self;
     }
     
     override var intrinsicContentSize: NSSize {
+        print("font:", self.font, "size:", self.font?.pointSize, "system:", NSFont.systemFont(ofSize: NSFont.systemFontSize - 1.0, weight: .light), "inset:", self.textContainerInset, "origin:", self.textContainerOrigin);
+        self.layoutManager?.typesetterBehavior = .latestBehavior;
         self.layoutManager!.ensureLayout(for: self.textContainer!);
+        self.layoutManager!.glyphRange(for: textContainer!);
         return layoutManager!.usedRect(for: self.textContainer!).size;
     }
     
@@ -54,7 +57,7 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
     func textStorage(_ textStorage: NSTextStorage, didProcessEditing editedMask: NSTextStorageEditActions, range editedRange: NSRange, changeInLength delta: Int) {
         let fullRange = NSRange(0..<textStorage.length);
         textStorage.fixAttributes(in: fullRange);
-        //textStorage.setAttributes([.font: self.font!], range: fullRange);
+        textStorage.setAttributes([.font: self.font!], range: fullRange);
         textStorage.addAttributes([.foregroundColor: NSColor.textColor], range: fullRange);
         
         if Settings.enableMarkdownFormatting.bool() {

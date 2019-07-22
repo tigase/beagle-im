@@ -449,7 +449,18 @@ class ChatMessage: ChatViewItemProtocol {
             return false;
         }
         
-        return self.account == item.account && self.jid == item.jid && self.state.direction == item.state.direction && self.authorNickname == item.authorNickname && self.authorJid == item.authorJid && abs(self.timestamp.timeIntervalSince(item.timestamp)) < 30 && self.encryption == item.encryption && self.encryptionFingerprint == item.encryptionFingerprint;
+        return self.account == item.account && self.jid == item.jid && self.state.direction == item.state.direction && self.authorNickname == item.authorNickname && self.authorJid == item.authorJid && abs(self.timestamp.timeIntervalSince(item.timestamp)) < allowedTimeDiff() && self.encryption == item.encryption && self.encryptionFingerprint == item.encryptionFingerprint;
+    }
+    
+    func allowedTimeDiff() -> TimeInterval {
+        switch Settings.messageGrouping.string() ?? "smart" {
+        case "none":
+            return -1.0;
+        case "always":
+            return 60.0 * 60.0 * 24.0;
+        default:
+            return 30.0;
+        }
     }
 
 }

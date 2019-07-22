@@ -29,6 +29,7 @@ class BaseChatMessageCellView: NSTableCellView {
     var id: Int = 0;
     
     @IBOutlet var message: NSTextField!
+    fileprivate var direction: MessageDirection? = nil;
     
     func set(message item: ChatMessage) {
         let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
@@ -89,6 +90,7 @@ class BaseChatMessageCellView: NSTableCellView {
         default:
             self.message.textColor = nil;//NSColor.textColor;
         }
+        self.direction = item.state.direction;
 
         self.toolTip = BaseChatMessageCellView.tooltipFormatter.string(from: item.timestamp) + (errors.isEmpty ? "" : "\n" + errors.joined(separator: "\n"));
         
@@ -118,6 +120,18 @@ class BaseChatMessageCellView: NSTableCellView {
     }
     
     override func layout() {
+        if Settings.alternateMessageColoringBasedOnDirection.bool() {
+            if let direction = self.direction {
+                switch direction {
+                case .incoming:
+                    self.wantsLayer = true;
+                    self.layer?.backgroundColor = NSColor(named: "chatBackgroundColor")!.cgColor;
+                case .outgoing:
+                    self.wantsLayer = true;
+                    self.layer?.backgroundColor = NSColor(named: "chatOutgoingBackgroundColor")!.cgColor;
+                }
+            }
+        }
         super.layout();
         if let width = self.superview?.superview?.frame.width {
             self.message.preferredMaxLayoutWidth = width - 50;

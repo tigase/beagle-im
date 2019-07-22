@@ -29,8 +29,6 @@ class GeneralSettingsController: NSViewController {
     fileprivate var autoconnect: NSButton!;
     fileprivate var automaticStatus: NSButton!;
     fileprivate var rememberLastStatusButton: NSButton!;
-    fileprivate var requestSubscriptionButton: NSButton!;
-    fileprivate var allowSubscriptionButton: NSButton!;
     
     fileprivate var enableMessageCarbonsButton: NSButton!;
     fileprivate var messageCarbonsMarkAsReadButton: NSButton!;
@@ -45,12 +43,6 @@ class GeneralSettingsController: NSViewController {
     
     fileprivate var encryptionButton: NSPopUpButton!;
     
-    fileprivate var imagePreviewMaxSizeLabel: NSTextField!;
-    fileprivate var imagePreviewMaxSize: NSSlider!;
-    
-    fileprivate var ignoreJingleSupportCheck: NSButton!;
-    fileprivate var enableBookmarksSync: NSButton!;
-    
     override func viewDidLoad() {
         if #available(macOS 10.14, *) {
             appearance = formView.addRow(label: "Appearance:", field: NSPopUpButton(frame: .zero, pullsDown: false));
@@ -62,10 +54,6 @@ class GeneralSettingsController: NSViewController {
         automaticStatus = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Automatic status", target: self, action: #selector(checkboxChanged)));
         rememberLastStatusButton = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Remember last status", target: self, action: #selector(checkboxChanged)));
         formView.groupItems(from: autoconnect, to: rememberLastStatusButton);
-        
-        requestSubscriptionButton = formView.addRow(label: "Adding user:", field: NSButton(checkboxWithTitle: "Request presence subscription", target: self, action: #selector(checkboxChanged)));
-        allowSubscriptionButton = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Allow presence subscription", target: self, action: #selector(checkboxChanged)));
-        formView.groupItems(from: requestSubscriptionButton, to: allowSubscriptionButton);
         
         enableMessageCarbonsButton = formView.addRow(label: "Message carbons:", field: NSButton(checkboxWithTitle: "Enable", target: self, action: #selector(checkboxChanged(_:))));
         messageCarbonsMarkAsReadButton = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Mark carbon messages as read", target: self, action: #selector(checkboxChanged(_:))));
@@ -81,22 +69,10 @@ class GeneralSettingsController: NSViewController {
         systemMenuIcon = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show system menu icon", target: self, action: #selector(checkboxChanged(_:))));
         formView.groupItems(from: notificationsFromUnknownSenders, to: systemMenuIcon);
         
-        imagePreviewMaxSize = formView.addRow(label: "Image preview size limit:", field: NSSlider(value: Double(Settings.imageDownloadSizeLimit.integer()), minValue: 0, maxValue: 50 * 1024 * 1024, target: self, action: #selector(sliderChanged)));
-        imagePreviewMaxSizeLabel = formView.addRow(label: "", field: formView.createLabel(text: "0.0B"));
-        imagePreviewMaxSizeLabel.alignment = .center;
-        formView.groupItems(from:imagePreviewMaxSize, to: imagePreviewMaxSizeLabel);
-        updateImagePreviewMaxSizeLabel();
-        formView.cell(for: imagePreviewMaxSizeLabel)!.xPlacement = .center;
-
         markdownFormatting = formView.addRow(label: "Message formatting:", field: NSButton(checkboxWithTitle: "Markdown", target: self, action: #selector(checkboxChanged(_:))));
         showEmoticons = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show emoticons", target: self, action: #selector(checkboxChanged(_:))))
         spellchecking = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Spellchecking", target: self, action: #selector(checkboxChanged(_:))));
         formView.groupItems(from:markdownFormatting, to: spellchecking);
-        
-        ignoreJingleSupportCheck = formView.addRow(label: "Experimental", field: NSButton(checkboxWithTitle: "Ignore VoIP support check", target: self, action: #selector(checkboxChanged(_:))));
-        
-        enableBookmarksSync = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Enable groupchat bookmarks sync", target: self, action: #selector(checkboxChanged(_:))));
-        formView.groupItems(from:ignoreJingleSupportCheck, to: enableBookmarksSync);
         
         self.preferredContentSize = NSSize(width: self.view.frame.size.width, height: self.view.frame.size.height);
     }
@@ -118,8 +94,6 @@ class GeneralSettingsController: NSViewController {
         autoconnect.state = Settings.automaticallyConnectAfterStart.bool() ? .on : .off;
         automaticStatus.state = Settings.enableAutomaticStatus.bool() ? .on : .off;
         rememberLastStatusButton.state = Settings.rememberLastStatus.bool() ? .on : .off;
-        requestSubscriptionButton.state = Settings.requestPresenceSubscription.bool() ? .on : .off;
-        allowSubscriptionButton.state = Settings.allowPresenceSubscription.bool() ? .on : .off;
         enableMessageCarbonsButton.state = Settings.enableMessageCarbons.bool() ? .on : .off;
         messageCarbonsMarkAsReadButton.state = Settings.markMessageCarbonsAsRead.bool() ? .on : .off;
         messageCarbonsMarkAsReadButton.isEnabled = Settings.enableMessageCarbons.bool();
@@ -131,8 +105,6 @@ class GeneralSettingsController: NSViewController {
         showEmoticons.isEnabled = Settings.enableMarkdownFormatting.bool()
         systemMenuIcon.state = Settings.systemMenuIcon.bool() ? .on : .off;
         spellchecking.state = Settings.spellchecking.bool() ? .on : .off;
-        ignoreJingleSupportCheck.state = Settings.ignoreJingleSupportCheck.bool() ? .on : .off;
-        enableBookmarksSync.state = Settings.enableBookmarksSync.bool() ? .on : .off;
         
         encryptionButton.removeAllItems();
         encryptionButton.addItems(withTitles: ["None", "OMEMO"]);
@@ -152,10 +124,6 @@ class GeneralSettingsController: NSViewController {
             } else {
                 Settings.currentStatus.set(value: nil);
             }
-        case requestSubscriptionButton:
-            Settings.requestPresenceSubscription.set(value: sender.state == .on);
-        case allowSubscriptionButton:
-            Settings.allowPresenceSubscription.set(value: sender.state == .on);
         case enableMessageCarbonsButton:
             Settings.enableMessageCarbons.set(value: sender.state == .on);
             messageCarbonsMarkAsReadButton.isEnabled = sender.state == .on;
@@ -173,12 +141,8 @@ class GeneralSettingsController: NSViewController {
             showEmoticons.isEnabled = sender.state == .on;
         case spellchecking:
             Settings.spellchecking.set(value: sender.state == .on);
-        case ignoreJingleSupportCheck:
-            Settings.ignoreJingleSupportCheck.set(value: sender.state == .on);
         case showEmoticons:
             Settings.showEmoticons.set(value: sender.state == .on);
-        case enableBookmarksSync:
-            Settings.enableBookmarksSync.set(value: sender.state == .on);
         case encryptionButton:
             let encryption: ChatEncryption = encryptionButton.indexOfSelectedItem == 1 ? .omemo : .none;
             Settings.messageEncryption.set(value: encryption.rawValue);
@@ -196,32 +160,8 @@ class GeneralSettingsController: NSViewController {
     
     @objc func sliderChanged(_ sender: NSSlider) {
         switch sender {
-        case imagePreviewMaxSize:
-            print("selected value:", sender.integerValue);
-            Settings.imageDownloadSizeLimit.set(value: sender.integerValue);
-            updateImagePreviewMaxSizeLabel();
-            break;
         default:
             break;
         }
-    }
-
-    fileprivate func updateImagePreviewMaxSizeLabel() {
-        self.imagePreviewMaxSizeLabel.stringValue = "\(string(filesize: Settings.imageDownloadSizeLimit.integer()))";
-    }
-    
-    fileprivate func string(filesize: Int) -> String {
-        var unit = "B";
-        var val = Double(filesize) / 1024.0;
-        if val > 0 {
-            unit = "KB";
-            if val > 1024 {
-                val = val / 1024;
-                unit = "MB";
-            }
-        } else {
-            val = Double(filesize);
-        }
-        return String(format: "%.1f\(unit)", val);
-    }
+    }    
 }
