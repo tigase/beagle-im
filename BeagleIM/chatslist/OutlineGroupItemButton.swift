@@ -21,18 +21,21 @@
 
 import AppKit
 
-class OutlineGroupItemButton: NSButton {
+class OutlineGroupItemButton: RoundButton {
     
     var group: ChatsListGroupProtocol?;
     
-    override func draw(_ dirtyRect: NSRect) {
-        if NSApp.isDarkMode {
-            self.contentFilters.removeAll();
-        } else if self.contentFilters.isEmpty {
-            let filter = CIFilter(name: "CIColorInvert")!;
-            filter.setDefaults();
-            self.contentFilters.append(filter);
+    override var contentTintColor: NSColor? {
+        get {
+            return mouseDown && (NSAppearance.current.bestMatch(from: [.aqua, .darkAqua]) == .aqua) ? backgroundColor : super.contentTintColor;
         }
+        set {
+            super.contentTintColor = newValue;
+        }
+    }
+    
+    override func draw(_ dirtyRect: NSRect) {
+        backgroundColor = NSColor(named: "sidebarBackgroundColor")!;
         super.draw(dirtyRect);
     }
 }

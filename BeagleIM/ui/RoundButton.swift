@@ -26,6 +26,16 @@ public class RoundButton: NSButton {
     
     @IBInspectable
     var backgroundColor: NSColor = NSColor.textBackgroundColor;
+    @IBInspectable
+    var marginRatio: CGFloat = 4.0;
+
+    fileprivate(set) var mouseDown: Bool = false {
+        didSet {
+            self.highlight(mouseDown);
+            self.state = mouseDown ? .on : .off;
+            self.needsDisplay = true;
+        }
+    }
     
     public override func draw(_ dirtyRect: NSRect) {
         NSGraphicsContext.saveGraphicsState();
@@ -33,15 +43,54 @@ public class RoundButton: NSButton {
         let path = NSBezierPath(roundedRect: dirtyRect, xRadius: frame.width/2, yRadius: frame.width/2);
         path.addClip();
 
-        backgroundColor.setFill();
+        if mouseDown {
+            NSColor.unemphasizedSelectedContentBackgroundColor.setFill();
+        } else {
+            backgroundColor.setFill();
+        }
         path.fill();
 
+        path.lineWidth = 1;
+        if NSApp.isDarkMode {
+            NSColor.darkGray.setStroke();
+        } else {
+            NSColor.lightGray.setStroke();
+        }
+        path.stroke();
+        
         NSGraphicsContext.restoreGraphicsState();
 
-        let margin = max(dirtyRect.width, dirtyRect.height) / 5;
+        let margin = max(dirtyRect.width, dirtyRect.height) / marginRatio;
         let imageFrame = NSRect(x: margin, y: margin, width: dirtyRect.width - (2 * margin), height: dirtyRect.height - (2 * margin));
-        (self.cell as? NSButtonCell)?.drawImage(self.cell!.image!, withFrame: imageFrame, in: self);
-        
+        let tint = contentTintColor ?? NSColor.textColor;
+        if let image: NSImage = (self.cell as? NSButtonCell)?.image?.copy() as? NSImage {
+            image.lockFocus();
+            tint.set();
+            NSRect(origin: .zero, size: image.size).fill(using: .sourceAtop);
+            image.unlockFocus();
+            image.isTemplate = false;
+            (self.cell as? NSButtonCell)?.drawImage(image, withFrame: imageFrame, in: self);
+        }
+        //(self.cell as? NSButtonCell)?.drawImage(self.cell!.image!, withFrame: imageFrame, in: self);
+    }
+    
+    public override func mouseDown(with event: NSEvent) {
+        if isEnabled {
+            mouseDown = true;
+        }
+    }
+    
+    public override func mouseUp(with event: NSEvent) {
+        if mouseDown {
+            mouseDown = false;
+            _ = target?.perform(action, with: self);
+        }
+    }
+    
+    public override func mouseExited(with event: NSEvent) {
+        if mouseDown {
+            mouseDown = false;
+        }
     }
     
 }

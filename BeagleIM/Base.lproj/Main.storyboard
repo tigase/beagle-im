@@ -746,12 +746,12 @@ CA
                                                     <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="key"/>
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
                                                     <prototypeCellViews>
-                                                        <tableCellView identifier="ChatGroupCell" id="gYg-HZ-CFu">
+                                                        <tableCellView identifier="ChatGroupCell" misplaced="YES" id="gYg-HZ-CFu">
                                                             <rect key="frame" x="1" y="0.0" width="304" height="25"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="249" translatesAutoresizingMaskIntoConstraints="NO" id="few-Rx-jGm">
-                                                                    <rect key="frame" x="6" y="2" width="273" height="17"/>
+                                                                    <rect key="frame" x="6" y="5" width="276" height="17"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="KoE-gC-vJV">
                                                                         <font key="font" metaFont="system"/>
                                                                         <color key="textColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -759,15 +759,12 @@ CA
                                                                     </textFieldCell>
                                                                 </textField>
                                                                 <button wantsLayer="YES" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="oOC-Ng-C7n" customClass="OutlineGroupItemButton" customModule="BeagleIM" customModuleProvider="target">
-                                                                    <rect key="frame" x="277" y="0.0" width="21" height="19"/>
-                                                                    <contentFilters>
-                                                                        <ciFilter name="CIColorInvert">
-                                                                            <configuration>
-                                                                                <null key="inputImage"/>
-                                                                            </configuration>
-                                                                        </ciFilter>
-                                                                    </contentFilters>
-                                                                    <buttonCell key="cell" type="roundRect" bezelStyle="roundedRect" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" inset="2" id="LNb-VG-NLr">
+                                                                    <rect key="frame" x="280" y="4" width="18" height="18"/>
+                                                                    <constraints>
+                                                                        <constraint firstAttribute="width" constant="18" id="jsY-Xn-xyW"/>
+                                                                        <constraint firstAttribute="height" constant="18" id="pzy-wo-Ibu"/>
+                                                                    </constraints>
+                                                                    <buttonCell key="cell" type="roundRect" bezelStyle="roundedRect" image="NSAddTemplate" imagePosition="only" alignment="center" inset="2" id="LNb-VG-NLr">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                         <font key="font" metaFont="cellTitle"/>
                                                                     </buttonCell>
@@ -780,10 +777,9 @@ CA
                                                             <constraints>
                                                                 <constraint firstAttribute="trailing" secondItem="oOC-Ng-C7n" secondAttribute="trailing" constant="6" id="0FS-wk-rPA"/>
                                                                 <constraint firstItem="oOC-Ng-C7n" firstAttribute="leading" secondItem="few-Rx-jGm" secondAttribute="trailing" id="2SR-ES-uTC"/>
-                                                                <constraint firstAttribute="bottom" secondItem="oOC-Ng-C7n" secondAttribute="bottom" constant="1" id="50Z-5E-cQu"/>
-                                                                <constraint firstItem="few-Rx-jGm" firstAttribute="top" secondItem="gYg-HZ-CFu" secondAttribute="top" constant="6" id="6xI-S2-EPz"/>
-                                                                <constraint firstItem="oOC-Ng-C7n" firstAttribute="top" secondItem="gYg-HZ-CFu" secondAttribute="top" constant="6" id="a1w-I7-xFR"/>
-                                                                <constraint firstAttribute="bottom" secondItem="few-Rx-jGm" secondAttribute="bottom" constant="2" id="dps-Pe-iMc"/>
+                                                                <constraint firstAttribute="bottom" secondItem="oOC-Ng-C7n" secondAttribute="bottom" constant="4" id="50Z-5E-cQu"/>
+                                                                <constraint firstItem="few-Rx-jGm" firstAttribute="centerY" secondItem="oOC-Ng-C7n" secondAttribute="centerY" id="FTQ-8o-u74"/>
+                                                                <constraint firstItem="oOC-Ng-C7n" firstAttribute="top" secondItem="gYg-HZ-CFu" secondAttribute="top" constant="4" id="a1w-I7-xFR"/>
                                                                 <constraint firstItem="few-Rx-jGm" firstAttribute="leading" secondItem="gYg-HZ-CFu" secondAttribute="leading" constant="8" id="wp9-21-6DH"/>
                                                             </constraints>
                                                             <connections>
@@ -1209,28 +1205,32 @@ AAAAAAEGA
                             <progressIndicator hidden="YES" wantsLayer="YES" maxValue="100" controlSize="small" style="bar" translatesAutoresizingMaskIntoConstraints="NO" id="xMh-bV-LhL">
                                 <rect key="frame" x="0.0" y="30" width="361" height="12"/>
                             </progressIndicator>
-                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="FiK-DK-gMw">
-                                <rect key="frame" x="4" y="7" width="21" height="19"/>
-                                <buttonCell key="cell" type="roundRect" bezelStyle="roundedRect" image="NSAddTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="ryi-wJ-njh">
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="FiK-DK-gMw" customClass="RoundButton" customModule="BeagleIM" customModuleProvider="target">
+                                <rect key="frame" x="4" y="6" width="18" height="18"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="18" id="Hqu-HZ-gun"/>
+                                    <constraint firstAttribute="width" constant="18" id="mqr-NS-AAR"/>
+                                </constraints>
+                                <buttonCell key="cell" type="roundRect" bezelStyle="roundedRect" image="NSAddTemplate" imagePosition="only" alignment="center" state="on" imageScaling="proportionallyUpOrDown" inset="2" id="ryi-wJ-njh">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="cellTitle"/>
+                                    <font key="font" metaFont="system"/>
                                 </buttonCell>
                                 <connections>
                                     <action selector="attachFile:" target="bJ4-ee-HmU" id="aiD-fG-EcW"/>
                                 </connections>
                             </button>
                             <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eQY-WT-lv4" customClass="RoundedScrollView" customModule="BeagleIM" customModuleProvider="target">
-                                <rect key="frame" x="29" y="4" width="306" height="22"/>
+                                <rect key="frame" x="26" y="4" width="309" height="22"/>
                                 <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="kiN-QC-soI">
-                                    <rect key="frame" x="0.0" y="0.0" width="306" height="22"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="309" height="22"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <textView drawsBackground="NO" importsGraphics="NO" richText="NO" verticallyResizable="YES" smartInsertDelete="YES" id="55A-ac-2fc" customClass="AutoresizingTextView" customModule="BeagleIM" customModuleProvider="target">
-                                            <rect key="frame" x="0.0" y="0.0" width="284" height="14"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="287" height="14"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" name="chatBackgroundColor"/>
-                                            <size key="minSize" width="284" height="14"/>
+                                            <size key="minSize" width="287" height="14"/>
                                             <size key="maxSize" width="100000" height="10000000"/>
                                             <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                         </textView>
@@ -1251,7 +1251,7 @@ AAAAAAEGA
                                 </scroller>
                             </scrollView>
                             <popUpButton translatesAutoresizingMaskIntoConstraints="NO" id="imk-OV-DnT">
-                                <rect key="frame" x="339" y="8" width="18" height="18"/>
+                                <rect key="frame" x="339" y="6" width="18" height="18"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="18" id="D2d-en-dQZ"/>
                                     <constraint firstAttribute="width" constant="18" id="fd5-7k-XNi"/>
@@ -1277,14 +1277,14 @@ AAAAAAEGA
                         </subviews>
                         <constraints>
                             <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="FiK-DK-gMw" secondAttribute="bottom" constant="4" id="0r0-ah-oMk"/>
-                            <constraint firstItem="FiK-DK-gMw" firstAttribute="top" secondItem="eQY-WT-lv4" secondAttribute="top" id="1dH-nr-bnn"/>
+                            <constraint firstItem="FiK-DK-gMw" firstAttribute="top" secondItem="eQY-WT-lv4" secondAttribute="top" constant="2" id="1dH-nr-bnn"/>
                             <constraint firstItem="xMh-bV-LhL" firstAttribute="bottom" secondItem="AeQ-nG-KTC" secondAttribute="bottom" id="94v-72-Fsg"/>
                             <constraint firstItem="imk-OV-DnT" firstAttribute="leading" secondItem="eQY-WT-lv4" secondAttribute="trailing" constant="4" id="EET-Pb-d7M"/>
                             <constraint firstItem="eQY-WT-lv4" firstAttribute="leading" secondItem="FiK-DK-gMw" secondAttribute="trailing" constant="4" id="KGs-ea-WhJ"/>
                             <constraint firstAttribute="trailing" secondItem="AeQ-nG-KTC" secondAttribute="trailing" id="PMk-TI-hyR"/>
                             <constraint firstItem="xMh-bV-LhL" firstAttribute="leading" secondItem="AeQ-nG-KTC" secondAttribute="leading" id="WEd-sy-D61"/>
                             <constraint firstItem="AeQ-nG-KTC" firstAttribute="leading" secondItem="XWz-tH-btE" secondAttribute="leading" id="YMI-Uw-krh"/>
-                            <constraint firstItem="imk-OV-DnT" firstAttribute="top" secondItem="eQY-WT-lv4" secondAttribute="top" id="a33-Jc-dFc"/>
+                            <constraint firstItem="imk-OV-DnT" firstAttribute="top" secondItem="eQY-WT-lv4" secondAttribute="top" constant="2" id="a33-Jc-dFc"/>
                             <constraint firstItem="FRG-k1-QUa" firstAttribute="leading" secondItem="XWz-tH-btE" secondAttribute="leading" id="anJ-EZ-b1v"/>
                             <constraint firstItem="eQY-WT-lv4" firstAttribute="top" secondItem="AeQ-nG-KTC" secondAttribute="bottom" constant="4" id="c98-zQ-aYM"/>
                             <constraint firstAttribute="trailing" secondItem="imk-OV-DnT" secondAttribute="trailing" constant="4" id="fvm-o6-ncJ"/>
@@ -3115,17 +3115,17 @@ AAAAAAEGA
                                 </scroller>
                             </scrollView>
                             <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" translatesAutoresizingMaskIntoConstraints="NO" id="17f-xV-Jus" customClass="RoundedScrollView" customModule="BeagleIM" customModuleProvider="target">
-                                <rect key="frame" x="29" y="4" width="367" height="22"/>
+                                <rect key="frame" x="26" y="4" width="370" height="22"/>
                                 <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="t2C-rl-jwx">
-                                    <rect key="frame" x="0.0" y="0.0" width="367" height="22"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="370" height="22"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <textView drawsBackground="NO" importsGraphics="NO" richText="NO" verticallyResizable="YES" smartInsertDelete="YES" id="fm7-td-rrI" customClass="AutoresizingTextView" customModule="BeagleIM" customModuleProvider="target">
-                                            <rect key="frame" x="0.0" y="0.0" width="345" height="14"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="348" height="14"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" name="chatBackgroundColor"/>
-                                            <size key="minSize" width="345" height="14"/>
+                                            <size key="minSize" width="348" height="14"/>
                                             <size key="maxSize" width="370" height="10000000"/>
                                             <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                         </textView>
@@ -3230,9 +3230,13 @@ AAAAAAEGA
                             <progressIndicator hidden="YES" wantsLayer="YES" maxValue="100" controlSize="small" style="bar" translatesAutoresizingMaskIntoConstraints="NO" id="FRz-b3-39X">
                                 <rect key="frame" x="0.0" y="30" width="400" height="12"/>
                             </progressIndicator>
-                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ehh-GE-Ait">
-                                <rect key="frame" x="4" y="7" width="21" height="19"/>
-                                <buttonCell key="cell" type="roundRect" bezelStyle="roundedRect" image="NSAddTemplate" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Nku-PV-0Eh">
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ehh-GE-Ait" customClass="RoundButton" customModule="BeagleIM" customModuleProvider="target">
+                                <rect key="frame" x="4" y="6" width="18" height="18"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="18" id="awg-Ob-jC4"/>
+                                    <constraint firstAttribute="height" constant="18" id="t0l-nk-u7c"/>
+                                </constraints>
+                                <buttonCell key="cell" type="roundRect" bezelStyle="roundedRect" image="NSAddTemplate" imagePosition="overlaps" alignment="center" state="on" imageScaling="proportionallyDown" inset="2" id="Nku-PV-0Eh">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="cellTitle"/>
                                 </buttonCell>
@@ -3242,7 +3246,7 @@ AAAAAAEGA
                             </button>
                         </subviews>
                         <constraints>
-                            <constraint firstItem="17f-xV-Jus" firstAttribute="top" secondItem="Ehh-GE-Ait" secondAttribute="top" id="0Z8-AC-OOJ"/>
+                            <constraint firstItem="17f-xV-Jus" firstAttribute="top" secondItem="Ehh-GE-Ait" secondAttribute="top" constant="-2" id="0Z8-AC-OOJ"/>
                             <constraint firstItem="0O6-Pu-tW4" firstAttribute="leading" secondItem="4Im-fO-8dU" secondAttribute="leading" id="1Q0-ar-aLM"/>
                             <constraint firstItem="fXI-LD-wEK" firstAttribute="top" secondItem="xEj-nj-qPf" secondAttribute="top" id="2Ju-sr-S7G"/>
                             <constraint firstItem="qPg-RH-BHf" firstAttribute="top" secondItem="0O6-Pu-tW4" secondAttribute="bottom" id="9tY-l0-H1N"/>
