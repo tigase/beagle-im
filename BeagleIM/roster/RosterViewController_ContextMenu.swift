@@ -77,6 +77,24 @@ extension RosterViewController: NSMenuDelegate {
         return true;
     }
     
+    @IBAction func detailsSelected(_ sender: NSMenuItem) {
+        let item = self.getItem(at: self.contactsTableView.clickedRow);
+        
+        guard let viewController = storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier("ContactDetailsViewController")) as? ContactDetailsViewController else {
+            return;
+        }
+        viewController.account = item.account;
+        viewController.jid = item.jid;
+        
+        let popover = NSPopover();
+        popover.contentViewController = viewController;
+        popover.behavior = .semitransient;
+        popover.animates = true;
+        let rect = self.contactsTableView.frameOfCell(atColumn: 0, row: self.contactsTableView.clickedRow);
+        popover.show(relativeTo: rect, of: self.view.window!.contentView!, preferredEdge: .maxX);
+
+    }
+    
     @IBAction func renameSelected(_ sender: NSMenuItem) {
         let item = self.getItem(at: self.contactsTableView.clickedRow);
         

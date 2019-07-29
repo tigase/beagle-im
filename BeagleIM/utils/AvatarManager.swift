@@ -165,9 +165,10 @@ class AvatarManager {
                 completionHandler(Data(base64Encoded: data, options: Data.Base64DecodingOptions.ignoreUnknownCharacters));
             } else {
                 let url = URL(string: uri)!;
-                URLSession.shared.dataTask(with: url) { (data, response, err) in
+                let task = URLSession.shared.dataTask(with: url) { (data, response, err) in
                     completionHandler(data);
                 }
+                task.resume();
             }
         } else {
             completionHandler(nil);
