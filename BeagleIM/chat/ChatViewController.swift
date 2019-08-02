@@ -239,6 +239,9 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     }
     
     override func sendMessage(body: String? = nil, url: String? = nil) -> Bool {
+        guard (XmppService.instance.getClient(for: account)?.state ?? .disconnected) == .connected else {
+            return false;
+        }
         let encryption = self.chat.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!;
         if encryption == ChatEncryption.omemo {
             return self.sendEncryptedMessage(body: body, url: url);
