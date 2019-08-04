@@ -116,6 +116,7 @@
 		FED7AEC521417328001E164B /* AvatarStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED7AEC421417328001E164B /* AvatarStore.swift */; };
 		FED7AEC721418B83001E164B /* VCardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED7AEC621418B83001E164B /* VCardManager.swift */; };
 		FED7AEC921418FA9001E164B /* DBVCardStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED7AEC821418FA9001E164B /* DBVCardStore.swift */; };
+		FEDCCA3D22F48C8300CC5C2C /* NetworkSettingsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDCCA3C22F48C8300CC5C2C /* NetworkSettingsController.swift */; };
 		FEDE6AF32142DC590019170A /* AvatarViewWithStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE6AF22142DC590019170A /* AvatarViewWithStatus.swift */; };
 		FEDE6AF52143D8130019170A /* ChatsListTableRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE6AF42143D8130019170A /* ChatsListTableRowView.swift */; };
 		FEDE6AF921440AEF0019170A /* StatusHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE6AF821440AEF0019170A /* StatusHelper.swift */; };
@@ -286,6 +287,7 @@
 		FED7AEC621418B83001E164B /* VCardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VCardManager.swift; sourceTree = "<group>"; };
 		FED7AEC821418FA9001E164B /* DBVCardStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBVCardStore.swift; sourceTree = "<group>"; };
 		FEDC03172257B2B400F24BF4 /* Settings.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Settings.storyboard; sourceTree = "<group>"; };
+		FEDCCA3C22F48C8300CC5C2C /* NetworkSettingsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkSettingsController.swift; sourceTree = "<group>"; };
 		FEDE6AF22142DC590019170A /* AvatarViewWithStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarViewWithStatus.swift; sourceTree = "<group>"; };
 		FEDE6AF42143D8130019170A /* ChatsListTableRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListTableRowView.swift; sourceTree = "<group>"; };
 		FEDE6AF821440AEF0019170A /* StatusHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusHelper.swift; sourceTree = "<group>"; };
@@ -599,6 +601,7 @@
 				FE8C9F5521B40F9000BE8332 /* RegisterAccountController.swift */,
 				FEEF25312264A80500202B28 /* OMEMOController.swift */,
 				FEA2F53622E5F6A2009F2E88 /* AdvancedSettingsController.swift */,
+				FEDCCA3C22F48C8300CC5C2C /* NetworkSettingsController.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -895,6 +898,7 @@
 				FED2ECF42066B01C00F506A5 /* AppDelegate.swift in Sources */,
 				FE30D8BA214ED28A00670BEC /* OpenGroupchatController.swift in Sources */,
 				FE41FB33215B8D5A00AD86D3 /* ServerCertificateErrorController.swift in Sources */,
+				FEDCCA3D22F48C8300CC5C2C /* NetworkSettingsController.swift in Sources */,
 				FE5C6B2D22916C47003DAB30 /* JoinGroupchatViewController.swift in Sources */,
 				FE3F2AF2228813E200737D51 /* EmptyViewController.swift in Sources */,
 				FEDE6AF921440AEF0019170A /* StatusHelper.swift in Sources */,

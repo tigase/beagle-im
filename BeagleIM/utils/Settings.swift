@@ -53,6 +53,8 @@ enum Settings: String {
     case alternateMessageColoringBasedOnDirection
     case messageGrouping
     
+    case turnServer
+    
     public static let CHANGED = Notification.Name("settingChanged");
     
     fileprivate static var observers: [Settings: [UUID: (Settings, Any?)->Void]] = [:];

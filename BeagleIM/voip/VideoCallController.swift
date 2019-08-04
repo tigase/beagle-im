@@ -410,7 +410,26 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     func initiatePeerConnection(for session: JingleManager.Session) -> RTCPeerConnection {
         let configuration = RTCConfiguration();
         configuration.sdpSemantics = .unifiedPlan;
-        configuration.iceServers = [ RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:stun2.l.google.com:19302","stun:stun3.l.google.com:19302","stun:stun4.l.google.com:19302"]), RTCIceServer(urlStrings: ["stun:stunserver.org:3478"]) ];
+        
+        var iceServers: [RTCIceServer] = [ RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:stun2.l.google.com:19302","stun:stun3.l.google.com:19302","stun:stun4.l.google.com:19302"]), RTCIceServer(urlStrings: ["stun:stunserver.org:3478" ]) ];
+        
+        if var urlComponents = URLComponents(string: Settings.turnServer.string() ?? "") {
+            let username = urlComponents.user;
+            let password = urlComponents.password;
+            urlComponents.user = nil;
+            urlComponents.password = nil;
+            let server = urlComponents.string!.replacingOccurrences(of: "/", with: "");
+            print("turn server:", server, "user:", username, "pass:", password);
+            iceServers.append(RTCIceServer(urlStrings: [server], username: username, credential: password, tlsCertPolicy: .insecureNoCheck));
+            let forceRelay = urlComponents.queryItems?.filter({ item in
+                item.name == "forceRelay" && item.value == "true"
+            }) != nil;
+            if forceRelay {
+                configuration.iceTransportPolicy = .relay;
+            }
+        }
+        
+        configuration.iceServers = iceServers;
         configuration.bundlePolicy = .maxCompat;
         configuration.rtcpMuxPolicy = .require;
         configuration.iceCandidatePoolSize = 3;
