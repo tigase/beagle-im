@@ -1460,7 +1460,7 @@ AAAAAAEGA
                             <textField horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0FB-QR-fM1">
                                 <rect key="frame" x="6" y="257" width="380" height="16"/>
                                 <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="jTO-BC-Tlr">
-                                    <font key="font" metaFont="system" size="12"/>
+                                    <font key="font" metaFont="cellTitle"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>

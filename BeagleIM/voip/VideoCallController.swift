@@ -44,27 +44,43 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
             return false;
         }
 
-        open { (windowController) in
-            (windowController.contentViewController as? VideoCallController)?.accept(session: session, sdpOffer: sdpOffer);
+        open { (videoCallController) in
+            videoCallController.accept(session: session, sdpOffer: sdpOffer);
         }
         return true;
     }
     
-    public static func open(completionHandler: @escaping (NSWindowController)->Void) {
+    public static func open(completionHandler: @escaping (VideoCallController)->Void) {
         DispatchQueue.main.async {
             let windowController = NSStoryboard(name: "VoIP", bundle: nil).instantiateController(withIdentifier: "VideoCallWindowController") as! NSWindowController;
+            completionHandler(windowController.contentViewController as! VideoCallController);
             windowController.showWindow(nil);
             DispatchQueue.main.async {
                 windowController.window?.makeKey();
-                completionHandler(windowController);
                 NSApp.activate(ignoringOtherApps: true);
             }
         }
     }
     
     public static func call(jid: BareJID, from account: BareJID, withAudio: Bool, withVideo: Bool) {
-        open { (windowController) in
-            (windowController.contentViewController as? VideoCallController)?.call(jid: jid, from: account, withAudio: withAudio, withVideo: withVideo);
+        open { (videoCallController) in
+            videoCallController.call(jid: jid, from: account, withAudio: withAudio, withVideo: withVideo);
+        }
+    }
+    
+    fileprivate func initialize(withAudio: Bool, withVideo: Bool) {
+        self.localAudioTrack = JingleManager.instance.connectionFactory.audioTrack(withTrackId: "audio0");
+        if VideoCallController.hasVideoSupport && withVideo {
+            self.localVideoSource = JingleManager.instance.connectionFactory.videoSource();
+            if let localVideoCapturer = self.localVideoCapturer {
+                localVideoCapturer.stopCapture();
+            }
+            self.localVideoCapturer = RTCCameraVideoCapturer(delegate: self.localVideoSource!);
+            self.localVideoTrack = JingleManager.instance.connectionFactory.videoTrack(with: self.localVideoSource!, trackId: "video-" + UUID().uuidString);
+            
+            self.startVideoCapture(videoCapturer: self.localVideoCapturer!) {
+                print("started!");
+            }
         }
     }
     
@@ -75,6 +91,9 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
     var remoteVideoViewAspect: NSLayoutConstraint?
     var localVideoViewAspect: NSLayoutConstraint?
+    
+//    var audio: Bool = true;
+//    var video: Bool = true;
     
     var session: JingleManager.Session? {
         didSet {
@@ -179,16 +198,6 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     override func viewWillAppear() {
         super.viewWillAppear();
 
-        if VideoCallController.hasVideoSupport {
-            self.localAudioTrack = JingleManager.instance.connectionFactory.audioTrack(withTrackId: "audio0");
-            self.localVideoSource = JingleManager.instance.connectionFactory.videoSource();
-            self.localVideoCapturer = RTCCameraVideoCapturer(delegate: self.localVideoSource!);
-            self.localVideoTrack = JingleManager.instance.connectionFactory.videoTrack(with: self.localVideoSource!, trackId: "video-" + UUID().uuidString);
-        
-            self.startVideoCapture(videoCapturer: self.localVideoCapturer!) {
-                print("started!");
-            }
-        }
     }
     
     func videoView(_ videoView: RTCVideoRenderer, didChangeVideoSize size: CGSize) {
@@ -232,6 +241,8 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                 return content.description?.media == "video"
             }) != nil;
             
+            self.initialize(withAudio: true, withVideo: isVideo);
+            
             var buttons = [ "Accept audio", "Deny" ];
             if isVideo {
                 buttons.insert("Accept video", at: 0);
@@ -268,6 +279,11 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         
         let sessDesc = RTCSessionDescription(type: .offer, sdp: sdpOffer.toString());
 
+        if !withVideo {
+            self.localVideoCapturer?.stopCapture();
+            self.localVideoCapturer = nil;
+        }
+        
         self.initializeMedia(for: session, audio: withAudio, video: withVideo) {
             session.peerConnection?.delegate = session;
             print("setting remote description:", sdpOffer.toString());
@@ -354,6 +370,8 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                 };
                 return;
         }
+        
+        self.initialize(withAudio: withAudio, withVideo: withVideo);
         
         var waitingFor: Int = presences.count;
         

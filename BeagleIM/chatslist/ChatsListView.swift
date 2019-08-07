@@ -555,14 +555,12 @@ class ChatsListView: NSOutlineView {
                 if let chatView = self.rowView(atRow: prevMouseOverRow, makeIfNecessary: false)?.subviews.last as? ChatCellView {
                     chatView.setMouseHovers(false);
                 }
-                self.setNeedsDisplay(self.rect(ofRow: prevMouseOverRow));
             }
         }
         if mouseOverRow >= 0 && mouseOverRow < self.numberOfRows {
             if let chatView = self.rowView(atRow: mouseOverRow, makeIfNecessary: false)?.subviews.last as? ChatCellView {
                 chatView.setMouseHovers(true);
             }
-            self.setNeedsDisplay(self.rect(ofRow: mouseOverRow));
         }
     }
     
