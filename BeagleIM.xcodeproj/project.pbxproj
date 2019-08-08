@@ -14,6 +14,8 @@
 		FE149D8222A5120300EE4E03 /* SearchHistory.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE149D8122A5120300EE4E03 /* SearchHistory.storyboard */; };
 		FE149D8522A515C900EE4E03 /* SearchHistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE149D8422A515C900EE4E03 /* SearchHistoryController.swift */; };
 		FE149D8722A51AD900EE4E03 /* db-schema-4.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE149D8622A51AD900EE4E03 /* db-schema-4.sql */; };
+		FE1678EE22FC92970013B94A /* WebRTC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE1678ED22FC92970013B94A /* WebRTC.framework */; };
+		FE1678EF22FC92970013B94A /* WebRTC.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE1678ED22FC92970013B94A /* WebRTC.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE1A8BA321C96C1B00604141 /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA221C96C1B00604141 /* RoundButton.swift */; };
 		FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */; };
 		FE28097D21652A7C002F5BD0 /* VCardEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */; };
@@ -95,7 +97,6 @@
 		FE9CDF0D2269E282001039C3 /* MessageEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9CDF0C2269E282001039C3 /* MessageEncryption.swift */; };
 		FEA2F53522E46A2E009F2E88 /* ShowRosterWindowSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2F53422E46A2E009F2E88 /* ShowRosterWindowSegue.swift */; };
 		FEA2F53722E5F6A2009F2E88 /* AdvancedSettingsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2F53622E5F6A2009F2E88 /* AdvancedSettingsController.swift */; };
-		FEA77CD221C7C47000E955A8 /* WebRTC.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FEA77CD121C7C47000E955A8 /* WebRTC.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FEA8941F2156625E004C3B51 /* ConfigureRoomViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8941E2156625E004C3B51 /* ConfigureRoomViewController.swift */; };
 		FEB4EAFC2162A3DC00F8A9E2 /* AutoresizineTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB4EAFB2162A3DC00F8A9E2 /* AutoresizineTextView.swift */; };
 		FEB4EAFE2163714300F8A9E2 /* RoundedScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB4EAFD2163714300F8A9E2 /* RoundedScrollView.swift */; };
@@ -160,10 +161,10 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				FEA77CD221C7C47000E955A8 /* WebRTC.framework in Embed Frameworks */,
 				FEF5C40022632CDE00889863 /* openssl.framework in Embed Frameworks */,
 				FEF5C3DA2260893800889863 /* TigaseSwiftOMEMO.framework in Embed Frameworks */,
 				FE4E8DE12160E7AA0010D88E /* TigaseSwift.framework in Embed Frameworks */,
+				FE1678EF22FC92970013B94A /* WebRTC.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -177,6 +178,7 @@
 		FE149D8122A5120300EE4E03 /* SearchHistory.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SearchHistory.storyboard; sourceTree = "<group>"; };
 		FE149D8422A515C900EE4E03 /* SearchHistoryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchHistoryController.swift; sourceTree = "<group>"; };
 		FE149D8622A51AD900EE4E03 /* db-schema-4.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-4.sql"; sourceTree = "<group>"; };
+		FE1678ED22FC92970013B94A /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
 		FE1A8BA221C96C1B00604141 /* RoundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
 		FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager_Session.swift; sourceTree = "<group>"; };
 		FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VCardEditorViewController.swift; sourceTree = "<group>"; };
@@ -258,7 +260,6 @@
 		FE9D88B3217652DF006CF0D9 /* BeagleIM-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BeagleIM-Bridging-Header.h"; sourceTree = "<group>"; };
 		FEA2F53422E46A2E009F2E88 /* ShowRosterWindowSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowRosterWindowSegue.swift; sourceTree = "<group>"; };
 		FEA2F53622E5F6A2009F2E88 /* AdvancedSettingsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedSettingsController.swift; sourceTree = "<group>"; };
-		FEA77CD121C7C47000E955A8 /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
 		FEA8941E2156625E004C3B51 /* ConfigureRoomViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigureRoomViewController.swift; sourceTree = "<group>"; };
 		FEB4EAFB2162A3DC00F8A9E2 /* AutoresizineTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoresizineTextView.swift; sourceTree = "<group>"; };
 		FEB4EAFD2163714300F8A9E2 /* RoundedScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundedScrollView.swift; sourceTree = "<group>"; };
@@ -316,6 +317,7 @@
 				FEF5C3D92260893800889863 /* TigaseSwiftOMEMO.framework in Frameworks */,
 				FEF9D12B2082804E00B09B6C /* TigaseSwift.framework in Frameworks */,
 				FEF9CE2220827F0000B09B6C /* libsqlite3.0.tbd in Frameworks */,
+				FE1678EE22FC92970013B94A /* WebRTC.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -510,10 +512,10 @@
 		FED2ECE72066B01C00F506A5 = {
 			isa = PBXGroup;
 			children = (
+				FE1678ED22FC92970013B94A /* WebRTC.framework */,
 				FEF5C3FE22632CDE00889863 /* openssl.framework */,
 				FEF5C3D82260893800889863 /* TigaseSwiftOMEMO.framework */,
 				FE421B4821C92FBF0022DF77 /* LICENSE */,
-				FEA77CD121C7C47000E955A8 /* WebRTC.framework */,
 				FED2ECF22066B01C00F506A5 /* BeagleIM */,
 				FED2ED052066B01C00F506A5 /* BeagleIMTests */,
 				FED2ED102066B01C00F506A5 /* BeagleIMUITests */,
