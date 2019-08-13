@@ -69,6 +69,7 @@
 		FE5C6B2D22916C47003DAB30 /* JoinGroupchatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5C6B2C22916C47003DAB30 /* JoinGroupchatViewController.swift */; };
 		FE5CAF982215BCD600FABD46 /* ScriptsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5CAF972215BCD600FABD46 /* ScriptsManager.swift */; };
 		FE5CAF9A2216EEF200FABD46 /* NSPopupButtonNoSizeWhenHidden.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5CAF992216EEF200FABD46 /* NSPopupButtonNoSizeWhenHidden.swift */; };
+		FE65A283230314D9001E68EF /* SettingsTabViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE65A282230314D9001E68EF /* SettingsTabViewController.swift */; };
 		FE6E6BF721384D5F003B1696 /* AutoresizingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */; };
 		FE6E6BF821384D5F003B1696 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE321384D5E003B1696 /* ViewController.swift */; };
 		FE6E6BF921384D5F003B1696 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE421384D5E003B1696 /* AvatarView.swift */; };
@@ -231,6 +232,7 @@
 		FE5C6B2C22916C47003DAB30 /* JoinGroupchatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinGroupchatViewController.swift; sourceTree = "<group>"; };
 		FE5CAF972215BCD600FABD46 /* ScriptsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptsManager.swift; sourceTree = "<group>"; };
 		FE5CAF992216EEF200FABD46 /* NSPopupButtonNoSizeWhenHidden.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSPopupButtonNoSizeWhenHidden.swift; sourceTree = "<group>"; };
+		FE65A282230314D9001E68EF /* SettingsTabViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTabViewController.swift; sourceTree = "<group>"; };
 		FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoresizingTextField.swift; sourceTree = "<group>"; };
 		FE6E6BE321384D5E003B1696 /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		FE6E6BE421384D5E003B1696 /* AvatarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
@@ -604,6 +606,7 @@
 				FEEF25312264A80500202B28 /* OMEMOController.swift */,
 				FEA2F53622E5F6A2009F2E88 /* AdvancedSettingsController.swift */,
 				FEDCCA3C22F48C8300CC5C2C /* NetworkSettingsController.swift */,
+				FE65A282230314D9001E68EF /* SettingsTabViewController.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -886,6 +889,7 @@
 				FE3AA0CF215406D1001667A9 /* ChatsListGroupChat.swift in Sources */,
 				FE6E6BF921384D5F003B1696 /* AvatarView.swift in Sources */,
 				FEEF25392266528E00202B28 /* ContactDetailsViewController.swift in Sources */,
+				FE65A283230314D9001E68EF /* SettingsTabViewController.swift in Sources */,
 				FE9CDF0D2269E282001039C3 /* MessageEncryption.swift in Sources */,
 				FE6E6C0821384DF1003B1696 /* ChatCellView.swift in Sources */,
 				FE41FB3D215CD82500AD86D3 /* PresenceRosterEventHandler.swift in Sources */,

@@ -31,7 +31,7 @@
         <!--Settings Tab Controller-->
         <scene sceneID="mD0-CP-dyf">
             <objects>
-                <tabViewController selectedTabViewItemIndex="0" tabStyle="toolbar" id="uoR-m7-AJP" userLabel="Settings Tab Controller" sceneMemberID="viewController">
+                <tabViewController selectedTabViewItemIndex="0" tabStyle="toolbar" id="uoR-m7-AJP" userLabel="Settings Tab Controller" customClass="SettingsTabViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
                     <tabViewItems>
                         <tabViewItem label="General" identifier="" image="NSPreferencesGeneral" id="9pN-Un-W2y"/>
                         <tabViewItem label="Accounts" identifier="" image="NSUserAccounts" id="Txt-RJ-fg8"/>
