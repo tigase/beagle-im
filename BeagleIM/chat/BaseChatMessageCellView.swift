@@ -140,7 +140,7 @@ class BaseChatMessageCellView: NSTableCellView {
     
     fileprivate func appendPreview(message msg: NSMutableAttributedString, url: URL, image origImage: NSImage, first: Bool) {
         let att = NSTextAttachment(data: nil, ofType: nil);
-        let image = origImage.scaledAndFlipped(maxWidth: 250.0, maxHeight: 200.0, flipX: false, flipY: true);
+        let image = origImage.scaledAndFlipped(maxWidth: 250.0, maxHeight: 200.0, flipX: false, flipY: true, roundedRadius: 8.0);
         att.image = image;
         //ten bounds wypadałoby dostosowywać w zależności od zmiany szerokości okna!!
         //print("W:", image.size.width, "H:", image.size.height);

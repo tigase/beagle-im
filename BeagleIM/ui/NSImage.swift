@@ -84,7 +84,7 @@ extension NSImage {
         return scaled(maxWidthOrHeight: maxWidthOrHeight, format: .png);
     }
     
-    func scaledAndFlipped(maxWidth: CGFloat, maxHeight: CGFloat, flipX: Bool, flipY: Bool) -> NSImage {
+    func scaledAndFlipped(maxWidth: CGFloat, maxHeight: CGFloat, flipX: Bool, flipY: Bool, roundedRadius radius: CGFloat = 0.0) -> NSImage {
         var scale: CGFloat = 1.0;
         if self.size.width > self.size.height {
             scale = max(self.size.width / maxWidth, 1.0);
@@ -109,7 +109,15 @@ extension NSImage {
         //transform.scaleX(by: flipX ? -1.0 : 1.0, yBy: flipY ? -1.0 : 1.0);
         transform.scaleX(by: 1.0 / scale, yBy: -1.0 / scale);
         transform.concat();
-        draw(at: .zero, from: NSRect(origin: .zero, size: size), operation: .sourceOver, fraction: 1.0);
+        
+        let rect = NSRect(origin: .zero, size: size);
+        if radius > 0.0, let context = NSGraphicsContext.current?.cgContext {
+            context.beginPath();
+            context.addPath(CGPath(roundedRect: rect, cornerWidth: radius * scale, cornerHeight: radius * scale, transform: nil));
+            context.closePath();
+            context.clip();
+        }
+        draw(at: .zero, from: rect, operation: .sourceOver, fraction: 1.0);
         flipped.unlockFocus();
         return flipped;
     }
