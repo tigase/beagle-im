@@ -797,8 +797,8 @@ CA
                                                                         <constraint firstAttribute="height" constant="40" id="Mta-U1-1K4"/>
                                                                     </constraints>
                                                                 </view>
-                                                                <textField verticalHuggingPriority="751" horizontalCompressionResistancePriority="450" translatesAutoresizingMaskIntoConstraints="NO" id="m3j-Rb-M6x">
-                                                                    <rect key="frame" x="52" y="25" width="159" height="17"/>
+                                                                <textField verticalHuggingPriority="751" horizontalCompressionResistancePriority="450" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="m3j-Rb-M6x">
+                                                                    <rect key="frame" x="52" y="25" width="175" height="17"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="30Y-0J-enL">
                                                                         <font key="font" metaFont="systemMedium" size="13"/>
                                                                         <color key="textColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -834,8 +834,8 @@ CA
                                                                         <action selector="closeClicked:" target="17j-oV-5uz" id="4Hf-Sb-Gdg"/>
                                                                     </connections>
                                                                 </button>
-                                                                <button horizontalHuggingPriority="350" verticalHuggingPriority="750" horizontalCompressionResistancePriority="350" translatesAutoresizingMaskIntoConstraints="NO" id="f5J-qG-57Z">
-                                                                    <rect key="frame" x="211" y="25" width="20" height="17"/>
+                                                                <button horizontalHuggingPriority="350" verticalHuggingPriority="750" horizontalCompressionResistancePriority="550" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="f5J-qG-57Z" customClass="NSButtonNoSizeWhenHidden" customModule="BeagleIM" customModuleProvider="target">
+                                                                    <rect key="frame" x="211" y="25" width="0.0" height="17"/>
                                                                     <buttonCell key="cell" type="inline" title="0" bezelStyle="inline" alignment="center" enabled="NO" borderStyle="border" inset="2" id="UeY-XO-CZa">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                         <font key="font" metaFont="smallSystemBold"/>
