@@ -31,7 +31,8 @@ class DBOMEMOStore {
     fileprivate let updateKeyPairStmt = try! DBConnection.main.prepareStatement("UPDATE omemo_identities SET key = :key, fingerprint = :fingerprint, own = :own WHERE account = :account AND name = :name AND device_id = :deviceId");
     fileprivate let loadKeyPairStatusStmt = try! DBConnection.main.prepareStatement("SELECT status FROM omemo_identities WHERE account = :account AND name = :name AND device_id = :deviceId");
     fileprivate let updateKeyPairStatusStmt = try! DBConnection.main.prepareStatement("UPDATE omemo_identities SET status = :status WHERE account = :account AND name = :name AND device_id = :deviceId");
-    fileprivate let insertKeyPairStmt = try! DBConnection.main.prepareStatement("INSERT INTO omemo_identities (account, name, device_id, key, fingerprint, own, status) VALUES (:account,:name,:deviceId,:key,:fingerprint,:own,:status)");
+    fileprivate let insertKeyPairStmt = try! DBConnection.main.prepareStatement("INSERT INTO omemo_identities (account, name, device_id, key, fingerprint, own, status) VALUES (:account,:name,:deviceId,:key,:fingerprint,:own,:status) ON CONFLICT(account, name, fingerprint) DO UPDATE SET device_id = :deviceId, status = :status");
+
     fileprivate let wipeIdentitiesKeyStoreStmt = try! DBConnection.main.prepareStatement("DELETE FROM omemo_identities WHERE account = :account");
     fileprivate let getIdentityStmt = try! DBConnection.main.prepareStatement("SELECT device_id, fingerprint, status, key, own FROM omemo_identities WHERE account = :account AND name = :name");
     fileprivate let getIdentityFingerprintStmt = try! DBConnection.main.prepareStatement("SELECT fingerprint FROM omemo_identities WHERE account = :account AND name = :name AND device_id = :deviceId");
@@ -52,7 +53,7 @@ class DBOMEMOStore {
 
     fileprivate let loadSessionRecordStmt = try! DBConnection.main.prepareStatement("SELECT key FROM omemo_sessions WHERE account = :account AND name = :name AND device_id = :deviceId");
     fileprivate let getAllDevicesStmt = try! DBConnection.main.prepareStatement("SELECT device_id FROM omemo_sessions WHERE account = :account AND name = :name");
-    fileprivate let getAllActivateAndTrustedDevicesStmt = try! DBConnection.main.prepareStatement("SELECT s.device_id FROM omemo_sessions s INNER JOIN omemo_identities i ON s.account = i.account AND s.name = i.name AND s.device_id = i.device_id WHERE s.account = :account AND s.name = :name AND (i.status >= 0 AND i.status % 2 = 0)");
+    fileprivate let getAllActivateAndTrustedDevicesStmt = try! DBConnection.main.prepareStatement("SELECT s.device_id FROM omemo_sessions s LEFT JOIN omemo_identities i ON s.account = i.account AND s.name = i.name AND s.device_id = i.device_id WHERE s.account = :account AND s.name = :name AND ((i.status >= 0 AND i.status % 2 = 0) OR i.status IS NULL)");
     fileprivate let insertSessionRecordStmt = try! DBConnection.main.prepareStatement("INSERT INTO omemo_sessions (account, name, device_id, key) VALUES (:account, :name, :deviceId, :key)");
     fileprivate let containsSessionRecordStmt = try! DBConnection.main.prepareStatement("SELECT count(1) FROM omemo_sessions WHERE account = :account AND name = :name AND device_id = :deviceId");
     fileprivate let deleteSessionRecordStmt = try! DBConnection.main.prepareStatement("DELETE FROM omemo_sessions WHERE account = :account AND name = :name AND device_id = :deviceId");
@@ -125,8 +126,10 @@ class DBOMEMOStore {
             return String(format: "%02x", byte)
             }.joined();
         var params: [String: Any?] = ["account": account, "name": identity.name, "deviceId": identity.deviceId, "key": publicKeyData!, "fingerprint": fingerprint, "own": (own ? 1 : 0)];
+        print("updating identity for account \(account) and address \(identity) with fingerprint \(fingerprint)");
         if try! updateKeyPairStmt.update(params) == 0 {
             // we are blindtrusting the remote identity
+            print("inserting identity for account \(account) and address \(identity) with fingerprint \(fingerprint)");
             params["status"] = IdentityStatus.trustedActive.rawValue;
             return try! insertKeyPairStmt.insert(params) != 0;
         }
@@ -215,6 +218,7 @@ class DBOMEMOStore {
     }
     
     func store(sessionRecord: Data, forAccount account: BareJID, andAddress address: SignalAddress) -> Bool {
+        print("storing session for account \(account) and address \(address)");
         return (try! insertSessionRecordStmt.insert(["account": account, "name": address.name, "deviceId": address.deviceId, "key": sessionRecord] as [String: Any?]) ?? 0) > 0;
     }
     

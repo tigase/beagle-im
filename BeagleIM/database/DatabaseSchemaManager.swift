@@ -54,6 +54,16 @@ public class DBSchemaManager {
         to_remove.forEach({ params in
             try! dbConnection.execute("delete from chats where account = '\(params["account"]!.stringValue)' and jid = '\(params["jid"]!.stringValue)'");
         })
+        
+        let toRemove: [(String,String,Int32)] = try dbConnection.prepareStatement("SELECT sess.account as account, sess.name as name, sess.device_id as deviceId FROM omemo_sessions sess WHERE NOT EXISTS (select 1 FROM omemo_identities i WHERE i.account = sess.account and i.name = sess.name and i.device_id = sess.device_id)").query([:] as [String: Any?], map: { (cursor:DBCursor) -> (String, String, Int32)? in
+            return (cursor["account"]!, cursor["name"]!, cursor["deviceId"]!);
+        });
+        
+        try toRemove.forEach { tuple in
+            let (account, name, device) = tuple;
+            try dbConnection.prepareStatement("DELETE FROM omemo_sessions WHERE account = :account AND name = :name AND device_id = :deviceId").update(["account": account, "name": name, "deviceId": device] as [String: Any?]);
+        }
+
     }
     
     open func getSchemaVersion() throws -> Int {
