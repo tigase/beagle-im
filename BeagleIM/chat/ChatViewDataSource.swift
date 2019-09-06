@@ -44,6 +44,7 @@ class ChatViewDataSource {
     }
     
     func getItem(at row: Int) -> ChatViewItemProtocol? {
+        let store = self.store;
         let item = store.item(at: row);
         if item != nil {
             if row >= (store.count - (1 + 10)) && row < store.count {
@@ -60,6 +61,10 @@ class ChatViewDataSource {
     }
     
     func getItems(fromId: Int, toId: Int, inRange: NSRange) -> [ChatViewItemProtocol] {
+        let store = self.store;
+        guard store.items.count > inRange.upperBound else {
+            return [];
+        }
         let sublist = store.items[inRange.lowerBound...inRange.upperBound];
         
         let edges = sublist.filter { (item) -> Bool in
