@@ -48,7 +48,7 @@ class XmppService: EventHandler {
     
     fileprivate let dispatcher = QueueDispatcher(label: "xmpp_service");
     fileprivate let reachability = Reachability();
-    
+    fileprivate let dnsCache: DNSSrvResolverCache = DNSSrvResolverWithCache.InMemoryCache(store: nil);
     var isAwake: Bool = true {
         didSet {
             if !isAwake {
@@ -344,6 +344,7 @@ class XmppService: EventHandler {
         }
         
         let client = XMPPClient();
+        client.sessionObject.dnsSrvResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(), cache: self.dnsCache);
         client.connectionConfiguration.setUserJID(jid);
         
         _ = client.modulesManager.register(StreamManagementModule());
