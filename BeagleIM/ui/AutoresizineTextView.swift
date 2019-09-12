@@ -65,6 +65,46 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
         }
     }
     
+    override func draggingEnded(_ sender: NSDraggingInfo) {
+        guard let handler = self.dragHandler?.draggingEnded else {
+            super.draggingEnded(sender);
+            return;
+        }
+        handler(sender);
+    }
+    
+    override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+        guard let handler = self.dragHandler?.draggingEntered else {
+            return super.draggingEntered(sender);
+        }
+        let res = handler(sender);
+        if res == .generic {
+            return super.draggingUpdated(sender);
+        } else {
+            return res;
+        }
+    }
+    
+    override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+        guard let handler = self.dragHandler?.draggingUpdated else {
+            return super.draggingUpdated(sender);
+        }
+        let res = handler(sender);
+        if res == .generic {
+            return super.draggingUpdated(sender);
+        } else {
+            return res;
+        }
+    }
+    
+    override func draggingExited(_ sender: NSDraggingInfo?) {
+        guard let handler = self.dragHandler?.draggingExited else {
+            super.draggingExited(sender);
+            return;
+        }
+        handler(sender);
+    }
+    
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
         return (dragHandler?.performDragOperation?(sender) ?? false) || super.performDragOperation(sender);
     }

@@ -38,11 +38,28 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         super.viewDidLoad();
         NotificationCenter.default.addObserver(self, selector: #selector(sharingSupportChanged), name: HttpFileUploadEventHandler.UPLOAD_SUPPORT_CHANGED, object: nil);
         messageField.dragHandler = self;
+        messageField.registerForDraggedTypes([.fileURL]);
     }
     
     override func viewWillAppear() {
         super.viewWillAppear();
         self.sharingButton.isEnabled = self.isSharingAvailable;
+    }
+    
+    func draggingEnded(_ sender: NSDraggingInfo) {
+        
+    }
+    
+    func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+        return sender.draggingSourceOperationMask.contains(.copy) && sender.draggingPasteboard.canReadObject(forClasses: [NSURL.self], options: nil) ? .copy : .generic;
+    }
+    
+    func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+        return sender.draggingSourceOperationMask.contains(.copy) && sender.draggingPasteboard.canReadObject(forClasses: [NSURL.self], options: nil) ? .copy : .generic;
+    }
+    
+    func draggingExited(_ sender: NSDraggingInfo?) {
+        
     }
     
     func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
