@@ -88,8 +88,23 @@ class AvatarViewWithStatus: NSView {
     
     func update(for jid: BareJID, on account: BareJID) {
         self.avatar = AvatarManager.instance.avatar(for: jid, on: account);
-        let presenceModule: PresenceModule? = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PresenceModule.ID);
-        self.status = presenceModule?.presenceStore.getBestPresence(for: jid)?.show;
+        if jid == account {
+            if let status = XmppService.instance.getClient(for: account)?.state {
+                switch status {
+                case .connected:
+                    self.status = .online;
+                case .connecting:
+                    self.status = .away;
+                default:
+                    self.status = .none;
+                }
+            } else {
+                self.status = .none;
+            }
+        } else {
+            let presenceModule: PresenceModule? = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PresenceModule.ID);
+            self.status = presenceModule?.presenceStore.getBestPresence(for: jid)?.show;
+        }
     }
     
     fileprivate func initSubviews() {

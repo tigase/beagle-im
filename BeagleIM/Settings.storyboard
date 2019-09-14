@@ -133,14 +133,13 @@
                                                             <rect key="frame" x="1" y="1" width="215" height="40"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
-                                                                <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="w83-CH-jPf" customClass="AvatarView" customModule="BeagleIM" customModuleProvider="target">
+                                                                <customView translatesAutoresizingMaskIntoConstraints="NO" id="NTp-tU-MN0" customClass="AvatarViewWithStatus" customModule="BeagleIM" customModuleProvider="target">
                                                                     <rect key="frame" x="4" y="4" width="32" height="32"/>
                                                                     <constraints>
-                                                                        <constraint firstAttribute="width" constant="32" id="KgQ-r1-3su"/>
-                                                                        <constraint firstAttribute="width" secondItem="w83-CH-jPf" secondAttribute="height" multiplier="1:1" id="jKN-YV-4D3"/>
+                                                                        <constraint firstAttribute="width" secondItem="NTp-tU-MN0" secondAttribute="height" multiplier="1:1" id="iLu-wO-TSt"/>
+                                                                        <constraint firstAttribute="width" constant="32" id="piv-tv-vMm"/>
                                                                     </constraints>
-                                                                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSUser" id="kj1-ov-aBF"/>
-                                                                </imageView>
+                                                                </customView>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ngi-lG-SMU">
                                                                     <rect key="frame" x="42" y="11" width="171" height="17"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" placeholderString="user@domain.com" id="bat-cW-RaG">
@@ -151,16 +150,16 @@
                                                                 </textField>
                                                             </subviews>
                                                             <constraints>
-                                                                <constraint firstItem="Ngi-lG-SMU" firstAttribute="leading" secondItem="w83-CH-jPf" secondAttribute="trailing" constant="8" id="1Y3-CV-h1C"/>
                                                                 <constraint firstItem="Ngi-lG-SMU" firstAttribute="top" secondItem="V2I-7y-t2t" secondAttribute="top" constant="12" id="Fks-R1-90Y"/>
                                                                 <constraint firstAttribute="trailing" secondItem="Ngi-lG-SMU" secondAttribute="trailing" constant="4" id="LTF-xw-7lX"/>
+                                                                <constraint firstItem="NTp-tU-MN0" firstAttribute="leading" secondItem="V2I-7y-t2t" secondAttribute="leading" constant="4" id="TL9-7q-WkH"/>
+                                                                <constraint firstAttribute="bottom" secondItem="NTp-tU-MN0" secondAttribute="bottom" constant="4" id="Xzr-TF-hBU"/>
                                                                 <constraint firstAttribute="bottom" secondItem="Ngi-lG-SMU" secondAttribute="bottom" constant="11" id="b30-kw-ub6"/>
-                                                                <constraint firstItem="w83-CH-jPf" firstAttribute="leading" secondItem="V2I-7y-t2t" secondAttribute="leading" constant="4" id="qes-bW-0pS"/>
-                                                                <constraint firstAttribute="bottom" secondItem="w83-CH-jPf" secondAttribute="bottom" constant="4" id="tKU-at-IC4"/>
-                                                                <constraint firstItem="w83-CH-jPf" firstAttribute="top" secondItem="V2I-7y-t2t" secondAttribute="top" constant="4" id="u3w-MZ-HhY"/>
+                                                                <constraint firstItem="Ngi-lG-SMU" firstAttribute="leading" secondItem="NTp-tU-MN0" secondAttribute="trailing" constant="8" id="vWn-Gl-eeW"/>
+                                                                <constraint firstItem="NTp-tU-MN0" firstAttribute="top" secondItem="V2I-7y-t2t" secondAttribute="top" constant="4" id="wkT-ea-ygD"/>
                                                             </constraints>
                                                             <connections>
-                                                                <outlet property="avatar" destination="w83-CH-jPf" id="5m2-3n-ipO"/>
+                                                                <outlet property="avatar" destination="NTp-tU-MN0" id="icb-GU-9en"/>
                                                                 <outlet property="label" destination="Ngi-lG-SMU" id="h67-Vk-ZTf"/>
                                                             </connections>
                                                         </tableCellView>

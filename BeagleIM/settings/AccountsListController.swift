@@ -36,6 +36,7 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
     override func viewDidLoad() {
         super.viewDidLoad();
         NotificationCenter.default.addObserver(self, selector: #selector(accountChanged), name: AccountManager.ACCOUNT_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(accountStatusChanged), name: XmppService.STATUS_CHANGED, object: nil)
     }
     
     override func viewWillAppear() {
@@ -62,10 +63,10 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
     func tableView(_ tableView: NSTableView, objectValueFor tableColumn: NSTableColumn?, row: Int) -> Any? {
         return accounts[row];
     }
-
+    
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("AccountCellView"), owner: self) as! AccountCellView;
-        view.avatar?.image = AvatarManager.instance.avatar(for: accounts[row], on: accounts[row]) ?? AvatarManager.instance.defaultAvatar;
+        view.avatar?.update(for: accounts[row], on: accounts[row]);
         view.label?.textColor = tableView.isRowSelected(row) ? NSColor.selectedTextColor : NSColor.textColor;
         view.label?.stringValue = accounts[row].stringValue;
         return view;
@@ -81,6 +82,10 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
         })
     }
     
+    func tableView(_ tableView: NSTableView, rowViewForRow row: Int) -> NSTableRowView? {
+        return AccountRowView();
+    }
+    
     @IBAction func defaultAccountChanged(_ sender: NSPopUpButton) {
         DispatchQueue.main.async {
             Settings.defaultAccount.set(bareJid: BareJID(sender.titleOfSelectedItem ?? ""));
@@ -89,6 +94,16 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
     }
     
     @objc func accountChanged(_ notification: Notification) {
+        DispatchQueue.main.async {
+            let selectedRow = self.tableView?.selectedRow;
+            self.refreshAccounts();
+            if selectedRow != nil {
+                self.tableView?.selectRowIndexes(IndexSet(integer: selectedRow!), byExtendingSelection: false);
+            }
+        }
+    }
+    
+    @objc func accountStatusChanged(_ notification: Notification) {
         DispatchQueue.main.async {
             let selectedRow = self.tableView?.selectedRow;
             self.refreshAccounts();
@@ -158,11 +173,48 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
     
 }
 
+class AccountRowView: NSTableRowView {
+    override var isSelected: Bool {
+        didSet {
+            if let accountView = self.subviews.last as? AccountCellView {
+                if isSelected {
+                    accountView.selectedBackgroundColor = isEmphasized ? NSColor.alternateSelectedControlColor : NSColor.secondarySelectedControlColor;
+                } else {
+                    accountView.selectedBackgroundColor = nil;
+                }
+            }
+        }
+    }
+    
+    override var isEmphasized: Bool {
+        didSet {
+            if let accountView = self.subviews.last as? AccountCellView {
+                if isSelected {
+                    accountView.selectedBackgroundColor = isEmphasized ? NSColor.alternateSelectedControlColor : NSColor.secondarySelectedControlColor;
+                } else {
+                    accountView.selectedBackgroundColor = nil;
+                }
+            }
+        }
+    }
+}
+
 class AccountCellView: NSTableCellView {
     
-    @IBOutlet weak var avatar: AvatarView?;
+    @IBOutlet weak var avatar: AvatarViewWithStatus?;
     @IBOutlet weak var label: NSTextField?;
+ 
+    var selectedBackgroundColor: NSColor? {
+        didSet {
+            avatar?.backgroundColor = selectedBackgroundColor ?? backgroundColor;
+        }
+    }
     
+    var backgroundColor: NSColor? {
+        didSet {
+            avatar?.backgroundColor = selectedBackgroundColor ?? backgroundColor;
+        }
+    }
 }
 
 protocol AccountAware: class {
