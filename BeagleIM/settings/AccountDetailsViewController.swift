@@ -28,7 +28,6 @@ class AccountDetailsViewController: NSViewController, AccountAware {
         didSet {
             username?.stringValue = account?.stringValue ?? "";
             let acc = account == nil ? nil : AccountManager.getAccount(for: account!);
-            password?.stringValue = acc?.password ?? "";
             nickname?.stringValue = acc?.nickname ?? "";
             active?.state = (acc?.active ?? false) ? .on : .off;
             resourceType?.itemArray.forEach { (item) in
@@ -53,15 +52,10 @@ class AccountDetailsViewController: NSViewController, AccountAware {
     }
     
     @IBOutlet weak var username: NSTextField!;
-    @IBOutlet weak var password: NSSecureTextField!;
     @IBOutlet weak var nickname: NSTextField!;
     @IBOutlet weak var active: NSButton!;
     @IBOutlet weak var resourceType: NSPopUpButton!;
     @IBOutlet weak var resourceName: NSTextField!;
-    
-    @IBAction func passwordChanged(_ sender: NSSecureTextFieldCell) {
-        save();
-    }
     
     @IBAction func nicknameChanged(_ sender: NSTextField) {
         save();
@@ -91,7 +85,6 @@ class AccountDetailsViewController: NSViewController, AccountAware {
             // do not save if we cannot find the account
             return;
         }
-        account.password = password.stringValue;
         account.nickname = nickname.stringValue;
         account.active = active.state == .on;
         let idx = resourceType.indexOfSelectedItem;
@@ -100,4 +93,11 @@ class AccountDetailsViewController: NSViewController, AccountAware {
         _ = AccountManager.save(account: account);
     }
     
+    override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
+        if segue.identifier == "ChangeAccountPassword" {
+            if let changeAccountController = segue.destinationController as? ChangePasswordController {
+                changeAccountController.account = self.account;
+            }
+        }
+    }
 }
