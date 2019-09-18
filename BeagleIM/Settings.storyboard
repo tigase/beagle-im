@@ -548,7 +548,7 @@ Gw
         <!--Tab View Controller-->
         <scene sceneID="hQO-l9-qU2">
             <objects>
-                <tabViewController selectedTabViewItemIndex="0" tabStyle="unspecified" id="rxZ-W4-pD8" sceneMemberID="viewController">
+                <tabViewController selectedTabViewItemIndex="0" id="rxZ-W4-pD8" sceneMemberID="viewController">
                     <tabViewItems>
                         <tabViewItem label="Account details" identifier="" id="Ku9-U1-Kmt"/>
                         <tabViewItem label="OMEMO" id="ZRp-ax-GUB"/>
@@ -556,7 +556,7 @@ Gw
                         <tabViewItem label="Personal" id="52h-lG-uy8"/>
                     </tabViewItems>
                     <viewControllerTransitionOptions key="transitionOptions" allowUserInteraction="YES"/>
-                    <tabView key="tabView" controlSize="small" id="Bn2-US-gYa">
+                    <tabView key="tabView" controlSize="small" type="noTabsNoBorder" id="Bn2-US-gYa">
                         <rect key="frame" x="0.0" y="0.0" width="450" height="300"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <connections>

@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--ConversationDetailsViewController-->
+        <scene sceneID="xp7-ce-rvd">
+            <objects>
+                <viewController title="ConversationDetailsViewController" identifier="ConversationDetailsViewController" storyboardIdentifier="ConversationDetailsViewController" id="yDC-N1-fGo" customClass="ConversationDetailsViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="xq8-f6-pmw">
+                        <rect key="frame" x="0.0" y="0.0" width="340" height="57"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Kbi-q0-cOs">
+                                <rect key="frame" x="8" y="30" width="66" height="17"/>
+                                <textFieldCell key="cell" lineBreakMode="clipping" title="Test User" id="7b7-bx-vsU">
+                                    <font key="font" metaFont="systemBold"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="8Ku-3C-CwA">
+                                <rect key="frame" x="8" y="12" width="20" height="14"/>
+                                <textFieldCell key="cell" lineBreakMode="clipping" title="Jid" id="Lkw-eP-Rzq">
+                                    <font key="font" metaFont="smallSystem"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <containerView horizontalHuggingPriority="750" verticalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="7e6-TW-Wy5">
+                                <rect key="frame" x="10" y="8" width="320" height="0.0"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" id="PSM-qJ-q9s"/>
+                                </constraints>
+                                <connections>
+                                    <segue destination="vuF-Zx-mrT" kind="embed" identifier="PrepareConversationSettingsViewController" id="z1N-H5-fNF"/>
+                                </connections>
+                            </containerView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="Kbi-q0-cOs" firstAttribute="top" secondItem="xq8-f6-pmw" secondAttribute="top" constant="10" id="9ya-nk-e89"/>
+                            <constraint firstItem="7e6-TW-Wy5" firstAttribute="top" secondItem="8Ku-3C-CwA" secondAttribute="bottom" constant="4" id="BOR-52-hA0"/>
+                            <constraint firstAttribute="trailing" secondItem="7e6-TW-Wy5" secondAttribute="trailing" constant="10" id="BjF-6X-p6p"/>
+                            <constraint firstItem="7e6-TW-Wy5" firstAttribute="leading" secondItem="xq8-f6-pmw" secondAttribute="leading" constant="10" id="Btf-5A-xHe"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Kbi-q0-cOs" secondAttribute="trailing" constant="10" id="BwI-fg-8up"/>
+                            <constraint firstAttribute="bottom" secondItem="7e6-TW-Wy5" secondAttribute="bottom" constant="8" id="b7r-Rz-aFE"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="8Ku-3C-CwA" secondAttribute="trailing" constant="10" id="bw0-qv-BMG"/>
+                            <constraint firstItem="Kbi-q0-cOs" firstAttribute="leading" secondItem="xq8-f6-pmw" secondAttribute="leading" constant="10" id="cNe-sL-fH6"/>
+                            <constraint firstItem="8Ku-3C-CwA" firstAttribute="top" secondItem="Kbi-q0-cOs" secondAttribute="bottom" constant="4" id="eac-it-SjB"/>
+                            <constraint firstItem="8Ku-3C-CwA" firstAttribute="leading" secondItem="xq8-f6-pmw" secondAttribute="leading" constant="10" id="yrv-y7-pmX"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="jidField" destination="8Ku-3C-CwA" id="yd2-Kq-qiC"/>
+                        <outlet property="nameField" destination="Kbi-q0-cOs" id="EvO-b6-gqS"/>
+                        <outlet property="settingsContainerView" destination="7e6-TW-Wy5" id="hcf-AW-yDM"/>
+                        <outlet property="settingsContainerViewHeightConstraint" destination="PSM-qJ-q9s" id="WYh-n5-Bv5"/>
+                    </connections>
+                </viewController>
+                <customObject id="zk1-NJ-Lxm" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-206" y="161"/>
+        </scene>
+        <!--Details-->
+        <scene sceneID="wHO-7f-vob">
+            <objects>
+                <viewController title="Details" identifier="ConversationSettingsViewController" storyboardIdentifier="ConversationSettingsViewController" id="vuF-Zx-mrT" customClass="ConversationSettingsViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="kfC-N1-wy3">
+                        <rect key="frame" x="0.0" y="0.0" width="325" height="31"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="P4b-av-WEz">
+                                <rect key="frame" x="0.0" y="24" width="325" height="5"/>
+                            </box>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="NK3-59-5dT">
+                                <rect key="frame" x="2" y="2" width="131" height="18"/>
+                                <buttonCell key="cell" type="check" title="Mute notifications" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="NOf-uN-eci">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="muteNotificcationsChanged:" target="vuF-Zx-mrT" id="wZW-fA-I24"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="P4b-av-WEz" secondAttribute="trailing" id="7cN-P4-wVZ"/>
+                            <constraint firstItem="NK3-59-5dT" firstAttribute="top" secondItem="P4b-av-WEz" secondAttribute="bottom" constant="8" id="h4K-wA-1Ib"/>
+                            <constraint firstAttribute="bottom" secondItem="NK3-59-5dT" secondAttribute="bottom" constant="4" id="hdh-1P-iIc"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="NK3-59-5dT" secondAttribute="trailing" constant="4" id="jTN-sY-SnL"/>
+                            <constraint firstItem="NK3-59-5dT" firstAttribute="leading" secondItem="kfC-N1-wy3" secondAttribute="leading" constant="4" id="s8x-Yz-Frt"/>
+                            <constraint firstItem="P4b-av-WEz" firstAttribute="leading" secondItem="kfC-N1-wy3" secondAttribute="leading" id="t2J-1r-FBv"/>
+                            <constraint firstItem="P4b-av-WEz" firstAttribute="top" secondItem="kfC-N1-wy3" secondAttribute="top" constant="4" id="yqd-Pz-aM3"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="muteNotifications" destination="NK3-59-5dT" id="xMb-Sx-4fp"/>
+                    </connections>
+                </viewController>
+                <customObject id="U9K-0H-fix" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-113.5" y="595"/>
+        </scene>
+        <!--OMEMO-->
+        <scene sceneID="CTn-kH-gwj">
+            <objects>
+                <viewController title="OMEMO" identifier="ConversationOmemoViewController" storyboardIdentifier="ConversationOmemoViewController" id="jqZ-a2-E6t" customClass="ConversationOmemoViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="z1c-Rk-i5y">
+                        <rect key="frame" x="0.0" y="0.0" width="329" height="300"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <stackView distribution="fill" orientation="vertical" alignment="leading" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="VP1-DN-Zxq">
+                                <rect key="frame" x="0.0" y="0.0" width="329" height="300"/>
+                                <edgeInsets key="edgeInsets" left="5" right="5" top="5" bottom="5"/>
+                            </stackView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="VP1-DN-Zxq" secondAttribute="bottom" id="Qe3-Yb-52G"/>
+                            <constraint firstAttribute="trailing" secondItem="VP1-DN-Zxq" secondAttribute="trailing" id="QmB-vT-R5C"/>
+                            <constraint firstItem="VP1-DN-Zxq" firstAttribute="leading" secondItem="z1c-Rk-i5y" secondAttribute="leading" id="V8C-6A-iWY"/>
+                            <constraint firstItem="VP1-DN-Zxq" firstAttribute="top" secondItem="z1c-Rk-i5y" secondAttribute="top" id="loJ-Ve-eRq"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="stack" destination="VP1-DN-Zxq" id="mDj-aP-SQa"/>
+                    </connections>
+                </viewController>
+                <customObject id="RY0-K1-wln" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-111.5" y="868"/>
+        </scene>
+        <!--Info-->
+        <scene sceneID="xq3-UU-hFC">
+            <objects>
+                <viewController title="Info" identifier="ConversationVCardViewController" storyboardIdentifier="ConversationVCardViewController" id="59p-X5-xhU" customClass="ConversationVCardViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="QoO-pj-QL8">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="1"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <stackView distribution="fill" orientation="vertical" alignment="leading" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" horizontalHuggingPriority="1000" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hhB-1n-e34" customClass="CustomNSStackView" customModule="BeagleIM" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="1"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" priority="750" constant="1" id="wcb-ia-cLO"/>
+                                </constraints>
+                            </stackView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="hhB-1n-e34" secondAttribute="trailing" id="1Kl-Dk-VQl"/>
+                            <constraint firstAttribute="bottom" secondItem="hhB-1n-e34" secondAttribute="bottom" id="DrE-io-RRQ"/>
+                            <constraint firstItem="hhB-1n-e34" firstAttribute="top" secondItem="QoO-pj-QL8" secondAttribute="top" id="duN-QW-uDf"/>
+                            <constraint firstItem="hhB-1n-e34" firstAttribute="leading" secondItem="QoO-pj-QL8" secondAttribute="leading" id="wru-K7-LP5"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="stack" destination="hhB-1n-e34" id="JKI-0X-b7b"/>
+                    </connections>
+                </viewController>
+                <customObject id="Hr9-pQ-ReL" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-111" y="-262"/>
+        </scene>
+        <!--Conversation Grouping View Controller-->
+        <scene sceneID="14R-xz-haG">
+            <objects>
+                <viewController storyboardIdentifier="ConversationGroupingViewController" id="hVy-gS-DsV" customClass="ConversationGroupingViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="1Y9-ZG-8lU">
+                        <rect key="frame" x="0.0" y="0.0" width="324" height="300"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <stackView distribution="fill" orientation="vertical" alignment="leading" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" horizontalHuggingPriority="750" verticalCompressionResistancePriority="250" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GVt-Eu-XbV">
+                                <rect key="frame" x="0.0" y="0.0" width="324" height="300"/>
+                            </stackView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="GVt-Eu-XbV" firstAttribute="leading" secondItem="1Y9-ZG-8lU" secondAttribute="leading" id="0eF-tn-NWC"/>
+                            <constraint firstAttribute="trailing" secondItem="GVt-Eu-XbV" secondAttribute="trailing" id="GV6-lC-P2y"/>
+                            <constraint firstItem="GVt-Eu-XbV" firstAttribute="top" secondItem="1Y9-ZG-8lU" secondAttribute="top" id="izA-Pz-pfw"/>
+                            <constraint firstAttribute="bottom" secondItem="GVt-Eu-XbV" secondAttribute="bottom" id="wa5-up-9oM"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="stack" destination="GVt-Eu-XbV" id="UnU-ct-NSL"/>
+                    </connections>
+                </viewController>
+                <customObject id="i8L-MY-K91" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="225" y="-278"/>
+        </scene>
+        <!--ContactDetailsViewController-->
+        <scene sceneID="rWR-e6-IX3">
+            <objects>
+                <viewController title="ContactDetailsViewController" identifier="ContactDetailsViewController" storyboardIdentifier="ContactDetailsViewController" id="CNf-2E-dQ8" customClass="ContactDetailsViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="DYM-cL-rq1">
+                        <rect key="frame" x="0.0" y="0.0" width="340" height="300"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <containerView ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Stc-L0-u64">
+                                <rect key="frame" x="0.0" y="278" width="340" height="22"/>
+                                <connections>
+                                    <segue destination="yDC-N1-fGo" kind="embed" identifier="ConversationDetailsViewController" id="ytY-nz-anO"/>
+                                </connections>
+                            </containerView>
+                            <segmentedControl verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ysX-T7-iCF">
+                                <rect key="frame" x="18" y="260" width="304" height="21"/>
+                                <segmentedCell key="cell" controlSize="small" borderStyle="border" alignment="left" segmentDistribution="fill" style="rounded" trackingMode="selectOne" id="Fav-ib-Srd">
+                                    <font key="font" metaFont="smallSystem"/>
+                                    <segments>
+                                        <segment/>
+                                    </segments>
+                                </segmentedCell>
+                                <connections>
+                                    <action selector="tabChanged:" target="CNf-2E-dQ8" id="arc-Zw-gzZ"/>
+                                </connections>
+                            </segmentedControl>
+                            <tabView verticalCompressionResistancePriority="250" ambiguous="YES" drawsBackground="NO" controlSize="small" type="noTabsNoBorder" translatesAutoresizingMaskIntoConstraints="NO" id="0p2-j5-Wy0">
+                                <rect key="frame" x="10" y="10" width="320" height="248"/>
+                            </tabView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="0p2-j5-Wy0" firstAttribute="leading" secondItem="DYM-cL-rq1" secondAttribute="leading" constant="10" id="0fF-dW-jwd"/>
+                            <constraint firstAttribute="trailing" secondItem="ysX-T7-iCF" secondAttribute="trailing" constant="20" id="47v-wg-46C"/>
+                            <constraint firstItem="ysX-T7-iCF" firstAttribute="leading" secondItem="DYM-cL-rq1" secondAttribute="leading" constant="20" id="AdY-rg-9v1"/>
+                            <constraint firstAttribute="trailing" secondItem="Stc-L0-u64" secondAttribute="trailing" id="JJo-Mc-aWS"/>
+                            <constraint firstItem="Stc-L0-u64" firstAttribute="leading" secondItem="DYM-cL-rq1" secondAttribute="leading" id="La9-q5-Qa2"/>
+                            <constraint firstItem="0p2-j5-Wy0" firstAttribute="top" secondItem="ysX-T7-iCF" secondAttribute="bottom" constant="4" id="Pdn-9L-drr"/>
+                            <constraint firstItem="Stc-L0-u64" firstAttribute="top" secondItem="DYM-cL-rq1" secondAttribute="top" id="Tx5-nE-rSH"/>
+                            <constraint firstAttribute="bottom" secondItem="0p2-j5-Wy0" secondAttribute="bottom" constant="10" id="k85-FU-fzX"/>
+                            <constraint firstAttribute="trailing" secondItem="0p2-j5-Wy0" secondAttribute="trailing" constant="10" id="xZb-o1-sa3"/>
+                            <constraint firstItem="ysX-T7-iCF" firstAttribute="top" secondItem="Stc-L0-u64" secondAttribute="bottom" constant="10" id="y2V-FV-OUJ"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="basicContainerView" destination="Stc-L0-u64" id="xKM-dF-Fif"/>
+                        <outlet property="tabs" destination="ysX-T7-iCF" id="ES4-WK-3Ue"/>
+                        <outlet property="tabsView" destination="0p2-j5-Wy0" id="MDw-dT-RUW"/>
+                    </connections>
+                </viewController>
+                <customObject id="1Xh-uj-mPn" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+        </scene>
+    </scenes>
+</document>

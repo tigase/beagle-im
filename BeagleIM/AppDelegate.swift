@@ -732,12 +732,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         guard item.state == .incoming_unread else {
             return;
         }
-        
+
+        let chat = DBChatStore.instance.getChat(for: item.account, with: item.jid);
         if item.authorNickname != nil {
             guard let mucModule: MucModule = XmppService.instance.getClient(for: item.account)?.modulesManager.getModule(MucModule.ID), let room = mucModule.roomsManager.getRoom(for: item.jid) else {
                 return;
             }
-            guard item.message.contains(room.nickname) else {
+            guard item.message.contains(room.nickname) && ((chat as? DBChatStore.DBRoom)?.options.notifications ?? .mention) != .none else {
                 return;
             }
             
@@ -766,6 +767,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         } else {
             let rosterItem = XmppService.instance.getClient(for: item.account)?.rosterStore?.get(for: JID(item.jid));
             guard rosterItem != nil || Settings.notificationsFromUnknownSenders.bool() else {
+                return;
+            }
+            
+            guard ((chat as? DBChatStore.DBChat)?.options.notifications ?? .mention) != .none else {
                 return;
             }
             

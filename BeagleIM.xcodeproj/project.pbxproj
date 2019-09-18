@@ -137,6 +137,8 @@
 		FEF9CE1D2082765000B09B6C /* db-schema-1.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEF9CE1C2082765000B09B6C /* db-schema-1.sql */; };
 		FEF9CE2220827F0000B09B6C /* libsqlite3.0.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF9CE2120827F0000B09B6C /* libsqlite3.0.tbd */; };
 		FEF9D12B2082804E00B09B6C /* TigaseSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF9D12A2082804E00B09B6C /* TigaseSwift.framework */; settings = {ATTRIBUTES = (Required, ); }; };
+		FEFFF7CD232FCF25004CB9CE /* ConversationDetails.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEFFF7CC232FCF25004CB9CE /* ConversationDetails.storyboard */; };
+		FEFFF7CF23313B52004CB9CE /* db-schema-5.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEFFF7CE23313B52004CB9CE /* db-schema-5.sql */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -309,6 +311,8 @@
 		FEF9CE2120827F0000B09B6C /* libsqlite3.0.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.0.tbd; path = usr/lib/libsqlite3.0.tbd; sourceTree = SDKROOT; };
 		FEF9D12A2082804E00B09B6C /* TigaseSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TigaseSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FEF9D12C2082808C00B09B6C /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
+		FEFFF7CC232FCF25004CB9CE /* ConversationDetails.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ConversationDetails.storyboard; sourceTree = "<group>"; };
+		FEFFF7CE23313B52004CB9CE /* db-schema-5.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-5.sql"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -572,6 +576,8 @@
 				FE02DD10225B8D1100FA08EB /* db-schema-3.sql */,
 				FE149D8122A5120300EE4E03 /* SearchHistory.storyboard */,
 				FE149D8622A51AD900EE4E03 /* db-schema-4.sql */,
+				FEFFF7CC232FCF25004CB9CE /* ConversationDetails.storyboard */,
+				FEFFF7CE23313B52004CB9CE /* db-schema-5.sql */,
 			);
 			path = BeagleIM;
 			sourceTree = "<group>";
@@ -763,8 +769,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FEFFF7CD232FCF25004CB9CE /* ConversationDetails.storyboard in Resources */,
 				FE0C817F2257B48400948C41 /* Settings.storyboard in Resources */,
 				FE4D2132221F2A6E0058B662 /* db-schema-2.sql in Resources */,
+				FEFFF7CF23313B52004CB9CE /* db-schema-5.sql in Resources */,
 				FEF9CE1D2082765000B09B6C /* db-schema-1.sql in Resources */,
 				FE4073A721BACA2D009CE335 /* VoIP.storyboard in Resources */,
 				FE8C9F5421B3F6BD00BE8332 /* container-migration.plist in Resources */,

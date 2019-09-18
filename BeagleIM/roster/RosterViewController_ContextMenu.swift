@@ -80,7 +80,8 @@ extension RosterViewController: NSMenuDelegate {
     @IBAction func detailsSelected(_ sender: NSMenuItem) {
         let item = self.getItem(at: self.contactsTableView.clickedRow);
         
-        guard let viewController = storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier("ContactDetailsViewController")) as? ContactDetailsViewController else {
+        let storyboard = NSStoryboard(name: "ConversationDetails", bundle: nil);
+        guard let viewController = storyboard.instantiateController(withIdentifier: "ContactDetailsViewController") as? ContactDetailsViewController else {
             return;
         }
         viewController.account = item.account;

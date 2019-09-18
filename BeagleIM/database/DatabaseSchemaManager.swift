@@ -24,7 +24,7 @@ import TigaseSwift
 
 public class DBSchemaManager {
     
-    static let CURRENT_VERSION = 4;
+    static let CURRENT_VERSION = 5;
     
     fileprivate let dbConnection: DBConnection;
     
@@ -64,6 +64,30 @@ public class DBSchemaManager {
             try dbConnection.prepareStatement("DELETE FROM omemo_sessions WHERE account = :account AND name = :name AND device_id = :deviceId").update(["account": account, "name": name, "deviceId": device] as [String: Any?]);
         }
 
+        let queryStmt = try dbConnection.prepareStatement("SELECT account, jid, encryption FROM chats WHERE encryption IS NOT NULL AND options IS NULL");
+        let toConvert = try queryStmt.query { (cursor) -> (BareJID, BareJID, ChatEncryption)? in
+            let account: BareJID = cursor["account"]!;
+            let jid: BareJID = cursor["jid"]!;
+            guard let encryptionStr: String = cursor["encryption"] else {
+                return nil;
+            }
+            guard let encryption = ChatEncryption(rawValue: encryptionStr) else {
+                return nil;
+            }
+            
+            return (account, jid, encryption);
+        }
+        if !toConvert.isEmpty {
+            let updateStmt = try dbConnection.prepareStatement("UPDATE chats SET options = ?, encryption = null WHERE account = ? AND jid = ?");
+            try toConvert.forEach { (arg0) in
+                let (account, jid, encryption) = arg0
+                var options = ChatOptions();
+                options.encryption = encryption;
+                let data = try? JSONEncoder().encode(options);
+                let dataStr = data != nil ? String(data: data!, encoding: .utf8)! : nil;
+                _ = try updateStmt.update(dataStr, account, jid);
+            }
+        }
     }
     
     open func getSchemaVersion() throws -> Int {

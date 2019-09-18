@@ -30,6 +30,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     @IBOutlet var subjectView: NSTextField!;
     
     @IBOutlet var inviteButton: NSButton!;
+    @IBOutlet var participantsButton: NSButton!;
     @IBOutlet var infoButton: NSButton!;
     @IBOutlet var settingsButtin: NSPopUpButton!;
     
@@ -74,11 +75,18 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         super.viewWillAppear();
         sidebarWidthConstraint.constant = Settings.showRoomDetailsSidebar.bool() ? 200 : 0;
         avatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
-        let cgRef = infoButton.image!.cgImage(forProposedRect: nil, context: nil, hints: nil);
+        buttonToGrayscale(button: participantsButton, template: true);
+        buttonToGrayscale(button: infoButton, template: false);
+        refreshRoomDetails();
+    }
+    
+    private func buttonToGrayscale(button: NSButton, template: Bool) {
+        let cgRef = button.image!.cgImage(forProposedRect: nil, context: nil, hints: nil);
         let representation = NSBitmapImageRep(cgImage: cgRef!);
         let newRep = representation.converting(to: .genericGray, renderingIntent: .default);
-        infoButton.image = NSImage(cgImage: newRep!.cgImage!, size: infoButton.frame.size);
-        refreshRoomDetails();
+        let img = NSImage(cgImage: newRep!.cgImage!, size: button.frame.size);
+        img.isTemplate = template;
+        button.image = img;
     }
     
     @objc func roomOccupantsChanged(_ notification: Notification) {
@@ -130,11 +138,10 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             anyActive = anyActive || (self.settingsButtin.item(at: i)?.isEnabled ?? false);
         }
         self.settingsButtin.isEnabled = anyActive;
-        
         self.inviteButton.isEnabled = currentRole != .none;
     }
     
-    @IBAction func infoClicked(_ sender: NSButton) {
+    @IBAction func participantsClicked(_ sender: NSButton) {
         let currWidth = self.sidebarWidthConstraint.constant;
         Settings.showRoomDetailsSidebar.set(value: currWidth == 0 ? true : false);
         self.sidebarWidthConstraint.constant = currWidth != 0 ? 0 : 200;
@@ -168,6 +175,23 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         let window = NSWindow(contentViewController: affilsViewController);
         affilsViewController.room = room;
         view.window?.beginSheet(window, completionHandler: nil);
+    }
+    
+    @IBAction func showInfoClicked(_ sender: NSButton) {
+        let storyboard = NSStoryboard(name: "ConversationDetails", bundle: nil);
+        guard let viewController = storyboard.instantiateController(withIdentifier: "ConversationDetailsViewController") as? ConversationDetailsViewController else {
+            return;
+        }
+        viewController.account = self.account;
+        viewController.jid = self.jid;
+        viewController.showSettings = true;
+
+        let popover = NSPopover();
+        popover.contentViewController = viewController;
+        popover.behavior = .semitransient;
+        popover.animates = true;
+        let rect = sender.convert(sender.bounds, to: self.view.window!.contentView!);
+        popover.show(relativeTo: rect, of: self.view.window!.contentView!, preferredEdge: .minY);
     }
     
     override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
@@ -438,5 +462,17 @@ class GroupchatParticipantCellView: NSTableCellView {
     
     @IBOutlet var avatar: AvatarViewWithStatus!;
     @IBOutlet var label: NSTextField!;
+    
+}
+
+class SettingsPopUpButton: NSPopUpButton {
+    
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect);
+     
+        NSGraphicsContext.saveGraphicsState();
+        
+        NSGraphicsContext.restoreGraphicsState();
+    }
     
 }

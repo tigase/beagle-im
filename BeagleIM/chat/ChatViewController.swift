@@ -242,7 +242,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         guard (XmppService.instance.getClient(for: account)?.state ?? .disconnected) == .connected else {
             return false;
         }
-        let encryption = self.chat.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!;
+        let encryption = (self.chat as? DBChatStore.DBChat)?.options.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!;
         if encryption == ChatEncryption.omemo {
             return self.sendEncryptedMessage(body: body, url: url);
         } else {
@@ -309,7 +309,12 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
                     alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
                         switch response {
                         case .alertSecondButtonReturn:
-                            DBChatStore.instance.changeChatEncryption(for: account, with: jid, to: ChatEncryption.none, completionHandler: {
+                            guard let chat = self.chat as? DBChatStore.DBChat else {
+                                return;
+                            }
+                            chat.modifyOptions({ (options) in
+                                options.encryption = ChatEncryption.none;
+                            }, completionHandler: {
                                 DispatchQueue.main.async {
                                     self.refreshEncryptionStatus();
                                     self.sendUnencryptedMessage(body: body, url: url);
@@ -367,11 +372,16 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             encryption = nil;
         }
         
-        DBChatStore.instance.changeChatEncryption(for: account, with: jid, to: encryption) {
+        guard let chat = self.chat as? DBChatStore.DBChat else {
+            return;
+        }
+        chat.modifyOptions({ (options) in
+            options.encryption = encryption;
+        }, completionHandler: {
             DispatchQueue.main.async {
                 self.refreshEncryptionStatus();
             }
-        }
+        })
     }
     
     @objc func settingsChanged(_ notification: Notification) {
@@ -394,7 +404,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             if !self.encryptButton.isEnabled {
                 self.encryptButton.item(at: 0)?.image = NSImage(named: NSImage.lockUnlockedTemplateName);
             } else {
-                let encryption = self.chat.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!;
+                let encryption = (self.chat as? DBChatStore.DBChat)?.options.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!;
                 let locked = encryption == ChatEncryption.omemo;
                 self.encryptButton.item(at: 0)?.image = locked ? NSImage(named: NSImage.lockLockedTemplateName) : NSImage(named: NSImage.lockUnlockedTemplateName);
             }
@@ -402,11 +412,36 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     }
     
     @IBAction func showInfoClicked(_ sender: NSButton) {
-        guard let viewController = storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier("ContactDetailsViewController")) as? ContactDetailsViewController else {
+        let storyboard = NSStoryboard(name: "ConversationDetails", bundle: nil);
+//        guard let viewController = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier("ConversationDetailsViewController")) as? ConversationDetailsViewController else {
+//            return;
+//        }
+//        viewController.showSettings = true;
+//        _ = viewController.view;
+////        if let group = storyboard.instantiateController(withIdentifier: "ConversationGroupingViewController") as? ConversationGroupingViewController {
+////            group.title = "Details";
+////            if let settings = storyboard.instantiateController(withIdentifier: "ConversationSettingsViewController") as? NSViewController {
+////                group.add(viewController: settings);
+////            }
+////            if let vcard = storyboard.instantiateController(withIdentifier: "ConversationVCardViewController") as? NSViewController {
+////                group.add(viewController: vcard);
+////            }
+////            viewController.tabView.addTabViewItem(NSTabViewItem(viewController: group));
+////        }
+//        if let vcard = storyboard.instantiateController(withIdentifier: "ConversationVCardViewController") as? NSViewController {
+//            vcard.title = "Details";
+//            viewController.tabView.addTabViewItem(NSTabViewItem(viewController: vcard));
+//        }
+//
+//        if let omemo = storyboard.instantiateController(withIdentifier: "ConversationOmemoViewController") as? NSViewController {
+//            viewController.tabView.addTabViewItem(NSTabViewItem(viewController: omemo));
+//        }
+        guard let viewController = storyboard.instantiateController(withIdentifier: "ContactDetailsViewController") as? ContactDetailsViewController else {
             return;
         }
         viewController.account = self.account;
         viewController.jid = self.jid;
+        viewController.showSettings = true;
         
         let popover = NSPopover();
         popover.contentViewController = viewController;
@@ -531,3 +566,4 @@ class ChatViewTableView: NSTableView {
 class ChatViewStatusView: NSTextField {
     
 }
+
