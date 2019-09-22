@@ -210,6 +210,13 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         guard let item = dataSource.getItem(at: row) as? ChatMessage else {
+            guard let item = dataSource.getItem(at: row) as? SystemMessage else {
+                return nil;
+            }
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "MucMessageSystemCellView"), owner: nil) as? ChatMessageSystemCellView {
+                cell.message.stringValue = "Unread messages";
+                return cell;
+            }
             return nil;
         }
         let prevItem = row >= 0 && (row + 1) < dataSource.count ? dataSource.getItem(at: row + 1) : nil;

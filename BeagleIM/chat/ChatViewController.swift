@@ -151,6 +151,13 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         guard let item = dataSource.getItem(at: row) as? ChatMessage else {
+            guard let item = dataSource.getItem(at: row) as? SystemMessage else {
+                return nil;
+            }
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMessageSystemCellView"), owner: nil) as? ChatMessageSystemCellView {
+                cell.message.stringValue = "Unread messages";
+                return cell;
+            }
             return nil;
         }
         let prevItem = row >= 0 && (row + 1) < dataSource.count ? dataSource.getItem(at: row + 1) : nil;
@@ -165,7 +172,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
                 c.set(senderName: item.state.direction == .incoming ? buddyName : "Me");
             }
             cell.set(message: item);
-            
+                        
             return cell;
         }
         
@@ -557,10 +564,25 @@ public enum MessageDirection: Int {
 }
 
 class ChatViewTableView: NSTableView {
+    
+    static let didScrollRowToVisible = Notification.Name("ChatViewTableView::didScrollRowToVisible");
+    
     override open var isFlipped: Bool {
         return false;
     }
-    
+
+    override func reflectScrolledClipView(_ clipView: NSClipView) {
+        super.reflectScrolledClipView(clipView);
+        print("reflectScrolledClipView called!");
+    }
+    override func scrollRowToVisible(_ row: Int) {
+        super.scrollRowToVisible(row);
+        if !self.rows(in: self.visibleRect).contains(row) {
+            super.scrollRowToVisible(row);
+        }
+        print("scrollRowToVisible called!");
+        NotificationCenter.default.post(name: ChatViewTableView.didScrollRowToVisible, object: self);
+    }
 }
 
 class ChatViewStatusView: NSTextField {

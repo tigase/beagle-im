@@ -42,8 +42,8 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         return chat.jid.bareJid;
     }
     
-    var hasFocus: Bool {
-        return DispatchQueue.main.sync { view.window?.isKeyWindow ?? false };
+    private var hasFocus: Bool {
+        return view.window?.isKeyWindow ?? false;
     }
     
     var mouseMonitor: Any?;
@@ -62,10 +62,19 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         super.viewWillAppear();
         self.messageField?.placeholderAttributedString = account != nil ? NSAttributedString(string: "from \(account.stringValue)...", attributes: [.foregroundColor: NSColor.placeholderTextColor]) : nil;
 //        self.tableView.reloadData();
-        print("scrolling to", self.tableView.numberOfRows - 1)
-        self.tableView.scrollRowToVisible(self.tableView.numberOfRows - 1);
         
-        self.dataSource.refreshData();
+        self.dataSource.refreshData(unread: chat.unread) {
+            DispatchQueue.main.async {
+                let unread = self.chat.unread;
+                if unread > 0 {
+                    print("scrolling to", unread);
+                    self.tableView.scrollRowToVisible(unread);
+                } else {
+                    print("scrolling to", 0);
+                    self.tableView.scrollRowToVisible(0);
+                }
+            }
+        };
         self.updateMessageFieldSize();
         
         mouseMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseDragged, .leftMouseUp, .rightMouseDown, .mouseMoved, .keyDown]) { (event) -> NSEvent? in
@@ -78,6 +87,8 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
             }
             return self.handleMouse(event: event) ? nil : event;
         }
+        NotificationCenter.default.addObserver(self, selector: #selector(didEndScrolling), name: NSScrollView.didEndLiveScrollNotification, object: self.tableView.enclosingScrollView);
+        NotificationCenter.default.addObserver(self, selector: #selector(scrolledRowToVisible(_:)), name: ChatViewTableView.didScrollRowToVisible, object: self.tableView);
         NotificationCenter.default.addObserver(self, selector: #selector(didBecomeKeyWindow), name: NSWindow.didBecomeKeyNotification, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(hourChanged), name: AppDelegate.HOUR_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(scrollToMessage(_:)), name: AbstractChatViewController.SCROLL_TO_MESSAGE, object: nil);
@@ -418,11 +429,37 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         self.dataSource.loadItems(limit: position + 20, awaitIfInProgress: true) {
             DispatchQueue.main.async {
                 self.tableView.scrollRowToVisible(position);
-                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                    self.tableView.scrollRowToVisible(position);
-                }
             }
         }
+    }
+    
+    @objc func didEndScrolling(_ notification: Notification) {
+        markAsReadUpToNewestVisibleRow();
+    }
+    
+    @objc func scrolledRowToVisible(_ notification: Notification) {
+        markAsReadUpToNewestVisibleRow();
+    }
+    
+    func markAsReadUpToNewestVisibleRow() {
+        guard self.hasFocus && self.chat.unread > 0 else {
+            return;
+        }
+        
+        let visibleRows = self.tableView.rows(in: self.tableView.visibleRect);
+        var ts: Date? = dataSource.getItem(at: visibleRows.lowerBound)?.timestamp;
+        if let tmp = dataSource.getItem(at: visibleRows.upperBound)?.timestamp {
+            if ts == nil {
+                ts = tmp;
+            } else if ts!.compare(tmp) == .orderedAscending {
+                ts = tmp;
+            }
+        }
+        guard let since = ts else {
+            return;
+        }
+        print("marking as read:", account, "jid:", jid, "before:", since);
+        DBChatHistoryStore.instance.markAsRead(for: self.account, with: self.jid, before: since);
     }
     
     func messageViewFor(event: NSEvent) -> BaseChatMessageCellView? {
@@ -448,14 +485,14 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     }
     
     @objc func didBecomeKeyWindow(_ notification: Notification) {
-        if chat.unread > 0 && self.tableView.rows(in: self.tableView.visibleRect).contains(0) {
-            DBChatHistoryStore.instance.markAsRead(for: account, with: jid);
+        if chat.unread > 0 {
+            markAsReadUpToNewestVisibleRow();
         }
     }
     
     @objc func boundsChange(_ notification: Notification) {
-        if chat.unread > 0 && self.tableView.rows(in: self.tableView.visibleRect).contains(0) {
-            DBChatHistoryStore.instance.markAsRead(for: account, with: jid);
+        if chat.unread > 0 {
+            markAsReadUpToNewestVisibleRow();
         }
     }
     
@@ -658,4 +695,32 @@ func < (lhs: NSTextField.CharacterRange, rhs: NSTextField.CharacterRange) -> Boo
 
 func == (lhs: NSTextField.CharacterRange, rhs: NSTextField.CharacterRange) -> Bool {
     return lhs.location == rhs.location;
+}
+
+class SystemMessage: ChatViewItemProtocol {
+    let id: Int;
+    let account: BareJID;
+    let jid: BareJID;
+    let timestamp: Date;
+    let state: MessageState;
+    let encryption: MessageEncryption = .none;
+    let encryptionFingerprint: String? = nil;
+    let kind: Kind;
+    
+    init(nextItem item: ChatViewItemProtocol, kind: Kind) {
+        id = item.id;
+        timestamp = item.timestamp.addingTimeInterval(-0.001);
+        account = item.account;
+        jid = item.jid;
+        state = .incoming;
+        self.kind = kind;
+    }
+    
+    func isMergeable(with item: ChatViewItemProtocol) -> Bool {
+        return false;
+    }
+
+    enum Kind {
+        case unreadMessages
+    }
 }

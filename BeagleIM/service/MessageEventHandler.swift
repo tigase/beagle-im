@@ -166,7 +166,11 @@ class MessageEventHandler: XmppServiceEventHandler {
             let jid = account == from.bareJid ? to.bareJid : from.bareJid;
             let timestamp = e.message.delay?.stamp ?? Date();
             let state: MessageState = calculateState(direction: account == from.bareJid ? .outgoing : .incoming, error: ((e.message.type ?? .chat) == .error), unread: !Settings.markMessageCarbonsAsRead.bool());
-            DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, type: .message, timestamp: timestamp, stanzaId: e.message.id, data: body!, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
+            DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, type: .message, timestamp: timestamp, stanzaId: e.message.id, data: body!, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: { (msgId) in
+                if state.direction == .outgoing {
+                    DBChatHistoryStore.instance.markAsRead(for: account, with: jid, before: timestamp);
+                }
+            });
         case let e as MessageArchiveManagementModule.ArchivedMessageReceivedEvent:
             guard let account = e.sessionObject.userBareJid, let from = e.message.from, let to = e.message.to else {
                 return;

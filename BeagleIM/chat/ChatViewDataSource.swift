@@ -89,40 +89,40 @@ class ChatViewDataSource {
         add(items: [item]);
     }
 
-    func add(items newItems: [ChatViewItemProtocol], completionHandler: (()->Void)? = nil) {
+    func add(items newItems: [ChatViewItemProtocol], force: Bool = false, completionHandler: (()->Void)? = nil) {
         queue.async {
             let start = Date();
             var store = DispatchQueue.main.sync { return self.store };
             var newRows = [Int]();
             newItems.forEach({ item in
-                guard let idx = store.add(item: item) else {
+                guard var idx = store.add(item: item, force: force) else {
                     return;
+                }
+                while newRows.contains(idx) {
+                    idx = idx + 1;
                 }
                 newRows.append(idx);
             })
-            print("added items in:", Date().timeIntervalSince(start))
+            // duplicated row idx in new rows when "unread" is part of the set!!
+            print("new rows:", newRows);
+            print("added", newItems.count, store.count, "items in:", Date().timeIntervalSince(start))
             DispatchQueue.main.async {
                 self.store = store;
-                if newItems.count > 3030 {
-                    for i in 3028...3031 {
-                        print("item:", i, ", ts:", newItems[i].timestamp, ", id:", newItems[i].id);
-                    }
-                }
                 self.delegate?.itemAdded(at: IndexSet(newRows));
+                completionHandler?();
             }
             
-            if newItems.first(where: { item -> Bool in return item.state.isUnread }) != nil {
-                if let delegate = self.delegate {
-                    if delegate.hasFocus {
-                        DBChatHistoryStore.instance.markAsRead(for: delegate.account, with: delegate.jid);
-                    }
-                }
-            }
+            //        if newItems.first(where: { item -> Bool in return item.state.isUnread }) != nil {
+            //            if let delegate = self.delegate {
+            //                if delegate.hasFocus {
+            //                    //DBChatHistoryStore.instance.markAsRead(for: delegate.account, with: delegate.jid);
+            //                }
+            //            }
+            //        }
             print("added items 2 in:", Date().timeIntervalSince(start));
-            completionHandler?();
         }
     }
-
+    
     func update(itemId: Int, data: [String:Any]) {
         queue.async {
             let store = DispatchQueue.main.sync { return self.store; };
@@ -204,15 +204,21 @@ class ChatViewDataSource {
         update(item: item);
     }
     
-    func refreshData() {
+    func refreshData(unread: Int, completionHandler: (()->Void)? = nil) {
         queue.async {
-            _ = DispatchQueue.main.sync { self.store };
             DispatchQueue.main.async {
                 self.store = MessagesStore(items: []);
                 self.delegate?.itemsReloaded();
-            }
-            DispatchQueue.global().async {
-                self.loadItems(before: nil, limit: 100);
+                self.loadItems(before: nil, limit: 100, unread: unread, completionHandler: {
+//                    if unread > 0 {
+//                        if let item = self.store.item(at: unread - 1) {
+//                            let unreadItem = SystemMessage(nextItem: item, kind: .unreadMessages);
+//                            self.add(items: [unreadItem], force: true, completionHandler: completionHandler);
+//                        }
+//                    } else {
+                        completionHandler?();
+//                    }
+                });
             }
         }
     }
@@ -220,14 +226,14 @@ class ChatViewDataSource {
     fileprivate var loadInProgress = false;
     fileprivate var waitingToLoad: (()->Void)? = nil;
     
-    func loadItems(before: Int? = nil, limit: Int, awaitIfInProgress: Bool = false, completionHandler: (()->Void)? = nil) {
+    func loadItems(before: Int? = nil, limit: Int, awaitIfInProgress: Bool = false, unread: Int = 0, completionHandler: (()->Void)? = nil) {
         guard let account = delegate?.account, let jid = delegate?.jid else {
             return;
         }
         guard !loadInProgress else {
             if awaitIfInProgress {
                 waitingToLoad = { [weak self] in
-                    self?.loadItems(before: before, limit: limit, awaitIfInProgress: awaitIfInProgress, completionHandler: completionHandler);
+                    self?.loadItems(before: before, limit: limit, awaitIfInProgress: awaitIfInProgress, unread: unread, completionHandler: completionHandler);
                 }
             }
             return;
@@ -236,16 +242,21 @@ class ChatViewDataSource {
         
         self.queue.async {
             let start = Date();
-            DBChatHistoryStore.instance.getHistory(for: account, jid: jid, before: before, limit: limit) { items in
+            DBChatHistoryStore.instance.getHistory(for: account, jid: jid, before: before, limit: limit) { dbItems in
+                var items = dbItems;
+                if unread > 0, dbItems.count >= unread {
+                    let item = dbItems[unread - 1];
+                    items.append(SystemMessage(nextItem: item, kind: .unreadMessages));
+                }
                 print("load completed in:", Date().timeIntervalSince(start));
-                self.add(items: items, completionHandler: completionHandler);
-                DispatchQueue.main.async {
+                self.add(items: items, force: unread > 0, completionHandler: {
                     self.loadInProgress = false;
                     if self.waitingToLoad != nil {
                         self.waitingToLoad!();
                         self.waitingToLoad = nil;
                     }
-                }
+                    completionHandler?();
+                });
             }
         }
     }
@@ -264,12 +275,15 @@ class ChatViewDataSource {
         }
         
         func item(at row: Int) -> ChatViewItemProtocol? {
+            guard row < self.items.count else {
+                return nil;
+            }
             return self.items[row];
         }
         
         func indexOf(itemId id: Int) -> Int? {
             guard let idx = self.items.firstIndex(where: { (item) -> Bool in
-                return item.id == id;
+                return item.id == id && !(item is SystemMessage);
             }) else {
                 return nil;
             }
@@ -278,7 +292,7 @@ class ChatViewDataSource {
         
         mutating func update(item: ChatViewItemProtocol) -> Int? {
             guard let idx = self.items.firstIndex(where: { (it) -> Bool in
-                return it.id == item.id;
+                return it.id == item.id && !(item is SystemMessage);
             }) else {
                 return nil;
             }
@@ -286,8 +300,8 @@ class ChatViewDataSource {
             return idx;
         }
         
-        mutating func add(item: ChatViewItemProtocol) -> Int? {
-            guard !knownItems.contains(item.id) else {
+        mutating func add(item: ChatViewItemProtocol, force: Bool = false) -> Int? {
+            guard !knownItems.contains(item.id) || force else {
                 return nil;
             }
             knownItems.insert(item.id);
@@ -340,7 +354,7 @@ class ChatViewDataSource {
                     start = idx;
                 }
             }
-            return items[start].timestamp < timestamp  ? (start - 1) : start;
+            return items[start].timestamp < timestamp  ? (start) : start + 1;
         }
     }
     

@@ -139,6 +139,7 @@
 		FEF9D12B2082804E00B09B6C /* TigaseSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF9D12A2082804E00B09B6C /* TigaseSwift.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		FEFFF7CD232FCF25004CB9CE /* ConversationDetails.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEFFF7CC232FCF25004CB9CE /* ConversationDetails.storyboard */; };
 		FEFFF7CF23313B52004CB9CE /* db-schema-5.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEFFF7CE23313B52004CB9CE /* db-schema-5.sql */; };
+		FEFFF7D12334E71B004CB9CE /* ChatMessageSystemCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEFFF7D02334E71B004CB9CE /* ChatMessageSystemCellView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -313,6 +314,7 @@
 		FEF9D12C2082808C00B09B6C /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
 		FEFFF7CC232FCF25004CB9CE /* ConversationDetails.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ConversationDetails.storyboard; sourceTree = "<group>"; };
 		FEFFF7CE23313B52004CB9CE /* db-schema-5.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-5.sql"; sourceTree = "<group>"; };
+		FEFFF7D02334E71B004CB9CE /* ChatMessageSystemCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageSystemCellView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -473,6 +475,7 @@
 				FEC5DC8321553A7500AA3E4F /* AbstractChatViewController.swift */,
 				FE4E8DDB215F72130010D88E /* AbstractChatView_ShareExtension.swift */,
 				FE5202D6227F339D00644C12 /* BaseChatMessageCellView.swift */,
+				FEFFF7D02334E71B004CB9CE /* ChatMessageSystemCellView.swift */,
 			);
 			path = chat;
 			sourceTree = "<group>";
@@ -860,6 +863,7 @@
 				FEDE6AF52143D8130019170A /* ChatsListTableRowView.swift in Sources */,
 				FE41FB43215CDAF900AD86D3 /* XMPPClient_extension.swift in Sources */,
 				FE41FB41215CDA6000AD86D3 /* MessageEventHandler.swift in Sources */,
+				FEFFF7D12334E71B004CB9CE /* ChatMessageSystemCellView.swift in Sources */,
 				FE8C9F5621B40F9000BE8332 /* RegisterAccountController.swift in Sources */,
 				FE5BE64E213AD19A00463183 /* ChatCellViewMessage.swift in Sources */,
 				FE5202D7227F339D00644C12 /* BaseChatMessageCellView.swift in Sources */,
@@ -1097,6 +1101,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 47;
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1123,6 +1128,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 47;
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",

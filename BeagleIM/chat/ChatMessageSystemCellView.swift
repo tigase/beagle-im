@@ -1,8 +1,8 @@
 //
-// ChatViewDataSourceDelegate.swift
+// ChatMessageSystemCellView.swift
 //
 // BeagleIM
-// Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2019 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,22 +19,11 @@
 // If not, see https://www.gnu.org/licenses/.
 //
 
-import Foundation
-import TigaseSwift
 
-protocol ChatViewDataSourceDelegate: class {
-    
-    var account: BareJID! { get }
-    var jid: BareJID! { get }
-    var chat: DBChatProtocol! { get }
-    
-    func itemAdded(at: IndexSet);
+import AppKit
 
-    func itemsUpdated(forRowIndexes: IndexSet);
+class ChatMessageSystemCellView: NSTableCellView {
     
-    func itemUpdated(indexPath: IndexPath);
+    @IBOutlet var message: NSTextField!;
     
-    func itemsRemoved(at: IndexSet);
-    
-    func itemsReloaded();
 }
