@@ -155,7 +155,10 @@ open class DBChatStore {
     
     func getChat(for account: BareJID, with jid: BareJID) -> DBChatProtocol? {
         return dispatcher.sync {
-            return accountChats[account]?.get(with: jid);
+            if let accountChats = self.accountChats[account] {
+                return accountChats.get(with: jid);
+            }
+            return nil;
         }
     }
     
