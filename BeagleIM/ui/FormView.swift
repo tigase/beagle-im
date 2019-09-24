@@ -61,7 +61,7 @@ class FormView: NSGridView, NSTextFieldDelegate {
             (field as? NSTextField)?.delegate = self;
         }
         self.addRow(with: [label, field]);
-        (label as? NSTextField)?.alignment = .right;
+        label.alignment = .right;
         self.column(at: 0).xPlacement = .trailing;
         return field;
     }

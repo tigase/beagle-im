@@ -152,7 +152,7 @@ open class OMEMOContoller: NSViewController, AccountAware, NSTableViewDataSource
         }
 
         selected.forEach { (identity) in
-            DBOMEMOStore.instance.setStatus(identity.status.make(active: active, trust: trust), forIdentity: identity.address, andAccount: account);
+            _ = DBOMEMOStore.instance.setStatus(identity.status.make(active: active, trust: trust), forIdentity: identity.address, andAccount: account);
         }
         self.refresh();
     }

@@ -103,7 +103,7 @@ class ChangePasswordController: NSViewController, NSTextFieldDelegate {
             return;
         }
         acc.password = newPassword;
-        AccountManager.save(account: acc);
+        _ = AccountManager.save(account: acc);
         let alert = NSAlert();
         alert.icon = NSImage(named: NSImage.infoName);
         alert.messageText = "Password changed";

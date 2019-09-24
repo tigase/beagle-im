@@ -171,7 +171,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
                             return !CharacterSet.alphanumerics.contains(c.unicodeScalars.first!);
                         }
                         let suffix = (afterIdx != nil) ? ((afterIdx! != after.startIndex) ? after[after.startIndex...after.index(before: afterIdx!)] : nil) : after;
-                        print("got:", prefix, suffix, "\(String(prefix))\(String(suffix ?? ""))");
+                        print("got:", prefix, suffix as Any, "\(String(prefix))\(String(suffix ?? ""))");
                         let attrStr = NSMutableAttributedString(attributedString: messageView.message.attributedStringValue);
                         let len = (prefix.count + (suffix?.count ?? 0));
                         attrStr.addAttribute(.backgroundColor, value: NSColor.selectedTextBackgroundColor, range: NSRange(location: before.count - prefix.count,  length: len));
@@ -458,7 +458,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         guard let since = ts else {
             return;
         }
-        print("marking as read:", account, "jid:", jid, "before:", since);
+        print("marking as read:", account as Any, "jid:", jid as Any, "before:", since);
         DBChatHistoryStore.instance.markAsRead(for: self.account, with: self.jid, before: since);
     }
     

@@ -324,7 +324,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
                             }, completionHandler: {
                                 DispatchQueue.main.async {
                                     self.refreshEncryptionStatus();
-                                    self.sendUnencryptedMessage(body: body, url: url);
+                                    _ = self.sendUnencryptedMessage(body: body, url: url);
                                 }
                             })
                         default:

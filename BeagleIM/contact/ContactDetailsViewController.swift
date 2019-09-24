@@ -161,7 +161,7 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
         } else {
             muteNotifications.isEnabled = false;
         }
-        print("got:", account, "and:", jid);
+        print("got:", account as Any, "and:", jid as Any);
     }
     
     @IBAction func muteNotificcationsChanged(_ sender: NSButton) {
@@ -320,7 +320,7 @@ class IdentityView: NSView {
             trust = .undecided;
         }
         print("selected:", sender.indexOfSelectedItem, "trust:", trust);
-        DBOMEMOStore.instance.setStatus(identity.status.toTrust(trust), forIdentity: identity.address, andAccount: self.account);
+        _ = DBOMEMOStore.instance.setStatus(identity.status.toTrust(trust), forIdentity: identity.address, andAccount: self.account);
         self.fingerprintView.textColor = trust == .compromised ? NSColor.systemRed : NSColor.labelColor;
     }
     
@@ -791,7 +791,7 @@ open class ContactDetailsViewController1: NSViewController, NSTableViewDelegate 
             trust = .undecided;
         }
         let identity = identitiesTableView.identities[sender.tag];
-        DBOMEMOStore.instance.setStatus(identity.status.toTrust(trust), forIdentity: identity.address, andAccount: self.account);
+        _ = DBOMEMOStore.instance.setStatus(identity.status.toTrust(trust), forIdentity: identity.address, andAccount: self.account);
         DispatchQueue.main.async {
             self.refresh();
         }

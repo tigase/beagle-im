@@ -61,10 +61,10 @@ class NetworkSettingsController: NSViewController {
             if forceRelayCheckbox.state == .on {
                 urlComponents.queryItems = [URLQueryItem(name: "forceRelay", value: "true")]
             }
-            print("url:", urlComponents.string, "parts:", urlComponents)
+            print("url:", urlComponents.string as Any, "parts:", urlComponents)
             urlComponents.user = usernameTextField.stringValue.isEmpty ? nil :  usernameTextField.stringValue;
             urlComponents.password = passwordTextField.stringValue.isEmpty ? nil : passwordTextField.stringValue;
-            print("url:", urlComponents.string, "parts:", urlComponents)
+            print("url:", urlComponents.string as Any, "parts:", urlComponents)
             Settings.turnServer.set(value: urlComponents.string);
         }
     }

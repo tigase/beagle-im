@@ -155,7 +155,7 @@ class ChatViewDataSource {
     
     func refreshDataNoReload() {
         queue.async {
-            var store = DispatchQueue.main.sync { return self.store; };
+            let store = DispatchQueue.main.sync { return self.store; };
             DispatchQueue.main.async {
                 self.store = store;
                 self.delegate?.itemsReloaded();

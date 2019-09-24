@@ -114,7 +114,6 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
                 view.alignment = labelsToRight ? .right : .left;
                 view.lineBreakMode = .byWordWrapping;
                 view.cell?.lineBreakMode = .byWordWrapping;
-                (view.cell as? NSTextFieldCell)
                 view.isEditable = false;
                 view.isSelectable = false;
                 view.translatesAutoresizingMaskIntoConstraints = false;

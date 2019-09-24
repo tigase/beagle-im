@@ -235,10 +235,10 @@ class DBOMEMOStore {
     }
     
     func wipe(forAccount account: BareJID) {
-        try! wipeSessionsStoreStmt.update(["account": account] as [String: Any?]);
-        try! wipePreKeyStoreStmt.update(["account": account] as [String: Any?]);
-        try! wipeSignedPreKeyStoreStmt.update(["account": account] as [String: Any?]);
-        try! wipeIdentitiesKeyStoreStmt.update(["account": account] as [String: Any?]);
+        _ = try! wipeSessionsStoreStmt.update(["account": account] as [String: Any?]);
+        _ = try! wipePreKeyStoreStmt.update(["account": account] as [String: Any?]);
+        _ = try! wipeSignedPreKeyStoreStmt.update(["account": account] as [String: Any?]);
+        _ = try! wipeIdentitiesKeyStoreStmt.update(["account": account] as [String: Any?]);
     }
 }
 

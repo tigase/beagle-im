@@ -437,7 +437,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
             urlComponents.user = nil;
             urlComponents.password = nil;
             let server = urlComponents.string!.replacingOccurrences(of: "/", with: "");
-            print("turn server:", server, "user:", username, "pass:", password);
+            print("turn server:", server, "user:", username as Any, "pass:", password as Any);
             iceServers.append(RTCIceServer(urlStrings: [server], username: username, credential: password, tlsCertPolicy: .insecureNoCheck));
             let forceRelay = urlComponents.queryItems?.filter({ item in
                 item.name == "forceRelay" && item.value == "true"

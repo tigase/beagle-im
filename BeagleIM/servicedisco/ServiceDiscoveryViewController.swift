@@ -111,9 +111,9 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
     
     func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
         if let it = item as? Item {
-            return it.subitems?[index];
+            return it.subitems?[index] as Any;
         }
-        return rootItem?.subitems?[index];
+        return rootItem?.subitems?[index] as Any;
     }
     
     func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
@@ -373,7 +373,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                     // nothing to do..
                 })
             }
-            print("error", error);
+            print("error", error as Any);
         }
     }
     

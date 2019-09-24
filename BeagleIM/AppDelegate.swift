@@ -293,7 +293,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             }
         case .roster:
             DispatchQueue.main.async {
-                print("uri:", uri.jid, "dict:", uri.dict);
+                print("uri:", uri.jid, "dict:", uri.dict as Any);
                 let rosterWindow = self.rosterWindow;
                 rosterWindow.makeKeyAndOrderFront(self);
                 if let addContact = self.mainWindowController?.storyboard?.instantiateController(withIdentifier: "AddContactController") as? AddContactController {

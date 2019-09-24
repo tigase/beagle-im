@@ -63,7 +63,7 @@ class SelectAdHocCommandController: NSViewController {
             DispatchQueue.main.async {
                 self.progressIndicator.stopAnimation(self);
             }
-            print("error:", error);
+            print("error:", error as Any);
         }
     }
     
@@ -73,7 +73,7 @@ class SelectAdHocCommandController: NSViewController {
     
     @IBAction func executeClicked(_ sender: NSButton) {
         let item = items[commendSelector.indexOfSelectedItem];
-        print("executing command", item.node, "at", item.jid);
+        print("executing command", item.node as Any, "at", item.jid);
         
         guard let windowController = self.storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier("ExecuteAdhocWindowController")) as? NSWindowController, let viewController = windowController.contentViewController as? ExecuteAdHocCommandController else {
             return;
