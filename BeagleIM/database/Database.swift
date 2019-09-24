@@ -46,7 +46,7 @@ open class DBConnection {
     }
     
     init(dbFilename:String) throws {
-        dispatcher = QueueDispatcher(queue: DispatchQueue(label: "db_queue"), queueTag: DispatchSpecificKey<DispatchQueue?>());
+        dispatcher = QueueDispatcher(label: "db_queue");
         
         try dispatcher.sync {
             let paths = NSSearchPathForDirectoriesInDomains(.applicationSupportDirectory, .userDomainMask, true);
@@ -135,7 +135,7 @@ open class DBStatement {
         return connection.changesCount;
     }
     
-    init(connection:DBConnection, query:String, dispatcher: QueueDispatcher = QueueDispatcher(queue: DispatchQueue(label: "DBStatementDispatcher"), queueTag: DispatchSpecificKey<DispatchQueue?>())) throws {
+    init(connection:DBConnection, query:String, dispatcher: QueueDispatcher = QueueDispatcher(label: "DBStatementDispatcher")) throws {
         self.connection = connection;
         self.dispatcher = dispatcher;
         _ = try connection.check(sqlite3_prepare_v2(connection.handle, query, -1, &handle, nil));

@@ -114,7 +114,7 @@ open class DBChatStore {
     }
 
     public init() {
-        self.dispatcher = QueueDispatcher(label: "chat_store");
+        self.dispatcher = QueueDispatcher(label: "db_chat_store");
         
         openChatStmt = try! DBConnection.main.prepareStatement(DBChatStore.OPEN_CHAT);
         openRoomStmt = try! DBConnection.main.prepareStatement(DBChatStore.OPEN_ROOM);

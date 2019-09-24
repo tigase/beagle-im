@@ -26,7 +26,7 @@ class DBRosterStoreWrapper: RosterStore {
     
     fileprivate var roster = [JID: DBRosterItem]();
     
-    fileprivate var queue = DispatchQueue(label: "roster_store_queue", attributes: DispatchQueue.Attributes.concurrent);
+    fileprivate var queue = DispatchQueue(label: "db_roster_store_wrapper", attributes: DispatchQueue.Attributes.concurrent);
     
     fileprivate let sessionObject: SessionObject;
     fileprivate let store = DBRosterStore.instance;
@@ -120,7 +120,7 @@ open class DBRosterStore {
     fileprivate let deleteItemGroupsStmt: DBStatement;
     
     public init() {
-        self.dispatcher = QueueDispatcher(label: "roster_store");
+        self.dispatcher = QueueDispatcher(label: "db_roster_store");
         
         insertItemStmt = try! DBConnection.main.prepareStatement("INSERT INTO roster_items (account, jid, name, subscription, timestamp, ask) VALUES (:account, :jid, :name, :subscription, :timestamp, :ask)");
         updateItemStmt = try! DBConnection.main.prepareStatement("UPDATE roster_items SET name = :name, subscription = :subscription, timestamp = :timestamp, ask = :ask WHERE id = :id");
