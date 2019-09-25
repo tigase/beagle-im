@@ -3114,10 +3114,10 @@ AAAAAAEGA
                                 <rect key="frame" x="0.0" y="30" width="400" height="263"/>
                                 <subviews>
                                     <customView translatesAutoresizingMaskIntoConstraints="NO" id="Zah-Im-z0B">
-                                        <rect key="frame" x="0.0" y="0.0" width="200" height="263"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="199" height="263"/>
                                         <subviews>
                                             <scrollView verticalHuggingPriority="249" borderType="none" autohidesScrollers="YES" horizontalLineScroll="17" horizontalPageScroll="10" verticalLineScroll="17" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xEj-nj-qPf">
-                                                <rect key="frame" x="0.0" y="12" width="199" height="263"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="199" height="263"/>
                                                 <clipView key="contentView" copiesOnScroll="NO" id="ZEQ-Qr-EIY">
                                                     <rect key="frame" x="0.0" y="0.0" width="199" height="263"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -3274,10 +3274,10 @@ AAAAAAEGA
                                         </constraints>
                                     </customView>
                                     <customView translatesAutoresizingMaskIntoConstraints="NO" id="VJJ-Aj-NHT">
-                                        <rect key="frame" x="201" y="0.0" width="199" height="263"/>
+                                        <rect key="frame" x="200" y="0.0" width="200" height="263"/>
                                         <subviews>
                                             <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="40" horizontalPageScroll="10" verticalLineScroll="40" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qPg-RH-BHf">
-                                                <rect key="frame" x="0.0" y="12" width="200" height="263"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="200" height="263"/>
                                                 <clipView key="contentView" copiesOnScroll="NO" id="KfR-1C-rOz">
                                                     <rect key="frame" x="0.0" y="0.0" width="200" height="263"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
