@@ -41,6 +41,8 @@ class ChatMessageCellView: BaseChatMessageCellView {
         var timestampStr: NSMutableAttributedString? = nil;
 
         switch item.state {
+        case .outgoing_unsent:
+            timestampStr = NSMutableAttributedString(string: "\u{1f4e4}");
         case .outgoing_delivered:
             timestampStr = NSMutableAttributedString(string: "\u{2713}");
         case .outgoing_error, .outgoing_error_unread:
@@ -62,10 +64,10 @@ class ChatMessageCellView: BaseChatMessageCellView {
         }
         
         if timestampStr != nil {
-            timestampStr!.append(NSMutableAttributedString(string: " " + formatTimestamp(item.timestamp)));
+            timestampStr!.append(item.state == .outgoing_unsent ? NSAttributedString(string: " Unsent") : NSMutableAttributedString(string: " " + formatTimestamp(item.timestamp)));
             self.timestamp.attributedStringValue = timestampStr!;
         } else {
-            self.timestamp.attributedStringValue = NSMutableAttributedString(string: formatTimestamp(item.timestamp));
+            self.timestamp.attributedStringValue = item.state == .outgoing_unsent ? NSAttributedString(string: "Unsent") : NSMutableAttributedString(string: formatTimestamp(item.timestamp));
         }
         super.set(message: item);
     }

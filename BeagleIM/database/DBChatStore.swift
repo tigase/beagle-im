@@ -89,6 +89,7 @@ open class DBChatStore {
     fileprivate static let CLOSE_CHAT = "DELETE FROM chats WHERE id = :id";
     fileprivate static let LOAD_CHATS = "SELECT c.id, c.type, c.jid, c.name, c.nickname, c.password, c.timestamp as creation_timestamp, last.timestamp as timestamp, last1.data, last1.encryption as lastEncryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))) as unread, c.options FROM chats c LEFT JOIN (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account GROUP BY ch.account, ch.jid) last ON c.jid = last.jid AND c.account = last.account LEFT JOIN chat_history last1 ON last1.account = c.account AND last1.jid = c.jid AND last1.timestamp = last.timestamp WHERE c.account = :account";
     fileprivate static let GET_LAST_MESSAGE = "SELECT last.timestamp as timestamp, last1.data, last1.encryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))) as unread FROM (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.jid = :jid GROUP BY ch.account, ch.jid) last LEFT JOIN chat_history last1 ON last1.account = last.account AND last1.jid = last.jid AND last1.timestamp = last.timestamp";
+    fileprivate static let GET_LAST_MESSAGE_TIMESTAMP_FOR_ACCOUNT = "SELECT max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.state <> \(MessageState.outgoing_unsent.rawValue)";
     fileprivate static let UPDATE_CHAT_NAME = "UPDATE chats SET name = :name WHERE account = :account AND jid = :jid";
     fileprivate static let UPDATE_CHAT_OPTIONS = "UPDATE chats SET options = ? WHERE account = ? AND jid = ?";
     fileprivate static let CHANGE_CHAT_ENCRYPTION = "UPDATE chats SET encryption = :encryption WHERE account = :account AND jid = :jid";
@@ -98,6 +99,7 @@ open class DBChatStore {
     fileprivate let openChatStmt: DBStatement;
     fileprivate let openRoomStmt: DBStatement;
     fileprivate let getLastMessageStmt: DBStatement;
+    fileprivate let getLastMessageTimestampForAccountStmt: DBStatement;
     fileprivate let updateChatOptionsStmt: DBStatement;
     fileprivate let updateChatNameStmt: DBStatement;
     fileprivate let changeChatEncryptionStmt: DBStatement;
@@ -120,6 +122,7 @@ open class DBChatStore {
         openRoomStmt = try! DBConnection.main.prepareStatement(DBChatStore.OPEN_ROOM);
         closeChatStmt = try! DBConnection.main.prepareStatement(DBChatStore.CLOSE_CHAT);
         getLastMessageStmt = try! DBConnection.main.prepareStatement(DBChatStore.GET_LAST_MESSAGE);
+        getLastMessageTimestampForAccountStmt = try! DBConnection.main.prepareStatement(DBChatStore.GET_LAST_MESSAGE_TIMESTAMP_FOR_ACCOUNT);
         updateChatNameStmt = try! DBConnection.main.prepareStatement(DBChatStore.UPDATE_CHAT_NAME);
         updateChatOptionsStmt = try! DBConnection.main.prepareStatement(DBChatStore.UPDATE_CHAT_OPTIONS);
         changeChatEncryptionStmt = try! DBConnection.main.prepareStatement(DBChatStore.CHANGE_CHAT_ENCRYPTION);
@@ -230,9 +233,11 @@ open class DBChatStore {
     }
     
     func lastMessageTimestamp(for account: BareJID) -> Date {
-        return mapChats(for: account, map: { chats -> Date? in
-            return chats?.lastMessageTimestamp();
-        }) ?? Date(timeIntervalSince1970: 0);
+        return dispatcher.sync {
+            return try! self.getLastMessageTimestampForAccountStmt.findFirst(["account": account] as [String: Any?], map: { (cursor) -> Date? in
+                return cursor["timestamp"];
+            }) ?? Date(timeIntervalSince1970: 0);
+        }
     }
     
     func process(chatState remoteChatState: ChatState, for account: BareJID, with jid: BareJID) {
@@ -244,7 +249,7 @@ open class DBChatStore {
         }
     }
     
-    func newMessage(for account: BareJID, with jid: BareJID, timestamp: Date, message: String?, state: MessageState, remoteChatState: ChatState? = nil) {
+    func newMessage(for account: BareJID, with jid: BareJID, timestamp: Date, message: String?, state: MessageState, remoteChatState: ChatState? = nil, completionHandler: @escaping ()->Void) {
         dispatcher.async {
             if let chat = self.getChat(for: account, with: jid) {
                 if chat.updateLastMessage(message, timestamp: timestamp, isUnread: state.isUnread) {
@@ -257,6 +262,7 @@ open class DBChatStore {
                     NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: chat);
                 }
             }
+            completionHandler();
         }
     }
     
@@ -600,7 +606,7 @@ open class DBChatStore {
             return nil;
         }
         
-        override func createMessage(_ body: String, type: StanzaType, subject: String?, additionalElements: [Element]?) -> Message {
+        override func createMessage(_ body: String, type: StanzaType = .chat, subject: String? = nil, additionalElements: [Element]? = nil) -> Message {
             let stanza = super.createMessage(body, type: type, subject: subject, additionalElements: additionalElements);
             stanza.id = UUID().uuidString;
             self.localChatState = .active;

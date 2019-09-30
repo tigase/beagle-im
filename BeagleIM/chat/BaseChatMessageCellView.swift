@@ -83,10 +83,16 @@ class BaseChatMessageCellView: NSTableCellView {
         if Settings.enableMarkdownFormatting.bool() {
             Markdown.applyStyling(attributedString: msg, showEmoticons: Settings.showEmoticons.bool());
         }
+        
+        if let errorMessage = item.error {
+            msg.append(NSAttributedString(string: "\n------\n\(errorMessage)", attributes: [.foregroundColor : NSColor.systemRed]));
+        }
 
         switch item.state {
         case .incoming_error, .incoming_error_unread:
             self.message.textColor = NSColor.red;
+        case .outgoing_unsent:
+            self.message.textColor = NSColor.secondaryLabelColor;
         default:
             self.message.textColor = nil;//NSColor.textColor;
         }
@@ -156,7 +162,14 @@ class BaseChatMessageCellView: NSTableCellView {
     }
 
     fileprivate func messageBody(item: ChatMessage) -> String {
-        return item.encryption.message() ?? item.message;
+        guard let msg = item.encryption.message() else {
+//            guard let error = item.error else {
+//                return item.message;
+//            }
+//            return "\(item.message)\n-----\n\(error)";
+            return item.message;
+        }
+        return msg;
     }
 
     func formatTimestamp(_ ts: Date) -> String {

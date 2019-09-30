@@ -118,6 +118,8 @@ class XmppService: EventHandler {
         }
     }
     
+    let tasksQueue = KeyedTasksQueue();
+    
     init() {
         let accountNames = AccountManager.getActiveAccounts();
         

@@ -28,6 +28,7 @@ class DBChatHistoryStore {
     // TODO: it looks like it is not working as expected. We should remove this notification in the future
     static let MESSAGES_MARKED_AS_READ = Notification.Name("messagesMarkedAsRead");
     static let MESSAGE_UPDATED = Notification.Name("messageUpdated");
+    static let MESSAGE_REMOVED = Notification.Name("messageRemoved");
     static var instance: DBChatHistoryStore = DBChatHistoryStore.init();
 
     fileprivate let appendMessageStmt: DBStatement = try! DBConnection.main.prepareStatement("INSERT INTO chat_history (account, jid, timestamp, item_type, data, stanza_id, state, author_nickname, author_jid, encryption, fingerprint) VALUES (:account, :jid, :timestamp, :item_type, :data, :stanza_id, :state, :author_nickname, :author_jid, :encryption, :fingerprint)");
@@ -35,19 +36,23 @@ class DBChatHistoryStore {
     fileprivate let markAsReadStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET state = case state when \(MessageState.incoming_error_unread.rawValue) then \(MessageState.incoming_error.rawValue) when \(MessageState.outgoing_error_unread.rawValue) then \(MessageState.outgoing_error.rawValue) else \(MessageState.incoming.rawValue) end WHERE account = :account AND jid = :jid AND state in (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))");
     fileprivate let markAsReadBeforeStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET state = case state when \(MessageState.incoming_error_unread.rawValue) then \(MessageState.incoming_error.rawValue) when \(MessageState.outgoing_error_unread.rawValue) then \(MessageState.outgoing_error.rawValue) else \(MessageState.incoming.rawValue) end WHERE account = :account AND jid = :jid AND timestamp <= :before AND state in (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))");
     fileprivate let markMessageAsReadStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET state = case state when \(MessageState.incoming_error_unread.rawValue) then \(MessageState.incoming_error.rawValue) when \(MessageState.outgoing_error_unread.rawValue) then \(MessageState.outgoing_error.rawValue) else \(MessageState.incoming.rawValue) end WHERE id = :id AND account = :account AND jid = :jid AND state in (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))");
-    fileprivate let updateItemStateStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET state = :newState WHERE id = :id AND (:oldState IS NULL OR state = :oldState)");
+    fileprivate let updateItemStateStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET state = :newState, timestamp = COALESCE(:newTimestamp, timestamp) WHERE id = :id AND (:oldState IS NULL OR state = :oldState)");
     fileprivate let updateItemStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET preview = coalesce(:preview, preview) WHERE id = :id");
     fileprivate let markAsErrorStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET state = :state, error = :error WHERE id = :id");
     fileprivate let countItemsStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid")
     
     fileprivate let getItemIdByStanzaId: DBStatement = try! DBConnection.main.prepareStatement("SELECT id FROM chat_history WHERE account = :account AND jid = :jid AND stanza_id = :stanza_id ORDER BY timestamp DESC");
-    fileprivate let getChatMessagesStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint FROM chat_history WHERE account = :account AND jid = :jid ORDER BY timestamp DESC LIMIT :limit OFFSET :offset");
-    fileprivate let getChatMessageWithIdStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint FROM chat_history WHERE id = :id");
+    fileprivate let getChatMessagesStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error FROM chat_history WHERE account = :account AND jid = :jid ORDER BY timestamp DESC LIMIT :limit OFFSET :offset");
+    fileprivate let getChatMessageWithIdStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error FROM chat_history WHERE id = :id");
 
     fileprivate let getChatMessagePosition: DBStatement = try! DBConnection.main.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND id <> :msgId AND timestamp > (SELECT timestamp FROM chat_history WHERE id = :msgId)")
     fileprivate let removeChatHistoryStmt: DBStatement = try! DBConnection.main.prepareStatement("DELETE FROM chat_history WHERE account = :account AND (:jid IS NULL OR jid = :jid)");
     
     fileprivate let searchHistoryStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT chat_history.id as id, chat_history.account as account, chat_history.jid as jid, author_nickname, author_jid, chat_history.timestamp as timestamp, item_type, chat_history.data as data, state, preview, chat_history.encryption as encryption, fingerprint FROM chat_history INNER JOIN chat_history_fts_index ON chat_history.id = chat_history_fts_index.rowid LEFT JOIN chats ON chats.account = chat_history.account AND chats.jid = chat_history.jid WHERE (chats.id IS NOT NULL OR chat_history.author_nickname is NULL) AND chat_history_fts_index MATCH :query AND (:account IS NULL OR chat_history.account = :account) AND (:jid IS NULL OR chat_history.jid = :jid) ORDER BY chat_history.timestamp DESC")
+    
+    fileprivate let getUnsentMessagesForAccountStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT ch.account as account, ch.jid as jid, ch.data as data, ch.stanza_id as stanza_id, ch.encryption as encryption FROM chat_history ch WHERE ch.account = :account AND ch.state = \(MessageState.outgoing_unsent.rawValue) ORDER BY timestamp ASC");
+
+    fileprivate let removeItemStmt: DBStatement = try! DBConnection.main.prepareStatement("DELETE FROM chat_history WHERE id = :id");
     
     fileprivate let dispatcher: QueueDispatcher;
     
@@ -80,9 +85,10 @@ class DBChatHistoryStore {
             }
             completionHandler?(msgId);
             
-            let item = ChatMessage(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, message: data, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint);
-            NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: item);
-            DBChatStore.instance.newMessage(for: account, with: jid, timestamp: timestamp, message: encryption.message() ?? data, state: state, remoteChatState: state.direction == .incoming ? chatState : nil);
+            let item = ChatMessage(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, message: data, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage);
+            DBChatStore.instance.newMessage(for: account, with: jid, timestamp: timestamp, message: encryption.message() ?? data, state: state, remoteChatState: state.direction == .incoming ? chatState : nil) {
+                NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: item);
+            }
         }
     }
     
@@ -102,9 +108,16 @@ class DBChatHistoryStore {
         guard try! self.markAsErrorStmt.update(params) > 0 else {
             return false;
         }
-        DBChatStore.instance.newMessage(for: account, with: jid, timestamp: Date(timeIntervalSince1970: 0), message: nil, state: .outgoing_error_unread);
-        itemUpdated(withId: itemId, for: account, with: jid);
+        DBChatStore.instance.newMessage(for: account, with: jid, timestamp: Date(timeIntervalSince1970: 0), message: nil, state: .outgoing_error_unread) {
+            self.itemUpdated(withId: itemId, for: account, with: jid);
+        }
         return true;
+    }
+    
+    open func markOutgoingAsError(for account: BareJID, with jid: BareJID, stanzaId: String, errorCondition: ErrorCondition?, errorMessage: String?) {
+        dispatcher.async {
+            _ = self.processOutgoingError(for: account, with: jid, stanzaId: stanzaId, errorCondition: errorCondition, errorMessage: errorMessage);
+        }
     }
     
     open func markAsRead(for account: BareJID, with jid: BareJID, messageId: String? = nil) {
@@ -161,23 +174,33 @@ class DBChatHistoryStore {
         }
     }
 
-    open func updateItemState(for account: BareJID, with jid: BareJID, stanzaId: String, from oldState: MessageState, to newState: MessageState) {
+    open func updateItemState(for account: BareJID, with jid: BareJID, stanzaId: String, from oldState: MessageState, to newState: MessageState, withTimestamp timestamp: Date? = nil) {
         dispatcher.async {
             guard let msgId = self.getItemId(for: account, with: jid, stanzaId: stanzaId) else {
                 return;
             }
 
-            self.updateItemState(for: account, with: jid, itemId: msgId, from: oldState, to: newState);
+            self.updateItemState(for: account, with: jid, itemId: msgId, from: oldState, to: newState, withTimestamp: timestamp);
         }
     }
 
-    open func updateItemState(for account: BareJID, with jid: BareJID, itemId msgId: Int, from oldState: MessageState, to newState: MessageState) {
+    open func updateItemState(for account: BareJID, with jid: BareJID, itemId msgId: Int, from oldState: MessageState, to newState: MessageState, withTimestamp timestamp: Date?) {
         dispatcher.async {
-            let params: [String: Any?] = ["id": msgId, "oldState": oldState.rawValue, "newState": newState.rawValue];
+            let params: [String: Any?] = ["id": msgId, "oldState": oldState.rawValue, "newState": newState.rawValue, "newTimestamp": timestamp];
             guard (try! self.updateItemStateStmt.update(params)) > 0 else {
                 return;
             }
             self.itemUpdated(withId: msgId, for: account, with: jid);
+        }
+    }
+    
+    open func removeItem(for account: BareJID, with jid: BareJID, itemId: Int) {
+        dispatcher.async {
+            let params: [String: Any?] = ["id": itemId];
+            guard (try! self.removeItemStmt.update(params)) > 0 else {
+                return;
+            }
+            self.itemRemoved(withId: itemId, for: account, with: jid);
         }
     }
     
@@ -195,6 +218,19 @@ class DBChatHistoryStore {
         }
     }
     
+    func loadUnsentMessage(for account: BareJID, completionHandler: @escaping (BareJID,BareJID,String,String,MessageEncryption)->Void) {
+        dispatcher.async {
+            try! self.getUnsentMessagesForAccountStmt.query(["account": account] as [String : Any?], forEach: { (cursor) in
+                let jid: BareJID = cursor["jid"]!;
+                let data: String = cursor["data"]!;
+                let stanzaId: String = cursor["stanza_id"]!;
+                let encryption: MessageEncryption = MessageEncryption(rawValue: cursor["encryption"] ?? 0) ?? .none;
+                
+                completionHandler(account, jid, data, stanzaId, encryption);
+            });
+        }
+    }
+    
     fileprivate func itemUpdated(withId id: Int, for account: BareJID, with jid: BareJID) {
         dispatcher.async {
             let params: [String: Any?] = ["id": id]
@@ -204,6 +240,12 @@ class DBChatHistoryStore {
                 }
                 NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_UPDATED, object: item);
             });
+        }
+    }
+    
+    fileprivate func itemRemoved(withId id: Int, for account: BareJID, with jid: BareJID) {
+        dispatcher.async {
+            NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_REMOVED, object: DeletedMessage(id: id, account: account, jid: jid));
         }
     }
     
@@ -276,6 +318,7 @@ class DBChatHistoryStore {
         let authorJid: BareJID? = cursor["author_jid"];
         let encryption: MessageEncryption = MessageEncryption(rawValue: cursor["encryption"] ?? 0) ?? .none;
         let encryptionFingerprint: String? = cursor["fingerprint"];
+        let error: String? = cursor["error"];
         
         var preview: [String: String]? = nil;
         if let previewStr: String = cursor["preview"] {
@@ -285,7 +328,7 @@ class DBChatHistoryStore {
                 preview?[String(tmp[0])] = String(tmp[1]);
             }
         }
-        return ChatMessage(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, message: message, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, preview: preview);
+        return ChatMessage(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, message: message, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, preview: preview, error: error);
     }
 }
 

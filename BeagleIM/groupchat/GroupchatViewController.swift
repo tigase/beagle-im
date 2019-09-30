@@ -45,7 +45,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     
     var room: DBChatStore.DBRoom! {
         get {
-            return self.chat as? DBChatStore.DBRoom
+            return self.chat as! DBChatStore.DBRoom;
         }
         set {
             self.chat = newValue;
@@ -266,7 +266,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         room.context.writer?.write(message);
         return true;
     }
-    
+        
     override func textDidChange(_ obj: Notification) {
         super.textDidChange(obj);
         self.messageField.complete(nil);

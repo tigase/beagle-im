@@ -229,129 +229,44 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         DispatchQueue.main.async {
             self.buddyAvatarView.update(for: jid, on: account);
             self.buddyStatusLabel.title = e.presence.status ?? "";
-
-//            NSAnimationContext.runAnimationGroup({ (_) in
-//                NSAnimationContext.current.duration = 0.5;
-//                self.buddyStatusLabel.controlView!.animator().alphaValue = 0;
-//            }, completionHandler: { () in
-//                self.buddyStatusLabel.title = e.presence.status ?? "";
-//                NSAnimationContext.runAnimationGroup({ (_) in
-//                    NSAnimationContext.current.duration = 0.5;
-//                    self.buddyStatusLabel.controlView!.animator().alphaValue = 1;
-//                }, completionHandler: nil);
-//            });
         }
         
         self.updateCapabilities();
     }
     
+    override func prepareContextMenu(_ menu: NSMenu, forRow row: Int) {
+        super.prepareContextMenu(menu, forRow: row);
+        if let item = self.dataSource.getItem(at: row) as? ChatMessage, item.state.direction == .outgoing && item.state.isError {
+            let resend = menu.addItem(withTitle: "Resend message", action: #selector(resendMessage), keyEquivalent: "");
+            resend.target = self;
+            resend.tag = item.id;
+        }
+    }
+    
+    @objc func resendMessage(_ sender: NSMenuItem) {
+        let tag = sender.tag;
+        guard tag >= 0 else {
+            return;
+        }
+
+        guard let item = dataSource.getItem(withId: tag) as? ChatMessage, let chat = self.chat as? DBChatStore.DBChat else {
+            return;
+        }
+        
+        let url = item.message.starts(with: "http:") || item.message.starts(with: "https:") ? item.message : nil;
+        MessageEventHandler.sendMessage(chat: chat, body: item.message, url: url);
+        DBChatHistoryStore.instance.removeItem(for: account, with: jid, itemId: item.id);
+    }
+    
     override func sendMessage(body: String? = nil, url: String? = nil) -> Bool {
-        guard (XmppService.instance.getClient(for: account)?.state ?? .disconnected) == .connected else {
-            return false;
-        }
-        let encryption = (self.chat as? DBChatStore.DBChat)?.options.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!;
-        if encryption == ChatEncryption.omemo {
-            return self.sendEncryptedMessage(body: body, url: url);
+        if let chat = self.chat as? DBChatStore.DBChat {
+            MessageEventHandler.sendMessage(chat: chat, body: body, url: url);
+            return true;
         } else {
-            return self.sendUnencryptedMessage(body: body, url: url);
-        }
-    }
-    
-    fileprivate func createMessage(body: String?, url: String?) -> (Message,MessageModule)? {
-        guard let msg = body ?? url else {
-            return nil;
-        }
-
-        guard let messageModule: MessageModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageModule.ID) else {
-            return nil;
-        }
-        
-        guard let chat = messageModule.chatManager.getChat(with: JID(jid), thread: nil) else {
-            return nil;
-        }
-        
-        let message = chat.createMessage(msg);
-        message.messageDelivery = MessageDeliveryReceiptEnum.request;
-        return (message, messageModule);
-    }
-    
-    fileprivate func sendUnencryptedMessage(body: String?, url: String?) -> Bool {
-        guard let (message, messageModule) = createMessage(body: body, url: url) else {
             return false;
         }
-
-        let msg = message.body!;
-        message.oob = url;
-        messageModule.context.writer?.write(message);
-        let stanzaId = message.id;
-        
-        DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing, type: .message, timestamp: Date(), stanzaId: stanzaId, data: msg, encryption: MessageEncryption.none, encryptionFingerprint: nil, completionHandler: nil);
-        
-        return true;
     }
-    
-    fileprivate func sendEncryptedMessage(body: String?, url: String?) -> Bool {
-        guard let (message, messageModule) = createMessage(body: body, url: url) else {
-            return false;
-        }
         
-        let msg = message.body!;
-
-        guard let omemoModule: OMEMOModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(OMEMOModule.ID) else {
-            print("NO OMEMO MODULE!");
-            return false;
-        }
-        let account = self.account!;
-        let jid = self.jid!;
-        let completionHandler: ((EncryptionResult<Message, SignalError>)->Void)? = { (result) in
-            switch result {
-            case .failure(let error):
-                switch error {
-                case .noSession:
-                    let alert = NSAlert();
-                    alert.messageText = "Could not send a message"
-                    alert.informativeText = "It was not possible to send encrypted message as there is no trusted device.\n\nWould you like to disable encryption for this chat and send a message?"
-                    alert.addButton(withTitle: "No")
-                    alert.addButton(withTitle: "Yes")
-                    alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
-                        switch response {
-                        case .alertSecondButtonReturn:
-                            guard let chat = self.chat as? DBChatStore.DBChat else {
-                                return;
-                            }
-                            chat.modifyOptions({ (options) in
-                                options.encryption = ChatEncryption.none;
-                            }, completionHandler: {
-                                DispatchQueue.main.async {
-                                    self.refreshEncryptionStatus();
-                                    _ = self.sendUnencryptedMessage(body: body, url: url);
-                                }
-                            })
-                        default:
-                            return;
-                        }
-                    })
-                default:
-                    let alert = NSAlert();
-                    alert.messageText = "Could not send message"
-                    alert.informativeText = "It was not possible to send encrypted message due to encryption error";
-                    alert.addButton(withTitle: "OK")
-                    alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
-                    break;
-                }
-                break;
-            case .successMessage(let encryptedMessage, let fingerprint):
-                self.messageField.reset();
-                self.updateMessageFieldSize();
-                let stanzaId = message.id;
-                
-                DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing, type: .message, timestamp: Date(), stanzaId: stanzaId, data: msg, encryption: .decrypted, encryptionFingerprint: fingerprint, completionHandler: nil);
-            }
-        };
-        
-        return omemoModule.send(message: message, completionHandler: completionHandler!);
-    }
-    
     fileprivate func updateCapabilities() {
         let supported = JingleManager.instance.support(for: JID(jid), on: account);
         DispatchQueue.main.async {
@@ -460,6 +375,20 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     
 }
 
+enum MessageSendError: Error {
+    case internalError
+    case unknownError(String)
+    
+    var stanzaId: String? {
+        switch self {
+        case .unknownError(let stanzaId):
+            return stanzaId;
+        default:
+            return nil;
+        }
+    }
+}
+
 class ChatMessage: ChatViewItemProtocol {
     
     let id: Int;
@@ -471,11 +400,12 @@ class ChatMessage: ChatViewItemProtocol {
     let authorNickname: String?;
     let authorJid: BareJID?;
     let preview: [String:String]?;
+    let error: String?;
     
     let encryption: MessageEncryption;
     let encryptionFingerprint: String?;
     
-    init(id: Int, timestamp: Date, account: BareJID, jid: BareJID, state: MessageState, message: String, authorNickname: String?, authorJid: BareJID?, encryption: MessageEncryption, encryptionFingerprint: String?, preview: [String:String]? = nil) {
+    init(id: Int, timestamp: Date, account: BareJID, jid: BareJID, state: MessageState, message: String, authorNickname: String?, authorJid: BareJID?, encryption: MessageEncryption, encryptionFingerprint: String?, preview: [String:String]? = nil, error: String?) {
         self.id = id;
         self.timestamp = timestamp;
         self.account = account;
@@ -487,6 +417,7 @@ class ChatMessage: ChatViewItemProtocol {
         self.preview = preview;
         self.encryption = encryption;
         self.encryptionFingerprint = encryptionFingerprint;
+        self.error = error;
     }
  
     func isMergeable(with: ChatViewItemProtocol) -> Bool {
@@ -494,7 +425,7 @@ class ChatMessage: ChatViewItemProtocol {
             return false;
         }
         
-        return self.account == item.account && self.jid == item.jid && self.state.direction == item.state.direction && self.authorNickname == item.authorNickname && self.authorJid == item.authorJid && abs(self.timestamp.timeIntervalSince(item.timestamp)) < allowedTimeDiff() && self.encryption == item.encryption && self.encryptionFingerprint == item.encryptionFingerprint;
+        return self.account == item.account && self.jid == item.jid && self.state == item.state && self.authorNickname == item.authorNickname && self.authorJid == item.authorJid && abs(self.timestamp.timeIntervalSince(item.timestamp)) < allowedTimeDiff() && self.encryption == item.encryption && self.encryptionFingerprint == item.encryptionFingerprint;
     }
     
     func allowedTimeDiff() -> TimeInterval {

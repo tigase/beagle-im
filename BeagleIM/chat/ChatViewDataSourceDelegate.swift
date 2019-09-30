@@ -28,7 +28,7 @@ protocol ChatViewDataSourceDelegate: class {
     var jid: BareJID! { get }
     var chat: DBChatProtocol! { get }
     
-    func itemAdded(at: IndexSet);
+    func itemAdded(at: IndexSet, shouldScroll: Bool);
 
     func itemsUpdated(forRowIndexes: IndexSet);
     

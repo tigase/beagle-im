@@ -31,6 +31,13 @@ class MessageEventHandler: XmppServiceEventHandler {
         var encryption: MessageEncryption = .none;
         var fingerprint: String? = nil;
         
+        guard (message.type ?? .chat) != .error else {
+            guard let body = message.body else {
+                return ("", encryption, nil);
+            }
+            return (body, encryption, nil);
+        }
+        
         var encryptionErrorBody: String?;
         if let omemoModule: OMEMOModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(OMEMOModule.ID) {
             switch omemoModule.decode(message: message) {
@@ -61,12 +68,6 @@ class MessageEventHandler: XmppServiceEventHandler {
         
         guard let body = message.body ?? message.oob ?? encryptionErrorBody else {
             return (nil, encryption, nil);
-        }
-        guard (message.type ?? .chat) != .error else {
-            guard let error = message.errorCondition else {
-                return ("Error: Unknown error\n------\n\(body)", encryption, nil);
-            }
-            return ("Error: \(message.errorText ?? error.rawValue)\n------\n\(body)", encryption, nil);
         }
         return (body, encryption, fingerprint);
     }
@@ -135,6 +136,18 @@ class MessageEventHandler: XmppServiceEventHandler {
                 
                 syncMessages(for: account, since: syncMessagesSince);
             }
+            DBChatHistoryStore.instance.loadUnsentMessage(for: account, completionHandler: { (account, jid, data, stanzaId, encryption) in
+                
+                var chat = DBChatStore.instance.getChat(for: account, with: jid);
+                if chat == nil {
+                    chat = DBChatStore.instance.open(for: account, chat: Chat(jid: JID(jid), thread: nil));
+                }
+                
+                if let dbChat = chat as? DBChatStore.DBChat {
+                    let url = data.starts(with: "http:") || data.starts(with: "https:") ? data : nil
+                    MessageEventHandler.sendMessage(chat: dbChat, body: data, url: data, stanzaId: stanzaId);
+                }
+            });
         case let e as DiscoveryModule.ServerFeaturesReceivedEvent:
             guard Settings.enableMessageCarbons.bool() else {
                 return;
@@ -189,6 +202,125 @@ class MessageEventHandler: XmppServiceEventHandler {
             break;
         }
     }
+    
+    static func sendMessage(chat: DBChatStore.DBChat, body: String?, url: String?, encrypted: ChatEncryption? = nil, stanzaId: String? = nil) {
+            guard let msg = body ?? url else {
+                return;
+            }
+
+            let encryption = encrypted ?? chat.options.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!;
+            
+            let message = chat.createMessage(msg);
+            message.id = stanzaId ?? UUID().uuidString;
+            message.messageDelivery = .request;
+            
+            let account = chat.account;
+            let jid = chat.jid.bareJid;
+            
+            switch encryption {
+            case .omemo:
+                if stanzaId == nil {
+                    let fingerprint = DBOMEMOStore.instance.identityFingerprint(forAccount: account, andAddress: SignalAddress(name: account.stringValue, deviceId: Int32(bitPattern: DBOMEMOStore.instance.localRegistrationId(forAccount: account)!)));
+                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing_unsent, type: .message, timestamp: Date(), stanzaId: message.id, data: msg, encryption: .decrypted, encryptionFingerprint: fingerprint, completionHandler: nil);
+                }
+                XmppService.instance.tasksQueue.schedule(for: jid, task: { (completionHandler) in
+                    sendEncryptedMessage(message, from: account, completionHandler: { result in
+                        switch result {
+                        case .success(_):
+                            DBChatHistoryStore.instance.updateItemState(for: account, with: jid, stanzaId: message.id!, from: .outgoing_unsent, to: .outgoing, withTimestamp: Date());
+                        case .failure(let err):
+                            let condition = (err is ErrorCondition) ? (err as? ErrorCondition) : nil;
+                            guard condition == nil || condition! != .gone else {
+                                completionHandler();
+                                return;
+                            }
+                            
+                            var errorMessage: String? = nil;
+                            if let encryptionError = err as? SignalError {
+                                switch encryptionError {
+                                case .noSession:
+                                    errorMessage = "There is no trusted device to send message to";
+                                default:
+                                    errorMessage = "It was not possible to send encrypted message due to encryption error";
+                                }
+                            }
+                            
+                            DBChatHistoryStore.instance.markOutgoingAsError(for: account, with: jid, stanzaId: message.id!, errorCondition: .undefined_condition, errorMessage: errorMessage);
+                        }
+                        completionHandler();
+                    });
+                });
+            case .none:
+                message.oob = url;
+                if stanzaId == nil {
+                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing_unsent, type: .message, timestamp: Date(), stanzaId: message.id, data: msg, encryption: .none, encryptionFingerprint: nil, completionHandler: nil);
+                }
+                XmppService.instance.tasksQueue.schedule(for: jid, task: { (completionHandler) in
+                    sendUnencryptedMessage(message, from: account, completionHandler: { result in
+                        switch result {
+                        case .success(_):
+                            DBChatHistoryStore.instance.updateItemState(for: account, with: jid, stanzaId: message.id!, from: .outgoing_unsent, to: .outgoing, withTimestamp: Date());
+                        case .failure(let err):
+                            guard let condition = err as? ErrorCondition, condition != .gone else {
+                                completionHandler();
+                                return;
+                            }
+                            DBChatHistoryStore.instance.markOutgoingAsError(for: account, with: jid, stanzaId: message.id!, errorCondition: err as? ErrorCondition ?? .undefined_condition, errorMessage: "Could not send message");
+                        }
+                        completionHandler();
+                    });
+                });
+            }
+        }
+                
+        fileprivate static func sendUnencryptedMessage(_ message: Message, from account: BareJID, completionHandler: (Result<Void,Error>)->Void) {
+            guard let client = XmppService.instance.getClient(for: account), client.state == .connected else {
+                completionHandler(.failure(ErrorCondition.gone));
+                return;
+            }
+            
+            client.context.writer?.write(message);
+
+            completionHandler(.success(Void()));
+        }
+
+        
+        fileprivate static func sendEncryptedMessage(_ message: Message, from account: BareJID, completionHandler resultHandler: @escaping (Result<Void,Error>)->Void) {
+            
+            let msg = message.body!;
+
+            guard let omemoModule: OMEMOModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(OMEMOModule.ID) else {
+                DBChatHistoryStore.instance.updateItemState(for: account, with: message.to!.bareJid, stanzaId: message.id!, from: .outgoing_unsent, to: .outgoing_error);
+                resultHandler(.failure(ErrorCondition.unexpected_request));
+                return;
+            }
+            
+            guard let client = XmppService.instance.getClient(for: account), client.state == .connected else {
+                resultHandler(.failure(ErrorCondition.gone));
+                return;
+            }
+        
+            let jid = message.to!.bareJid;
+            let stanzaId = message.id!;
+            
+            let completionHandler: ((EncryptionResult<Message, SignalError>)->Void)? = { (result) in
+                switch result {
+                case .failure(let error):
+                    // FIXME: add support for error handling!!
+                    resultHandler(.failure(error));
+                case .successMessage(let encryptedMessage, let fingerprint):
+                    guard let client = XmppService.instance.getClient(for: account) else {
+                        resultHandler(.failure(ErrorCondition.gone));
+                        return;
+                    }
+                    client.context.writer?.write(encryptedMessage);
+                    resultHandler(.success(Void()));
+                }
+            };
+            
+            omemoModule.encode(message: message, completionHandler: completionHandler!);
+        }
+
     
     fileprivate func calculateState(direction: MessageDirection, error: Bool, unread: Bool) -> MessageState {
         if direction == .incoming {

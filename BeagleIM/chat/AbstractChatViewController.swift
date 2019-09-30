@@ -23,9 +23,9 @@ import AppKit
 import TigaseSwift
 
 class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatViewDataSourceDelegate, NSTextViewDelegate {
-    
+
     static let SCROLL_TO_MESSAGE = Notification.Name("chatScrollToMessage");
-    
+
     @IBOutlet var tableView: NSTableView!;
     @IBOutlet var messageFieldScroller: NSScrollView!;
     @IBOutlet var messageField: AutoresizingTextView!;
@@ -63,16 +63,10 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         self.messageField?.placeholderAttributedString = account != nil ? NSAttributedString(string: "from \(account.stringValue)...", attributes: [.foregroundColor: NSColor.placeholderTextColor]) : nil;
 //        self.tableView.reloadData();
         
-        self.dataSource.refreshData(unread: chat.unread) {
+        self.dataSource.refreshData(unread: chat.unread) { (firstUnread) in
             DispatchQueue.main.async {
-                let unread = self.chat.unread;
-                if unread > 0 {
-                    print("scrolling to", unread);
-                    self.tableView.scrollRowToVisible(unread);
-                } else {
-                    print("scrolling to", 0);
-                    self.tableView.scrollRowToVisible(0);
-                }
+                let unread = firstUnread ?? 0;//self.chat.unread;
+                self.tableView.scrollRowToVisible(unread);
             }
         };
         self.updateMessageFieldSize();
@@ -114,7 +108,13 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         //}
     }
     
-    var currentSession: BaseSelectionSession?;
+    var currentSession: BaseSelectionSession? {
+        willSet {
+            if newValue == nil && currentSession != nil {
+                print("changing selection!");
+            }
+        }
+    }
     
     func handleMouse(event: NSEvent) -> Bool {
         guard self.view.window?.isKeyWindow ?? false else {
@@ -313,31 +313,58 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
             }
             return true;
         case .rightMouseDown:
-            guard let messageView = messageViewFor(event: event) else {
+            guard let contentView = event.window?.contentView else {
                 return false;
             }
             let menu = NSMenu(title: "Actions");
-            if currentSession != nil {
-                var copy = menu.addItem(withTitle: "Copy text", action: #selector(copySelectedText), keyEquivalent: "");
-                copy.target = self;
-                copy = menu.addItem(withTitle: "Copy messages", action: #selector(copySelectedMessages), keyEquivalent: "");
-                copy.target = self;
-            }
-            if let idx = messageView.message.characterIndexFor(event: event)?.location, idx != 0 {
-                if let link = messageView.message.attributedStringValue.attribute(.link, at: idx, effectiveRange: nil) as? URL {
-                    var copy = menu.addItem(withTitle: "Copy link", action: #selector(copySelectedText), keyEquivalent: "");
-                    copy.target = self;
-                    copy.representedObject = link;
+            let tag = currentSession != nil ? -1 : (self.messageId(for: event) ?? -1);
+            if tag != -1 {
+                if let row = row(for: event) {
+                    self.prepareContextMenu(menu, forRow: row);
                 }
             }
+            if tag != -1 || currentSession != nil {
+                var copy = menu.addItem(withTitle: "Copy text", action: #selector(copySelectedText), keyEquivalent: "");
+                copy.target = self;
+                copy.tag = tag;
+                copy = menu.addItem(withTitle: "Copy messages", action: #selector(copySelectedMessages), keyEquivalent: "");
+                copy.target = self;
+                copy.tag = tag;
+            }
+            if let messageView = messageViewFor(event: event) {
+                if let idx = messageView.message.characterIndexFor(event: event)?.location, idx != 0 {
+                    if let link = messageView.message.attributedStringValue.attribute(.link, at: idx, effectiveRange: nil) as? URL {
+                        var copy = menu.addItem(withTitle: "Copy link", action: #selector(copySelectedText), keyEquivalent: "");
+                        copy.target = self;
+                        copy.representedObject = link;
+                    }
+                }
+            }
+
             if !menu.items.isEmpty {
-                NSMenu.popUpContextMenu(menu, with: event, for: messageView);
+                NSMenu.popUpContextMenu(menu, with: event, for: self.tableView);
             }
             return true;
         default:
             break;
         }
         return false;
+    }
+
+    func prepareContextMenu(_ menu: NSMenu, forRow row: Int) {
+        
+    }
+    
+    private func row(for event: NSEvent) -> Int? {
+        let point = self.tableView.convert(event.locationInWindow, from: nil);
+        return self.tableView.row(at: point);
+    }
+    
+    private func messageId(for event: NSEvent) -> Int? {
+        guard let row = self.row(for: event) else {
+            return nil;
+        }
+        return dataSource.getItem(at: row)?.id;
     }
     
     @objc func copySelectedText(_ sender: Any) {
@@ -348,6 +375,14 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         }
         guard let session = self.currentSession as? SelectionSession else {
             guard let selectedText = (self.currentSession as? TextSelectionSession)?.selected else {
+                guard let tag = (sender as? NSMenuItem)?.tag, tag >= 0 else {
+                    return;
+                }
+                let range = tableView.rows(in: tableView.visibleRect);
+                guard let item = dataSource.getItems(fromId: tag, toId: tag, inRange: range).first as? ChatMessage else {
+                    return;
+                }
+                NSPasteboard.general.setString(item.message, forType: .string);
                 return;
             }
             NSPasteboard.general.setString(selectedText, forType: .string);
@@ -361,11 +396,17 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         var text: [String] = [];
         if selected.count == 1 {
             let item = selected[0];
-            let message = NSAttributedString(string: item.message.emojify());
+            let message = NSMutableAttributedString(string: item.message.emojify());
+            if let errorMessage = item.error {
+                message.append(NSAttributedString(string: "\n------\n\(errorMessage)"));
+            }
             text.append(message.attributedSubstring(from: NSRange(location: startOffset, length: endOffset-startOffset)).string);
         } else {
             for (pos, item) in selected.enumerated() {
-                let message = NSAttributedString(string: item.message.emojify());
+                let message = NSMutableAttributedString(string: item.message.emojify());
+                if let errorMessage = item.error {
+                    message.append(NSAttributedString(string: "\n------\n\(errorMessage)"));
+                }
                 if pos == 0 {
                     text.append(message.attributedSubstring(from: NSRange(location: startOffset, length: message.length-startOffset)).string);
                 } else if pos == (selected.count - 1) {
@@ -381,18 +422,17 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     
     @objc func copySelectedMessages(_ sender: Any) {
         NSPasteboard.general.clearContents();
-        guard let session = self.currentSession else {
-            return;
-        }
-        var selected: [ChatMessage] = (session as? SelectionSession)?.selected ?? [];
+        var selected: [ChatMessage] = (self.currentSession as? SelectionSession)?.selected ?? [];
         if selected.isEmpty {
             let range = tableView.rows(in: tableView.visibleRect);
-            if let messageId = (session as? TextSelectionSession)?.messageId {
-                selected = dataSource.getItems(fromId: messageId, toId: messageId, inRange: range).filter { (item) -> Bool in
-                    return item as? ChatMessage != nil;
-                    }.map { (item) -> ChatMessage in
-                        return item as! ChatMessage;
-                };
+            if let messageId = (self.currentSession as? TextSelectionSession)?.messageId ?? ((sender as? NSMenuItem)?.tag) {
+                if messageId >= 0 {
+                    selected = dataSource.getItems(fromId: messageId, toId: messageId, inRange: range).filter { (item) -> Bool in
+                        return item as? ChatMessage != nil;
+                        }.map { (item) -> ChatMessage in
+                            return item as! ChatMessage;
+                    };
+                }
             }
         }
 
@@ -426,7 +466,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         let position = DBChatHistoryStore.instance.itemPosition(for: account, with: jid, msgId: messageId) ?? 0;
         
         print("found on position:", position);
-        self.dataSource.loadItems(limit: position + 20, awaitIfInProgress: true) {
+        self.dataSource.loadItems(limit: position + 20, awaitIfInProgress: true) { (firstUnread) in
             DispatchQueue.main.async {
                 self.tableView.scrollRowToVisible(position);
             }
@@ -448,7 +488,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         
         let visibleRows = self.tableView.rows(in: self.tableView.visibleRect);
         var ts: Date? = dataSource.getItem(at: visibleRows.lowerBound)?.timestamp;
-        if let tmp = dataSource.getItem(at: visibleRows.upperBound)?.timestamp {
+        if let tmp = dataSource.getItem(at: visibleRows.upperBound-1)?.timestamp {
             if ts == nil {
                 ts = tmp;
             } else if ts!.compare(tmp) == .orderedAscending {
@@ -518,8 +558,8 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         return false;
     }
     
-    func itemAdded(at rows: IndexSet) {
-        let shouldScroll = rows.contains(0) && tableView.rows(in: self.tableView.visibleRect).contains(0)
+    func itemAdded(at rows: IndexSet, shouldScroll scroll: Bool = true) {
+        let shouldScroll = scroll && rows.contains(0) && tableView.rows(in: self.tableView.visibleRect).contains(0)
         tableView.insertRows(at: rows, withAnimation: NSTableView.AnimationOptions.slideLeft)
         if (shouldScroll) {
             tableView.scrollRowToVisible(0);
@@ -527,11 +567,14 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     }
     
     func itemUpdated(indexPath: IndexPath) {
-        tableView.reloadData(forRowIndexes: [indexPath.item], columnIndexes: [0]);
+        tableView.removeRows(at: IndexSet(integer: indexPath.item), withAnimation: .effectFade);
+        tableView.insertRows(at: IndexSet(integer: indexPath.item), withAnimation: .effectFade);
+        markAsReadUpToNewestVisibleRow();
     }
     
     func itemsUpdated(forRowIndexes: IndexSet) {
         tableView.reloadData(forRowIndexes: forRowIndexes, columnIndexes: [0])
+        markAsReadUpToNewestVisibleRow();
     }
     
     func itemsRemoved(at: IndexSet) {
@@ -599,6 +642,11 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
 
         let selected: String;
 
+        init(messageId: Int, selected: String) {
+            self.selected = selected;
+            super.init(messageId: messageId);
+        }
+        
         init(messageView: BaseChatMessageCellView, selected: String) {
             self.selected = selected;
             super.init(messageId: messageView.id);
@@ -695,6 +743,29 @@ func < (lhs: NSTextField.CharacterRange, rhs: NSTextField.CharacterRange) -> Boo
 
 func == (lhs: NSTextField.CharacterRange, rhs: NSTextField.CharacterRange) -> Bool {
     return lhs.location == rhs.location;
+}
+
+class DeletedMessage: ChatViewItemProtocol {
+    
+    let id: Int;
+    let account: BareJID;
+    let jid: BareJID;
+    
+    let timestamp: Date = Date();
+    let state: MessageState = .outgoing;
+    let encryption: MessageEncryption = .none;
+    let encryptionFingerprint: String? = nil;
+
+    init(id: Int, account: BareJID, jid: BareJID) {
+        self.id = id;
+        self.account = account;
+        self.jid = jid;
+    }
+    
+    func isMergeable(with item: ChatViewItemProtocol) -> Bool {
+        return false;
+    }
+    
 }
 
 class SystemMessage: ChatViewItemProtocol {
