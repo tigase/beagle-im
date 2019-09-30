@@ -357,7 +357,8 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     
     private func row(for event: NSEvent) -> Int? {
         let point = self.tableView.convert(event.locationInWindow, from: nil);
-        return self.tableView.row(at: point);
+        let row = self.tableView.row(at: point);
+        return row >= 0 ? row : nil;
     }
     
     private func messageId(for event: NSEvent) -> Int? {
