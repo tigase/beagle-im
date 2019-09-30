@@ -131,7 +131,7 @@ class ChatViewDataSource {
             print("added", newItems.count, store.count, "items in:", Date().timeIntervalSince(start))
             DispatchQueue.main.async {
                 self.store = store;
-                self.delegate?.itemAdded(at: IndexSet(newRows), shouldScroll: firstUnread != nil);
+                self.delegate?.itemAdded(at: IndexSet(newRows), shouldScroll: firstUnread == nil);
                 completionHandler?(firstUnread);
             }
             
