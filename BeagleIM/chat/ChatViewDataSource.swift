@@ -165,6 +165,12 @@ class ChatViewDataSource {
             // do something when item needs to be updated, ie. marked as delivered or read..
             //            items[idx] = item;
             guard let oldIdx = store.remove(item: item) else {
+                if let newIdx = store.add(item: item) {
+                    DispatchQueue.main.async {
+                        self.store = store;
+                        self.delegate?.itemAdded(at: IndexSet([newIdx]), shouldScroll: true);
+                    }
+                }
                 return;
             }
 

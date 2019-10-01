@@ -277,7 +277,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         let tmp = textView.string;
         let start = tmp.index(tmp.startIndex, offsetBy: charRange.lowerBound);
         let end = tmp.index(tmp.startIndex, offsetBy: charRange.upperBound);
-        let query = textView.string[start..<end];
+        let query = textView.string[start..<end].uppercased();
         index?.initialize(to: -1);
         
         print("tmp:", tmp, "start:", start, "end:", end, "query:", query);
@@ -287,7 +287,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         }
         
         let suggestions = self.room?.presences.keys.filter({ (key) -> Bool in
-            return key.contains(query);
+            return key.uppercased().contains(query);
         }).sorted() ?? [];
         
         return suggestions.map({ name in "\(name) "});

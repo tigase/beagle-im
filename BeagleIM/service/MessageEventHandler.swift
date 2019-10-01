@@ -33,7 +33,7 @@ class MessageEventHandler: XmppServiceEventHandler {
         
         guard (message.type ?? .chat) != .error else {
             guard let body = message.body else {
-                return ("", encryption, nil);
+                return (message.to?.resource == nil ? nil : "", encryption, nil);
             }
             return (body, encryption, nil);
         }

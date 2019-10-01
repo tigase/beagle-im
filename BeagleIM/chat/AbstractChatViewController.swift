@@ -560,8 +560,12 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     }
     
     func itemAdded(at rows: IndexSet, shouldScroll scroll: Bool = true) {
-        let shouldScroll = scroll && rows.contains(0) && tableView.rows(in: self.tableView.visibleRect).contains(0)
-        tableView.insertRows(at: rows, withAnimation: NSTableView.AnimationOptions.slideLeft)
+        let shouldScroll = scroll && rows.contains(0) && tableView.rows(in: self.tableView.visibleRect).contains(0);
+        if dataSource.count == rows.count && rows.count > 1 {
+            tableView.reloadData();
+        } else {
+            tableView.insertRows(at: rows, withAnimation: NSTableView.AnimationOptions.effectFade)
+        }
         if (shouldScroll) {
             tableView.scrollRowToVisible(0);
         }
@@ -579,7 +583,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     }
     
     func itemsRemoved(at: IndexSet) {
-        tableView.removeRows(at: at, withAnimation: .slideUp);
+        tableView.removeRows(at: at, withAnimation: .effectFade);
     }
     
     func itemsReloaded() {
