@@ -29,6 +29,7 @@ class BaseChatMessageCellView: NSTableCellView {
     var id: Int = 0;
     
     @IBOutlet var message: NSTextField!
+    @IBOutlet var state: NSTextField?;
     fileprivate var direction: MessageDirection? = nil;
     
     func set(message item: ChatMessage) {
@@ -90,12 +91,22 @@ class BaseChatMessageCellView: NSTableCellView {
 
         switch item.state {
         case .incoming_error, .incoming_error_unread:
-            self.message.textColor = NSColor.red;
+            self.message.textColor = NSColor.systemRed;
+            self.state?.stringValue = "\u{203c}";
         case .outgoing_unsent:
             self.message.textColor = NSColor.secondaryLabelColor;
+            self.state?.stringValue = "\u{1f4e4}";
+        case .outgoing_delivered:
+            self.message.textColor = nil;
+            self.state?.stringValue = "\u{2713}";
+        case .outgoing_error, .outgoing_error_unread:
+            self.message.textColor = nil;
+            self.state?.stringValue = "\u{203c}";
         default:
+            self.state?.stringValue = "";
             self.message.textColor = nil;//NSColor.textColor;
         }
+        self.state?.textColor = item.state.isError ? NSColor.systemRed : NSColor.secondaryLabelColor;
         self.direction = item.state.direction;
 
         self.toolTip = BaseChatMessageCellView.tooltipFormatter.string(from: item.timestamp) + (errors.isEmpty ? "" : "\n" + errors.joined(separator: "\n"));
@@ -140,7 +151,7 @@ class BaseChatMessageCellView: NSTableCellView {
         }
         super.layout();
         if let width = self.superview?.superview?.frame.width {
-            self.message.preferredMaxLayoutWidth = width - 50;
+            self.message.preferredMaxLayoutWidth = width - 78;
         }
     }
     

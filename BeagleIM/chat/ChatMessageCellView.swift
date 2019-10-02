@@ -40,17 +40,6 @@ class ChatMessageCellView: BaseChatMessageCellView {
     override func set(message item: ChatMessage) {
         var timestampStr: NSMutableAttributedString? = nil;
 
-        switch item.state {
-        case .outgoing_unsent:
-            timestampStr = NSMutableAttributedString(string: "\u{1f4e4}");
-        case .outgoing_delivered:
-            timestampStr = NSMutableAttributedString(string: "\u{2713}");
-        case .outgoing_error, .outgoing_error_unread:
-            timestampStr = NSMutableAttributedString(string: "Not delivered\u{203c}", attributes: [.foregroundColor: NSColor.red]);
-        default:
-            break;
-        }
-
         switch item.encryption {
         case .decrypted, .notForThisDevice, .decryptionFailed:
             let secured = NSMutableAttributedString(string: "\u{1F512}");
