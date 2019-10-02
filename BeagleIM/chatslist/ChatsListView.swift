@@ -92,8 +92,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     override func viewDidLoad() {
         self.groups = [ChatsListGroupGroupchat(delegate: self), ChatsListGroupChat(delegate: self), ChatsListGroupChatUnknown(delegate: self)];
         outlineView.reloadData();
-        self.view.wantsLayer = true;
-        outlineView.expandItem(nil, expandChildren: true);
+//        outlineView.expandItem(nil, expandChildren: true);
         
         NotificationCenter.default.addObserver(self, selector: #selector(chatSelected), name: ChatsListViewController.CHAT_SELECTED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(closeSelectedChat), name: ChatsListViewController.CLOSE_SELECTED_CHAT, object: nil);
@@ -349,7 +348,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         }
         return nil;
     }
-    
+        
     func close(chat: ChatItemProtocol) {
         switch chat.chat {
         case let c as DBChatStore.DBChat:

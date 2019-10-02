@@ -87,6 +87,7 @@
 		FE6E6C0521384D5F003B1696 /* DBChatStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BF521384D5E003B1696 /* DBChatStore.swift */; };
 		FE6E6C0621384D5F003B1696 /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BF621384D5E003B1696 /* Database.swift */; };
 		FE6E6C0821384DF1003B1696 /* ChatCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6C0721384DF1003B1696 /* ChatCellView.swift */; };
+		FE7F876C2343D99300254AF2 /* CustomScroller.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7F876B2343D99300254AF2 /* CustomScroller.swift */; };
 		FE83E363217A3809001DEF09 /* JingleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE83E362217A3809001DEF09 /* JingleManager.swift */; };
 		FE83E365217B0F89001DEF09 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE83E364217B0F89001DEF09 /* AVFoundation.framework */; };
 		FE87C76C2283487300B0B64C /* XMLConsole.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE87C76B2283487300B0B64C /* XMLConsole.storyboard */; };
@@ -255,6 +256,7 @@
 		FE6E6BF521384D5E003B1696 /* DBChatStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBChatStore.swift; sourceTree = "<group>"; };
 		FE6E6BF621384D5E003B1696 /* Database.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Database.swift; sourceTree = "<group>"; };
 		FE6E6C0721384DF1003B1696 /* ChatCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatCellView.swift; sourceTree = "<group>"; };
+		FE7F876B2343D99300254AF2 /* CustomScroller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomScroller.swift; sourceTree = "<group>"; };
 		FE83E362217A3809001DEF09 /* JingleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager.swift; sourceTree = "<group>"; };
 		FE83E364217B0F89001DEF09 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		FE87C76B2283487300B0B64C /* XMLConsole.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = XMLConsole.storyboard; sourceTree = "<group>"; };
@@ -425,6 +427,7 @@
 				FEA2F53422E46A2E009F2E88 /* ShowRosterWindowSegue.swift */,
 				FE5CAF992216EEF200FABD46 /* NSPopupButtonNoSizeWhenHidden.swift */,
 				FEEF25352266303A00202B28 /* OMEMOIdentititesTableView.swift */,
+				FE7F876B2343D99300254AF2 /* CustomScroller.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -875,6 +878,7 @@
 				FEA8941F2156625E004C3B51 /* ConfigureRoomViewController.swift in Sources */,
 				FEA2F53522E46A2E009F2E88 /* ShowRosterWindowSegue.swift in Sources */,
 				FE30D8AF214C3B7600670BEC /* NSImage.swift in Sources */,
+				FE7F876C2343D99300254AF2 /* CustomScroller.swift in Sources */,
 				FE6E6C0421384D5F003B1696 /* DatabaseSchemaManager.swift in Sources */,
 				FE5C6B2722897F1B003DAB30 /* ServiceDiscoveryViewController.swift in Sources */,
 				FE3AA0CD2154069D001667A9 /* ChatsListGroupGroupchat.swift in Sources */,
