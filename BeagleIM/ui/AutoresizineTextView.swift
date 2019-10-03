@@ -55,6 +55,7 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
     }
     
     func textStorage(_ textStorage: NSTextStorage, didProcessEditing editedMask: NSTextStorageEditActions, range editedRange: NSRange, changeInLength delta: Int) {
+        self.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1.0, weight: .light);
         let fullRange = NSRange(0..<textStorage.length);
         textStorage.fixAttributes(in: fullRange);
         textStorage.setAttributes([.font: self.font!], range: fullRange);
