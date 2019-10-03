@@ -266,19 +266,23 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         room.context.writer?.write(message);
         return true;
     }
-        
+    
+    var lastRange = 0;
+
     override func textDidChange(_ obj: Notification) {
         super.textDidChange(obj);
-        self.messageField.complete(nil);
+        if lastRange < messageField.rangeForUserCompletion.length {
+            self.messageField.complete(nil);
+        }
+        lastRange = messageField.rangeForUserCompletion.length;
     }
-    
+        
     func textView(_ textView: NSTextView, completions words: [String], forPartialWordRange charRange: NSRange, indexOfSelectedItem index: UnsafeMutablePointer<Int>?) -> [String] {
         
         let tmp = textView.string;
         let start = tmp.index(tmp.startIndex, offsetBy: charRange.lowerBound);
         let end = tmp.index(tmp.startIndex, offsetBy: charRange.upperBound);
         let query = textView.string[start..<end].uppercased();
-        index?.initialize(to: -1);
         
         print("tmp:", tmp, "start:", start, "end:", end, "query:", query);
         
@@ -289,7 +293,9 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         let suggestions = self.room?.presences.keys.filter({ (key) -> Bool in
             return key.uppercased().contains(query);
         }).sorted() ?? [];
-        
+
+        index?.initialize(to: suggestions.isEmpty ? -1 : 0);
+
         return suggestions.map({ name in "\(name) "});
     }
 
