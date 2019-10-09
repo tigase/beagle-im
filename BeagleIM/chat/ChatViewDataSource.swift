@@ -326,7 +326,7 @@ class ChatViewDataSource {
         
         self.queue.async {
             let start = Date();
-            DBChatHistoryStore.instance.getHistory(for: account, jid: jid, before: before, limit: limit) { dbItems in
+            DBChatHistoryStore.instance.history(for: account, jid: jid, before: before, limit: limit) { dbItems in
                 print("load completed in:", Date().timeIntervalSince(start));
                 self.add(items: dbItems, markUnread: unread > 0, completionHandler: { (firstUnread) in
                     self.loadInProgress = false;

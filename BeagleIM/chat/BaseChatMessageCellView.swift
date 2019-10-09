@@ -157,7 +157,7 @@ class BaseChatMessageCellView: NSTableCellView {
     
     fileprivate func appendPreview(message msg: NSMutableAttributedString, url: URL, image origImage: NSImage, first: Bool) {
         let att = NSTextAttachment(data: nil, ofType: nil);
-        let image = origImage.scaledAndFlipped(maxWidth: 250.0, maxHeight: 200.0, flipX: false, flipY: true, roundedRadius: 8.0);
+        let image = scalled(image: origImage);
         att.image = image;
         //ten bounds wypadałoby dostosowywać w zależności od zmiany szerokości okna!!
         //print("W:", image.size.width, "H:", image.size.height);
@@ -172,6 +172,14 @@ class BaseChatMessageCellView: NSTableCellView {
         msg.addAttribute(.link, value: url, range: NSRange(pos..<(pos+1)));
     }
 
+    private func scalled(image origImage: NSImage) -> NSImage {
+        if #available(OSX 10.15, *) {
+            return origImage.scaledAndFlipped(maxWidth: 250.0, maxHeight: 200.0, flipX: false, flipY: false, roundedRadius: 8.0);
+        } else {
+            return origImage.scaledAndFlipped(maxWidth: 250.0, maxHeight: 200.0, flipX: false, flipY: true, roundedRadius: 8.0);
+        }
+    }
+    
     fileprivate func messageBody(item: ChatMessage) -> String {
         guard let msg = item.encryption.message() else {
 //            guard let error = item.error else {

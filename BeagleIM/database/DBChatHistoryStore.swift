@@ -23,7 +23,7 @@ import Foundation
 import TigaseSwift
 
 class DBChatHistoryStore {
-    
+
     static let MESSAGE_NEW = Notification.Name("messageAdded");
     // TODO: it looks like it is not working as expected. We should remove this notification in the future
     static let MESSAGES_MARKED_AS_READ = Notification.Name("messagesMarkedAsRead");
@@ -40,70 +40,70 @@ class DBChatHistoryStore {
     fileprivate let updateItemStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET preview = coalesce(:preview, preview) WHERE id = :id");
     fileprivate let markAsErrorStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET state = :state, error = :error WHERE id = :id");
     fileprivate let countItemsStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid")
-    
+
     fileprivate let getItemIdByStanzaId: DBStatement = try! DBConnection.main.prepareStatement("SELECT id FROM chat_history WHERE account = :account AND jid = :jid AND stanza_id = :stanza_id ORDER BY timestamp DESC");
     fileprivate let getChatMessagesStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error FROM chat_history WHERE account = :account AND jid = :jid ORDER BY timestamp DESC LIMIT :limit OFFSET :offset");
     fileprivate let getChatMessageWithIdStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error FROM chat_history WHERE id = :id");
 
     fileprivate let getChatMessagePosition: DBStatement = try! DBConnection.main.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND id <> :msgId AND timestamp > (SELECT timestamp FROM chat_history WHERE id = :msgId)")
     fileprivate let removeChatHistoryStmt: DBStatement = try! DBConnection.main.prepareStatement("DELETE FROM chat_history WHERE account = :account AND (:jid IS NULL OR jid = :jid)");
-    
+
     fileprivate let searchHistoryStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT chat_history.id as id, chat_history.account as account, chat_history.jid as jid, author_nickname, author_jid, chat_history.timestamp as timestamp, item_type, chat_history.data as data, state, preview, chat_history.encryption as encryption, fingerprint FROM chat_history INNER JOIN chat_history_fts_index ON chat_history.id = chat_history_fts_index.rowid LEFT JOIN chats ON chats.account = chat_history.account AND chats.jid = chat_history.jid WHERE (chats.id IS NOT NULL OR chat_history.author_nickname is NULL) AND chat_history_fts_index MATCH :query AND (:account IS NULL OR chat_history.account = :account) AND (:jid IS NULL OR chat_history.jid = :jid) ORDER BY chat_history.timestamp DESC")
-    
+
     fileprivate let getUnsentMessagesForAccountStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT ch.account as account, ch.jid as jid, ch.data as data, ch.stanza_id as stanza_id, ch.encryption as encryption FROM chat_history ch WHERE ch.account = :account AND ch.state = \(MessageState.outgoing_unsent.rawValue) ORDER BY timestamp ASC");
 
     fileprivate let removeItemStmt: DBStatement = try! DBConnection.main.prepareStatement("DELETE FROM chat_history WHERE id = :id");
-    
+
     fileprivate let dispatcher: QueueDispatcher;
-    
+
     public init() {
         dispatcher = QueueDispatcher(label: "chat_history_store");
     }
-    
+
     open func process(chatState: ChatState, for account: BareJID, with jid: BareJID) {
         dispatcher.async {
             DBChatStore.instance.process(chatState: chatState, for: account, with: jid);
         }
     }
-    
+
     open func appendItem(for account: BareJID, with jid: BareJID, state: MessageState, authorNickname: String? = nil, authorJid: BareJID? = nil, type: ItemType = .message, timestamp: Date, stanzaId: String?, data: String, chatState: ChatState? = nil, errorCondition: ErrorCondition? = nil, errorMessage: String? = nil, encryption: MessageEncryption, encryptionFingerprint: String?, completionHandler: ((Int) -> Void)?) {
         dispatcher.async {
             guard !state.isError || stanzaId == nil || !self.processOutgoingError(for: account, with: jid, stanzaId: stanzaId!, errorCondition: errorCondition, errorMessage: errorMessage) else {
                 return;
             }
-            
+
             guard !self.checkItemAlreadyAdded(for: account, with: jid, authorNickname: authorNickname, type: type, timestamp: timestamp, direction: state.direction, stanzaId: stanzaId, data: data) else {
                 if chatState != nil {
                     DBChatStore.instance.process(chatState: chatState!, for: account, with: jid);
                 }
                 return;
             }
-            
+
             let params: [String:Any?] = ["account": account, "jid": jid, "timestamp": timestamp, "data": data, "item_type": type.rawValue, "state": state.rawValue, "stanza_id": stanzaId, "author_nickname": authorNickname, "author_jid": authorJid, "encryption": encryption.rawValue, "fingerprint": encryptionFingerprint];
             guard let msgId = try! self.appendMessageStmt.insert(params) else {
                 return;
             }
             completionHandler?(msgId);
-            
+
             let item = ChatMessage(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, message: data, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage);
             DBChatStore.instance.newMessage(for: account, with: jid, timestamp: timestamp, message: encryption.message() ?? data, state: state, remoteChatState: state.direction == .incoming ? chatState : nil) {
                 NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: item);
             }
         }
     }
-    
+
     open func removeHistory(for account: BareJID, with jid: BareJID?) {
         dispatcher.async {
             let params: [String: Any?] = ["account": account, "jid": jid];
             _ = try! self.removeChatHistoryStmt.update(params);
         }
     }
-    
+
     fileprivate func processOutgoingError(for account: BareJID, with jid: BareJID, stanzaId: String, errorCondition: ErrorCondition?, errorMessage: String?) -> Bool {
         guard let itemId = DBChatHistoryStore.instance.getItemId(for: account, with: jid, stanzaId: stanzaId) else {
             return false;
         }
-        
+
         let params: [String: Any?] = ["id": itemId, "state": MessageState.outgoing_error_unread.rawValue, "error": errorMessage ?? errorCondition?.rawValue ?? "Unknown error"];
         guard try! self.markAsErrorStmt.update(params) > 0 else {
             return false;
@@ -113,13 +113,13 @@ class DBChatHistoryStore {
         }
         return true;
     }
-    
+
     open func markOutgoingAsError(for account: BareJID, with jid: BareJID, stanzaId: String, errorCondition: ErrorCondition?, errorMessage: String?) {
         dispatcher.async {
             _ = self.processOutgoingError(for: account, with: jid, stanzaId: stanzaId, errorCondition: errorCondition, errorMessage: errorMessage);
         }
     }
-    
+
     open func markAsRead(for account: BareJID, with jid: BareJID, messageId: String? = nil) {
         dispatcher.async {
             if let id = messageId {
@@ -146,7 +146,7 @@ class DBChatHistoryStore {
             }
         }
     }
-    
+
     open func markAsRead(for account: BareJID, with jid: BareJID, before: Date) {
         dispatcher.async {
             let params: [String: Any?] = ["account": account, "jid": jid, "before": before];
@@ -159,14 +159,14 @@ class DBChatHistoryStore {
             }
         }
     }
-    
+
     open func getItemId(for account: BareJID, with jid: BareJID, stanzaId: String) -> Int? {
         return dispatcher.sync {
             let params: [String: Any?] = ["account": account, "jid": jid, "stanza_id": stanzaId];
             return try! self.getItemIdByStanzaId.scalar(params);
         }
     }
-    
+
     open func itemPosition(for account: BareJID, with jid: BareJID, msgId: Int) -> Int? {
         return dispatcher.sync {
             let params: [String: Any?] = ["account": account, "jid": jid, "msgId": msgId];
@@ -193,7 +193,7 @@ class DBChatHistoryStore {
             self.itemUpdated(withId: msgId, for: account, with: jid);
         }
     }
-    
+
     open func removeItem(for account: BareJID, with jid: BareJID, itemId: Int) {
         dispatcher.async {
             let params: [String: Any?] = ["id": itemId];
@@ -203,7 +203,7 @@ class DBChatHistoryStore {
             self.itemRemoved(withId: itemId, for: account, with: jid);
         }
     }
-    
+
     open func updateItem(for account: BareJID, with jid: BareJID, id: Int, preview: [String:String]? = nil) {
         dispatcher.async {
             var params: [String: Any?] = ["id": id];
@@ -217,7 +217,7 @@ class DBChatHistoryStore {
             }
         }
     }
-    
+
     func loadUnsentMessage(for account: BareJID, completionHandler: @escaping (BareJID,BareJID,String,String,MessageEncryption)->Void) {
         dispatcher.async {
             try! self.getUnsentMessagesForAccountStmt.query(["account": account] as [String : Any?], forEach: { (cursor) in
@@ -225,12 +225,12 @@ class DBChatHistoryStore {
                 let data: String = cursor["data"]!;
                 let stanzaId: String = cursor["stanza_id"]!;
                 let encryption: MessageEncryption = MessageEncryption(rawValue: cursor["encryption"] ?? 0) ?? .none;
-                
+
                 completionHandler(account, jid, data, stanzaId, encryption);
             });
         }
     }
-    
+
     fileprivate func itemUpdated(withId id: Int, for account: BareJID, with jid: BareJID) {
         dispatcher.async {
             let params: [String: Any?] = ["id": id]
@@ -242,36 +242,36 @@ class DBChatHistoryStore {
             });
         }
     }
-    
+
     fileprivate func itemRemoved(withId id: Int, for account: BareJID, with jid: BareJID) {
         dispatcher.async {
             NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_REMOVED, object: DeletedMessage(id: id, account: account, jid: jid));
         }
     }
-    
-    open func getHistory(for account: BareJID, jid: BareJID, before: Int? = nil, limit: Int, completionHandler: @escaping (([ChatViewItemProtocol]) -> Void)) {
+
+    open func history(for account: BareJID, jid: BareJID, before: Int? = nil, limit: Int, completionHandler: @escaping (([ChatViewItemProtocol]) -> Void)) {
         dispatcher.async {
             if before != nil {
                 let params: [String: Any?] = ["account": account, "jid": jid, "msgId": before!];
                 let offset = try! self.getChatMessagePosition.scalar(params)!;
-                completionHandler(self.getHistory(for: account, jid: jid, offset: offset, limit: limit));
+                completionHandler(self.history(for: account, jid: jid, offset: offset, limit: limit));
             } else {
-                completionHandler(self.getHistory(for: account, jid: jid, offset: 0, limit: limit));
+                completionHandler(self.history(for: account, jid: jid, offset: 0, limit: limit));
             }
         }
     }
-    
-    open func getHistory(for account: BareJID, jid: BareJID, before: Int? = nil, limit: Int) -> [ChatViewItemProtocol] {
+
+    open func history(for account: BareJID, jid: BareJID, before: Int? = nil, limit: Int) -> [ChatViewItemProtocol] {
         return dispatcher.sync {
             if before != nil {
                 let offset = try! getChatMessagePosition.scalar(["account": account, "jid": jid, "msgId": before!])!;
-                return getHistory(for: account, jid: jid, offset: offset, limit: limit);
+                return history(for: account, jid: jid, offset: offset, limit: limit);
             } else {
-                return getHistory(for: account, jid: jid, offset: 0, limit: limit);
+                return history(for: account, jid: jid, offset: 0, limit: limit);
             }
         }
     }
-    
+
     open func searchHistory(for account: BareJID? = nil, with jid: BareJID? = nil, search: String, completionHandler: @escaping ([ChatViewItemProtocol])->Void) {
         dispatcher.async {
             let tokens = search.unicodeScalars.split(whereSeparator: { (c) -> Bool in
@@ -291,24 +291,24 @@ class DBChatHistoryStore {
             completionHandler(items);
         }
     }
-    
-    fileprivate func getHistory(for account: BareJID, jid: BareJID, offset: Int, limit: Int) -> [ChatViewItemProtocol] {
+
+    fileprivate func history(for account: BareJID, jid: BareJID, offset: Int, limit: Int) -> [ChatViewItemProtocol] {
         let params: [String: Any?] = ["account": account, "jid": jid, "offset": offset, "limit": limit];
         return try! getChatMessagesStmt.query(params) { (cursor) -> ChatViewItemProtocol? in
             return itemFrom(cursor: cursor, for: account, with: jid);
         }
     }
-    
+
     public func checkItemAlreadyAdded(for account: BareJID, with jid: BareJID, authorNickname: String?, type: ItemType, timestamp: Date, direction: MessageDirection, stanzaId: String?, data: String?) -> Bool {
         let range = stanzaId == nil ? 5.0 : 60.0;
         let ts_from = timestamp.addingTimeInterval(-60 * range);
         let ts_to = timestamp.addingTimeInterval(60 * range);
-        
+
         let params: [String: Any?] = ["account": account, "jid": jid, "ts_from": ts_from, "ts_to": ts_to, "item_type": type.rawValue, "direction": direction.rawValue, "stanza_id": stanzaId, "data": data, "author_nickname": authorNickname];
-        
+
         return (try! checkItemAlreadyAddedStmt.scalar(params) ?? 0) > 0;
     }
-    
+
     fileprivate func itemFrom(cursor: DBCursor, for account: BareJID, with jid: BareJID) -> ChatViewItemProtocol? {
         let id: Int = cursor["id"]!;
         let stateInt: Int = cursor["state"]!;
@@ -319,7 +319,7 @@ class DBChatHistoryStore {
         let encryption: MessageEncryption = MessageEncryption(rawValue: cursor["encryption"] ?? 0) ?? .none;
         let encryptionFingerprint: String? = cursor["fingerprint"];
         let error: String? = cursor["error"];
-        
+
         var preview: [String: String]? = nil;
         if let previewStr: String = cursor["preview"] {
             preview = [:];

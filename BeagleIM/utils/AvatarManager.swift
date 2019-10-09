@@ -23,10 +23,10 @@ import AppKit
 import TigaseSwift
 
 class AvatarManager {
-    
+
     public static let AVATAR_CHANGED = Notification.Name("avatarChanged");
     public static let instance = AvatarManager();
-    
+
     public let store = AvatarStore();
     public var defaultAvatar: NSImage {
         return NSImage(named: NSImage.userName)!;
@@ -34,18 +34,18 @@ class AvatarManager {
 
     fileprivate var dispatcher = QueueDispatcher(label: "avatar_manager", attributes: .concurrent);
     fileprivate var cache: [BareJID: AccountAvatars] = [:];
-    
+
     public init() {
         NotificationCenter.default.addObserver(self, selector: #selector(vcardUpdated), name: DBVCardStore.VCARD_UPDATED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(accountChanged), name: AccountManager.ACCOUNT_CHANGED, object: nil);
     }
-    
+
     open func avatar(for jid: BareJID, on account: BareJID) -> NSImage? {
         return dispatcher.sync(flags: .barrier) {
             return self.avatars(on: account).avatar(for: jid, on: account);
         }
     }
-    
+
     open func avatarHashChanged(for jid: BareJID, on account: BareJID, type: AvatarType, hash: String) {
         let oldHash = self.store.avatarHash(for: jid, on: account)[type];
         guard oldHash == nil || oldHash! != hash else {
@@ -83,22 +83,22 @@ class AvatarManager {
             }
         });
     }
-    
+
     @objc func vcardUpdated(_ notification: Notification) {
         guard let vcardItem = notification.object as? DBVCardStore.VCardItem else {
             return;
         }
-        
+
         DispatchQueue.global().async {
             guard let photo = vcardItem.vcard.photos.first else {
                 return;
             }
-            
+
             self.fetchData(photo: photo) { data in
                 guard data != nil else {
                     return;
                 }
-                
+
                 let hash = Digest.sha1.digest(toHex: data)!;
 
                 self.store.storeAvatar(data: data!, for: hash);
@@ -111,26 +111,26 @@ class AvatarManager {
             }
         }
     }
-    
+
     @objc func accountChanged(_ notification: Notification) {
         guard let account = notification.object as? AccountManager.Account else {
             return;
         }
-        
+
         guard AccountManager.getAccount(for: account.name) == nil else {
             return;
         }
-        
+
         dispatcher.async(flags: .barrier) {
             self.cache.removeValue(forKey: account.name);
         }
     }
-    
+
     func retrievePepUserAvatar(for jid: BareJID, on account: BareJID, hash: String) {
         guard let pepModule: PEPUserAvatarModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PEPUserAvatarModule.ID) else {
             return;
         }
-        
+
         pepModule.retrieveAvatar(from: jid, itemId: hash, onSuccess: { (jid, hash, photoData) in
             guard let data = photoData else {
                 return;
@@ -144,7 +144,7 @@ class AvatarManager {
             })
         }, onError: nil);
     }
-    
+
     fileprivate func avatars(on account: BareJID) -> AvatarManager.AccountAvatars {
         if let avatars = self.cache[account] {
             return avatars;
@@ -153,7 +153,7 @@ class AvatarManager {
         self.cache[account] = avatars;
         return avatars;
     }
-    
+
     fileprivate func fetchData(photo: VCard.Photo, completionHandler: @escaping (Data?)->Void) {
         if let data = photo.binval {
             completionHandler(Data(base64Encoded: data, options: Data.Base64DecodingOptions.ignoreUnknownCharacters));
@@ -174,7 +174,7 @@ class AvatarManager {
             completionHandler(nil);
         }
     }
-    
+
     fileprivate func loadAvatar(for jid: BareJID, on account: BareJID) -> NSImage? {
         let hashes = store.avatarHash(for: jid, on: account);
         if let hash = hashes[.pepUserAvatar] {
@@ -191,24 +191,24 @@ class AvatarManager {
         }
         return nil
     }
-    
+
     class AccountAvatars {
-        
+
         fileprivate var avatars: [BareJID: NSImage] = [:];
-        
+
         func avatar(for jid: BareJID, on account: BareJID) -> NSImage? {
             if let image = AvatarManager.instance.dispatcher.sync(execute: { self.avatars[jid] }) {
                 return image === AvatarManager.instance.defaultAvatar ? nil : image;
             }
-            
+
             let image = AvatarManager.instance.loadAvatar(for: jid, on: account) ?? AvatarManager.instance.defaultAvatar;
             AvatarManager.instance.dispatcher.sync(flags: .barrier) {
                 self.avatars[jid] = image;
             }
-            
+
             return image === AvatarManager.instance.defaultAvatar ? nil : image;
         }
-        
+
         fileprivate func invalidateAvatar(for jid: BareJID, on account: BareJID) {
             AvatarManager.instance.dispatcher.async(flags: .barrier) {
                 self.avatars.removeValue(forKey: jid);
@@ -217,7 +217,6 @@ class AvatarManager {
                 }
             }
         }
-        
+
     }
 }
-

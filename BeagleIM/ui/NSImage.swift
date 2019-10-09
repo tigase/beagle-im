@@ -103,11 +103,11 @@ extension NSImage {
         NSGraphicsContext.current?.imageInterpolation = .high;
 
         let transform = NSAffineTransform();
-        transform.translateX(by: 0.0, yBy: expSize.height);
+        transform.translateX(by: 0.0, yBy: flipY ? expSize.height : 0);
 //        transform.translateX(by: expSize.width, yBy: expSize.height);
         //transform.scaleX(by: (flipX ? -1.0 : 1.0)/scale, yBy: (flipY ? -1.0 : 1.0)/scale);
         //transform.scaleX(by: flipX ? -1.0 : 1.0, yBy: flipY ? -1.0 : 1.0);
-        transform.scaleX(by: 1.0 / scale, yBy: -1.0 / scale);
+        transform.scaleX(by: (flipX ? -1.0 : 1.0) / scale, yBy: (flipY ? -1.0 : 1.0) / scale);
         transform.concat();
         
         let rect = NSRect(origin: .zero, size: size);

@@ -24,20 +24,20 @@ import TigaseSwift
 import TigaseSwiftOMEMO
 
 class MessageEventHandler: XmppServiceEventHandler {
-    
+
     public static let OMEMO_AVAILABILITY_CHANGED = Notification.Name(rawValue: "OMEMOAvailabilityChanged");
-    
+
     static func prepareBody(message: Message, forAccount account: BareJID) -> (String?, MessageEncryption, String?) {
         var encryption: MessageEncryption = .none;
         var fingerprint: String? = nil;
-        
+
         guard (message.type ?? .chat) != .error else {
             guard let body = message.body else {
                 return (message.to?.resource == nil ? nil : "", encryption, nil);
             }
             return (body, encryption, nil);
         }
-        
+
         var encryptionErrorBody: String?;
         if let omemoModule: OMEMOModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(OMEMOModule.ID) {
             switch omemoModule.decode(message: message) {
@@ -65,24 +65,24 @@ class MessageEventHandler: XmppServiceEventHandler {
                 break;
             }
         }
-        
+
         guard let body = message.body ?? message.oob ?? encryptionErrorBody else {
             return (nil, encryption, nil);
         }
         return (body, encryption, fingerprint);
     }
-    
+
     let events: [Event] = [MessageModule.MessageReceivedEvent.TYPE, MessageDeliveryReceiptsModule.ReceiptEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, MessageArchiveManagementModule.ArchivedMessageReceivedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, OMEMOModule.AvailabilityChangedEvent.TYPE];
-    
+
     init() {
         NotificationCenter.default.addObserver(self, selector: #selector(settingsChanged), name: Settings.CHANGED, object: nil);
     }
-    
+
     @objc func settingsChanged(_ notification: Notification) {
         guard let setting = notification.object as? Settings else {
             return;
         }
-        
+
         switch setting {
         case .enableMessageCarbons:
             XmppService.instance.clients.values.filter { (client) -> Bool in
@@ -101,14 +101,14 @@ class MessageEventHandler: XmppServiceEventHandler {
             break;
         }
     }
-    
+
     func handle(event: Event) {
         switch event {
         case let e as MessageModule.MessageReceivedEvent:
             guard let from = e.message.from, let account = e.sessionObject.userBareJid else {
                 return;
             }
-            
+
             let (body, encryption, fingerprint) = MessageEventHandler.prepareBody(message: e.message, forAccount: account)
             guard body != nil else {
                 if (e.message.type ?? .normal) != .error, let chatState = e.message.chatState, e.message.delay == nil {
@@ -116,7 +116,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                 }
                 return;
             }
-            
+
             let timestamp = e.message.delay?.stamp ?? Date();
             let state: MessageState = ((e.message.type ?? .chat) == .error) ? .incoming_error_unread : .incoming_unread;
             DBChatHistoryStore.instance.appendItem(for: account, with: from.bareJid, state: state, type: .message, timestamp: timestamp, stanzaId: e.message.id, data: body!, chatState: e.message.chatState, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
@@ -127,22 +127,14 @@ class MessageEventHandler: XmppServiceEventHandler {
             DBChatHistoryStore.instance.updateItemState(for: account, with: from, stanzaId: e.messageId, from: .outgoing, to: .outgoing_delivered);
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
             let account = e.sessionObject.userBareJid!;
-            if AccountSettings.messageSyncAuto(account).bool() {
-                var syncPeriod = AccountSettings.messageSyncPeriod(account).double();
-                if syncPeriod == 0 {
-                    syncPeriod = 72;
-                }
-                let syncMessagesSince = max(DBChatStore.instance.lastMessageTimestamp(for: account), Date(timeIntervalSinceNow: -1 * syncPeriod * 3600));
-                
-                syncMessages(for: account, since: syncMessagesSince);
-            }
+            MessageEventHandler.syncMessages(for: account);
             DBChatHistoryStore.instance.loadUnsentMessage(for: account, completionHandler: { (account, jid, data, stanzaId, encryption) in
-                
+
                 var chat = DBChatStore.instance.getChat(for: account, with: jid);
                 if chat == nil {
                     chat = DBChatStore.instance.open(for: account, chat: Chat(jid: JID(jid), thread: nil));
                 }
-                
+
                 if let dbChat = chat as? DBChatStore.DBChat {
                     let url = data.starts(with: "http:") || data.starts(with: "https:") ? data : nil
                     MessageEventHandler.sendMessage(chat: dbChat, body: data, url: data, stanzaId: stanzaId);
@@ -202,21 +194,21 @@ class MessageEventHandler: XmppServiceEventHandler {
             break;
         }
     }
-    
+
     static func sendMessage(chat: DBChatStore.DBChat, body: String?, url: String?, encrypted: ChatEncryption? = nil, stanzaId: String? = nil) {
             guard let msg = body ?? url else {
                 return;
             }
 
             let encryption = encrypted ?? chat.options.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!;
-            
+
             let message = chat.createMessage(msg);
             message.id = stanzaId ?? UUID().uuidString;
             message.messageDelivery = .request;
-            
+
             let account = chat.account;
             let jid = chat.jid.bareJid;
-            
+
             switch encryption {
             case .omemo:
                 if stanzaId == nil {
@@ -234,7 +226,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                                 completionHandler();
                                 return;
                             }
-                            
+
                             var errorMessage: String? = nil;
                             if let encryptionError = err as? SignalError {
                                 switch encryptionError {
@@ -244,7 +236,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                                     errorMessage = "It was not possible to send encrypted message due to encryption error";
                                 }
                             }
-                            
+
                             DBChatHistoryStore.instance.markOutgoingAsError(for: account, with: jid, stanzaId: message.id!, errorCondition: .undefined_condition, errorMessage: errorMessage);
                         }
                         completionHandler();
@@ -272,21 +264,21 @@ class MessageEventHandler: XmppServiceEventHandler {
                 });
             }
         }
-                
+
         fileprivate static func sendUnencryptedMessage(_ message: Message, from account: BareJID, completionHandler: (Result<Void,Error>)->Void) {
             guard let client = XmppService.instance.getClient(for: account), client.state == .connected else {
                 completionHandler(.failure(ErrorCondition.gone));
                 return;
             }
-            
+
             client.context.writer?.write(message);
 
             completionHandler(.success(Void()));
         }
 
-        
+
         fileprivate static func sendEncryptedMessage(_ message: Message, from account: BareJID, completionHandler resultHandler: @escaping (Result<Void,Error>)->Void) {
-            
+
             let msg = message.body!;
 
             guard let omemoModule: OMEMOModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(OMEMOModule.ID) else {
@@ -294,15 +286,15 @@ class MessageEventHandler: XmppServiceEventHandler {
                 resultHandler(.failure(ErrorCondition.unexpected_request));
                 return;
             }
-            
+
             guard let client = XmppService.instance.getClient(for: account), client.state == .connected else {
                 resultHandler(.failure(ErrorCondition.gone));
                 return;
             }
-        
+
             let jid = message.to!.bareJid;
             let stanzaId = message.id!;
-            
+
             let completionHandler: ((EncryptionResult<Message, SignalError>)->Void)? = { (result) in
                 switch result {
                 case .failure(let error):
@@ -317,11 +309,11 @@ class MessageEventHandler: XmppServiceEventHandler {
                     resultHandler(.success(Void()));
                 }
             };
-            
+
             omemoModule.encode(message: message, completionHandler: completionHandler!);
         }
 
-    
+
     fileprivate func calculateState(direction: MessageDirection, error: Bool, unread: Bool) -> MessageState {
         if direction == .incoming {
             if error {
@@ -335,12 +327,22 @@ class MessageEventHandler: XmppServiceEventHandler {
             return .outgoing;
         }
     }
+    static func syncMessages(for account: BareJID) {
+        if AccountSettings.messageSyncAuto(account).bool() {
+            var syncPeriod = AccountSettings.messageSyncPeriod(account).double();
+            if syncPeriod == 0 {
+                syncPeriod = 72;
+            }
+            let syncMessagesSince = max(DBChatStore.instance.lastMessageTimestamp(for: account), Date(timeIntervalSinceNow: -1 * syncPeriod * 3600));
+            syncMessages(for: account, since: syncMessagesSince);
+        }
+    }
 
-    fileprivate func syncMessages(for account: BareJID, since: Date, rsmQuery: RSM.Query? = nil) {
+    static func syncMessages(for account: BareJID, since: Date, rsmQuery: RSM.Query? = nil) {
         guard let mamModule: MessageArchiveManagementModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageArchiveManagementModule.ID) else {
             return;
         }
-        
+
         let queryId = UUID().uuidString;
         mamModule.queryItems(start: since, queryId: queryId, rsm: rsmQuery ?? RSM.Query(lastItems: 100), onSuccess: { (queryid,complete,rsmResponse) in
             if rsmResponse != nil && rsmResponse!.index != 0 && rsmResponse?.first != nil {
