@@ -316,6 +316,11 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
             guard let contentView = event.window?.contentView else {
                 return false;
             }
+            let point = self.view.convert(event.locationInWindow, from: nil);
+//            print("point:", point, "frame:", self.tableView.enclosingScrollView?.frame);
+            guard self.tableView.enclosingScrollView?.frame.contains(point) ?? false else {
+                return false;
+            }
             let menu = NSMenu(title: "Actions");
             let tag = currentSession != nil ? -1 : (self.messageId(for: event) ?? -1);
             if tag != -1 {
