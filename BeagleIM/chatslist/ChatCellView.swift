@@ -146,14 +146,14 @@ class ChatCellView: NSTableCellView {
         super.layout();
         
         if let width = self.superview?.superview?.frame.width {
-            self.lastMessage.preferredMaxLayoutWidth = width - 80;
+            self.lastMessage.preferredMaxLayoutWidth = width - 66;
         }
     }
     
     override func resize(withOldSuperviewSize oldSize: NSSize) {
         super.resize(withOldSuperviewSize: oldSize);
         if let width = self.superview?.superview?.frame.width {
-            self.lastMessage.preferredMaxLayoutWidth = width - 80;
+            self.lastMessage.preferredMaxLayoutWidth = width - 66;
         }
     }
  

@@ -151,7 +151,11 @@ class BaseChatMessageCellView: NSTableCellView {
         }
         super.layout();
         if let width = self.superview?.superview?.frame.width {
-            self.message.preferredMaxLayoutWidth = width - 78;
+            if self.state != nil {
+                self.message.preferredMaxLayoutWidth = width - 72;
+            } else {
+                self.message.preferredMaxLayoutWidth = width - 50;
+            }
         }
     }
     

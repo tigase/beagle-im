@@ -45,7 +45,6 @@ class MucEventHandler: XmppServiceEventHandler {
                 return;
             }
             NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
-            NotificationCenter.default.post(name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: room.presences[room.nickname]);
             updateRoomName(room: room);
         case let e as MucModule.RoomClosedEvent:
             guard let room = e.room as? DBChatStore.DBRoom else {

@@ -358,26 +358,9 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
     
     @objc func occupantsChanged(_ notification: Notification) {
         guard let event = notification.object as? MucModule.AbstractOccupantEvent else {
-            guard let occupant = notification.object as? MucOccupant else {
-                return;
-            }
-            DispatchQueue.main.async {
-                var tmp = self.participants;
-                tmp.append(occupant);
-                tmp.sort(by: { (i1, i2) -> Bool in
-                    return i1.nickname.caseInsensitiveCompare(i2.nickname) == .orderedAscending;
-                })
-                guard let idx = tmp.firstIndex(where: { (i) -> Bool in
-                    i.nickname == occupant.nickname;
-                }) else {
-                    return;
-                }
-                self.participants = tmp;
-                self.tableView?.insertRows(at: IndexSet(integer: idx), withAnimation: .slideLeft);
-            }
             return;
         }
-        guard let room = self.room, event.room === room else {
+        guard let room = self.room, (event.room as? DBChatProtocol)?.id == room.id else {
             return;
         }
         
