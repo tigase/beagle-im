@@ -181,10 +181,10 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
             })
         }
         
-        let query = searchField.stringValue.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines);
+        let query = searchField.stringValue.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).lowercased();
         if !query.isEmpty {
             rows = rows.filter { (item) -> Bool in
-                return item.jid.stringValue.contains(query) || (item.name ?? "").contains(query);
+                return item.jid.stringValue.lowercased().contains(query) || (item.name?.lowercased() ?? "").contains(query);
             };
         }
         self.rows = rows.sorted { (i1, i2) -> Bool in
