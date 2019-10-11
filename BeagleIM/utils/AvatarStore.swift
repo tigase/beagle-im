@@ -33,6 +33,8 @@ class AvatarStore {
     fileprivate let dispatcher = QueueDispatcher(label: "avatar_store", attributes: .concurrent);
     fileprivate let cacheDirectory: URL;
     
+    private let cache = NSCache<NSString,NSImage>();
+    
     init() {
         cacheDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!.appendingPathComponent(Bundle.main.bundleIdentifier!).appendingPathComponent("avatars");
         print("found cache directory:", cacheDirectory.path);
@@ -41,10 +43,9 @@ class AvatarStore {
         }
     }
     
-    func hasAvatarFor(hash: String, completionHandler: @escaping (Bool)->Void) {
-        DispatchQueue.global().async {
-            let result = FileManager.default.fileExists(atPath: self.cacheDirectory.appendingPathComponent(hash).path);
-            completionHandler(result);
+    func hasAvatarFor(hash: String) -> Bool {
+        return dispatcher.sync {
+            return FileManager.default.fileExists(atPath: self.cacheDirectory.appendingPathComponent(hash).path);
         }
     }
     
@@ -64,19 +65,30 @@ class AvatarStore {
     
     func avatar(for hash: String) -> NSImage? {
         return dispatcher.sync {
-            return NSImage(contentsOf: self.cacheDirectory.appendingPathComponent(hash));
+            if let image = cache.object(forKey: hash as NSString) {
+                return image;
+            }
+            if let image = NSImage(contentsOf: self.cacheDirectory.appendingPathComponent(hash)) {
+                cache.setObject(image, forKey: hash as NSString);
+                return image;
+            }
+            return nil;
         }
     }
     
     func removeAvatar(for hash: String) {
         dispatcher.sync(flags: .barrier) {
             try? FileManager.default.removeItem(at: self.cacheDirectory.appendingPathComponent(hash));
+            cache.removeObject(forKey: hash as NSString);
         }
     }
     
     func storeAvatar(data: Data, for hash: String) {
         dispatcher.async(flags: .barrier) {
             _ = FileManager.default.createFile(atPath: self.cacheDirectory.appendingPathComponent(hash).path, contents: data, attributes: nil);
+            if let image = NSImage(data: data) {
+                self.cache.setObject(image, forKey: hash as NSString);
+            }
         }
     }
     

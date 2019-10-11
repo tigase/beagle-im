@@ -39,7 +39,8 @@ class ChatsListGroupAbstractChat<I: DBChatProtocol>: ChatsListGroupProtocol {
         NotificationCenter.default.addObserver(self, selector: #selector(chatOpened), name: DBChatStore.CHAT_OPENED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(chatClosed), name: DBChatStore.CHAT_CLOSED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(chatUpdated), name: DBChatStore.CHAT_UPDATED, object: nil);
-        
+        NotificationCenter.default.addObserver(self, selector: #selector(avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
+
         dispatcher.async {
             DispatchQueue.main.sync {
                 self.items = DBChatStore.instance.getChats().filter({dbChatProtocol -> Bool in

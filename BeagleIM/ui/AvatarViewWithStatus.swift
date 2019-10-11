@@ -86,8 +86,8 @@ class AvatarViewWithStatus: NSView {
         initSubviews();
     }
     
-    func update(for jid: BareJID, on account: BareJID) {
-        self.avatar = AvatarManager.instance.avatar(for: jid, on: account);
+    func update(for jid: BareJID, on account: BareJID, orDefault: NSImage? = nil) {
+        self.avatar = AvatarManager.instance.avatar(for: jid, on: account) ?? orDefault;
         if jid == account {
             if let status = XmppService.instance.getClient(for: account)?.state {
                 switch status {

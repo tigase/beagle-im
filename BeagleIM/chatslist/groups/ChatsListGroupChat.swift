@@ -27,7 +27,6 @@ class ChatsListGroupChat: ChatsListGroupAbstractChat<DBChatStore.DBChat> {
     init(delegate: ChatsListViewDataSourceDelegate) {
         super.init(name: "Direct messages", dispatcher: QueueDispatcher(label: "chats_list_group_chats_queue"), delegate: delegate, canOpenChat: true);
         NotificationCenter.default.addObserver(self, selector: #selector(rosterItemUpdated), name: DBRosterStore.ITEM_UPDATED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(contactPresenceChanged), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
     }
     
@@ -85,7 +84,6 @@ class ChatsListGroupChatUnknown: ChatsListGroupAbstractChat<DBChatStore.DBChat> 
     init(delegate: ChatsListViewDataSourceDelegate) {
         super.init(name: "From unknown", dispatcher: QueueDispatcher(label: "chats_list_group_chats_unkonwn_queue"), delegate: delegate, canOpenChat: false);
         NotificationCenter.default.addObserver(self, selector: #selector(rosterItemUpdated), name: DBRosterStore.ITEM_UPDATED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(contactPresenceChanged), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
     }
     

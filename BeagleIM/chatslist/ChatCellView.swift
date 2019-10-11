@@ -137,7 +137,7 @@ class ChatCellView: NSTableCellView {
         if item.chat is Chat {
             self.avatar.update(for: item.chat.jid.bareJid, on: item.chat.account);
         } else if let room  = item.chat as? Room {
-            self.avatar.avatar = NSImage(named: NSImage.userGroupName);
+            self.avatar.update(for: item.chat.jid.bareJid, on: item.chat.account, orDefault: NSImage(named: NSImage.userGroupName));
             self.avatar.status = room.state == .joined ? .online : (room.state == .requested ? .away : nil);
         }
     }

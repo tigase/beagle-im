@@ -69,6 +69,8 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         NotificationCenter.default.addObserver(self, selector: #selector(roomStatusChanged), name: MucEventHandler.ROOM_STATUS_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(roomOccupantsChanged), name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(roomStatusChanged(_:)), name: MucEventHandler.ROOM_NAME_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(avatarForHashChanged), name: AvatarManager.AVATAR_FOR_HASH_CHANGED, object: nil);
     }
     
     override func viewWillAppear() {
@@ -89,18 +91,16 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         button.image = img;
     }
     
-    @objc func roomOccupantsChanged(_ notification: Notification) {
-        guard let e = notification.object as? MucModule.OccupantChangedPresenceEvent else {
+    @objc func avatarChanged(_ notification: Notification) {
+        guard let account = notification.userInfo?["account"] as? BareJID, let jid = notification.userInfo?["jid"] as? BareJID else {
             return;
         }
-        guard let room = e.room as? DBChatStore.DBRoom, self.room.id == room.id && (e.nickname ?? "") == self.room.nickname else {
+        guard room.roomJid == jid && room.account == account else {
             return;
         }
-        DispatchQueue.main.async {
-            self.refreshPermissions();
-        }
+        avatarView.update(for: room.roomJid, on: room.account, orDefault: NSImage(named: NSImage.userGroupName));
     }
-    
+        
     @objc func roomStatusChanged(_ notification: Notification) {
         guard let room = notification.object as? DBChatStore.DBRoom else {
             return;
@@ -114,7 +114,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     }
     
     fileprivate func refreshRoomDetails() {
-        avatarView.avatar = NSImage(named: NSImage.userGroupName);
+        avatarView.update(for: room.roomJid, on: room.account, orDefault: NSImage(named: NSImage.userGroupName));
         avatarView.status = room.state == .joined ? .online : (room.state == .requested ? .away : nil);
         titleView.stringValue = room.name ?? room.roomJid.localPart ?? "";
         jidView.stringValue = room.roomJid.stringValue;
@@ -224,10 +224,15 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         
         if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "MucMessageContinuationCellView" : "MucMessageCellView"), owner: nil) as? BaseChatMessageCellView {
                         
-            let senderJid = item.state.direction == .incoming ? (item.authorJid ?? item.jid) : item.account;
             cell.id = item.id;
             if let c = cell as? ChatMessageCellView {
-                c.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
+                if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
+                    c.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
+                } else if let nickname = item.authorNickname, let photoHash = self.room.presences[nickname]?.presence.vcardTempPhoto {
+                    c.set(avatar: AvatarManager.instance.avatar(withHash: photoHash));
+                } else {
+                    c.set(avatar: nil);
+                }
                 c.set(senderName: item.authorNickname ?? "From \(item.jid.stringValue)");
             }
             cell.set(message: item);
@@ -298,6 +303,61 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
 
         return suggestions.map({ name in "\(name) "});
     }
+    
+    @objc func avatarForHashChanged(_ notification: Notification) {
+        guard let avatarHash = notification.object as? String else {
+            return;
+        }
+        
+        guard let occupant = room.presences.values.first(where: { (occupant) -> Bool in
+            guard let hash = occupant.presence.vcardTempPhoto else {
+                return false;
+            }
+            return hash == avatarHash;
+        }) else {
+            return;
+        }
+        
+        let nickname = occupant.nickname;
+        DispatchQueue.main.async {
+            for i in 0..<self.dataSource.count {
+                if let item = self.dataSource.getItem(at: i) as? ChatMessage, item.authorNickname != nil && item.authorNickname! == nickname {
+                    if let view = self.tableView.view(atColumn: 0, row: i, makeIfNecessary: false) as? ChatMessageCellView {
+                        view.set(avatar: AvatarManager.instance.avatar(withHash: avatarHash));
+                    }
+                }
+            }
+        }
+    }
+    
+    @objc func roomOccupantsChanged(_ notification: Notification) {
+        guard let e = notification.object as? MucModule.AbstractOccupantEvent else {
+            return;
+        }
+        
+        guard let room = e.room as? DBChatStore.DBRoom, self.room.id == room.id else {
+            return;
+        }
+        
+        if (e.nickname ?? "") == self.room.nickname && e is MucModule.OccupantChangedPresenceEvent {
+            DispatchQueue.main.async {
+                self.refreshPermissions();
+            }
+        }
+
+        guard let avatarHash = e.occupant.presence.vcardTempPhoto else {
+            return;
+        }
+        DispatchQueue.main.async {
+            for i in 0..<self.dataSource.count {
+                if let item = self.dataSource.getItem(at: i) as? ChatMessage, item.authorNickname != nil && item.authorNickname! == e.occupant.nickname {
+                    if let view = self.tableView.view(atColumn: 0, row: i, makeIfNecessary: false) as? ChatMessageCellView {
+                        view.set(avatar: AvatarManager.instance.avatar(withHash: avatarHash));
+                    }
+                }
+            }
+        }
+    }
 
 }
 
@@ -322,6 +382,7 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
     func registerNotifications() {
         NotificationCenter.default.addObserver(self, selector: #selector(roomStatusChanged), name: MucEventHandler.ROOM_STATUS_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(occupantsChanged), name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(avatarForHashChanged), name: AvatarManager.AVATAR_FOR_HASH_CHANGED, object: nil);
     }
     
     func numberOfRows(in tableView: NSTableView) -> Int {
@@ -335,7 +396,15 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
             let name = participant.nickname + "" + roleToEmoji(participant.role);
             
             view.avatar.name = name;
-            view.avatar.avatar = participant.jid != nil ? AvatarManager.instance.avatar(for: participant.jid!.bareJid, on: room!.account) : nil;
+            if let jid = participant.jid {
+                view.avatar.avatar = AvatarManager.instance.avatar(for: jid.bareJid, on: room!.account);
+            } else {
+                if let photoHash = participant.presence.vcardTempPhoto {
+                    view.avatar.avatar = AvatarManager.instance.avatar(withHash: photoHash);
+                } else {
+                    view.avatar.avatar = nil;
+                }
+            }
             view.avatar.backgroundColor = NSColor(named: "chatBackgroundColor")!;
             view.avatar.status = participant.presence.show;
             view.label.stringValue = name;
@@ -449,6 +518,20 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
             DispatchQueue.main.async {
                 self.participants.removeAll();
                 self.tableView?.reloadData();
+            }
+        }
+    }
+    
+    @objc func avatarForHashChanged(_ notification: Notification) {
+        guard let hash = notification.object as? String else {
+            return;
+        }
+        DispatchQueue.main.async {
+            for (idx, participant) in self.participants.enumerated() {
+                if let photoHash = participant.presence.vcardTempPhoto, photoHash == hash {
+                    self.tableView?.reloadData(forRowIndexes: IndexSet(integer: idx), columnIndexes: IndexSet(integer: 0));
+                    return;
+                }
             }
         }
     }

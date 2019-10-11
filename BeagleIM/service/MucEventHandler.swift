@@ -76,6 +76,29 @@ class MucEventHandler: XmppServiceEventHandler {
             DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: ((e.nickname == nil) || (room.nickname != e.nickname!)) ? .incoming_unread : .outgoing, authorNickname: e.nickname, authorJid: authorJid, type: .message, timestamp: e.timestamp, stanzaId: e.message.id, data: body, encryption: MessageEncryption.none, encryptionFingerprint: nil, completionHandler: nil);
         case let e as MucModule.AbstractOccupantEvent:
             NotificationCenter.default.post(name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: e);
+            if let photoHash = e.presence.vcardTempPhoto {
+                if e.occupant.jid == nil {
+                    let jid = JID(e.room.roomJid, resource: e.occupant.nickname);
+                    if !AvatarManager.instance.hasAvatar(withHash: photoHash) {
+                        guard let vcardTempModule: VCardTempModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(VCardTempModule.ID) else {
+                            return;
+                        }
+                        
+                        vcardTempModule.retrieveVCard(from: jid, onSuccess: { (vcard) in
+                            vcard.photos.forEach { (photo) in
+                                AvatarManager.fetchData(photo: photo) { (result) in
+                                    guard let data = result else {
+                                        return;
+                                    }
+                                    AvatarManager.instance.storeAvatar(data: data);
+                                }
+                            }
+                        }, onError: { (errorCondition) in
+                            print("failed to retrieve vcard from", jid, "error:", errorCondition as Any);
+                        })
+                    }
+                }
+            }
         case let e as MucModule.PresenceErrorEvent:
             guard let error = MucModule.RoomError.from(presence: e.presence), e.nickname == nil || e.nickname! == e.room.nickname else {
                 return;
