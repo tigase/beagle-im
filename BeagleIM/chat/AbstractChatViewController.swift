@@ -546,24 +546,29 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         self.updateMessageFieldSize();
     }
     
-    func textView(_ textView: NSTextView, shouldChangeTextIn affectedCharRange: NSRange, replacementString: String?) -> Bool {
-        guard "\n" == replacementString else {
+    func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+        switch commandSelector {
+        case #selector(NSResponder.insertNewline(_:)):
+            guard !NSEvent.modifierFlags.contains(.shift) else {
+                return false;
+            }
+            DispatchQueue.main.async {
+                let msg = textView.string;
+                guard !msg.isEmpty else {
+                    return;
+                }
+                guard self.sendMessage(body: msg) else {
+                    return;
+                }
+                self.messageField.reset();
+                self.updateMessageFieldSize();
+            }
             return true;
+        default:
+            return false;
         }
-        DispatchQueue.main.async {
-            let msg = textView.string;
-            guard !msg.isEmpty else {
-                return;
-            }
-            guard self.sendMessage(body: msg) else {
-                return;
-            }
-            self.messageField.reset();
-            self.updateMessageFieldSize();
-        }
-        return false;
     }
-    
+        
     func itemAdded(at rows: IndexSet, shouldScroll scroll: Bool = true) {
         let shouldScroll = scroll && rows.contains(0) && tableView.rows(in: self.tableView.visibleRect).contains(0);
         if dataSource.count == rows.count && rows.count > 1 {
