@@ -18,6 +18,7 @@
 		FE1678EF22FC92970013B94A /* WebRTC.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE1678ED22FC92970013B94A /* WebRTC.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE1A8BA321C96C1B00604141 /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA221C96C1B00604141 /* RoundButton.swift */; };
 		FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */; };
+		FE25B1712350D2FC00CD69CA /* db-schema-6.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE25B1702350D2FC00CD69CA /* db-schema-6.sql */; };
 		FE28097D21652A7C002F5BD0 /* VCardEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */; };
 		FE28097F2166892D002F5BD0 /* AccountDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */; };
 		FE2809852169FB75002F5BD0 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2809842169FB74002F5BD0 /* Alert.swift */; };
@@ -188,6 +189,7 @@
 		FE1678ED22FC92970013B94A /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
 		FE1A8BA221C96C1B00604141 /* RoundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
 		FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager_Session.swift; sourceTree = "<group>"; };
+		FE25B1702350D2FC00CD69CA /* db-schema-6.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-6.sql"; sourceTree = "<group>"; };
 		FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VCardEditorViewController.swift; sourceTree = "<group>"; };
 		FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDetailsViewController.swift; sourceTree = "<group>"; };
 		FE2809842169FB74002F5BD0 /* Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
@@ -587,6 +589,7 @@
 				FE149D8622A51AD900EE4E03 /* db-schema-4.sql */,
 				FEFFF7CC232FCF25004CB9CE /* ConversationDetails.storyboard */,
 				FEFFF7CE23313B52004CB9CE /* db-schema-5.sql */,
+				FE25B1702350D2FC00CD69CA /* db-schema-6.sql */,
 			);
 			path = BeagleIM;
 			sourceTree = "<group>";
@@ -783,6 +786,7 @@
 				FE4D2132221F2A6E0058B662 /* db-schema-2.sql in Resources */,
 				FEFFF7CF23313B52004CB9CE /* db-schema-5.sql in Resources */,
 				FEF9CE1D2082765000B09B6C /* db-schema-1.sql in Resources */,
+				FE25B1712350D2FC00CD69CA /* db-schema-6.sql in Resources */,
 				FE4073A721BACA2D009CE335 /* VoIP.storyboard in Resources */,
 				FE8C9F5421B3F6BD00BE8332 /* container-migration.plist in Resources */,
 				FE02DD11225B8D1100FA08EB /* db-schema-3.sql in Resources */,

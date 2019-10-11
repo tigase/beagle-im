@@ -87,6 +87,16 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         NotificationCenter.default.addObserver(self, selector: #selector(hourChanged), name: AppDelegate.HOUR_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(scrollToMessage(_:)), name: AbstractChatViewController.SCROLL_TO_MESSAGE, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(boundsChange), name: NSView.boundsDidChangeNotification, object: self.tableView.enclosingScrollView?.contentView);
+        
+        DBChatStore.instance.messageDraft(for: account, with: jid, completionHandler: { draft in
+            guard let text = draft else {
+                return;
+            }
+            DispatchQueue.main.async {
+                self.messageField.string = text;
+                self.updateMessageFieldSize();
+            }
+        });
     }
     
     override func viewWillDisappear() {
@@ -97,6 +107,10 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         }
         NotificationCenter.default.removeObserver(self, name: NSWindow.didBecomeKeyNotification, object: nil);
         NotificationCenter.default.removeObserver(self, name: AppDelegate.HOUR_CHANGED, object: nil);
+        if let account = self.account, let jid = self.jid {
+            let draft = self.messageField.string;
+            DBChatStore.instance.storeMessage(draft: draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : draft, for: account, with: jid);
+        }
     }
     
     override func viewDidAppear() {

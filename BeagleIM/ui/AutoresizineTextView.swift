@@ -27,6 +27,12 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
     
     weak var dragHandler: NSDraggingDestination? = nil;
     
+    override var string: String {
+        didSet {
+            self.invalidateIntrinsicContentSize();
+        }
+    }
+    
     override func awakeFromNib() {
         self.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1.0, weight: .light);
         self.textStorage?.delegate = self;
@@ -47,7 +53,6 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
     
     func reset() {
         self.string = "";
-        self.invalidateIntrinsicContentSize();
     }
     
     override func cancelOperation(_ sender: Any?) {

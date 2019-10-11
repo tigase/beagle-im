@@ -93,6 +93,8 @@ open class DBChatStore {
     fileprivate static let UPDATE_CHAT_NAME = "UPDATE chats SET name = :name WHERE account = :account AND jid = :jid";
     fileprivate static let UPDATE_CHAT_OPTIONS = "UPDATE chats SET options = ? WHERE account = ? AND jid = ?";
     fileprivate static let CHANGE_CHAT_ENCRYPTION = "UPDATE chats SET encryption = :encryption WHERE account = :account AND jid = :jid";
+    fileprivate static let UPDATE_MESSAGE_DRAFT = "UPDATE chats SET message_draft = ? WHERE account = ? AND jid = ? AND IFNULL(message_draft, '') <> IFNULL(?, '')";
+    fileprivate static let GET_MESSAGE_DRAFT = "SELECT message_draft FROM chats WHERE account = ? AND jid = ?";
     public let dispatcher: QueueDispatcher;
 
     fileprivate let closeChatStmt: DBStatement;
@@ -103,6 +105,9 @@ open class DBChatStore {
     fileprivate let updateChatOptionsStmt: DBStatement;
     fileprivate let updateChatNameStmt: DBStatement;
     fileprivate let changeChatEncryptionStmt: DBStatement;
+    fileprivate let updateMessageDraftStmt: DBStatement;
+    fileprivate let getMessageDraftStmt: DBStatement;
+
 
     fileprivate var accountChats = [BareJID: AccountChats]();
     
@@ -126,6 +131,8 @@ open class DBChatStore {
         updateChatNameStmt = try! DBConnection.main.prepareStatement(DBChatStore.UPDATE_CHAT_NAME);
         updateChatOptionsStmt = try! DBConnection.main.prepareStatement(DBChatStore.UPDATE_CHAT_OPTIONS);
         changeChatEncryptionStmt = try! DBConnection.main.prepareStatement(DBChatStore.CHANGE_CHAT_ENCRYPTION);
+        updateMessageDraftStmt = try! DBConnection.main.prepareStatement(DBChatStore.UPDATE_MESSAGE_DRAFT);
+        getMessageDraftStmt = try! DBConnection.main.prepareStatement(DBChatStore.GET_MESSAGE_DRAFT);
     }
  
     func count(for account: BareJID) -> Int {
@@ -313,6 +320,21 @@ open class DBChatStore {
                 (chat as? DBChat)?.remoteChatState = nil;
                 (chat as? DBChat)?.localChatState = .active;
             }
+        }
+    }
+        
+    func messageDraft(for account: BareJID, with jid: BareJID, completionHandler: @escaping (String?)->Void) {
+        dispatcher.async {
+            let text = try! self.getMessageDraftStmt.queryFirstMatching(account, jid, forEachRowUntil: { (cursor) -> String? in
+                return cursor["message_draft"];
+            })
+            completionHandler(text);
+        }
+    }
+    
+    func storeMessage(draft: String?, for account: BareJID, with jid: BareJID) {
+        dispatcher.async {
+            _ = try! self.updateMessageDraftStmt.update(draft, account, jid, draft);
         }
     }
     
