@@ -135,7 +135,7 @@ class BaseChatMessageCellView: NSTableCellView {
         }
         self.message.attributedStringValue = msg;
     }
-    
+        
     override func layout() {
         if Settings.alternateMessageColoringBasedOnDirection.bool() {
             if let direction = self.direction {
@@ -149,14 +149,14 @@ class BaseChatMessageCellView: NSTableCellView {
                 }
             }
         }
+//        if let width = self.superview?.superview?.frame.width {
+//            if self.state != nil {
+//                self.message.preferredMaxLayoutWidth = width - 68;
+//            } else {
+//                self.message.preferredMaxLayoutWidth = width - 50;
+//            }
+//        }
         super.layout();
-        if let width = self.superview?.superview?.frame.width {
-            if self.state != nil {
-                self.message.preferredMaxLayoutWidth = width - 68;
-            } else {
-                self.message.preferredMaxLayoutWidth = width - 50;
-            }
-        }
     }
     
     fileprivate func appendPreview(message msg: NSMutableAttributedString, url: URL, image origImage: NSImage, first: Bool) {

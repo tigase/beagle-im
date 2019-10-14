@@ -142,20 +142,20 @@ class ChatCellView: NSTableCellView {
         }
     }
 
-    override func layout() {
-        super.layout();
-        
-        if let width = self.superview?.superview?.frame.width {
-            self.lastMessage.preferredMaxLayoutWidth = width - 66;
-        }
-    }
-    
-    override func resize(withOldSuperviewSize oldSize: NSSize) {
-        super.resize(withOldSuperviewSize: oldSize);
-        if let width = self.superview?.superview?.frame.width {
-            self.lastMessage.preferredMaxLayoutWidth = width - 66;
-        }
-    }
+//    override func layout() {
+//        super.layout();
+//
+//        if let width = self.superview?.superview?.frame.width {
+//            self.lastMessage.preferredMaxLayoutWidth = width - 66;
+//        }
+//    }
+//
+//    override func resize(withOldSuperviewSize oldSize: NSSize) {
+//        super.resize(withOldSuperviewSize: oldSize);
+//        if let width = self.superview?.superview?.frame.width {
+//            self.lastMessage.preferredMaxLayoutWidth = width - 66;
+//        }
+//    }
  
     func setMouseHovers(_ val: Bool) {
         self.lastMessage.blured = val;
