@@ -22,6 +22,10 @@
 		FE28097D21652A7C002F5BD0 /* VCardEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */; };
 		FE28097F2166892D002F5BD0 /* AccountDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */; };
 		FE2809852169FB75002F5BD0 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2809842169FB74002F5BD0 /* Alert.swift */; };
+		FE2ACA8023546C4B004623BC /* NSString_extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA7F23546C4B004623BC /* NSString_extensions.swift */; };
+		FE2ACA8223546C8E004623BC /* NSMutableAttributedString_extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA8123546C8E004623BC /* NSMutableAttributedString_extensions.swift */; };
+		FE2ACA842355B967004623BC /* EditKeywordsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA832355B967004623BC /* EditKeywordsController.swift */; };
+		FE2ACA862355C5DA004623BC /* NSTableViewCustomGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA852355C5DA004623BC /* NSTableViewCustomGrid.swift */; };
 		FE30D8AD214C2D7100670BEC /* RosterViewController_ContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8AC214C2D7100670BEC /* RosterViewController_ContextMenu.swift */; };
 		FE30D8AF214C3B7600670BEC /* NSImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8AE214C3B7600670BEC /* NSImage.swift */; };
 		FE30D8B1214CE93600670BEC /* FormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8B0214CE93600670BEC /* FormView.swift */; };
@@ -193,6 +197,10 @@
 		FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VCardEditorViewController.swift; sourceTree = "<group>"; };
 		FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDetailsViewController.swift; sourceTree = "<group>"; };
 		FE2809842169FB74002F5BD0 /* Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
+		FE2ACA7F23546C4B004623BC /* NSString_extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSString_extensions.swift; sourceTree = "<group>"; };
+		FE2ACA8123546C8E004623BC /* NSMutableAttributedString_extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSMutableAttributedString_extensions.swift; sourceTree = "<group>"; };
+		FE2ACA832355B967004623BC /* EditKeywordsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditKeywordsController.swift; sourceTree = "<group>"; };
+		FE2ACA852355C5DA004623BC /* NSTableViewCustomGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSTableViewCustomGrid.swift; sourceTree = "<group>"; };
 		FE30D8AC214C2D7100670BEC /* RosterViewController_ContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RosterViewController_ContextMenu.swift; sourceTree = "<group>"; };
 		FE30D8AE214C3B7600670BEC /* NSImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSImage.swift; sourceTree = "<group>"; };
 		FE30D8B0214CE93600670BEC /* FormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormView.swift; sourceTree = "<group>"; };
@@ -430,6 +438,7 @@
 				FE5CAF992216EEF200FABD46 /* NSPopupButtonNoSizeWhenHidden.swift */,
 				FEEF25352266303A00202B28 /* OMEMOIdentititesTableView.swift */,
 				FE7F876B2343D99300254AF2 /* CustomScroller.swift */,
+				FE2ACA852355C5DA004623BC /* NSTableViewCustomGrid.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -450,6 +459,8 @@
 				FE5CAF972215BCD600FABD46 /* ScriptsManager.swift */,
 				FE9CDF0C2269E282001039C3 /* MessageEncryption.swift */,
 				FEA3D127233D0A10000BD20A /* TasksQueue.swift */,
+				FE2ACA7F23546C4B004623BC /* NSString_extensions.swift */,
+				FE2ACA8123546C8E004623BC /* NSMutableAttributedString_extensions.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -628,6 +639,7 @@
 				FEDCCA3C22F48C8300CC5C2C /* NetworkSettingsController.swift */,
 				FE65A282230314D9001E68EF /* SettingsTabViewController.swift */,
 				FE988C18232C0A0C002D85AF /* ChangePasswordController.swift */,
+				FE2ACA832355B967004623BC /* EditKeywordsController.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -843,6 +855,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FE6E6BFC21384D5F003B1696 /* OutlineGroupItemButton.swift in Sources */,
+				FE2ACA862355C5DA004623BC /* NSTableViewCustomGrid.swift in Sources */,
 				FE41FB31215AB32200AD86D3 /* ServerCertificateInfo.swift in Sources */,
 				FE6E6BFE21384D5F003B1696 /* ChatMessageCellView.swift in Sources */,
 				FEF5C3FA22632C0000889863 /* OpenSSL_AES_GCM_Engine.swift in Sources */,
@@ -905,6 +918,7 @@
 				FE02DD13225BC33F00FA08EB /* DBOMEMOStore.swift in Sources */,
 				FE6E6C0121384D5F003B1696 /* ChatsWindowController.swift in Sources */,
 				FE3AA0D3215409B8001667A9 /* DBRoomsManager.swift in Sources */,
+				FE2ACA8023546C4B004623BC /* NSString_extensions.swift in Sources */,
 				FE5BE64C213AC3EA00463183 /* ChatsCellViewCloseButton.swift in Sources */,
 				FE3AA0D12154077D001667A9 /* ChatsListGroupAbstractChat.swift in Sources */,
 				FE5C6B2B228C119A003DAB30 /* ExecuteAdHocCommandController.swift in Sources */,
@@ -929,6 +943,7 @@
 				FED7AEBF214035C0001E164B /* AccountsListController.swift in Sources */,
 				FEF8BED2216A6761001DA755 /* InviteToGroupchatController.swift in Sources */,
 				FE6E6BFD21384D5F003B1696 /* Open1On1ChatController.swift in Sources */,
+				FE2ACA8223546C8E004623BC /* NSMutableAttributedString_extensions.swift in Sources */,
 				FED2ECF42066B01C00F506A5 /* AppDelegate.swift in Sources */,
 				FE30D8BA214ED28A00670BEC /* OpenGroupchatController.swift in Sources */,
 				FE41FB33215B8D5A00AD86D3 /* ServerCertificateErrorController.swift in Sources */,
@@ -941,6 +956,7 @@
 				FE6E6C0621384D5F003B1696 /* Database.swift in Sources */,
 				FEEF25362266303A00202B28 /* OMEMOIdentititesTableView.swift in Sources */,
 				FEB4EAFC2162A3DC00F8A9E2 /* AutoresizineTextView.swift in Sources */,
+				FE2ACA842355B967004623BC /* EditKeywordsController.swift in Sources */,
 				FEB4EAFE2163714300F8A9E2 /* RoundedScrollView.swift in Sources */,
 				FEC5DC8021552A9B00AA3E4F /* ChatViewDataSource.swift in Sources */,
 				FE41FB37215BBFC800AD86D3 /* DBCapabilitiesCache.swift in Sources */,

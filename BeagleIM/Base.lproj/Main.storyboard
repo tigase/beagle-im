@@ -767,7 +767,7 @@ CA
                                                                     </constraints>
                                                                     <buttonCell key="cell" type="roundRect" bezelStyle="roundedRect" image="NSAddTemplate" imagePosition="only" alignment="center" inset="2" id="LNb-VG-NLr">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                                        <font key="font" metaFont="controlContent"/>
+                                                                        <font key="font" metaFont="system" size="12"/>
                                                                     </buttonCell>
                                                                     <color key="contentTintColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                     <connections>
@@ -809,7 +809,7 @@ CA
                                                                 <textField horizontalHuggingPriority="300" verticalHuggingPriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="PqR-oy-TGv">
                                                                     <rect key="frame" x="231" y="27" width="67" height="15"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Timestamp" id="uIX-uL-LSO">
-                                                                        <font key="font" metaFont="controlContent"/>
+                                                                        <font key="font" metaFont="system" size="12"/>
                                                                         <color key="textColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
@@ -1519,7 +1519,7 @@ AAAAAAEGA
                             <textField horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0FB-QR-fM1">
                                 <rect key="frame" x="6" y="232" width="380" height="16"/>
                                 <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="jTO-BC-Tlr">
-                                    <font key="font" metaFont="controlContent"/>
+                                    <font key="font" metaFont="system" size="12"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
@@ -2059,7 +2059,7 @@ Gw
                             <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="PVg-8T-5qZ">
                                 <rect key="frame" x="66" y="178" width="402" height="30"/>
                                 <textFieldCell key="cell" selectable="YES" title="It is not possible to automatically verify server certificate for test.com. Please review following certiciate details." id="Wxz-bh-twp">
-                                    <font key="font" metaFont="controlContent"/>
+                                    <font key="font" metaFont="system" size="12"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
@@ -2112,7 +2112,7 @@ Gw
                                         <textField key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="dcc-gM-k6w">
                                             <rect key="frame" x="164" y="92" width="35" height="15"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="sfI-Td-iUq">
-                                                <font key="font" metaFont="controlContent"/>
+                                                <font key="font" metaFont="system" size="12"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
@@ -2132,7 +2132,7 @@ Gw
                                         <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gtx-0b-jdu">
                                             <rect key="frame" x="164" y="69" width="35" height="15"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="5cb-bY-3Nb">
-                                                <font key="font" metaFont="controlContent"/>
+                                                <font key="font" metaFont="system" size="12"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
@@ -2152,7 +2152,7 @@ Gw
                                         <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="def-pZ-Bbx">
                                             <rect key="frame" x="164" y="46" width="35" height="15"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="Dmx-hJ-hXv">
-                                                <font key="font" metaFont="controlContent"/>
+                                                <font key="font" metaFont="system" size="12"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
@@ -2172,7 +2172,7 @@ Gw
                                         <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="V7s-ww-GPg">
                                             <rect key="frame" x="164" y="23" width="35" height="15"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="Toq-W6-Bi6">
-                                                <font key="font" metaFont="controlContent"/>
+                                                <font key="font" metaFont="system" size="12"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
@@ -2192,7 +2192,7 @@ Gw
                                         <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ARy-Kq-eaC">
                                             <rect key="frame" x="164" y="0.0" width="35" height="15"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="bgM-PY-KWL">
-                                                <font key="font" metaFont="controlContent"/>
+                                                <font key="font" metaFont="system" size="12"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
@@ -2895,7 +2895,7 @@ Gw
                             <textField horizontalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="oBJ-L5-QGd">
                                 <rect key="frame" x="18" y="66" width="220" height="42"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Enter contact details:" id="Mye-bs-AKS">
-                                    <font key="font" metaFont="controlContent"/>
+                                    <font key="font" metaFont="system" size="12"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
@@ -3458,7 +3458,7 @@ AAAAAAEGA
                                 </constraints>
                                 <buttonCell key="cell" type="roundRect" bezelStyle="roundedRect" image="NSAddTemplate" imagePosition="overlaps" alignment="center" state="on" imageScaling="proportionallyDown" inset="2" id="Nku-PV-0Eh">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="controlContent"/>
+                                    <font key="font" metaFont="system" size="12"/>
                                 </buttonCell>
                                 <connections>
                                     <action selector="attachFile:" target="vht-52-XAK" id="JeY-XV-5ON"/>

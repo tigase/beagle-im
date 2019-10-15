@@ -37,7 +37,7 @@ class ChatMessageCellView: BaseChatMessageCellView {
         self.avatar?.name = senderName;
     }
     
-    override func set(message item: ChatMessage) {
+    override func set(message item: ChatMessage, nickname: String? = nil, keywords: [String]? = nil) {
         var timestampStr: NSMutableAttributedString? = nil;
 
         switch item.encryption {
@@ -58,7 +58,7 @@ class ChatMessageCellView: BaseChatMessageCellView {
         } else {
             self.timestamp.attributedStringValue = item.state == .outgoing_unsent ? NSAttributedString(string: "Unsent") : NSMutableAttributedString(string: formatTimestamp(item.timestamp));
         }
-        super.set(message: item);
+        super.set(message: item, nickname: nickname, keywords: keywords);
     }
     
 }

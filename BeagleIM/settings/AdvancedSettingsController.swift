@@ -37,6 +37,9 @@ class AdvancedSettingsController: NSViewController {
     fileprivate var ignoreJingleSupportCheck: NSButton!;
     fileprivate var enableBookmarksSync: NSButton!;
 
+    fileprivate var markKeywords: NSButton!;
+    fileprivate var markKeywordsWithBold: NSButton!;
+    fileprivate var editKeywords: NSButton!;
     
     override func viewDidLoad() {
         messageGrouping = formView.addRow(label: "Message grouping:", field: NSPopUpButton(frame: .zero, pullsDown: false));
@@ -47,6 +50,11 @@ class AdvancedSettingsController: NSViewController {
         alternateMessageColoringBasedOnDirection = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Alternate colors for incoming/outgoing messages", target: self, action: #selector(checkboxChanged(_:))));
         formView.groupItems(from: alternateMessageColoringBasedOnDirection, to: alternateMessageColoringBasedOnDirection);
         
+        markKeywords = formView.addRow(label: "Keywords", field: NSButton(checkboxWithTitle: "Enabled", target: self, action: #selector(checkboxChanged)));
+        markKeywordsWithBold = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Make them bold", target: self, action: #selector(checkboxChanged)));
+        editKeywords = formView.addRow(label: "", field: NSButton(title: "Edit keywords", target: self, action: #selector(editKeywordsClicked)));
+        formView.groupItems(from: markKeywords, to: editKeywords);
+
         requestSubscriptionButton = formView.addRow(label: "Adding user:", field: NSButton(checkboxWithTitle: "Request presence subscription", target: self, action: #selector(checkboxChanged)));
         allowSubscriptionButton = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Allow presence subscription", target: self, action: #selector(checkboxChanged)));
         formView.groupItems(from: requestSubscriptionButton, to: allowSubscriptionButton);
@@ -82,6 +90,11 @@ class AdvancedSettingsController: NSViewController {
         allowSubscriptionButton.state = Settings.allowPresenceSubscription.bool() ? .on : .off;
         ignoreJingleSupportCheck.state = Settings.ignoreJingleSupportCheck.bool() ? .on : .off;
         enableBookmarksSync.state = Settings.enableBookmarksSync.bool() ? .on : .off;
+        let keywords = Settings.markKeywords.stringArrays();
+        markKeywords.state = keywords != nil ? .on : .off;
+        markKeywordsWithBold.state = Settings.boldKeywords.bool() ? .on : .off;
+        markKeywordsWithBold.isEnabled = markKeywords.state == .on;
+        editKeywords.isEnabled = markKeywords.state == .on;
     }
     
     @objc func checkboxChanged(_ sender: NSButton) {
@@ -107,11 +120,29 @@ class AdvancedSettingsController: NSViewController {
             Settings.ignoreJingleSupportCheck.set(value: sender.state == .on);
         case enableBookmarksSync:
             Settings.enableBookmarksSync.set(value: sender.state == .on);
+        case markKeywords:
+            Settings.markKeywords.set(values: (sender.state == .on ? [] : nil) as [String]?);
+            markKeywordsWithBold.isEnabled = sender.state == .on;
+            editKeywords.isEnabled = markKeywords.state == .on;
+        case markKeywordsWithBold:
+            Settings.boldKeywords.set(value: sender.state == .on);
         default:
             break;
         }
     }
     
+    @objc func editKeywordsClicked(_ sender: NSButton) {
+        guard let editKeywordsController = NSStoryboard(name: "Settings", bundle: nil).instantiateController(withIdentifier: "EditKeywordsController") as? NSViewController else {
+            return;
+        }
+        self.presentAsSheet(editKeywordsController);
+    }
+    
+//    @objc func keywordsChanged(_ sender: NSTextField) {
+//        let keywords = sender.stringValue.split(separator: ",").map({ x -> String in String(x).trimmingCharacters(in: .whitespacesAndNewlines)}).filter({ s -> Bool in !s.isEmpty});
+//        Settings.markKeywords.set(values: keywords);
+//    }
+//
     @objc func sliderChanged(_ sender: NSSlider) {
         switch sender {
         case imagePreviewMaxSize:

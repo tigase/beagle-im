@@ -39,6 +39,8 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     
     fileprivate var participantsContainer: GroupchatParticipantsContainer?;
     
+    private var keywords: [String]? = Settings.markKeywords.stringArrays();
+    
     override var isSharingAvailable: Bool {
         return super.isSharingAvailable && room.state == .joined;
     }
@@ -235,7 +237,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                 }
                 c.set(senderName: item.authorNickname ?? "From \(item.jid.stringValue)");
             }
-            cell.set(message: item);
+            cell.set(message: item, nickname: self.room.nickname, keywords: self.keywords);
             
             return cell;
         }

@@ -32,7 +32,7 @@ class BaseChatMessageCellView: NSTableCellView {
     @IBOutlet var state: NSTextField?;
     fileprivate var direction: MessageDirection? = nil;
     
-    func set(message item: ChatMessage) {
+    func set(message item: ChatMessage, nickname: String? = nil, keywords: [String]? = nil) {
         let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
         
         let messageBody = self.messageBody(item: item);
@@ -84,7 +84,12 @@ class BaseChatMessageCellView: NSTableCellView {
         if Settings.enableMarkdownFormatting.bool() {
             Markdown.applyStyling(attributedString: msg, showEmoticons: Settings.showEmoticons.bool());
         }
-        
+        if let nick = nickname {
+            msg.markMention(of: nick, withColor: NSColor.systemBlue, bold: Settings.boldKeywords.bool());
+        }
+        if let keys = keywords {
+            msg.mark(keywords: keys, withColor: NSColor.systemRed, bold: Settings.boldKeywords.bool());
+        }
         if let errorMessage = item.error {
             msg.append(NSAttributedString(string: "\n------\n\(errorMessage)", attributes: [.foregroundColor : NSColor.systemRed]));
         }
@@ -210,7 +215,7 @@ class BaseChatMessageCellView: NSTableCellView {
         }
         
     }
-    
+
     fileprivate static func downloadPreviews(for item: ChatMessage, urls: [URL]) {
         guard !urls.isEmpty && Settings.imageDownloadSizeLimit.integer() > 0 else {
             return;

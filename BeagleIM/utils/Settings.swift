@@ -53,6 +53,9 @@ enum Settings: String {
     case alternateMessageColoringBasedOnDirection
     case messageGrouping
     
+    case boldKeywords
+    case markKeywords
+    
     case turnServer
     
     public static let CHANGED = Notification.Name("settingChanged");
@@ -102,8 +105,17 @@ enum Settings: String {
         valueChanged();
     }
     
+    func set(values: [String]?) {
+        UserDefaults.standard.set(values, forKey: self.rawValue);
+        valueChanged();
+    }
+    
     func string() -> String? {
         return UserDefaults.standard.string(forKey: self.rawValue);
+    }
+    
+    func stringArrays() -> [String]? {
+        return UserDefaults.standard.stringArray(forKey: self.rawValue);
     }
     
     func bareJid() -> BareJID? {
