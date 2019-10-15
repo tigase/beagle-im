@@ -675,11 +675,12 @@ extension NSTextField {
         textStorage.addLayoutManager(layoutManager);
 
         layoutManager.typesetterBehavior = .latestBehavior;
-        textContainer.lineFragmentPadding = 0;
+        textContainer.lineFragmentPadding = 2;
         textContainer.maximumNumberOfLines = self.maximumNumberOfLines;
         textContainer.lineBreakMode = self.lineBreakMode;
         
-        textContainer.size = self.intrinsicContentSize;
+        textContainer.size = self.cell?.titleRect(forBounds: self.bounds).size ?? .zero;
+        print(self.bounds.size, self.cell?.titleRect(forBounds: self.bounds).size);
         
         textStorage.beginEditing();
         textStorage.setAttributedString(self.attributedStringValue);
