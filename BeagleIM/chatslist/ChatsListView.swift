@@ -206,11 +206,6 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
                         self.view.window?.windowController?.showWindow(self);
 
                         self.outlineView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false);
-                        if messageId != nil {
-                            DispatchQueue.main.async {
-                                NotificationCenter.default.post(name: AbstractChatViewController.SCROLL_TO_MESSAGE, object: nil, userInfo: ["account": account, "jid": jid, "messageId": messageId!]);
-                            }
-                        }
                     }
                 }
             }
@@ -227,11 +222,6 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
                     self.view.window?.windowController?.showWindow(self);
                     
                     self.outlineView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false);
-                    if messageId != nil {
-                        DispatchQueue.main.async {
-                            NotificationCenter.default.post(name: AbstractChatViewController.SCROLL_TO_MESSAGE, object: nil, userInfo: ["account": item.chat.account, "jid": item.chat.jid.bareJid, "messageId": messageId!]);
-                        }
-                    }
                 }
             }
         }

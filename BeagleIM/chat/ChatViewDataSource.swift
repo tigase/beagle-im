@@ -354,7 +354,7 @@ class ChatViewDataSource {
         }
         
         func item(at row: Int) -> ChatViewItemProtocol? {
-            guard row < self.items.count else {
+            guard row < self.items.count && row >= 0 else {
                 return nil;
             }
             return self.items[row];

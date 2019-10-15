@@ -24,8 +24,6 @@ import TigaseSwift
 
 class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatViewDataSourceDelegate, NSTextViewDelegate {
 
-    static let SCROLL_TO_MESSAGE = Notification.Name("chatScrollToMessage");
-
     @IBOutlet var tableView: NSTableView!;
     @IBOutlet var messageFieldScroller: NSScrollView!;
     @IBOutlet var messageField: AutoresizingTextView!;
@@ -85,7 +83,6 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         NotificationCenter.default.addObserver(self, selector: #selector(scrolledRowToVisible(_:)), name: ChatViewTableView.didScrollRowToVisible, object: self.tableView);
         NotificationCenter.default.addObserver(self, selector: #selector(didBecomeKeyWindow), name: NSWindow.didBecomeKeyNotification, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(hourChanged), name: AppDelegate.HOUR_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(scrollToMessage(_:)), name: AbstractChatViewController.SCROLL_TO_MESSAGE, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(boundsChange), name: NSView.boundsDidChangeNotification, object: self.tableView.enclosingScrollView?.contentView);
         
         DBChatStore.instance.messageDraft(for: account, with: jid, completionHandler: { draft in
@@ -472,25 +469,6 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         };
         
         NSPasteboard.general.setString(text.joined(separator: "\n"), forType: .string);
-    }
-    
-    @objc func scrollToMessage(_ notification: Notification) {
-        guard let account = notification.userInfo?["account"] as? BareJID, let jid = notification.userInfo?["jid"] as? BareJID, let messageId = notification.userInfo?["messageId"] as? Int else {
-            return;
-        }
-     
-        guard self.account == account && self.jid == jid else {
-            return;
-        }
-        
-        let position = DBChatHistoryStore.instance.itemPosition(for: account, with: jid, msgId: messageId) ?? 0;
-        
-        print("found on position:", position);
-        self.dataSource.loadItems(limit: position + 20, awaitIfInProgress: true) { (firstUnread) in
-            DispatchQueue.main.async {
-                self.tableView.scrollRowToVisible(position);
-            }
-        }
     }
     
     @objc func didEndScrolling(_ notification: Notification) {
