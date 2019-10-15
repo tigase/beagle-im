@@ -768,7 +768,7 @@
 					};
 				};
 			};
-			buildConfigurationList = FED2ECEB2066B01C00F506A5 /* Build configuration list for PBXProject "BeagleIM" */;
+			buildConfigurationList = FED2ECEB2066B01C00F506A5 /* Build configuration list for PBXProject " " */;
 			compatibilityVersion = "Xcode 8.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1129,7 +1129,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 56;
+				CURRENT_PROJECT_VERSION = 57;
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1157,7 +1157,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 56;
+				CURRENT_PROJECT_VERSION = 57;
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1242,7 +1242,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		FED2ECEB2066B01C00F506A5 /* Build configuration list for PBXProject "BeagleIM" */ = {
+		FED2ECEB2066B01C00F506A5 /* Build configuration list for PBXProject " " */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				FED2ED142066B01C00F506A5 /* Debug */,
