@@ -71,7 +71,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         
         mouseMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseDragged, .leftMouseUp, .rightMouseDown, .mouseMoved, .keyDown]) { (event) -> NSEvent? in
             guard event.type != .keyDown else {
-                if self.currentSession != nil {
+                if self.currentSession != nil && event.modifierFlags.contains(.command) && event.characters?.first == "c" {
                     self.copySelectedText(self);
                     return nil;
                 }
