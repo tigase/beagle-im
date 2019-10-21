@@ -508,11 +508,16 @@ class ChatViewTableView: NSTableView {
     }
     override func scrollRowToVisible(_ row: Int) {
         super.scrollRowToVisible(row);
-        if !self.rows(in: self.visibleRect).contains(row) {
-            super.scrollRowToVisible(row);
+        let visibleRows = self.rows(in: self.visibleRect);
+        if !visibleRows.contains(row) {
+            print("visible rows:", visibleRows, "need:", row);
+            DispatchQueue.main.async {
+                self.scrollRowToVisible(row);
+            }
+        } else {
+            print("scrollRowToVisible called!");
+            NotificationCenter.default.post(name: ChatViewTableView.didScrollRowToVisible, object: self);
         }
-        print("scrollRowToVisible called!");
-        NotificationCenter.default.post(name: ChatViewTableView.didScrollRowToVisible, object: self);
     }
 }
 

@@ -52,8 +52,9 @@ class ChatViewDataSource {
                 if let it = store.item(at: store.count - 1) {
                     loadItems(before: it.id, limit: 100, completionHandler: nil);
                 }
-            } else if (row == 0) {
-                trimStore();
+//            } else if (row == 0) {
+                // this causes issues!! we are loading row 0 during initial scrollRowToVisible!
+                //trimStore();
             }
         } else {
             print("no item for row:", row, "index:", 0, "store.count:", store.count);

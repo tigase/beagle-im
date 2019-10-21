@@ -495,11 +495,14 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     }
     
     func markAsReadUpToNewestVisibleRow() {
+        let visibleRows = self.tableView.rows(in: self.tableView.visibleRect);
+        if visibleRows.contains(0) {
+            self.dataSource.trimStore();
+        }
         guard self.hasFocus && self.chat.unread > 0 else {
             return;
         }
         
-        let visibleRows = self.tableView.rows(in: self.tableView.visibleRect);
         var ts: Date? = dataSource.getItem(at: visibleRows.lowerBound)?.timestamp;
         if let tmp = dataSource.getItem(at: visibleRows.upperBound-1)?.timestamp {
             if ts == nil {
