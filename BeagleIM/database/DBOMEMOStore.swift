@@ -27,7 +27,7 @@ class DBOMEMOStore {
     
     public static let instance = DBOMEMOStore();
     
-    fileprivate let keyPairForAccountStmt = try! DBConnection.main.prepareStatement("SELECT key FROM omemo_identities WHERE account = :account AND own = 1");
+    fileprivate let keyPairForAccountStmt = try! DBConnection.main.prepareStatement("SELECT key FROM omemo_identities WHERE account = :account AND name = :name AND device_id = :deviceId AND own = 1");
     fileprivate let updateKeyPairStmt = try! DBConnection.main.prepareStatement("UPDATE omemo_identities SET key = :key, fingerprint = :fingerprint, own = :own WHERE account = :account AND name = :name AND device_id = :deviceId");
     fileprivate let loadKeyPairStatusStmt = try! DBConnection.main.prepareStatement("SELECT status FROM omemo_identities WHERE account = :account AND name = :name AND device_id = :deviceId");
     fileprivate let updateKeyPairStatusStmt = try! DBConnection.main.prepareStatement("UPDATE omemo_identities SET status = :status WHERE account = :account AND name = :name AND device_id = :deviceId");
@@ -61,7 +61,10 @@ class DBOMEMOStore {
     fileprivate let wipeSessionsStoreStmt = try! DBConnection.main.prepareStatement("DELETE FROM omemo_sessions WHERE account = :account");
     
     func keyPair(forAccount account: BareJID) -> SignalIdentityKeyPairProtocol? {
-        guard let data = try! keyPairForAccountStmt.queryFirstMatching(["account": account], forEachRowUntil: { (cursor) -> Data? in
+        guard let deviceId = localRegistrationId(forAccount: account) else {
+            return nil;
+        }
+        guard let data = try! keyPairForAccountStmt.queryFirstMatching(["account": account, "name": account.stringValue, "deviceId": deviceId] as [String: Any?], forEachRowUntil: { (cursor) -> Data? in
             return cursor["key"];
         }) else {
             return nil;
@@ -116,7 +119,7 @@ class DBOMEMOStore {
         return true;
     }
 
-    func save(identity: SignalAddress, publicKeyData: Data?, forAccount account: BareJID, own: Bool = false) -> Bool {
+    func save(identity: SignalAddress, publicKeyData: Data?, forAccount account: BareJID) -> Bool {
         guard publicKeyData != nil else {
             // should we remove this key?
             return false;
@@ -125,7 +128,7 @@ class DBOMEMOStore {
         let fingerprint: String = publicKeyData!.map { (byte) -> String in
             return String(format: "%02x", byte)
             }.joined();
-        var params: [String: Any?] = ["account": account, "name": identity.name, "deviceId": identity.deviceId, "key": publicKeyData!, "fingerprint": fingerprint, "own": (own ? 1 : 0)];
+        var params: [String: Any?] = ["account": account, "name": identity.name, "deviceId": identity.deviceId, "key": publicKeyData!, "fingerprint": fingerprint, "own": 0];
         print("updating identity for account \(account) and address \(identity) with fingerprint \(fingerprint)");
         if try! updateKeyPairStmt.update(params) == 0 {
             // we are blindtrusting the remote identity
@@ -415,8 +418,7 @@ class OMEMOStoreWrapper: SignalStorage {
         if wipe || identityKeyStore.localRegistrationId() == 0 || !hasKeyPair {
             let regId: UInt32 = signalContext.generateRegistrationId();
             AccountSettings.omemoRegistrationId(context!.sessionObject.userBareJid!).set(value: regId);
-        }
-        if !hasKeyPair {
+
             print("no identity key pair! generating new one!");
             let keyPair = SignalIdentityKeyPair.generateKeyPair(context: signalContext);
             if !identityKeyStore.save(identity: SignalAddress(name: context!.sessionObject.userBareJid!.stringValue, deviceId: Int32(identityKeyStore.localRegistrationId())), key: keyPair) {
