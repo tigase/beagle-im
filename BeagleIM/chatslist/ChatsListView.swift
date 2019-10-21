@@ -189,6 +189,8 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         }
     }
     
+    private var scrollChatToMessageWithId: Int?;
+    
     @objc func chatSelected(_ notification: Notification) {
         let messageId = notification.userInfo?["messageId"] as? Int;
         guard let chat = notification.object as? DBChatProtocol else {
@@ -204,7 +206,8 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
                             return;
                         }
                         self.view.window?.windowController?.showWindow(self);
-
+                        self.scrollChatToMessageWithId = messageId;
+                        self.outlineView.selectRowIndexes(IndexSet(), byExtendingSelection: false);
                         self.outlineView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false);
                     }
                 }
@@ -220,7 +223,8 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
                         return;
                     }
                     self.view.window?.windowController?.showWindow(self);
-                    
+                    self.scrollChatToMessageWithId = messageId;
+                    self.outlineView.selectRowIndexes(IndexSet(), byExtendingSelection: false);
                     self.outlineView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false);
                 }
             }
@@ -280,6 +284,8 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 print("selected chat item:", chat.name);
                 let chatController = self.storyboard!.instantiateController(withIdentifier: "ChatViewController") as! ChatViewController;
                 chatController.chat = chat.chat;
+                chatController.scrollChatToMessageWithId = self.scrollChatToMessageWithId;
+                self.scrollChatToMessageWithId = nil;
                 let item = NSSplitViewItem(viewController: chatController);
                 if splitController.splitViewItems.count == 1 {
                     splitController.addSplitViewItem(item);
@@ -290,6 +296,8 @@ extension ChatsListViewController: NSOutlineViewDelegate {
             } else if let room = item as? GroupchatItem {
                 let roomController = self.storyboard?.instantiateController(withIdentifier: "GroupchatViewController") as! GroupchatViewController;
                 roomController.room = (room.chat as! DBChatStore.DBRoom);
+                roomController.scrollChatToMessageWithId = self.scrollChatToMessageWithId;
+                self.scrollChatToMessageWithId = nil;
                 let item = NSSplitViewItem(viewController: roomController);
                 if splitController.splitViewItems.count == 1 {
                     splitController.addSplitViewItem(item);

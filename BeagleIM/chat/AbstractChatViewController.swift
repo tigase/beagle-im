@@ -32,6 +32,8 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     var dataSource: ChatViewDataSource!;
     var chat: DBChatProtocol!;
 
+    var scrollChatToMessageWithId: Int?;
+    
     var account: BareJID! {
         return chat.account;
     }
@@ -59,14 +61,27 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     override func viewWillAppear() {
         super.viewWillAppear();
         self.messageField?.placeholderAttributedString = account != nil ? NSAttributedString(string: "from \(account.stringValue)...", attributes: [.foregroundColor: NSColor.placeholderTextColor]) : nil;
-//        self.tableView.reloadData();
         
-        self.dataSource.refreshData(unread: chat.unread) { (firstUnread) in
-            DispatchQueue.main.async {
-                let unread = firstUnread ?? 0;//self.chat.unread;
-                self.tableView.scrollRowToVisible(unread);
+        if let scrollToMessageWithId = self.scrollChatToMessageWithId {
+            let position = DBChatHistoryStore.instance.itemPosition(for: account, with: jid, msgId: scrollToMessageWithId) ?? 0;
+            self.dataSource.loadItems(before: nil, limit: max(position + 20, 100), awaitIfInProgress: true, unread: chat.unread) { (unread) in
+                DispatchQueue.main.async {
+                    if position > self.dataSource.count {
+                        self.tableView.scrollRowToVisible(0);
+                    } else {
+                        self.tableView.scrollRowToVisible(position);
+                    }
+                }
             }
-        };
+        } else {
+            self.dataSource.refreshData(unread: chat.unread) { (firstUnread) in
+                DispatchQueue.main.async {
+                    let unread = firstUnread ?? 0;//self.chat.unread;
+                    self.tableView.scrollRowToVisible(unread);
+                }
+            };
+        }
+        scrollChatToMessageWithId = nil;
         self.updateMessageFieldSize();
         
         mouseMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseDragged, .leftMouseUp, .rightMouseDown, .mouseMoved, .keyDown]) { (event) -> NSEvent? in
@@ -564,7 +579,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
     func itemAdded(at rows: IndexSet, shouldScroll scroll: Bool = true) {
         let shouldScroll = scroll && rows.contains(0) && tableView.rows(in: self.tableView.visibleRect).contains(0);
         if dataSource.count == rows.count && rows.count > 1 {
-            tableView.reloadData();
+            tableView.insertRows(at: rows, withAnimation: []);
         } else {
             tableView.insertRows(at: rows, withAnimation: NSTableView.AnimationOptions.effectFade)
         }
