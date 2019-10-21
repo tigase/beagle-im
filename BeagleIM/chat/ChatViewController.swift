@@ -507,6 +507,11 @@ class ChatViewTableView: NSTableView {
         print("reflectScrolledClipView called!");
     }
     override func scrollRowToVisible(_ row: Int) {
+        let numberOfRows = self.dataSource?.numberOfRows?(in: self) ?? 0;
+        guard numberOfRows > row else {
+            print("cannot scroll to row", row, "as data source has only", numberOfRows, "rows");
+            return;
+        }
         super.scrollRowToVisible(row);
         let visibleRows = self.rows(in: self.visibleRect);
         if !visibleRows.contains(row) {
