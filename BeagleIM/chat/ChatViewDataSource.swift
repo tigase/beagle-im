@@ -294,7 +294,7 @@ class ChatViewDataSource {
             DispatchQueue.main.async {
                 self.store = MessagesStore(items: []);
                 self.delegate?.itemsReloaded();
-                self.loadItems(before: nil, limit: 100, unread: unread, completionHandler: { firstUnread in
+                self.loadItems(before: nil, limit: max(unread + 20, 100), unread: unread, completionHandler: { firstUnread in
 //                    if unread > 0 {
 //                        if let item = self.store.item(at: unread - 1) {
 //                            let unreadItem = SystemMessage(nextItem: item, kind: .unreadMessages);
