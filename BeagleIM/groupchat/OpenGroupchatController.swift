@@ -284,10 +284,8 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                     configRoomController.account = self.account;
                     configRoomController.mucComponent = self.mucJid!;
                     configRoomController.roomJid = room;
+                    configRoomController.nickname = nickname;
                     self.view.window?.beginSheet(window, completionHandler: { result in
-                        if result == .OK {
-                            self.join(room: room)
-                        }
                         self.close();
                     });
                 }

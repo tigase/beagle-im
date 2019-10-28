@@ -28,13 +28,43 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
     
     fileprivate var visibleFields: [String] = [];
     fileprivate var namedFieldViews: [String: Any] = [:];
+        
+    override var isHidden: Bool {
+        didSet {
+            updateHeight();
+        }
+    }
+    
+    fileprivate(set) var estimatedHeight: CGFloat = 0.0 {
+        didSet {
+            updateHeight();
+        }
+    }
+    
+    func updateHeight() {
+        let oldConstraint = heightConstraint;
+        heightConstraint = self.enclosingScrollView?.heightAnchor.constraint(equalToConstant: isHidden ? 0.0 : min(estimatedHeight + 10, 600));
+        NSAnimationContext.runAnimationGroup({ (context) in
+            context.duration = 0.25;
+            context.allowsImplicitAnimation = true;
+            oldConstraint?.animator().isActive = false;
+            heightConstraint?.animator().isActive = true;
+        }, completionHandler: {
+            if oldConstraint != nil {
+                self.enclosingScrollView?.removeConstraint(oldConstraint!);
+            }
+            print("document height:", self.enclosingScrollView?.documentView?.frame.size.height, self.enclosingScrollView?.contentSize);
+        });
+    }
+    
+    var hideFields: [String] = [];
     
     var form: JabberDataElement? {
         didSet {
-            visibleFields = form?.visibleFieldNames ?? [];
+            visibleFields = form?.visibleFieldNames.filter({ name -> Bool in !self.hideFields.contains(name)}) ?? [];
             self.reloadData();
 
-            var estHeight = self.numberOfRows == 0 ? 0 : self.rect(ofRow: self.numberOfRows - 1).maxY;
+            var estHeight = self.numberOfRows == 0 ? 0 : self.rect(ofColumn: 0).height;
             if self.numberOfRows < 20 {
                 estHeight = 0;
                 for i in 0..<self.numberOfRows {
@@ -58,24 +88,14 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
                     estHeight += max(c1Size.height + 4, (c2Size?.height ?? 0.0) + 4);
                 }
             }
-            NSAnimationContext.runAnimationGroup { (context) in
-                context.duration = 0.25;
-                context.allowsImplicitAnimation = true;
-                if heightConstraint != nil {
-                    heightConstraint?.animator().isActive = false;
-                    self.enclosingScrollView!.removeConstraint(heightConstraint!);
-                    heightConstraint = nil;
-                }
-                heightConstraint = self.enclosingScrollView?.heightAnchor.constraint(equalToConstant: min(estHeight + 10, 600));
-                heightConstraint?.animator().isActive = true;
-            }
+            estimatedHeight = estHeight;
         }
     }
     
     var heightConstraint: NSLayoutConstraint?;
     
     override func viewDidMoveToSuperview() {
-        self.heightConstraint = self.enclosingScrollView?.heightAnchor.constraint(equalToConstant: 0.0);
+        self.updateHeight();
     }
     
     override init(frame frameRect: NSRect) {

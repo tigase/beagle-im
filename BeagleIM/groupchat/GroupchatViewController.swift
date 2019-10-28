@@ -100,7 +100,9 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         guard room.roomJid == jid && room.account == account else {
             return;
         }
-        avatarView.update(for: room.roomJid, on: room.account, orDefault: NSImage(named: NSImage.userGroupName));
+        DispatchQueue.main.async {
+            self.avatarView.update(for: jid, on: account, orDefault: NSImage(named: NSImage.userGroupName));
+        }
     }
         
     @objc func roomStatusChanged(_ notification: Notification) {
@@ -146,7 +148,11 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     @IBAction func participantsClicked(_ sender: NSButton) {
         let currWidth = self.sidebarWidthConstraint.constant;
         Settings.showRoomDetailsSidebar.set(value: currWidth == 0 ? true : false);
-        self.sidebarWidthConstraint.constant = currWidth != 0 ? 0 : 200;
+        NSAnimationContext.runAnimationGroup { (context) in
+            context.duration = 0.25;
+            context.allowsImplicitAnimation = true;
+            self.sidebarWidthConstraint.animator().constant = currWidth != 0 ? 0 : 200;
+        }
     }
     
     @IBAction func configureClicked(_ sender: NSMenuItem) {

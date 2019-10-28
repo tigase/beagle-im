@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="15400" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15400"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -10,27 +11,19 @@
             <objects>
                 <viewController title="ConversationDetailsViewController" identifier="ConversationDetailsViewController" storyboardIdentifier="ConversationDetailsViewController" id="yDC-N1-fGo" customClass="ConversationDetailsViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="xq8-f6-pmw">
-                        <rect key="frame" x="0.0" y="0.0" width="340" height="57"/>
+                        <rect key="frame" x="0.0" y="0.0" width="348" height="56"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Kbi-q0-cOs">
-                                <rect key="frame" x="8" y="30" width="66" height="17"/>
-                                <textFieldCell key="cell" lineBreakMode="clipping" title="Test User" id="7b7-bx-vsU">
-                                    <font key="font" metaFont="systemBold"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="8Ku-3C-CwA">
-                                <rect key="frame" x="8" y="12" width="20" height="14"/>
+                                <rect key="frame" x="54" y="12" width="20" height="14"/>
                                 <textFieldCell key="cell" lineBreakMode="clipping" title="Jid" id="Lkw-eP-Rzq">
-                                    <font key="font" metaFont="smallSystem"/>
+                                    <font key="font" metaFont="controlContent" size="11"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
                             <containerView horizontalHuggingPriority="750" verticalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="7e6-TW-Wy5">
-                                <rect key="frame" x="10" y="8" width="320" height="0.0"/>
+                                <rect key="frame" x="10" y="8" width="328" height="0.0"/>
                                 <constraints>
                                     <constraint firstAttribute="height" id="PSM-qJ-q9s"/>
                                 </constraints>
@@ -38,21 +31,45 @@
                                     <segue destination="vuF-Zx-mrT" kind="embed" identifier="PrepareConversationSettingsViewController" id="z1N-H5-fNF"/>
                                 </connections>
                             </containerView>
+                            <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="gRv-VO-gEp" customClass="AvatarView" customModule="BeagleIM" customModuleProvider="target">
+                                <rect key="frame" x="8" y="8" width="40" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="40" id="9b3-ZY-GmO"/>
+                                    <constraint firstAttribute="height" constant="40" id="9bz-WN-FOO"/>
+                                </constraints>
+                                <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="Eou-81-vfd"/>
+                            </imageView>
+                            <textField horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Kbi-q0-cOs">
+                                <rect key="frame" x="54" y="30" width="286" height="16"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="282" id="4KA-po-SgB"/>
+                                </constraints>
+                                <textFieldCell key="cell" lineBreakMode="clipping" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="Test User" id="7b7-bx-vsU">
+                                    <font key="font" metaFont="systemBold"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
                         </subviews>
                         <constraints>
+                            <constraint firstItem="gRv-VO-gEp" firstAttribute="leading" secondItem="xq8-f6-pmw" secondAttribute="leading" constant="8" id="8IS-3B-H8g"/>
                             <constraint firstItem="Kbi-q0-cOs" firstAttribute="top" secondItem="xq8-f6-pmw" secondAttribute="top" constant="10" id="9ya-nk-e89"/>
+                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="gRv-VO-gEp" secondAttribute="bottom" constant="8" id="BFY-Qn-IuS"/>
                             <constraint firstItem="7e6-TW-Wy5" firstAttribute="top" secondItem="8Ku-3C-CwA" secondAttribute="bottom" constant="4" id="BOR-52-hA0"/>
                             <constraint firstAttribute="trailing" secondItem="7e6-TW-Wy5" secondAttribute="trailing" constant="10" id="BjF-6X-p6p"/>
                             <constraint firstItem="7e6-TW-Wy5" firstAttribute="leading" secondItem="xq8-f6-pmw" secondAttribute="leading" constant="10" id="Btf-5A-xHe"/>
-                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Kbi-q0-cOs" secondAttribute="trailing" constant="10" id="BwI-fg-8up"/>
+                            <constraint firstAttribute="trailing" secondItem="Kbi-q0-cOs" secondAttribute="trailing" constant="10" id="BwI-fg-8up"/>
+                            <constraint firstItem="Kbi-q0-cOs" firstAttribute="leading" secondItem="gRv-VO-gEp" secondAttribute="trailing" constant="8" id="Q5E-UU-K6h"/>
                             <constraint firstAttribute="bottom" secondItem="7e6-TW-Wy5" secondAttribute="bottom" constant="8" id="b7r-Rz-aFE"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="8Ku-3C-CwA" secondAttribute="trailing" constant="10" id="bw0-qv-BMG"/>
-                            <constraint firstItem="Kbi-q0-cOs" firstAttribute="leading" secondItem="xq8-f6-pmw" secondAttribute="leading" constant="10" id="cNe-sL-fH6"/>
                             <constraint firstItem="8Ku-3C-CwA" firstAttribute="top" secondItem="Kbi-q0-cOs" secondAttribute="bottom" constant="4" id="eac-it-SjB"/>
-                            <constraint firstItem="8Ku-3C-CwA" firstAttribute="leading" secondItem="xq8-f6-pmw" secondAttribute="leading" constant="10" id="yrv-y7-pmX"/>
+                            <constraint firstItem="8Ku-3C-CwA" firstAttribute="leading" secondItem="Kbi-q0-cOs" secondAttribute="leading" id="lM2-XS-ZDx"/>
+                            <constraint firstAttribute="bottom" secondItem="8Ku-3C-CwA" secondAttribute="bottom" constant="12" id="nlK-Rr-1jf"/>
+                            <constraint firstItem="gRv-VO-gEp" firstAttribute="top" secondItem="xq8-f6-pmw" secondAttribute="top" constant="8" id="yzp-1a-ccD"/>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="avatarView" destination="gRv-VO-gEp" id="bvw-yU-oyq"/>
                         <outlet property="jidField" destination="8Ku-3C-CwA" id="yd2-Kq-qiC"/>
                         <outlet property="nameField" destination="Kbi-q0-cOs" id="EvO-b6-gqS"/>
                         <outlet property="settingsContainerView" destination="7e6-TW-Wy5" id="hcf-AW-yDM"/>
@@ -61,7 +78,7 @@
                 </viewController>
                 <customObject id="zk1-NJ-Lxm" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-206" y="161"/>
+            <point key="canvasLocation" x="-151" y="161"/>
         </scene>
         <!--Details-->
         <scene sceneID="wHO-7f-vob">
@@ -77,7 +94,7 @@
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="NK3-59-5dT">
                                 <rect key="frame" x="2" y="2" width="131" height="18"/>
                                 <buttonCell key="cell" type="check" title="Mute notifications" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="NOf-uN-eci">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
                                 <connections>
@@ -205,7 +222,7 @@
                             <segmentedControl verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ysX-T7-iCF">
                                 <rect key="frame" x="18" y="260" width="304" height="21"/>
                                 <segmentedCell key="cell" controlSize="small" borderStyle="border" alignment="left" segmentDistribution="fill" style="rounded" trackingMode="selectOne" id="Fav-ib-Srd">
-                                    <font key="font" metaFont="smallSystem"/>
+                                    <font key="font" metaFont="controlContent" size="11"/>
                                     <segments>
                                         <segment/>
                                     </segments>
@@ -239,6 +256,7 @@
                 </viewController>
                 <customObject id="1Xh-uj-mPn" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="139" y="131"/>
         </scene>
     </scenes>
 </document>

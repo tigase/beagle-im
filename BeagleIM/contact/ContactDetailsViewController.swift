@@ -48,6 +48,7 @@ open class ContactDetailsViewController: NSViewController, ContactDetailsAccount
         basicViewController?.account = self.account;
         basicViewController?.jid = self.jid;
         basicViewController?.showSettings = self.showSettings;
+        
         self.tabs.segmentCount = self.tabsView.tabViewItems.count;
         var i = 0;
         self.tabsView.tabViewItems.forEach { (item) in
@@ -80,6 +81,7 @@ open class ConversationDetailsViewController: NSViewController, ContactDetailsAc
     
     @IBOutlet var nameField: NSTextField!;
     @IBOutlet var jidField: NSTextField!;
+    @IBOutlet var avatarView: AvatarView!;
     
     @IBOutlet var settingsContainerView: NSView!
     @IBOutlet var settingsContainerViewHeightConstraint: NSLayoutConstraint!
@@ -95,8 +97,11 @@ open class ConversationDetailsViewController: NSViewController, ContactDetailsAc
     
     open override func viewWillAppear() {
         nameField.stringValue = jid?.stringValue ?? "";
+        //nameField.focusRingType = .none;
         jidField.stringValue = jid?.stringValue ?? "";
         if let jid = self.jid, let account = self.account {
+            DBChatStore.instance.getChat(for: account, with: jid)
+            avatarView.image = AvatarManager.instance.avatar(for: jid, on: account);
             DBVCardStore.instance.vcard(for: jid) { (vcard) in
                 DispatchQueue.main.async {
                     var fn: String = "";

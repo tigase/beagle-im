@@ -92,7 +92,7 @@ extension RosterViewController: NSMenuDelegate {
         popover.behavior = .semitransient;
         popover.animates = true;
         let rect = self.contactsTableView.frameOfCell(atColumn: 0, row: self.contactsTableView.clickedRow);
-        popover.show(relativeTo: rect, of: self.view.window!.contentView!, preferredEdge: .maxX);
+        popover.show(relativeTo: rect, of: self.contactsTableView, preferredEdge: .maxX);
 
     }
     

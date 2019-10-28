@@ -64,6 +64,7 @@ class MucEventHandler: XmppServiceEventHandler {
             if let xUser = XMucUserElement.extract(from: e.message) {
                 if xUser.statuses.contains(104) {
                     self.updateRoomName(room: room);
+                    VCardManager.instance.refreshVCard(for: room.roomJid, on: room.account, completionHandler: nil);
                 }
             }
             
