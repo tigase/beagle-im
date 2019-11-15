@@ -38,6 +38,7 @@ open class ContactDetailsViewController: NSViewController, ContactDetailsAccount
         didSet {
             basicViewController?.account = self.account;
             basicViewController?.jid = self.jid;
+            basicViewController?.showSettings = self.showSettings;
         }
     }
     
@@ -84,7 +85,7 @@ open class ConversationDetailsViewController: NSViewController, ContactDetailsAc
     @IBOutlet var avatarView: AvatarView!;
     
     @IBOutlet var settingsContainerView: NSView!
-    @IBOutlet var settingsContainerViewHeightConstraint: NSLayoutConstraint!
+    @IBOutlet var settingsContainerViewHeightConstraint: NSLayoutConstraint?
     
     var settingsViewController: ConversationSettingsViewController? {
         didSet {
@@ -123,15 +124,17 @@ open class ConversationDetailsViewController: NSViewController, ContactDetailsAc
             }
         }
         settingsContainerView.isHidden = !showSettings;
-        settingsContainerViewHeightConstraint.isActive = !showSettings;
+        settingsContainerViewHeightConstraint?.isActive = !showSettings;
         settingsViewController?.account = self.account;
         settingsViewController?.jid = self.jid;
         super.viewWillAppear();
+        self.view.layout();
     }
     
     open override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
         if segue.identifier == "PrepareConversationSettingsViewController" {
             self.settingsViewController = segue.destinationController as? ConversationSettingsViewController;
+            self.settingsContainerView.heightAnchor.constraint(equalToConstant: self.settingsViewController!.view.fittingSize.height).isActive = true;
         }
     }
 }
