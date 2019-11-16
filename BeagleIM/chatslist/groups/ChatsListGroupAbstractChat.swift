@@ -227,7 +227,7 @@ class ChatsListGroupAbstractChat<I: DBChatProtocol>: ChatsListGroupProtocol {
             
             let item = self.items[idx];
             if let chat = item.chat as? DBChatStore.DBChat, chat.remoteChatState == .composing {
-                chat.remoteChatState = .active;
+                chat.update(remoteChatState: .active);
             }
             
             executeIfExists?(item);

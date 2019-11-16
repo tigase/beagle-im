@@ -250,7 +250,7 @@ open class DBChatStore {
     func process(chatState remoteChatState: ChatState, for account: BareJID, with jid: BareJID) {
         dispatcher.async {
             if let chat = self.getChat(for: account, with: jid) {
-                (chat as? DBChat)?.remoteChatState = remoteChatState;
+                (chat as? DBChat)?.update(remoteChatState: remoteChatState);
                 NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: chat);
             }
         }
@@ -264,7 +264,7 @@ open class DBChatStore {
                         self.unreadMessagesCount = self.unreadMessagesCount + 1;
                     }
                     if remoteChatState != nil {
-                        (chat as? DBChat)?.remoteChatState = remoteChatState;
+                        (chat as? DBChat)?.update(remoteChatState: remoteChatState);
                     }
                     NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: chat);
                 }
@@ -317,7 +317,7 @@ open class DBChatStore {
     func resetChatStates(for account: BareJID) {
         dispatcher.async {
             self.getChats(for: account).forEach { chat in
-                (chat as? DBChat)?.remoteChatState = nil;
+                (chat as? DBChat)?.update(remoteChatState: nil);
                 (chat as? DBChat)?.localChatState = .active;
             }
         }
@@ -562,7 +562,7 @@ open class DBChatStore {
         fileprivate(set) var options: ChatOptions = ChatOptions();
         
         fileprivate var localChatState: ChatState = .active;
-        var remoteChatState: ChatState? = nil;
+        private(set) var remoteChatState: ChatState? = nil;
         
         override var jid: JID {
             get {
@@ -626,6 +626,31 @@ open class DBChatStore {
                 return msg;
             }
             return nil;
+        }
+        
+        private var remoteChatStateTimer: Foundation.Timer?;
+        
+        func update(remoteChatState state: ChatState?) {
+            if let oldState = remoteChatState, oldState == .composing {
+                remoteChatStateTimer?.invalidate();
+                remoteChatStateTimer = nil;
+            }
+            self.remoteChatState = state;
+            
+            if state == .composing {
+                DispatchQueue.main.async {
+                    self.remoteChatStateTimer = Foundation.Timer.scheduledTimer(withTimeInterval: 60.0, repeats: false, block: { [weak self] timer in
+                    guard let that = self else {
+                        return;
+                    }
+                    if that.remoteChatState == .composing {
+                        that.remoteChatState = .active;
+                        that.remoteChatStateTimer = nil;
+                        NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: that);
+                    }
+                });
+                }
+            }
         }
         
         override func createMessage(_ body: String, type: StanzaType = .chat, subject: String? = nil, additionalElements: [Element]? = nil) -> Message {
