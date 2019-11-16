@@ -265,6 +265,10 @@ open class DBChatStore {
                     }
                     if remoteChatState != nil {
                         (chat as? DBChat)?.update(remoteChatState: remoteChatState);
+                    } else {
+                        if (chat as? DBChat)?.remoteChatState == .composing {
+                            (chat as? DBChat)?.update(remoteChatState: .active);
+                        }
                     }
                     NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: chat);
                 }

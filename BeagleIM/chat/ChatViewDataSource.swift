@@ -421,7 +421,11 @@ class ChatViewDataSource {
             let unsent1 = it1.state == .outgoing_unsent;
             let unsent2 = it2.state == .outgoing_unsent;
             if unsent1 == unsent2 {
-                return it1.timestamp.compare(it2.timestamp);
+                let result = it1.timestamp.compare(it2.timestamp);
+                guard result == .orderedSame else {
+                    return result;
+                }
+                return it1.id < it2.id ? .orderedAscending : .orderedDescending;
             } else {
                 if unsent1 {
                     return .orderedDescending;
