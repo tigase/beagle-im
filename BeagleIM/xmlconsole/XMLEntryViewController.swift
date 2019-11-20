@@ -31,6 +31,7 @@ class XMLEntryViewController: NSViewController, NSTextViewDelegate {
     
     override func viewDidLoad() {
         self.xmlInput.delegate = self;
+        self.xmlInput.isAutomaticQuoteSubstitutionEnabled = false;
     }
     
     func textDidChange(_ notification: Notification) {
