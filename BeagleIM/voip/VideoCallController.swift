@@ -284,7 +284,15 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
             self.localVideoCapturer = nil;
         }
         
-        self.initializeMedia(for: session, audio: withAudio, video: withVideo) {
+        self.initializeMedia(for: session, audio: withAudio, video: withVideo) { result in
+            guard result else {
+                _ = session.decline();
+                
+                self.showAlert(title: "Call failed!", message: "Could not initialize recording devices", icon: NSImage(named: NSImage.infoName), buttons: ["OK"], completionHandler: { (reponse) in
+                    self.closeWindow();
+                })
+                return;
+            }
             session.peerConnection?.delegate = session;
             print("setting remote description:", sdpOffer.toString());
             self.setRemoteSessionDescription(sessDesc) {
@@ -396,7 +404,14 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
             
             print("creating peer connection for:", session.jid);
             session.peerConnection = self.initiatePeerConnection(for: session);
-            self.initializeMedia(for: session, audio: withAudio, video: withVideo) {
+            self.initializeMedia(for: session, audio: withAudio, video: withVideo) { result in
+                guard result else {
+                    print("intialization of media failed!");
+                    finisher();
+                    return;
+                }
+
+                print("preparing sdp offer for:", session.peerConnection, "....");
                 session.peerConnection?.offer(for: self.defaultCallConstraints, completionHandler: { (sdp, error) in
                     if sdp != nil && error == nil {
                         print("setting local description:", sdp!.sdp);
@@ -416,6 +431,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                             finisher();
                         })
                     } else {
+                        print("did not get sdp offer:", sdp, "error:", error);
                         finisher();
                     }
                 });
@@ -431,21 +447,21 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         
         var iceServers: [RTCIceServer] = [ RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:stun2.l.google.com:19302","stun:stun3.l.google.com:19302","stun:stun4.l.google.com:19302"]), RTCIceServer(urlStrings: ["stun:stunserver.org:3478" ]) ];
         
-        if var urlComponents = URLComponents(string: Settings.turnServer.string() ?? "") {
-            let username = urlComponents.user;
-            let password = urlComponents.password;
-            urlComponents.user = nil;
-            urlComponents.password = nil;
-            let server = urlComponents.string!.replacingOccurrences(of: "/", with: "");
-            print("turn server:", server, "user:", username as Any, "pass:", password as Any);
-            iceServers.append(RTCIceServer(urlStrings: [server], username: username, credential: password, tlsCertPolicy: .insecureNoCheck));
-            let forceRelay = urlComponents.queryItems?.filter({ item in
-                item.name == "forceRelay" && item.value == "true"
-            }) != nil;
-            if forceRelay {
-                configuration.iceTransportPolicy = .relay;
-            }
-        }
+//        if var urlComponents = URLComponents(string: Settings.turnServer.string() ?? "") {
+//            let username = urlComponents.user;
+//            let password = urlComponents.password;
+//            urlComponents.user = nil;
+//            urlComponents.password = nil;
+//            let server = urlComponents.string!.replacingOccurrences(of: "/", with: "");
+//            print("turn server:", server, "user:", username as Any, "pass:", password as Any);
+//            iceServers.append(RTCIceServer(urlStrings: [server], username: username, credential: password, tlsCertPolicy: .insecureNoCheck));
+//            let forceRelay = urlComponents.queryItems?.filter({ item in
+//                item.name == "forceRelay" && item.value == "true"
+//            }) != nil;
+//            if forceRelay {
+//                configuration.iceTransportPolicy = .relay;
+//            }
+//        }
         
         configuration.iceServers = iceServers;
         configuration.bundlePolicy = .maxCompat;
@@ -456,8 +472,9 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     }
     
     // this may be called multiple times, needs to handle that with video capture!!!
-    func initializeMedia(for session: JingleManager.Session, audio: Bool, video: Bool, completionHandler: @escaping ()->Void) {
+    func initializeMedia(for session: JingleManager.Session, audio: Bool, video: Bool, completionHandler: @escaping (Bool)->Void) {
 //        DispatchQueue.main.async {
+        print("intializing session for:", session.peerConnection, "sdpSemantics:", session.peerConnection?.configuration.sdpSemantics)
             if (session.peerConnection?.configuration.sdpSemantics ?? RTCSdpSemantics.planB) == RTCSdpSemantics.unifiedPlan {
                 // send audio?
                 if audio, let localAudioTrack = self.localAudioTrack {
@@ -469,9 +486,12 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                     session.peerConnection?.add(localVideoTrack, streamIds: ["RTCmS"]);
                 }
                 DispatchQueue.main.async {
-                    completionHandler();
+                    completionHandler(true);
                 }
             } else {
+                DispatchQueue.main.async {
+                    completionHandler(false);
+                }
 //                let localStream = JingleManager.instance.createLocalStream(audio: audio, video: video);
 //                session.peerConnection?.add(localStream);
 //                if let videoTrack = localStream.videoTracks.first {
