@@ -121,6 +121,21 @@ extension NSImage {
         flipped.unlockFocus();
         return flipped;
     }
+    
+    func tinted(with tintColor: NSColor) -> NSImage {
+        guard let cgImage = self.cgImage else {
+            return self;
+        }
+        
+        return NSImage(size: size, flipped: false, drawingHandler: { bounds in
+            guard let context = NSGraphicsContext.current?.cgContext else { return false }
+            tintColor.set()
+            context.clip(to: bounds, mask: cgImage)
+            context.fill(bounds)
+            return true;
+        })
+    }
+    
 }
 
 fileprivate extension NSImage {

@@ -24,6 +24,27 @@ import TigaseSwift
 
 class StatusHelper {
     
+    public static let blockedImage: NSImage = {
+        let bgImage = NSImage(named: NSImage.statusUnavailableName)!;
+        var rect = CGRect(origin: .zero, size: bgImage.size);
+        let bgCgImage = bgImage.cgImage(forProposedRect: &rect, context: nil, hints: nil)!;
+
+        return NSImage(size: bgImage.size, flipped: false, drawingHandler: { bounds in
+            guard let context = NSGraphicsContext.current?.cgContext else { return false }
+            
+            context.draw(bgCgImage, in: bounds);
+            
+            let w = bounds.width/2;
+            let h = bounds.height/2;
+            let eclipse2 = NSBezierPath.init(roundedRect: NSRect(x: w/2, y: h/2, width: w, height: h), xRadius: w/2, yRadius: h/2);
+            eclipse2.setClip();
+            
+            NSImage(named: NSImage.stopProgressTemplateName)!.tinted(with: NSColor.white).draw(in: bounds);
+            
+            return true;
+        })
+    }();
+    
     public static func imageFor(status: Presence.Show?) -> NSImage {
         return NSImage(named: StatusHelper.imageNameFor(status: status))!;
     }

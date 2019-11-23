@@ -102,7 +102,9 @@ class AvatarViewWithStatus: NSView {
                 self.status = .none;
             }
         } else {
-            let presenceModule: PresenceModule? = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PresenceModule.ID);
+            let client = XmppService.instance.getClient(for: account);
+            let presenceModule: PresenceModule? = client?.modulesManager.getModule(PresenceModule.ID);
+            self.statusView.blocked = client != nil && BlockedEventHandler.isBlocked(JID(jid), on: client!);
             self.status = presenceModule?.presenceStore.getBestPresence(for: jid)?.show;
         }
     }
@@ -136,20 +138,33 @@ class AvatarViewWithStatus: NSView {
     class StatusView: NSImageView {
         
         var backgroundColor: NSColor?;
+        var blocked: Bool = false {
+            didSet {
+                updateImage();
+            }
+        }
         var status: Presence.Show? = nil {
             didSet {
+                updateImage();
+            }
+        }
+        
+        func updateImage() {
+            if blocked {
+                self.image = StatusHelper.blockedImage;
+            } else {
                 self.image = StatusHelper.imageFor(status: status);
             }
         }
         
         override init(frame frameRect: NSRect) {
             super.init(frame: frameRect);
-            self.image = StatusHelper.imageFor(status: nil);
+            updateImage();
         }
         
         required init?(coder: NSCoder) {
             super.init(coder: coder);
-            self.image = StatusHelper.imageFor(status: nil);
+            updateImage();
         }
         
         override func draw(_ dirtyRect: NSRect) {
@@ -161,10 +176,13 @@ class AvatarViewWithStatus: NSView {
                 let ellipse = NSBezierPath.init(roundedRect: dirtyRect, xRadius: dirtyRect.width/2, yRadius: dirtyRect.height/2);
                 ellipse.fill();
                 ellipse.setClip();
-            
+                
+                super.draw(dirtyRect);
+                
                 context.restoreGraphicsState();
+            } else {
+                super.draw(dirtyRect);
             }
-            super.draw(dirtyRect);
         }
                 
     }

@@ -102,6 +102,8 @@
 		FE8C9F5621B40F9000BE8332 /* RegisterAccountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8C9F5521B40F9000BE8332 /* RegisterAccountController.swift */; };
 		FE9486B221BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9486B121BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift */; };
 		FE988C19232C0A0C002D85AF /* ChangePasswordController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE988C18232C0A0C002D85AF /* ChangePasswordController.swift */; };
+		FE9CB700238700E2008F1049 /* BlockedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9CB6FF238700E2008F1049 /* BlockedViewController.swift */; };
+		FE9CB7022388382A008F1049 /* BlockedEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9CB7012388382A008F1049 /* BlockedEventHandler.swift */; };
 		FE9CDF0D2269E282001039C3 /* MessageEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9CDF0C2269E282001039C3 /* MessageEncryption.swift */; };
 		FEA2F53522E46A2E009F2E88 /* ShowRosterWindowSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2F53422E46A2E009F2E88 /* ShowRosterWindowSegue.swift */; };
 		FEA2F53722E5F6A2009F2E88 /* AdvancedSettingsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2F53622E5F6A2009F2E88 /* AdvancedSettingsController.swift */; };
@@ -277,6 +279,8 @@
 		FE8C9F5521B40F9000BE8332 /* RegisterAccountController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterAccountController.swift; sourceTree = "<group>"; };
 		FE9486B121BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSButtonNoSizeWhenHidden.swift; sourceTree = "<group>"; };
 		FE988C18232C0A0C002D85AF /* ChangePasswordController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangePasswordController.swift; sourceTree = "<group>"; };
+		FE9CB6FF238700E2008F1049 /* BlockedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedViewController.swift; sourceTree = "<group>"; };
+		FE9CB7012388382A008F1049 /* BlockedEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedEventHandler.swift; sourceTree = "<group>"; };
 		FE9CDF0C2269E282001039C3 /* MessageEncryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEncryption.swift; sourceTree = "<group>"; };
 		FE9D88B3217652DF006CF0D9 /* BeagleIM-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BeagleIM-Bridging-Header.h"; sourceTree = "<group>"; };
 		FEA2F53422E46A2E009F2E88 /* ShowRosterWindowSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowRosterWindowSegue.swift; sourceTree = "<group>"; };
@@ -480,6 +484,7 @@
 				FE41FB42215CDAF900AD86D3 /* XMPPClient_extension.swift */,
 				FE4E8DD9215EA4860010D88E /* HttpFileUploadEventHandler.swift */,
 				FE4D21372223FEE70058B662 /* PEPBookmarksModule_extension.swift */,
+				FE9CB7012388382A008F1049 /* BlockedEventHandler.swift */,
 			);
 			path = service;
 			sourceTree = "<group>";
@@ -643,6 +648,7 @@
 				FE65A282230314D9001E68EF /* SettingsTabViewController.swift */,
 				FE988C18232C0A0C002D85AF /* ChangePasswordController.swift */,
 				FE2ACA832355B967004623BC /* EditKeywordsController.swift */,
+				FE9CB6FF238700E2008F1049 /* BlockedViewController.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -860,6 +866,7 @@
 				FE6E6BFC21384D5F003B1696 /* OutlineGroupItemButton.swift in Sources */,
 				FE2ACA862355C5DA004623BC /* NSTableViewCustomGrid.swift in Sources */,
 				FE41FB31215AB32200AD86D3 /* ServerCertificateInfo.swift in Sources */,
+				FE9CB700238700E2008F1049 /* BlockedViewController.swift in Sources */,
 				FE6E6BFE21384D5F003B1696 /* ChatMessageCellView.swift in Sources */,
 				FEF5C3FA22632C0000889863 /* OpenSSL_AES_GCM_Engine.swift in Sources */,
 				FE2809852169FB75002F5BD0 /* Alert.swift in Sources */,
@@ -902,6 +909,7 @@
 				FE7F876C2343D99300254AF2 /* CustomScroller.swift in Sources */,
 				FE6E6C0421384D5F003B1696 /* DatabaseSchemaManager.swift in Sources */,
 				FE5C6B2722897F1B003DAB30 /* ServiceDiscoveryViewController.swift in Sources */,
+				FE9CB7022388382A008F1049 /* BlockedEventHandler.swift in Sources */,
 				FE3AA0CD2154069D001667A9 /* ChatsListGroupGroupchat.swift in Sources */,
 				FED7AEC521417328001E164B /* AvatarStore.swift in Sources */,
 				FE6E6BFA21384D5F003B1696 /* AccountManager.swift in Sources */,

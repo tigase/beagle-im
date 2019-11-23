@@ -85,37 +85,10 @@
         <scene sceneID="wHO-7f-vob">
             <objects>
                 <viewController title="Details" identifier="ConversationSettingsViewController" storyboardIdentifier="ConversationSettingsViewController" id="vuF-Zx-mrT" customClass="ConversationSettingsViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" misplaced="YES" id="kfC-N1-wy3">
+                    <view key="view" id="kfC-N1-wy3">
                         <rect key="frame" x="0.0" y="0.0" width="325" height="31"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <subviews>
-                            <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="P4b-av-WEz">
-                                <rect key="frame" x="0.0" y="24" width="325" height="5"/>
-                            </box>
-                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="NK3-59-5dT">
-                                <rect key="frame" x="2" y="2" width="131" height="18"/>
-                                <buttonCell key="cell" type="check" title="Mute notifications" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="NOf-uN-eci">
-                                    <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <action selector="muteNotificcationsChanged:" target="vuF-Zx-mrT" id="wZW-fA-I24"/>
-                                </connections>
-                            </button>
-                        </subviews>
-                        <constraints>
-                            <constraint firstAttribute="trailing" secondItem="P4b-av-WEz" secondAttribute="trailing" id="7cN-P4-wVZ"/>
-                            <constraint firstAttribute="bottom" secondItem="NK3-59-5dT" secondAttribute="bottom" constant="4" id="Sm7-TT-Zsa"/>
-                            <constraint firstItem="NK3-59-5dT" firstAttribute="top" secondItem="P4b-av-WEz" secondAttribute="bottom" constant="8" id="h4K-wA-1Ib"/>
-                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="NK3-59-5dT" secondAttribute="trailing" constant="4" id="jTN-sY-SnL"/>
-                            <constraint firstItem="NK3-59-5dT" firstAttribute="leading" secondItem="kfC-N1-wy3" secondAttribute="leading" constant="4" id="s8x-Yz-Frt"/>
-                            <constraint firstItem="P4b-av-WEz" firstAttribute="leading" secondItem="kfC-N1-wy3" secondAttribute="leading" id="t2J-1r-FBv"/>
-                            <constraint firstItem="P4b-av-WEz" firstAttribute="top" secondItem="kfC-N1-wy3" secondAttribute="top" constant="4" id="yqd-Pz-aM3"/>
-                        </constraints>
                     </view>
-                    <connections>
-                        <outlet property="muteNotifications" destination="NK3-59-5dT" id="xMb-Sx-4fp"/>
-                    </connections>
                 </viewController>
                 <customObject id="U9K-0H-fix" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>

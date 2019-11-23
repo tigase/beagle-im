@@ -134,7 +134,7 @@ open class ConversationDetailsViewController: NSViewController, ContactDetailsAc
     open override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
         if segue.identifier == "PrepareConversationSettingsViewController" {
             self.settingsViewController = segue.destinationController as? ConversationSettingsViewController;
-            self.settingsContainerView.heightAnchor.constraint(equalToConstant: self.settingsViewController!.view.fittingSize.height).isActive = true;
+            self.settingsViewController?.superView = self.settingsContainerView;
         }
     }
 }
@@ -144,35 +144,77 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
     var account: BareJID?
     var jid: BareJID?
     
-    var chat: DBChatProtocol? {
-        didSet {
-            if chat != nil {
-                muteNotifications.isEnabled = true;
-                if let chat = self.chat as? DBChatStore.DBChat {
-                    muteNotifications.state = chat.options.notifications == .none ? .on : .off;
-                }
-                if let room = self.chat as? DBChatStore.DBRoom {
-                    muteNotifications.state = room.options.notifications == .none ? .on : .off;
-                }
-            } else {
-                muteNotifications.isEnabled = false;
-            }
-        }
-    }
+    var chat: DBChatProtocol?;
     
-    @IBOutlet var muteNotifications: NSButton!;
- 
+    weak var superView: NSView?;
+    
+    var muteNotifications: NSButton?;
+    var blockContact: NSButton?;
+    
     open override func viewWillAppear() {
         super.viewWillAppear();
         if let account = self.account, let jid = self.jid {
             chat = DBChatStore.instance.getChat(for: account, with: jid);
-        } else {
-            muteNotifications.isEnabled = false;
         }
+        var rows: [NSView] = [];
+        if let chat = self.chat {
+            muteNotifications = NSButton(checkboxWithTitle: "Mute notifications", target: self, action: #selector(muteNotificationsChanged));
+            rows.append(muteNotifications!);
+
+            switch chat {
+            case let r as DBChatStore.DBRoom:
+                muteNotifications?.state = r.options.notifications == .none ? .on : .off;
+            case let c as DBChatStore.DBChat:
+                muteNotifications?.state = c.options.notifications == .none ? .on : .off;
+                if let client = XmppService.instance.getClient(for: c.account), let blockingModule: BlockingCommandModule = client.modulesManager.getModule(BlockingCommandModule.ID) {
+                    blockContact = NSButton(checkboxWithTitle: "Block contact", target: self, action: #selector(blockContactChanged));
+                    rows.append(blockContact!);
+                    blockContact?.state = BlockedEventHandler.isBlocked(c.jid, on: client) ? .on : .off;
+                    blockContact?.isEnabled = blockingModule.isAvailable;
+                }
+            default:
+                break;
+            }
+        }
+
+        setRows(rows);
+        
+        superView?.heightAnchor.constraint(equalToConstant: self.view.fittingSize.height).isActive = true;
+        
         print("got:", account as Any, "and:", jid as Any);
     }
     
-    @IBAction func muteNotificcationsChanged(_ sender: NSButton) {
+    private func setRows(_ rows: [NSView]) {
+        if !rows.isEmpty {
+            var constraints: [NSLayoutConstraint] = [];
+            rows.enumerated().forEach() { index, row in
+                row.translatesAutoresizingMaskIntoConstraints = false;
+            
+                let divider = NSBox();
+                divider.translatesAutoresizingMaskIntoConstraints = false;
+                divider.title = "Separator \(index)";
+                divider.boxType = .separator;
+                view.addSubview(divider);
+                constraints.append(view.leadingAnchor.constraint(equalTo: divider.leadingAnchor));
+                constraints.append(view.trailingAnchor.constraint(equalTo: divider.trailingAnchor));
+                if index == 0 {
+                    constraints.append(view.topAnchor.constraint(equalTo: divider.topAnchor, constant: -4));
+                } else {
+                    constraints.append(rows[index-1].bottomAnchor.constraint(equalTo: divider.topAnchor, constant: -8));
+                }
+            
+                view.addSubview(row);
+                constraints.append(view.leadingAnchor.constraint(equalTo: row.leadingAnchor, constant: -4));
+                constraints.append(view.trailingAnchor.constraint(greaterThanOrEqualTo: row.trailingAnchor, constant: 4));
+                constraints.append(divider.bottomAnchor.constraint(equalTo: row.topAnchor, constant: -8))
+            }
+            constraints.append(view.bottomAnchor.constraint(equalTo: rows.last!.bottomAnchor, constant: 4));
+            
+            NSLayoutConstraint.activate(constraints);
+        }
+    }
+    
+    @objc func muteNotificationsChanged(_ sender: NSButton) {
         let state = sender.state == .on;
         if let chat = self.chat as? DBChatStore.DBChat {
             chat.modifyOptions({ (options) in
@@ -183,6 +225,34 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
             room.modifyOptions({ (options) in
                 options.notifications = state ? .none : .mention;
             }, completionHandler: nil);
+        }
+    }
+    
+    @objc func blockContactChanged(_ sender: NSButton) {
+        if let chat = self.chat as? DBChatStore.DBChat, let blockingModule: BlockingCommandModule = XmppService.instance.getClient(for: chat.account)?.modulesManager.getModule(BlockingCommandModule.ID) {
+            if sender.state == .on {
+                blockingModule.block(jids: [chat.jid], completionHandler: { [weak sender] result in
+                    DispatchQueue.main.async {
+                        switch result {
+                        case .failure(_):
+                            sender?.state = .off;
+                        default:
+                            break;
+                        }
+                    }
+                })
+            } else {
+                blockingModule.unblock(jids: [chat.jid], completionHandler: { [weak sender] result in
+                    DispatchQueue.main.async {
+                        switch result {
+                        case .failure(_):
+                            sender?.state = .on;
+                        default:
+                            break;
+                        }
+                    }
+                })
+            }
         }
     }
     

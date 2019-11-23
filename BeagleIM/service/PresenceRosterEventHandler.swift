@@ -49,8 +49,14 @@ class PresenceRosterEventHandler: XmppServiceEventHandler {
                 alert.addButton(withTitle: "Accept");
                 alert.addButton(withTitle: "Deny");
                 
-                alert.run(completionHandler: { (result) in
+                if let blockingModule: BlockingCommandModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(BlockingCommandModule.ID), blockingModule.isAvailable {
+                    alert.addSpacing();
+                    alert.addButton(withTitle: "Block");
+                }
+                
+                alert.run(completionHandler: { (controller, result, completionHandler) in
                     if result == .alertFirstButtonReturn {
+                        completionHandler();
                         guard let presenceModule: PresenceModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(PresenceModule.ID) else {
                             return;
                         }
@@ -60,12 +66,43 @@ class PresenceRosterEventHandler: XmppServiceEventHandler {
                         if Settings.requestPresenceSubscription.bool() {
                             presenceModule.subscribe(to: jid);
                         }
-                    } else {
+                    } else if result == .alertSecondButtonReturn {
+                        completionHandler();
                         guard let presenceModule: PresenceModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(PresenceModule.ID) else {
                             return;
                         }
                         
                         presenceModule.unsubscribed(by: jid);
+                    } else if result == .alertThirdButtonReturn {
+                        guard let blockingModule: BlockingCommandModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(BlockingCommandModule.ID) else {
+                            return;
+                        }
+                        DispatchQueue.main.async {
+                            controller.showProgressIndicator();
+                        }
+                        if let presenceModule: PresenceModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(PresenceModule.ID) {
+                            presenceModule.unsubscribed(by: jid);
+                        }
+                        blockingModule.block(jids: [jid.withoutResource], completionHandler: { result in
+                            DispatchQueue.main.async {
+                                controller.hideProgressIndicator();
+                                switch result {
+                                case .success(_):
+                                    // everything went ok!
+                                    completionHandler();
+                                    break;
+                                case .failure(let err):
+                                    let alert = NSAlert();
+                                    alert.messageText = "Error";
+                                    alert.informativeText = "Server returned an error: \(err.rawValue)";
+                                    alert.addButton(withTitle: "OK");
+                                    alert.beginSheetModal(for: controller.view.window!, completionHandler: { res in
+                                        // do we have anything to do here?
+                                    });
+                                    break;
+                                }
+                            }
+                        });
                     }
                 });
             }

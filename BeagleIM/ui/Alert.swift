@@ -29,6 +29,7 @@ class Alert {
     var informativeText: String?;
     
     var buttons: [NSButton] = [];
+    var items: [Item] = [];
     
     var styleMask: NSWindow.StyleMask?;
     
@@ -36,11 +37,22 @@ class Alert {
     func addButton(withTitle title: String) -> NSButton {
         let button = NSButton(title: title, target: nil, action: nil);
         buttons.append(button);
+        items.append(.button(button));
         return button;
     }
     
+    func addSpacing() {
+        items.append(.spacing);
+    }
+    
     func run(completionHandler handler: @escaping (NSApplication.ModalResponse)->Void) {
-        
+        run(completionHandler: { controller, result, completionHandler in
+            completionHandler();
+            handler(result);
+        });
+    }
+    
+    func run(completionHandler handler: @escaping (AlertViewController,NSApplication.ModalResponse, @escaping ()->Void)->Void) {
         let windowController = NSStoryboard(name: "Main", bundle: nil).instantiateController(withIdentifier: "AlertWindowController") as! NSWindowController;
         let controller = windowController.contentViewController as! AlertViewController;
         controller.view.setFrameSize(NSSize(width: 420, height: 60.0));
@@ -52,10 +64,15 @@ class Alert {
             controller.informativeTextField.heightAnchor.constraint(equalToConstant: 0).isActive = true;
         }
         
-        buttons.reversed().forEach { button in
-            controller.buttonsStack.addView(button, in: .leading);
-            button.target = controller;
-            button.action = #selector(AlertViewController.buttonClicked);
+        items.reversed().forEach { item in
+            switch item {
+            case .button(let button):
+                controller.buttonsStack.addView(button, in: .leading);
+                button.target = controller;
+                button.action = #selector(AlertViewController.buttonClicked);
+            case .spacing:
+                controller.buttonsStack.setCustomSpacing(controller.buttonsStack.spacing * 4, after: controller.buttonsStack.arrangedSubviews.last!);
+            }
         }
         for i in 1..<buttons.count {
             buttons[i].widthAnchor.constraint(equalTo: buttons[i-1].widthAnchor).isActive = true;
@@ -77,8 +94,11 @@ class Alert {
         
         NSSpeechSynthesizer().startSpeaking(messageText ?? "");
     }
-
     
+    enum Item {
+        case button(NSButton)
+        case spacing
+    }
 }
 
 class AlertViewController: NSViewController {
@@ -89,7 +109,8 @@ class AlertViewController: NSViewController {
     @IBOutlet var contentView: NSView!;
     @IBOutlet var buttonsStack: NSStackView!;
     
-    var completionHandler: ((NSApplication.ModalResponse)->Void)?
+    var completionHandler: ((AlertViewController,NSApplication.ModalResponse, @escaping ()->Void)->Void)?
+    @IBOutlet var progressIndicator: NSProgressIndicator!;
     
     @objc func buttonClicked(_ sender: NSButton) {
         for i in 0..<buttonsStack.views.count {
@@ -116,9 +137,21 @@ class AlertViewController: NSViewController {
         guard let tmp = completionHandler else {
             return;
         }
-        completionHandler = nil;
         
-        self.view.window?.close();
-        tmp(result);
+        tmp(self, result, self.close);
     }
+    
+    func close() {
+        completionHandler = nil;
+        self.view.window?.close();
+    }
+    
+    func hideProgressIndicator() {
+        progressIndicator.stopAnimation(nil);
+    }
+    
+    func showProgressIndicator() {
+        progressIndicator.startAnimation(nil);
+    }
+
 }
