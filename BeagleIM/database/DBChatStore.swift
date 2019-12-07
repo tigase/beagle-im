@@ -23,7 +23,7 @@ import AppKit
 import TigaseSwift
 
 open class DBChatStoreWrapper: ChatStore {
-    public var dispatcher: QueueDispatcher
+    public let dispatcher: QueueDispatcher
     
     public func getChat<T>(with jid: BareJID, filter: @escaping (T) -> Bool) -> T? where T : ChatProtocol {
         return store.getChat(for: sessionObject.userBareJid!, with: jid) as? T;
@@ -109,7 +109,7 @@ open class DBChatStore {
     fileprivate let getMessageDraftStmt: DBStatement;
 
 
-    fileprivate var accountChats = [BareJID: AccountChats]();
+    private var accountChats = [BareJID: AccountChats]();
     
     fileprivate(set) var unreadMessagesCount: Int = 0 {
         didSet {
@@ -157,7 +157,7 @@ open class DBChatStore {
         });
     }
     
-    func mapChats<T>(for account: BareJID, map: (AccountChats?)->T) -> T {
+    private func mapChats<T>(for account: BareJID, map: (AccountChats?)->T) -> T {
         return dispatcher.sync {
             return map(accountChats[account]);
         }
@@ -342,7 +342,7 @@ open class DBChatStore {
         }
     }
     
-    fileprivate func createChat(account: BareJID, chat: ChatProtocol) -> DBChatProtocol? {
+    private func createChat(account: BareJID, chat: ChatProtocol) -> DBChatProtocol? {
         guard chat as? DBChatProtocol == nil else {
             return chat as? DBChatProtocol;
         }
@@ -360,12 +360,12 @@ open class DBChatStore {
         }
     }
     
-    fileprivate func destroyChat(account: BareJID, chat: DBChatProtocol) {
+    private func destroyChat(account: BareJID, chat: DBChatProtocol) {
         let params: [String: Any?] = ["id": chat.id];
         _ = try! self.closeChatStmt.update(params);
     }
     
-    fileprivate func getLastMessage(for account: BareJID, jid: BareJID) -> String? {
+    private func getLastMessage(for account: BareJID, jid: BareJID) -> String? {
         return dispatcher.sync {
             let params: [String: Any?] = ["account": account, "jid": jid];
             return try! self.getLastMessageStmt.queryFirstMatching(params) { cursor in
@@ -504,9 +504,9 @@ open class DBChatStore {
         }
     }
     
-    class AccountChats {
+    private class AccountChats {
         
-        fileprivate var chats = [BareJID: DBChatProtocol]();
+        private var chats = [BareJID: DBChatProtocol]();
         
         var count: Int {
             return chats.count;
