@@ -50,7 +50,7 @@ class DBChatHistoryStore {
 
     fileprivate let searchHistoryStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT chat_history.id as id, chat_history.account as account, chat_history.jid as jid, author_nickname, author_jid, chat_history.timestamp as timestamp, item_type, chat_history.data as data, state, preview, chat_history.encryption as encryption, fingerprint FROM chat_history INNER JOIN chat_history_fts_index ON chat_history.id = chat_history_fts_index.rowid LEFT JOIN chats ON chats.account = chat_history.account AND chats.jid = chat_history.jid WHERE (chats.id IS NOT NULL OR chat_history.author_nickname is NULL) AND chat_history_fts_index MATCH :query AND (:account IS NULL OR chat_history.account = :account) AND (:jid IS NULL OR chat_history.jid = :jid) ORDER BY chat_history.timestamp DESC")
 
-    fileprivate let getUnsentMessagesForAccountStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT ch.account as account, ch.jid as jid, ch.data as data, ch.stanza_id as stanza_id, ch.encryption as encryption FROM chat_history ch WHERE ch.account = :account AND ch.state = \(MessageState.outgoing_unsent.rawValue) ORDER BY timestamp ASC");
+    fileprivate let getUnsentMessagesForAccountStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT ch.account as account, ch.jid as jid, ch.item_type as item_type, ch.data as data, ch.stanza_id as stanza_id, ch.encryption as encryption FROM chat_history ch WHERE ch.account = :account AND ch.state = \(MessageState.outgoing_unsent.rawValue) ORDER BY timestamp ASC");
 
     fileprivate let removeItemStmt: DBStatement = try! DBConnection.main.prepareStatement("DELETE FROM chat_history WHERE id = :id");
 
@@ -66,7 +66,7 @@ class DBChatHistoryStore {
         }
     }
 
-    open func appendItem(for account: BareJID, with jid: BareJID, state: MessageState, authorNickname: String? = nil, authorJid: BareJID? = nil, type: ItemType = .message, timestamp: Date, stanzaId: String?, data: String, chatState: ChatState? = nil, errorCondition: ErrorCondition? = nil, errorMessage: String? = nil, encryption: MessageEncryption, encryptionFingerprint: String?, completionHandler: ((Int) -> Void)?) {
+    open func appendItem(for account: BareJID, with jid: BareJID, state: MessageState, authorNickname: String? = nil, authorJid: BareJID? = nil, type: ItemType, timestamp: Date, stanzaId: String?, data: String, chatState: ChatState? = nil, errorCondition: ErrorCondition? = nil, errorMessage: String? = nil, encryption: MessageEncryption, encryptionFingerprint: String?, completionHandler: ((Int) -> Void)?) {
         dispatcher.async {
             guard !state.isError || stanzaId == nil || !self.processOutgoingError(for: account, with: jid, stanzaId: stanzaId!, errorCondition: errorCondition, errorMessage: errorMessage) else {
                 return;
@@ -85,9 +85,20 @@ class DBChatHistoryStore {
             }
             completionHandler?(msgId);
 
-            let item = ChatMessage(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, message: data, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage);
-            DBChatStore.instance.newMessage(for: account, with: jid, timestamp: timestamp, message: encryption.message() ?? data, state: state, remoteChatState: state.direction == .incoming ? chatState : nil) {
-                NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: item);
+            
+            var item: ChatViewItemProtocol?;
+            switch type {
+            case .message:
+                item = ChatMessage(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, message: data, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage);
+            case .attachment:
+                item = ChatAttachment(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, url: data, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: ChatAttachmentAppendix(), error: errorMessage);
+            case .linkPreview:
+                item = ChatLinkPreview(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, url: data, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage);
+            }
+            if item != nil {
+                DBChatStore.instance.newMessage(for: account, with: jid, timestamp: timestamp, message: encryption.message() ?? data, state: state, remoteChatState: state.direction == .incoming ? chatState : nil) {
+                    NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: item);
+                }
             }
         }
     }
@@ -218,15 +229,18 @@ class DBChatHistoryStore {
         }
     }
 
-    func loadUnsentMessage(for account: BareJID, completionHandler: @escaping (BareJID,BareJID,String,String,MessageEncryption)->Void) {
+//    open func updateAppendix(for account: BareJID, with jid: BareJID, id: Int, update)
+    
+    func loadUnsentMessage(for account: BareJID, completionHandler: @escaping (BareJID,BareJID,String,String,MessageEncryption, ItemType)->Void) {
         dispatcher.async {
             try! self.getUnsentMessagesForAccountStmt.query(["account": account] as [String : Any?], forEach: { (cursor) in
                 let jid: BareJID = cursor["jid"]!;
+                let type = ItemType(rawValue: cursor["item_type"]!)!;
                 let data: String = cursor["data"]!;
                 let stanzaId: String = cursor["stanza_id"]!;
                 let encryption: MessageEncryption = MessageEncryption(rawValue: cursor["encryption"] ?? 0) ?? .none;
 
-                completionHandler(account, jid, data, stanzaId, encryption);
+                completionHandler(account, jid, data, stanzaId, encryption, type);
             });
         }
     }
@@ -313,25 +327,51 @@ class DBChatHistoryStore {
         let id: Int = cursor["id"]!;
         let stateInt: Int = cursor["state"]!;
         let timestamp: Date = cursor["timestamp"]!;
-        let message: String = cursor["data"]!;
+
+        guard let entryType = ItemType(rawValue: cursor["item_type"]!) else {
+            return nil;
+        }
+
         let authorNickname: String? = cursor["author_nickname"];
         let authorJid: BareJID? = cursor["author_jid"];
+
         let encryption: MessageEncryption = MessageEncryption(rawValue: cursor["encryption"] ?? 0) ?? .none;
         let encryptionFingerprint: String? = cursor["fingerprint"];
         let error: String? = cursor["error"];
 
-        var preview: [String: String]? = nil;
-        if let previewStr: String = cursor["preview"] {
-            preview = [:];
-            previewStr.split(separator: "\n").forEach { (line) in
-                let tmp = line.split(separator: "\t");
-                preview?[String(tmp[0])] = String(tmp[1]);
+        //let appendix: String? = cursor["appendix"];
+        // maybe we should have a "supplement" object which would provide additional info? such as additional data, etc..
+        switch entryType {
+        case .message:
+            let message: String = cursor["data"]!;
+
+            var preview: [String: String]? = nil;
+            if let previewStr: String = cursor["preview"] {
+                preview = [:];
+                previewStr.split(separator: "\n").forEach { (line) in
+                    let tmp = line.split(separator: "\t");
+                    preview?[String(tmp[0])] = String(tmp[1]);
+                }
             }
+
+            return ChatMessage(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, message: message, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error);
+        case .attachment:
+            let url: String = cursor["data"]!;
+
+            return ChatAttachment(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, url: url, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: ChatAttachmentAppendix(), error: error);
+        case .linkPreview:
+            let url: String = cursor["data"]!;
+            return ChatLinkPreview(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, url: url, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error)
         }
-        return ChatMessage(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, message: message, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, preview: preview, error: error);
+
     }
 }
 
 public enum ItemType: Int {
     case message = 0
+    case attachment = 1
+    // how about new type called link preview? this way we would have a far less data kept in a single item..
+    // we could even have them separated to the new item/entry during adding message to the store..
+    case linkPreview = 2
+    // with that in place we can have separate metadata kept "per" message as it is only one, so message id can be id of associated metadata..
 }

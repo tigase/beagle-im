@@ -20,67 +20,53 @@
 //
 
 import AppKit
-
+import LinkPresentation
+import TigaseSwift
 
 class BaseChatMessageCellView: NSTableCellView {
-    
+
     fileprivate static let imageLoadingQueue = DispatchQueue(label: "image_loading_queue");
-    
+
+    fileprivate static let allowedUrlPreviewSchemas = [ "https://", "http://", "file://" ];
+
     var id: Int = 0;
-    
+
     @IBOutlet var message: NSTextField!
     @IBOutlet var state: NSTextField?;
+    @IBOutlet var previews: Previews?;
     fileprivate var direction: MessageDirection? = nil;
-    
+
     func set(message item: ChatMessage, nickname: String? = nil, keywords: [String]? = nil) {
         let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
-        
+
         let messageBody = self.messageBody(item: item);
         let matches = detector.matches(in: messageBody, range: NSMakeRange(0, messageBody.utf16.count));
         let msg = NSMutableAttributedString(string: messageBody);
-        var previewsToRetrive: [URL] = [];
-        var previewsToLoad: [(URL,String)] = [];
+//        var previewsToRetrive: [URL] = [];
+//        var previewsToLoad: [(URL,String)] = [];
         var errors: [String] = [];
+
+        var urls: [URL] = [];
+        var previewsToShow: [URL] = [];
+
         matches.forEach { match in
-            if let url = match.url {
-                if let previewId = item.preview?[url.absoluteString] {
-                    if previewId.starts(with: "ERROR") {
-                        var error = "";
-                        if previewId.contains(":") {
-                            switch previewId.dropFirst("ERROR:".count) {
-                            case "NSURLErrorServerCertificateUntrusted":
-                                error = "Could not retrieve preview - invalid SSL certificate!";
-                            case "SizeExceeded":
-                                error = "Could not retrieve preview - file size exceeded!";
-                            default:
-                                error = "Could not retrieve preview - an error occurred";
-                            }
-                        } else {
-                            error = "Could not retrieve preview - an error occurred";
-                        }
-                        if !errors.contains(error) {
-                            errors.append(error);
-                        }
-                    } else if "NONE" != previewId {
-                        previewsToLoad.append((url, previewId));
-                    }
-                }
+            if var url = match.url {
                 msg.addAttribute(.link, value: url, range: match.range);
-                
-                if item.preview == nil {
-                    previewsToRetrive.append(url);
-                }
             }
             if let phoneNumber = match.phoneNumber {
                 msg.addAttribute(.link, value: URL(string: "tel:\(phoneNumber.replacingOccurrences(of: " ", with: "-"))")!, range: match.range);
             }
             if let address = match.components {
                 let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
-                msg.addAttribute(.link, value: URL(string: "http://maps.apple.com/?q=\(query!)")!, range: match.range);
+                let mapUrl = URL(string: "http://maps.apple.com/?q=\(query!)")!;
+                msg.addAttribute(.link, value: mapUrl, range: match.range);
+                if #available(macOS 10.15, *) {
+                    previewsToShow.append(mapUrl);
+                }
             }
         }
         msg.addAttribute(NSAttributedString.Key.font, value: self.message.font!, range: NSMakeRange(0, msg.length));
-        
+
         if Settings.enableMarkdownFormatting.bool() {
             Markdown.applyStyling(attributedString: msg, showEmoticons: Settings.showEmoticons.bool());
         }
@@ -115,32 +101,121 @@ class BaseChatMessageCellView: NSTableCellView {
         self.direction = item.state.direction;
 
         self.toolTip = BaseChatMessageCellView.tooltipFormatter.string(from: item.timestamp) + (errors.isEmpty ? "" : "\n" + errors.joined(separator: "\n"));
-        
-        if previewsToLoad.isEmpty {
-            BaseChatMessageCellView.downloadPreviews(for: item, urls: previewsToRetrive);
-        } else {
-            DownloadCache.instance.getImages(for: previewsToLoad) { (loaded, sync) in
-                var first = true;
-                let msgStr = msg.string;
-                loaded.forEach { (arg0) in
-                    let (url, image) = arg0
-                    self.appendPreview(message: msg, url: url, image: image, first: first);
-                    first = false;
-                }
-                if !sync && !first {
-                    DispatchQueue.main.async {
-                        if self.message.attributedStringValue.string == msgStr {
-                            self.message.attributedStringValue = msg;
-                        } else {
-                            print("items do not match!");
-                        }
-                    }
-                }
-            }
+
+        if let previews = self.previews {
+            previews.clear();
         }
+//            if previewsToShow.isEmpty {
+//                previews.clear();
+//            } else {
+//                if #available(macOS 10.15, *) {
+//                    let msgId = item.id;
+//                    var metadatas: [LPLinkMetadata] = [];
+//
+//                    for url in previewsToShow {
+//                        if let result = item.preview?[url.absoluteString] {
+//                            switch result {
+//                            case .success(let previewId):
+//                                if let metadata = MetadataCache.instance.metadata(for: previewId) {
+//                                    metadatas.append(metadata);
+//                                } else if let url = DownloadStore.instance.url(for: previewId) {
+//                                    MetadataCache.instance.generateMetadata(for: url, withId: <#T##String#>, completionHandler: { meta in
+//                                        // now we have meta..
+//                                        if let metadata = meta {
+//                                            DispatchQueue.main.async { [weak self] in
+//                                                guard let that = self, that.id == msgId else {
+//                                                    return;
+//                                                }
+//                                                metadatas.append(metadata);
+//                                                previews.set(previews: metadatas.map({ meta in LPLinkView(metadata: meta) }));
+//                                            }
+//                                        } else {
+//                                            // we cannot do anything.. maybe the file is missing..
+//                                        }
+//                                    })
+//                                } else {
+//                                    // do we have anything to do here? most likely not
+//                                }
+//                            case .failure(let err):
+//                                // there was an error, skipping preview for this url...
+//                                break;
+//                            }
+//                        } else {
+//                            // we need to try to download it
+//                            DownloadManager.instance.downloadFile(destination: DownloadStore.instance, url: url, maxSize: Int64(Settings.imageDownloadSizeLimit.integer()), excludedMimetypes: ["text/html"], completionHandler: { result in
+//                                switch result {
+//                                case .success(let downloadId):
+//                                    // we need to generate preview from download...
+//                                    if let localUrl = DownloadStore.instance.url(for: downloadId) {
+//                                        DispatchQueue.main.async {
+//                                            var values: [String: Result<String,PreviewError>] = item.preview ?? [:];
+//                                            values[url.absoluteString] = .success(downloadId);
+//                                            DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, preview: values);
+//                                        }
+//                                        MetadataCache.instance.generateMetadata(for: localUrl, withId: downloadId, completionHandler: { meta in
+//                                            // now we have meta..
+//                                            if let metadata = meta {
+//                                                DispatchQueue.main.async { [weak self] in
+//                                                    guard let that = self, that.id == msgId else {
+//                                                        return;
+//                                                    }
+//                                                    metadatas.append(metadata);
+//                                                    previews.set(previews: metadatas.map({ meta in LPLinkView(metadata: meta) }));
+//                                                }
+//
+//                                                UPDATE PREVIEW IDs...
+//
+//                                            } else {
+//                                                // we cannot do anything.. maybe the file is missing..
+//                                            }
+//                                        })
+//                                    }
+//                                case .failure(let downloadError):
+//                                    switch downloadError {
+//                                        case .networkError(let err):
+//                                            // we should retry later on..
+//                                            break;
+//                                        case .responseError(let err):
+//                                            // we should retry later on.. or just drop it..
+//                                            break;
+//                                        case .tooBig(_), .badMimeType(_):
+//                                            // lets generate metadata from original URL
+//                                            let previewId = UUID().uuidString;
+//                                            MetadataCache.instance.generateMetadata(for: url, withId: previewId, completionHandler: { meta in
+//                                                // now we have meta..
+//                                                if let metadata = meta {
+//                                                    DispatchQueue.main.async { [weak self] in
+//                                                        guard let that = self, that.id == msgId else {
+//                                                            return;
+//                                                        }
+//                                                        metadatas.append(metadata);
+//                                                        previews.set(previews: metadatas.map({ meta in LPLinkView(metadata: meta) }));
+//                                                    }
+//
+//                                                    UPDATE PREVIEW IDs...
+//
+//                                                } else {
+//                                                    // we cannot do anything.. maybe the file is missing..
+//                                                }
+//                                            })
+//                                            break;
+//                                    }
+//                                }
+//                            });
+//                        }
+//                    }
+//
+//                    previews.set(previews: metadatas.map({ meta in LPLinkView(metadata: meta) }));
+//                } else {
+//
+//                }
+//            }
+//        } else {
+//          // nothing to do..
+//        }
         self.message.attributedStringValue = msg;
     }
-        
+
     override func layout() {
         if Settings.alternateMessageColoringBasedOnDirection.bool() {
             if let direction = self.direction {
@@ -163,7 +238,7 @@ class BaseChatMessageCellView: NSTableCellView {
 //        }
         super.layout();
     }
-    
+
     fileprivate func appendPreview(message msg: NSMutableAttributedString, url: URL, image origImage: NSImage, first: Bool) {
         let att = NSTextAttachment(data: nil, ofType: nil);
         let image = scalled(image: origImage);
@@ -188,7 +263,7 @@ class BaseChatMessageCellView: NSTableCellView {
             return origImage.scaledAndFlipped(maxWidth: 250.0, maxHeight: 200.0, flipX: false, flipY: true, roundedRadius: 8.0);
         }
     }
-    
+
     fileprivate func messageBody(item: ChatMessage) -> String {
         guard let msg = item.encryption.message() else {
 //            guard let error = item.error else {
@@ -213,106 +288,8 @@ class BaseChatMessageCellView: NSTableCellView {
         } else {
             return BaseChatMessageCellView.defaultFormatter.string(from: ts);
         }
-        
     }
 
-    fileprivate static func downloadPreviews(for item: ChatMessage, urls: [URL]) {
-        guard !urls.isEmpty && Settings.imageDownloadSizeLimit.integer() > 0 else {
-            return;
-        }
-        
-        DispatchQueue.global().async {
-            var preview = item.preview ?? [:];
-            
-            let finisher: (URL, String)->Void = { url, previewId in
-                DispatchQueue.main.async {
-                    preview[url.absoluteString] = previewId;
-                    var result = true;
-                    urls.forEach({ u in
-                        result = result && preview[u.absoluteString] != nil;
-                    })
-                    if result {
-                        DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, preview: [url.absoluteString: previewId]);
-                    }
-                }
-            };
-            
-            let sessionConfig = URLSessionConfiguration.default;
-            let session = URLSession(configuration: sessionConfig);
-            urls.forEach { (url) in
-                if let previewId = DownloadCache.instance.hasFile(for: url) {
-                    finisher(url, previewId);
-                    return;
-                } else {
-                    BaseChatMessageCellView.downloadPreviewGetHeaders(session: session, url: url, completion: { (statusCode, error, mimeType, length) in
-                        guard error == nil else {
-                            if (error!._code == -1202 && error!._domain == "NSURLErrorDomain") {
-                                finisher(url, "ERROR:NSURLErrorServerCertificateUntrusted");
-                            } else {
-                                finisher(url, "ERROR");
-                            }
-                            return;
-                        }
-                        var isImage = (mimeType?.hasPrefix("image/") ?? false);
-                        if !isImage {
-                            if let fileExtension = url.lastPathComponent.split(separator: ".").last {
-                                isImage = fileExtension == "jpg" || fileExtension == "jpeg" || fileExtension == "png";
-                            }
-                        }
-                        if isImage, let size = length {
-                            if size < Int64(Settings.imageDownloadSizeLimit.integer()) {
-                                BaseChatMessageCellView.downloadPreviewImage(session: session, url: url, completion: { (url, previewId) in
-                                    finisher(url, previewId);
-                                })
-                            } else {
-                                finisher(url, "ERROR:SizeExceeeded");
-                            }
-                        } else {
-                            finisher(url, "NONE");
-                        }
-                    });
-                }
-            }
-        }
-    }
-    
-    fileprivate static func downloadPreviewImage(session: URLSession, url: URL, completion: @escaping (URL, String)->Void) {
-        let request = URLRequest(url: url);
-        let task = session.downloadTask(with: request) { (tempLocalUrl, response, error) in
-            if let tempLocalUrl = tempLocalUrl, error == nil {
-                do {
-                    let previewId = try DownloadCache.instance.addImage(url: tempLocalUrl, maxWidthOrHeight: 300, previewFor: url);
-                    completion(url, previewId);
-                } catch _ {
-                    //print("could not copy downloaded file!", writeError);
-                    completion(url, "NONE");
-                }
-            } else {
-                guard error == nil else {
-                    if (error!._code == -1202 && error!._domain == "NSURLErrorDomain") {
-                        completion(url, "ERROR:NSURLErrorServerCertificateUntrusted");
-                    } else {
-                        completion(url, "ERROR");
-                    }
-                    return;
-                }
-                
-                //print("could not download file:", error?.localizedDescription);
-                completion(url, "NONE");
-            }
-        }
-        task.resume();
-    }
-    
-    fileprivate static func downloadPreviewGetHeaders(session: URLSession, url: URL, completion: @escaping (Int, Error?, String?, Int64?)->Void) {
-        var request = URLRequest(url: url);
-        request.httpMethod = "HEAD";
-        session.dataTask(with: request) { (data, resp, error) in
-            let response = resp as? HTTPURLResponse;
-            completion(response?.statusCode ?? 500, error, response?.mimeType, response?.expectedContentLength);
-            }.resume();
-    }
-    
     fileprivate static let todaysFormatter = ({()-> DateFormatter in
         var f = DateFormatter();
         f.dateStyle = .none;
@@ -331,7 +308,7 @@ class BaseChatMessageCellView: NSTableCellView {
         //        f.timeStyle = .NoStyle;
         return f;
     })();
-    
+
     fileprivate static let tooltipFormatter = ({()-> DateFormatter in
         var f = DateFormatter();
         f.locale = NSLocale.current;
@@ -341,4 +318,148 @@ class BaseChatMessageCellView: NSTableCellView {
     })();
 
 
+}
+
+@available(OSX 10.15, *)
+class MetadataCache {
+
+    static let instance = MetadataCache();
+
+    private var cache: [URL: Result<LPLinkMetadata, MetadataCache.CacheError>] = [:];
+    private let diskCacheUrl: URL;
+    private let dispatcher = QueueDispatcher(label: "MetadataCache");
+
+    private var inProgress: [URL: OperationQueue] = [:];
+    
+    init() {
+        diskCacheUrl = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!.appendingPathComponent(Bundle.main.bundleIdentifier!, isDirectory: true).appendingPathComponent("metadata", isDirectory: true);
+        if !FileManager.default.fileExists(atPath: diskCacheUrl.path) {
+            try! FileManager.default.createDirectory(at: diskCacheUrl, withIntermediateDirectories: true, attributes: nil);
+        }
+    }
+
+    func store(_ value: LPLinkMetadata, for id: String) {
+        let fileUrl = diskCacheUrl.appendingPathComponent("\(id).metadata");
+        guard let codedData = try? NSKeyedArchiver.archivedData(withRootObject: value, requiringSecureCoding: false) else {
+            return;
+        }
+
+        try? codedData.write(to: fileUrl);
+    }
+
+    func metadata(for id: String) -> LPLinkMetadata? {
+        guard let data = FileManager.default.contents(atPath: diskCacheUrl.appendingPathComponent("\(id).metadata").path) else {
+            return nil;
+        }
+
+        return try! NSKeyedUnarchiver.unarchivedObject(ofClass: LPLinkMetadata.self, from: data);
+    }
+
+    func generateMetadata(for url: URL, withId id: String, completionHandler: @escaping (LPLinkMetadata?)->Void) {
+        dispatcher.async {
+            if let queue = self.inProgress[url] {
+                queue.addOperation {
+                    completionHandler(self.metadata(for: id));
+                }
+            } else {
+                let queue = OperationQueue();
+                queue.isSuspended = true;
+                self.inProgress[url] = queue;
+                
+                queue.addOperation {
+                    completionHandler(self.metadata(for: id));
+                }
+                
+                DispatchQueue.main.async {
+                    let provider = LPMetadataProvider();
+                    provider.startFetchingMetadata(for: url, completionHandler: { (meta, error) in
+                        if let metadata = meta {
+                            self.store(metadata, for: id);
+                        } else {
+                            print("failed to download metadata for:", url);
+                            let metadata = LPLinkMetadata();
+                            metadata.originalURL = url;
+                            self.store(metadata, for: id);
+                        }
+                        self.dispatcher.async {
+                            self.inProgress.removeValue(forKey: url);
+                            queue.isSuspended = false;
+                        }
+                    })
+                }
+            }
+        }
+    }
+
+    enum CacheError: Error {
+        case NO_DATA
+        case RETRIEVAL_ERROR
+    }
+}
+
+class Previews: NSView {
+
+    func clear() {
+        let subviews = self.subviews;
+        subviews.forEach { (view) in
+            view.removeFromSuperview();
+        }
+
+        self.removeConstraints(self.constraints);
+        self.heightAnchor.constraint(equalToConstant: 0).isActive = true;
+    }
+
+    @available(macOS 10.15, *)
+    func add(preview linkView: LPLinkView) {
+        self.removeConstraints(self.constraints);
+
+        linkView.setContentHuggingPriority(.defaultLow, for: .vertical);
+        linkView.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
+        linkView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
+        linkView.translatesAutoresizingMaskIntoConstraints = false;
+
+        self.addSubview(linkView);
+
+        linkView.heightAnchor.constraint(lessThanOrEqualToConstant: 200).isActive = true;
+
+        linkView.topAnchor.constraint(equalTo: self.topAnchor, constant: 0).isActive = true;
+        linkView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: 0).isActive = true;
+        linkView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 0).isActive = true;
+        linkView.trailingAnchor.constraint(lessThanOrEqualTo: self.trailingAnchor, constant: 0).isActive = true;
+    }
+
+    @available(macOS 10.15, *)
+    func set(previews: [LPLinkView]) {
+        let subviews = self.subviews;
+        subviews.forEach { (view) in
+            view.removeFromSuperview();
+        }
+
+        self.removeConstraints(self.constraints);
+
+        var constraints: [NSLayoutConstraint] = [];
+
+        var topAnchor: NSLayoutYAxisAnchor = self.topAnchor;
+
+        for linkView in previews {
+            linkView.setContentHuggingPriority(.defaultLow, for: .vertical);
+            linkView.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
+            linkView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
+            linkView.translatesAutoresizingMaskIntoConstraints = false;
+
+            self.addSubview(linkView);
+
+            constraints.append(contentsOf: [
+                linkView.heightAnchor.constraint(lessThanOrEqualToConstant: 200),
+                linkView.topAnchor.constraint(equalTo: topAnchor, constant: 4),
+                linkView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 0),
+                linkView.trailingAnchor.constraint(lessThanOrEqualTo: self.trailingAnchor, constant: 0)
+            ]);
+
+            topAnchor = linkView.bottomAnchor;
+        }
+        constraints.append(self.bottomAnchor.constraint(equalTo: topAnchor, constant: 0));
+
+        NSLayoutConstraint.activate(constraints);
+    }
 }

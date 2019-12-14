@@ -217,38 +217,48 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     }
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        guard let item = dataSource.getItem(at: row) as? ChatMessage else {
-            guard let item = dataSource.getItem(at: row) as? SystemMessage else {
-                return nil;
-            }
+        guard let item = dataSource.getItem(at: row) else {
+            return nil;
+        }
+        
+        let prevItem = row >= 0 && (row + 1) < dataSource.count ? dataSource.getItem(at: row + 1) : nil;
+        let continuation = prevItem != nil && item.isMergeable(with: prevItem!);
+        
+        switch item {
+        case let item as SystemMessage:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "MucMessageSystemCellView"), owner: nil) as? ChatMessageSystemCellView {
                 cell.message.stringValue = "Unread messages";
                 return cell;
             }
             return nil;
-        }
-        let prevItem = row >= 0 && (row + 1) < dataSource.count ? dataSource.getItem(at: row + 1) : nil;
-        let continuation = prevItem != nil && item.isMergeable(with: prevItem!);
-        
-        if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "MucMessageContinuationCellView" : "MucMessageCellView"), owner: nil) as? BaseChatMessageCellView {
-                        
-            cell.id = item.id;
-            if let c = cell as? ChatMessageCellView {
-                if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
-                    c.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-                } else if let nickname = item.authorNickname, let photoHash = self.room.presences[nickname]?.presence.vcardTempPhoto {
-                    c.set(avatar: AvatarManager.instance.avatar(withHash: photoHash));
-                } else {
-                    c.set(avatar: nil);
+        case let item as ChatMessage:
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "MucMessageContinuationCellView" : "MucMessageCellView"), owner: nil) as? BaseChatMessageCellView {
+
+                cell.id = item.id;
+                if let c = cell as? ChatMessageCellView {
+                    if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
+                        c.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
+                    } else if let nickname = item.authorNickname, let photoHash = self.room.presences[nickname]?.presence.vcardTempPhoto {
+                        c.set(avatar: AvatarManager.instance.avatar(withHash: photoHash));
+                    } else {
+                        c.set(avatar: nil);
+                    }
+                    c.set(senderName: item.authorNickname ?? "From \(item.jid.stringValue)");
                 }
-                c.set(senderName: item.authorNickname ?? "From \(item.jid.stringValue)");
+                cell.set(message: item);
+
+                return cell;
             }
-            cell.set(message: item, nickname: self.room.nickname, keywords: self.keywords);
-            
-            return cell;
+            return nil;
+        case let item as ChatLinkPreview:
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "MucLinkPreviewCellView"), owner: nil) as? ChatLinkPreviewCellView {
+                cell.set(item: item);
+                return cell;
+            }
+            return nil;
+        default:
+            return nil;
         }
-        
-        return nil;
     }
     
     @IBAction func enterInInputTextField(_ sender: NSTextField) {

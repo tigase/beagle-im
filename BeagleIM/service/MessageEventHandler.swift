@@ -119,7 +119,30 @@ class MessageEventHandler: XmppServiceEventHandler {
 
             let timestamp = e.message.delay?.stamp ?? Date();
             let state: MessageState = ((e.message.type ?? .chat) == .error) ? .incoming_error_unread : .incoming_unread;
-            DBChatHistoryStore.instance.appendItem(for: account, with: from.bareJid, state: state, type: .message, timestamp: timestamp, stanzaId: e.message.id, data: body!, chatState: e.message.chatState, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
+            
+            var type: ItemType = .message;
+            if let oob = e.message.oob {
+                if oob == body! {
+                    type = .attachment;
+                }
+            }
+            
+            DBChatHistoryStore.instance.appendItem(for: account, with: from.bareJid, state: state, type: type, timestamp: timestamp, stanzaId: e.message.id, data: body!, chatState: e.message.chatState, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
+            
+            if type == .message && !state.isError {
+                let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
+                let matches = detector.matches(in: body!, range: NSMakeRange(0, body!.utf16.count));
+                matches.forEach { match in
+                    if let url = match.url, let scheme = url.scheme, ["https", "http"].contains(scheme) {
+                        DBChatHistoryStore.instance.appendItem(for: account, with: from.bareJid, state: state, type: .linkPreview, timestamp: timestamp, stanzaId: nil, data: url.absoluteString, chatState: e.message.chatState, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
+                    }
+                    if let address = match.components {
+                        let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
+                        let mapUrl = URL(string: "http://maps.apple.com/?q=\(query!)")!;
+                        DBChatHistoryStore.instance.appendItem(for: account, with: from.bareJid, state: state, type: .linkPreview, timestamp: timestamp, stanzaId: nil, data: mapUrl.absoluteString, chatState: e.message.chatState, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
+                    }
+                }
+            }
         case let e as MessageDeliveryReceiptsModule.ReceiptEvent:
             guard let from = e.message.from?.bareJid, let account = e.sessionObject.userBareJid else {
                 return;
@@ -128,7 +151,7 @@ class MessageEventHandler: XmppServiceEventHandler {
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
             let account = e.sessionObject.userBareJid!;
             MessageEventHandler.syncMessages(for: account);
-            DBChatHistoryStore.instance.loadUnsentMessage(for: account, completionHandler: { (account, jid, data, stanzaId, encryption) in
+            DBChatHistoryStore.instance.loadUnsentMessage(for: account, completionHandler: { (account, jid, data, stanzaId, encryption, type) in
 
                 var chat = DBChatStore.instance.getChat(for: account, with: jid);
                 if chat == nil {
@@ -136,8 +159,11 @@ class MessageEventHandler: XmppServiceEventHandler {
                 }
 
                 if let dbChat = chat as? DBChatStore.DBChat {
-                    let url = data.starts(with: "http:") || data.starts(with: "https:") ? data : nil
-                    MessageEventHandler.sendMessage(chat: dbChat, body: data, url: data, stanzaId: stanzaId);
+                    if type == .message {
+                        MessageEventHandler.sendMessage(chat: dbChat, body: data, url: nil, stanzaId: stanzaId);
+                    } else if type == .attachment {
+                        MessageEventHandler.sendMessage(chat: dbChat, body: data, url: data, stanzaId: stanzaId);
+                    }
                 }
             });
         case let e as DiscoveryModule.ServerFeaturesReceivedEvent:
@@ -171,11 +197,34 @@ class MessageEventHandler: XmppServiceEventHandler {
             let jid = account == from.bareJid ? to.bareJid : from.bareJid;
             let timestamp = e.message.delay?.stamp ?? Date();
             let state: MessageState = calculateState(direction: account == from.bareJid ? .outgoing : .incoming, error: ((e.message.type ?? .chat) == .error), unread: !Settings.markMessageCarbonsAsRead.bool());
-            DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, type: .message, timestamp: timestamp, stanzaId: e.message.id, data: body!, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: { (msgId) in
+            
+            var type: ItemType = .message;
+            if let oob = e.message.oob {
+                if oob == body! {
+                    type = .attachment;
+                }
+            }
+            
+            DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, type: type, timestamp: timestamp, stanzaId: e.message.id, data: body!, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: { (msgId) in
                 if state.direction == .outgoing {
                     DBChatHistoryStore.instance.markAsRead(for: account, with: jid, before: timestamp);
                 }
             });
+            
+            if type == .message && !state.isError {
+                let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
+                let matches = detector.matches(in: body!, range: NSMakeRange(0, body!.utf16.count));
+                matches.forEach { match in
+                    if let url = match.url, let scheme = url.scheme, ["https", "http"].contains(scheme) {
+                        DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, type: .linkPreview, timestamp: timestamp, stanzaId: nil, data: url.absoluteString, chatState: e.message.chatState, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
+                    }
+                    if let address = match.components {
+                        let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
+                        let mapUrl = URL(string: "http://maps.apple.com/?q=\(query!)")!;
+                        DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, type: .linkPreview, timestamp: timestamp, stanzaId: nil, data: mapUrl.absoluteString, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
+                    }
+                }
+            }
         case let e as MessageArchiveManagementModule.ArchivedMessageReceivedEvent:
             guard let account = e.sessionObject.userBareJid, let from = e.message.from, let to = e.message.to else {
                 return;
@@ -184,10 +233,33 @@ class MessageEventHandler: XmppServiceEventHandler {
             guard body != nil else {
                 return;
             }
+            
+            var type: ItemType = .message;
+            if let oob = e.message.oob {
+                if oob == body {
+                    type = .attachment;
+                }
+            }
+            
             let jid = account == from.bareJid ? to.bareJid : from.bareJid;
             let timestamp = e.timestamp!;
             let state: MessageState = calculateState(direction: account == from.bareJid ? .outgoing : .incoming, error: ((e.message.type ?? .chat) == .error), unread: false);
-            DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, type: .message, timestamp: timestamp, stanzaId: e.message.id, data: body!, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
+            DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, type: type, timestamp: timestamp, stanzaId: e.message.id, data: body!, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
+            
+            if type == .message && !state.isError {
+                let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
+                let matches = detector.matches(in: body!, range: NSMakeRange(0, body!.utf16.count));
+                matches.forEach { match in
+                    if let url = match.url, let scheme = url.scheme, ["https", "http"].contains(scheme) {
+                        DBChatHistoryStore.instance.appendItem(for: account, with: from.bareJid, state: state, type: .linkPreview, timestamp: timestamp, stanzaId: nil, data: url.absoluteString, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
+                    }
+                    if let address = match.components {
+                        let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
+                        let mapUrl = URL(string: "http://maps.apple.com/?q=\(query!)")!;
+                        DBChatHistoryStore.instance.appendItem(for: account, with: from.bareJid, state: state, type: .linkPreview, timestamp: timestamp, stanzaId: nil, data: mapUrl.absoluteString, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
+                    }
+                }
+            }
         case let e as OMEMOModule.AvailabilityChangedEvent:
             NotificationCenter.default.post(name: MessageEventHandler.OMEMO_AVAILABILITY_CHANGED, object: e);
         default:
@@ -213,7 +285,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             case .omemo:
                 if stanzaId == nil {
                     let fingerprint = DBOMEMOStore.instance.identityFingerprint(forAccount: account, andAddress: SignalAddress(name: account.stringValue, deviceId: Int32(bitPattern: DBOMEMOStore.instance.localRegistrationId(forAccount: account)!)));
-                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing_unsent, type: .message, timestamp: Date(), stanzaId: message.id, data: msg, encryption: .decrypted, encryptionFingerprint: fingerprint, completionHandler: nil);
+                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing_unsent, type: url == nil ? .message : .attachment, timestamp: Date(), stanzaId: message.id, data: msg, encryption: .decrypted, encryptionFingerprint: fingerprint, completionHandler: nil);
                 }
                 XmppService.instance.tasksQueue.schedule(for: jid, task: { (completionHandler) in
                     sendEncryptedMessage(message, from: account, completionHandler: { result in
@@ -244,14 +316,31 @@ class MessageEventHandler: XmppServiceEventHandler {
                 });
             case .none:
                 message.oob = url;
+                let type: ItemType = url == nil ? .message : .attachment;
                 if stanzaId == nil {
-                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing_unsent, type: .message, timestamp: Date(), stanzaId: message.id, data: msg, encryption: .none, encryptionFingerprint: nil, completionHandler: nil);
+                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing_unsent, type: type, timestamp: Date(), stanzaId: message.id, data: msg, encryption: .none, encryptionFingerprint: nil, completionHandler: nil);
                 }
                 XmppService.instance.tasksQueue.schedule(for: jid, task: { (completionHandler) in
                     sendUnencryptedMessage(message, from: account, completionHandler: { result in
                         switch result {
                         case .success(_):
-                            DBChatHistoryStore.instance.updateItemState(for: account, with: jid, stanzaId: message.id!, from: .outgoing_unsent, to: .outgoing, withTimestamp: Date());
+                            let timestamp = Date();
+                            DBChatHistoryStore.instance.updateItemState(for: account, with: jid, stanzaId: message.id!, from: .outgoing_unsent, to: .outgoing, withTimestamp: timestamp);
+                            
+                            if type == .message {
+                                let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
+                                let matches = detector.matches(in: body!, range: NSMakeRange(0, body!.utf16.count));
+                                matches.forEach { match in
+                                    if let url = match.url, let scheme = url.scheme, ["https", "http"].contains(scheme) {
+                                        DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing, type: .linkPreview, timestamp: timestamp, stanzaId: nil, data: url.absoluteString, encryption: .none, encryptionFingerprint: nil, completionHandler: nil);
+                                    }
+                                    if let address = match.components {
+                                        let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
+                                        let mapUrl = URL(string: "http://maps.apple.com/?q=\(query!)")!;
+                                        DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing, type: .linkPreview, timestamp: timestamp, stanzaId: nil, data: mapUrl.absoluteString, encryption: .none, encryptionFingerprint: nil, completionHandler: nil);
+                                    }
+                                }
+                            }
                         case .failure(let err):
                             guard let condition = err as? ErrorCondition, condition != .gone else {
                                 completionHandler();

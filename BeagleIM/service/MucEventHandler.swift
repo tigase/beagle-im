@@ -68,13 +68,35 @@ class MucEventHandler: XmppServiceEventHandler {
                 }
             }
             
-            guard let body = e.message.body else {
+            guard let body = e.message.body ?? e.message.oob else {
                 return;
             }
             
             let authorJid = e.nickname == nil ? nil : room.presences[e.nickname!]?.jid?.bareJid;
             
-            DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: ((e.nickname == nil) || (room.nickname != e.nickname!)) ? .incoming_unread : .outgoing, authorNickname: e.nickname, authorJid: authorJid, type: .message, timestamp: e.timestamp, stanzaId: e.message.id, data: body, encryption: MessageEncryption.none, encryptionFingerprint: nil, completionHandler: nil);
+            var type: ItemType = .message;
+            if let oob = e.message.oob {
+                if oob == body {
+                    type = .attachment;
+                }
+            }
+            
+            DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: ((e.nickname == nil) || (room.nickname != e.nickname!)) ? .incoming_unread : .outgoing, authorNickname: e.nickname, authorJid: authorJid, type: type, timestamp: e.timestamp, stanzaId: e.message.id, data: body, encryption: MessageEncryption.none, encryptionFingerprint: nil, completionHandler: nil);
+            
+            if type == .message && e.message.type != StanzaType.error {
+                let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
+                let matches = detector.matches(in: body, range: NSMakeRange(0, body.utf16.count));
+                matches.forEach { match in
+                    if let url = match.url, let scheme = url.scheme, ["https", "http"].contains(scheme) {
+                        DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: ((e.nickname == nil) || (room.nickname != e.nickname!)) ? .incoming_unread : .outgoing, authorNickname: e.nickname, authorJid: authorJid, type: .linkPreview, timestamp: e.timestamp, stanzaId: nil, data: url.absoluteString, chatState: e.message.chatState, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: .none, encryptionFingerprint: nil, completionHandler: nil);
+                    }
+                    if let address = match.components {
+                        let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
+                        let mapUrl = URL(string: "http://maps.apple.com/?q=\(query!)")!;
+                        DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: ((e.nickname == nil) || (room.nickname != e.nickname!)) ? .incoming_unread : .outgoing, authorNickname: e.nickname, authorJid: authorJid, type: .linkPreview, timestamp: e.timestamp, stanzaId: nil, data: mapUrl.absoluteString, chatState: e.message.chatState, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: .none, encryptionFingerprint: nil, completionHandler: nil);
+                    }
+                }
+            }
         case let e as MucModule.AbstractOccupantEvent:
             NotificationCenter.default.post(name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: e);
             if let photoHash = e.presence.vcardTempPhoto {
