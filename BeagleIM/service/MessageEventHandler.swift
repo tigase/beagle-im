@@ -129,7 +129,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             
             DBChatHistoryStore.instance.appendItem(for: account, with: from.bareJid, state: state, type: type, timestamp: timestamp, stanzaId: e.message.id, data: body!, chatState: e.message.chatState, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
             
-            if type == .message && !state.isError {
+            if type == .message && !state.isError, #available(macOS 10.15, *) {
                 let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
                 let matches = detector.matches(in: body!, range: NSMakeRange(0, body!.utf16.count));
                 matches.forEach { match in
@@ -211,7 +211,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                 }
             });
             
-            if type == .message && !state.isError {
+            if type == .message && !state.isError, #available(macOS 10.15, *) {
                 let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
                 let matches = detector.matches(in: body!, range: NSMakeRange(0, body!.utf16.count));
                 matches.forEach { match in
@@ -246,7 +246,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             let state: MessageState = calculateState(direction: account == from.bareJid ? .outgoing : .incoming, error: ((e.message.type ?? .chat) == .error), unread: false);
             DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, type: type, timestamp: timestamp, stanzaId: e.message.id, data: body!, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
             
-            if type == .message && !state.isError {
+            if type == .message && !state.isError, #available(macOS 10.15, *) {
                 let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
                 let matches = detector.matches(in: body!, range: NSMakeRange(0, body!.utf16.count));
                 matches.forEach { match in
@@ -327,7 +327,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                             let timestamp = Date();
                             DBChatHistoryStore.instance.updateItemState(for: account, with: jid, stanzaId: message.id!, from: .outgoing_unsent, to: .outgoing, withTimestamp: timestamp);
                             
-                            if type == .message {
+                            if type == .message, #available(macOS 10.15, *) {
                                 let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
                                 let matches = detector.matches(in: body!, range: NSMakeRange(0, body!.utf16.count));
                                 matches.forEach { match in

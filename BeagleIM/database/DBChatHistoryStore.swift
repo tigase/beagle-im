@@ -42,13 +42,13 @@ class DBChatHistoryStore {
     fileprivate let countItemsStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid")
 
     fileprivate let getItemIdByStanzaId: DBStatement = try! DBConnection.main.prepareStatement("SELECT id FROM chat_history WHERE account = :account AND jid = :jid AND stanza_id = :stanza_id ORDER BY timestamp DESC");
-    fileprivate let getChatMessagesStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error FROM chat_history WHERE account = :account AND jid = :jid ORDER BY timestamp DESC LIMIT :limit OFFSET :offset");
+    fileprivate let getChatMessagesStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error FROM chat_history WHERE account = :account AND jid = :jid AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))) ORDER BY timestamp DESC LIMIT :limit OFFSET :offset");
     fileprivate let getChatMessageWithIdStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error FROM chat_history WHERE id = :id");
 
-    fileprivate let getChatMessagePosition: DBStatement = try! DBConnection.main.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND id <> :msgId AND timestamp > (SELECT timestamp FROM chat_history WHERE id = :msgId)")
+    fileprivate let getChatMessagePosition: DBStatement = try! DBConnection.main.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND id <> :msgId AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))) AND timestamp > (SELECT timestamp FROM chat_history WHERE id = :msgId)")
     fileprivate let removeChatHistoryStmt: DBStatement = try! DBConnection.main.prepareStatement("DELETE FROM chat_history WHERE account = :account AND (:jid IS NULL OR jid = :jid)");
 
-    fileprivate let searchHistoryStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT chat_history.id as id, chat_history.account as account, chat_history.jid as jid, author_nickname, author_jid, chat_history.timestamp as timestamp, item_type, chat_history.data as data, state, preview, chat_history.encryption as encryption, fingerprint FROM chat_history INNER JOIN chat_history_fts_index ON chat_history.id = chat_history_fts_index.rowid LEFT JOIN chats ON chats.account = chat_history.account AND chats.jid = chat_history.jid WHERE (chats.id IS NOT NULL OR chat_history.author_nickname is NULL) AND chat_history_fts_index MATCH :query AND (:account IS NULL OR chat_history.account = :account) AND (:jid IS NULL OR chat_history.jid = :jid) ORDER BY chat_history.timestamp DESC")
+    fileprivate let searchHistoryStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT chat_history.id as id, chat_history.account as account, chat_history.jid as jid, author_nickname, author_jid, chat_history.timestamp as timestamp, item_type, chat_history.data as data, state, preview, chat_history.encryption as encryption, fingerprint FROM chat_history INNER JOIN chat_history_fts_index ON chat_history.id = chat_history_fts_index.rowid LEFT JOIN chats ON chats.account = chat_history.account AND chats.jid = chat_history.jid WHERE (chats.id IS NOT NULL OR chat_history.author_nickname is NULL) AND chat_history_fts_index MATCH :query AND (:account IS NULL OR chat_history.account = :account) AND (:jid IS NULL OR chat_history.jid = :jid) AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))) ORDER BY chat_history.timestamp DESC")
 
     fileprivate let getUnsentMessagesForAccountStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT ch.account as account, ch.jid as jid, ch.item_type as item_type, ch.data as data, ch.stanza_id as stanza_id, ch.encryption as encryption FROM chat_history ch WHERE ch.account = :account AND ch.state = \(MessageState.outgoing_unsent.rawValue) ORDER BY timestamp ASC");
 
@@ -180,7 +180,7 @@ class DBChatHistoryStore {
 
     open func itemPosition(for account: BareJID, with jid: BareJID, msgId: Int) -> Int? {
         return dispatcher.sync {
-            let params: [String: Any?] = ["account": account, "jid": jid, "msgId": msgId];
+            let params: [String: Any?] = ["account": account, "jid": jid, "msgId": msgId, "showLinkPreviews": linkPreviews];
             return try! self.getChatMessagePosition.scalar(params);
         }
     }
@@ -266,7 +266,7 @@ class DBChatHistoryStore {
     open func history(for account: BareJID, jid: BareJID, before: Int? = nil, limit: Int, completionHandler: @escaping (([ChatViewItemProtocol]) -> Void)) {
         dispatcher.async {
             if before != nil {
-                let params: [String: Any?] = ["account": account, "jid": jid, "msgId": before!];
+                let params: [String: Any?] = ["account": account, "jid": jid, "msgId": before!, "showLinkPreviews": self.linkPreviews];
                 let offset = try! self.getChatMessagePosition.scalar(params)!;
                 completionHandler(self.history(for: account, jid: jid, offset: offset, limit: limit));
             } else {
@@ -278,7 +278,7 @@ class DBChatHistoryStore {
     open func history(for account: BareJID, jid: BareJID, before: Int? = nil, limit: Int) -> [ChatViewItemProtocol] {
         return dispatcher.sync {
             if before != nil {
-                let offset = try! getChatMessagePosition.scalar(["account": account, "jid": jid, "msgId": before!])!;
+                let offset = try! getChatMessagePosition.scalar(["account": account, "jid": jid, "msgId": before!, "showLinkPreviews": linkPreviews])!;
                 return history(for: account, jid: jid, offset: offset, limit: limit);
             } else {
                 return history(for: account, jid: jid, offset: 0, limit: limit);
@@ -295,7 +295,7 @@ class DBChatHistoryStore {
             });
             let query = tokens.joined(separator: " + ");
             print("searching for:", tokens, "query:", query);
-            let params: [String: Any?] = ["account": account, "jid": jid, "query": query];
+            let params: [String: Any?] = ["account": account, "jid": jid, "query": query, "showLinkPreviews": self.linkPreviews];
             let items = (try? self.searchHistoryStmt.query(params, map: { (cursor) -> ChatViewItemProtocol? in
                 guard let account: BareJID = cursor["account"], let jid: BareJID = cursor["jid"] else {
                     return nil;
@@ -307,7 +307,7 @@ class DBChatHistoryStore {
     }
 
     fileprivate func history(for account: BareJID, jid: BareJID, offset: Int, limit: Int) -> [ChatViewItemProtocol] {
-        let params: [String: Any?] = ["account": account, "jid": jid, "offset": offset, "limit": limit];
+        let params: [String: Any?] = ["account": account, "jid": jid, "offset": offset, "limit": limit, "showLinkPreviews": linkPreviews];
         return try! getChatMessagesStmt.query(params) { (cursor) -> ChatViewItemProtocol? in
             return itemFrom(cursor: cursor, for: account, with: jid);
         }
@@ -321,6 +321,14 @@ class DBChatHistoryStore {
         let params: [String: Any?] = ["account": account, "jid": jid, "ts_from": ts_from, "ts_to": ts_to, "item_type": type.rawValue, "direction": direction.rawValue, "stanza_id": stanzaId, "data": data, "author_nickname": authorNickname];
 
         return (try! checkItemAlreadyAddedStmt.scalar(params) ?? 0) > 0;
+    }
+    
+    fileprivate var linkPreviews: Bool {
+        if #available(macOS 10.15, *) {
+            return Settings.linkPreviews.bool();
+        } else {
+            return false;
+        }
     }
 
     fileprivate func itemFrom(cursor: DBCursor, for account: BareJID, with jid: BareJID) -> ChatViewItemProtocol? {
@@ -372,6 +380,7 @@ public enum ItemType: Int {
     case attachment = 1
     // how about new type called link preview? this way we would have a far less data kept in a single item..
     // we could even have them separated to the new item/entry during adding message to the store..
+    @available(macOS 10.15, *)
     case linkPreview = 2
     // with that in place we can have separate metadata kept "per" message as it is only one, so message id can be id of associated metadata..
 }

@@ -184,6 +184,12 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
                 return cell;
             }
             return nil;
+        case let item as ChatAttachment:
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatAttachmentContinuationCellView"), owner: nil) as? ChatAttachmentContinuationCellView {
+                cell.set(item: item);
+                return cell;
+            }
+            return nil;
         default:
             return nil;
         }

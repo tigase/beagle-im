@@ -78,6 +78,7 @@
 		FE6201DE23A502FB00C965A5 /* ChatMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6201DD23A502FB00C965A5 /* ChatMessage.swift */; };
 		FE6201E023A5357B00C965A5 /* ChatLinkPreviewCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6201DF23A5357B00C965A5 /* ChatLinkPreviewCellView.swift */; };
 		FE6201E223A573BC00C965A5 /* ChatAttachment.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6201E123A573BC00C965A5 /* ChatAttachment.swift */; };
+		FE6201E423A693ED00C965A5 /* BaseChatAttachmentCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6201E323A693ED00C965A5 /* BaseChatAttachmentCellView.swift */; };
 		FE65A283230314D9001E68EF /* SettingsTabViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE65A282230314D9001E68EF /* SettingsTabViewController.swift */; };
 		FE6E6BF721384D5F003B1696 /* AutoresizingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */; };
 		FE6E6BF821384D5F003B1696 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE321384D5E003B1696 /* ViewController.swift */; };
@@ -260,6 +261,7 @@
 		FE6201DD23A502FB00C965A5 /* ChatMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessage.swift; sourceTree = "<group>"; };
 		FE6201DF23A5357B00C965A5 /* ChatLinkPreviewCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatLinkPreviewCellView.swift; sourceTree = "<group>"; };
 		FE6201E123A573BC00C965A5 /* ChatAttachment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAttachment.swift; sourceTree = "<group>"; };
+		FE6201E323A693ED00C965A5 /* BaseChatAttachmentCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseChatAttachmentCellView.swift; sourceTree = "<group>"; };
 		FE65A282230314D9001E68EF /* SettingsTabViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTabViewController.swift; sourceTree = "<group>"; };
 		FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoresizingTextField.swift; sourceTree = "<group>"; };
 		FE6E6BE321384D5E003B1696 /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -518,6 +520,7 @@
 				FE6201DD23A502FB00C965A5 /* ChatMessage.swift */,
 				FE6201DF23A5357B00C965A5 /* ChatLinkPreviewCellView.swift */,
 				FE6201E123A573BC00C965A5 /* ChatAttachment.swift */,
+				FE6201E323A693ED00C965A5 /* BaseChatAttachmentCellView.swift */,
 			);
 			path = chat;
 			sourceTree = "<group>";
@@ -922,6 +925,7 @@
 				FEA2F53522E46A2E009F2E88 /* ShowRosterWindowSegue.swift in Sources */,
 				FE30D8AF214C3B7600670BEC /* NSImage.swift in Sources */,
 				FE6201E023A5357B00C965A5 /* ChatLinkPreviewCellView.swift in Sources */,
+				FE6201E423A693ED00C965A5 /* BaseChatAttachmentCellView.swift in Sources */,
 				FE7F876C2343D99300254AF2 /* CustomScroller.swift in Sources */,
 				FE6E6C0421384D5F003B1696 /* DatabaseSchemaManager.swift in Sources */,
 				FE5C6B2722897F1B003DAB30 /* ServiceDiscoveryViewController.swift in Sources */,

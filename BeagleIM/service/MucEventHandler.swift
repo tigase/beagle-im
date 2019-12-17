@@ -83,7 +83,7 @@ class MucEventHandler: XmppServiceEventHandler {
             
             DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: ((e.nickname == nil) || (room.nickname != e.nickname!)) ? .incoming_unread : .outgoing, authorNickname: e.nickname, authorJid: authorJid, type: type, timestamp: e.timestamp, stanzaId: e.message.id, data: body, encryption: MessageEncryption.none, encryptionFingerprint: nil, completionHandler: nil);
             
-            if type == .message && e.message.type != StanzaType.error {
+            if type == .message && e.message.type != StanzaType.error, #available(macOS 10.15, *) {
                 let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
                 let matches = detector.matches(in: body, range: NSMakeRange(0, body.utf16.count));
                 matches.forEach { match in

@@ -57,6 +57,8 @@ enum Settings: String {
     case markKeywords
     
     case turnServer
+    @available(macOS 10.15, *)
+    case linkPreviews
     
     public static let CHANGED = Notification.Name("settingChanged");
     
@@ -78,7 +80,8 @@ enum Settings: String {
             "spellchecking": true,
             "appearance": Appearance.auto.rawValue,
             "imageDownloadSizeLimit": (10*1024*1024),
-            "messageGrouping": "smart"
+            "messageGrouping": "smart",
+            "linkPreviews": true
         ];
         UserDefaults.standard.register(defaults: defaults);
     }
@@ -98,6 +101,7 @@ enum Settings: String {
     
     func set(value: Int) {
         UserDefaults.standard.set(value, forKey: self.rawValue);
+        valueChanged();
     }
     
     func set(value: String?) {

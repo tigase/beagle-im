@@ -42,6 +42,17 @@ class ChatViewDataSource {
         NotificationCenter.default.addObserver(self, selector: #selector(messageUpdated(_:)), name: DBChatHistoryStore.MESSAGE_UPDATED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(messageRemoved(_:)), name: DBChatHistoryStore.MESSAGE_REMOVED, object: nil);
         //NotificationCenter.default.addObserver(self, selector: #selector(messagesMarkedAsRead), name: DBChatHistoryStore.MESSAGES_MARKED_AS_READ, object: nil);
+        if #available(macOS 10.15, *) {
+            NotificationCenter.default.addObserver(self, selector: #selector(settingChanged), name: Settings.CHANGED, object: nil);
+        }
+    }
+    
+    @available(macOS 10.15, *)
+    @objc func settingChanged(_ notification: Notification) {
+        guard let setting = notification.object as? Settings, setting == .linkPreviews else {
+            return;
+        }
+        self.refreshData(unread: 0, completionHandler: nil);
     }
     
     func getItem(at row: Int) -> ChatViewItemProtocol? {

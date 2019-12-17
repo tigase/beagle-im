@@ -45,18 +45,18 @@ class DownloadStore {
         }
     }
     
-    func store(_ source: URL, with id: String) -> URL {
+    func store(_ source: URL, filename: String, with id: String) -> URL {
         let fileDir = diskCacheUrl.appendingPathComponent(id, isDirectory: true);
         if !FileManager.default.fileExists(atPath: fileDir.path) {
             try! FileManager.default.createDirectory(at: fileDir, withIntermediateDirectories: true, attributes: nil);
         }
         
-        try! FileManager.default.copyItem(at: source, to: fileDir.appendingPathComponent(source.lastPathComponent));
+        try? FileManager.default.copyItem(at: source, to: fileDir.appendingPathComponent(filename));
         if !FileManager.default.fileExists(atPath: fileDir.appendingPathComponent(id).path) {
-            try! FileManager.default.createSymbolicLink(at: fileDir.appendingPathComponent(id), withDestinationURL: fileDir.appendingPathComponent(source.lastPathComponent));
+            try! FileManager.default.createSymbolicLink(at: fileDir.appendingPathComponent(id), withDestinationURL: fileDir.appendingPathComponent(filename));
         }
         
-        return fileDir.appendingPathComponent(source.lastPathComponent);
+        return fileDir.appendingPathComponent(filename);
     }
     
     func url(for id: String) -> URL? {
@@ -69,6 +69,15 @@ class DownloadStore {
         return URL(fileURLWithPath: filePath);
     }
             
+    func deleteFile(for id: String) {
+        let fileDir = diskCacheUrl.appendingPathComponent(id, isDirectory: true);
+        guard FileManager.default.fileExists(atPath: fileDir.path) else {
+            return;
+        }
+        
+        try? FileManager.default.removeItem(at: fileDir);
+    }
+    
 //    func addImage(url: URL, maxWidthOrHeight: CGFloat, previewFor: URL) throws -> String {
 //        let previewId = hash(for: previewFor);
 //        guard !hasFile(for: previewId) else {

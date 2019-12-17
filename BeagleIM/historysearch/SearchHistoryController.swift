@@ -39,6 +39,7 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
     }
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+        // FIXME: THIS IS NO LONGER TRUE
         let item = self.items[row] as! ChatMessage;
         guard let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMessageCellView"), owner: self) as? ChatMessageCellView else {
             return nil;
