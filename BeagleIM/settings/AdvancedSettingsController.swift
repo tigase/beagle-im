@@ -59,11 +59,11 @@ class AdvancedSettingsController: NSViewController {
         allowSubscriptionButton = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Allow presence subscription", target: self, action: #selector(checkboxChanged)));
         formView.groupItems(from: requestSubscriptionButton, to: allowSubscriptionButton);
         
-        imagePreviewMaxSize = formView.addRow(label: "Image preview size limit:", field: NSSlider(value: Double(Settings.imageDownloadSizeLimit.integer()), minValue: 0, maxValue: 50 * 1024 * 1024, target: self, action: #selector(sliderChanged)));
+        imagePreviewMaxSize = formView.addRow(label: "Automatic download size limit:", field: NSSlider(value: Double(Settings.fileDownloadSizeLimit.integer()), minValue: 0, maxValue: 50 * 1024 * 1024, target: self, action: #selector(sliderChanged)));
         imagePreviewMaxSizeLabel = formView.addRow(label: "", field: formView.createLabel(text: "0.0B"));
         imagePreviewMaxSizeLabel.alignment = .center;
         formView.groupItems(from:imagePreviewMaxSize, to: imagePreviewMaxSizeLabel);
-        updateImagePreviewMaxSizeLabel();
+        updateFileDownloadMaxSizeLabel();
         formView.cell(for: imagePreviewMaxSizeLabel)!.xPlacement = .center;
         
         ignoreJingleSupportCheck = formView.addRow(label: "Experimental", field: NSButton(checkboxWithTitle: "Ignore VoIP support check", target: self, action: #selector(checkboxChanged(_:))));
@@ -147,16 +147,16 @@ class AdvancedSettingsController: NSViewController {
         switch sender {
         case imagePreviewMaxSize:
             print("selected value:", sender.integerValue);
-            Settings.imageDownloadSizeLimit.set(value: sender.integerValue);
-            updateImagePreviewMaxSizeLabel();
+            Settings.fileDownloadSizeLimit.set(value: sender.integerValue);
+            updateFileDownloadMaxSizeLabel();
             break;
         default:
             break;
         }
     }
     
-    fileprivate func updateImagePreviewMaxSizeLabel() {
-        self.imagePreviewMaxSizeLabel.stringValue = "\(string(filesize: Settings.imageDownloadSizeLimit.integer()))";
+    fileprivate func updateFileDownloadMaxSizeLabel() {
+        self.imagePreviewMaxSizeLabel.stringValue = "\(string(filesize: Settings.fileDownloadSizeLimit.integer()))";
     }
     
     fileprivate func string(filesize: Int) -> String {

@@ -37,13 +37,13 @@ class DBChatHistoryStore {
     fileprivate let markAsReadBeforeStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET state = case state when \(MessageState.incoming_error_unread.rawValue) then \(MessageState.incoming_error.rawValue) when \(MessageState.outgoing_error_unread.rawValue) then \(MessageState.outgoing_error.rawValue) else \(MessageState.incoming.rawValue) end WHERE account = :account AND jid = :jid AND timestamp <= :before AND state in (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))");
     fileprivate let markMessageAsReadStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET state = case state when \(MessageState.incoming_error_unread.rawValue) then \(MessageState.incoming_error.rawValue) when \(MessageState.outgoing_error_unread.rawValue) then \(MessageState.outgoing_error.rawValue) else \(MessageState.incoming.rawValue) end WHERE id = :id AND account = :account AND jid = :jid AND state in (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))");
     fileprivate let updateItemStateStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET state = :newState, timestamp = COALESCE(:newTimestamp, timestamp) WHERE id = :id AND (:oldState IS NULL OR state = :oldState)");
-    fileprivate let updateItemStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET preview = coalesce(:preview, preview) WHERE id = :id");
+    fileprivate let updateItemStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET appendix = :appendix WHERE id = :id");
     fileprivate let markAsErrorStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET state = :state, error = :error WHERE id = :id");
     fileprivate let countItemsStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid")
 
     fileprivate let getItemIdByStanzaId: DBStatement = try! DBConnection.main.prepareStatement("SELECT id FROM chat_history WHERE account = :account AND jid = :jid AND stanza_id = :stanza_id ORDER BY timestamp DESC");
-    fileprivate let getChatMessagesStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error FROM chat_history WHERE account = :account AND jid = :jid AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))) ORDER BY timestamp DESC LIMIT :limit OFFSET :offset");
-    fileprivate let getChatMessageWithIdStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error FROM chat_history WHERE id = :id");
+    fileprivate let getChatMessagesStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix FROM chat_history WHERE account = :account AND jid = :jid AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))) ORDER BY timestamp DESC LIMIT :limit OFFSET :offset");
+    fileprivate let getChatMessageWithIdStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix FROM chat_history WHERE id = :id");
 
     fileprivate let getChatMessagePosition: DBStatement = try! DBConnection.main.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND id <> :msgId AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))) AND timestamp > (SELECT timestamp FROM chat_history WHERE id = :msgId)")
     fileprivate let removeChatHistoryStmt: DBStatement = try! DBConnection.main.prepareStatement("DELETE FROM chat_history WHERE account = :account AND (:jid IS NULL OR jid = :jid)");
@@ -214,23 +214,26 @@ class DBChatHistoryStore {
             self.itemRemoved(withId: itemId, for: account, with: jid);
         }
     }
-
-    open func updateItem(for account: BareJID, with jid: BareJID, id: Int, preview: [String:String]? = nil) {
+    
+    open func updateItem(for account: BareJID, with jid: BareJID, id: Int, updateAppendix updateFn: @escaping (inout ChatAttachmentAppendix)->Void) {
         dispatcher.async {
             var params: [String: Any?] = ["id": id];
-            if preview != nil {
-                params["preview"] = preview!.map({ (k,v) -> String in
-                    return "\(k)\t\(v)";
-                }).joined(separator: "\n");
+            guard let item = try! self.getChatMessageWithIdStmt.findFirst(params, map: { (cursor) in
+                return self.itemFrom(cursor: cursor, for: account, with: jid)
+            }) as? ChatAttachment else {
+                return;
             }
-            if try! self.updateItemStmt.update(params) > 0 {
-                self.itemUpdated(withId: id, for: account, with: jid);
+            updateFn(&item.appendix);
+            if let data = try? JSONEncoder().encode(item.appendix), let dataStr = String(data: data, encoding: .utf8) {
+                params["appendix"] = dataStr;
+                try! self.updateItemStmt.update(params)
+            }
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_UPDATED, object: item);
             }
         }
     }
 
-//    open func updateAppendix(for account: BareJID, with jid: BareJID, id: Int, update)
-    
     func loadUnsentMessage(for account: BareJID, completionHandler: @escaping (BareJID,BareJID,String,String,MessageEncryption, ItemType)->Void) {
         dispatcher.async {
             try! self.getUnsentMessagesForAccountStmt.query(["account": account] as [String : Any?], forEach: { (cursor) in
@@ -366,12 +369,21 @@ class DBChatHistoryStore {
         case .attachment:
             let url: String = cursor["data"]!;
 
-            return ChatAttachment(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, url: url, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: ChatAttachmentAppendix(), error: error);
+            let appendix = parseAttachmentAppendix(string: cursor["appendix"]);
+            
+            return ChatAttachment(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, url: url, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: appendix, error: error);
         case .linkPreview:
             let url: String = cursor["data"]!;
             return ChatLinkPreview(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, url: url, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error)
         }
 
+    }
+    
+    fileprivate func parseAttachmentAppendix(string: String?) -> ChatAttachmentAppendix {
+        guard let data = string?.data(using: .utf8) else {
+            return ChatAttachmentAppendix();
+        }
+        return (try? JSONDecoder().decode(ChatAttachmentAppendix.self, from: data)) ?? ChatAttachmentAppendix();
     }
 }
 

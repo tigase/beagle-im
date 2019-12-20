@@ -36,7 +36,7 @@ enum Settings: String {
     case markMessageCarbonsAsRead
     case markMessageDeliveredToOtherResourceAsRead
     case enableBookmarksSync
-    case imageDownloadSizeLimit
+    case fileDownloadSizeLimit
     
     case enableMarkdownFormatting
     case showEmoticons
@@ -79,11 +79,16 @@ enum Settings: String {
             "systemMenuIcon": false,
             "spellchecking": true,
             "appearance": Appearance.auto.rawValue,
-            "imageDownloadSizeLimit": (10*1024*1024),
+            "fileDownloadSizeLimit": Int(10*1024*1024),
             "messageGrouping": "smart",
             "linkPreviews": true
         ];
         UserDefaults.standard.register(defaults: defaults);
+        if UserDefaults.standard.object(forKey: "imageDownloadSizeLimit") != nil {
+            let downloadLimit = UserDefaults.standard.integer(forKey: "imageDownloadSizeLimit");
+            UserDefaults.standard.removeObject(forKey: "imageDownloadSizeLimit");
+            Settings.fileDownloadSizeLimit.set(value: downloadLimit);
+        }
     }
     
     func set(value: Bool) {

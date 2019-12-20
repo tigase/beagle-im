@@ -82,16 +82,7 @@ class BaseChatAttachmentCellView: NSTableCellView {
         }
         self.state?.textColor = item.state.isError ? NSColor.systemRed : NSColor.secondaryLabelColor;
         self.direction = item.state.direction;
-        
-//        self.actionButton?.wantsLayer = true;
-//        self.actionButton?.layer?.backgroundColor = NSColor.red.cgColor;
-//
-//        self.downloadButton?.wantsLayer = true;
-//        self.downloadButton?.layer?.backgroundColor = NSColor.orange.cgColor;
-//
-//        self.state?.wantsLayer = true;
-//        self.state?.layer?.backgroundColor = NSColor.green.cgColor;
-        
+                
         let subviews = self.customView.subviews;
         subviews.forEach { (view) in
             view.removeFromSuperview();
@@ -107,7 +98,7 @@ class BaseChatAttachmentCellView: NSTableCellView {
             self.downloadButton?.isHidden = true;
             self.actionButton?.isEnabled = true;
             self.actionButton?.isHidden = false;
-            if #available(macOS 10.15, *), false {
+            if #available(macOS 10.15, *) {
                 var metadata = MetadataCache.instance.metadata(for: "\(item.id)");
                 var isNew = false;
 
@@ -142,8 +133,8 @@ class BaseChatAttachmentCellView: NSTableCellView {
                 }
             } else {
                 let attachmentInfo = AttachmentInfoView(frame: .zero);
-                attachmentInfo.cellView = self;
                 self.customView.addSubview(attachmentInfo);
+                attachmentInfo.cellView = self;
                 NSLayoutConstraint.activate([
                     customView.leadingAnchor.constraint(equalTo: attachmentInfo.leadingAnchor),
                     customView.trailingAnchor.constraint(equalTo: attachmentInfo.trailingAnchor),
@@ -153,14 +144,11 @@ class BaseChatAttachmentCellView: NSTableCellView {
                 attachmentInfo.set(item: item);
             }
         } else {
-            self.downloadButton?.isEnabled = true;
-            self.downloadButton?.isHidden = false;
+            self.downloadButton?.isEnabled = item.appendix.state != .gone;
+            self.downloadButton?.isHidden = item.appendix.state == .gone;
             self.actionButton?.isEnabled = false;
             self.actionButton?.isHidden = true;
             
-//            let trackingArea = NSTrackingArea(rect: customView.frame, options: [.], owner: <#T##Any?#>, userInfo: <#T##[AnyHashable : Any]?#>)
-//
-//            let imageButton = NSButton(image: NSWorkspace.shared.icon(forFileType: "image/png"), target: self, action: #selector(downloadClicked(_:)));
             let attachmentInfo = AttachmentInfoView(frame: .zero);
             attachmentInfo.cellView = self;
             self.customView.addSubview(attachmentInfo);
@@ -172,74 +160,36 @@ class BaseChatAttachmentCellView: NSTableCellView {
             ])
             attachmentInfo.set(item: item);
             
-            if DownloadManager.instance.downloadInProgress(for: URL(string: item.url)!, completionHandler: { [weak self] result in
-                DispatchQueue.main.async {
-                    guard let that = self, let id = that.item?.id, id == item.id else {
+            switch item.appendix.state {
+            case .new:
+                let sizeLimit = Settings.fileDownloadSizeLimit.integer();
+                if sizeLimit > 0 {
+                    if let client = XmppService.instance.getClient(for: item.account), (client.rosterStore?.get(for: JID(item.jid))?.subscription ?? .none).isFrom || (DBChatStore.instance.getChat(for: item.account, with: item.jid) as? Room != nil) {
+                        DownloadManager.instance.download(item: item, maxSize: Int64(sizeLimit));
+                        progressIndicator = NSProgressIndicator();
                         return;
                     }
-                    that.downloadCompleted(result: result, item: item);
                 }
-            }) {
-                progressIndicator = NSProgressIndicator();
+                if DownloadManager.instance.downloadInProgress(for: item) {
+                    progressIndicator = NSProgressIndicator();
+                }
+            default:
+                if DownloadManager.instance.downloadInProgress(for: item) {
+                    progressIndicator = NSProgressIndicator();
+                }
             }
         }
     }
-
-//    override func updateTrackingAreas() {
-//        super.updateTrackingAreas();
-//        if customTrackingArea == nil {
-//            let trackingArea = NSTrackingArea(rect: self.frame, options: [.mouseEnteredAndExited, .activeAlways], owner: self, userInfo: nil);
-//            addTrackingArea(trackingArea);
-//            customTrackingArea = trackingArea;
-//        }
-//    }
-//
-//    override func mouseEntered(with event: NSEvent) {
-//        // is is not working as expected :/
-//        //downloadButton?.isHidden = false;
-//    }
-//
-//    override func mouseExited(with event: NSEvent) {
-//        //downloadButton?.isHidden = true;
-//    }
     
     @IBAction func downloadClicked(_ sender: Any) {
         guard let item = self.item else {
             return;
         }
+        
         guard let localUrl = DownloadStore.instance.url(for: "\(item.id)") else {
-            let url = URL(string: item.url)!;
-            
+            DownloadManager.instance.download(item: item, maxSize: Int64.max);
             self.progressIndicator = NSProgressIndicator();
-            
-            DownloadManager.instance.downloadFile(destination: DownloadStore.instance, as: "\(item.id)", url: url, maxSize: Int64.max, excludedMimetypes: [], completionHandler: { [weak self] result in
-                DispatchQueue.main.async {
-                    guard let that = self, let id = that.item?.id, id == item.id else {
-                        return;
-                    }
-                    that.downloadCompleted(result: result, item: item);
-                }
-            })
             return;
-        }
-        
-        //print("opening file:", localUrl);
-        
-//        let menu = NSMenu(title: "Actions");
-    }
-    
-    func downloadCompleted(result: Result<String,DownloadManager.DownloadError>, item: ChatAttachment) {
-        self.progressIndicator = nil;
-        switch result {
-        case .success(let localUrl):
-            print("download completed!");
-            guard let localItem = self.item, localItem.id == item.id else {
-                return;
-            }
-            self.set(item: item);
-            break;
-        case .failure(let err):
-            break;
         }
     }
     
@@ -298,7 +248,25 @@ class BaseChatAttachmentCellView: NSTableCellView {
     }
     
     @IBAction func saveFile(_ sender: Any) {
-        
+        guard let item = self.item else {
+            return;
+        }
+        guard let localUrl = DownloadStore.instance.url(for: "\(item.id)") else {
+            return;
+        }
+        let savePanel = NSSavePanel();
+        let ext = localUrl.pathExtension;
+        if !ext.isEmpty {
+            savePanel.allowedFileTypes = [ext];
+        }
+        savePanel.nameFieldStringValue = localUrl.lastPathComponent;
+        savePanel.allowsOtherFileTypes = true;
+        savePanel.beginSheetModal(for: self.window!, completionHandler: { response in
+            guard response == NSApplication.ModalResponse.OK, let url = savePanel.url else {
+                return;
+            }
+            try? FileManager.default.copyItem(at: localUrl, to: url);
+        })
     }
 
     @IBAction func deleteFile(_ sender: Any) {
@@ -306,7 +274,9 @@ class BaseChatAttachmentCellView: NSTableCellView {
             return;
         }
         DownloadStore.instance.deleteFile(for: "\(item.id)");
-        self.set(item: item);
+        DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+            appendix.state = .removed;
+        })
     }
     
     func infoClicked() {
@@ -337,9 +307,18 @@ class BaseChatAttachmentCellView: NSTableCellView {
         super.layout();
     }
     
+    override func resizeSubviews(withOldSize oldSize: NSSize) {
+        super.resizeSubviews(withOldSize: oldSize);
+        for subview in customView.subviews {
+            if let info = subview as? AttachmentInfoView {
+                info.iconView.widthConstraint?.constant = min(350, self.frame.width - 98);
+            }
+        }
+    }
+    
     class AttachmentInfoView: NSView {
         
-        let iconView: NSImageView;
+        let iconView: ImageAttachmentPreview;
         let filename: NSTextField;
         let details: NSTextField;
         
@@ -366,16 +345,23 @@ class BaseChatAttachmentCellView: NSTableCellView {
                     case .imagePreview:
                         NSLayoutConstraint.activate(imagePreviewConstraints);
                 }
+                iconView.isImagePreview = viewType == .imagePreview;
             }
         }
         private var fileViewConstraints: [NSLayoutConstraint] = [];
         private var imagePreviewConstraints: [NSLayoutConstraint] = [];
         
         override init(frame: NSRect) {
-            iconView = NSImageView(frame: .zero);
+            iconView = ImageAttachmentPreview(frame: .zero);
             iconView.imageScaling = .scaleProportionallyUpOrDown;
             iconView.image = NSWorkspace.shared.icon(forFileType: "image/png");
             iconView.translatesAutoresizingMaskIntoConstraints = false;
+            iconView.setContentHuggingPriority(.defaultHigh, for: .vertical);
+            iconView.setContentHuggingPriority(.defaultHigh, for: .horizontal);
+//            iconView.setContentHuggingPriority(.defaultHigh, for: .vertical);
+            iconView.setContentCompressionResistancePriority(.defaultLow, for: .vertical);
+            //iconView.setContentCompressionResistancePriority(.fittingSizeCompression, for: .vertical);
+            iconView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
 
             filename = NSTextField(labelWithString: "File");
             filename.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .semibold);
@@ -413,7 +399,9 @@ class BaseChatAttachmentCellView: NSTableCellView {
             ];
             
             imagePreviewConstraints = [
-//                iconView.heightAnchor.constraint(equalToConstant: 30),
+                iconView.widthAnchor.constraint(lessThanOrEqualToConstant: 350),
+                iconView.heightAnchor.constraint(lessThanOrEqualToConstant: 350),
+                iconView.widthAnchor.constraint(lessThanOrEqualTo: self.widthAnchor),
                 
                 iconView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
                 iconView.topAnchor.constraint(equalTo: self.topAnchor),
@@ -439,6 +427,10 @@ class BaseChatAttachmentCellView: NSTableCellView {
             cellView?.infoClicked();
         }
         
+        override func layout() {
+            super.layout();
+        }
+        
         override func draw(_ dirtyRect: NSRect) {
             NSGraphicsContext.saveGraphicsState();
             
@@ -446,10 +438,9 @@ class BaseChatAttachmentCellView: NSTableCellView {
             path.addClip();
             NSColor.separatorColor.setFill();
             path.fill();
-            
-            NSGraphicsContext.restoreGraphicsState();
-            
+                        
             super.draw(dirtyRect);
+            NSGraphicsContext.restoreGraphicsState();
         }
                 
         func set(item: ChatAttachment) {
@@ -471,14 +462,25 @@ class BaseChatAttachmentCellView: NSTableCellView {
                     self.viewType = .file;
                 }
             } else {
-                let filename = URL(string: item.url)?.lastPathComponent ?? "";
+                let filename = item.appendix.filename ?? URL(string: item.url)?.lastPathComponent ?? "";
                 if filename.isEmpty {
                     self.filename.stringValue =  "Unknown file";
                 } else {
                     self.filename.stringValue = filename;
                 }
-                details.stringValue = "--";
-                iconView.image = NSWorkspace.shared.icon(forFileType: "");
+                if let size = item.appendix.filesize {
+                    if let mimetype = item.appendix.mimetype, let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimetype as CFString, nil)?.takeRetainedValue(), let typeName = UTTypeCopyDescription(uti)?.takeRetainedValue() as String? {
+                        let fileSize = fileSizeToString(UInt64(size));
+                        details.stringValue = "\(typeName) - \(fileSize)";
+                        iconView.image = NSWorkspace.shared.icon(forFileType: uti as String);
+                    } else {
+                        details.stringValue = fileSizeToString(UInt64(size));
+                        iconView.image = NSWorkspace.shared.icon(forFileType: "");
+                    }
+                } else {
+                    details.stringValue = "--";
+                    iconView.image = NSWorkspace.shared.icon(forFileType: "");
+                }
                 self.viewType = .file;
             }
         }
@@ -498,8 +500,147 @@ class BaseChatAttachmentCellView: NSTableCellView {
             case imagePreview
         }
     }
+    
+}
+
+class ImageAttachmentPreview: NSImageView {
+    
+    var isImagePreview: Bool = false {
+        didSet {
+            widthConstraint?.isActive = isImagePreview;
+        }
+    }
+    
+    var ratioConstraint: NSLayoutConstraint?;
+    var widthConstraint: NSLayoutConstraint?;
+    
+    override init(frame: NSRect) {
+        super.init(frame: frame);
+        
+        widthConstraint = self.widthAnchor.constraint(equalToConstant: 0);
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override var image: NSImage? {
+        didSet {
+            if let constraint = ratioConstraint {
+                self.removeConstraint(constraint);
+                ratioConstraint = nil;
+            }
+            if let value = image {
+                ratioConstraint = self.heightAnchor.constraint(equalTo: self.widthAnchor, multiplier: value.size.height / value.size.width);
+                NSLayoutConstraint.activate([ratioConstraint!])
+            }
+        }
+    }
+        
+    override func draw(_ dirtyRect: NSRect) {
+        if isImagePreview {
+        NSGraphicsContext.saveGraphicsState();
+        
+            let path = NSBezierPath(roundedRect: NSRect(x: dirtyRect.minX, y: dirtyRect.minY - 10.0, width: dirtyRect.width, height: dirtyRect.height + 10), xRadius: 10, yRadius: 10);
+        path.addClip();
+        NSColor.separatorColor.setFill();
+        path.fill();
+                    
+        super.draw(dirtyRect);
+        NSGraphicsContext.restoreGraphicsState();
+        }  else {
+            super.draw(dirtyRect);
+        }
+    }
+    
+    override func layout() {
+        super.layout();
+    }
+}
+
+class ChatAttachmentCellView: BaseChatAttachmentCellView {
+
+    @IBOutlet var avatar: AvatarView!
+    @IBOutlet var senderName: NSTextField!
+    @IBOutlet var timestamp: NSTextField!
+       
+    func set(avatar: NSImage?) {
+        self.avatar?.image = avatar;
+    }
+    
+    func set(senderName: String?) {
+        self.senderName.stringValue = senderName!;
+        self.avatar?.name = senderName;
+    }
+       
+    override func set(item: ChatAttachment) {
+        var timestampStr: NSMutableAttributedString? = nil;
+
+        switch item.encryption {
+        case .decrypted, .notForThisDevice, .decryptionFailed:
+            let secured = NSMutableAttributedString(string: "\u{1F512}");
+            if timestampStr != nil {
+                timestampStr?.append(secured);
+            } else {
+                timestampStr = secured;
+            }
+        default:
+            break;
+        }
+           
+        if timestampStr != nil {
+            timestampStr!.append(item.state == .outgoing_unsent ? NSAttributedString(string: " Unsent") : NSMutableAttributedString(string: " " + formatTimestamp(item.timestamp)));
+            self.timestamp.attributedStringValue = timestampStr!;
+        } else {
+            self.timestamp.attributedStringValue = item.state == .outgoing_unsent ? NSAttributedString(string: "Unsent") : NSMutableAttributedString(string: formatTimestamp(item.timestamp));
+        }
+        super.set(item: item);
+    }
+    
+    func formatTimestamp(_ ts: Date) -> String {
+        let flags: Set<Calendar.Component> = [.day, .year];
+        let components = Calendar.current.dateComponents(flags, from: ts, to: Date());
+        if (components.day! == 1) {
+            return "Yesterday";
+        } else if (components.day! < 1) {
+            return ChatAttachmentCellView.todaysFormatter.string(from: ts);
+        }
+        if (components.year! != 0) {
+            return ChatAttachmentCellView.fullFormatter.string(from: ts);
+        } else {
+            return ChatAttachmentCellView.defaultFormatter.string(from: ts);
+        }
+    }
+
+    fileprivate static let todaysFormatter = ({()-> DateFormatter in
+        var f = DateFormatter();
+        f.dateStyle = .none;
+        f.timeStyle = .short;
+        return f;
+    })();
+    fileprivate static let defaultFormatter = ({()-> DateFormatter in
+        var f = DateFormatter();
+        f.dateFormat = DateFormatter.dateFormat(fromTemplate: "dd.MM", options: 0, locale: NSLocale.current);
+        //        f.timeStyle = .NoStyle;
+        return f;
+    })();
+    fileprivate static let fullFormatter = ({()-> DateFormatter in
+        var f = DateFormatter();
+        f.dateFormat = DateFormatter.dateFormat(fromTemplate: "dd.MM.yyyy", options: 0, locale: NSLocale.current);
+        //        f.timeStyle = .NoStyle;
+        return f;
+    })();
+
+    fileprivate static let tooltipFormatter = ({()-> DateFormatter in
+        var f = DateFormatter();
+        f.locale = NSLocale.current;
+        f.dateStyle = .medium
+        f.timeStyle = .medium;
+        return f;
+    })();
+    
 }
 
 class ChatAttachmentContinuationCellView: BaseChatAttachmentCellView {
-    
+
 }

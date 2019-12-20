@@ -18,6 +18,8 @@ class DownloadManager {
     
     private var inProgress: [URL: Item] = [:];
     
+    private var itemDownloadInProgress: [Int] = [];
+    
     func downloadInProgress(for url: URL, completionHandler: @escaping (Result<String,DownloadError>)->Void) -> Bool {
         return dispatcher.sync {
             if let item = self.inProgress[url] {
@@ -25,6 +27,89 @@ class DownloadManager {
                 return true;
             }
             return false;
+        }
+    }
+    
+    func downloadInProgress(for item: ChatAttachment) -> Bool {
+        return dispatcher.sync {
+            return self.itemDownloadInProgress.contains(item.id);
+        }
+    }
+    
+    func download(item: ChatAttachment, maxSize: Int64) -> Bool {
+        return dispatcher.sync {
+            guard !itemDownloadInProgress.contains(item.id) else {
+                return false;
+            }
+            
+            itemDownloadInProgress.append(item.id);
+            
+            let url = URL(string: item.url)!;
+            
+            let sessionConfig = URLSessionConfiguration.default;
+            let session = URLSession(configuration: sessionConfig);
+            DownloadManager.retrieveHeaders(session: session, url: url, completionHandler: { headersResult in
+                switch headersResult {
+                case .success(let suggestedFilename, let expectedSize, let mimeType):
+                    let isTooBig = expectedSize > maxSize;
+                    
+                    DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+                        appendix.filesize = Int(expectedSize);
+                        appendix.mimetype = mimeType;
+                        appendix.filename = suggestedFilename;
+                        if isTooBig {
+                            appendix.state = .tooBig;
+                        }
+                    });
+                    
+                    guard !isTooBig else {
+                        return;
+                    }
+                                        
+                    DownloadManager.download(session: session, url: url, completionHandler: { result in
+                        switch result {
+                        case .success(let localUrl, let filename):
+                            //let id = UUID().uuidString;
+                            DownloadStore.instance.store(localUrl, filename: filename, with: "\(item.id)");
+                            DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+                                appendix.state = .downloaded;
+                            });
+                            self.dispatcher.sync {
+                                self.itemDownloadInProgress = self.itemDownloadInProgress.filter({ (id) -> Bool in
+                                    return item.id != id;
+                                });
+                            }
+                        case .failure(let err):
+                            var statusCode = 0;
+                            switch err {
+                            case .responseError(let code):
+                                statusCode = code;
+                            default:
+                                break;
+                            }
+                            DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+                                appendix.state = statusCode == 404 ? .gone : .error;
+                            });
+                            self.dispatcher.sync {
+                                self.itemDownloadInProgress = self.itemDownloadInProgress.filter({ (id) -> Bool in
+                                    return item.id != id;
+                                });
+                            }
+                        }
+                    });
+                    break;
+                case .failure(let statusCode):
+                    DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+                        appendix.state = statusCode == 404 ? .gone : .error;
+                    });
+                    self.dispatcher.async {
+                        self.itemDownloadInProgress = self.itemDownloadInProgress.filter({ (id) -> Bool in
+                            return item.id != id;
+                        });
+                    }
+                }
+            })
+            return true;
         }
     }
     
@@ -156,7 +241,7 @@ class DownloadManager {
     enum DownloadError: Error {
         case networkError(error: Error)
         case responseError(statusCode: Int)
-        case tooBig(size: Int64)
+        case tooBig(size: Int64, mimeType: String?, filename: String?)
         case badMimeType(mimeType: String?)
     }
 }

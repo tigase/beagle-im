@@ -79,6 +79,7 @@
 		FE6201E023A5357B00C965A5 /* ChatLinkPreviewCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6201DF23A5357B00C965A5 /* ChatLinkPreviewCellView.swift */; };
 		FE6201E223A573BC00C965A5 /* ChatAttachment.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6201E123A573BC00C965A5 /* ChatAttachment.swift */; };
 		FE6201E423A693ED00C965A5 /* BaseChatAttachmentCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6201E323A693ED00C965A5 /* BaseChatAttachmentCellView.swift */; };
+		FE6201E623AA43C900C965A5 /* db-schema-7.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE6201E523AA43C900C965A5 /* db-schema-7.sql */; };
 		FE65A283230314D9001E68EF /* SettingsTabViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE65A282230314D9001E68EF /* SettingsTabViewController.swift */; };
 		FE6E6BF721384D5F003B1696 /* AutoresizingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */; };
 		FE6E6BF821384D5F003B1696 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE321384D5E003B1696 /* ViewController.swift */; };
@@ -262,6 +263,7 @@
 		FE6201DF23A5357B00C965A5 /* ChatLinkPreviewCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatLinkPreviewCellView.swift; sourceTree = "<group>"; };
 		FE6201E123A573BC00C965A5 /* ChatAttachment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAttachment.swift; sourceTree = "<group>"; };
 		FE6201E323A693ED00C965A5 /* BaseChatAttachmentCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseChatAttachmentCellView.swift; sourceTree = "<group>"; };
+		FE6201E523AA43C900C965A5 /* db-schema-7.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-7.sql"; sourceTree = "<group>"; };
 		FE65A282230314D9001E68EF /* SettingsTabViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTabViewController.swift; sourceTree = "<group>"; };
 		FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoresizingTextField.swift; sourceTree = "<group>"; };
 		FE6E6BE321384D5E003B1696 /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -627,6 +629,7 @@
 				FEFFF7CC232FCF25004CB9CE /* ConversationDetails.storyboard */,
 				FEFFF7CE23313B52004CB9CE /* db-schema-5.sql */,
 				FE25B1702350D2FC00CD69CA /* db-schema-6.sql */,
+				FE6201E523AA43C900C965A5 /* db-schema-7.sql */,
 			);
 			path = BeagleIM;
 			sourceTree = "<group>";
@@ -823,6 +826,7 @@
 				FEFFF7CD232FCF25004CB9CE /* ConversationDetails.storyboard in Resources */,
 				FE0C817F2257B48400948C41 /* Settings.storyboard in Resources */,
 				FE4D2132221F2A6E0058B662 /* db-schema-2.sql in Resources */,
+				FE6201E623AA43C900C965A5 /* db-schema-7.sql in Resources */,
 				FEFFF7CF23313B52004CB9CE /* db-schema-5.sql in Resources */,
 				FEF9CE1D2082765000B09B6C /* db-schema-1.sql in Resources */,
 				FE25B1712350D2FC00CD69CA /* db-schema-6.sql in Resources */,

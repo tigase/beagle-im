@@ -250,6 +250,22 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                 return cell;
             }
             return nil;
+        case let item as ChatAttachment:
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "MucAttachmentContinuationCellView" : "MucAttachmentCellView"), owner: nil) as? BaseChatAttachmentCellView {
+                if let c = cell as? ChatAttachmentCellView {
+                    if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
+                        c.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
+                    } else if let nickname = item.authorNickname, let photoHash = self.room.presences[nickname]?.presence.vcardTempPhoto {
+                        c.set(avatar: AvatarManager.instance.avatar(withHash: photoHash));
+                    } else {
+                        c.set(avatar: nil);
+                    }
+                    c.set(senderName: item.authorNickname ?? "From \(item.jid.stringValue)");
+                }
+                cell.set(item: item);
+                return cell;
+            }
+            return nil;
         case let item as ChatLinkPreview:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "MucLinkPreviewCellView"), owner: nil) as? ChatLinkPreviewCellView {
                 cell.set(item: item);

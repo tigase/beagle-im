@@ -24,12 +24,27 @@ import LinkPresentation
 
 class ChatLinkPreviewCellView: NSTableCellView {
     
-    func set(item: ChatLinkPreview) {
-        let subviews = self.subviews;
-        subviews.forEach { (view) in
-            view.removeFromSuperview();
+    var linkView: NSView? {
+        didSet {
+            if let value = oldValue {
+                if #available(macOS 10.15, *) {
+                    (value as! LPLinkView).metadata = LPLinkMetadata();
+                }
+                value.removeFromSuperview();
+            }
+            if let value = linkView {
+                self.addSubview(value);
+                NSLayoutConstraint.activate([
+                    value.topAnchor.constraint(equalTo: self.topAnchor, constant: 0),
+                    value.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -4),
+                    value.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 40),
+                    value.trailingAnchor.constraint(lessThanOrEqualTo: self.trailingAnchor, constant: -26)
+                ]);
+            }
         }
-        
+    }
+    
+    func set(item: ChatLinkPreview) {
         if #available(macOS 10.15, *) {
             var metadata = MetadataCache.instance.metadata(for: "\(item.id)");
             var isNew = false;
@@ -40,21 +55,17 @@ class ChatLinkPreviewCellView: NSTableCellView {
                 metadata!.originalURL = url;
                 isNew = true;
             }
-            let linkView = LPLinkView(metadata: metadata!);
-        
-            linkView.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
-            linkView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
-            linkView.translatesAutoresizingMaskIntoConstraints = false;
-
-            self.addSubview(linkView);
-
-            NSLayoutConstraint.activate([
-                linkView.topAnchor.constraint(equalTo: self.topAnchor, constant: 0),
-                linkView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -4),
-                linkView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 40),
-                linkView.trailingAnchor.constraint(lessThanOrEqualTo: self.trailingAnchor, constant: -26)
-            ]);
+            if self.linkView == nil {
+                self.linkView = CustomLPLinkView(url: url);
+                linkView?.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
+                linkView?.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
+                linkView?.translatesAutoresizingMaskIntoConstraints = false;
+            };
             
+            let linkView = self.linkView as! LPLinkView;
+            linkView.metadata = metadata!;
+
+
             if isNew {
                 MetadataCache.instance.generateMetadata(for: url, withId: "\(item.id)", completionHandler: { [weak linkView] meta1 in
                     guard let meta = meta1 else {
@@ -66,4 +77,16 @@ class ChatLinkPreviewCellView: NSTableCellView {
         }
     }
     
+}
+
+@available(macOS 10.15, *)
+class CustomLPLinkView: LPLinkView {
+    
+    override var metadata: LPLinkMetadata {
+        didSet {
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1.0, execute: {
+                print("linkView:", self);
+            })
+        }
+    }
 }
