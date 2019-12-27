@@ -36,6 +36,7 @@ class AdvancedSettingsController: NSViewController {
     
     fileprivate var ignoreJingleSupportCheck: NSButton!;
     fileprivate var enableBookmarksSync: NSButton!;
+    fileprivate var enableLinkPreviews: NSButton?;
 
     fileprivate var markKeywords: NSButton!;
     fileprivate var markKeywordsWithBold: NSButton!;
@@ -69,6 +70,10 @@ class AdvancedSettingsController: NSViewController {
         ignoreJingleSupportCheck = formView.addRow(label: "Experimental", field: NSButton(checkboxWithTitle: "Ignore VoIP support check", target: self, action: #selector(checkboxChanged(_:))));
         
         enableBookmarksSync = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Enable groupchat bookmarks sync", target: self, action: #selector(checkboxChanged(_:))));
+        if #available(macOS 10.15, *) {
+            enableLinkPreviews = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Enable link previews", target: self, action: #selector(checkboxChanged(_:))));
+        }
+        
         formView.groupItems(from:ignoreJingleSupportCheck, to: enableBookmarksSync);
         
         self.preferredContentSize = NSSize(width: self.view.frame.size.width, height: self.view.frame.size.height);
@@ -90,6 +95,9 @@ class AdvancedSettingsController: NSViewController {
         allowSubscriptionButton.state = Settings.allowPresenceSubscription.bool() ? .on : .off;
         ignoreJingleSupportCheck.state = Settings.ignoreJingleSupportCheck.bool() ? .on : .off;
         enableBookmarksSync.state = Settings.enableBookmarksSync.bool() ? .on : .off;
+        if #available(macOS 10.15, *) {
+            enableLinkPreviews?.state = Settings.linkPreviews.bool() ? .on : .off;
+        }
         let keywords = Settings.markKeywords.stringArrays();
         markKeywords.state = keywords != nil ? .on : .off;
         markKeywordsWithBold.state = Settings.boldKeywords.bool() ? .on : .off;
@@ -127,6 +135,11 @@ class AdvancedSettingsController: NSViewController {
         case markKeywordsWithBold:
             Settings.boldKeywords.set(value: sender.state == .on);
         default:
+            if #available(macOS 10.15, *) {
+                if let linkPreviews = enableLinkPreviews, sender == linkPreviews {
+                    Settings.linkPreviews.set(value: sender.state == .on);
+                }
+            }
             break;
         }
     }

@@ -94,7 +94,9 @@ class DBChatHistoryStore {
             case .attachment:
                 item = ChatAttachment(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, url: data, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: ChatAttachmentAppendix(), error: errorMessage);
             case .linkPreview:
-                item = ChatLinkPreview(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, url: data, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage);
+                if #available(macOS 10.15, *), Settings.linkPreviews.bool() {
+                    item = ChatLinkPreview(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, url: data, authorNickname: authorNickname, authorJid: authorJid, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage);
+                }
             }
             if item != nil {
                 DBChatStore.instance.newMessage(for: account, with: jid, timestamp: timestamp, message: encryption.message() ?? data, state: state, remoteChatState: state.direction == .incoming ? chatState : nil) {
