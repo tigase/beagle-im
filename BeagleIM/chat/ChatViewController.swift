@@ -356,35 +356,12 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
 
     @IBAction func showInfoClicked(_ sender: NSButton) {
         let storyboard = NSStoryboard(name: "ConversationDetails", bundle: nil);
-//        guard let viewController = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier("ConversationDetailsViewController")) as? ConversationDetailsViewController else {
-//            return;
-//        }
-//        viewController.showSettings = true;
-//        _ = viewController.view;
-////        if let group = storyboard.instantiateController(withIdentifier: "ConversationGroupingViewController") as? ConversationGroupingViewController {
-////            group.title = "Details";
-////            if let settings = storyboard.instantiateController(withIdentifier: "ConversationSettingsViewController") as? NSViewController {
-////                group.add(viewController: settings);
-////            }
-////            if let vcard = storyboard.instantiateController(withIdentifier: "ConversationVCardViewController") as? NSViewController {
-////                group.add(viewController: vcard);
-////            }
-////            viewController.tabView.addTabViewItem(NSTabViewItem(viewController: group));
-////        }
-//        if let vcard = storyboard.instantiateController(withIdentifier: "ConversationVCardViewController") as? NSViewController {
-//            vcard.title = "Details";
-//            viewController.tabView.addTabViewItem(NSTabViewItem(viewController: vcard));
-//        }
-//
-//        if let omemo = storyboard.instantiateController(withIdentifier: "ConversationOmemoViewController") as? NSViewController {
-//            viewController.tabView.addTabViewItem(NSTabViewItem(viewController: omemo));
-//        }
         guard let viewController = storyboard.instantiateController(withIdentifier: "ContactDetailsViewController") as? ContactDetailsViewController else {
             return;
         }
         viewController.account = self.account;
         viewController.jid = self.jid;
-        viewController.showSettings = true;
+        viewController.viewType = .chat;
 
         let popover = NSPopover();
         popover.contentViewController = viewController;

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="15702" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15505"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15702"/>
+        <capability name="System colors introduced in macOS 10.14" minToolsVersion="10.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -10,20 +11,20 @@
         <scene sceneID="xp7-ce-rvd">
             <objects>
                 <viewController title="ConversationDetailsViewController" identifier="ConversationDetailsViewController" storyboardIdentifier="ConversationDetailsViewController" id="yDC-N1-fGo" customClass="ConversationDetailsViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" id="xq8-f6-pmw">
-                        <rect key="frame" x="0.0" y="0.0" width="348" height="56"/>
+                    <view key="view" misplaced="YES" id="xq8-f6-pmw">
+                        <rect key="frame" x="0.0" y="0.0" width="333" height="56"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="8Ku-3C-CwA">
                                 <rect key="frame" x="54" y="12" width="20" height="14"/>
                                 <textFieldCell key="cell" lineBreakMode="clipping" title="Jid" id="Lkw-eP-Rzq">
-                                    <font key="font" metaFont="message" size="11"/>
+                                    <font key="font" metaFont="toolTip"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
                             <containerView horizontalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="7e6-TW-Wy5">
-                                <rect key="frame" x="10" y="4" width="328" height="0.0"/>
+                                <rect key="frame" x="10" y="4" width="313" height="0.0"/>
                                 <constraints>
                                     <constraint firstAttribute="height" id="RPc-ST-NvL"/>
                                 </constraints>
@@ -40,9 +41,9 @@
                                 <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="Eou-81-vfd"/>
                             </imageView>
                             <textField horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Kbi-q0-cOs">
-                                <rect key="frame" x="54" y="30" width="286" height="16"/>
+                                <rect key="frame" x="54" y="30" width="271" height="16"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="282" id="4KA-po-SgB"/>
+                                    <constraint firstAttribute="width" constant="267" id="4KA-po-SgB"/>
                                 </constraints>
                                 <textFieldCell key="cell" lineBreakMode="clipping" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="Test User" id="7b7-bx-vsU">
                                     <font key="font" metaFont="systemBold"/>
@@ -99,11 +100,11 @@
             <objects>
                 <viewController title="OMEMO" identifier="ConversationOmemoViewController" storyboardIdentifier="ConversationOmemoViewController" id="jqZ-a2-E6t" customClass="ConversationOmemoViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="z1c-Rk-i5y">
-                        <rect key="frame" x="0.0" y="0.0" width="329" height="300"/>
+                        <rect key="frame" x="0.0" y="0.0" width="319" height="300"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <stackView distribution="fill" orientation="vertical" alignment="leading" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="VP1-DN-Zxq">
-                                <rect key="frame" x="0.0" y="0.0" width="329" height="300"/>
+                                <rect key="frame" x="0.0" y="0.0" width="319" height="300"/>
                                 <edgeInsets key="edgeInsets" left="5" right="5" top="5" bottom="5"/>
                             </stackView>
                         </subviews>
@@ -121,6 +122,87 @@
                 <customObject id="RY0-K1-wln" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-111.5" y="868"/>
+        </scene>
+        <!--Conversation Attachments View Controller-->
+        <scene sceneID="JIT-yD-zda">
+            <objects>
+                <viewController storyboardIdentifier="ConversationAttachmentsViewController" id="fwV-Dy-LJd" customClass="ConversationAttachmentsViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="Amn-qp-NN0">
+                        <rect key="frame" x="0.0" y="0.0" width="319" height="350"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <scrollView wantsLayer="YES" borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Nk-wo-4xt">
+                                <rect key="frame" x="0.0" y="0.0" width="319" height="350"/>
+                                <clipView key="contentView" drawsBackground="NO" id="svN-aP-WTW">
+                                    <rect key="frame" x="0.0" y="0.0" width="319" height="350"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <subviews>
+                                        <collectionView id="CGE-3z-D7V" customClass="ConversationAttachmentsCollectionView" customModule="BeagleIM" customModuleProvider="target">
+                                            <rect key="frame" x="0.0" y="0.0" width="319" height="158"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+                                            <collectionViewFlowLayout key="collectionViewLayout" minimumInteritemSpacing="5" minimumLineSpacing="5" id="6Ln-Wg-ZNd">
+                                                <size key="itemSize" width="100" height="100"/>
+                                            </collectionViewFlowLayout>
+                                            <color key="primaryBackgroundColor" name="alternatingContentBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            <connections>
+                                                <outlet property="dataSource" destination="fwV-Dy-LJd" id="EST-O4-NNw"/>
+                                                <outlet property="delegate" destination="fwV-Dy-LJd" id="Iot-Kb-Qt8"/>
+                                            </connections>
+                                        </collectionView>
+                                    </subviews>
+                                </clipView>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="350" id="Xcy-VJ-q7u"/>
+                                </constraints>
+                                <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="2XE-Wa-58E">
+                                    <rect key="frame" x="0.0" y="334" width="319" height="16"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </scroller>
+                                <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="35e-CY-hjs">
+                                    <rect key="frame" x="234" y="1" width="15" height="143"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </scroller>
+                            </scrollView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="5Nk-wo-4xt" secondAttribute="bottom" id="PVs-ke-Tfa"/>
+                            <constraint firstItem="5Nk-wo-4xt" firstAttribute="leading" secondItem="Amn-qp-NN0" secondAttribute="leading" id="S7c-pg-NKY"/>
+                            <constraint firstItem="5Nk-wo-4xt" firstAttribute="top" secondItem="Amn-qp-NN0" secondAttribute="top" id="orm-qb-Tos"/>
+                            <constraint firstAttribute="trailing" secondItem="5Nk-wo-4xt" secondAttribute="trailing" id="z7E-dm-FZH"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="collectionView" destination="CGE-3z-D7V" id="zae-6N-L3Q"/>
+                        <outlet property="heightConstraint" destination="Xcy-VJ-q7u" id="TzT-iv-XI9"/>
+                    </connections>
+                </viewController>
+                <customObject id="1ws-3T-prs" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="396" y="732"/>
+        </scene>
+        <!--Conversation Attachment View-->
+        <scene sceneID="8ad-9m-xjz">
+            <objects>
+                <collectionViewItem storyboardIdentifier="ConversationAttachmentImageView" id="a8h-u6-FG8" customClass="ConversationAttachmentView" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="rVi-w4-adZ">
+                        <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ajd-aZ-NSF">
+                                <rect key="frame" x="45" y="54" width="37" height="16"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="gFd-Vv-2YU">
+                                    <font key="font" usesAppearanceFont="YES"/>
+                                    <color key="textColor" red="0.96070605519999996" green="0.95685130360000004" blue="0.95685487989999995" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                        </subviews>
+                    </view>
+                </collectionViewItem>
+                <customObject id="leg-tz-w6j" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="297" y="1113"/>
         </scene>
         <!--Info-->
         <scene sceneID="xq3-UU-hFC">
@@ -184,22 +266,22 @@
             <objects>
                 <viewController title="ContactDetailsViewController" identifier="ContactDetailsViewController" storyboardIdentifier="ContactDetailsViewController" id="CNf-2E-dQ8" customClass="ContactDetailsViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="DYM-cL-rq1">
-                        <rect key="frame" x="0.0" y="0.0" width="340" height="300"/>
+                        <rect key="frame" x="0.0" y="0.0" width="310" height="300"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <containerView verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Stc-L0-u64">
-                                <rect key="frame" x="0.0" y="278" width="340" height="22"/>
+                                <rect key="frame" x="0.0" y="278" width="310" height="22"/>
                                 <connections>
                                     <segue destination="yDC-N1-fGo" kind="embed" identifier="ConversationDetailsViewController" id="ytY-nz-anO"/>
                                 </connections>
                             </containerView>
                             <box verticalHuggingPriority="750" ambiguous="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="bj7-Ff-p7f">
-                                <rect key="frame" x="10" y="276" width="320" height="5"/>
+                                <rect key="frame" x="10" y="276" width="290" height="5"/>
                             </box>
                             <segmentedControl verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ysX-T7-iCF">
-                                <rect key="frame" x="18" y="260" width="304" height="21"/>
+                                <rect key="frame" x="18" y="260" width="274" height="21"/>
                                 <segmentedCell key="cell" controlSize="small" borderStyle="border" alignment="left" segmentDistribution="fill" style="rounded" trackingMode="selectOne" id="Fav-ib-Srd">
-                                    <font key="font" metaFont="message" size="11"/>
+                                    <font key="font" metaFont="toolTip"/>
                                     <segments>
                                         <segment/>
                                     </segments>
@@ -209,7 +291,7 @@
                                 </connections>
                             </segmentedControl>
                             <tabView verticalCompressionResistancePriority="250" ambiguous="YES" drawsBackground="NO" controlSize="small" type="noTabsNoBorder" translatesAutoresizingMaskIntoConstraints="NO" id="0p2-j5-Wy0">
-                                <rect key="frame" x="10" y="10" width="320" height="248"/>
+                                <rect key="frame" x="10" y="10" width="290" height="248"/>
                             </tabView>
                         </subviews>
                         <constraints>
@@ -237,6 +319,19 @@
                 <customObject id="1Xh-uj-mPn" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="139" y="131"/>
+        </scene>
+        <!--Conversation Attachment View-->
+        <scene sceneID="KEf-nw-7ar">
+            <objects>
+                <collectionViewItem storyboardIdentifier="ConversationAttachmentFileView" id="G0Y-BC-LmJ" customClass="ConversationAttachmentView" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="MxA-lZ-K9i">
+                        <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </view>
+                </collectionViewItem>
+                <customObject id="a5d-9Y-gf0" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="517" y="1113"/>
         </scene>
     </scenes>
 </document>

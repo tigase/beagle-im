@@ -187,12 +187,12 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     
     @IBAction func showInfoClicked(_ sender: NSButton) {
         let storyboard = NSStoryboard(name: "ConversationDetails", bundle: nil);
-        guard let viewController = storyboard.instantiateController(withIdentifier: "ConversationDetailsViewController") as? ConversationDetailsViewController else {
+        guard let viewController = storyboard.instantiateController(withIdentifier: "ContactDetailsViewController") as? ContactDetailsViewController else {
             return;
         }
         viewController.account = self.account;
         viewController.jid = self.jid;
-        viewController.showSettings = true;
+        viewController.viewType = .groupchat;
 
         let popover = NSPopover();
         popover.contentViewController = viewController;

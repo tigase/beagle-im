@@ -122,6 +122,27 @@ extension NSImage {
         return flipped;
     }
     
+    func square(_ size: CGFloat) -> NSImage {
+        let width = self.size.width;
+        let height = self.size.height;
+        
+        let dest = NSImage(size: NSSize(width: size, height: size));
+        dest.lockFocus();
+    
+        let sourceRect = width > height ? NSRect(x: (width - height) / 2, y: 0, width: height, height: height) : NSRect(x: 0, y: (height - width) / 2, width: width, height: height);
+   
+        NSGraphicsContext.current?.imageInterpolation = .high;
+
+        let transform = NSAffineTransform();
+        transform.translateX(by: 0.0, yBy: 0);
+        transform.scaleX(by: size / sourceRect.width, yBy: size / sourceRect.height);
+        transform.concat();
+        
+        draw(at: .zero, from: sourceRect, operation: .sourceOver, fraction: 1.0);
+        dest.unlockFocus();
+        return dest;
+    }
+    
     func tinted(with tintColor: NSColor) -> NSImage {
         guard let cgImage = self.cgImage else {
             return self;

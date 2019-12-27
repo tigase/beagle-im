@@ -32,7 +32,10 @@ open class ContactDetailsViewController: NSViewController, ContactDetailsAccount
     @IBOutlet var tabs: NSSegmentedControl!;
     @IBOutlet var tabsView: NSTabView!;
     
-    var showSettings: Bool = false;
+    var showSettings: Bool {
+        return viewType != .contact;
+    }
+    var viewType: ViewType = .contact;
     
     var basicViewController: ConversationDetailsViewController? {
         didSet {
@@ -43,8 +46,15 @@ open class ContactDetailsViewController: NSViewController, ContactDetailsAccount
     }
     
     open override func viewWillAppear() {
-        self.tabsView.addTabViewItem(NSTabViewItem(viewController: self.storyboard!.instantiateController(withIdentifier: "ConversationVCardViewController") as! NSViewController));
-        self.tabsView.addTabViewItem(NSTabViewItem(viewController: self.storyboard!.instantiateController(withIdentifier: "ConversationOmemoViewController") as! NSViewController))
+        if viewType != .groupchat {
+            self.tabsView.addTabViewItem(NSTabViewItem(viewController: self.storyboard!.instantiateController(withIdentifier: "ConversationVCardViewController") as! NSViewController));
+        }
+        let tab = NSTabViewItem(viewController: self.storyboard!.instantiateController(withIdentifier: "ConversationAttachmentsViewController") as! NSViewController);
+        tab.label = "Attachments"
+        self.tabsView.addTabViewItem(tab);
+        if viewType != .groupchat {
+            self.tabsView.addTabViewItem(NSTabViewItem(viewController: self.storyboard!.instantiateController(withIdentifier: "ConversationOmemoViewController") as! NSViewController))
+        }
         
         basicViewController?.account = self.account;
         basicViewController?.jid = self.jid;
@@ -72,6 +82,12 @@ open class ContactDetailsViewController: NSViewController, ContactDetailsAccount
         if segue.identifier == "ConversationDetailsViewController" {
             self.basicViewController = segue.destinationController as? ConversationDetailsViewController;
         }
+    }
+    
+    enum ViewType {
+        case contact
+        case chat
+        case groupchat
     }
 }
 
@@ -322,7 +338,7 @@ class IdentityView: NSView {
         fingerprintView = NSTextField(wrappingLabelWithString: IdentityView.prettify(fingerprint: String(identity.fingerprint.dropFirst(2))));
         fingerprintView.translatesAutoresizingMaskIntoConstraints = false;
         fingerprintView.setContentHuggingPriority(.required, for: .horizontal);
-        fingerprintView.font = NSFont.userFixedPitchFont(ofSize: NSFont.systemFontSize);
+        fingerprintView.font = NSFont.userFixedPitchFont(ofSize: NSFont.systemFontSize - 1);
         statusButton = NSPopUpButton(image: NSImage(named: NSImage.lockLockedTemplateName)!, target: nil, action: #selector(trustChanged(_:)));
         statusButton.imagePosition = .imageOnly;
         //                statusButton.widthAnchor.constraint(equalToConstant: 20).isActive = true;
@@ -875,4 +891,448 @@ open class ContactDetailsViewController1: NSViewController, NSTableViewDelegate 
         }
     }
     
+}
+
+open class ConversationAttachmentsViewController: NSViewController, ContactDetailsAccountJidAware, NSCollectionViewDelegate, NSCollectionViewDataSource {
+
+    var account: BareJID?
+    var jid: BareJID?
+    
+    @IBOutlet var collectionView: NSCollectionView!;
+    
+    @IBOutlet var heightConstraint: NSLayoutConstraint!;
+    
+    var items: [ChatAttachment] = [];
+        
+    open override func viewDidLoad() {
+        super.viewDidLoad();
+        heightConstraint.constant = 0;
+    }
+    
+    @objc func openFile(_ sender: NSMenuItem) {
+        guard let item = sender.representedObject as? ChatAttachment else {
+            return;
+        }
+        guard let localUrl = DownloadStore.instance.url(for: "\(item.id)") else {
+            return;
+        }
+        NSWorkspace.shared.open(localUrl);
+    }
+    
+    @objc func saveFile(_ sender: NSMenuItem) {
+        guard let item = sender.representedObject as? ChatAttachment else {
+            return;
+        }
+        guard let localUrl = DownloadStore.instance.url(for: "\(item.id)") else {
+            return;
+        }
+        let savePanel = NSSavePanel();
+        let ext = localUrl.pathExtension;
+        if !ext.isEmpty {
+            savePanel.allowedFileTypes = [ext];
+        }
+        savePanel.nameFieldStringValue = localUrl.lastPathComponent;
+        savePanel.allowsOtherFileTypes = true;
+        savePanel.beginSheetModal(for: self.view.window!, completionHandler: { response in
+            guard response == NSApplication.ModalResponse.OK, let url = savePanel.url else {
+                return;
+            }
+            try? FileManager.default.copyItem(at: localUrl, to: url);
+        })
+    }
+
+    @objc func deleteFile(_ sender: NSMenuItem) {
+        guard let item = sender.representedObject as? ChatAttachment else {
+            return;
+        }
+        DownloadStore.instance.deleteFile(for: "\(item.id)");
+        if let idx = items.firstIndex(where: { (att) -> Bool in
+            return item.id == att.id;
+        }) {
+            items.remove(at: idx);
+            collectionView.deleteItems(at: [IndexPath(item: idx, section: 0)]);
+        }
+        DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+            appendix.state = .removed;
+        })
+    }
+    
+    @objc func shareFile(_ sender: NSMenuItem) {
+        guard let item = sender.representedObject as? ChatAttachment else {
+            return;
+        }
+        guard let localUrl = DownloadStore.instance.url(for: "\(item.id)") else {
+            return;
+        }
+        
+        NSSharingService.sharingServices(forItems: [localUrl]).first(where: { (service) -> Bool in
+            service.title == sender.title;
+        })?.perform(withItems: [localUrl]);
+    }
+    
+    func collectionView(_ collectionView: NSCollectionView, menuForRepresentedObjectAt indexPath: IndexPath) -> NSMenu? {
+        let menu = NSMenu();
+        let attachment = items[indexPath.item];
+        menu.addItem(NSMenuItem(title: "Open", action: #selector(openFile(_:)), keyEquivalent: ""));
+        menu.addItem(NSMenuItem(title: "Save", action: #selector(saveFile(_:)), keyEquivalent: ""));
+        if let localUrl = DownloadStore.instance.url(for: "\(attachment.id)") {
+            let shareItem = NSMenuItem(title: "Share", action: nil, keyEquivalent: "");
+            let shareMenu = NSMenu();
+            shareItem.submenu = shareMenu;
+            let sharingServices = NSSharingService.sharingServices(forItems: [localUrl]);
+            for service in sharingServices {
+                let item = shareMenu.addItem(withTitle: service.title, action: nil, keyEquivalent: "");
+                item.image = service.image;
+                item.target = self;
+                item.action = #selector(shareFile(_:));
+                item.isEnabled = true;
+                item.representedObject = attachment;
+            }
+
+            if !shareMenu.items.isEmpty {
+                menu.addItem(shareItem);
+            }
+        }
+        menu.addItem(NSMenuItem.separator());
+        let deleteItem = NSMenuItem(title: "Delete", action: #selector(deleteFile(_:)), keyEquivalent: "");
+        deleteItem.attributedTitle = NSAttributedString(string: "Delete", attributes: [.foregroundColor: NSColor.systemRed]);
+        menu.addItem(deleteItem);
+        for item in menu.items {
+            item.representedObject = attachment;
+        }
+        
+        return menu.items.isEmpty ? nil : menu;
+    }
+    
+    open override func viewWillAppear() {
+        // should show progress indicator...
+        DBChatHistoryStore.instance.loadAttachments(for: account!, with: jid!, completionHandler: { attachments in
+            DispatchQueue.main.async {
+                self.items = attachments.filter({ (attachment) -> Bool in
+                    return DownloadStore.instance.url(for: "\(attachment.id)") != nil;
+                })
+                self.collectionView.reloadData();
+                self.heightConstraint.constant = max(min(CGFloat(ceil(Double(self.items.count) / 3.0)) * 105.0, 350.0), 20);
+                if self.items.isEmpty {
+                    let label = NSTextField(labelWithString: "No attachments");
+                    label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium);
+                    label.alignment = .center;
+                    label.setContentHuggingPriority(.defaultHigh, for: .horizontal);
+                    label.textColor = NSColor.secondaryLabelColor;
+                    self.collectionView.backgroundView = label;
+                } else {
+                    self.collectionView.backgroundView = nil;
+                }
+            }
+        })
+        super.viewWillAppear();
+    }
+    
+    public func numberOfSections(in collectionView: NSCollectionView) -> Int {
+        return 1;
+    }
+    
+    public func collectionView(_ collectionView: NSCollectionView, numberOfItemsInSection section: Int) -> Int {
+        return items.count;
+    }
+    
+    public func collectionView(_ collectionView: NSCollectionView, itemForRepresentedObjectAt indexPath: IndexPath) -> NSCollectionViewItem {
+        let view = storyboard!.instantiateController(withIdentifier: "ConversationAttachmentFileView") as! ConversationAttachmentView;
+    
+        let item = items[indexPath.item];
+        
+        view.set(item: item);
+        
+        return view;
+    }
+}
+    
+class ConversationAttachmentsCollectionView: NSCollectionView {
+
+    var clickedItemIndex: Int = NSNotFound;
+
+    override func menu(for event: NSEvent) -> NSMenu? {
+        self.clickedItemIndex = NSNotFound;
+
+        let point = self.convert(event.locationInWindow, from:nil)
+        let count = numberOfItems(inSection: 0);
+
+        for index in 0 ..< count
+        {
+            let itemFrame = self.frameForItem(at: index)
+            if NSMouseInRect(point, itemFrame, self.isFlipped)
+            {
+                self.clickedItemIndex = index
+                if let delegate = self.delegate as? ConversationAttachmentsViewController {
+                    return delegate.collectionView(self, menuForRepresentedObjectAt: IndexPath(item: index, section: 0));
+                }
+            }
+        }
+
+        return super.menu(for: event)
+    }
+
+}
+
+class ConversationAttachmentView: NSCollectionViewItem {
+    
+    var imageField: NSImageView!;
+    var filenameField: NSTextField!;
+    var detailsField: NSTextField!;
+    
+    private var id: Int = NSNotFound;
+        
+    private var trackingArea: NSTrackingArea?;
+        
+    var constraints: [ViewType: [NSLayoutConstraint]] = [:];
+    
+    var viewType: ViewType = .none {
+        didSet {
+            if let oldConstraints = self.constraints[oldValue] {
+                NSLayoutConstraint.deactivate(oldConstraints);
+            }
+            if let newConstraints = self.constraints[viewType] {
+                NSLayoutConstraint.activate(newConstraints);
+            }
+        }
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad();
+        trackingArea = NSTrackingArea(rect: .zero, options: [.inVisibleRect, .activeAlways, .mouseEnteredAndExited], owner: self, userInfo: nil);
+        self.view.addTrackingArea(trackingArea!);
+        
+        imageField = NSImageView(frame: .zero);
+        imageField.translatesAutoresizingMaskIntoConstraints = false;
+        self.view.addSubview(imageField);
+        filenameField = NSTextField(labelWithString: "");
+        filenameField.translatesAutoresizingMaskIntoConstraints = false;
+        filenameField.drawsBackground = true;
+        filenameField.backgroundColor = NSColor.alternatingContentBackgroundColors.first?.withAlphaComponent(0.85);
+        filenameField.textColor = NSColor.secondaryLabelColor;
+        filenameField.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 2, weight: .medium);
+        filenameField.alignment = .center;
+        filenameField.lineBreakMode = .byTruncatingTail;
+        filenameField.cell?.truncatesLastVisibleLine = true
+        self.view.addSubview(filenameField);
+        detailsField = NSTextField(labelWithString: "");
+        detailsField.translatesAutoresizingMaskIntoConstraints = false;
+        detailsField.drawsBackground = true;
+        detailsField.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 3, weight: .medium);
+        detailsField.alignment = .center;
+        detailsField.textColor = NSColor.secondaryLabelColor;
+        detailsField.backgroundColor = NSColor.alternatingContentBackgroundColors.first?.withAlphaComponent(0.85); //NSColor.alternatingContentBackgroundColors//unemphasizedSelectedContentBackgroundColor;
+        detailsField.lineBreakMode = .byTruncatingTail;
+        detailsField.cell?.truncatesLastVisibleLine = true
+        self.view.addSubview(detailsField);
+
+        constraints[.image] = [
+            view.leadingAnchor.constraint(equalTo: imageField.leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: imageField.trailingAnchor),
+            view.topAnchor.constraint(equalTo: imageField.topAnchor),
+            view.bottomAnchor.constraint(equalTo: imageField.bottomAnchor),
+            
+            imageField.widthAnchor.constraint(equalTo: imageField.heightAnchor),
+            imageField.heightAnchor.constraint(equalToConstant: 100),
+            
+            view.leadingAnchor.constraint(equalTo: filenameField.leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: filenameField.trailingAnchor),
+            imageField.bottomAnchor.constraint(equalTo: filenameField.topAnchor),
+            
+            view.leadingAnchor.constraint(equalTo: detailsField.leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: detailsField.trailingAnchor),
+            filenameField.bottomAnchor.constraint(equalTo: detailsField.topAnchor),
+            detailsField.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ];
+
+        constraints[.imageHover] = [
+            view.leadingAnchor.constraint(equalTo: imageField.leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: imageField.trailingAnchor),
+            view.topAnchor.constraint(equalTo: imageField.topAnchor),
+            view.bottomAnchor.constraint(equalTo: imageField.bottomAnchor),
+            
+            imageField.widthAnchor.constraint(equalTo: imageField.heightAnchor),
+            imageField.heightAnchor.constraint(equalToConstant: 100),
+            
+            view.leadingAnchor.constraint(equalTo: filenameField.leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: filenameField.trailingAnchor),
+            view.topAnchor.constraint(lessThanOrEqualTo: filenameField.topAnchor),
+            
+            view.leadingAnchor.constraint(equalTo: detailsField.leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: detailsField.trailingAnchor),
+            filenameField.bottomAnchor.constraint(equalTo: detailsField.topAnchor),
+            detailsField.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ];
+        
+        constraints[.file] = [
+            view.leadingAnchor.constraint(equalTo: imageField.leadingAnchor, constant: -10),
+            view.trailingAnchor.constraint(equalTo: imageField.trailingAnchor, constant: 10),
+            view.topAnchor.constraint(equalTo: imageField.topAnchor, constant: -4),
+            view.bottomAnchor.constraint(equalTo: imageField.bottomAnchor, constant: 16),
+            
+            imageField.widthAnchor.constraint(equalTo: imageField.heightAnchor),
+            imageField.heightAnchor.constraint(equalToConstant: 80),
+            
+            view.leadingAnchor.constraint(equalTo: filenameField.leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: filenameField.trailingAnchor),
+            view.topAnchor.constraint(lessThanOrEqualTo: filenameField.topAnchor),
+            
+            view.leadingAnchor.constraint(equalTo: detailsField.leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: detailsField.trailingAnchor),
+            filenameField.bottomAnchor.constraint(equalTo: detailsField.topAnchor),
+            detailsField.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            detailsField.heightAnchor.constraint(equalToConstant: 0)
+        ];
+
+        constraints[.fileHover] = [
+            view.leadingAnchor.constraint(equalTo: imageField.leadingAnchor, constant: -17),
+            view.trailingAnchor.constraint(equalTo: imageField.trailingAnchor, constant: 17),
+            view.topAnchor.constraint(equalTo: imageField.topAnchor, constant: -4),
+            view.bottomAnchor.constraint(equalTo: imageField.bottomAnchor, constant: 30),
+            
+            imageField.widthAnchor.constraint(equalTo: imageField.heightAnchor),
+            imageField.heightAnchor.constraint(equalToConstant: 66),
+            
+            view.leadingAnchor.constraint(equalTo: filenameField.leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: filenameField.trailingAnchor),
+            view.topAnchor.constraint(lessThanOrEqualTo: filenameField.topAnchor),
+            
+            view.leadingAnchor.constraint(equalTo: detailsField.leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: detailsField.trailingAnchor),
+            filenameField.bottomAnchor.constraint(equalTo: detailsField.topAnchor),
+            detailsField.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ];
+    }
+    
+    override func mouseEntered(with event: NSEvent) {
+        print("mouse entered!");
+        super.mouseEntered(with: event);
+//        NSAnimationContext.runAnimationGroup { (context) in
+//            context.duration = 5.0;
+//            context.allowsImplicitAnimation = true;
+            switch viewType {
+            case .image:
+                viewType = .imageHover;
+            case .file:
+                viewType = .fileHover;
+            default:
+                break;
+            }
+//            self.view.layoutSubtreeIfNeeded()
+//        }
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        print("mouse exited!");
+        super.mouseExited(with: event);
+//        NSAnimationContext.runAnimationGroup { (context) in
+//            context.duration = 5.0;
+//            context.allowsImplicitAnimation = true;
+        switch viewType {
+        case .imageHover:
+            viewType = .image;
+        case .fileHover:
+            viewType = .file;
+        default:
+            break;
+        }
+//            self.view.layoutSubtreeIfNeeded()
+//        }
+    }
+
+    func set(item: ChatAttachment) {
+        self.id = item.id;
+        if let fileUrl = DownloadStore.instance.url(for: "\(item.id)") {
+            filenameField.stringValue = fileUrl.lastPathComponent;
+            let fileSize = fileSizeToString(try? FileManager.default.attributesOfItem(atPath: fileUrl.path)[.size] as? UInt64);
+            detailsField.stringValue = fileSize;
+//
+//            if let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, fileUrl.pathExtension as CFString, nil)?.takeRetainedValue(), let typeName = UTTypeCopyDescription(uti)?.takeRetainedValue() as String? {
+//                //details.stringValue = "\(typeName) - \(fileSize)";
+//                if UTTypeConformsTo(uti, kUTTypeImage) {
+//                    //self.viewType = .imagePreview;
+//                    imageField.image = NSImage(contentsOf: fileUrl)?.square(100);
+//                } else {
+//                    //self.viewType = .file;
+//                    imageField.image = NSWorkspace.shared.icon(forFile: fileUrl.path);
+//                }
+//            } else {
+//                //details.stringValue = fileSize;
+//                imageField.image = NSWorkspace.shared.icon(forFile: fileUrl.path);
+//                //self.viewType = .file;
+//            }
+            if #available(macOS 10.15, *), let imageProvider = MetadataCache.instance.metadata(for: "\(item.id)")?.imageProvider {
+                viewType = .image;
+                imageField.image = NSWorkspace.shared.icon(forFile: fileUrl.path);
+                imageProvider.loadItem(forTypeIdentifier: kUTTypeImage as String, options: nil, completionHandler: { data, error in
+                    guard data != nil && error == nil else {
+                        DispatchQueue.main.async {
+                            guard self.id == item.id else {
+                                return;
+                            }
+                            self.viewType = .file;
+                            self.imageField.image = NSWorkspace.shared.icon(forFile: fileUrl.path);
+                        }
+                        return;
+                    }
+                    DispatchQueue.main.async {
+                        guard self.id == item.id else {
+                            return;
+                        }
+                        switch data! {
+                        case let image as NSImage:
+                            self.imageField.image = image.square(100);
+                        case let data as Data:
+                            self.imageField.image = NSImage(data: data)?.square(100);
+                        default:
+                            break;
+                        }
+                    }
+                })
+            } else if let image = NSImage(contentsOf: fileUrl)?.square(100) {
+                imageField.image = image;
+                viewType = .image;
+            } else {
+                imageField.image = NSWorkspace.shared.icon(forFile: fileUrl.path);
+                viewType = .file;
+            }
+        } else {
+            viewType = .file;
+            let filename = item.appendix.filename ?? URL(string: item.url)?.lastPathComponent ?? "";
+            if filename.isEmpty {
+                self.filenameField.stringValue =  "Unknown file";
+            } else {
+                self.filenameField.stringValue = filename;
+            }
+            if let size = item.appendix.filesize {
+                if let mimetype = item.appendix.mimetype, let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimetype as CFString, nil)?.takeRetainedValue(), let typeName = UTTypeCopyDescription(uti)?.takeRetainedValue() as String? {
+                    let fileSize = fileSizeToString(UInt64(size));
+                    imageField.image = NSWorkspace.shared.icon(forFileType: uti as String);
+                } else {
+                    imageField.image = NSWorkspace.shared.icon(forFileType: "");
+                }
+                detailsField.stringValue = fileSizeToString(UInt64(size));
+            } else {
+                detailsField.stringValue = "---";
+                imageField.image = NSWorkspace.shared.icon(forFileType: "");
+            }
+        }
+    }
+    
+    func fileSizeToString(_ sizeIn: UInt64?) -> String {
+        guard let size = sizeIn else {
+            return "";
+        }
+        let formatter = ByteCountFormatter();
+        formatter.countStyle = .file;
+        return formatter.string(fromByteCount: Int64(size));
+    }
+    
+    enum ViewType {
+        case none
+        case image
+        case imageHover
+        case file
+        case fileHover
+    }
 }
