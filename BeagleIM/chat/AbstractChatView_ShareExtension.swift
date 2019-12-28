@@ -64,9 +64,14 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
     
     func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
         if self.sharingButton.isEnabled, let urls = sender.draggingPasteboard.readObjects(forClasses: [NSURL.self], options: nil) as? [URL], urls.count == 1, let url = urls.first, url.isFileURL {
-            self.uploadFileToHttpServer(url: url, onSuccess: { (uploadedUrl) in
-                DispatchQueue.main.async {
-                    _ = self.sendMessage(url: uploadedUrl.absoluteString);
+            self.uploadFileToHttpServerWithErrorHandling(url: url, onSuccess: { (result) in
+                switch result {
+                case .success(let uploadedUrl, let filesize, let mimeType):
+                    DispatchQueue.main.async {
+                        _ = self.sendAttachment(originalUrl: url, uploadedUrl: uploadedUrl, filesize: filesize, mimeType: mimeType);
+                    }
+                default:
+                    break;
                 }
             });
             return true;
@@ -88,9 +93,14 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
     
     @IBAction func attachFile(_ sender: NSButton) {
         self.selectFile { (url) in
-            self.uploadFileToHttpServer(url: url, onSuccess: { (uploadedUrl) in
-                DispatchQueue.main.async {
-                    _ = self.sendMessage(url: uploadedUrl.absoluteString);
+            self.uploadFileToHttpServerWithErrorHandling(url: url, onSuccess: { (result) in
+                switch result {
+                case .success(let uploadedUrl, let filesize, let mimeType):
+                    DispatchQueue.main.async {
+                        _ = self.sendAttachment(originalUrl: url, uploadedUrl: uploadedUrl, filesize: filesize, mimeType: mimeType);
+                    }
+                default:
+                    break;
                 }
             });
         }
@@ -115,32 +125,35 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         }
     }
     
-    fileprivate func uploadFileToHttpServer(url: URL, onSuccess: @escaping (URL)->Void) {
-        uploadFileToHttpServer(url: url) { (uploadedUrl, errorCondition, errorMessage) in
-            guard errorCondition == nil else {
-                let alert = NSAlert();
-                alert.icon = NSImage(named: NSImage.cautionName);
-                alert.messageText = "Upload error";
-                alert.informativeText = errorMessage ?? "Received an error: \(errorCondition!.rawValue)";
-                alert.addButton(withTitle: "OK");
-                alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
-                return;
-            }
-            DispatchQueue.main.async {
-                onSuccess(uploadedUrl!);
+    fileprivate func uploadFileToHttpServerWithErrorHandling(url: URL, onSuccess: @escaping (UploadResult)->Void) {
+        uploadFileToHttpServer(url: url) { (result) in
+            switch result {
+            case .failure(let error, let errorMessage):
+                DispatchQueue.main.async {
+                    let alert = NSAlert();
+                    alert.icon = NSImage(named: NSImage.cautionName);
+                    alert.messageText = "Upload error";
+                    alert.informativeText = errorMessage ?? "Received an error: \(error.rawValue)";
+                    alert.addButton(withTitle: "OK");
+                    alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
+                }
+            case .success(let destUrl, let filesize, let mimeType):
+                DispatchQueue.main.async {
+                    onSuccess(result);
+                }
             }
         }
     }
     
-    func uploadFileToHttpServer(url: URL, completionHandler: @escaping (URL?, ErrorCondition?, String?)->Void) {
+    func uploadFileToHttpServer(url: URL, completionHandler: @escaping (UploadResult)->Void) {
         print("selected file:", url);
         guard let uploadModule: HttpFileUploadModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(HttpFileUploadModule.ID) else {
-            completionHandler(nil, ErrorCondition.feature_not_implemented, "HttpFileUploadModule not enabled!");
+            completionHandler(.failure(error: ErrorCondition.feature_not_implemented, errorMessage: "HttpFileUploadModule not enabled!"));
             return;
         }
         guard let component = uploadModule.availableComponents.first else {
             print("could not found any HTTP upload component!");
-            completionHandler(nil, ErrorCondition.feature_not_implemented, "Server does not support XEP-0363: HTTP File Upload");
+            completionHandler(.failure(error: ErrorCondition.feature_not_implemented, errorMessage: "Server does not support XEP-0363: HTTP File Upload"));
             return;
         }
 
@@ -148,6 +161,7 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         let filesize = attributes[FileAttributeKey.size] as! UInt64;
         
         let contentType = guessContentType(of: url);
+        
         uploadModule.requestUploadSlot(componentJid: component.jid, filename: url.lastPathComponent, size: Int(filesize), contentType: contentType, onSuccess: { (slot) in
             DispatchQueue.main.async {
                 self.sharingProgressBar.isHidden = false;
@@ -168,49 +182,60 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
                 guard error == nil && code == 201 else {
                     print("received HTTP error response", error as Any, code);
                     self.sharingProgressBar.isHidden = true;
-                    completionHandler(nil, ErrorCondition.internal_server_error, "Could not upload data to the HTTP server" + (error == nil ? "" : (":\n" + error!.localizedDescription)));
+                    completionHandler(.failure(error: ErrorCondition.internal_server_error, errorMessage: "Could not upload data to the HTTP server" + (error == nil ? "" : (":\n" + error!.localizedDescription))));
                     return;
                 }
                     
                 print("file uploaded at:", slot.getUri);
                 self.sharingProgressBar.isHidden = true;
-                completionHandler(slot.getUri, nil, nil);
+                completionHandler(.success(url: slot.getUri, filesize: Int64(filesize), mimeType: contentType));
             }).resume();
         }, onError: { (errorCondition, errorText) in
             print("failedd to allocate slot:", errorCondition as Any, errorText as Any);
-            completionHandler(nil, errorCondition, errorText);
+            completionHandler(.failure(error: errorCondition ?? ErrorCondition.undefined_condition, errorMessage: errorText));
         })
     }
 
     func guessContentType(of url: URL) -> String? {
-        guard let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, url.pathExtension as CFString, nil)?.takeRetainedValue() else {
+//        guard let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, url.pathExtension as CFString, nil)?.takeRetainedValue() else {
+//            return nil;
+//        }
+        
+        //NSWorkspace.shared.ty
+        guard let uti = try? url.resourceValues(forKeys: [.typeIdentifierKey]).typeIdentifier else {
             return nil;
         }
-        
-        if UTTypeConformsTo(uti, kUTTypeImage) {
-            if UTTypeConformsTo(uti, kUTTypePNG) {
-                return "image/png";
-            }
-            if UTTypeConformsTo(uti, kUTTypeJPEG) || UTTypeConformsTo(uti, kUTTypeJPEG2000) {
-                return "image/jpeg";
-            }
-            if UTTypeConformsTo(uti, kUTTypeGIF) {
-                return "image/gif";
-            }
+//
+        guard let mimeType = UTTypeCopyPreferredTagWithClass(uti as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as? String else {
+            return nil;
         }
-        if UTTypeConformsTo(uti, kUTTypeMovie) || UTTypeConformsTo(uti, kUTTypeVideo) {
-            if UTTypeConformsTo(uti, kUTTypeMPEG2Video) {
-                return "video/mpeg";
-            }
-            if UTTypeConformsTo(uti, kUTTypeMPEG4) {
-                return "video/mp4";
-            }
-            if UTTypeConformsTo(uti, kUTTypeAVIMovie) {
-                return "video/x-msvideo";
-            }
-        }
+//
+        return mimeType;
         
-        return nil;
+//        if UTTypeConformsTo(uti, kUTTypeImage) {
+//            if UTTypeConformsTo(uti, kUTTypePNG) {
+//                return "image/png";
+//            }
+//            if UTTypeConformsTo(uti, kUTTypeJPEG) || UTTypeConformsTo(uti, kUTTypeJPEG2000) {
+//                return "image/jpeg";
+//            }
+//            if UTTypeConformsTo(uti, kUTTypeGIF) {
+//                return "image/gif";
+//            }
+//        }
+//        if UTTypeConformsTo(uti, kUTTypeMovie) || UTTypeConformsTo(uti, kUTTypeVideo) {
+//            if UTTypeConformsTo(uti, kUTTypeMPEG2Video) {
+//                return "video/mpeg";
+//            }
+//            if UTTypeConformsTo(uti, kUTTypeMPEG4) {
+//                return "video/mp4";
+//            }
+//            if UTTypeConformsTo(uti, kUTTypeAVIMovie) {
+//                return "video/x-msvideo";
+//            }
+//        }
+//
+//        return nil;
     }
     
     func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
@@ -259,5 +284,11 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
                 self.sharingProgressBar.isHidden = false;
             }
         }
+    }
+    
+    enum UploadResult {
+        case success(url: URL, filesize: Int64, mimeType: String?)
+        case failure(error: ErrorCondition, errorMessage: String?)
+        
     }
 }

@@ -43,6 +43,15 @@ class DownloadStore {
         if !FileManager.default.fileExists(atPath: diskCacheUrl.path) {
             try! FileManager.default.createDirectory(at: diskCacheUrl, withIntermediateDirectories: true, attributes: nil);
         }
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(messageRemoved(_:)), name: DBChatHistoryStore.MESSAGE_REMOVED, object: nil);
+    }
+    
+    @objc func messageRemoved(_ notification: Notification) {
+        guard let item = notification.object as? DeletedMessage else {
+            return;
+        }
+        self.deleteFile(for: "\(item.id)")
     }
     
     func store(_ source: URL, filename: String, with id: String) -> URL {

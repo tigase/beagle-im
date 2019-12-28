@@ -266,8 +266,20 @@ class MessageEventHandler: XmppServiceEventHandler {
             break;
         }
     }
+    
+    static func sendAttachment(chat: DBChatStore.DBChat, originalUrl: URL?, uploadedUrl: String, appendix: ChatAttachmentAppendix, completionHandler: (()->Void)?) {
+        
+        self.sendMessage(chat: chat, body: nil, url: uploadedUrl, chatAttachmentAppendix: appendix, messageStored: { (msgId) in
+            DispatchQueue.main.async {
+                if originalUrl != nil {
+                    _ = DownloadStore.instance.store(originalUrl!, filename: originalUrl!.lastPathComponent, with: "\(msgId)");
+                }
+                completionHandler?();
+            }
+        })
+    }
 
-    static func sendMessage(chat: DBChatStore.DBChat, body: String?, url: String?, encrypted: ChatEncryption? = nil, stanzaId: String? = nil) {
+    static func sendMessage(chat: DBChatStore.DBChat, body: String?, url: String?, encrypted: ChatEncryption? = nil, stanzaId: String? = nil, chatAttachmentAppendix: ChatAttachmentAppendix? = nil, messageStored: ((Int)->Void)? = nil) {
             guard let msg = body ?? url else {
                 return;
             }
@@ -285,7 +297,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             case .omemo:
                 if stanzaId == nil {
                     let fingerprint = DBOMEMOStore.instance.identityFingerprint(forAccount: account, andAddress: SignalAddress(name: account.stringValue, deviceId: Int32(bitPattern: DBOMEMOStore.instance.localRegistrationId(forAccount: account)!)));
-                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing_unsent, type: url == nil ? .message : .attachment, timestamp: Date(), stanzaId: message.id, data: msg, encryption: .decrypted, encryptionFingerprint: fingerprint, completionHandler: nil);
+                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing_unsent, type: url == nil ? .message : .attachment, timestamp: Date(), stanzaId: message.id, data: msg, encryption: .decrypted, encryptionFingerprint: fingerprint, chatAttachmentAppendix: chatAttachmentAppendix, completionHandler: messageStored);
                 }
                 XmppService.instance.tasksQueue.schedule(for: jid, task: { (completionHandler) in
                     sendEncryptedMessage(message, from: account, completionHandler: { result in
@@ -318,7 +330,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                 message.oob = url;
                 let type: ItemType = url == nil ? .message : .attachment;
                 if stanzaId == nil {
-                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing_unsent, type: type, timestamp: Date(), stanzaId: message.id, data: msg, encryption: .none, encryptionFingerprint: nil, completionHandler: nil);
+                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing_unsent, type: type, timestamp: Date(), stanzaId: message.id, data: msg, encryption: .none, encryptionFingerprint: nil, chatAttachmentAppendix: chatAttachmentAppendix, completionHandler: messageStored);
                 }
                 XmppService.instance.tasksQueue.schedule(for: jid, task: { (completionHandler) in
                     sendUnencryptedMessage(message, from: account, completionHandler: { result in

@@ -270,22 +270,48 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             return;
         }
 
-        guard let item = dataSource.getItem(withId: tag) as? ChatMessage, let chat = self.chat as? DBChatStore.DBChat else {
+        guard let item = dataSource.getItem(withId: tag), let chat = self.chat as? DBChatStore.DBChat else {
             return;
         }
 
-        let url = item.message.starts(with: "http:") || item.message.starts(with: "https:") ? item.message : nil;
-        MessageEventHandler.sendMessage(chat: chat, body: item.message, url: url);
-        DBChatHistoryStore.instance.removeItem(for: account, with: jid, itemId: item.id);
+        guard let account = self.account, let jid = self.jid else {
+            return;
+        }
+        switch item {
+        case let item as ChatMessage:
+            MessageEventHandler.sendMessage(chat: chat, body: item.message, url: nil);
+            DBChatHistoryStore.instance.removeItem(for: account, with: jid, itemId: item.id);
+        case let item as ChatAttachment:
+            let oldLocalFile = DownloadStore.instance.url(for: "\(item.id)");
+            MessageEventHandler.sendAttachment(chat: chat, originalUrl: oldLocalFile, uploadedUrl: item.url, appendix: item.appendix, completionHandler: {
+                DBChatHistoryStore.instance.removeItem(for: account, with: jid, itemId: item.id);
+            });
+        default:
+            break;
+        }
     }
 
-    override func sendMessage(body: String? = nil, url: String? = nil) -> Bool {
-        if let chat = self.chat as? DBChatStore.DBChat {
-            MessageEventHandler.sendMessage(chat: chat, body: body, url: url);
-            return true;
-        } else {
+    override func send(message: String) -> Bool {
+        guard let chat = self.chat as? DBChatStore.DBChat else {
+            return false;
+            
+        }
+        MessageEventHandler.sendMessage(chat: chat, body: message, url: nil);
+        return true;
+    }
+    
+    override func sendAttachment(originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?) -> Bool {
+        guard let chat = self.chat as? DBChatStore.DBChat else {
             return false;
         }
+        
+        var appendix = ChatAttachmentAppendix();
+        appendix.state = .downloaded;
+        appendix.filename = originalUrl.lastPathComponent;
+        appendix.filesize = Int(filesize);
+        appendix.mimetype = mimeType;
+        MessageEventHandler.sendAttachment(chat: chat, originalUrl: originalUrl, uploadedUrl: uploadedUrl.absoluteString, appendix: appendix, completionHandler: nil);
+        return false;
     }
 
     fileprivate func updateCapabilities() {

@@ -128,7 +128,9 @@ class BaseChatAttachmentCellView: NSTableCellView {
                         guard let meta = meta1 else {
                             return;
                         }
-                        linkView?.metadata = meta;
+                        DispatchQueue.main.async {
+                            linkView?.metadata = meta;
+                        }
                     })
                 }
             } else {

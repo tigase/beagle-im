@@ -567,7 +567,7 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
                 guard !msg.isEmpty else {
                     return;
                 }
-                guard self.sendMessage(body: msg) else {
+                guard self.send(message: msg) else {
                     return;
                 }
                 self.messageField.reset();
@@ -614,7 +614,11 @@ class AbstractChatViewController: NSViewController, NSTableViewDataSource, ChatV
         return dataSource.count;
     }
 
-    func sendMessage(body: String? = nil, url: String? = nil) -> Bool {
+    func send(message: String) -> Bool {
+        return false;
+    }
+    
+    func sendAttachment(originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?) -> Bool {
         return false;
     }
     

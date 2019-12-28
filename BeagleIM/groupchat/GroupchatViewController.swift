@@ -283,29 +283,38 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             return;
         }
         
-        guard sendMessage(body: msg) else {
+        guard send(message: msg) else {
             return;
         }
         
         (sender as? AutoresizingTextField)?.reset();
     }
     
-    override func sendMessage(body: String? = nil, url: String? = nil) -> Bool {
-        guard let msg = body ?? url else {
-            return false;
-        }
+    override func send(message: String) -> Bool {
         guard (XmppService.instance.getClient(for: account)?.state ?? .disconnected) == .connected else {
             return false;
         }
         guard room.state == .joined else {
             return false;
         }
-        let message = room.createMessage(msg);
-        message.oob = url;
+        let message = room.createMessage(message);
         room.context.writer?.write(message);
         return true;
     }
     
+    override func sendAttachment(originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?) -> Bool {
+        guard (XmppService.instance.getClient(for: account)?.state ?? .disconnected) == .connected else {
+            return false;
+        }
+        guard room.state == .joined else {
+            return false;
+        }
+        let message = room.createMessage(uploadedUrl.absoluteString);
+        message.oob = uploadedUrl.absoluteString;
+        room.context.writer?.write(message);
+        return true;
+    }
+        
     var lastRange = 0;
 
     override func textDidChange(_ obj: Notification) {
