@@ -67,8 +67,10 @@ class DBChatHistoryStore {
         }
     }
 
-    open func appendItem(for account: BareJID, with jid: BareJID, state: MessageState, authorNickname: String? = nil, authorJid: BareJID? = nil, type: ItemType, timestamp: Date, stanzaId: String?, data: String, chatState: ChatState? = nil, errorCondition: ErrorCondition? = nil, errorMessage: String? = nil, encryption: MessageEncryption, encryptionFingerprint: String?, chatAttachmentAppendix: ChatAttachmentAppendix? = nil, completionHandler: ((Int) -> Void)?) {
+    open func appendItem(for account: BareJID, with jid: BareJID, state: MessageState, authorNickname: String? = nil, authorJid: BareJID? = nil, type: ItemType, timestamp inTimestamp: Date, stanzaId: String?, data: String, chatState: ChatState? = nil, errorCondition: ErrorCondition? = nil, errorMessage: String? = nil, encryption: MessageEncryption, encryptionFingerprint: String?, chatAttachmentAppendix: ChatAttachmentAppendix? = nil, completionHandler: ((Int) -> Void)?) {
         dispatcher.async {
+            let timestamp = Date(timeIntervalSince1970: Double(Int64(inTimestamp.timeIntervalSince1970 * 1000)) / 1000);
+
             guard !state.isError || stanzaId == nil || !self.processOutgoingError(for: account, with: jid, stanzaId: stanzaId!, errorCondition: errorCondition, errorMessage: errorMessage) else {
                 return;
             }
@@ -215,13 +217,40 @@ class DBChatHistoryStore {
         }
     }
 
-    open func removeItem(for account: BareJID, with jid: BareJID, itemId: Int) {
+    fileprivate var findLinkPreviewsForMessageStmt: DBStatement?;
+    
+    open func remove(item: ChatViewItemProtocol) {
         dispatcher.async {
-            let params: [String: Any?] = ["id": itemId];
+            let params: [String: Any?] = ["id": item.id];
             guard (try! self.removeItemStmt.update(params)) > 0 else {
                 return;
             }
-            self.itemRemoved(withId: itemId, for: account, with: jid);
+            self.itemRemoved(withId: item.id, for: item.account, with: item.jid);
+            
+            if #available(macOS 10.15, *), let item = item as? ChatMessage {
+                if self.findLinkPreviewsForMessageStmt == nil {
+                    self.findLinkPreviewsForMessageStmt = try! DBConnection.main.prepareStatement("SELECT id, data FROM chat_history WHERE account = :account AND jid = :jid AND timestamp = :timestamp AND item_type = \(ItemType.linkPreview.rawValue) AND id > :afterId");
+                }
+                // for chat message we might have a link previews which we need to remove..
+                let linkParams: [String: Any?] = ["account": item.account, "jid": item.jid, "timestamp": item.timestamp, "afterId": item.id];
+                guard let linkPreviews = try? self.findLinkPreviewsForMessageStmt?.query(linkParams, map: { cursor -> (Int, String)? in
+                    guard let id: Int = cursor["id"], let url: String = cursor["data"] else {
+                        return nil;
+                    }
+                    return (id, url);
+                }), !linkPreviews.isEmpty else {
+                    return;
+                }
+                for (id, url) in linkPreviews {
+                    if item.message.contains(url) {
+                        // this is a preview and needs to be removed..
+                        let removeLinkParams: [String: Any?] = ["id": id];
+                        if (try! self.removeItemStmt.update(removeLinkParams)) > 0 {
+                            self.itemRemoved(withId: id, for: item.account, with: item.jid);
+                        }
+                    }
+                }
+            }
         }
     }
     

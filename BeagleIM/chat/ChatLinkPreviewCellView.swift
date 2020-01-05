@@ -23,7 +23,7 @@ import AppKit
 import LinkPresentation
 
 class ChatLinkPreviewCellView: NSTableCellView {
-    
+
     var linkView: NSView? {
         didSet {
             if let value = oldValue {
@@ -43,7 +43,7 @@ class ChatLinkPreviewCellView: NSTableCellView {
             }
         }
     }
-    
+
     func set(item: ChatLinkPreview) {
         if #available(macOS 10.15, *) {
             var metadata = MetadataCache.instance.metadata(for: "\(item.id)");
@@ -55,13 +55,13 @@ class ChatLinkPreviewCellView: NSTableCellView {
                 metadata!.originalURL = url;
                 isNew = true;
             }
-            if self.linkView == nil {
+//            if self.linkView == nil {
                 self.linkView = CustomLPLinkView(url: url);
                 linkView?.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
                 linkView?.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
                 linkView?.translatesAutoresizingMaskIntoConstraints = false;
-            };
-            
+  //          };
+
             let linkView = self.linkView as! LPLinkView;
             linkView.metadata = metadata!;
 
@@ -71,17 +71,19 @@ class ChatLinkPreviewCellView: NSTableCellView {
                     guard let meta = meta1 else {
                         return;
                     }
-                    linkView?.metadata = meta;
+                    DispatchQueue.main.async {
+                        linkView?.metadata = meta;                    
+                    }
                 })
             }
         }
     }
-    
+
 }
 
 @available(macOS 10.15, *)
 class CustomLPLinkView: LPLinkView {
-    
+
     override var metadata: LPLinkMetadata {
         didSet {
             DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1.0, execute: {

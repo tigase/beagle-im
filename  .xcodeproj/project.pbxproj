@@ -22,6 +22,7 @@
 		FE28097D21652A7C002F5BD0 /* VCardEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */; };
 		FE28097F2166892D002F5BD0 /* AccountDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */; };
 		FE2809852169FB75002F5BD0 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2809842169FB74002F5BD0 /* Alert.swift */; };
+		FE29D35823C208840028D306 /* MetadataCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE29D35723C208840028D306 /* MetadataCache.swift */; };
 		FE2ACA8023546C4B004623BC /* NSString_extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA7F23546C4B004623BC /* NSString_extensions.swift */; };
 		FE2ACA8223546C8E004623BC /* NSMutableAttributedString_extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA8123546C8E004623BC /* NSMutableAttributedString_extensions.swift */; };
 		FE2ACA842355B967004623BC /* EditKeywordsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA832355B967004623BC /* EditKeywordsController.swift */; };
@@ -207,6 +208,7 @@
 		FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VCardEditorViewController.swift; sourceTree = "<group>"; };
 		FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDetailsViewController.swift; sourceTree = "<group>"; };
 		FE2809842169FB74002F5BD0 /* Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
+		FE29D35723C208840028D306 /* MetadataCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataCache.swift; sourceTree = "<group>"; };
 		FE2ACA7F23546C4B004623BC /* NSString_extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSString_extensions.swift; sourceTree = "<group>"; };
 		FE2ACA8123546C8E004623BC /* NSMutableAttributedString_extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSMutableAttributedString_extensions.swift; sourceTree = "<group>"; };
 		FE2ACA832355B967004623BC /* EditKeywordsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditKeywordsController.swift; sourceTree = "<group>"; };
@@ -483,6 +485,7 @@
 				FE2ACA7F23546C4B004623BC /* NSString_extensions.swift */,
 				FE2ACA8123546C8E004623BC /* NSMutableAttributedString_extensions.swift */,
 				FE9E069923A3976500952E9C /* DownloadManager.swift */,
+				FE29D35723C208840028D306 /* MetadataCache.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -916,6 +919,7 @@
 				FE41FB39215CD51700AD86D3 /* MucEventHandler.swift in Sources */,
 				FE6E6BFF21384D5F003B1696 /* ChatViewController.swift in Sources */,
 				FE28097D21652A7C002F5BD0 /* VCardEditorViewController.swift in Sources */,
+				FE29D35823C208840028D306 /* MetadataCache.swift in Sources */,
 				FEDE6AF52143D8130019170A /* ChatsListTableRowView.swift in Sources */,
 				FE41FB43215CDAF900AD86D3 /* XMPPClient_extension.swift in Sources */,
 				FE41FB41215CDA6000AD86D3 /* MessageEventHandler.swift in Sources */,

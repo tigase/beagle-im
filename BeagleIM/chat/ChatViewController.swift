@@ -280,11 +280,11 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         switch item {
         case let item as ChatMessage:
             MessageEventHandler.sendMessage(chat: chat, body: item.message, url: nil);
-            DBChatHistoryStore.instance.removeItem(for: account, with: jid, itemId: item.id);
+            DBChatHistoryStore.instance.remove(item: item);
         case let item as ChatAttachment:
             let oldLocalFile = DownloadStore.instance.url(for: "\(item.id)");
             MessageEventHandler.sendAttachment(chat: chat, originalUrl: oldLocalFile, uploadedUrl: item.url, appendix: item.appendix, completionHandler: {
-                DBChatHistoryStore.instance.removeItem(for: account, with: jid, itemId: item.id);
+                DBChatHistoryStore.instance.remove(item: item);
             });
         default:
             break;
