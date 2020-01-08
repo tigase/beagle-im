@@ -27,7 +27,6 @@ import Metal
 class RTCVideoView: RTCMTLNSVideoView {
     
     override func renderFrame(_ frame: RTCVideoFrame?) {
-        print("rendering frame:", frame, "metal:", RTCMTLNSVideoView.isMetalAvailable());
         super.renderFrame(frame);
     }
 
@@ -296,10 +295,6 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         session.peerConnection = self.initiatePeerConnection(for: session);
         
         self.session = session;
-        
-        self.localVideoView.isHidden = false;
-        self.localVideoView.wantsLayer = true;
-        self.localVideoView.layer?.backgroundColor = NSColor.red.cgColor;
         
         let sessDesc = RTCSessionDescription(type: .offer, sdp: sdpOffer.toString());
 
