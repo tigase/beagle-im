@@ -27,7 +27,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
 
     static let instance = JingleManager();
     
-    let connectionFactory: RTCPeerConnectionFactory;
+    //let connectionFactory: RTCPeerConnectionFactory;
     
     let events: [Event] = [JingleModule.JingleEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE];
     
@@ -42,8 +42,6 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
             alert.runModal();
         }
 //        RTCPeerConnectionFactory.initialize();
-        self.connectionFactory = RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(),
-                                                          decoderFactory: RTCDefaultVideoDecoderFactory());
     }
     
     func activeSessionSid(for account: BareJID, with jid: JID) -> String? {

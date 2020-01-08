@@ -79,14 +79,14 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     }
     
     fileprivate func initialize(withAudio: Bool, withVideo: Bool) {
-        self.localAudioTrack = JingleManager.instance.connectionFactory.audioTrack(withTrackId: "audio0");
+        self.localAudioTrack = connectionFactory.audioTrack(withTrackId: "audio0");
         if VideoCallController.hasVideoSupport && withVideo {
-            self.localVideoSource = JingleManager.instance.connectionFactory.videoSource();
+            self.localVideoSource = connectionFactory.videoSource();
             if let localVideoCapturer = self.localVideoCapturer {
                 localVideoCapturer.stopCapture();
             }
             self.localVideoCapturer = RTCCameraVideoCapturer(delegate: self.localVideoSource!);
-            self.localVideoTrack = JingleManager.instance.connectionFactory.videoTrack(with: self.localVideoSource!, trackId: "video-" + UUID().uuidString);
+            self.localVideoTrack = connectionFactory.videoTrack(with: self.localVideoSource!, trackId: "video-" + UUID().uuidString);
             
             self.startVideoCapture(videoCapturer: self.localVideoCapturer!) {
                 print("started!", self.localVideoTrack?.isEnabled);
@@ -101,6 +101,8 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
     var remoteVideoViewAspect: NSLayoutConstraint?
     var localVideoViewAspect: NSLayoutConstraint?
+    
+    var connectionFactory: RTCPeerConnectionFactory!;
     
 //    var audio: Bool = true;
 //    var video: Bool = true;
@@ -268,6 +270,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
     func accept(session: JingleManager.Session, sdpOffer: SDP) {
         DispatchQueue.main.async {
+            self.connectionFactory = RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(), decoderFactory: RTCDefaultVideoDecoderFactory());
             self.avplayer = AVPlayer(url: Bundle.main.url(forResource: "incomingCall", withExtension: "aiff")!);
 
             self.session = session;
@@ -412,6 +415,8 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     }
     
     func call(jid: BareJID, from account: BareJID, withAudio: Bool, withVideo: Bool) {
+        self.connectionFactory = RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(), decoderFactory: RTCDefaultVideoDecoderFactory());
+        
         let name = XmppService.instance.getClient(for: account)?.rosterStore?.get(for: JID(jid))?.name ?? jid.stringValue;
         self.view.window?.title = "Call with \(name)";
         self.remoteAvatarView.image = AvatarManager.instance.avatar(for: jid, on: account) ?? AvatarManager.instance.defaultAvatar;
@@ -513,7 +518,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         configuration.rtcpMuxPolicy = .require;
         configuration.iceCandidatePoolSize = 3;
         
-        return JingleManager.instance.connectionFactory.peerConnection(with: configuration, constraints: self.defaultCallConstraints, delegate: session);
+        return connectionFactory.peerConnection(with: configuration, constraints: self.defaultCallConstraints, delegate: session);
     }
     
     // this may be called multiple times, needs to handle that with video capture!!!

@@ -134,7 +134,9 @@ extension JingleManager {
             self.delegate?.sessionTerminated(session: self);
             if let peerConnection = self.peerConnection {
                 self.peerConnection = nil;
+                print("closing connection");
                 peerConnection.close();
+                print("connection freed!");
             }
             
             JingleManager.instance.close(session: self);
