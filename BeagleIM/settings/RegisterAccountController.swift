@@ -157,7 +157,7 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
     
     fileprivate func onCertificateError(certData: SslCertificateInfo, accepted: @escaping ()->Void) {
         DispatchQueue.main.async {
-            guard let controller = self.storyboard?.instantiateController(withIdentifier: "ServerCertificateErrorController") as? ServerCertificateErrorController else {
+            guard let controller = NSStoryboard(name: "Main", bundle: nil).instantiateController(withIdentifier: "ServerCertificateErrorController") as? ServerCertificateErrorController else {
                 return;
             }
             
