@@ -23,6 +23,7 @@ import AppKit
 import WebRTC
 import TigaseSwift
 import Metal
+import UserNotifications
 
 class RTCVideoView: RTCMTLNSVideoView {
     
@@ -243,8 +244,32 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
     fileprivate var sessionsInProgress: [JingleManager.Session] = [];
     
+    var avplayer: AVPlayer? = nil {
+        didSet {
+            if let value = oldValue {
+                print("deregistering av player item:", value.currentItem);
+                value.pause();
+                NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: value.currentItem);
+            }
+            if let value = avplayer {
+                value.actionAtItemEnd = .none;
+                print("registering av player item:", value.currentItem);
+                NotificationCenter.default.addObserver(self, selector: #selector(playerItemDidReachEnd), name: .AVPlayerItemDidPlayToEndTime, object: value.currentItem);
+                value.play();
+            }
+        }
+    }
+    
+    @objc func playerItemDidReachEnd(notification: Notification) {
+        if let playerItem = notification.object as? AVPlayerItem {
+            playerItem.seek(to: CMTime.zero, completionHandler: nil)
+        }
+    }
+    
     func accept(session: JingleManager.Session, sdpOffer: SDP) {
         DispatchQueue.main.async {
+            self.avplayer = AVPlayer(url: Bundle.main.url(forResource: "incomingCall", withExtension: "aiff")!);
+
             self.session = session;
             session.delegate = self;
             
@@ -266,6 +291,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
             }
             
             self.showAlert(title: "Incoming call from \(name)", message: "Do you want to accept this call?", buttons: buttons, completionHandler: { (response) in
+                self.avplayer = nil;
                 if isVideo {
                     switch response {
                     case .alertFirstButtonReturn:
@@ -678,6 +704,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
     func closeWindow() {
         DispatchQueue.main.async {
+            self.avplayer = nil;
             if let localVideoCapturer = self.localVideoCapturer {
                 localVideoCapturer.stopCapture();
             }

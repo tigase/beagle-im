@@ -27,6 +27,7 @@
 		FE2ACA862355C5DA004623BC /* NSTableViewCustomGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA852355C5DA004623BC /* NSTableViewCustomGrid.swift */; };
 		FE2DEDA023C5FC0F00AEF14F /* WebRTC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE2DED9E23C5FC0900AEF14F /* WebRTC.framework */; };
 		FE2DEDA123C5FC0F00AEF14F /* WebRTC.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE2DED9E23C5FC0900AEF14F /* WebRTC.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FE2DEDA323C62D7100AEF14F /* incomingCall.aiff in Resources */ = {isa = PBXBuildFile; fileRef = FE2DEDA223C62D7000AEF14F /* incomingCall.aiff */; };
 		FE30D8AD214C2D7100670BEC /* RosterViewController_ContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8AC214C2D7100670BEC /* RosterViewController_ContextMenu.swift */; };
 		FE30D8AF214C3B7600670BEC /* NSImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8AE214C3B7600670BEC /* NSImage.swift */; };
 		FE30D8B1214CE93600670BEC /* FormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8B0214CE93600670BEC /* FormView.swift */; };
@@ -214,6 +215,7 @@
 		FE2ACA852355C5DA004623BC /* NSTableViewCustomGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSTableViewCustomGrid.swift; sourceTree = "<group>"; };
 		FE2DED8F23C5C6B300AEF14F /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebRTC.framework; path = "../../../../../Volumes/Dane/Users/andrzej/test/webrtc-checkout/src/outios/WebRTC.framework"; sourceTree = "<group>"; };
 		FE2DED9E23C5FC0900AEF14F /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
+		FE2DEDA223C62D7000AEF14F /* incomingCall.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = incomingCall.aiff; sourceTree = "<group>"; };
 		FE30D8AC214C2D7100670BEC /* RosterViewController_ContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RosterViewController_ContextMenu.swift; sourceTree = "<group>"; };
 		FE30D8AE214C3B7600670BEC /* NSImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSImage.swift; sourceTree = "<group>"; };
 		FE30D8B0214CE93600670BEC /* FormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormView.swift; sourceTree = "<group>"; };
@@ -634,6 +636,7 @@
 				FEFFF7CE23313B52004CB9CE /* db-schema-5.sql */,
 				FE25B1702350D2FC00CD69CA /* db-schema-6.sql */,
 				FE6201E523AA43C900C965A5 /* db-schema-7.sql */,
+				FE2DEDA223C62D7000AEF14F /* incomingCall.aiff */,
 			);
 			path = BeagleIM;
 			sourceTree = "<group>";
@@ -834,6 +837,7 @@
 				FE6201E623AA43C900C965A5 /* db-schema-7.sql in Resources */,
 				FEFFF7CF23313B52004CB9CE /* db-schema-5.sql in Resources */,
 				FEF9CE1D2082765000B09B6C /* db-schema-1.sql in Resources */,
+				FE2DEDA323C62D7100AEF14F /* incomingCall.aiff in Resources */,
 				FE25B1712350D2FC00CD69CA /* db-schema-6.sql in Resources */,
 				FE4073A721BACA2D009CE335 /* VoIP.storyboard in Resources */,
 				FE8C9F5421B3F6BD00BE8332 /* container-migration.plist in Resources */,
