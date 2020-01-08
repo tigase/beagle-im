@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="15702" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15702"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -35,8 +36,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="480" height="480"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <customView identifier="VideoCallView" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0JM-uv-ZnY" customClass="RTCMTLNSVideoView">
-                                <rect key="frame" x="0.0" y="0.0" width="560" height="560"/>
+                            <customView identifier="VideoCallView" translatesAutoresizingMaskIntoConstraints="NO" id="0JM-uv-ZnY" customClass="RTCMTLNSVideoView">
+                                <rect key="frame" x="0.0" y="0.0" width="480" height="480"/>
                             </customView>
                             <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="5C7-CN-gUK">
                                 <rect key="frame" x="80" y="80" width="320" height="320"/>
@@ -47,14 +48,14 @@
                                 <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyUpOrDown" id="abv-5U-ZzK"/>
                             </imageView>
                             <textField wantsLayer="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fh0-1H-Aux">
-                                <rect key="frame" x="18" y="443" width="88" height="17"/>
+                                <rect key="frame" x="18" y="444" width="88" height="16"/>
                                 <textFieldCell key="cell" lineBreakMode="clipping" title="Connecting..." id="pEi-f7-PFa">
                                     <font key="font" metaFont="systemMedium" size="13"/>
                                     <color key="textColor" name="selectedMenuItemTextColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
-                            <customView ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ILM-AG-cOq" customClass="RTCMTLNSVideoView">
+                            <customView ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ILM-AG-cOq" customClass="RTCVideoView" customModule="BeagleIM" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="0.0" width="158" height="148"/>
                             </customView>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="wqe-49-7Kt" userLabel="End Call" customClass="RoundButton" customModule="BeagleIM" customModuleProvider="target">

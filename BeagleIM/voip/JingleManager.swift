@@ -27,17 +27,24 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
 
     static let instance = JingleManager();
     
-    let connectionFactory = { () -> RTCPeerConnectionFactory in
-        RTCPeerConnectionFactory.initialize();
-        return RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(),
-                                        decoderFactory: RTCDefaultVideoDecoderFactory());
-    }();
+    let connectionFactory: RTCPeerConnectionFactory;
     
     let events: [Event] = [JingleModule.JingleEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE];
     
     fileprivate var connections: [Session] = [];
     
     let dispatcher = QueueDispatcher(label: "jingleEventHandler");
+    
+    init() {
+        if !RTCInitializeSSL() {
+            let alert = NSAlert();
+            alert.messageText = "Failed to initialize RTC SSL!";
+            alert.runModal();
+        }
+//        RTCPeerConnectionFactory.initialize();
+        self.connectionFactory = RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(),
+                                                          decoderFactory: RTCDefaultVideoDecoderFactory());
+    }
     
     func activeSessionSid(for account: BareJID, with jid: JID) -> String? {
         return session(for: account, with: jid, sid: nil)?.sid;

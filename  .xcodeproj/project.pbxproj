@@ -14,8 +14,6 @@
 		FE149D8222A5120300EE4E03 /* SearchHistory.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE149D8122A5120300EE4E03 /* SearchHistory.storyboard */; };
 		FE149D8522A515C900EE4E03 /* SearchHistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE149D8422A515C900EE4E03 /* SearchHistoryController.swift */; };
 		FE149D8722A51AD900EE4E03 /* db-schema-4.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE149D8622A51AD900EE4E03 /* db-schema-4.sql */; };
-		FE1678EE22FC92970013B94A /* WebRTC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE1678ED22FC92970013B94A /* WebRTC.framework */; };
-		FE1678EF22FC92970013B94A /* WebRTC.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE1678ED22FC92970013B94A /* WebRTC.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE1A8BA321C96C1B00604141 /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA221C96C1B00604141 /* RoundButton.swift */; };
 		FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */; };
 		FE25B1712350D2FC00CD69CA /* db-schema-6.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE25B1702350D2FC00CD69CA /* db-schema-6.sql */; };
@@ -27,6 +25,8 @@
 		FE2ACA8223546C8E004623BC /* NSMutableAttributedString_extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA8123546C8E004623BC /* NSMutableAttributedString_extensions.swift */; };
 		FE2ACA842355B967004623BC /* EditKeywordsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA832355B967004623BC /* EditKeywordsController.swift */; };
 		FE2ACA862355C5DA004623BC /* NSTableViewCustomGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA852355C5DA004623BC /* NSTableViewCustomGrid.swift */; };
+		FE2DED9C23C5D3C700AEF14F /* WebRTC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE2DED9A23C5D3C300AEF14F /* WebRTC.framework */; };
+		FE2DED9D23C5D3C700AEF14F /* WebRTC.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE2DED9A23C5D3C300AEF14F /* WebRTC.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE30D8AD214C2D7100670BEC /* RosterViewController_ContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8AC214C2D7100670BEC /* RosterViewController_ContextMenu.swift */; };
 		FE30D8AF214C3B7600670BEC /* NSImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8AE214C3B7600670BEC /* NSImage.swift */; };
 		FE30D8B1214CE93600670BEC /* FormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8B0214CE93600670BEC /* FormView.swift */; };
@@ -187,7 +187,7 @@
 				FEF5C40022632CDE00889863 /* openssl.framework in Embed Frameworks */,
 				FEF5C3DA2260893800889863 /* TigaseSwiftOMEMO.framework in Embed Frameworks */,
 				FE4E8DE12160E7AA0010D88E /* TigaseSwift.framework in Embed Frameworks */,
-				FE1678EF22FC92970013B94A /* WebRTC.framework in Embed Frameworks */,
+				FE2DED9D23C5D3C700AEF14F /* WebRTC.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -201,7 +201,6 @@
 		FE149D8122A5120300EE4E03 /* SearchHistory.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SearchHistory.storyboard; sourceTree = "<group>"; };
 		FE149D8422A515C900EE4E03 /* SearchHistoryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchHistoryController.swift; sourceTree = "<group>"; };
 		FE149D8622A51AD900EE4E03 /* db-schema-4.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-4.sql"; sourceTree = "<group>"; };
-		FE1678ED22FC92970013B94A /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
 		FE1A8BA221C96C1B00604141 /* RoundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
 		FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager_Session.swift; sourceTree = "<group>"; };
 		FE25B1702350D2FC00CD69CA /* db-schema-6.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-6.sql"; sourceTree = "<group>"; };
@@ -213,6 +212,8 @@
 		FE2ACA8123546C8E004623BC /* NSMutableAttributedString_extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSMutableAttributedString_extensions.swift; sourceTree = "<group>"; };
 		FE2ACA832355B967004623BC /* EditKeywordsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditKeywordsController.swift; sourceTree = "<group>"; };
 		FE2ACA852355C5DA004623BC /* NSTableViewCustomGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSTableViewCustomGrid.swift; sourceTree = "<group>"; };
+		FE2DED8F23C5C6B300AEF14F /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebRTC.framework; path = "../../../../../Volumes/Dane/Users/andrzej/test/webrtc-checkout/src/outios/WebRTC.framework"; sourceTree = "<group>"; };
+		FE2DED9A23C5D3C300AEF14F /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
 		FE30D8AC214C2D7100670BEC /* RosterViewController_ContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RosterViewController_ContextMenu.swift; sourceTree = "<group>"; };
 		FE30D8AE214C3B7600670BEC /* NSImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSImage.swift; sourceTree = "<group>"; };
 		FE30D8B0214CE93600670BEC /* FormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormView.swift; sourceTree = "<group>"; };
@@ -363,7 +364,7 @@
 				FEF5C3D92260893800889863 /* TigaseSwiftOMEMO.framework in Frameworks */,
 				FEF9D12B2082804E00B09B6C /* TigaseSwift.framework in Frameworks */,
 				FEF9CE2220827F0000B09B6C /* libsqlite3.0.tbd in Frameworks */,
-				FE1678EE22FC92970013B94A /* WebRTC.framework in Frameworks */,
+				FE2DED9C23C5D3C700AEF14F /* WebRTC.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -573,7 +574,7 @@
 		FED2ECE72066B01C00F506A5 = {
 			isa = PBXGroup;
 			children = (
-				FE1678ED22FC92970013B94A /* WebRTC.framework */,
+				FE2DED9A23C5D3C300AEF14F /* WebRTC.framework */,
 				FEF5C3FE22632CDE00889863 /* openssl.framework */,
 				FEF5C3D82260893800889863 /* TigaseSwiftOMEMO.framework */,
 				FE421B4821C92FBF0022DF77 /* LICENSE */,
@@ -698,6 +699,7 @@
 		FEF9CE2020827F0000B09B6C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				FE2DED8F23C5C6B300AEF14F /* WebRTC.framework */,
 				FE83E364217B0F89001DEF09 /* AVFoundation.framework */,
 				FEF9D12C2082808C00B09B6C /* libxml2.tbd */,
 				FEF9D12A2082804E00B09B6C /* TigaseSwift.framework */,

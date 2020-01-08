@@ -129,7 +129,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         Settings.initialize();
-        RTCInitializeSSL();
         
         if #available(macOS 10.14, *) {
             updateAppearance();

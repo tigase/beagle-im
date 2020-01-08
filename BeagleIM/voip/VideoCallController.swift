@@ -22,6 +22,16 @@
 import AppKit
 import WebRTC
 import TigaseSwift
+import Metal
+
+class RTCVideoView: RTCMTLNSVideoView {
+    
+    override func renderFrame(_ frame: RTCVideoFrame?) {
+        print("rendering frame:", frame, "metal:", RTCMTLNSVideoView.isMetalAvailable());
+        super.renderFrame(frame);
+    }
+
+}
 
 class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
@@ -79,7 +89,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
             self.localVideoTrack = JingleManager.instance.connectionFactory.videoTrack(with: self.localVideoSource!, trackId: "video-" + UUID().uuidString);
             
             self.startVideoCapture(videoCapturer: self.localVideoCapturer!) {
-                print("started!");
+                print("started!", self.localVideoTrack?.isEnabled);
             }
         }
     }
@@ -97,9 +107,12 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
     var session: JingleManager.Session? {
         didSet {
+            print("setting session:", session, "peerConnection:", session?.peerConnection)
             if let conn = session?.peerConnection {
+                print("with sdp:", conn.configuration.sdpSemantics.rawValue);
                 if conn.configuration.sdpSemantics == .unifiedPlan {
                     if remoteVideoView != nil {
+                        print("setting remote view");
                         conn.transceivers.forEach { (trans) in
                             if trans.mediaType == .video && (trans.direction == .sendRecv || trans.direction == .recvOnly) {
                                 guard let track = trans.receiver.track as? RTCVideoTrack else {
@@ -108,6 +121,8 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                                 self.didAdd(remoteVideoTrack: track);
                             }
                         }
+                    } else {
+                        print("no remote view");
                     }
                     if localVideoView != nil {
                         conn.transceivers.forEach { (trans) in
@@ -132,11 +147,13 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     fileprivate var localVideoTrack: RTCVideoTrack? {
         willSet {
             if localVideoTrack != nil && localVideoView != nil {
+                print("removing old local video track:", localVideoTrack);
                 localVideoTrack!.remove(localVideoView!);
             }
         }
         didSet {
             if localVideoTrack != nil && localVideoView != nil {
+                print("adding new local video track:", localVideoTrack, localVideoTrack?.isEnabled);
                 localVideoTrack!.add(localVideoView!);
             }
         }
@@ -150,6 +167,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         didSet {
             if remoteVideoTrack != nil && remoteVideoView != nil {
                 remoteVideoTrack!.add(remoteVideoView);
+                print("track added to remote view")
             }
         }
     }
@@ -276,6 +294,12 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         session.initiated();
         
         session.peerConnection = self.initiatePeerConnection(for: session);
+        
+        self.session = session;
+        
+        self.localVideoView.isHidden = false;
+        self.localVideoView.wantsLayer = true;
+        self.localVideoView.layer?.backgroundColor = NSColor.red.cgColor;
         
         let sessDesc = RTCSessionDescription(type: .offer, sdp: sdpOffer.toString());
 
@@ -439,7 +463,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         }
     }
     
-    fileprivate var defaultCallConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil);
+    fileprivate var defaultCallConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement": "true"]);
     
     func initiatePeerConnection(for session: JingleManager.Session) -> RTCPeerConnection {
         let configuration = RTCConfiguration();
@@ -511,9 +535,9 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                     return range.maxFrameRate;
                 }).max() ?? 0, ", type:", CMFormatDescriptionGetMediaSubType(format.formatDescription), "expected:", videoCapturer.preferredOutputPixelFormat());
                 // larger size causes issues during encoding...
-//                if (size.width > 640) {
-//                    return;
-//                }
+                if (size.width > 640) {
+                    return;
+                }
                 let currSize = bestFormat == nil ? nil : CMVideoFormatDescriptionGetDimensions(bestFormat!.formatDescription);
                 let currRating = currSize == nil ? nil : (currSize!.width * currSize!.height);
                 let rating = size.width * size.height;
@@ -545,17 +569,23 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     }
     
     func didAdd(remoteVideoTrack: RTCVideoTrack) {
-        if self.remoteVideoTrack != nil && self.remoteVideoTrack! == remoteVideoTrack {
-            return;
+        print("remote view configured with:", remoteVideoTrack);
+        DispatchQueue.main.async {
+            if self.remoteVideoTrack != nil && self.remoteVideoTrack! == remoteVideoTrack {
+                return;
+            }
+            self.remoteVideoTrack = remoteVideoTrack;
         }
-        self.remoteVideoTrack = remoteVideoTrack;
     }
     
     func didAdd(localVideoTrack: RTCVideoTrack) {
-        if self.localVideoTrack != nil && self.localVideoTrack! == localVideoTrack {
-            return;
+        print("skipping setting local video track!");
+        DispatchQueue.main.async {
+            if self.localVideoTrack != nil && self.localVideoTrack! ==  localVideoTrack {
+                return;
+            }
+            self.localVideoTrack = localVideoTrack;
         }
-        self.localVideoTrack = localVideoTrack;
     }
     
     @IBAction func closeClicked(_ sender: Any) {
