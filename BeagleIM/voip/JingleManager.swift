@@ -27,8 +27,6 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
 
     static let instance = JingleManager();
     
-    //let connectionFactory: RTCPeerConnectionFactory;
-    
     let events: [Event] = [JingleModule.JingleEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE];
     
     fileprivate var connections: [Session] = [];
@@ -41,7 +39,13 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
             alert.messageText = "Failed to initialize RTC SSL!";
             alert.runModal();
         }
-//        RTCPeerConnectionFactory.initialize();
+        
+        let path = FileManager.default.temporaryDirectory.path;
+        if let files = try? FileManager.default.contentsOfDirectory(atPath: path) {
+            files.filter({ $0.starts(with: "webrtc_log_") }).forEach { (file) in
+                try? FileManager.default.removeItem(at: FileManager.default.temporaryDirectory.appendingPathComponent(file, isDirectory: false));
+            }
+        }
     }
     
     func activeSessionSid(for account: BareJID, with jid: JID) -> String? {
@@ -64,9 +68,9 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
         }
     }
 
-    func open(for account: BareJID, with jid: JID, sid: String?, role: Jingle.Content.Creator) -> Session {
+    func open(for account: BareJID, with jid: JID, sid: String?, role: Jingle.Content.Creator, peerConnectionFactory: RTCPeerConnectionFactory? = nil) -> Session {
         return dispatcher.sync {
-            let session = Session(account: account, jid: jid, sid: sid, role: role);
+            let session = Session(account: account, jid: jid, sid: sid, role: role, peerConnectionFactory: peerConnectionFactory ??  RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(), decoderFactory: RTCDefaultVideoDecoderFactory()));
             self.connections.append(session);
             return session;
         }
@@ -118,7 +122,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                         return session.jid == from && session.account == account;
                     });
                     toClose.forEach({ (session) in
-                        self.close(session: session);
+                        session.terminate();
                     })
                 }
             default:
@@ -132,7 +136,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
         case video
         case filetransfer
     }
-    
+        
     func support(for jid: JID, on account: BareJID) -> Set<ContentType> {
         guard let client = XmppService.instance.getClient(for: account), let _ = client.presenceStore else {
             return [];

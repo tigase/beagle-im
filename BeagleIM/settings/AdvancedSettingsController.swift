@@ -73,8 +73,9 @@ class AdvancedSettingsController: NSViewController {
         if #available(macOS 10.15, *) {
             enableLinkPreviews = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Enable link previews", target: self, action: #selector(checkboxChanged(_:))));
         }
-        
-        formView.groupItems(from:ignoreJingleSupportCheck, to: enableBookmarksSync);
+        let logsDir = formView.addRow(label: "", field: NSButton(title: "Open logs directory", target: self, action: #selector(openLogsDirectory)));
+        formView.groupItems(from:ignoreJingleSupportCheck, to: logsDir);
+
         
         self.preferredContentSize = NSSize(width: self.view.frame.size.width, height: self.view.frame.size.height);
     }
@@ -103,6 +104,10 @@ class AdvancedSettingsController: NSViewController {
         markKeywordsWithBold.state = Settings.boldKeywords.bool() ? .on : .off;
         markKeywordsWithBold.isEnabled = markKeywords.state == .on;
         editKeywords.isEnabled = markKeywords.state == .on;
+    }
+    
+    @objc func openLogsDirectory(_ sender: NSButton) {
+        NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: FileManager.default.temporaryDirectory.path);
     }
     
     @objc func checkboxChanged(_ sender: NSButton) {

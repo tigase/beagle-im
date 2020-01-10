@@ -78,7 +78,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         }
     }
     
-    fileprivate func initialize(withAudio: Bool, withVideo: Bool) {
+    fileprivate func initialize(connectionFactory: RTCPeerConnectionFactory, withAudio: Bool, withVideo: Bool) {
         self.localAudioTrack = connectionFactory.audioTrack(withTrackId: "audio0");
         if VideoCallController.hasVideoSupport && withVideo {
             self.localVideoSource = connectionFactory.videoSource();
@@ -101,9 +101,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
     var remoteVideoViewAspect: NSLayoutConstraint?
     var localVideoViewAspect: NSLayoutConstraint?
-    
-    var connectionFactory: RTCPeerConnectionFactory!;
-    
+        
 //    var audio: Bool = true;
 //    var video: Bool = true;
     
@@ -149,13 +147,11 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     fileprivate var localVideoTrack: RTCVideoTrack? {
         willSet {
             if localVideoTrack != nil && localVideoView != nil {
-                print("removing old local video track:", localVideoTrack);
                 localVideoTrack!.remove(localVideoView!);
             }
         }
         didSet {
             if localVideoTrack != nil && localVideoView != nil {
-                print("adding new local video track:", localVideoTrack, localVideoTrack?.isEnabled);
                 localVideoTrack!.add(localVideoView!);
             }
         }
@@ -169,7 +165,6 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         didSet {
             if remoteVideoTrack != nil && remoteVideoView != nil {
                 remoteVideoTrack!.add(remoteVideoView);
-                print("track added to remote view")
             }
         }
     }
@@ -268,9 +263,14 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         }
     }
     
+    var logger: RTCFileLogger?;
+    var loggerFile: URL?;
+    
     func accept(session: JingleManager.Session, sdpOffer: SDP) {
+        loggerFile = FileManager.default.temporaryDirectory;
+        logger = RTCFileLogger(dirPath: loggerFile!.path, maxFileSize: 20 * 1024 * 1024);
+        logger?.start();
         DispatchQueue.main.async {
-            self.connectionFactory = RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(), decoderFactory: RTCDefaultVideoDecoderFactory());
             self.avplayer = AVPlayer(url: Bundle.main.url(forResource: "incomingCall", withExtension: "aiff")!);
 
             self.session = session;
@@ -286,7 +286,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                 return content.description?.media == "video"
             }) != nil;
             
-            self.initialize(withAudio: true, withVideo: isVideo);
+            self.initialize(connectionFactory: session.peerConnectionFactory, withAudio: true, withVideo: isVideo);
             
             var buttons = [ "Accept audio", "Deny" ];
             if isVideo {
@@ -321,7 +321,10 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     fileprivate func accept(session: JingleManager.Session, sdpOffer: SDP, withAudio: Bool, withVideo: Bool) {
         session.initiated();
         
-        session.peerConnection = self.initiatePeerConnection(for: session);
+        guard self.initiatePeerConnection(for: session) else {
+            handle(error: .peerConnectionNotCreated, for: session);
+            return;
+        }
         
         self.session = session;
         
@@ -334,49 +337,69 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         
         self.initializeMedia(for: session, audio: withAudio, video: withVideo) { result in
             guard result else {
-                _ = session.decline();
-                
-                self.showAlert(title: "Call failed!", message: "Could not initialize recording devices", icon: NSImage(named: NSImage.infoName), buttons: ["OK"], completionHandler: { (reponse) in
-                    self.closeWindow();
-                })
+                self.handle(error: .mediaInitializationFailed, for: session);
                 return;
             }
             session.peerConnection?.delegate = session;
             print("setting remote description:", sdpOffer.toString());
-            self.setRemoteSessionDescription(sessDesc) {
-                DispatchQueue.main.async {
-                    if (session.peerConnection?.configuration.sdpSemantics ?? RTCSdpSemantics.planB) == RTCSdpSemantics.unifiedPlan {
-                        session.peerConnection?.transceivers.forEach({ transceiver in
-                            if !withAudio && transceiver.mediaType == .audio {
-                                transceiver.stop();
-                            }
-                            if !withVideo && transceiver.mediaType == .video {
-                                transceiver.stop();
-                            }
-                        });
-                    }
-                    
-                    session.peerConnection?.answer(for: self.defaultCallConstraints, completionHandler: { (sdpAnswer, error) in
-                        guard error == nil else {
-                            _ = session.decline();
-                            
-                            self.showAlert(title: "Call failed!", message: "Negotiation of the call failed", icon: NSImage(named: NSImage.infoName), buttons: ["OK"], completionHandler: { (reponse) in
-                                self.closeWindow();
-                            })
-
-                            return;
+            self.setRemoteSessionDescription(sessDesc, for: session) { (result) in
+                switch result {
+                case .success(_):
+                    DispatchQueue.main.async {
+                        if (session.peerConnection?.configuration.sdpSemantics ?? RTCSdpSemantics.planB) == RTCSdpSemantics.unifiedPlan {
+                            session.peerConnection?.transceivers.forEach({ transceiver in
+                                if !withAudio && transceiver.mediaType == .audio {
+                                    transceiver.stop();
+                                }
+                                if !withVideo && transceiver.mediaType == .video {
+                                    transceiver.stop();
+                                }
+                            });
                         }
-                        print("generated local description:", sdpAnswer!.sdp, sdpAnswer!.type);
-                        self.setLocalSessionDescription(sdpAnswer!, for: session, onSuccess: {
-                            print("set local description:", session.peerConnection?.localDescription?.sdp as Any);
-                            
-                            let sdp = SDP(from: sdpAnswer!.sdp, creator: session.role);
-                            _  = session.accept(contents: sdp!.contents, bundle: sdp!.bundle);
+                        
+                        session.peerConnection?.answer(for: self.defaultCallConstraints, completionHandler: { (sdpAnswer, error) in
+                            guard error == nil else {
+                                self.handle(error: .sdpAnswerNotGenerated(error: error!), for: session);
+                                return;
+                            }
+                            print("generated local description:", sdpAnswer!.sdp, sdpAnswer!.type);
+                            self.setLocalSessionDescription(sdpAnswer!, for: session, completionHandler: { result in
+                                switch result {
+                                case .success(_):
+                                    print("set local description:", session.peerConnection?.localDescription?.sdp as Any);
+                                    
+                                    let sdp = SDP(from: sdpAnswer!.sdp, creator: session.role);
+                                    _  = session.accept(contents: sdp!.contents, bundle: sdp!.bundle);
+                                case .failure(let error):
+                                    self.handle(error: error, for: session);
+                                }
+                            })
                         })
-                    })
+                    }
+                case .failure(let error):
+                    self.handle(error: error, for: session);
                 }
+
             }
         }
+    }
+    
+    func handle(error: PeerConnectionError, for session: JingleManager.Session) {
+        switch error {
+        case .settingLocalDescriptionFailed(let error), .settingRemoteDescriptionFailed(let error):
+            _ = session.decline();
+        case .mediaInitializationFailed:
+            _ = session.decline();
+        case .sdpAnswerNotGenerated(let error):
+            _ = session.decline();
+        case .sdpOfferNotGenerated(let error):
+            _ = session.decline();
+        case .peerConnectionNotCreated:
+            break;
+        }
+        self.showAlert(title: "Call failed!", message: error.description, icon: NSImage(named: NSImage.infoName), buttons: ["OK"], completionHandler: { (reponse) in
+            self.closeWindow();
+        });
     }
 
     func setAudioEnabled(value: Bool) {
@@ -415,8 +438,10 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     }
     
     func call(jid: BareJID, from account: BareJID, withAudio: Bool, withVideo: Bool) {
-        self.connectionFactory = RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(), decoderFactory: RTCDefaultVideoDecoderFactory());
-        
+        loggerFile = FileManager.default.temporaryDirectory;
+        print("starting logging at:", loggerFile);
+        logger = RTCFileLogger(dirPath: loggerFile!.path, maxFileSize: 20 * 1024 * 1024);
+        logger?.start();
         let name = XmppService.instance.getClient(for: account)?.rosterStore?.get(for: JID(jid))?.name ?? jid.stringValue;
         self.view.window?.title = "Call with \(name)";
         self.remoteAvatarView.image = AvatarManager.instance.avatar(for: jid, on: account) ?? AvatarManager.instance.defaultAvatar;
@@ -429,35 +454,38 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                 return;
         }
         
-        self.initialize(withAudio: withAudio, withVideo: withVideo);
+        let connectionFactory = RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(), decoderFactory: RTCDefaultVideoDecoderFactory());
+
+        self.initialize(connectionFactory: connectionFactory, withAudio: withAudio, withVideo: withVideo);
         
-        var waitingFor: Int = presences.count;
+        var errors: [PeerConnectionError] = [];
         
-        let finisher = { [weak self] in
-            guard let that = self else {
-                return;
-            }
-            DispatchQueue.main.async {
-                waitingFor = waitingFor - 1;
-                if waitingFor == 0 && that.sessionsInProgress.isEmpty {
-                    that.showAlert(title: "Call failed", message: "It was not possible to establish the connection.", icon: NSImage(named: NSImage.cautionName), buttons: ["OK"]) { (response) in
-                        that.closeWindow();
-                    };
-                }
-            }
-        }
+        let group = DispatchGroup();
         
-        presences.forEach { (resource) in
-            let session = JingleManager.instance.open(for: account, with: JID(jid, resource: resource), sid: nil, role: .initiator);
+        group.enter();
+        presences.forEach { resource in
+            group.enter();
+            let session = JingleManager.instance.open(for: account, with: JID(jid, resource: resource), sid: nil, role: .initiator, peerConnectionFactory: connectionFactory);
             
             session.delegate = self;
+            guard self.initiatePeerConnection(for: session) else {
+                DispatchQueue.main.async {
+                    errors.append(.peerConnectionNotCreated);
+                }
+                _ = session.terminate();
+                group.leave();
+                return;
+            }
             
             print("creating peer connection for:", session.jid);
-            session.peerConnection = self.initiatePeerConnection(for: session);
             self.initializeMedia(for: session, audio: withAudio, video: withVideo) { result in
                 guard result else {
                     print("intialization of media failed!");
-                    finisher();
+                    DispatchQueue.main.async {
+                        errors.append(.mediaInitializationFailed);
+                    }
+                    _ = session.terminate();
+                    group.leave();
                     return;
                 }
 
@@ -466,32 +494,56 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                     if sdp != nil && error == nil {
                         print("setting local description:", sdp!.sdp);
                         let tmp = RTCSessionDescription(type: sdp!.type, sdp: sdp!.sdp.replacingOccurrences(of: "a=mid:0", with: "a=mid:m0").replacingOccurrences(of: "a=group:BUNDLE 0", with: "a=group:BUNDLE m0"));
-                        self.setLocalSessionDescription(tmp, for: session, onError: finisher, onSuccess: {
-                            let sdpOffer = SDP(from: tmp.sdp, creator: .initiator)!;
-                            
-                            if session.initiate(sid: sdpOffer.sid, contents: sdpOffer.contents, bundle: sdpOffer.bundle) {
-                                DispatchQueue.main.async {
-                                    self.sessionsInProgress.append(session);
-                                    session.delegate = self;
+                        self.setLocalSessionDescription(tmp, for: session, completionHandler: { result in
+                            switch result {
+                            case .success(_):
+                                let sdpOffer = SDP(from: tmp.sdp, creator: .initiator)!;
+                                
+                                if session.initiate(sid: sdpOffer.sid, contents: sdpOffer.contents, bundle: sdpOffer.bundle) {
+                                    DispatchQueue.main.async {
+                                        self.sessionsInProgress.append(session);
+                                        session.delegate = self;
+                                        group.leave();
+                                    }
+                                } else {
+                                    _ = session.terminate();
+                                    group.leave();
                                 }
-                            } else {
+                            case .failure(let error):
+                                DispatchQueue.main.async {
+                                    errors.append(.sdpOfferNotGenerated(error: error));
+                                }
                                 _ = session.terminate();
+                                group.leave();
                             }
-                            
-                            finisher();
                         })
                     } else {
-                        print("did not get sdp offer:", sdp, "error:", error);
-                        finisher();
+                        DispatchQueue.main.async {
+                            errors.append(.sdpOfferNotGenerated(error: error!));
+                        }
+                        _ = session.terminate();
+                        group.leave();
                     }
                 });
             }
         }
+        group.leave();
+        
+        group.notify(queue: DispatchQueue.main, execute: { [weak self] in
+            guard let that = self else {
+                return;
+            }
+            if that.sessionsInProgress.isEmpty {
+                that.showAlert(title: "Call failed", message: "It was not possible to establish the connection.\nErrors:\n \(errors.map({ $0.description }).joined(separator: "\n"))", icon: NSImage(named: NSImage.cautionName), buttons: ["OK"]) { (response) in
+                    that.closeWindow();
+                };
+            }
+        })
     }
-    
+        
     fileprivate var defaultCallConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement": "true"]);
     
-    func initiatePeerConnection(for session: JingleManager.Session) -> RTCPeerConnection {
+    func initiatePeerConnection(for session: JingleManager.Session) -> Bool {
         let configuration = RTCConfiguration();
         configuration.sdpSemantics = .unifiedPlan;
         
@@ -518,7 +570,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         configuration.rtcpMuxPolicy = .require;
         configuration.iceCandidatePoolSize = 3;
         
-        return connectionFactory.peerConnection(with: configuration, constraints: self.defaultCallConstraints, delegate: session);
+        return session.initiatePeerConnection(with: configuration, constraints: self.defaultCallConstraints) != nil;
     }
     
     // this may be called multiple times, needs to handle that with video capture!!!
@@ -615,6 +667,8 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     }
     
     @IBAction func closeClicked(_ sender: Any) {
+        self.localVideoCapturer?.stopCapture();
+        self.localVideoCapturer = nil;
         if let session = self.session {
             session.delegate = nil;
             _ = session.terminate();
@@ -676,6 +730,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                     self.session = nil;
                     if let videoCapturer = self.localVideoCapturer {
                         videoCapturer.stopCapture(completionHandler: nil);
+                        self.localVideoCapturer = nil;
                     }
                     if self.state == .created {
                         self.hideAlert();
@@ -700,14 +755,21 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                 
                 print("setting remote description:", sdpAnswer.toString());
                 let sessDesc = RTCSessionDescription(type: .answer, sdp: sdpAnswer.toString());
-                self.setRemoteSessionDescription(sessDesc, onSuccess: {
-                    print("remote session description set");
-                })
+                self.setRemoteSessionDescription(sessDesc, for: session, completionHandler: { (result) in
+                    switch result {
+                    case .success(_):
+                        print("remote session description set");
+                    case .failure(let err):
+                        self.handle(error: err, for: session);
+                    }
+                });
             }
         }
     }
     
     func closeWindow() {
+        logger?.stop();
+        
         DispatchQueue.main.async {
             self.avplayer = nil;
             if let localVideoCapturer = self.localVideoCapturer {
@@ -721,48 +783,79 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         }
     }
     
-    fileprivate func setLocalSessionDescription(_ sessDesc: RTCSessionDescription, for session: JingleManager.Session, onError: (()->Void)? = nil, onSuccess: @escaping ()->Void) {
+    fileprivate func setLocalSessionDescription(_ sessDesc: RTCSessionDescription, for session: JingleManager.Session, completionHandler: @escaping (Result<Void,PeerConnectionError>)->Void) {
         DispatchQueue.main.async {
             session.peerConnection?.setLocalDescription(sessDesc, completionHandler: { (error) in
-                guard error == nil else {
-                    guard onError == nil else {
-                        onError!();
-                        return;
-                    }
-                    
-                    _ = session.decline();
-                    
-                    self.showAlert(title: "Call failed!", message: "Negotiation of the call failed", icon: NSImage(named: NSImage.infoName), buttons: ["OK"], completionHandler: { (reponse) in
-                        self.closeWindow();
-                    })
-                    return;
+                if error == nil {
+                    session.localDescriptionSet();
+                    completionHandler(.success(Void()));
+                } else {
+                    completionHandler(.failure(PeerConnectionError.settingLocalDescriptionFailed(error: error!)));
                 }
-                
-                session.localDescriptionSet();
-
-                onSuccess();
+//                guard error == nil else {
+//                    guard onError == nil else {
+//                        onError!();
+//                        return;
+//                    }
+//
+//                    _ = session.decline();
+//
+//                    self.showAlert(title: "Call failed!", message: "Negotiation of the call failed", icon: NSImage(named: NSImage.infoName), buttons: ["OK"], completionHandler: { (reponse) in
+//                        self.closeWindow();
+//                    })
+//                    return;
+//                }
+//
+//
+//                onSuccess();
             });
         }
     }
     
-    fileprivate func setRemoteSessionDescription(_ sessDesc: RTCSessionDescription, onSuccess: @escaping ()->Void) {
-        guard let session = self.session else {
-            return;
-        }
-        
+    fileprivate func setRemoteSessionDescription(_ sessDesc: RTCSessionDescription, for session: JingleManager.Session, completionHandler: @escaping (Result<Void,PeerConnectionError>)->Void) {
         session.peerConnection?.setRemoteDescription(sessDesc, completionHandler: { (error) in
             print("remote description set:", session.peerConnection?.remoteDescription?.sdp as Any);
             guard error == nil else {
-                _ = session.decline();
-                
-                self.showAlert(title: "Call failed!", message: "Negotiation of the call failed", icon: NSImage(named: NSImage.infoName), buttons: ["OK"], completionHandler: { (reponse) in
-                    self.closeWindow();
-                })
+                completionHandler(.failure(VideoCallController.PeerConnectionError.settingRemoteDescriptionFailed(error: error!)));
+//                _ = session.decline();
+//
+//                self.showAlert(title: "Call failed!", message: "Negotiation of the call failed", icon: NSImage(named: NSImage.infoName), buttons: ["OK"], completionHandler: { (reponse) in
+//                    self.closeWindow();
+//                })
                 return;
             }
 
             session.remoteDescriptionSet();
-            onSuccess();
+            completionHandler(.success(Void()));
+//            onSuccess();
         });
+    }
+    
+    enum PeerConnectionError: Error {
+        case settingLocalDescriptionFailed(error: Error)
+        case settingRemoteDescriptionFailed(error: Error)
+        case mediaInitializationFailed
+        case peerConnectionNotCreated
+        case sdpOfferNotGenerated(error: Error)
+        case sdpAnswerNotGenerated(error: Error)
+        
+        var description: String {
+            switch self {
+            case .settingLocalDescriptionFailed(let error), .settingRemoteDescriptionFailed(let error):
+                return "Negotiation of the call failed: \(error.localizedDescription)";
+            case .mediaInitializationFailed:
+                return "Could not initialize recording devices";
+            case .sdpAnswerNotGenerated(let error):
+                return "Negotiation of the call failed: \(error.localizedDescription)";
+            case .sdpOfferNotGenerated(let error):
+                return "Negotiation of the call failed: \(error.localizedDescription)";
+            case .peerConnectionNotCreated:
+                return "Cound not initialize connection: peer connection not created!";
+            }
+        }
+            
+        var isFatal: Bool {
+            return true;
+        }
     }
 }
