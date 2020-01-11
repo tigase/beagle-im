@@ -26,7 +26,7 @@ protocol ChatItemProtocol {
     var chat: DBChatProtocol { get };
     
     var name: String { get };
-    var lastMessageText: String? { get }
+    var lastActivity: LastChatActivity? { get }
     var lastMessageTs: Date { get }
     var unread: Int { get }
     

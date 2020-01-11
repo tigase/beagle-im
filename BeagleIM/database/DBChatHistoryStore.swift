@@ -188,7 +188,7 @@ class DBChatHistoryStore {
                 }
             }
             if item != nil {
-                DBChatStore.instance.newMessage(for: account, with: jid, timestamp: timestamp, message: encryption.message() ?? data, state: state, remoteChatState: state.direction == .incoming ? chatState : nil) {
+                DBChatStore.instance.newMessage(for: account, with: jid, timestamp: timestamp, itemType: type, message: encryption.message() ?? data, state: state, remoteChatState: state.direction == .incoming ? chatState : nil) {
                     NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: item);
                 }
             }
@@ -211,7 +211,7 @@ class DBChatHistoryStore {
         guard try! self.markAsErrorStmt.update(params) > 0 else {
             return false;
         }
-        DBChatStore.instance.newMessage(for: account, with: jid, timestamp: Date(timeIntervalSince1970: 0), message: nil, state: .outgoing_error_unread) {
+        DBChatStore.instance.newMessage(for: account, with: jid, timestamp: Date(timeIntervalSince1970: 0), itemType: nil, message: nil, state: .outgoing_error_unread) {
             self.itemUpdated(withId: itemId, for: account, with: jid);
         }
         return true;

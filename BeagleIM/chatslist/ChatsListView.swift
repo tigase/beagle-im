@@ -27,8 +27,8 @@ class AbstractChatItem: ChatItemProtocol {
     let chat: DBChatProtocol;
     
     var name: String;
-    var lastMessageText: String? {
-        return chat.lastMessage;
+    var lastActivity: LastChatActivity? {
+        return chat.lastActivity;
     }
     var lastMessageTs: Date {
         return chat.timestamp;

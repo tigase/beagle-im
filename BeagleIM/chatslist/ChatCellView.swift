@@ -71,16 +71,25 @@ class ChatCellView: NSTableCellView {
         self.avatar?.name = name;
     }
     
-    func set(lastMessage: String?, ts: Date?) {
+    func set(lastActivity: LastChatActivity?, ts: Date?) {
         if chatState != .composing {
-            if lastMessage == nil {
-                self.lastMessage?.stringValue = "";
-            } else {
-                let msg = NSMutableAttributedString(string: lastMessage!);
-                if Settings.enableMarkdownFormatting.bool() {
-                    Markdown.applyStyling(attributedString: msg, showEmoticons: Settings.showEmoticons.bool());
+            if let activity = lastActivity {
+                switch activity {
+                case .message(let lastMessage):
+                    let msg = NSMutableAttributedString(string: lastMessage);
+                    if Settings.enableMarkdownFormatting.bool() {
+                        Markdown.applyStyling(attributedString: msg, showEmoticons: Settings.showEmoticons.bool());
+                    }
+                    self.lastMessage?.attributedStringValue = msg;
+                case .attachment(let url):
+                    if let fieldfont = self.lastMessage?.font {
+                        self.lastMessage?.attributedStringValue = NSAttributedString(string: "📎 ATTACHMENT", attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask]), .foregroundColor: self.lastMessage.textColor!.withAlphaComponent(0.8)]);
+                    } else {
+                        self.lastMessage?.attributedStringValue = NSAttributedString(string: "📎 ATTACHMENT", attributes: [.foregroundColor: self.lastMessage.textColor!.withAlphaComponent(0.8)]);
+                    }
                 }
-                self.lastMessage?.attributedStringValue = msg;
+            } else {
+                self.lastMessage?.stringValue = "";
             }
             self.lastMessage?.maximumNumberOfLines = 3;
         } else {
@@ -133,7 +142,7 @@ class ChatCellView: NSTableCellView {
         if let chat = item.chat as? DBChatStore.DBChat {
             self.set(chatState: chat.remoteChatState ?? .active);
         }
-        self.set(lastMessage: item.lastMessageText, ts: item.lastMessageTs);
+        self.set(lastActivity: item.lastActivity, ts: item.lastMessageTs);
         if item.chat is Chat {
             self.avatar.update(for: item.chat.jid.bareJid, on: item.chat.account);
         } else if let room  = item.chat as? Room {

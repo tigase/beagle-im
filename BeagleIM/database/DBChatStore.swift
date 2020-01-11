@@ -87,8 +87,8 @@ open class DBChatStore {
     fileprivate static let OPEN_CHAT = "INSERT INTO chats (account, jid, timestamp, type) VALUES (:account, :jid, :timestamp, :type)";
     fileprivate static let OPEN_ROOM = "INSERT INTO chats (account, jid, timestamp, type, nickname, password) VALUES (:account, :jid, :timestamp, :type, :nickname, :password)";
     fileprivate static let CLOSE_CHAT = "DELETE FROM chats WHERE id = :id";
-    fileprivate static let LOAD_CHATS = "SELECT c.id, c.type, c.jid, c.name, c.nickname, c.password, c.timestamp as creation_timestamp, last.timestamp as timestamp, last1.data, last1.encryption as lastEncryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))) as unread, c.options FROM chats c LEFT JOIN (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account GROUP BY ch.account, ch.jid) last ON c.jid = last.jid AND c.account = last.account LEFT JOIN chat_history last1 ON last1.account = c.account AND last1.jid = c.jid AND last1.timestamp = last.timestamp WHERE c.account = :account";
-    fileprivate static let GET_LAST_MESSAGE = "SELECT last.timestamp as timestamp, last1.data, last1.encryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))) as unread FROM (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.jid = :jid GROUP BY ch.account, ch.jid) last LEFT JOIN chat_history last1 ON last1.account = last.account AND last1.jid = last.jid AND last1.timestamp = last.timestamp";
+    fileprivate static let LOAD_CHATS = "SELECT c.id, c.type, c.jid, c.name, c.nickname, c.password, c.timestamp as creation_timestamp, last.timestamp as timestamp, last1.item_type, last1.data, last1.encryption as lastEncryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))) as unread, c.options FROM chats c LEFT JOIN (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) GROUP BY ch.account, ch.jid) last ON c.jid = last.jid AND c.account = last.account LEFT JOIN chat_history last1 ON last1.account = c.account AND last1.jid = c.jid AND last1.timestamp = last.timestamp AND last1.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) WHERE c.account = :account";
+    fileprivate static let GET_LAST_MESSAGE = "SELECT last.timestamp as timestamp, last1.item_type, last1.data, last1.encryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))) as unread FROM (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.jid = :jid AND ch.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) GROUP BY ch.account, ch.jid) last LEFT JOIN chat_history last1 ON last1.account = last.account AND last1.jid = last.jid AND last1.timestamp = last.timestamp AND last1.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))";
     fileprivate static let GET_LAST_MESSAGE_TIMESTAMP_FOR_ACCOUNT = "SELECT max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.state <> \(MessageState.outgoing_unsent.rawValue)";
     fileprivate static let UPDATE_CHAT_NAME = "UPDATE chats SET name = :name WHERE account = :account AND jid = :jid";
     fileprivate static let UPDATE_CHAT_OPTIONS = "UPDATE chats SET options = ? WHERE account = ? AND jid = ?";
@@ -256,10 +256,11 @@ open class DBChatStore {
         }
     }
     
-    func newMessage(for account: BareJID, with jid: BareJID, timestamp: Date, message: String?, state: MessageState, remoteChatState: ChatState? = nil, completionHandler: @escaping ()->Void) {
+    func newMessage(for account: BareJID, with jid: BareJID, timestamp: Date, itemType: ItemType?, message: String?, state: MessageState, remoteChatState: ChatState? = nil, completionHandler: @escaping ()->Void) {
         dispatcher.async {
             if let chat = self.getChat(for: account, with: jid) {
-                if chat.updateLastMessage(message, timestamp: timestamp, isUnread: state.isUnread) {
+                let lastActivity = LastChatActivity.from(itemType: itemType, data: message);
+                if chat.updateLastActivity(lastActivity, timestamp: timestamp, isUnread: state.isUnread) {
                     if state.isUnread && !self.isMuted(chat: chat) {
                         self.unreadMessagesCount = self.unreadMessagesCount + 1;
                     }
@@ -350,11 +351,11 @@ open class DBChatStore {
         case let c as Chat:
             let params: [String: Any?] = [ "account": account, "jid": c.jid.bareJid, "timestamp": Date(), "type": 0 ];
             let id = try! self.openChatStmt.insert(params);
-            return DBChat(id: id!, account: account, jid: c.jid.bareJid, timestamp: Date(), lastMessage: getLastMessage(for: account, jid: chat.jid.bareJid), unread: 0, options: ChatOptions());
+            return DBChat(id: id!, account: account, jid: c.jid.bareJid, timestamp: Date(), lastActivity: getLastActivity(for: account, jid: chat.jid.bareJid), unread: 0, options: ChatOptions());
         case let r as Room:
             let params: [String: Any?] = [ "account": account, "jid": r.roomJid, "timestamp": Date(), "type": 1, "nickname": r.nickname, "password": r.password];
             let id = try! self.openRoomStmt.insert(params);
-            return DBRoom(id: id!, context: r.context, account: account, roomJid: r.roomJid, name: nil, nickname: r.nickname, password: r.password, timestamp: Date(), lastMessage: getLastMessage(for: account, jid: chat.jid.bareJid), unread: 0, options: RoomOptions());
+            return DBRoom(id: id!, context: r.context, account: account, roomJid: r.roomJid, name: nil, nickname: r.nickname, password: r.password, timestamp: Date(), lastActivity: getLastActivity(for: account, jid: chat.jid.bareJid), unread: 0, options: RoomOptions());
         default:
             return nil;
         }
@@ -365,16 +366,24 @@ open class DBChatStore {
         _ = try! self.closeChatStmt.update(params);
     }
     
-    private func getLastMessage(for account: BareJID, jid: BareJID) -> String? {
+    private func getLastActivity(for account: BareJID, jid: BareJID) -> LastChatActivity? {
         return dispatcher.sync {
             let params: [String: Any?] = ["account": account, "jid": jid];
             return try! self.getLastMessageStmt.queryFirstMatching(params) { cursor in
                 let encryption = MessageEncryption(rawValue: cursor["encryption"] ?? 0) ?? .none;
                 switch encryption {
                 case .decrypted, .none:
-                    return cursor["data"];
+                    if let itemType: Int = cursor["item_type"] {
+                        return LastChatActivity.from(itemType: ItemType(rawValue: itemType), data: cursor["data"]);
+                    } else {
+                        return nil;
+                    }
                 default:
-                    return encryption.message();
+                    if let message = encryption.message() {
+                        return .message(message);
+                    } else {
+                        return nil;
+                    }
                 }
             }
         }
@@ -394,7 +403,10 @@ open class DBChatStore {
                 let creationTimestamp: Date = cursor["creation_timestamp"]!;
                 let lastMessageTimestamp: Date = cursor["timestamp"]!;
                 let lastMessageEncryption = MessageEncryption(rawValue: cursor["lastEncryption"] ?? 0) ?? .none;
-                let lastMessage: String? = lastMessageEncryption.message() ?? cursor["data"];
+                var lastActivity: LastChatActivity?;
+                if let itemType: Int = cursor["item_type"] {
+                    lastActivity = LastChatActivity.from(itemType: ItemType(rawValue: itemType), data: lastMessageEncryption.message() ?? cursor["data"]);
+                }
                 let unread: Int = cursor["unread"]!;
                 let optionsStr: String? = cursor["options"];
                 
@@ -410,8 +422,8 @@ open class DBChatStore {
                     if optionsStr != nil, let data = optionsStr!.data(using: .utf8) {
                         options = try? JSONDecoder().decode(RoomOptions.self, from: data);
                     }
-                    let room = DBRoom(id: id, context: context, account: account, roomJid: jid, name: name, nickname: nickname, password: password, timestamp: timestamp, lastMessage: lastMessage, unread: unread, options: options ?? RoomOptions());
-                    if lastMessage != nil {
+                    let room = DBRoom(id: id, context: context, account: account, roomJid: jid, name: name, nickname: nickname, password: password, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options ?? RoomOptions());
+                    if lastActivity != nil {
                         room.lastMessageDate = timestamp;
                     }
                     return room;
@@ -420,7 +432,7 @@ open class DBChatStore {
                     if optionsStr != nil, let data = optionsStr!.data(using: .utf8) {
                         options = try? JSONDecoder().decode(ChatOptions.self, from: data);
                     }
-                    return DBChat(id: id, account: account, jid: jid, timestamp: timestamp, lastMessage: lastMessage, unread: unread, options: options ?? ChatOptions());
+                    return DBChat(id: id, account: account, jid: jid, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options ?? ChatOptions());
                 }
             }
             let accountChats = AccountChats(items: chats);
@@ -547,7 +559,7 @@ open class DBChatStore {
         func lastMessageTimestamp() -> Date {
             var timestamp = Date(timeIntervalSince1970: 0);
             chats.values.forEach { (chat) in
-                guard chat.lastMessage != nil else {
+                guard chat.lastActivity != nil else {
                     return;
                 }
                 timestamp = max(timestamp, chat.timestamp);
@@ -561,7 +573,7 @@ open class DBChatStore {
         let id: Int;
         let account: BareJID;
         var timestamp: Date;
-        var lastMessage: String? = nil;
+        var lastActivity: LastChatActivity?;
         var unread: Int;
         fileprivate(set) var options: ChatOptions = ChatOptions();
         
@@ -577,25 +589,25 @@ open class DBChatStore {
             }
         }
         
-        init(id: Int, account: BareJID, jid: BareJID, timestamp: Date, lastMessage: String?, unread: Int, options: ChatOptions) {
+        init(id: Int, account: BareJID, jid: BareJID, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: ChatOptions) {
             self.id = id;
             self.account = account;
             self.timestamp = timestamp;
-            self.lastMessage = lastMessage;
+            self.lastActivity = lastActivity;
             self.unread = unread;
             self.options = options;
             super.init(jid: JID(jid), thread: nil);
         }
      
-        func updateLastMessage(_ message: String?, timestamp: Date, isUnread: Bool) -> Bool {
+        func updateLastActivity(_ lastActivity: LastChatActivity?, timestamp: Date, isUnread: Bool) -> Bool {
             if isUnread {
                 unread = unread + 1;
             }
-            guard self.lastMessage == nil || self.timestamp.compare(timestamp) == .orderedAscending else {
+            guard self.lastActivity == nil || self.timestamp.compare(timestamp) == .orderedAscending else {
                 return isUnread;
             }
-            if message != nil {
-                self.lastMessage = message;
+            if lastActivity != nil {
+                self.lastActivity = lastActivity;
                 self.timestamp = timestamp;
             }
             return true;
@@ -671,17 +683,17 @@ open class DBChatStore {
         let id: Int;
         let account: BareJID;
         var timestamp: Date;
-        var lastMessage: String? = nil;
+        var lastActivity: LastChatActivity?;
         var subject: String? = nil;
         var unread: Int;
         var name: String? = nil;
         fileprivate(set) var options: RoomOptions = RoomOptions();
 
-        init(id: Int, context: Context, account: BareJID, roomJid: BareJID, name: String?, nickname: String, password: String?, timestamp: Date, lastMessage: String?, unread: Int, options: RoomOptions) {
+        init(id: Int, context: Context, account: BareJID, roomJid: BareJID, name: String?, nickname: String, password: String?, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: RoomOptions) {
             self.id = id;
             self.account = account;
             self.timestamp = timestamp;
-            self.lastMessage = lastMessage;
+            self.lastActivity = lastActivity;
             self.unread = unread;
             self.name = name;
             self.options = options;
@@ -697,16 +709,18 @@ open class DBChatStore {
             self.name = name;
         }
         
-        func updateLastMessage(_ message: String?, timestamp: Date, isUnread: Bool) -> Bool {
+        func updateLastActivity(_ lastActivity: LastChatActivity?, timestamp: Date, isUnread: Bool) -> Bool {
             if isUnread {
                 unread = unread + 1;
             }
-            guard self.lastMessage == nil || self.timestamp.compare(timestamp) == .orderedAscending else {
+            guard self.lastActivity == nil || self.timestamp.compare(timestamp) == .orderedAscending else {
                 return isUnread;
             }
             
-            self.lastMessage = message;
-            self.timestamp = timestamp;
+            if lastActivity != nil {
+                self.lastActivity = lastActivity;
+                self.timestamp = timestamp;
+            }
             
             return true;
         }
@@ -800,12 +814,31 @@ protocol DBChatProtocol: ChatProtocol {
     var id: Int { get };
     var account: BareJID { get }
     var timestamp: Date { get };
-    var lastMessage: String? { get };
+    var lastActivity: LastChatActivity? { get };
     var unread: Int { get }
     
     func markAsRead(count: Int) -> Bool;
-    func updateLastMessage(_ message: String?, timestamp: Date, isUnread: Bool) -> Bool;
+    func updateLastActivity(_ lastActivity: LastChatActivity?, timestamp: Date, isUnread: Bool) -> Bool;
+
+}
+
+enum LastChatActivity {
+    case message(String)
+    case attachment(String)
     
+    static func from(itemType: ItemType?, data: String?) -> LastChatActivity? {
+        guard itemType != nil else {
+            return nil;
+        }
+        switch itemType! {
+        case .message:
+            return data == nil ? nil : .message(data!);
+        case .attachment:
+            return data == nil ? nil : .attachment(data!);
+        case .linkPreview:
+            return nil;
+        }
+    }
 }
 
 public enum ChatEncryption: String {
