@@ -58,20 +58,30 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
     }
     
     var hideFields: [String] = [];
+    var instruction: String?;
     
     var form: JabberDataElement? {
         didSet {
             visibleFields = form?.visibleFieldNames.filter({ name -> Bool in !self.hideFields.contains(name)}) ?? [];
+            
+            self.instruction = form?.instructions.map({ (texts) -> String in
+                return texts.filter({ $0 != nil }).map({ $0! }).joined(separator: "\n");
+                });
+            if self.instruction?.isEmpty ?? false {
+                self.instruction = nil;
+            }
             self.reloadData();
 
             var estHeight = self.numberOfRows == 0 ? 0 : self.rect(ofColumn: 0).height;
             if self.numberOfRows < 20 {
                 estHeight = 0;
+                let offset = self.instruction != nil ? 1 : 0;
                 for i in 0..<self.numberOfRows {
-                    let label = self.extractLabel(from: form!.getField(named: visibleFields[i])!);
+                    
+                    let label = i == 0 && self.instruction != nil ? self.instruction! : self.extractLabel(from: form!.getField(named: visibleFields[i - offset])!);
                     
                     let textStorage = NSTextStorage(string: label);
-                    textStorage.addAttribute(.font, value: NSFont.systemFont(ofSize: NSFont.systemFontSize), range: NSRange(0..<textStorage.length));
+                    textStorage.addAttribute(.font, value: NSFont.systemFont(ofSize: NSFont.labelFontSize, weight: i == 0 && self.instruction != nil ? .medium : .regular), range: NSRange(0..<textStorage.length));
                     let layoutManager = NSLayoutManager()
                     let containerSize = CGSize(width: self.tableColumns[0].width - self.intercellSpacing.width,
                                                height: .greatestFiniteMagnitude);
@@ -119,13 +129,52 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
     }
     
     func numberOfRows(in tableView: NSTableView) -> Int {
-        return visibleFields.count;
+        return visibleFields.count + (self.instruction == nil ? 0 : 1);
     }
     
+    func tableView(_ tableView: NSTableView, isGroupRow row: Int) -> Bool {
+        return row == 0 && self.instruction != nil;
+    }
+    
+    func tableView(_ tableView: NSTableView, rowViewForRow row: Int) -> NSTableRowView? {
+        guard row != 0 || self.instruction == nil else {
+            return NSTableInstructionsRowView(frame: .zero);
+        }
+        return tableView.rowView(atRow: row, makeIfNecessary: true);
+    }
+        
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+        guard !self.tableView(tableView, isGroupRow: row) else {
+            let horizontalSpacing = self.intercellSpacing.width / 2;
+            let view = NSTextField(labelWithString: self.instruction ?? "");
+            view.alignment = .justified;
+            view.lineBreakMode = .byWordWrapping;
+            view.cell?.lineBreakMode = .byWordWrapping;
+            view.isEditable = false;
+            view.isSelectable = false;
+            view.translatesAutoresizingMaskIntoConstraints = false;
+            view.setContentCompressionResistancePriority(.fittingSizeCompression, for: .horizontal);
+            view.setContentHuggingPriority(.defaultLow, for: .horizontal);
+            view.setContentHuggingPriority(.defaultLow, for: .vertical);
+            view.setContentCompressionResistancePriority(.required, for: .vertical);
+            view.font = NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium);
+
+            let cellView = NSTableInstructionsCellView(frame: .zero);
+            cellView.addSubview(view);
+            NSLayoutConstraint.activate([
+                view.leadingAnchor.constraint(equalTo: cellView.leadingAnchor, constant: horizontalSpacing),
+                view.trailingAnchor.constraint(equalTo: cellView.trailingAnchor, constant: -1 * horizontalSpacing),
+                view.topAnchor.constraint(equalTo: cellView.topAnchor, constant: 3.0),
+                view.bottomAnchor.constraint(equalTo: cellView.bottomAnchor)]);
+
+            cellView.backgroundStyle = .normal;
+            
+            return cellView;
+        }
+        let offset = self.instruction != nil ? 1 : 0;
         if tableColumn != nil {
             let horizontalSpacing = self.intercellSpacing.width / 2;
-            let field = form?.getField(named: visibleFields[row]);
+            let field = form?.getField(named: visibleFields[row - offset]);
             if tableView.column(withIdentifier: tableColumn!.identifier) == 0 {
                 if field is BooleanField {
                     return nil;
@@ -152,7 +201,7 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
 
                 return cellView;
             } else {
-                let view = create(row: row, field: field!);
+                let view = create(row: row - offset, field: field!);
                 view.translatesAutoresizingMaskIntoConstraints = false;
                 view.setContentHuggingPriority(.fittingSizeCompression, for: .horizontal);
                 view.setContentHuggingPriority(.fittingSizeCompression, for: .vertical);
@@ -428,5 +477,29 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
             NSGraphicsContext.restoreGraphicsState();
         }
         
+    }
+    
+    class NSTableInstructionsRowView: NSTableRowView {
+        override func draw(_ dirtyRect: NSRect) {
+        }
+    }
+    
+    class NSTableInstructionsCellView: NSTableCellView {
+        override var backgroundStyle: NSView.BackgroundStyle {
+            get {
+                return .normal;
+            }
+            set {
+                // nothing to do..
+            }
+        }
+        
+        override func draw(_ dirtyRect: NSRect) {
+            NSGraphicsContext.saveGraphicsState();
+            NSColor.windowBackgroundColor.setFill();
+            self.bounds.fill();
+            NSGraphicsContext.restoreGraphicsState();
+
+        }
     }
 }
