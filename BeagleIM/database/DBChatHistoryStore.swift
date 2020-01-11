@@ -56,7 +56,87 @@ class DBChatHistoryStore {
     fileprivate let removeItemStmt: DBStatement = try! DBConnection.main.prepareStatement("DELETE FROM chat_history WHERE id = :id");
 
     fileprivate let dispatcher: QueueDispatcher;
-
+    
+    static func convertToAttachments() {
+        let diskCacheUrl = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!.appendingPathComponent(Bundle.main.bundleIdentifier!).appendingPathComponent("download", isDirectory: true);
+        guard FileManager.default.fileExists(atPath: diskCacheUrl.path) else {
+            return;
+        }
+        
+        let previewsToConvert = try! DBConnection.main.prepareStatement("SELECT id FROM chat_history WHERE preview IS NOT NULL").query(map: { cursor -> Int in
+            return cursor["id"]!;
+        });
+        let convertStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, account, jid, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, preview, stanza_id FROM chat_history WHERE id = ?");
+        let removePreviewStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET preview = NULL WHERE id = ?");
+                        
+        previewsToConvert.forEach { id in
+            guard let (item, previews, stanzaId) = try! convertStmt.findFirst(id, map: { (cursor) -> (ChatMessage, [String:String], String?)? in
+                let account: BareJID = cursor["account"]!;
+                let jid: BareJID = cursor["jid"]!;
+                let stanzaId: String? = cursor["stanza_id"];
+                guard let item = DBChatHistoryStore.instance.itemFrom(cursor: cursor, for: account, with: jid) as? ChatMessage, let previewStr: String = cursor["preview"] else {
+                    return nil;
+                }
+                var previews: [String:String] = [:];
+                previewStr.split(separator: "\n").forEach { (line) in
+                    let tmp = line.split(separator: "\t").map({String($0)});
+                    if (!tmp[1].starts(with: "ERROR")) && (tmp[1] != "NONE") {
+                        previews[tmp[0]] = tmp[1];
+                    }
+                }
+                return (item, previews, stanzaId);
+            }) else {
+                return;
+            }
+            
+            if previews.isEmpty {
+                _ = try! removePreviewStmt.update(item.id);
+            } else {
+                print("converting for:", item.account, "with:", item.jid, "previews:", previews);
+                if previews.count == 1 {
+                    let isAttachmentOnly = URL(string: item.message) != nil;
+                    
+                    if isAttachmentOnly {
+                        let appendix = ChatAttachmentAppendix();
+                        DBChatHistoryStore.instance.appendItem(for: item.account, with: item.jid, state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, type: .attachment, timestamp: item.timestamp, stanzaId: stanzaId, data: item.message, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, chatAttachmentAppendix: appendix, skipItemAlreadyExists: true, completionHandler: { newId in
+                                DBChatHistoryStore.instance.remove(item: item);
+                        });
+                    } else {
+                        if #available(macOS 10.15, *) {
+                            DBChatHistoryStore.instance.appendItem(for: item.account, with: item.jid, state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, type: .linkPreview, timestamp: item.timestamp, stanzaId: stanzaId, data: previews.keys.first ?? item.message, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, skipItemAlreadyExists: true, completionHandler: { newId in
+                                    _ = try! removePreviewStmt.update(item.id);
+                            });
+                        } else {
+                            _ = try! removePreviewStmt.update(item.id);
+                        }
+                    }
+                } else {
+                    if #available(macOS 10.15, *) {
+                        let group = DispatchGroup();
+                        group.enter();
+                    
+                        group.notify(queue: DispatchQueue.main, execute: {
+                            _ = try! removePreviewStmt.update(item.id);
+                        })
+                    
+                        for (url, previewId) in previews {
+                            group.enter();
+                            DBChatHistoryStore.instance.appendItem(for: item.account, with: item.jid, state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, type: .linkPreview, timestamp: item.timestamp, stanzaId: stanzaId, data: url, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, skipItemAlreadyExists: true, completionHandler: { newId in
+                                    group.leave();
+                            });
+                        }
+                        group.leave();
+                    } else {
+                        _ = try! removePreviewStmt.update(item.id);
+                    }
+                }
+            }
+        }
+        
+        try? FileManager.default.removeItem(at: diskCacheUrl);
+    }
+    
+    
     public init() {
         dispatcher = QueueDispatcher(label: "chat_history_store");
     }
@@ -67,7 +147,7 @@ class DBChatHistoryStore {
         }
     }
 
-    open func appendItem(for account: BareJID, with jid: BareJID, state: MessageState, authorNickname: String? = nil, authorJid: BareJID? = nil, type: ItemType, timestamp inTimestamp: Date, stanzaId: String?, data: String, chatState: ChatState? = nil, errorCondition: ErrorCondition? = nil, errorMessage: String? = nil, encryption: MessageEncryption, encryptionFingerprint: String?, chatAttachmentAppendix: ChatAttachmentAppendix? = nil, completionHandler: ((Int) -> Void)?) {
+    open func appendItem(for account: BareJID, with jid: BareJID, state: MessageState, authorNickname: String? = nil, authorJid: BareJID? = nil, type: ItemType, timestamp inTimestamp: Date, stanzaId: String?, data: String, chatState: ChatState? = nil, errorCondition: ErrorCondition? = nil, errorMessage: String? = nil, encryption: MessageEncryption, encryptionFingerprint: String?, chatAttachmentAppendix: ChatAttachmentAppendix? = nil, skipItemAlreadyExists: Bool = false, completionHandler: ((Int) -> Void)?) {
         dispatcher.async {
             let timestamp = Date(timeIntervalSince1970: Double(Int64(inTimestamp.timeIntervalSince1970 * 1000)) / 1000);
 
@@ -75,7 +155,7 @@ class DBChatHistoryStore {
                 return;
             }
 
-            guard !self.checkItemAlreadyAdded(for: account, with: jid, authorNickname: authorNickname, type: type, timestamp: timestamp, direction: state.direction, stanzaId: stanzaId, data: data) else {
+            guard skipItemAlreadyExists || !self.checkItemAlreadyAdded(for: account, with: jid, authorNickname: authorNickname, type: type, timestamp: timestamp, direction: state.direction, stanzaId: stanzaId, data: data) else {
                 if chatState != nil {
                     DBChatStore.instance.process(chatState: chatState!, for: account, with: jid);
                 }

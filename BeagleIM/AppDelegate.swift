@@ -166,6 +166,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             NSUserNotificationCenter.default.delegate = self;
         }
         
+        DBChatHistoryStore.convertToAttachments();
 //        let storyboard = NSStoryboard(name: "Main", bundle: nil);
 //        let rosterWindowController = storyboard.instantiateController(withIdentifier: "RosterWindowController") as! NSWindowController;
 //        rosterWindowController.showWindow(self);
