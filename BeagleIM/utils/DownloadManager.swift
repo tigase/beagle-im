@@ -22,6 +22,7 @@
 import Foundation
 import AppKit
 import TigaseSwift
+import TigaseSwiftOMEMO
 
 class DownloadManager {
 
@@ -51,14 +52,29 @@ class DownloadManager {
 
     func download(item: ChatAttachment, maxSize: Int64) -> Bool {
         return dispatcher.sync {
+            guard var url = URL(string: item.url) else {
+                DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+                    appendix.state = .error;
+                });
+                return false;
+            }
+
             guard !itemDownloadInProgress.contains(item.id) else {
                 return false;
             }
 
             itemDownloadInProgress.append(item.id);
 
-            let url = URL(string: item.url)!;
-
+            var encryptionKey: String? = nil;
+            if url.scheme == "aesgcm", var components = URLComponents(url: url, resolvingAgainstBaseURL: true) {
+                encryptionKey = components.fragment;
+                components.scheme = "https";
+                components.fragment = nil;
+                if let tmpUrl = components.url {
+                    url = tmpUrl;
+                }
+            }
+            
             let sessionConfig = URLSessionConfiguration.default;
             let session = URLSession(configuration: sessionConfig);
             DownloadManager.retrieveHeaders(session: session, url: url, completionHandler: { headersResult in
@@ -87,6 +103,14 @@ class DownloadManager {
                     DownloadManager.download(session: session, url: url, completionHandler: { result in
                         switch result {
                         case .success(let localUrl, let filename):
+                            if let encryptionKey = encryptionKey, let omemoModule: OMEMOModule = XmppService.instance.getClient(for: item.account)?.modulesManager.getModule(OMEMOModule.ID) {
+                                switch omemoModule.decryptFile(url: localUrl, fragment: encryptionKey) {
+                                case .success(let data):
+                                    try? data.write(to: localUrl);
+                                case .failure(let err):
+                                    break;
+                                }
+                            }
                             //let id = UUID().uuidString;
                             DownloadStore.instance.store(localUrl, filename: filename, with: "\(item.id)");
                             DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in

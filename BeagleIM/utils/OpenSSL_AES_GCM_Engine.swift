@@ -29,7 +29,7 @@ class OpenSSL_AES_GCM_Engine: AES_GCM_Engine {
         
         let ctx = EVP_CIPHER_CTX_new();
         
-        EVP_EncryptInit_ex(ctx, EVP_aes_128_gcm(), nil, nil, nil);
+        EVP_EncryptInit_ex(ctx, key.count == 32 ? EVP_aes_256_gcm() : EVP_aes_128_gcm(), nil, nil, nil);
         EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, Int32(iv.count), nil);
         iv.withUnsafeBytes({ (ivBytes: UnsafeRawBufferPointer) -> Void in
             key.withUnsafeBytes({ (keyBytes: UnsafeRawBufferPointer) -> Void in
@@ -63,7 +63,7 @@ class OpenSSL_AES_GCM_Engine: AES_GCM_Engine {
     func decrypt(iv: Data, key: Data, encoded payload: Data, auth tag: Data?, output: UnsafeMutablePointer<Data>?) -> Bool {
         
         let ctx = EVP_CIPHER_CTX_new();
-        EVP_DecryptInit_ex(ctx, EVP_aes_128_gcm(), nil, nil, nil);
+        EVP_DecryptInit_ex(ctx, key.count == 32 ? EVP_aes_256_gcm() : EVP_aes_128_gcm(), nil, nil, nil);
         EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, Int32(iv.count), nil);
         key.withUnsafeBytes({ (keyBytes) -> Void in
             iv.withUnsafeBytes({ (ivBytes) -> Void in

@@ -122,7 +122,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             
             var type: ItemType = .message;
             if let oob = e.message.oob {
-                if oob == body! {
+                if oob == body! && URL(string: oob) != nil {
                     type = .attachment;
                 }
             }
@@ -200,7 +200,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             
             var type: ItemType = .message;
             if let oob = e.message.oob {
-                if oob == body! {
+                if oob == body!, URL(string: oob) != nil {
                     type = .attachment;
                 }
             }
@@ -236,7 +236,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             
             var type: ItemType = .message;
             if let oob = e.message.oob {
-                if oob == body {
+                if oob == body, URL(string: oob) != nil {
                     type = .attachment;
                 }
             }

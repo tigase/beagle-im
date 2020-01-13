@@ -300,6 +300,37 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         return true;
     }
     
+    override func uploadFileToHttpServerWithErrorHandling(data: Data, filename: String, mimeType: String?, onSuccess: @escaping (AbstractChatViewControllerWithSharing.UploadResult) -> Void) {
+        let encryption: ChatEncryption = (chat as? DBChatStore.DBChat)?.options.encryption ?? .none;
+        switch encryption {
+        case .none:
+            super.uploadFileToHttpServerWithErrorHandling(data: data, filename: filename, mimeType: mimeType, onSuccess: onSuccess);
+        case .omemo:
+            let omemoModule: OMEMOModule = XmppService.instance.getClient(for: chat!.account)!.modulesManager.getModule(OMEMOModule.ID)!;
+            let result = omemoModule.encryptFile(data: data);
+            switch result {
+            case .success(let (encryptedData, hash)):
+                super.uploadFileToHttpServerWithErrorHandling(data: encryptedData, filename: filename, mimeType: mimeType, onSuccess: { uploadResult in
+                    switch uploadResult {
+                    case .success(let url, let filesize, let mimeType):
+                        var parts = URLComponents(url: url, resolvingAgainstBaseURL: true)!;
+                        parts.scheme = "aesgcm";
+                        parts.fragment = hash;
+                        let shareUrl = parts.url!;
+                        
+                        print("sending url:", shareUrl.absoluteString);
+                        onSuccess(.success(url: shareUrl, filesize: filesize, mimeType: mimeType));
+                    case .failure(let error, let errorMessage):
+                        onSuccess(.failure(error: error, errorMessage: errorMessage));
+                    }
+                });
+            case .failure(let err):
+                onSuccess(.failure(error: err, errorMessage: nil));
+            }
+        }
+
+    }
+        
     override func sendAttachment(originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?) -> Bool {
         guard let chat = self.chat as? DBChatStore.DBChat else {
             return false;

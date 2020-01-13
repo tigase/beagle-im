@@ -125,8 +125,15 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         }
     }
     
-    fileprivate func uploadFileToHttpServerWithErrorHandling(url: URL, onSuccess: @escaping (UploadResult)->Void) {
-        uploadFileToHttpServer(url: url) { (result) in
+    func uploadFileToHttpServerWithErrorHandling(url: URL, onSuccess: @escaping (UploadResult)->Void) {
+        let contentType = guessContentType(of: url);
+        let data = try! Data(contentsOf: url);
+        
+        self.uploadFileToHttpServerWithErrorHandling(data: data, filename: url.lastPathComponent, mimeType: contentType, onSuccess: onSuccess);
+    }
+    
+    func uploadFileToHttpServerWithErrorHandling(data: Data, filename: String, mimeType: String?, onSuccess: @escaping (UploadResult)->Void) {
+        uploadFileToHttpServer(data: data, filename: filename, mimeType: mimeType) { (result) in
             switch result {
             case .failure(let error, let errorMessage):
                 DispatchQueue.main.async {
@@ -145,8 +152,7 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         }
     }
     
-    func uploadFileToHttpServer(url: URL, completionHandler: @escaping (UploadResult)->Void) {
-        print("selected file:", url);
+    func uploadFileToHttpServer(data: Data, filename: String, mimeType contentType: String?, completionHandler: @escaping (UploadResult)->Void) {
         guard let uploadModule: HttpFileUploadModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(HttpFileUploadModule.ID) else {
             completionHandler(.failure(error: ErrorCondition.feature_not_implemented, errorMessage: "HttpFileUploadModule not enabled!"));
             return;
@@ -157,12 +163,11 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
             return;
         }
 
-        let attributes = try! FileManager.default.attributesOfItem(atPath: url.path);
-        let filesize = attributes[FileAttributeKey.size] as! UInt64;
+//        let attributes = try! FileManager.default.attributesOfItem(atPath: url.path);
+//        let filesize = attributes[FileAttributeKey.size] as! UInt64;
+        let filesize = data.count;
         
-        let contentType = guessContentType(of: url);
-        
-        uploadModule.requestUploadSlot(componentJid: component.jid, filename: url.lastPathComponent, size: Int(filesize), contentType: contentType, onSuccess: { (slot) in
+        uploadModule.requestUploadSlot(componentJid: component.jid, filename: filename, size: filesize, contentType: contentType, onSuccess: { (slot) in
             DispatchQueue.main.async {
                 self.sharingProgressBar.isHidden = false;
             }
@@ -174,7 +179,7 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
                 request.addValue(contentType!, forHTTPHeaderField: "Content-Type")
             }
             request.httpMethod = "PUT";
-            request.httpBody = try! Data(contentsOf: url);
+            request.httpBody = data;
                 
             let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: OperationQueue.main);
             session.dataTask(with: request, completionHandler: { (data, response, error) in
