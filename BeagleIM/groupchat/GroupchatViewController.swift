@@ -245,7 +245,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                     }
                     c.set(senderName: item.authorNickname ?? "From \(item.jid.stringValue)");
                 }
-                cell.set(message: item);
+                cell.set(message: item, nickname: room.nickname, keywords: keywords);
 
                 return cell;
             }
