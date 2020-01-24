@@ -71,14 +71,22 @@ class ChatCellViewMessage: NSTextField {
         
         let isHighlighted = (self.superview?.superview as? NSTableRowView)?.isSelected ?? false;
         
-        if blured && !isHighlighted {
-            
-            let startingColor = isHighlighted ? NSColor(calibratedWhite: 0.82, alpha: 0.15) : NSColor(named: "sidebarBackgroundColor")!.withAlphaComponent(0.0);
-            let endingColor = isHighlighted ? NSColor(calibratedWhite: 0.82, alpha: 0.15) : NSColor(named: "sidebarBackgroundColor")!.withAlphaComponent(1.0);
-            let gradient = NSGradient(starting: startingColor, ending: endingColor);
+        if blured {
+            if isHighlighted {
+                let startingColor = NSColor(named: "sidebarBackgroundColor")!.blended(withFraction: 0.15, of: NSColor(calibratedWhite: 0.82, alpha: 1.0))!.withAlphaComponent(0.0);
+                let endingColor = NSColor(named: "sidebarBackgroundColor")!.blended(withFraction: 0.15, of: NSColor(calibratedWhite: 0.82, alpha: 1.0))!.withAlphaComponent(1.0);
+                let gradient = NSGradient(starting: startingColor, ending: endingColor);
+                
+                let rect = NSRect(x: dirtyRect.origin.x + dirtyRect.width/2, y: dirtyRect.origin.y, width: dirtyRect.width/2, height: dirtyRect.height);
+                gradient!.draw(in: rect, angle: 0.0);
+            } else {
+                let startingColor = NSColor(named: "sidebarBackgroundColor")!.withAlphaComponent(0.0);
+                let endingColor = NSColor(named: "sidebarBackgroundColor")!.withAlphaComponent(1.0);
+                let gradient = NSGradient(starting: startingColor, ending: endingColor);
         
-            let rect = NSRect(x: dirtyRect.origin.x + dirtyRect.width/2, y: dirtyRect.origin.y, width: dirtyRect.width/2, height: dirtyRect.height);
-            gradient!.draw(in: rect, angle: 0.0);
+                let rect = NSRect(x: dirtyRect.origin.x + dirtyRect.width/2, y: dirtyRect.origin.y, width: dirtyRect.width/2, height: dirtyRect.height);
+                gradient!.draw(in: rect, angle: 0.0);
+            }
         }
     }
     
