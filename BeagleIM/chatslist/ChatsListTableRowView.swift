@@ -25,6 +25,15 @@ class ChatsListTableRowView: NSTableRowView {
     
     fileprivate var highlightColor: NSColor = NSColor(named: "sidebarBackgroundColor")!;
     
+    override var isGroupRowStyle: Bool {
+        set {
+            // nothing to do
+        }
+        get {
+            return false;
+        }
+    }
+    
     override var isSelected: Bool {
         didSet {
             self.highlightColor = isSelected ? NSColor(named: "sidebarBackgroundColor")!.blended(withFraction: 0.15, of: NSColor(calibratedWhite: 0.82, alpha: 1.0))! : NSColor(named: "sidebarBackgroundColor")!;
@@ -51,13 +60,13 @@ class ChatsListTableRowView: NSTableRowView {
         }
     }
     
-    override func layout() {
+//    override func layout() {
 //        let color = highlightColor.usingColorSpaceName(.deviceRGB)!;
 //        print("color:", String(format: "#%02X%02X%02X", Int(color.redComponent * 0xFF), Int(color.greenComponent * 0xFF), Int(color.blueComponent * 0xFF)));
-        self.isGroupRowStyle = false;
-        super.layout();
-        self.invalidateIntrinsicContentSize();
-        super.layout();
-    }
- 
+//        self.isGroupRowStyle = false;
+//        super.layout();
+//        self.invalidateIntrinsicContentSize();
+//        super.layout();
+//    }
+//
 }
