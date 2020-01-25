@@ -71,8 +71,10 @@ class ChatCellView: NSTableCellView {
         self.avatar?.name = name;
     }
     
-    func set(lastActivity: LastChatActivity?, ts: Date?) {
+    func set(lastActivity: LastChatActivity?, ts: Date?, chatState: ChatState) {
+        self.chatState = chatState;
         if chatState != .composing {
+            self.lastMessage?.stopAnimating();
             if let activity = lastActivity {
                 switch activity {
                 case .message(let lastMessage):
@@ -94,9 +96,11 @@ class ChatCellView: NSTableCellView {
             self.lastMessage?.maximumNumberOfLines = 3;
         } else {
             self.lastMessage?.stringValue = "";
+            self.lastMessage?.startAnimating();
         }
         //self.lastMessage?.preferredMaxLayoutWidth = self.lastMessage!.frame.width;
         self.lastMessageTs?.stringValue = ts != nil ? formatTimestamp(ts!) : "";
+        self.lastMessage?.invalidateIntrinsicContentSize();
     }
     
     func set(chatState: ChatState) {
@@ -139,10 +143,7 @@ class ChatCellView: NSTableCellView {
     func update(from item: ChatItemProtocol) {
         self.set(name: item.name);
         self.set(unread: item.unread);
-        if let chat = item.chat as? DBChatStore.DBChat {
-            self.set(chatState: chat.remoteChatState ?? .active);
-        }
-        self.set(lastActivity: item.lastActivity, ts: item.lastMessageTs);
+        self.set(lastActivity: item.lastActivity, ts: item.lastMessageTs, chatState: (item.chat as? DBChatStore.DBChat)?.remoteChatState ?? .active);
         if item.chat is Chat {
             self.avatar.update(for: item.chat.jid.bareJid, on: item.chat.account);
         } else if let room  = item.chat as? Room {

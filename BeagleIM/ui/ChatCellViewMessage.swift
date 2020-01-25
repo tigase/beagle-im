@@ -112,6 +112,9 @@ class ChatCellViewMessage: NSTextField {
     }
     
     func stopAnimating() {
+        guard !dotLayers.isEmpty else {
+            return;
+        }
         dotLayers.forEach { (layer) in
             layer.removeAllAnimations();
         }

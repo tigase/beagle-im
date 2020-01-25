@@ -538,6 +538,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             return;
         }
         
+        // TODO: remove in the next version
         switch id {
         case "authentication-failure":
             guard let _ = BareJID(userInfo["account"] as? String) else {
@@ -628,60 +629,33 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             return;
         }
      
-        let id = "authenticationError.\(accountName.stringValue)";
-        
-        if #available(OSX 10.14, *) {
-            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [id]);
-            
-            let content = UNMutableNotificationContent();
-            content.title = accountName.stringValue;
-            content.subtitle = "Authentication failure";
+        DispatchQueue.main.async {
+            let alert = Alert();
+            alert.messageText = "Authentication failure for \(accountName.stringValue)";
             switch error {
             case .aborted, .temporary_auth_failure:
-                content.body = "Temporary authetnication failure, will retry..";
+                // those are temporary errors and we will retry, so there is no point in notifying user...
+                return;
             case .invalid_mechanism:
-                content.body = "Required authentication mechanism not supported";
+                alert.informativeText = "Required authentication mechanism not supported";
             case .mechanism_too_weak:
-                content.body = "Authentication mechanism is too weak for authentication";
+                alert.informativeText = "Authentication mechanism is too weak for authentication";
             case .incorrect_encoding, .invalid_authzid, .not_authorized:
-                content.body = "Invalid password for account";
+                alert.informativeText = "Invalid password for account";
             case .server_not_trusted:
-                content.body = "It was not possible to verify that server is trusted";
-            }
-            content.sound = UNNotificationSound.defaultCritical;
-            content.userInfo = ["account": accountName.stringValue, "id": "authentication-failure"];
-            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
-            UNUserNotificationCenter.current().add(request) { (error) in
-                print("could not show notification:", error as Any);
-            }
-        } else {
-            // invalidate old auth error notification if there is any
-            NSUserNotificationCenter.default.deliveredNotifications.filter { (n) -> Bool in
-                return n.identifier == id;
-                }.forEach { (n) in
-                    NSUserNotificationCenter.default.removeDeliveredNotification(n);
+                alert.informativeText = "It was not possible to verify that server is trusted";
             }
             
-            let notification = NSUserNotification();
-            notification.identifier = UUID().uuidString;
-            notification.title = accountName.stringValue;
-            notification.subtitle = "Authentication failure";
-            switch error {
-            case .aborted, .temporary_auth_failure:
-                notification.informativeText = "Temporary authetnication failure, will retry..";
-            case .invalid_mechanism:
-                notification.informativeText = "Required authentication mechanism not supported";
-            case .mechanism_too_weak:
-                notification.informativeText = "Authentication mechanism is too weak for authentication";
-            case .incorrect_encoding, .invalid_authzid, .not_authorized:
-                notification.informativeText = "Invalid password for account";
-            case .server_not_trusted:
-                notification.informativeText = "It was not possible to verify that server is trusted";
-            }
-            notification.soundName = NSUserNotificationDefaultSoundName;
-            notification.userInfo = ["account": accountName.stringValue, "id": "authentication-failure"];
-            NSUserNotificationCenter.default.deliver(notification);
-        }
+            alert.icon = NSImage(named: NSImage.cautionName);
+            alert.addButton(withTitle: "OK");
+            alert.run(completionHandler: { response in
+                guard let windowController = (NSApplication.shared.delegate as? AppDelegate)?.preferencesWindowController else {
+                    return;
+                }
+                (windowController.contentViewController as? NSTabViewController)?.selectedTabViewItemIndex = 1;
+                windowController.showWindow(self);
+            })
+        }        
     }
     
     @objc func chatUpdated(_ notification: Notification) {
@@ -820,26 +794,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @objc func serverCertificateError(_ notification: Notification) {
         guard let accountName = notification.object as? BareJID else {
             return;
-        }
-        
-        if #available(OSX 10.14, *) {
-            let content = UNMutableNotificationContent();
-            content.title = "Unknown SSL certificate";
-            content.subtitle = "SSL certificate could not be verified.";
-            content.body = "Account \(accountName) was disabled.";
-            content.sound = UNNotificationSound.defaultCritical;
-            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
-            UNUserNotificationCenter.current().add(request) { (error) in
-                print("could not show notification:", error as Any);
-            }
-        } else {
-            let notification = NSUserNotification();
-            notification.identifier = UUID().uuidString;
-            notification.title = "Unknown SSL certificate";
-            notification.subtitle = "SSL certificate could not be verified.";
-            notification.informativeText = "Account \(accountName) was disabled.";
-            notification.soundName = NSUserNotificationDefaultSoundName;
-            NSUserNotificationCenter.default.deliver(notification);
         }
         
         DispatchQueue.main.async {

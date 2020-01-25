@@ -128,29 +128,33 @@ class MucEventHandler: XmppServiceEventHandler {
             }
             print("received error from room:", e.room as Any, ", error:", error)
             
-            if #available(OSX 10.14, *) {
-                let content = UNMutableNotificationContent();
-                content.title = "Room \(e.room.roomJid.stringValue)";
-                content.body = "Could not join room. Reason:\n\(error.reason)";
-                content.sound = UNNotificationSound.defaultCritical;
-                if error != .banned && error != .registrationRequired {
-                    content.userInfo = ["account": e.sessionObject.userBareJid!.stringValue, "roomJid": e.room.roomJid.stringValue, "nickname": e.room.nickname, "id": "room-join-error"];
-                }
-                let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
-                UNUserNotificationCenter.current().add(request) { (error) in
-                    print("could not show notification:", error as Any);
-                }
-            } else {
-                let notification = NSUserNotification();
-                notification.identifier = UUID().uuidString;
-                notification.title = "Room \(e.room.roomJid.stringValue)";
-                notification.informativeText = "Could not join room. Reason:\n\(error.reason)";
-                notification.soundName = NSUserNotificationDefaultSoundName;
-                notification.contentImage = NSImage(named: NSImage.userGroupName);
-                if error != .banned && error != .registrationRequired {
-                    notification.userInfo = ["account": e.sessionObject.userBareJid!.stringValue, "roomJid": e.room.roomJid.stringValue, "nickname": e.room.nickname, "id": "room-join-error"];
-                }
-                NSUserNotificationCenter.default.deliver(notification);
+            DispatchQueue.main.async {
+                let alert = Alert();
+                alert.messageText = "Room \(e.room.roomJid.stringValue)";
+                alert.informativeText = "Could not join room. Reason:\n\(error.reason)";
+                alert.icon = NSImage(named: NSImage.userGroupName);
+                alert.addButton(withTitle: "OK");
+                alert.run(completionHandler: { response in
+                    if error != .banned && error != .registrationRequired {
+                        let storyboard = NSStoryboard(name: "Main", bundle: nil);
+                        guard let windowController = storyboard.instantiateController(withIdentifier: "OpenGroupchatController") as? NSWindowController else {
+                            return;
+                        }
+                        guard let openRoomController = windowController.contentViewController as? OpenGroupchatController else {
+                            return;
+                        }
+                        let roomJid = e.room.roomJid;
+                        openRoomController.searchField.stringValue = roomJid.stringValue;
+                        openRoomController.mucJids = [BareJID(roomJid.domain)];
+                        openRoomController.account = e.sessionObject.userBareJid!;
+                        openRoomController.nicknameField.stringValue = e.room.nickname;
+                        guard let window = (NSApplication.shared.delegate as? AppDelegate)?.mainWindowController?.window else {
+                            return;
+                        }
+                        window.windowController?.showWindow(self);
+                        window.beginSheet(windowController.window!, completionHandler: nil);
+                    }
+                })
             }
 
             guard let mucModule: MucModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(MucModule.ID) else {
