@@ -70,7 +70,7 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
         }
         DBChatHistoryStore.instance.searchHistory(search: searchField.stringValue) { (items) in
             DispatchQueue.main.async {
-                self.items = items;
+                self.items = items.filter({ it -> Bool in it is ChatMessage });
             }
         }
     }
