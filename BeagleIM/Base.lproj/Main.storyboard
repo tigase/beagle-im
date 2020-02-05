@@ -723,7 +723,7 @@ CA
                                             <tableColumns>
                                                 <tableColumn identifier="ITEM1" editable="NO" width="304" minWidth="40" maxWidth="4000" id="DEA-O0-PQ6">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="justified">
-                                                        <font key="font" metaFont="label" size="11"/>
+                                                        <font key="font" metaFont="message" size="11"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                     </tableHeaderCell>
@@ -947,7 +947,7 @@ CA
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="249" translatesAutoresizingMaskIntoConstraints="NO" id="c6x-4d-M5h">
                                             <rect key="frame" x="159" y="38" width="81" height="14"/>
                                             <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="kobit@tigase.org" id="gde-5T-n8j">
-                                                <font key="font" metaFont="label" size="11"/>
+                                                <font key="font" metaFont="message" size="11"/>
                                                 <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
@@ -967,8 +967,8 @@ AAAAAAEGA
 </mutableData>
                                                 </caTransition>
                                             </animations>
-                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="justified" title="Label" id="BoY-8I-sGR">
-                                                <font key="font" metaFont="label" size="11"/>
+                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="Label" id="BoY-8I-sGR">
+                                                <font key="font" metaFont="message" size="11"/>
                                                 <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
@@ -3395,7 +3395,7 @@ Gw
                                             </textFieldCell>
                                         </textField>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="450" horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="w1S-5v-cY4" customClass="ChatViewStatusView" customModule="BeagleIM" customModuleProvider="target">
-                                            <rect key="frame" x="64" y="4" width="325" height="30"/>
+                                            <rect key="frame" x="64" y="4" width="417" height="30"/>
                                             <animations>
                                                 <caTransition key="subviews">
                                                     <mutableData key="keyedArchiveRepresentation">
@@ -3409,7 +3409,7 @@ AAAAAAEGA
 </mutableData>
                                                 </caTransition>
                                             </animations>
-                                            <textFieldCell key="cell" truncatesLastVisibleLine="YES" sendsActionOnEndEditing="YES" alignment="justified" title="Label" id="yE1-5x-RKG">
+                                            <textFieldCell key="cell" truncatesLastVisibleLine="YES" sendsActionOnEndEditing="YES" alignment="left" title="Label" id="yE1-5x-RKG">
                                                 <font key="font" metaFont="message" size="11"/>
                                                 <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -3496,6 +3496,7 @@ AAAAAAEGA
                                         <constraint firstItem="pxt-na-aFe" firstAttribute="leading" secondItem="ZD0-29-6Ph" secondAttribute="trailing" constant="8" id="1Ne-24-ypp"/>
                                         <constraint firstItem="ZD0-29-6Ph" firstAttribute="leading" secondItem="zzQ-jt-v2u" secondAttribute="trailing" constant="10" id="1pO-bI-xgg"/>
                                         <constraint firstItem="w1S-5v-cY4" firstAttribute="top" secondItem="ZD0-29-6Ph" secondAttribute="bottom" constant="4" id="2zE-HP-g7u"/>
+                                        <constraint firstItem="w1S-5v-cY4" firstAttribute="top" secondItem="JOG-WH-1Aj" secondAttribute="bottom" id="4Lq-7e-SCH"/>
                                         <constraint firstItem="zzQ-jt-v2u" firstAttribute="top" secondItem="8J8-dt-vbv" secondAttribute="top" constant="18" id="9em-Bc-5EM"/>
                                         <constraint firstItem="JOG-WH-1Aj" firstAttribute="bottom" secondItem="7xK-y9-tDx" secondAttribute="bottom" id="CRP-Sb-7rO"/>
                                         <constraint firstItem="mMG-Ae-wje" firstAttribute="width" secondItem="8J8-dt-vbv" secondAttribute="width" id="Djz-4j-WR9"/>
@@ -3509,11 +3510,11 @@ AAAAAAEGA
                                         <constraint firstAttribute="trailing" secondItem="mMG-Ae-wje" secondAttribute="trailing" id="Ykc-Ah-Njg"/>
                                         <constraint firstItem="zzQ-jt-v2u" firstAttribute="leading" secondItem="8J8-dt-vbv" secondAttribute="leading" constant="8" id="afR-8C-RVh"/>
                                         <constraint firstItem="pxt-na-aFe" firstAttribute="baseline" secondItem="ZD0-29-6Ph" secondAttribute="baseline" id="b5y-dH-7AP"/>
-                                        <constraint firstItem="7xK-y9-tDx" firstAttribute="leading" secondItem="w1S-5v-cY4" secondAttribute="trailing" constant="8" id="bRD-bc-llT"/>
                                         <constraint firstItem="ZD0-29-6Ph" firstAttribute="top" secondItem="8J8-dt-vbv" secondAttribute="top" constant="18" id="cKR-gJ-8ez"/>
                                         <constraint firstItem="7xK-y9-tDx" firstAttribute="leading" secondItem="Sra-s5-1zD" secondAttribute="trailing" constant="4" id="fRS-SU-zAa"/>
                                         <constraint firstItem="Sra-s5-1zD" firstAttribute="height" secondItem="7xK-y9-tDx" secondAttribute="height" constant="-2" id="hcb-Uz-Zrl"/>
                                         <constraint firstAttribute="bottom" secondItem="mMG-Ae-wje" secondAttribute="bottom" id="kGJ-8G-7ca"/>
+                                        <constraint firstItem="w1S-5v-cY4" firstAttribute="trailing" secondItem="JOG-WH-1Aj" secondAttribute="trailing" id="kNI-Wh-O2c"/>
                                         <constraint firstAttribute="trailing" secondItem="JOG-WH-1Aj" secondAttribute="trailing" constant="10" id="l8e-Ch-Kzw"/>
                                         <constraint firstItem="JOG-WH-1Aj" firstAttribute="leading" secondItem="aLG-u7-09c" secondAttribute="trailing" id="q79-pu-Ege"/>
                                         <constraint firstItem="aLG-u7-09c" firstAttribute="width" secondItem="7xK-y9-tDx" secondAttribute="width" id="uaZ-Ht-ZIy"/>
