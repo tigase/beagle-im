@@ -145,7 +145,19 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     }
     
     func itemChanged(item: Any?) {
-        outlineView.reloadItem(item);
+        if #available(macOS 10.15, *) {
+            outlineView.reloadItem(item);
+        } else {
+            let row = outlineView.row(forItem: item);
+            guard row == 0 || row > 0 else {
+                return;
+            }
+            let view = outlineView.view(atColumn: 0, row: row, makeIfNecessary: false);
+            // maybe we should update view?
+            if let v = view as? ChatCellView, let i = item as? ChatItemProtocol {
+                v.update(from: i);
+            }
+        }
     }
     
     @IBAction func openNewChatClicked(_ sender: NSButton) {
