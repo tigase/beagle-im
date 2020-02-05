@@ -188,7 +188,7 @@ class DBChatHistoryStore {
                 }
             }
             if item != nil {
-                DBChatStore.instance.newMessage(for: account, with: jid, timestamp: timestamp, itemType: type, message: encryption.message() ?? data, state: state, remoteChatState: state.direction == .incoming ? chatState : nil) {
+                DBChatStore.instance.newMessage(for: account, with: jid, timestamp: timestamp, itemType: type, message: encryption.message() ?? data, state: state, remoteChatState: state.direction == .incoming ? chatState : nil, senderNickname: authorNickname) {
                     NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: item);
                 }
             }

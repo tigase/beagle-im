@@ -77,23 +77,42 @@ class ChatCellView: NSTableCellView {
             self.lastMessage?.stopAnimating();
             if let activity = lastActivity {
                 switch activity {
-                case .message(let lastMessage):
+                case .message(let lastMessage, let sender):
                     let msg = NSMutableAttributedString(string: lastMessage);
                     if Settings.enableMarkdownFormatting.bool() {
                         Markdown.applyStyling(attributedString: msg, showEmoticons: Settings.showEmoticons.bool());
                     }
-                    self.lastMessage?.attributedStringValue = msg;
-                case .attachment(let url):
-                    if let fieldfont = self.lastMessage?.font {
-                        self.lastMessage?.attributedStringValue = NSAttributedString(string: "📎 ATTACHMENT", attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask]), .foregroundColor: self.lastMessage.textColor!.withAlphaComponent(0.8)]);
+                    if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                        prefix.append(msg);
+                        self.lastMessage?.attributedStringValue = prefix;
                     } else {
-                        self.lastMessage?.attributedStringValue = NSAttributedString(string: "📎 ATTACHMENT", attributes: [.foregroundColor: self.lastMessage.textColor!.withAlphaComponent(0.8)]);
+                        self.lastMessage?.attributedStringValue = msg;
+                    }
+                case .attachment(let url, let sender):
+                    if let fieldfont = self.lastMessage?.font {
+                        let msg = NSAttributedString(string: "📎 Attachment", attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask, .boldFontMask]), .foregroundColor: self.lastMessage.textColor!.withAlphaComponent(0.8)]);
+
+                        if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                            prefix.append(msg);
+                            self.lastMessage?.attributedStringValue = prefix;
+                        } else {
+                            self.lastMessage?.attributedStringValue = msg;
+                        }
+                    } else {
+                        let msg = NSAttributedString(string: "📎 Attachment", attributes: [.foregroundColor: self.lastMessage.textColor!.withAlphaComponent(0.8)]);
+                        
+                        if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                            prefix.append(msg);
+                            self.lastMessage?.attributedStringValue = prefix;
+                        } else {
+                            self.lastMessage?.attributedStringValue = msg;
+                        }
                     }
                 }
             } else {
                 self.lastMessage?.stringValue = "";
             }
-            self.lastMessage?.maximumNumberOfLines = 3;
+            self.lastMessage?.maximumNumberOfLines = 2;
         } else {
             self.lastMessage?.stringValue = "";
             self.lastMessage?.startAnimating();

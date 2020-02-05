@@ -87,8 +87,8 @@ open class DBChatStore {
     fileprivate static let OPEN_CHAT = "INSERT INTO chats (account, jid, timestamp, type) VALUES (:account, :jid, :timestamp, :type)";
     fileprivate static let OPEN_ROOM = "INSERT INTO chats (account, jid, timestamp, type, nickname, password) VALUES (:account, :jid, :timestamp, :type, :nickname, :password)";
     fileprivate static let CLOSE_CHAT = "DELETE FROM chats WHERE id = :id";
-    fileprivate static let LOAD_CHATS = "SELECT c.id, c.type, c.jid, c.name, c.nickname, c.password, c.timestamp as creation_timestamp, last.timestamp as timestamp, last1.item_type, last1.data, last1.encryption as lastEncryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))) as unread, c.options FROM chats c LEFT JOIN (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) GROUP BY ch.account, ch.jid) last ON c.jid = last.jid AND c.account = last.account LEFT JOIN chat_history last1 ON last1.account = c.account AND last1.jid = c.jid AND last1.timestamp = last.timestamp AND last1.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) WHERE c.account = :account";
-    fileprivate static let GET_LAST_MESSAGE = "SELECT last.timestamp as timestamp, last1.item_type, last1.data, last1.encryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))) as unread FROM (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.jid = :jid AND ch.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) GROUP BY ch.account, ch.jid) last LEFT JOIN chat_history last1 ON last1.account = last.account AND last1.jid = last.jid AND last1.timestamp = last.timestamp AND last1.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))";
+    fileprivate static let LOAD_CHATS = "SELECT c.id, c.type, c.jid, c.name, c.nickname, c.password, c.timestamp as creation_timestamp, last.timestamp as timestamp, last1.item_type, last1.data, last1.encryption as lastEncryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))) as unread, c.options, last1.author_nickname FROM chats c LEFT JOIN (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) GROUP BY ch.account, ch.jid) last ON c.jid = last.jid AND c.account = last.account LEFT JOIN chat_history last1 ON last1.account = c.account AND last1.jid = c.jid AND last1.timestamp = last.timestamp AND last1.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) WHERE c.account = :account";
+    fileprivate static let GET_LAST_MESSAGE = "SELECT last.timestamp as timestamp, last1.item_type, last1.data, last1.encryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))) as unread, last1.author_nickname FROM (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.jid = :jid AND ch.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) GROUP BY ch.account, ch.jid) last LEFT JOIN chat_history last1 ON last1.account = last.account AND last1.jid = last.jid AND last1.timestamp = last.timestamp AND last1.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))";
     fileprivate static let GET_LAST_MESSAGE_TIMESTAMP_FOR_ACCOUNT = "SELECT max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.state <> \(MessageState.outgoing_unsent.rawValue)";
     fileprivate static let UPDATE_CHAT_NAME = "UPDATE chats SET name = :name WHERE account = :account AND jid = :jid";
     fileprivate static let UPDATE_CHAT_OPTIONS = "UPDATE chats SET options = ? WHERE account = ? AND jid = ?";
@@ -256,10 +256,10 @@ open class DBChatStore {
         }
     }
     
-    func newMessage(for account: BareJID, with jid: BareJID, timestamp: Date, itemType: ItemType?, message: String?, state: MessageState, remoteChatState: ChatState? = nil, completionHandler: @escaping ()->Void) {
+    func newMessage(for account: BareJID, with jid: BareJID, timestamp: Date, itemType: ItemType?, message: String?, state: MessageState, remoteChatState: ChatState? = nil, senderNickname: String? = nil, completionHandler: @escaping ()->Void) {
         dispatcher.async {
             if let chat = self.getChat(for: account, with: jid) {
-                let lastActivity = LastChatActivity.from(itemType: itemType, data: message);
+                let lastActivity = LastChatActivity.from(itemType: itemType, data: message, sender: senderNickname);
                 if chat.updateLastActivity(lastActivity, timestamp: timestamp, isUnread: state.isUnread) {
                     if state.isUnread && !self.isMuted(chat: chat) {
                         self.unreadMessagesCount = self.unreadMessagesCount + 1;
@@ -371,16 +371,17 @@ open class DBChatStore {
             let params: [String: Any?] = ["account": account, "jid": jid];
             return try! self.getLastMessageStmt.queryFirstMatching(params) { cursor in
                 let encryption = MessageEncryption(rawValue: cursor["encryption"] ?? 0) ?? .none;
+                let authorNickname: String? = cursor["author_nickname"];
                 switch encryption {
                 case .decrypted, .none:
                     if let itemType: Int = cursor["item_type"] {
-                        return LastChatActivity.from(itemType: ItemType(rawValue: itemType), data: cursor["data"]);
+                        return LastChatActivity.from(itemType: ItemType(rawValue: itemType), data: cursor["data"], sender: authorNickname);
                     } else {
                         return nil;
                     }
                 default:
                     if let message = encryption.message() {
-                        return .message(message);
+                        return .message(message, sender: nil);
                     } else {
                         return nil;
                     }
@@ -405,7 +406,7 @@ open class DBChatStore {
                 let lastMessageEncryption = MessageEncryption(rawValue: cursor["lastEncryption"] ?? 0) ?? .none;
                 var lastActivity: LastChatActivity?;
                 if let itemType: Int = cursor["item_type"] {
-                    lastActivity = LastChatActivity.from(itemType: ItemType(rawValue: itemType), data: lastMessageEncryption.message() ?? cursor["data"]);
+                    lastActivity = LastChatActivity.from(itemType: ItemType(rawValue: itemType), data: lastMessageEncryption.message() ?? cursor["data"], sender: cursor["author_nickname"]);
                 }
                 let unread: Int = cursor["unread"]!;
                 let optionsStr: String? = cursor["options"];
@@ -823,18 +824,18 @@ protocol DBChatProtocol: ChatProtocol {
 }
 
 enum LastChatActivity {
-    case message(String)
-    case attachment(String)
+    case message(String, sender: String?)
+    case attachment(String, sender: String?)
     
-    static func from(itemType: ItemType?, data: String?) -> LastChatActivity? {
+    static func from(itemType: ItemType?, data: String?, sender: String?) -> LastChatActivity? {
         guard itemType != nil else {
             return nil;
         }
         switch itemType! {
         case .message:
-            return data == nil ? nil : .message(data!);
+            return data == nil ? nil : .message(data!, sender: sender);
         case .attachment:
-            return data == nil ? nil : .attachment(data!);
+            return data == nil ? nil : .attachment(data!, sender: sender);
         case .linkPreview:
             return nil;
         }
