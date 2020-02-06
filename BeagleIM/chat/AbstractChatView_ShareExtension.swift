@@ -184,16 +184,35 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
             let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: OperationQueue.main);
             session.dataTask(with: request, completionHandler: { (data, response, error) in
                 let code = ((response as? HTTPURLResponse)?.statusCode ?? 500);
-                guard error == nil && code == 201 else {
+                guard error == nil && (code == 201 || code == 200) else {
                     print("received HTTP error response", error as Any, code);
                     self.sharingProgressBar.isHidden = true;
                     completionHandler(.failure(error: ErrorCondition.internal_server_error, errorMessage: "Could not upload data to the HTTP server" + (error == nil ? "" : (":\n" + error!.localizedDescription))));
                     return;
                 }
-                    
-                print("file uploaded at:", slot.getUri);
+                
                 self.sharingProgressBar.isHidden = true;
-                completionHandler(.success(url: slot.getUri, filesize: Int64(filesize), mimeType: contentType));
+                if code == 200 {
+                    if let window = self.view.window {
+                        let alert = NSAlert();
+                        alert.icon = NSImage(named: NSImage.cautionName);
+                        alert.messageText = "Warning";
+                        alert.informativeText = "File upload completed but it was not confirmed correctly by your server. Do you wish to proceed anyway?";
+                        alert.addButton(withTitle: "Yes");
+                        alert.addButton(withTitle: "No");
+                        alert.beginSheetModal(for: window, completionHandler: { result in
+                            switch result {
+                            case NSApplication.ModalResponse.alertFirstButtonReturn:
+                                completionHandler(.success(url: slot.getUri, filesize: Int64(filesize), mimeType: contentType));
+                            default:
+                                break;
+                            }
+                        })
+                    }
+                } else {
+                    print("file uploaded at:", slot.getUri);
+                    completionHandler(.success(url: slot.getUri, filesize: Int64(filesize), mimeType: contentType));
+                }
             }).resume();
         }, onError: { (errorCondition, errorText) in
             print("failedd to allocate slot:", errorCondition as Any, errorText as Any);
