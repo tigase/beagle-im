@@ -328,13 +328,20 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     func textView(_ textView: NSTextView, completions words: [String], forPartialWordRange charRange: NSRange, indexOfSelectedItem index: UnsafeMutablePointer<Int>?) -> [String] {
         
         let tmp = textView.string;
-        let start = tmp.index(tmp.startIndex, offsetBy: charRange.lowerBound);
-        let end = tmp.index(tmp.startIndex, offsetBy: charRange.upperBound);
-        let query = textView.string[start..<end].uppercased();
+        let utf16 = tmp.utf16;
+        let start = utf16.index(utf16.startIndex, offsetBy: charRange.lowerBound);
+        let end = utf16.index(utf16.startIndex, offsetBy: charRange.upperBound);
+        guard let query = String(utf16[start..<end])?.uppercased() else {
+            return [];
+        }
         
-        print("tmp:", tmp, "start:", start, "end:", end, "query:", query);
+//        let start = tmp.index(tmp.startIndex, offsetBy: charRange.lowerBound);
+//        let end = tmp.index(tmp.startIndex, offsetBy: charRange.upperBound);
+//        let query = textView.string[start..<end].uppercased();
         
-        guard start != tmp.startIndex, tmp[tmp.index(before: start)] == "@" else {
+        print("tmp:", tmp, "start:", start, "startIndex:", "end:", end, "query:", query);
+        
+        guard start != utf16.startIndex, utf16[utf16.index(before: start)] == ("@" as NSString).character(at: 0) else {
             return [];
         }
         
