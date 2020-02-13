@@ -36,7 +36,7 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
     override func viewDidLoad() {
         super.viewDidLoad();
         NotificationCenter.default.addObserver(self, selector: #selector(accountChanged), name: AccountManager.ACCOUNT_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(accountStatusChanged), name: XmppService.STATUS_CHANGED, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(accountStatusChanged), name: XmppService.ACCOUNT_STATUS_CHANGED, object: nil)
     }
     
     override func viewWillAppear() {
@@ -104,12 +104,14 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
     }
     
     @objc func accountStatusChanged(_ notification: Notification) {
+        guard let account = notification.object as? BareJID else {
+            return;
+        }
         DispatchQueue.main.async {
-            let selectedRow = self.tableView?.selectedRow;
-            self.refreshAccounts();
-            if selectedRow != nil {
-                self.tableView?.selectRowIndexes(IndexSet(integer: selectedRow!), byExtendingSelection: false);
+            guard let idx = self.accounts.index(of: account) else {
+                return;
             }
+            self.tableView?.reloadData(forRowIndexes: IndexSet(integer: idx), columnIndexes: IndexSet(integer: 0));
         }
     }
     

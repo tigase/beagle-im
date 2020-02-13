@@ -28,6 +28,7 @@ class XmppService: EventHandler {
     static let AUTHENTICATION_ERROR = Notification.Name("authenticationError");
     static let CONTACT_PRESENCE_CHANGED = Notification.Name("contactPresenceChanged");
     static let STATUS_CHANGED = Notification.Name("statusChanged");
+    static let ACCOUNT_STATUS_CHANGED = Notification.Name("accountStatusChanged");
     static let SERVER_CERTIFICATE_ERROR = Notification.Name("serverCertificateError");
     
     static let instance = XmppService();
@@ -114,7 +115,9 @@ class XmppService: EventHandler {
     
     fileprivate(set) var currentStatus: Status = Status(show: nil, message: nil) {
         didSet {
-            NotificationCenter.default.post(name: XmppService.STATUS_CHANGED, object: currentStatus);
+            if oldValue != currentStatus {
+                NotificationCenter.default.post(name: XmppService.STATUS_CHANGED, object: currentStatus);
+            }
         }
     }
     
@@ -182,12 +185,14 @@ class XmppService: EventHandler {
     
     func handle(event: Event) {
         switch event {
-        case is StreamManagementModule.ResumedEvent:
+        case let e as StreamManagementModule.ResumedEvent:
             updateCurrentStatus();
+            NotificationCenter.default.post(name: XmppService.ACCOUNT_STATUS_CHANGED, object: e.sessionObject.userBareJid);
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
             //test(e.sessionObject);
             print("account", e.sessionObject.userBareJid!, "is now connected!");
             self.updateCurrentStatus();
+            NotificationCenter.default.post(name: XmppService.ACCOUNT_STATUS_CHANGED, object: e.sessionObject.userBareJid);
             break;
         case let e as AuthModule.AuthFailedEvent:
             guard let accountName = e.sessionObject.userBareJid else {
@@ -219,7 +224,8 @@ class XmppService: EventHandler {
         case let e as SocketConnector.DisconnectedEvent:
             print("##### \(e.sessionObject.userBareJid!.stringValue) - disconnected", Date());
             updateCurrentStatus();
-            
+            NotificationCenter.default.post(name: XmppService.ACCOUNT_STATUS_CHANGED, object: e.sessionObject.userBareJid);
+
             let accountName = e.sessionObject.userBareJid!;
             self.dispatcher.sync {
                 let active = AccountManager.getAccount(for: accountName)?.active
@@ -429,7 +435,17 @@ class XmppService: EventHandler {
         }
     }
     
-    class Status: CustomDictionaryConvertible {
+    class Status: CustomDictionaryConvertible, Equatable {
+        static func == (lhs: XmppService.Status, rhs: XmppService.Status) -> Bool {
+            if (lhs.show == nil && rhs.show == nil) {
+                return (lhs.message ?? "") == (rhs.message ?? "");
+            } else if let ls = lhs.show, let rs = rhs.show {
+                return ls == rs && (lhs.message ?? "") == (rhs.message ?? "");
+            } else {
+                return false;
+            }
+        }
+        
         let show: Presence.Show?;
         let message: String?;
         

@@ -32,6 +32,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
             if account == nil {
                 self.vcard = VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"))!;
             } else {
+                self.isEnabled = false;
                 DBVCardStore.instance.vcard(for: account!) { (vcard) in
                     DispatchQueue.main.async {
                         self.vcard = vcard ?? VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"))!;
