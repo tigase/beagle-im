@@ -56,7 +56,9 @@ class Alert {
         let windowController = NSStoryboard(name: "Main", bundle: nil).instantiateController(withIdentifier: "AlertWindowController") as! NSWindowController;
         let controller = windowController.contentViewController as! AlertViewController;
         controller.view.setFrameSize(NSSize(width: 420, height: 60.0));
-        
+        if let title = self.messageText {
+            controller.title = title;
+        }
         controller.iconView.image = icon ?? NSImage(named: NSImage.applicationIconName);
         controller.messageTextField.stringValue = messageText ?? "";
         controller.informativeTextField.stringValue = informativeText ?? "";
@@ -91,8 +93,6 @@ class Alert {
         
         windowController.showWindow(self);
         windowController.window?.makeKeyAndOrderFront(nil);
-        
-        NSSpeechSynthesizer().startSpeaking(messageText ?? "");
     }
     
     enum Item {

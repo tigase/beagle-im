@@ -575,6 +575,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 break;
             }
             NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: nil, userInfo: ["account": account, "jid": jid]);
+        case "presence-subscription-request", "muc-invitation":
+            self.makeMainWindowKey();
+            InvitationManager.instance.handle(invitationWithId: response.notification.request.identifier, window: self.mainWindowController!.window!);
         default:
             break;
         }

@@ -88,9 +88,15 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     @IBOutlet var outlineView: ChatsListView!;
     
     var groups: [ChatsListGroupProtocol] = [];
+    
+    var invitationGroup: InvitationGroup?;
 
     override func viewDidLoad() {
         self.groups = [ChatsListGroupGroupchat(delegate: self), ChatsListGroupChat(delegate: self), ChatsListGroupChatUnknown(delegate: self)];
+        self.invitationGroup = InvitationGroup(delegate: self, items: InvitationManager.instance.items);
+        if !InvitationManager.instance.items.isEmpty {
+            self.groups.insert(invitationGroup!, at: 0);
+        }
         outlineView.reloadData();
 //        outlineView.expandItem(nil, expandChildren: true);
         
@@ -116,7 +122,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     
     func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
         if let group = item as? ChatsListGroupProtocol {
-            return group.getChat(at: index)!;
+            return group.getItem(at: index)!;
         }
         return groups[index];
     }
@@ -168,12 +174,17 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         
         print("clicked button for", group.name);
         
-        if groups.firstIndex(where: { it -> Bool in return it.name == group.name}) == 0 {
+        guard let item = groups.first(where: { it -> Bool in
+            return it.name == group.name;
+        }) else {
+            return;
+        }
+        if item is ChatsListGroupGroupchat {
             guard let windowController = storyboard?.instantiateController(withIdentifier: "OpenGroupchatController") as? NSWindowController else {
                 return;
             }
             view.window?.beginSheet(windowController.window!, completionHandler: nil);
-        } else {
+        } else if item is ChatsListGroupChat {
             guard let windowController = storyboard?.instantiateController(withIdentifier: "Open1On1ChatController") as? NSWindowController else {
                 return;
             }
@@ -264,6 +275,9 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         if item is GroupchatItem {
             return true;
         }
+        if item is InvitationItem {
+            return true;
+        }
         return false;
     }
     
@@ -309,12 +323,15 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                     splitController.removeSplitViewItem(splitController.splitViewItems[1]);
                     splitController.addSplitViewItem(item);
                 }
-            } else if item == nil {
+            } else {
                 let controller = self.storyboard!.instantiateController(withIdentifier: "EmptyViewController") as! NSViewController;
                 if splitController.splitViewItems.count > 1 {
                     splitController.removeSplitViewItem(splitController.splitViewItems[1]);
                 }
                 splitController.addSplitViewItem(NSSplitViewItem(viewController: controller));
+                if let invitation = item as? InvitationItem {
+                    InvitationManager.instance.handle(invitation: invitation, window: self.view.window!);
+                }
             }
         }
     }
@@ -345,6 +362,14 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 self.close(chat: chat);
             }
             view?.setMouseHovers(false);
+            view?.layout();
+            return view;
+        } else if let invitation = item as? InvitationItem {
+            let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("InvitationCellView"), owner: self) as? InvitationCellView;
+            view?.avatar.image = AvatarManager.instance.avatar(for: invitation.jid.bareJid, on: invitation.account) ?? AvatarManager.instance.defaultAvatar;
+            view?.label.stringValue = XmppService.instance.getClient(for: invitation.account)?.rosterStore?.get(for: invitation.jid)?.name ?? invitation.jid.stringValue;
+            view?.message.maximumNumberOfLines = 2;
+            view?.message.stringValue = invitation.name;
             view?.layout();
             return view;
         }

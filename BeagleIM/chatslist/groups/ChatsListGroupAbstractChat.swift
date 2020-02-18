@@ -65,7 +65,7 @@ class ChatsListGroupAbstractChat<I: DBChatProtocol>: ChatsListGroupProtocol {
         return nil;
     }
     
-    func getChat(at index: Int) -> ChatItemProtocol? {
+    func getItem(at index: Int) -> ChatsListItemProtocol? {
         return items[index];
     }
     

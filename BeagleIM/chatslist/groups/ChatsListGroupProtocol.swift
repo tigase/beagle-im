@@ -30,9 +30,13 @@ protocol ChatsListGroupProtocol {
     
     var canOpenChat: Bool { get }
     
-    func getChat(at: Int) -> ChatItemProtocol?;
+    func getItem(at: Int) -> ChatsListItemProtocol?;
     
     func forChat(_ chat: DBChatProtocol, execute: @escaping (ChatItemProtocol)->Void);
     
     func forChat(account: BareJID, jid: BareJID, execute: @escaping (ChatItemProtocol)->Void);
+}
+
+protocol ChatsListItemProtocol {
+    var name: String { get }
 }

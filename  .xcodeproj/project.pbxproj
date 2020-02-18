@@ -10,6 +10,10 @@
 		FE02DD11225B8D1100FA08EB /* db-schema-3.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE02DD10225B8D1100FA08EB /* db-schema-3.sql */; };
 		FE02DD13225BC33F00FA08EB /* DBOMEMOStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE02DD12225BC33F00FA08EB /* DBOMEMOStore.swift */; };
 		FE0C817F2257B48400948C41 /* Settings.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEDC03172257B2B400F24BF4 /* Settings.storyboard */; };
+		FE10BCE923FAA47800E214F3 /* InvitationGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCE823FAA47800E214F3 /* InvitationGroup.swift */; };
+		FE10BCEB23FAA60A00E214F3 /* InvitationItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCEA23FAA60A00E214F3 /* InvitationItem.swift */; };
+		FE10BCED23FAA86900E214F3 /* InvitationCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCEC23FAA86900E214F3 /* InvitationCellView.swift */; };
+		FE10BCEF23FAB13800E214F3 /* InvitationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCEE23FAB13800E214F3 /* InvitationsManager.swift */; };
 		FE137A4621F5FE05006B7F7C /* ShowMainWindowSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4521F5FE05006B7F7C /* ShowMainWindowSegue.swift */; };
 		FE149D8222A5120300EE4E03 /* SearchHistory.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE149D8122A5120300EE4E03 /* SearchHistory.storyboard */; };
 		FE149D8522A515C900EE4E03 /* SearchHistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE149D8422A515C900EE4E03 /* SearchHistoryController.swift */; };
@@ -198,6 +202,10 @@
 /* Begin PBXFileReference section */
 		FE02DD10225B8D1100FA08EB /* db-schema-3.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-3.sql"; sourceTree = "<group>"; };
 		FE02DD12225BC33F00FA08EB /* DBOMEMOStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBOMEMOStore.swift; sourceTree = "<group>"; };
+		FE10BCE823FAA47800E214F3 /* InvitationGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationGroup.swift; sourceTree = "<group>"; };
+		FE10BCEA23FAA60A00E214F3 /* InvitationItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationItem.swift; sourceTree = "<group>"; };
+		FE10BCEC23FAA86900E214F3 /* InvitationCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationCellView.swift; sourceTree = "<group>"; };
+		FE10BCEE23FAB13800E214F3 /* InvitationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationsManager.swift; sourceTree = "<group>"; };
 		FE137A4521F5FE05006B7F7C /* ShowMainWindowSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowMainWindowSegue.swift; sourceTree = "<group>"; };
 		FE149D8122A5120300EE4E03 /* SearchHistory.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SearchHistory.storyboard; sourceTree = "<group>"; };
 		FE149D8422A515C900EE4E03 /* SearchHistoryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchHistoryController.swift; sourceTree = "<group>"; };
@@ -424,6 +432,8 @@
 				FE3AA0CC2154069D001667A9 /* ChatsListGroupGroupchat.swift */,
 				FE3AA0CE215406D1001667A9 /* ChatsListGroupChat.swift */,
 				FE3AA0D02154077D001667A9 /* ChatsListGroupAbstractChat.swift */,
+				FE10BCE823FAA47800E214F3 /* InvitationGroup.swift */,
+				FE10BCEA23FAA60A00E214F3 /* InvitationItem.swift */,
 			);
 			path = groups;
 			sourceTree = "<group>";
@@ -489,6 +499,7 @@
 				FE2ACA8123546C8E004623BC /* NSMutableAttributedString_extensions.swift */,
 				FE9E069923A3976500952E9C /* DownloadManager.swift */,
 				FE29D35723C208840028D306 /* MetadataCache.swift */,
+				FE10BCEE23FAB13800E214F3 /* InvitationsManager.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -544,6 +555,7 @@
 				FEDE6AF42143D8130019170A /* ChatsListTableRowView.swift */,
 				FE3AA0CA21540669001667A9 /* ChatItemProtocol.swift */,
 				FE3F2AF1228813E200737D51 /* EmptyViewController.swift */,
+				FE10BCEC23FAA86900E214F3 /* InvitationCellView.swift */,
 			);
 			path = chatslist;
 			sourceTree = "<group>";
@@ -905,8 +917,10 @@
 				FE4E8DDA215EA4860010D88E /* HttpFileUploadEventHandler.swift in Sources */,
 				FED7AEC321415CB8001E164B /* AvatarManager.swift in Sources */,
 				FE83E363217A3809001DEF09 /* JingleManager.swift in Sources */,
+				FE10BCED23FAA86900E214F3 /* InvitationCellView.swift in Sources */,
 				FEB5B4E1235DB57F00DE6AAD /* NSWindowCloseOnEsc.swift in Sources */,
 				FE4D21382223FEE70058B662 /* PEPBookmarksModule_extension.swift in Sources */,
+				FE10BCEB23FAA60A00E214F3 /* InvitationItem.swift in Sources */,
 				FE3AA0C92154062F001667A9 /* ChatsListGroupProtocol.swift in Sources */,
 				FED7AEC721418B83001E164B /* VCardManager.swift in Sources */,
 				FE6E6C0321384D5F003B1696 /* DBRosterStore.swift in Sources */,
@@ -926,6 +940,7 @@
 				FE6E6BFF21384D5F003B1696 /* ChatViewController.swift in Sources */,
 				FE28097D21652A7C002F5BD0 /* VCardEditorViewController.swift in Sources */,
 				FE29D35823C208840028D306 /* MetadataCache.swift in Sources */,
+				FE10BCE923FAA47800E214F3 /* InvitationGroup.swift in Sources */,
 				FEDE6AF52143D8130019170A /* ChatsListTableRowView.swift in Sources */,
 				FE41FB43215CDAF900AD86D3 /* XMPPClient_extension.swift in Sources */,
 				FE41FB41215CDA6000AD86D3 /* MessageEventHandler.swift in Sources */,
@@ -976,6 +991,7 @@
 				FE30D8B3214CF15700670BEC /* AddContactController.swift in Sources */,
 				FE6201DC23A5007900C965A5 /* ChatEntry.swift in Sources */,
 				FEC661F821AABFB0004FDE1E /* NSViewWithTextBackground.swift in Sources */,
+				FE10BCEF23FAB13800E214F3 /* InvitationsManager.swift in Sources */,
 				FE3AA0CF215406D1001667A9 /* ChatsListGroupChat.swift in Sources */,
 				FE6E6BF921384D5F003B1696 /* AvatarView.swift in Sources */,
 				FEEF25392266528E00202B28 /* ContactDetailsViewController.swift in Sources */,
@@ -1179,7 +1195,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 77;
+				CURRENT_PROJECT_VERSION = 78;
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1189,7 +1205,7 @@
 				INFOPLIST_FILE = BeagleIM/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 3.6;
+				MARKETING_VERSION = 4.0;
 				OTHER_LDFLAGS = "-v";
 				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.BeagleIM;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1208,7 +1224,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 77;
+				CURRENT_PROJECT_VERSION = 78;
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1218,7 +1234,7 @@
 				INFOPLIST_FILE = BeagleIM/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 3.6;
+				MARKETING_VERSION = 4.0;
 				OTHER_LDFLAGS = "-v";
 				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.BeagleIM;
 				PRODUCT_NAME = "$(TARGET_NAME)";

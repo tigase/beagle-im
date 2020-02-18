@@ -45,6 +45,7 @@ class MucEventHandler: XmppServiceEventHandler {
                 return;
             }
             NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
+            InvitationManager.instance.mucJoined(on: e.sessionObject.userBareJid!, roomJid: room.roomJid);
             updateRoomName(room: room);
         case let e as MucModule.RoomClosedEvent:
             guard let room = e.room as? DBChatStore.DBRoom else {
@@ -166,39 +167,13 @@ class MucEventHandler: XmppServiceEventHandler {
                 return;
             }
             
+            
             guard !mucModule.roomsManager.contains(roomJid: e.invitation.roomJid) else {
                 mucModule.decline(invitation: e.invitation, reason: nil);
                 return;
             }
-
-            let alert = Alert();
-            alert.messageText = "Invitation to groupchat";
-            if let inviter = e.invitation.inviter {
-                let name = XmppService.instance.clients.values.flatMap({ (client) -> [String] in
-                    guard let n = client.rosterStore?.get(for: inviter)?.name else {
-                        return [];
-                    }
-                    return ["\(n) (\(inviter))"];
-                }).first ?? inviter.stringValue;
-                alert.informativeText = "User \(name) invited you (\(e.sessionObject.userBareJid!)) to the groupchat \(e.invitation.roomJid)";
-            } else {
-                alert.informativeText = "You (\(e.sessionObject.userBareJid!)) were invited to the groupchat \(e.invitation.roomJid)";
-            }
-            alert.addButton(withTitle: "Accept");
-            alert.addButton(withTitle: "Decline");
             
-            DispatchQueue.main.async {
-                alert.run { (response) in
-                    if response == NSApplication.ModalResponse.alertFirstButtonReturn {
-                        let nickname = AccountManager.getAccount(for: e.sessionObject.userBareJid!)?.nickname ?? e.sessionObject.userBareJid!.localPart!;
-                        _ = mucModule.join(roomName: roomName, mucServer: e.invitation.roomJid.domain, nickname: nickname, password: e.invitation.password);
-                        
-                        PEPBookmarksModule.updateOrAdd(for: e.sessionObject.userBareJid!, bookmark: Bookmarks.Conference(name: roomName, jid: JID(BareJID(localPart: roomName, domain: e.invitation.roomJid.domain)), autojoin: true, nick: nickname, password: e.invitation.password));
-                    } else {
-                        mucModule.decline(invitation: e.invitation, reason: nil);
-                    }
-                }
-            }
+            InvitationManager.instance.addMucInvitation(for: e.sessionObject.userBareJid!, roomJid: e.invitation.roomJid, invitation: e.invitation);
             
             break;
         case let e as MucModule.InvitationDeclinedEvent:
