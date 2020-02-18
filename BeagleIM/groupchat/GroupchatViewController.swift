@@ -413,7 +413,12 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
 
 class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableViewDataSource {
 
-    weak var tableView: NSTableView?;
+    weak var tableView: NSTableView? {
+        didSet {
+            tableView?.menu = self.prepareContextMenu();
+            tableView?.menu?.delegate = self;
+        }
+    }
     var room: DBChatStore.DBRoom? {
         didSet {
             self.participants.removeAll();
@@ -427,7 +432,6 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
         }
     }
     var participants: [MucOccupant] = [];
-    
     
     func registerNotifications() {
         NotificationCenter.default.addObserver(self, selector: #selector(roomStatusChanged), name: MucEventHandler.ROOM_STATUS_CHANGED, object: nil);
@@ -604,4 +608,91 @@ class SettingsPopUpButton: NSPopUpButton {
         NSGraphicsContext.restoreGraphicsState();
     }
     
+}
+
+extension GroupchatParticipantsContainer: NSMenuDelegate {
+    
+    func prepareContextMenu() -> NSMenu {
+        let menu = NSMenu();
+        menu.autoenablesItems = true;
+        menu.addItem(BanUserMenuItem(title: "Ban user", action: #selector(banUser(_:)), keyEquivalent: ""));
+        return menu;
+    }
+    
+    func numberOfItems(in menu: NSMenu) -> Int {
+        return menu.items.count;
+    }
+ 
+    func menu(_ menu: NSMenu, update item: NSMenuItem, at index: Int, shouldCancel: Bool) -> Bool {
+        guard let clickedRow = self.tableView?.clickedRow, clickedRow >= 0 && clickedRow < self.participants.count else {
+            item.isHidden = true;
+            return true;
+        }
+                
+        guard let nickname = self.room?.nickname, let affiliation = self.room?.presences[nickname]?.affiliation, (affiliation == .admin || affiliation == .owner) else {
+            item.isHidden = true;
+            return true;
+        }
+         
+        let participant = self.participants[clickedRow];
+        guard participant.jid != nil else {
+            item.isHidden = true;
+            return true;
+        }
+        item.isHidden = false;
+        item.isEnabled = true;
+        item.target = self;
+        (item as? BanUserMenuItem)?.occupant = participant;
+        
+        return true;
+    }
+    
+    @objc func banUser(_ menuItem: NSMenuItem?) {
+        guard let participant = (menuItem as? BanUserMenuItem)?.occupant, let jid = participant.jid, let room = self.room, let mucModule: MucModule = XmppService.instance.getClient(for: room.account)?.modulesManager.getModule(MucModule.ID) else {
+            return;
+        }
+        
+        guard let window = self.tableView?.window else {
+            return;
+        }
+        
+        let alert = NSAlert();
+        alert.icon = NSImage(named: NSImage.cautionName);
+        alert.messageText = "Do you wish to ban user \(participant.nickname)?";
+        alert.addButton(withTitle: "Yes")
+        alert.addButton(withTitle: "No")
+        alert.beginSheetModal(for: window, completionHandler: { response in
+            switch response {
+            case .alertFirstButtonReturn:
+                // we need to ban the user
+                print("We need to ban user with jid: \(jid)");
+                mucModule.setRoomAffiliations(to: room, changedAffiliations: [MucModule.RoomAffiliation(jid: jid.withoutResource, affiliation: .outcast)], completionHandler: { error in
+                    guard let err = error else {
+                        return;
+                    }
+                    DispatchQueue.main.async {
+                        let alert = NSAlert();
+                        alert.icon = NSImage(named: NSImage.cautionName);
+                        alert.messageText = "Banning user \(participant.nickname) failed";
+                        alert.informativeText = "Server returned an error: \(err.rawValue)";
+                        alert.addButton(withTitle: "OK");
+                        alert.beginSheetModal(for: window, completionHandler: { response in
+                            //we do not care about the response
+                        })
+                    }
+                })
+                break;
+            default:
+                // action was cancelled
+                break;
+            }
+        })
+    }
+    
+    
+    class BanUserMenuItem: NSMenuItem {
+        
+        weak var occupant: MucOccupant?;
+        
+    }
 }
