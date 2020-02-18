@@ -570,8 +570,12 @@ class ChatAttachmentCellView: BaseChatAttachmentCellView {
         self.avatar?.image = avatar;
     }
     
-    func set(senderName: String?) {
-        self.senderName.stringValue = senderName!;
+    func set(senderName: String, attributedSenderName: NSAttributedString? = nil) {
+        if attributedSenderName == nil {
+            self.senderName.stringValue = senderName;
+        } else {
+            self.senderName.attributedStringValue = attributedSenderName!;
+        }
         self.avatar?.name = senderName;
     }
        

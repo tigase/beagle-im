@@ -243,7 +243,17 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                     } else {
                         c.set(avatar: nil);
                     }
-                    c.set(senderName: item.authorNickname ?? "From \(item.jid.stringValue)");
+                    
+                    let sender = item.authorNickname ?? "From \(item.jid.stringValue)";
+                    if let author = item.authorNickname, let recipient = item.recipientNickname {
+                        let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(author) " : "To \(recipient)  ");
+                        let font = NSFontManager.shared.convert(NSFont.systemFont(ofSize: c.senderName.font!.pointSize - 2), toHaveTrait: [.italicFontMask, .smallCapsFontMask, .unboldFontMask]);
+                        val.append(NSAttributedString(string: " (private message)", attributes: [.font: font]));
+
+                        c.set(senderName: sender, attributedSenderName: val);
+                    } else {
+                        c.set(senderName: sender);
+                    }
                 }
                 cell.set(message: item, nickname: room.nickname, keywords: keywords);
 
@@ -260,7 +270,16 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                     } else {
                         c.set(avatar: nil);
                     }
-                    c.set(senderName: item.authorNickname ?? "From \(item.jid.stringValue)");
+                    let sender = item.authorNickname ?? "From \(item.jid.stringValue)";
+                    if let author = item.authorNickname, let recipient = item.recipientNickname {
+                        let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(author) " : "To \(recipient)  ");
+                        let font = NSFontManager.shared.convert(NSFont.systemFont(ofSize: c.senderName.font!.pointSize - 2), toHaveTrait: [.italicFontMask, .smallCapsFontMask, .unboldFontMask]);
+                        val.append(NSAttributedString(string: " (private message)", attributes: [.font: font]));
+
+                        c.set(senderName: sender, attributedSenderName: val);
+                    } else {
+                        c.set(senderName: sender);
+                    }
                 }
                 cell.set(item: item);
                 return cell;
@@ -615,7 +634,8 @@ extension GroupchatParticipantsContainer: NSMenuDelegate {
     func prepareContextMenu() -> NSMenu {
         let menu = NSMenu();
         menu.autoenablesItems = true;
-        menu.addItem(BanUserMenuItem(title: "Ban user", action: #selector(banUser(_:)), keyEquivalent: ""));
+        menu.addItem(MenuItemWithOccupant(title: "Private message", action: #selector(privateMessage(_:)), keyEquivalent: ""));
+        menu.addItem(MenuItemWithOccupant(title: "Ban user", action: #selector(banUser(_:)), keyEquivalent: ""));
         return menu;
     }
     
@@ -624,31 +644,38 @@ extension GroupchatParticipantsContainer: NSMenuDelegate {
     }
  
     func menu(_ menu: NSMenu, update item: NSMenuItem, at index: Int, shouldCancel: Bool) -> Bool {
-        guard let clickedRow = self.tableView?.clickedRow, clickedRow >= 0 && clickedRow < self.participants.count else {
+        guard let clickedRow = self.tableView?.clickedRow, clickedRow >= 0 && clickedRow < self.participants.count, let nickname = self.room?.nickname else {
             item.isHidden = true;
             return true;
         }
                 
-        guard let nickname = self.room?.nickname, let affiliation = self.room?.presences[nickname]?.affiliation, (affiliation == .admin || affiliation == .owner) else {
-            item.isHidden = true;
-            return true;
+        let participant = self.participants[clickedRow];
+        switch item.action {
+        case #selector(privateMessage(_:)):
+            break;
+        case #selector(banUser(_:)):
+            guard let affiliation = self.room?.presences[nickname]?.affiliation, (affiliation == .admin || affiliation == .owner) else {
+                item.isHidden = true;
+                return true;
+            }
+            guard participant.jid != nil else {
+                item.isHidden = true;
+                return true;
+            }
+        default:
+            break;
         }
          
-        let participant = self.participants[clickedRow];
-        guard participant.jid != nil else {
-            item.isHidden = true;
-            return true;
-        }
         item.isHidden = false;
         item.isEnabled = true;
         item.target = self;
-        (item as? BanUserMenuItem)?.occupant = participant;
+        (item as? MenuItemWithOccupant)?.occupant = participant;
         
         return true;
     }
     
     @objc func banUser(_ menuItem: NSMenuItem?) {
-        guard let participant = (menuItem as? BanUserMenuItem)?.occupant, let jid = participant.jid, let room = self.room, let mucModule: MucModule = XmppService.instance.getClient(for: room.account)?.modulesManager.getModule(MucModule.ID) else {
+        guard let participant = (menuItem as? MenuItemWithOccupant)?.occupant, let jid = participant.jid, let room = self.room, let mucModule: MucModule = XmppService.instance.getClient(for: room.account)?.modulesManager.getModule(MucModule.ID) else {
             return;
         }
         
@@ -689,8 +716,35 @@ extension GroupchatParticipantsContainer: NSMenuDelegate {
         })
     }
     
+    @objc func privateMessage(_ menuItem: NSMenuItem) {
+        guard let participant = (menuItem as? MenuItemWithOccupant)?.occupant, let jid = participant.jid, let room = self.room else {
+            return;
+        }
+        
+        guard let window = self.tableView?.window else {
+            return;
+        }
+        
+        let alert = NSAlert();
+        alert.icon = NSImage(named: NSImage.infoName);
+        alert.messageText = "Enter message to send to \(participant.nickname):";
+        let text = NSTextView(frame: NSRect(origin: .zero, size: CGSize(width: 300, height: 100)));
+        text.isEditable = true;
+        alert.accessoryView = text;
+        alert.addButton(withTitle: "Send");
+        alert.addButton(withTitle: "Cancel");
+        alert.beginSheetModal(for: window, completionHandler: { result in
+            switch result {
+            case .alertFirstButtonReturn:
+                MucEventHandler.instance.sendPrivateMessage(room: room, recipientNickname: participant.nickname, body: text.string);
+            default:
+                break;
+            }
+        })
+    }
     
-    class BanUserMenuItem: NSMenuItem {
+    
+    class MenuItemWithOccupant: NSMenuItem {
         
         weak var occupant: MucOccupant?;
         

@@ -677,6 +677,7 @@ open class DBChatStore {
             stanza.chatState = ChatState.active;
             return stanza;
         }
+        
     }
     
     class DBRoom: Room, DBChatProtocol {
@@ -741,7 +742,12 @@ open class DBChatStore {
                 DBChatStore.instance.updateOptions(for: self.account, jid: self.jid.bareJid, options: options, completionHandler: completionHandler);
             }
         }
-        
+
+        override func createPrivateMessage(_ body: String?, recipientNickname: String) -> Message {
+            let stanza = super.createPrivateMessage(body, recipientNickname: recipientNickname);
+            stanza.id = UUID().uuidString;
+            return stanza;
+        }
     }
 }
 

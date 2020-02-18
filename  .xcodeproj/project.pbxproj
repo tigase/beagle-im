@@ -14,6 +14,7 @@
 		FE10BCEB23FAA60A00E214F3 /* InvitationItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCEA23FAA60A00E214F3 /* InvitationItem.swift */; };
 		FE10BCED23FAA86900E214F3 /* InvitationCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCEC23FAA86900E214F3 /* InvitationCellView.swift */; };
 		FE10BCEF23FAB13800E214F3 /* InvitationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCEE23FAB13800E214F3 /* InvitationsManager.swift */; };
+		FE10BCF123FC495700E214F3 /* db-schema-8.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE10BCF023FC495700E214F3 /* db-schema-8.sql */; };
 		FE137A4621F5FE05006B7F7C /* ShowMainWindowSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4521F5FE05006B7F7C /* ShowMainWindowSegue.swift */; };
 		FE149D8222A5120300EE4E03 /* SearchHistory.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE149D8122A5120300EE4E03 /* SearchHistory.storyboard */; };
 		FE149D8522A515C900EE4E03 /* SearchHistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE149D8422A515C900EE4E03 /* SearchHistoryController.swift */; };
@@ -206,6 +207,7 @@
 		FE10BCEA23FAA60A00E214F3 /* InvitationItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationItem.swift; sourceTree = "<group>"; };
 		FE10BCEC23FAA86900E214F3 /* InvitationCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationCellView.swift; sourceTree = "<group>"; };
 		FE10BCEE23FAB13800E214F3 /* InvitationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationsManager.swift; sourceTree = "<group>"; };
+		FE10BCF023FC495700E214F3 /* db-schema-8.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-8.sql"; sourceTree = "<group>"; };
 		FE137A4521F5FE05006B7F7C /* ShowMainWindowSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowMainWindowSegue.swift; sourceTree = "<group>"; };
 		FE149D8122A5120300EE4E03 /* SearchHistory.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SearchHistory.storyboard; sourceTree = "<group>"; };
 		FE149D8422A515C900EE4E03 /* SearchHistoryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchHistoryController.swift; sourceTree = "<group>"; };
@@ -649,6 +651,7 @@
 				FE25B1702350D2FC00CD69CA /* db-schema-6.sql */,
 				FE6201E523AA43C900C965A5 /* db-schema-7.sql */,
 				FE2DEDA223C62D7000AEF14F /* incomingCall.aiff */,
+				FE10BCF023FC495700E214F3 /* db-schema-8.sql */,
 			);
 			path = BeagleIM;
 			sourceTree = "<group>";
@@ -853,6 +856,7 @@
 				FE25B1712350D2FC00CD69CA /* db-schema-6.sql in Resources */,
 				FE4073A721BACA2D009CE335 /* VoIP.storyboard in Resources */,
 				FE8C9F5421B3F6BD00BE8332 /* container-migration.plist in Resources */,
+				FE10BCF123FC495700E214F3 /* db-schema-8.sql in Resources */,
 				FE02DD11225B8D1100FA08EB /* db-schema-3.sql in Resources */,
 				FE149D8722A51AD900EE4E03 /* db-schema-4.sql in Resources */,
 				FE421B4921C92FBF0022DF77 /* LICENSE in Resources */,
@@ -1195,7 +1199,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 78;
+				CURRENT_PROJECT_VERSION = 79;
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1224,7 +1228,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 78;
+				CURRENT_PROJECT_VERSION = 79;
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
