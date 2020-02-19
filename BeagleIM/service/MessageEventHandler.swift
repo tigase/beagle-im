@@ -127,16 +127,14 @@ class MessageEventHandler: XmppServiceEventHandler {
                 }
             }
             
-            let isMucPM = e.message.findChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") != nil;
             var authorNickname: String? = nil;
             var recipientNickname: String? = nil;
-            if isMucPM {
-                let room = DBChatStore.instance.getChat(for: account, with: from.bareJid) as? DBChatStore.DBRoom;
+            if let room = DBChatStore.instance.getChat(for: account, with: from.bareJid) as? DBChatStore.DBRoom {
                 if state.direction == .incoming {
                     authorNickname = from.resource;
-                    recipientNickname = room?.nickname;
+                    recipientNickname = room.nickname;
                 } else {
-                    authorNickname = room?.nickname;
+                    authorNickname = room.nickname;
                     recipientNickname = e.message.to?.resource;
                 }
             }
@@ -219,13 +217,13 @@ class MessageEventHandler: XmppServiceEventHandler {
                 }
             }
                         
-            let isMucPM = e.message.findChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") != nil;
-            guard !isMucPM else {
+            var authorNickname: String? = nil;
+            var recipientNickname: String? = nil;
+            if let room = DBChatStore.instance.getChat(for: account, with: from.bareJid) as? DBChatStore.DBRoom {
+                // carbons should not copy PM messages
                 return;
             }
-            let recipientNickname: String? = isMucPM ? (state.direction == .incoming ? e.message.to?.resource : from.resource) : nil;
-            let authorNickname: String? = isMucPM ? (state.direction == .incoming ? from.resource : e.message.to?.resource) : nil;
-            
+
             DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, authorNickname: authorNickname, recipientNickname: recipientNickname, type: type, timestamp: timestamp, stanzaId: e.message.id, data: body!, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: { (msgId) in
                 if state.direction == .outgoing {
                     DBChatHistoryStore.instance.markAsRead(for: account, with: jid, before: timestamp);
@@ -264,14 +262,32 @@ class MessageEventHandler: XmppServiceEventHandler {
             
             let jid = account == from.bareJid ? to.bareJid : from.bareJid;
             let timestamp = e.timestamp!;
-            let state: MessageState = calculateState(direction: account == from.bareJid ? .outgoing : .incoming, error: ((e.message.type ?? .chat) == .error), unread: false);
+            var state: MessageState = calculateState(direction: account == from.bareJid ? .outgoing : .incoming, error: ((e.message.type ?? .chat) == .error), unread: false);
             
-            let isMucPM = e.message.findChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") != nil;
-            guard !isMucPM else {
-                return;
+            var authorNickname: String? = nil;
+            var recipientNickname: String? = nil;
+            if let room = DBChatStore.instance.getChat(for: account, with: from.bareJid) as? DBChatStore.DBRoom {
+                if room.nickname == from.resource {
+                    if state.isError {
+                        state = .incoming_error;
+                    } else {
+                        state = .incoming;
+                    }
+                } else {
+                    if state.isError {
+                        state = .outgoing_error;
+                    } else {
+                        state = .outgoing;
+                    }
+                }
+                if state.direction == .incoming {
+                    authorNickname = from.resource;
+                    recipientNickname = room.nickname;
+                } else {
+                    authorNickname = room.nickname;
+                    recipientNickname = e.message.to?.resource;
+                }
             }
-            let recipientNickname: String? = isMucPM ? (state.direction == .incoming ? e.message.to?.resource : from.resource) : nil;
-            let authorNickname: String? = isMucPM ? (state.direction == .incoming ? from.resource : e.message.to?.resource) : nil;
 
             DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, authorNickname: authorNickname, recipientNickname: recipientNickname, type: type, timestamp: timestamp, stanzaId: e.message.id, data: body!, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
             

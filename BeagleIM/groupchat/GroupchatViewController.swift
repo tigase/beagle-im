@@ -248,7 +248,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                     if let author = item.authorNickname, let recipient = item.recipientNickname {
                         let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(author) " : "To \(recipient)  ");
                         let font = NSFontManager.shared.convert(NSFont.systemFont(ofSize: c.senderName.font!.pointSize - 2), toHaveTrait: [.italicFontMask, .smallCapsFontMask, .unboldFontMask]);
-                        val.append(NSAttributedString(string: " (private message)", attributes: [.font: font]));
+                        val.append(NSAttributedString(string: " (private message)", attributes: [.font: font, .foregroundColor: NSColor.secondaryLabelColor]));
 
                         c.set(senderName: sender, attributedSenderName: val);
                     } else {

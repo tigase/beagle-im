@@ -83,22 +83,20 @@ class MucEventHandler: XmppServiceEventHandler {
                     type = .attachment;
                 }
             }
-
-            let recipientNickname = e.privateMessage ? room.nickname : nil
             
-            DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: ((e.nickname == nil) || (room.nickname != e.nickname!)) ? .incoming_unread : .outgoing, authorNickname: e.nickname, authorJid: authorJid, recipientNickname: recipientNickname, type: type, timestamp: e.timestamp, stanzaId: e.message.id, data: body, encryption: MessageEncryption.none, encryptionFingerprint: nil, completionHandler: nil);
+            DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: ((e.nickname == nil) || (room.nickname != e.nickname!)) ? .incoming_unread : .outgoing, authorNickname: e.nickname, authorJid: authorJid, recipientNickname: nil, type: type, timestamp: e.timestamp, stanzaId: e.message.id, data: body, encryption: MessageEncryption.none, encryptionFingerprint: nil, completionHandler: nil);
             
             if type == .message && e.message.type != StanzaType.error, #available(macOS 10.15, *) {
                 let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
                 let matches = detector.matches(in: body, range: NSMakeRange(0, body.utf16.count));
                 matches.forEach { match in
                     if let url = match.url, let scheme = url.scheme, ["https", "http"].contains(scheme) {
-                        DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: ((e.nickname == nil) || (room.nickname != e.nickname!)) ? .incoming_unread : .outgoing, authorNickname: e.nickname, authorJid: authorJid, recipientNickname: recipientNickname, type: .linkPreview, timestamp: e.timestamp, stanzaId: nil, data: url.absoluteString, chatState: e.message.chatState, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: .none, encryptionFingerprint: nil, completionHandler: nil);
+                        DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: ((e.nickname == nil) || (room.nickname != e.nickname!)) ? .incoming_unread : .outgoing, authorNickname: e.nickname, authorJid: authorJid, recipientNickname: nil, type: .linkPreview, timestamp: e.timestamp, stanzaId: nil, data: url.absoluteString, chatState: e.message.chatState, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: .none, encryptionFingerprint: nil, completionHandler: nil);
                     }
                     if let address = match.components {
                         let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
                         let mapUrl = URL(string: "http://maps.apple.com/?q=\(query!)")!;
-                        DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: ((e.nickname == nil) || (room.nickname != e.nickname!)) ? .incoming_unread : .outgoing, authorNickname: e.nickname, authorJid: authorJid, recipientNickname: recipientNickname, type: .linkPreview, timestamp: e.timestamp, stanzaId: nil, data: mapUrl.absoluteString, chatState: e.message.chatState, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: .none, encryptionFingerprint: nil, completionHandler: nil);
+                        DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: ((e.nickname == nil) || (room.nickname != e.nickname!)) ? .incoming_unread : .outgoing, authorNickname: e.nickname, authorJid: authorJid, recipientNickname: nil, type: .linkPreview, timestamp: e.timestamp, stanzaId: nil, data: mapUrl.absoluteString, chatState: e.message.chatState, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: .none, encryptionFingerprint: nil, completionHandler: nil);
                     }
                 }
             }
