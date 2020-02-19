@@ -219,7 +219,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                         
             var authorNickname: String? = nil;
             var recipientNickname: String? = nil;
-            if let room = DBChatStore.instance.getChat(for: account, with: from.bareJid) as? DBChatStore.DBRoom {
+            if let room = DBChatStore.instance.getChat(for: account, with: jid) as? DBChatStore.DBRoom {
                 // carbons should not copy PM messages
                 return;
             }
@@ -266,7 +266,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             
             var authorNickname: String? = nil;
             var recipientNickname: String? = nil;
-            if let room = DBChatStore.instance.getChat(for: account, with: from.bareJid) as? DBChatStore.DBRoom {
+            if let room = DBChatStore.instance.getChat(for: account, with: jid) as? DBChatStore.DBRoom {
                 if room.nickname == from.resource {
                     if state.isError {
                         state = .incoming_error;
