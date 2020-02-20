@@ -36,23 +36,24 @@ class BaseChatMessageCellView: NSTableCellView {
     fileprivate var direction: MessageDirection? = nil;
 
     func set(message item: ChatMessage, nickname: String? = nil, keywords: [String]? = nil) {
-        let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
-
         let messageBody = self.messageBody(item: item);
-        let matches = detector.matches(in: messageBody, range: NSMakeRange(0, messageBody.utf16.count));
         let msg = NSMutableAttributedString(string: messageBody);
+        if let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue) {
+        
+            let matches = detector.matches(in: messageBody, range: NSMakeRange(0, messageBody.utf16.count));
 
-        matches.forEach { match in
-            if let url = match.url {
-                msg.addAttribute(.link, value: url, range: match.range);
-            }
-            if let phoneNumber = match.phoneNumber {
-                msg.addAttribute(.link, value: URL(string: "tel:\(phoneNumber.replacingOccurrences(of: " ", with: "-"))")!, range: match.range);
-            }
-            if let address = match.components {
-                let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
-                let mapUrl = URL(string: "http://maps.apple.com/?q=\(query!)")!;
-                msg.addAttribute(.link, value: mapUrl, range: match.range);
+            matches.forEach { match in
+                if let url = match.url {
+                    msg.addAttribute(.link, value: url, range: match.range);
+                }
+                if let phoneNumber = match.phoneNumber {
+                    msg.addAttribute(.link, value: URL(string: "tel:\(phoneNumber.replacingOccurrences(of: " ", with: "-"))")!, range: match.range);
+                }
+                if let address = match.components {
+                    let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
+                    let mapUrl = URL(string: "http://maps.apple.com/?q=\(query!)")!;
+                    msg.addAttribute(.link, value: mapUrl, range: match.range);
+                }
             }
         }
         msg.addAttribute(NSAttributedString.Key.font, value: self.message.font!, range: NSMakeRange(0, msg.length));
