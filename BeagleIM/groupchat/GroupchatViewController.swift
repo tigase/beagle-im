@@ -54,11 +54,12 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             self.participantsContainer?.room = newValue;
         }
     }
+
+    override func conversationTableViewDelegate() -> NSTableViewDelegate? {
+        return self;
+    }
     
     override func viewDidLoad() {
-        self.dataSource = ChatViewDataSource();
-        self.tableView.delegate = self;
-        
         self.participantsContainer = GroupchatParticipantsContainer();
         self.participantsContainer?.tableView = self.participantsTableView;
         self.participantsContainer?.room = self.room;
@@ -226,13 +227,13 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         
         switch item {
         case let item as SystemMessage:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "MucMessageSystemCellView"), owner: nil) as? ChatMessageSystemCellView {
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMessageSystemCellView"), owner: nil) as? ChatMessageSystemCellView {
                 cell.message.stringValue = "Unread messages";
                 return cell;
             }
             return nil;
         case let item as ChatMessage:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "MucMessageContinuationCellView" : "MucMessageCellView"), owner: nil) as? BaseChatMessageCellView {
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? BaseChatMessageCellView {
 
                 cell.id = item.id;
                 if let c = cell as? ChatMessageCellView {
@@ -261,7 +262,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             }
             return nil;
         case let item as ChatAttachment:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "MucAttachmentContinuationCellView" : "MucAttachmentCellView"), owner: nil) as? BaseChatAttachmentCellView {
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatAttachmentContinuationCellView" : "ChatAttachmentCellView"), owner: nil) as? BaseChatAttachmentCellView {
                 if let c = cell as? ChatAttachmentCellView {
                     if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
                         c.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
@@ -286,7 +287,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             }
             return nil;
         case let item as ChatLinkPreview:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "MucLinkPreviewCellView"), owner: nil) as? ChatLinkPreviewCellView {
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatLinkPreviewCellView"), owner: nil) as? ChatLinkPreviewCellView {
                 cell.set(item: item);
                 return cell;
             }
@@ -391,7 +392,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         DispatchQueue.main.async {
             for i in 0..<self.dataSource.count {
                 if let item = self.dataSource.getItem(at: i) as? ChatMessage, item.authorNickname != nil && item.authorNickname! == nickname {
-                    if let view = self.tableView.view(atColumn: 0, row: i, makeIfNecessary: false) as? ChatMessageCellView {
+                    if let view = self.conversationLogController?.tableView.view(atColumn: 0, row: i, makeIfNecessary: false) as? ChatMessageCellView {
                         view.set(avatar: AvatarManager.instance.avatar(withHash: avatarHash));
                     }
                 }
@@ -420,7 +421,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         DispatchQueue.main.async {
             for i in 0..<self.dataSource.count {
                 if let item = self.dataSource.getItem(at: i) as? ChatMessage, item.authorNickname != nil && item.authorNickname! == e.occupant.nickname {
-                    if let view = self.tableView.view(atColumn: 0, row: i, makeIfNecessary: false) as? ChatMessageCellView {
+                    if let view = self.conversationLogController?.tableView.view(atColumn: 0, row: i, makeIfNecessary: false) as? ChatMessageCellView {
                         view.set(avatar: AvatarManager.instance.avatar(withHash: avatarHash));
                     }
                 }

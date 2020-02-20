@@ -111,6 +111,9 @@
 		FE87C76C2283487300B0B64C /* XMLConsole.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE87C76B2283487300B0B64C /* XMLConsole.storyboard */; };
 		FE87C76F22834E0B00B0B64C /* XMLConsoleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE87C76E22834E0B00B0B64C /* XMLConsoleViewController.swift */; };
 		FE87C7752285736200B0B64C /* XMLEntryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE87C7742285736200B0B64C /* XMLEntryViewController.swift */; };
+		FE890D1B23FEA5DF00107437 /* Conversation.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE890D1A23FEA5DF00107437 /* Conversation.storyboard */; };
+		FE890D1D23FEED1700107437 /* ConversationLogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE890D1C23FEED1700107437 /* ConversationLogController.swift */; };
+		FE890D1F23FEF0B900107437 /* AbstractConversationLogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE890D1E23FEF0B900107437 /* AbstractConversationLogController.swift */; };
 		FE8C9F5421B3F6BD00BE8332 /* container-migration.plist in Resources */ = {isa = PBXBuildFile; fileRef = FE8C9F5321B3F6BD00BE8332 /* container-migration.plist */; };
 		FE8C9F5621B40F9000BE8332 /* RegisterAccountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8C9F5521B40F9000BE8332 /* RegisterAccountController.swift */; };
 		FE9486B221BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9486B121BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift */; };
@@ -303,6 +306,9 @@
 		FE87C76B2283487300B0B64C /* XMLConsole.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = XMLConsole.storyboard; sourceTree = "<group>"; };
 		FE87C76E22834E0B00B0B64C /* XMLConsoleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMLConsoleViewController.swift; sourceTree = "<group>"; };
 		FE87C7742285736200B0B64C /* XMLEntryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMLEntryViewController.swift; sourceTree = "<group>"; };
+		FE890D1A23FEA5DF00107437 /* Conversation.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Conversation.storyboard; sourceTree = "<group>"; };
+		FE890D1C23FEED1700107437 /* ConversationLogController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationLogController.swift; sourceTree = "<group>"; };
+		FE890D1E23FEF0B900107437 /* AbstractConversationLogController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractConversationLogController.swift; sourceTree = "<group>"; };
 		FE8C9F5321B3F6BD00BE8332 /* container-migration.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "container-migration.plist"; sourceTree = "<group>"; };
 		FE8C9F5521B40F9000BE8332 /* RegisterAccountController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterAccountController.swift; sourceTree = "<group>"; };
 		FE9486B121BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSButtonNoSizeWhenHidden.swift; sourceTree = "<group>"; };
@@ -542,6 +548,8 @@
 				FE6201DF23A5357B00C965A5 /* ChatLinkPreviewCellView.swift */,
 				FE6201E123A573BC00C965A5 /* ChatAttachment.swift */,
 				FE6201E323A693ED00C965A5 /* BaseChatAttachmentCellView.swift */,
+				FE890D1C23FEED1700107437 /* ConversationLogController.swift */,
+				FE890D1E23FEF0B900107437 /* AbstractConversationLogController.swift */,
 			);
 			path = chat;
 			sourceTree = "<group>";
@@ -652,6 +660,7 @@
 				FE6201E523AA43C900C965A5 /* db-schema-7.sql */,
 				FE2DEDA223C62D7000AEF14F /* incomingCall.aiff */,
 				FE10BCF023FC495700E214F3 /* db-schema-8.sql */,
+				FE890D1A23FEA5DF00107437 /* Conversation.storyboard */,
 			);
 			path = BeagleIM;
 			sourceTree = "<group>";
@@ -846,6 +855,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FE890D1B23FEA5DF00107437 /* Conversation.storyboard in Resources */,
 				FEFFF7CD232FCF25004CB9CE /* ConversationDetails.storyboard in Resources */,
 				FE0C817F2257B48400948C41 /* Settings.storyboard in Resources */,
 				FE4D2132221F2A6E0058B662 /* db-schema-2.sql in Resources */,
@@ -945,11 +955,13 @@
 				FE28097D21652A7C002F5BD0 /* VCardEditorViewController.swift in Sources */,
 				FE29D35823C208840028D306 /* MetadataCache.swift in Sources */,
 				FE10BCE923FAA47800E214F3 /* InvitationGroup.swift in Sources */,
+				FE890D1D23FEED1700107437 /* ConversationLogController.swift in Sources */,
 				FEDE6AF52143D8130019170A /* ChatsListTableRowView.swift in Sources */,
 				FE41FB43215CDAF900AD86D3 /* XMPPClient_extension.swift in Sources */,
 				FE41FB41215CDA6000AD86D3 /* MessageEventHandler.swift in Sources */,
 				FEFFF7D12334E71B004CB9CE /* ChatMessageSystemCellView.swift in Sources */,
 				FE8C9F5621B40F9000BE8332 /* RegisterAccountController.swift in Sources */,
+				FE890D1F23FEF0B900107437 /* AbstractConversationLogController.swift in Sources */,
 				FE5BE64E213AD19A00463183 /* ChatCellViewMessage.swift in Sources */,
 				FE5202D7227F339D00644C12 /* BaseChatMessageCellView.swift in Sources */,
 				FEA2F53722E5F6A2009F2E88 /* AdvancedSettingsController.swift in Sources */,

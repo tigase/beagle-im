@@ -23,7 +23,7 @@ import AppKit
 import TigaseSwift
 import TigaseSwiftOMEMO
 
-class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDelegate {
+class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDelegate, ConversationLogContextMenuDelegate {
 
     @IBOutlet var buddyAvatarView: AvatarViewWithStatus!
     @IBOutlet var buddyNameLabel: NSTextFieldCell!
@@ -52,10 +52,11 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     };
     fileprivate var buddyName: String! = "";
 
+    override func conversationTableViewDelegate() -> NSTableViewDelegate? {
+        return self;
+    }
+    
     override func viewDidLoad() {
-        self.dataSource = ChatViewDataSource();
-        self.tableView.delegate = self;
-
         super.viewDidLoad();
 
         audioCall.isHidden = true;
@@ -230,7 +231,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         }
         DispatchQueue.main.async {
             self.buddyAvatarView.avatar = AvatarManager.instance.avatar(for: jid, on: account);
-            self.tableView.reloadData();
+            self.conversationLogController?.tableView.reloadData();
         }
     }
 
@@ -255,9 +256,8 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         self.updateCapabilities();
     }
 
-    override func prepareContextMenu(_ menu: NSMenu, forRow row: Int) {
-        super.prepareContextMenu(menu, forRow: row);
-        if let item = self.dataSource.getItem(at: row) as? ChatMessage, item.state.direction == .outgoing && item.state.isError {
+    func prepareConversationLogContextMenu(dataSource: ChatViewDataSource, menu: NSMenu, forRow row: Int) {
+        if let item = dataSource.getItem(at: row) as? ChatMessage, item.state.direction == .outgoing && item.state.isError {
             let resend = menu.addItem(withTitle: "Resend message", action: #selector(resendMessage), keyEquivalent: "");
             resend.target = self;
             resend.tag = item.id;
