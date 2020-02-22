@@ -167,7 +167,12 @@ class MessageEventHandler: XmppServiceEventHandler {
 
                 var chat = DBChatStore.instance.getChat(for: account, with: jid);
                 if chat == nil {
-                    chat = DBChatStore.instance.open(for: account, chat: Chat(jid: JID(jid), thread: nil));
+                    switch DBChatStore.instance.createChat(for: account, jid: JID(jid), thread: nil) {
+                    case .success(let newChat):
+                        chat = newChat;
+                    case .failure(let err):
+                        return;
+                    }
                 }
 
                 if let dbChat = chat as? DBChatStore.DBChat {
@@ -266,8 +271,38 @@ class MessageEventHandler: XmppServiceEventHandler {
             
             var authorNickname: String? = nil;
             var recipientNickname: String? = nil;
-            if let room = DBChatStore.instance.getChat(for: account, with: jid) as? DBChatStore.DBRoom {
-                if room.nickname == from.resource {
+            var authorJid: BareJID? = nil;
+            
+            if let mix = e.message.mix {
+                authorNickname = mix.nickname;
+                authorJid = mix.jid;
+                if mix.jid != nil {
+                    if mix.jid == account {
+                        if state.isError {
+                            state = .outgoing_error;
+                        } else {
+                            state = .outgoing;
+                        }
+                    }
+                } else if let channel = DBChatStore.instance.getChat(for: account, with: jid) as? DBChatStore.DBChannel {
+                    if let senderId = from.resource {
+                        if channel.participantId == senderId {
+                            if state.isError {
+                                state = .outgoing_error;
+                            } else {
+                                state = .outgoing;
+                            }
+                        }
+                    } else if mix.nickname == channel.nickname {
+                        if state.isError {
+                            state = .outgoing_error;
+                        } else {
+                            state = .outgoing;
+                        }
+                    }
+                }
+            } else if let room = DBChatStore.instance.getChat(for: account, with: jid) as? DBChatStore.DBRoom {
+                if room.nickname != from.resource {
                     if state.isError {
                         state = .incoming_error;
                     } else {
@@ -289,19 +324,19 @@ class MessageEventHandler: XmppServiceEventHandler {
                 }
             }
 
-            DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, authorNickname: authorNickname, recipientNickname: recipientNickname, type: type, timestamp: timestamp, stanzaId: e.message.id, data: body!, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
+            DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, type: type, timestamp: timestamp, stanzaId: e.message.id, data: body!, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
             
             if type == .message && !state.isError, #available(macOS 10.15, *) {
                 let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
                 let matches = detector.matches(in: body!, range: NSMakeRange(0, body!.utf16.count));
                 matches.forEach { match in
                     if let url = match.url, let scheme = url.scheme, ["https", "http"].contains(scheme) {
-                        DBChatHistoryStore.instance.appendItem(for: account, with: from.bareJid, state: state, authorNickname: authorNickname, recipientNickname: recipientNickname, type: .linkPreview, timestamp: timestamp, stanzaId: nil, data: url.absoluteString, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
+                        DBChatHistoryStore.instance.appendItem(for: account, with: from.bareJid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, type: .linkPreview, timestamp: timestamp, stanzaId: nil, data: url.absoluteString, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
                     }
                     if let address = match.components {
                         let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
                         let mapUrl = URL(string: "http://maps.apple.com/?q=\(query!)")!;
-                        DBChatHistoryStore.instance.appendItem(for: account, with: from.bareJid, state: state, authorNickname: authorNickname, recipientNickname: recipientNickname, type: .linkPreview, timestamp: timestamp, stanzaId: nil, data: mapUrl.absoluteString, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
+                        DBChatHistoryStore.instance.appendItem(for: account, with: from.bareJid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, type: .linkPreview, timestamp: timestamp, stanzaId: nil, data: mapUrl.absoluteString, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
                     }
                 }
             }

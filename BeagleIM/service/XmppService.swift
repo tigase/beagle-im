@@ -35,7 +35,7 @@ class XmppService: EventHandler {
  
     fileprivate let observedEvents: [Event] = [ SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE ];
     
-    fileprivate let eventHandlers: [XmppServiceEventHandler] = [MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), MessageEventHandler(), HttpFileUploadEventHandler(), JingleManager.instance, BlockedEventHandler.instance];
+    fileprivate let eventHandlers: [XmppServiceEventHandler] = [MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), MessageEventHandler(), HttpFileUploadEventHandler(), JingleManager.instance, BlockedEventHandler.instance, MixEventHandler.instance];
     
     var clients: [BareJID: XMPPClient] {
         get {
@@ -237,6 +237,12 @@ class XmppService: EventHandler {
                         if let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) {
                             ((messageModule.chatManager as! DefaultChatManager).chatStore as! DBChatStoreWrapper).deinitialize();
                         }
+                        if let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) {
+                            ((mucModule.roomsManager as! DefaultRoomsManager).store as! DBRoomStore).deinitialize();
+                        }
+                        if let mixModule: MixModule = client.modulesManager.getModule(MixModule.ID) {
+                            ((mixModule.channelManager as! DefaultChannelManager).store as! DBChannelStore).deinitialize();
+                        }
                     } else {
                         DBRosterStore.instance.removeAll(for: accountName);
                         DBChatStore.instance.closeAll(for: accountName);
@@ -326,9 +332,6 @@ class XmppService: EventHandler {
                 client.disconnect();
             } else {
                 let client = self.register(client: self.initializeClient(jid: account.name)!, for: account.name);
-                if let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) {
-                    ((messageModule.chatManager as! DefaultChatManager).chatStore as! DBChatStoreWrapper).initialize();
-                }
                 if self.isNetworkAvailable {
                     DispatchQueue.global().async {
                         self.connect(client: client);
@@ -394,7 +397,13 @@ class XmppService: EventHandler {
         
         _ = client.modulesManager.register(PresenceModule());
         
-        client.modulesManager.register(MucModule()).roomsManager = DBRoomsManager();
+        let roomStore = DBRoomStore(sessionObject: client.context.sessionObject);
+        client.modulesManager.register(MucModule(roomsManager: DefaultRoomsManager(store: roomStore)));
+        roomStore.initialize();
+    
+        let channelStore = DBChannelStore(sessionObject: client.context.sessionObject);
+        client.modulesManager.register(MixModule(channelManager: DefaultChannelManager(context: client.context, store: channelStore)));
+        channelStore.initialize();
         
         _ = client.modulesManager.register(AdHocCommandsModule());
         
