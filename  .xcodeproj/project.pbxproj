@@ -117,6 +117,8 @@
 		FE890D30240020DE00107437 /* db-schema-9.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE890D2F240020DD00107437 /* db-schema-9.sql */; };
 		FE890D3824014EAF00107437 /* DBChannelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE890D3724014EAF00107437 /* DBChannelStore.swift */; };
 		FE890D3A240153E200107437 /* MixEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE890D39240153E200107437 /* MixEventHandler.swift */; };
+		FE890D402404069E00107437 /* MIX.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE890D3F2404069D00107437 /* MIX.storyboard */; };
+		FE890D4524040F1200107437 /* ChannelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE890D4424040F1200107437 /* ChannelViewController.swift */; };
 		FE8C9F5421B3F6BD00BE8332 /* container-migration.plist in Resources */ = {isa = PBXBuildFile; fileRef = FE8C9F5321B3F6BD00BE8332 /* container-migration.plist */; };
 		FE8C9F5621B40F9000BE8332 /* RegisterAccountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8C9F5521B40F9000BE8332 /* RegisterAccountController.swift */; };
 		FE9486B221BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9486B121BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift */; };
@@ -315,6 +317,8 @@
 		FE890D2F240020DD00107437 /* db-schema-9.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "db-schema-9.sql"; sourceTree = "<group>"; };
 		FE890D3724014EAF00107437 /* DBChannelStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBChannelStore.swift; sourceTree = "<group>"; };
 		FE890D39240153E200107437 /* MixEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MixEventHandler.swift; sourceTree = "<group>"; };
+		FE890D3F2404069D00107437 /* MIX.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = MIX.storyboard; sourceTree = "<group>"; };
+		FE890D4424040F1200107437 /* ChannelViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChannelViewController.swift; sourceTree = "<group>"; };
 		FE8C9F5321B3F6BD00BE8332 /* container-migration.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "container-migration.plist"; sourceTree = "<group>"; };
 		FE8C9F5521B40F9000BE8332 /* RegisterAccountController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterAccountController.swift; sourceTree = "<group>"; };
 		FE9486B121BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSButtonNoSizeWhenHidden.swift; sourceTree = "<group>"; };
@@ -603,6 +607,14 @@
 			path = xmlconsole;
 			sourceTree = "<group>";
 		};
+		FE890D4324040F1200107437 /* channel */ = {
+			isa = PBXGroup;
+			children = (
+				FE890D4424040F1200107437 /* ChannelViewController.swift */,
+			);
+			path = channel;
+			sourceTree = "<group>";
+		};
 		FED2ECE72066B01C00F506A5 = {
 			isa = PBXGroup;
 			children = (
@@ -631,6 +643,7 @@
 		FED2ECF22066B01C00F506A5 /* BeagleIM */ = {
 			isa = PBXGroup;
 			children = (
+				FE890D4324040F1200107437 /* channel */,
 				FE2DEDA223C62D7000AEF14F /* incomingCall.aiff */,
 				FED2ECFD2066B01C00F506A5 /* BeagleIM.entitlements */,
 				FE9D88B3217652DF006CF0D9 /* BeagleIM-Bridging-Header.h */,
@@ -670,6 +683,7 @@
 				FE6E6BE521384D5E003B1696 /* utils */,
 				FE1A8BA421CA880100604141 /* voip */,
 				FE87C76D22834DFA00B0B64C /* xmlconsole */,
+				FE890D3F2404069D00107437 /* MIX.storyboard */,
 			);
 			path = BeagleIM;
 			sourceTree = "<group>";
@@ -883,6 +897,7 @@
 				FE5C6B2422896B12003DAB30 /* ServiceDiscovery.storyboard in Resources */,
 				FE87C76C2283487300B0B64C /* XMLConsole.storyboard in Resources */,
 				FE421B4721C928B00022DF77 /* Credits.rtf in Resources */,
+				FE890D402404069E00107437 /* MIX.storyboard in Resources */,
 				FED2ECF82066B01C00F506A5 /* Assets.xcassets in Resources */,
 				FED2ECFB2066B01C00F506A5 /* Main.storyboard in Resources */,
 				FE149D8222A5120300EE4E03 /* SearchHistory.storyboard in Resources */,
@@ -974,6 +989,7 @@
 				FE890D1F23FEF0B900107437 /* AbstractConversationLogController.swift in Sources */,
 				FE5BE64E213AD19A00463183 /* ChatCellViewMessage.swift in Sources */,
 				FE5202D7227F339D00644C12 /* BaseChatMessageCellView.swift in Sources */,
+				FE890D4524040F1200107437 /* ChannelViewController.swift in Sources */,
 				FEA2F53722E5F6A2009F2E88 /* AdvancedSettingsController.swift in Sources */,
 				FED7AEC921418FA9001E164B /* DBVCardStore.swift in Sources */,
 				FEA8941F2156625E004C3B51 /* ConfigureRoomViewController.swift in Sources */,

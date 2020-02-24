@@ -22,7 +22,7 @@
 import AppKit
 import TigaseSwift
 
-class ChatsListGroupGroupchat: ChatsListGroupAbstractChat<DBChatStore.DBRoom> {
+class ChatsListGroupGroupchat: ChatsListGroupAbstractChat {
     
     init(delegate: ChatsListViewDataSourceDelegate) {
         super.init(name: "Groupchats", dispatcher: QueueDispatcher(label: "chats_list_group_groupchats_queue"), delegate: delegate, canOpenChat: true);
@@ -31,7 +31,11 @@ class ChatsListGroupGroupchat: ChatsListGroupAbstractChat<DBChatStore.DBRoom> {
         NotificationCenter.default.addObserver(self, selector: #selector(roomNameChanged), name: MucEventHandler.ROOM_NAME_CHANGED, object: nil);
     }
 
-    override func newChatItem(chat: DBChatStore.DBRoom) -> ChatItemProtocol? {
+    override func isAccepted(chat: DBChatProtocol) -> Bool {
+        return chat is DBChatStore.DBRoom || chat is DBChatStore.DBChannel;
+    }
+
+    override func newChatItem(chat: DBChatProtocol) -> ChatItemProtocol? {
         return GroupchatItem(chat: chat);
     }
 

@@ -277,8 +277,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 guard let windowController = self.mainWindowController?.storyboard?.instantiateController(withIdentifier: "OpenGroupchatController") as? NSWindowController else {
                     return;
                 }
-                (windowController.contentViewController as? OpenGroupchatController)?.mucJidField.stringValue = uri.jid.domain;
-                (windowController.contentViewController as? OpenGroupchatController)?.mucJid = BareJID(uri.jid.domain);
+                (windowController.contentViewController as? OpenGroupchatController)?.componentJidField.stringValue = uri.jid.domain;
+                (windowController.contentViewController as? OpenGroupchatController)?.componentJid = BareJID(uri.jid.domain);
                 (windowController.contentViewController as? OpenGroupchatController)?.searchField.stringValue = uri.jid.localPart ?? "";
                 (windowController.contentViewController as? OpenGroupchatController)?.password = uri.dict?["password"];
                 self.mainWindowController?.window?.beginSheet(windowController.window!, completionHandler: nil);
@@ -510,7 +510,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             }
             let roomJid = BareJID(roomJidStr);
             openRoomController.searchField.stringValue = roomJidStr;
-            openRoomController.mucJids = [BareJID(roomJid.domain)];
+            openRoomController.componentJids = [BareJID(roomJid.domain)];
             openRoomController.account = BareJID(accountStr);
             openRoomController.nicknameField.stringValue = nickname;
             guard let window = self.mainWindowController?.window else {
@@ -562,7 +562,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             }
             let roomJid = BareJID(roomJidStr);
             openRoomController.searchField.stringValue = roomJidStr;
-            openRoomController.mucJids = [BareJID(roomJid.domain)];
+            openRoomController.componentJids = [BareJID(roomJid.domain)];
             openRoomController.account = BareJID(accountStr);
             openRoomController.nicknameField.stringValue = nickname;
             guard let window = self.mainWindowController?.window else {

@@ -120,7 +120,7 @@ class MucEventHandler: XmppServiceEventHandler {
                         }
                         let roomJid = e.room.roomJid;
                         openRoomController.searchField.stringValue = roomJid.stringValue;
-                        openRoomController.mucJids = [BareJID(roomJid.domain)];
+                        openRoomController.componentJids = [BareJID(roomJid.domain)];
                         openRoomController.account = e.sessionObject.userBareJid!;
                         openRoomController.nicknameField.stringValue = e.room.nickname;
                         guard let window = (NSApplication.shared.delegate as? AppDelegate)?.mainWindowController?.window else {

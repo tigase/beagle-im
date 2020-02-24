@@ -26,7 +26,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
     
     @IBOutlet var accountField: NSPopUpButton!;
     @IBOutlet var searchField: NSTextField!;
-    @IBOutlet var mucJidField: NSTextField!;
+    @IBOutlet var componentJidField: NSTextField!;
     @IBOutlet var roomsTableView: NSTableView!;
     @IBOutlet var progressIndicator: NSProgressIndicator!;
     @IBOutlet var nicknameField: NSTextField!;
@@ -50,22 +50,22 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
         }
     }
     
-    var mucJids: [BareJID] = [] {
+    var componentJids: [BareJID] = [] {
         didSet {
-            self.mucJidField.stringValue = mucJids.first?.stringValue ?? "";
-            if let jid = mucJids.first {
-                mucJid = jid;
+            self.componentJidField.stringValue = componentJids.first?.stringValue ?? "";
+            if let jid = componentJids.first {
+                componentJid = jid;
             }
         }
     }
     
-    var mucJid: BareJID? {
+    var componentJid: BareJID? {
         didSet {
-            guard oldValue == nil || mucJid == nil || ((oldValue!) != (mucJid!)) else {
+            guard oldValue == nil || componentJid == nil || ((oldValue!) != (componentJid!)) else {
                 return;
             }
             
-            guard mucJid != nil else {
+            guard componentJid != nil else {
                 self.allItems = [];
                 return;
             }
@@ -74,13 +74,13 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                 return;
             }
             
-            refreshRooms(at: mucJid!);
+            refreshRooms(at: componentJid!);
         }
     }
     
     override func viewDidLoad() {
         self.searchField.delegate = self;
-        self.mucJidField.delegate = self;
+        self.componentJidField.delegate = self;
         self.nicknameField.delegate = self;
         self.roomsTableView.dataSource = self;
         self.roomsTableView.delegate = self;
@@ -118,10 +118,10 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
             }
             joinButton.isEnabled = !nicknameField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty;
         }
-        if mucJid == nil {
+        if componentJid == nil {
             self.findMucComponent(at: account);
         } else {
-            self.refreshRooms(at: mucJid!);
+            self.refreshRooms(at: componentJid!);
         }
     }
     
@@ -172,9 +172,9 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
         }
         
         switch field {
-        case mucJidField:
-            let mucJidStr = mucJidField.stringValue.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines);
-            self.mucJid = mucJidStr.isEmpty ? nil : BareJID(mucJidStr);
+        case componentJidField:
+            let mucJidStr = componentJidField.stringValue.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines);
+            self.componentJid = mucJidStr.isEmpty ? nil : BareJID(mucJidStr);
             field.resignFirstResponder();
         case searchField:
             break;
@@ -211,10 +211,10 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
             guard let item = self.items.first(where: { item -> Bool in
                 return roomName == (item.jid.localPart ?? "")
             }) else {
-                guard let mucDomain = self.mucJid?.domain else {
+                guard let mucDomain = self.componentJid?.domain else {
                     return;
                 }
-                self.join(room: BareJID(localPart: roomName, domain: mucDomain));
+                self.join(jid: BareJID(localPart: roomName, domain: mucDomain));
                 return;
             }
             self.openRoom(for: item);
@@ -227,10 +227,90 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
     }
     
     func openRoom(for roomItem: DiscoveryModule.Item) {
-        join(room: roomItem.jid.bareJid)
+        join(jid: roomItem.jid.bareJid)
     }
     
-    func join(room: BareJID) {
+    func join(jid: BareJID) {
+        guard let type = componentType else {
+            return;
+        }
+        
+        switch type {
+        case .mix:
+            joinChannel(channel: jid);
+        case .muc:
+            joinRoom(room: jid);
+        }
+    }
+    
+    func joinChannel(channel: BareJID) {
+        guard let mixModule: MixModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MixModule.ID) else {
+            return;
+        }
+        
+        let nickname = self.nicknameField.stringValue;
+        mixModule.join(channel: channel, withNick: nickname, completionHandler: { result in
+            switch result {
+            case .success(let response):
+                // we have joined, so all what we need to do is close this window
+                DispatchQueue.main.async {
+                    self.close();
+                }
+            case .failure(let errorCondition, let response):
+                switch errorCondition {
+                case .item_not_found:
+                    // there is no such channel, we need to create a new one..
+                    // TODO: add more details room creation view..
+                    mixModule.create(channel: channel.localPart, at: BareJID(channel.domain), completionHandler: { result in
+                        switch result {
+                        case .success(let channel):
+                            mixModule.join(channel: channel, withNick: nickname, completionHandler: { result in
+                                switch result {
+                                case .success(let response):
+                                    // we have joined, so all what we need to do is close this window
+                                    DispatchQueue.main.async {
+                                        self.close();
+                                    }
+                                case .failure(let errorCondition, let response):
+                                    DispatchQueue.main.async {
+                                        let alert = NSAlert();
+                                        alert.messageText = "Could not join";
+                                        alert.informativeText = "The channel \(channel) was created but it was not possible to join it. The server returned an error: \(response?.errorText ?? errorCondition.rawValue)";
+                                        alert.addButton(withTitle: "OK")
+                                        alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
+                                            self.close();
+                                        });
+                                    }
+                                }
+                            });
+                        case .failure(let errorCondition):
+                            DispatchQueue.main.async {
+                                let alert = NSAlert();
+                                alert.messageText = "Could not create";
+                                alert.informativeText = "It was not possible to create a channel. The server returned an error: \(response?.errorText ?? errorCondition.rawValue)";
+                                alert.addButton(withTitle: "OK")
+                                alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
+                                    self.close();
+                                });
+                            }
+                        }
+                    })
+                default:
+                    DispatchQueue.main.async {
+                        let alert = NSAlert();
+                        alert.messageText = "Could not join";
+                        alert.informativeText = "It was not possible to join a channel. The server returned an error: \(response?.errorText ?? errorCondition.rawValue)";
+                        alert.addButton(withTitle: "OK")
+                        alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
+                            self.close();
+                        });
+                    }
+                }
+            }
+        });
+    }
+    
+    func joinRoom(room: BareJID) {
         guard let discoModule: DiscoveryModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(DiscoveryModule.ID) else {
             return;
         }
@@ -282,7 +362,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                     
                     let window = NSWindow(contentViewController: configRoomController);
                     configRoomController.account = self.account;
-                    configRoomController.mucComponent = self.mucJid!;
+                    configRoomController.mucComponent = self.componentJid!;
                     configRoomController.roomJid = room;
                     configRoomController.nickname = nickname;
                     self.view.window?.beginSheet(window, completionHandler: { result in
@@ -319,7 +399,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
             return;
         }
         
-        self.mucJids = [];
+        self.componentJids = [];
         self.allItems = [];
         progressIndicator.startAnimation(nil);
         
@@ -330,7 +410,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                 counter = counter - 1;
                 if (counter <= 0) {
                     self.progressIndicator.stopAnimation(nil);
-                    self.mucJids = mucJids.sorted(by: { (j1, j2) -> Bool in
+                    self.componentJids = mucJids.sorted(by: { (j1, j2) -> Bool in
                         return j2.stringValue.compare(j2.stringValue) == .orderedAscending;
                     });
                 }
@@ -363,6 +443,8 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
         });
     }
     
+    var componentType: ComponentType?;
+    
     fileprivate func refreshRooms(at mucJid: BareJID) {
         guard let discoModule: DiscoveryModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(DiscoveryModule.ID) else {
             return;
@@ -371,6 +453,11 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
         self.allItems = [];
         progressIndicator.startAnimation(nil);
         
+        self.componentType = nil;
+        var foundItems: [DiscoveryModule.Item] = [];
+        
+        let group = DispatchGroup();
+        group.enter();
         discoModule.getItems(for: JID(mucJid), onItemsReceived: { (node, items) in
             let sortedItems = items.sorted(by: { (i1, i2) -> Bool in
                 let n1 = i1.name ?? i1.jid.localPart!;
@@ -378,18 +465,50 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                 return n1.compare(n2) == ComparisonResult.orderedAscending;
             })
             DispatchQueue.main.async {
-                self.allItems = sortedItems;
-                self.progressIndicator.stopAnimation(nil);
+                foundItems = sortedItems;
+                group.leave();
             }
         }) { (errorCondition) in
-            DispatchQueue.main.async {
-                self.progressIndicator.stopAnimation(nil);
-            }
+            group.leave();
         };
+        
+        group.enter();
+        discoModule.getInfo(for: JID(mucJid), node: nil, onInfoReceived: { (node, identities, features) in
+            DispatchQueue.main.async {
+                self.componentType = ComponentType.from(identities: identities, features: features);
+                group.leave();
+            }
+        }, onError: { errorCondition in
+            group.leave();
+        })
+        
+        group.notify(queue: DispatchQueue.main, execute: {
+            if self.componentType == nil {
+                self.allItems = [];
+            } else {
+                self.allItems = foundItems;
+            }
+            self.progressIndicator.stopAnimation(nil);
+        })
     }
  
     fileprivate func close() {
         self.view.window?.sheetParent?.endSheet(self.view.window!);
+    }
+    
+    enum ComponentType {
+        case muc
+        case mix
+        
+        static func from(identities: [DiscoveryModule.Identity], features: [String]) -> ComponentType? {
+            if identities.first(where: { $0.category == "conference" && $0.type == "mix" }) != nil && features.contains(MixModule.CORE_XMLNS) {
+                return .mix;
+            }
+            if identities.first(where: { $0.category == "conference" }) != nil && features.contains("http://jabber.org/protocol/muc") {
+                return .muc;
+            }
+            return nil;
+        }
     }
 }
 
