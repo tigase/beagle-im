@@ -35,8 +35,8 @@ class DBChatHistoryStore {
     // if server has MAM:2 then use server_msg_id for checking
     // if there is no result, try to match using origin-id/stanza-id (if there is one in a form of UUID) and update server_msg_id if message is found
     // if there is was no origin-id/stanza-id then use old check with timestamp range and all of that..
-    fileprivate let findItemFallback: DBStatement = try! DBConnection.main.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND timestamp BETWEEN :ts_from AND :ts_to AND item_type = :item_type AND (:data IS NULL OR data = :data) AND (:stanza_id IS NULL OR (stanza_id IS NOT NULL AND stanza_id = :stanza_id)) AND (state % 2 == :direction) AND (:author_nickname is null OR author_nickname = :author_nickname) order by timestamp desc");
-    fileprivate let findItemByServerMsgId: DBStatement = try! DBConnection.main.prepareStatement("SELECT id FROM chat_history WHERE account = :account AND jid = :jid AND server_msg_id = :server_msg_id");
+    fileprivate let findItemFallback: DBStatement = try! DBConnection.main.prepareStatement("SELECT id FROM chat_history WHERE account = :account AND jid = :jid AND timestamp BETWEEN :ts_from AND :ts_to AND item_type = :item_type AND (:data IS NULL OR data = :data) AND (:stanza_id IS NULL OR (stanza_id IS NOT NULL AND stanza_id = :stanza_id)) AND (state % 2 == :direction) AND (:author_nickname is null OR author_nickname = :author_nickname) order by timestamp desc");
+    fileprivate let findItemByServerMsgId: DBStatement = try! DBConnection.main.prepareStatement("SELECT id FROM chat_history WHERE account = :account AND server_msg_id = :server_msg_id");
     fileprivate let findItemByOriginId: DBStatement = try! DBConnection.main.prepareStatement("SELECT id FROM chat_history WHERE account = :account AND jid = :jid AND stanza_id = :stanza_id");
     fileprivate let updateServerMsgId: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET server_msg_id = :server_msg_id WHERE id = :id");
     fileprivate let markAsReadStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET state = case state when \(MessageState.incoming_error_unread.rawValue) then \(MessageState.incoming_error.rawValue) when \(MessageState.outgoing_error_unread.rawValue) then \(MessageState.outgoing_error.rawValue) else \(MessageState.incoming.rawValue) end WHERE account = :account AND jid = :jid AND state in (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))");
@@ -155,7 +155,7 @@ class DBChatHistoryStore {
     
     enum MessageSource {
         case stream
-        case archive(source: BareJID, version: MessageArchiveManagementModule.Version, messageId: String)
+        case archive(source: BareJID, version: MessageArchiveManagementModule.Version, messageId: String, timestamp: Date)
         case carbons(action: MessageCarbonsModule.Action)
     }
         
@@ -195,8 +195,10 @@ class DBChatHistoryStore {
         var stableIds = message.stanzaId;
         var fromArchive = false;
 
+        var inTimestamp: Date?;
+
         switch source {
-        case .archive(let source, let version, let messageId):
+        case .archive(let source, let version, let messageId, let timestamp):
             if version == .MAM2 {
                 if stableIds == nil {
                     stableIds = [source: messageId];
@@ -204,8 +206,10 @@ class DBChatHistoryStore {
                     stableIds?[source] = messageId;
                 }
             }
+            inTimestamp = timestamp;
             fromArchive = true;
         default:
+            inTimestamp = message.delay?.stamp;
             break;
         }
 
@@ -218,13 +222,11 @@ class DBChatHistoryStore {
         }
         
         let (authorNickname, authorJid, recipientNickname) = MessageEventHandler.extractRealAuthor(from: message, for: account, with: jid);
-        
-        let inTimestamp = message.delay?.stamp ?? Date();
-        
+                
         let state = MessageEventHandler.calculateState(direction: MessageEventHandler.calculateDirection(direction: direction, for: account, with: jid, authorNickname: authorNickname, authorJid: authorJid), isError: (message.type ?? .chat) == .error, isUnread: !fromArchive);
         
         dispatcher.async {
-            let timestamp = Date(timeIntervalSince1970: Double(Int64(inTimestamp.timeIntervalSince1970 * 1000)) / 1000);
+            let timestamp = Date(timeIntervalSince1970: Double(Int64((inTimestamp ?? Date()).timeIntervalSince1970 * 1000)) / 1000);
 
             guard !state.isError || stanzaId == nil || !self.processOutgoingError(for: account, with: jid, stanzaId: stanzaId!, errorCondition: message.errorCondition, errorMessage: message.errorText) else {
                 return;
@@ -251,7 +253,7 @@ class DBChatHistoryStore {
     
     private func findItemId(for account: BareJID, with jid: BareJID, serverMsgId: String?, originId: String?, timestamp: Date, direction: MessageDirection, itemType: ItemType, stanzaId: String?, authorNickname: String?, data: String?) -> Int? {
         if serverMsgId != nil {
-            if let id = try! self.findItemByServerMsgId.findFirst(["server_msg_id": serverMsgId, "account": account, "jid": jid] as [String: Any?], map: { cursor -> Int? in
+            if let id = try! self.findItemByServerMsgId.findFirst(["server_msg_id": serverMsgId, "account": account] as [String: Any?], map: { cursor -> Int? in
                 return cursor["id"];
             }) {
                 return id;

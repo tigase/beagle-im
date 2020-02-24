@@ -122,12 +122,12 @@ open class DBRosterStore {
     public init() {
         self.dispatcher = QueueDispatcher(label: "db_roster_store");
         
-        insertItemStmt = try! DBConnection.main.prepareStatement("INSERT INTO roster_items (account, jid, name, subscription, timestamp, ask) VALUES (:account, :jid, :name, :subscription, :timestamp, :ask)");
+        insertItemStmt = try! DBConnection.main.prepareStatement("INSERT INTO roster_items (account, jid, name, subscription, timestamp, ask, annotations) VALUES (:account, :jid, :name, :subscription, :timestamp, :ask, :annotations)");
         updateItemStmt = try! DBConnection.main.prepareStatement("UPDATE roster_items SET name = :name, subscription = :subscription, timestamp = :timestamp, ask = :ask WHERE id = :id");
         deleteItemStmt = try! DBConnection.main.prepareStatement("DELETE FROM roster_items WHERE id = :id");
         
         getAllItemsGroupsStmt = try! DBConnection.main.prepareStatement("SELECT rig.item_id as item_id, rg.name as name FROM roster_items ri INNER JOIN roster_items_groups rig ON ri.id = rig.item_id INNER JOIN roster_groups rg ON rig.group_id = rg.id WHERE ri.account = :account");
-        getAllItemsStmt = try! DBConnection.main.prepareStatement("SELECT id, jid, name, subscription, ask FROM roster_items WHERE account = :account");
+        getAllItemsStmt = try! DBConnection.main.prepareStatement("SELECT id, jid, name, subscription, ask, annotations FROM roster_items WHERE account = :account");
         
         getGroupIdStmt = try! DBConnection.main.prepareStatement("SELECT id from roster_groups WHERE name = :name");
         insertGroupStmt = try! DBConnection.main.prepareStatement("INSERT INTO roster_groups (name) VALUES (:name)");
