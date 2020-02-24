@@ -66,17 +66,20 @@ class MessageArchivingSettingsViewController: NSViewController, AccountAware {
             self.disable();
             return;
         }
-        mamModule.retrieveSettings(onSuccess: { (defaultValue, _, _) in
-            DispatchQueue.main.async {
-                let isOn = defaultValue == .always
-                self.archivingEnabled.state = isOn ? .on : .off;
-                self.archivingEnabled.isEnabled = true;
-                self.automaticSynchronization.isEnabled = isOn;
-                self.synchronizationPeriod.isEnabled = syncEnabled;
+        mamModule.retrieveSettings(completionHandler: { result in
+            switch result {
+            case .success(let defValue, let always, let never):
+                DispatchQueue.main.async {
+                    let isOn = defValue == .always
+                    self.archivingEnabled.state = isOn ? .on : .off;
+                    self.archivingEnabled.isEnabled = true;
+                    self.automaticSynchronization.isEnabled = isOn;
+                    self.synchronizationPeriod.isEnabled = syncEnabled;
+                }
+            case .failure(let errorCondition, let response):
+                print("got an error from the server:", errorCondition as Any, ", ignoring...");
             }
-        }) { (errorCondition, stanza) in
-            print("got an error from the server:", errorCondition as Any, ", ignoring...");
-        }
+        });
     }
     
     func disable() {
@@ -93,14 +96,20 @@ class MessageArchivingSettingsViewController: NSViewController, AccountAware {
             return;
         }
         
-        mamModule.retrieveSettings(onSuccess: { (defaultValue, always, never) in
-            mamModule.updateSettings(defaultValue: isOn ? .always : .never, always: always, never: never, onSuccess: { (newValue, always, never) in
-                self.updateArchivingState(newValue == .always);
-            }, onError: { (errorCondition, stanza) in
-                self.updateArchivingState(defaultValue == .always);
-            });
-        }, onError: { (errorCondition, stanza) in
-            self.updateArchivingState(!isOn);
+        mamModule.retrieveSettings(completionHandler: { result in
+            switch result {
+            case .success(let defValue, let always, let never):
+                mamModule.updateSettings(defaultValue: isOn ? .always : .never, always: always, never: never, completionHandler: { (result) in
+                    switch result {
+                    case .success(let newValue, let always, let never):
+                        self.updateArchivingState(newValue == .always);
+                    case .failure(let errorCondition, let response):
+                        self.updateArchivingState(defValue == .always);
+                    }
+                });
+            case .failure(let errorCondition, let response):
+                self.updateArchivingState(!isOn);
+            }
         });
     }
     

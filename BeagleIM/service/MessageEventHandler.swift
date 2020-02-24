@@ -53,9 +53,8 @@ class MessageEventHandler: XmppServiceEventHandler {
                     encryptionErrorBody = "Message was not encrypted for this device.";
                     encryption = .notForThisDevice;
                 case .duplicateMessage:
-                    if let from = message.from?.bareJid, DBChatHistoryStore.instance.checkItemAlreadyAdded(for: account, with: from, authorNickname: nil, type: .message, timestamp: message.delay?.stamp ?? Date(), direction: account == from ? .outgoing : .incoming, stanzaId: message.getAttribute("id"), data: nil) {
-                        return (nil, .none, nil);
-                    }
+                    // message is a duplicate and was processed before
+                    return (nil, .none, nil);
                 case .notEncrypted:
                     encryption = .none;
                 default:
@@ -72,7 +71,7 @@ class MessageEventHandler: XmppServiceEventHandler {
         return (body, encryption, fingerprint);
     }
 
-    let events: [Event] = [MessageModule.MessageReceivedEvent.TYPE, MessageDeliveryReceiptsModule.ReceiptEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, MessageArchiveManagementModule.ArchivedMessageReceivedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, OMEMOModule.AvailabilityChangedEvent.TYPE];
+    let events: [Event] = [MessageModule.MessageReceivedEvent.TYPE, MessageDeliveryReceiptsModule.ReceiptEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, DiscoveryModule.AccountFeaturesReceivedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, MessageArchiveManagementModule.ArchivedMessageReceivedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, OMEMOModule.AvailabilityChangedEvent.TYPE];
 
     init() {
         NotificationCenter.default.addObserver(self, selector: #selector(settingsChanged), name: Settings.CHANGED, object: nil);
@@ -109,52 +108,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                 return;
             }
 
-            let (body, encryption, fingerprint) = MessageEventHandler.prepareBody(message: e.message, forAccount: account)
-            guard body != nil else {
-                if (e.message.type ?? .normal) != .error, let chatState = e.message.chatState, e.message.delay == nil {
-                    DBChatHistoryStore.instance.process(chatState: chatState, for: account, with: from.bareJid);
-                }
-                return;
-            }
-
-            let timestamp = e.message.delay?.stamp ?? Date();
-            let state: MessageState = from.bareJid == account ? (((e.message.type ?? .chat) == .error) ? .outgoing_error : .outgoing) : (((e.message.type ?? .chat) == .error) ? .incoming_error_unread : .incoming_unread);
-            
-            var type: ItemType = .message;
-            if let oob = e.message.oob {
-                if oob == body! && URL(string: oob) != nil {
-                    type = .attachment;
-                }
-            }
-            
-            var authorNickname: String? = nil;
-            var recipientNickname: String? = nil;
-            if let room = DBChatStore.instance.getChat(for: account, with: from.bareJid) as? DBChatStore.DBRoom {
-                if state.direction == .incoming {
-                    authorNickname = from.resource;
-                    recipientNickname = room.nickname;
-                } else {
-                    authorNickname = room.nickname;
-                    recipientNickname = e.message.to?.resource;
-                }
-            }
-            
-            DBChatHistoryStore.instance.appendItem(for: account, with: from.bareJid, state: state, authorNickname: authorNickname, recipientNickname: recipientNickname, type: type, timestamp: timestamp, stanzaId: e.message.id, data: body!, chatState: e.message.chatState, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
-            
-            if type == .message && !state.isError, #available(macOS 10.15, *) {
-                let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
-                let matches = detector.matches(in: body!, range: NSMakeRange(0, body!.utf16.count));
-                matches.forEach { match in
-                    if let url = match.url, let scheme = url.scheme, ["https", "http"].contains(scheme) {
-                        DBChatHistoryStore.instance.appendItem(for: account, with: from.bareJid, state: state, authorNickname: authorNickname, recipientNickname: recipientNickname, type: .linkPreview, timestamp: timestamp, stanzaId: nil, data: url.absoluteString, chatState: e.message.chatState, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
-                    }
-                    if let address = match.components {
-                        let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
-                        let mapUrl = URL(string: "http://maps.apple.com/?q=\(query!)")!;
-                        DBChatHistoryStore.instance.appendItem(for: account, with: from.bareJid, state: state, authorNickname: authorNickname, recipientNickname: recipientNickname, type: .linkPreview, timestamp: timestamp, stanzaId: nil, data: mapUrl.absoluteString, chatState: e.message.chatState, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
-                    }
-                }
-            }
+            DBChatHistoryStore.instance.append(for: account, message: e.message, source: .stream);
         case let e as MessageDeliveryReceiptsModule.ReceiptEvent:
             guard let from = e.message.from?.bareJid, let account = e.sessionObject.userBareJid else {
                 return;
@@ -162,7 +116,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             DBChatHistoryStore.instance.updateItemState(for: account, with: from, stanzaId: e.messageId, from: .outgoing, to: .outgoing_delivered);
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
             let account = e.sessionObject.userBareJid!;
-            MessageEventHandler.syncMessages(for: account);
+            MessageEventHandler.scheduleMessageSync(for: account);
             DBChatHistoryStore.instance.loadUnsentMessage(for: account, completionHandler: { (account, jid, data, stanzaId, encryption, type) in
 
                 var chat = DBChatStore.instance.getChat(for: account, with: jid);
@@ -183,6 +137,10 @@ class MessageEventHandler: XmppServiceEventHandler {
                     }
                 }
             });
+        case let e as DiscoveryModule.AccountFeaturesReceivedEvent:
+            if let account = e.sessionObject.userBareJid, let mamModule: MessageArchiveManagementModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageArchiveManagementModule.ID), mamModule.isAvailable {
+                MessageEventHandler.syncMessagesScheduled(for: account);
+            }
         case let e as DiscoveryModule.ServerFeaturesReceivedEvent:
             guard Settings.enableMessageCarbons.bool() else {
                 return;
@@ -198,148 +156,14 @@ class MessageEventHandler: XmppServiceEventHandler {
             guard let account = e.sessionObject.userBareJid, let from = e.message.from, let to = e.message.to else {
                 return;
             }
-            let (body, encryption,fingerprint) = MessageEventHandler.prepareBody(message: e.message, forAccount: account);
-            guard body != nil else {
-                if Settings.markMessageDeliveredToOtherResourceAsRead.bool(), let delivery = e.message.messageDelivery, e.action == .sent {
-                    switch delivery {
-                    case .received(let msgId):
-                        DBChatHistoryStore.instance.markAsRead(for: from.bareJid, with: to.bareJid, messageId: msgId);
-                        break;
-                    default:
-                        break;
-                    }
-                }
-                return;
-            }
-            let jid = account == from.bareJid ? to.bareJid : from.bareJid;
-            let timestamp = e.message.delay?.stamp ?? Date();
-            let state: MessageState = calculateState(direction: account == from.bareJid ? .outgoing : .incoming, error: ((e.message.type ?? .chat) == .error), unread: !Settings.markMessageCarbonsAsRead.bool());
             
-            var type: ItemType = .message;
-            if let oob = e.message.oob {
-                if oob == body!, URL(string: oob) != nil {
-                    type = .attachment;
-                }
-            }
-                        
-            var authorNickname: String? = nil;
-            var recipientNickname: String? = nil;
-            if let room = DBChatStore.instance.getChat(for: account, with: jid) as? DBChatStore.DBRoom {
-                // carbons should not copy PM messages
-                return;
-            }
-
-            DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, authorNickname: authorNickname, recipientNickname: recipientNickname, type: type, timestamp: timestamp, stanzaId: e.message.id, data: body!, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: { (msgId) in
-                if state.direction == .outgoing {
-                    DBChatHistoryStore.instance.markAsRead(for: account, with: jid, before: timestamp);
-                }
-            });
-            
-            if type == .message && !state.isError, #available(macOS 10.15, *) {
-                let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
-                let matches = detector.matches(in: body!, range: NSMakeRange(0, body!.utf16.count));
-                matches.forEach { match in
-                    if let url = match.url, let scheme = url.scheme, ["https", "http"].contains(scheme) {
-                        DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, authorNickname: authorNickname, recipientNickname: recipientNickname, type: .linkPreview, timestamp: timestamp, stanzaId: nil, data: url.absoluteString, chatState: e.message.chatState, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
-                    }
-                    if let address = match.components {
-                        let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
-                        let mapUrl = URL(string: "http://maps.apple.com/?q=\(query!)")!;
-                        DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, authorNickname: authorNickname, recipientNickname: recipientNickname, type: .linkPreview, timestamp: timestamp, stanzaId: nil, data: mapUrl.absoluteString, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
-                    }
-                }
-            }
+            DBChatHistoryStore.instance.append(for: account, message: e.message, source: .carbons(action: e.action));
         case let e as MessageArchiveManagementModule.ArchivedMessageReceivedEvent:
             guard let account = e.sessionObject.userBareJid, let from = e.message.from, let to = e.message.to else {
                 return;
             }
-            let (body, encryption, fingerprint) = MessageEventHandler.prepareBody(message: e.message, forAccount: account)
-            guard body != nil else {
-                return;
-            }
             
-            var type: ItemType = .message;
-            if let oob = e.message.oob {
-                if oob == body, URL(string: oob) != nil {
-                    type = .attachment;
-                }
-            }
-            
-            let jid = account == from.bareJid ? to.bareJid : from.bareJid;
-            let timestamp = e.timestamp!;
-            var state: MessageState = calculateState(direction: account == from.bareJid ? .outgoing : .incoming, error: ((e.message.type ?? .chat) == .error), unread: false);
-            
-            var authorNickname: String? = nil;
-            var recipientNickname: String? = nil;
-            var authorJid: BareJID? = nil;
-            
-            if let mix = e.message.mix {
-                authorNickname = mix.nickname;
-                authorJid = mix.jid;
-                if mix.jid != nil {
-                    if mix.jid == account {
-                        if state.isError {
-                            state = .outgoing_error;
-                        } else {
-                            state = .outgoing;
-                        }
-                    }
-                } else if let channel = DBChatStore.instance.getChat(for: account, with: jid) as? DBChatStore.DBChannel {
-                    if let senderId = from.resource {
-                        if channel.participantId == senderId {
-                            if state.isError {
-                                state = .outgoing_error;
-                            } else {
-                                state = .outgoing;
-                            }
-                        }
-                    } else if mix.nickname == channel.nickname {
-                        if state.isError {
-                            state = .outgoing_error;
-                        } else {
-                            state = .outgoing;
-                        }
-                    }
-                }
-            } else if let room = DBChatStore.instance.getChat(for: account, with: jid) as? DBChatStore.DBRoom {
-                if room.nickname != from.resource {
-                    if state.isError {
-                        state = .incoming_error;
-                    } else {
-                        state = .incoming;
-                    }
-                } else {
-                    if state.isError {
-                        state = .outgoing_error;
-                    } else {
-                        state = .outgoing;
-                    }
-                }
-                if state.direction == .incoming {
-                    authorNickname = from.resource;
-                    recipientNickname = room.nickname;
-                } else {
-                    authorNickname = room.nickname;
-                    recipientNickname = e.message.to?.resource;
-                }
-            }
-
-            DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, type: type, timestamp: timestamp, stanzaId: e.message.id, data: body!, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
-            
-            if type == .message && !state.isError, #available(macOS 10.15, *) {
-                let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
-                let matches = detector.matches(in: body!, range: NSMakeRange(0, body!.utf16.count));
-                matches.forEach { match in
-                    if let url = match.url, let scheme = url.scheme, ["https", "http"].contains(scheme) {
-                        DBChatHistoryStore.instance.appendItem(for: account, with: from.bareJid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, type: .linkPreview, timestamp: timestamp, stanzaId: nil, data: url.absoluteString, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
-                    }
-                    if let address = match.components {
-                        let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
-                        let mapUrl = URL(string: "http://maps.apple.com/?q=\(query!)")!;
-                        DBChatHistoryStore.instance.appendItem(for: account, with: from.bareJid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, type: .linkPreview, timestamp: timestamp, stanzaId: nil, data: mapUrl.absoluteString, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, completionHandler: nil);
-                    }
-                }
-            }
+            DBChatHistoryStore.instance.append(for: account, message: e.message, source: .archive(source: e.source, version: e.version, messageId: e.messageId));
         case let e as OMEMOModule.AvailabilityChangedEvent:
             NotificationCenter.default.post(name: MessageEventHandler.OMEMO_AVAILABILITY_CHANGED, object: e);
         default:
@@ -368,6 +192,9 @@ class MessageEventHandler: XmppServiceEventHandler {
 
             let message = chat.createMessage(msg);
             message.id = stanzaId ?? UUID().uuidString;
+            if let id = message.id, UUID(uuidString: id) != nil {
+                message.originId = id;
+            }
             message.messageDelivery = .request;
 
             let account = chat.account;
@@ -377,13 +204,16 @@ class MessageEventHandler: XmppServiceEventHandler {
             case .omemo:
                 if stanzaId == nil {
                     let fingerprint = DBOMEMOStore.instance.identityFingerprint(forAccount: account, andAddress: SignalAddress(name: account.stringValue, deviceId: Int32(bitPattern: DBOMEMOStore.instance.localRegistrationId(forAccount: account)!)));
-                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing_unsent, recipientNickname: nil, type: url == nil ? .message : .attachment, timestamp: Date(), stanzaId: message.id, data: msg, encryption: .decrypted, encryptionFingerprint: fingerprint, chatAttachmentAppendix: chatAttachmentAppendix, completionHandler: messageStored);
+                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing_unsent, authorNickname: nil, authorJid: nil, recipientNickname: nil, type: url == nil ? .message : .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: msg, encryption: .decrypted, encryptionFingerprint: fingerprint, chatAttachmentAppendix: chatAttachmentAppendix, linkPreviewAction: .none, completionHandler: messageStored);
                 }
                 XmppService.instance.tasksQueue.schedule(for: jid, task: { (completionHandler) in
                     sendEncryptedMessage(message, from: account, completionHandler: { result in
                         switch result {
                         case .success(_):
-                            DBChatHistoryStore.instance.updateItemState(for: account, with: jid, stanzaId: message.id!, from: .outgoing_unsent, to: .outgoing, withTimestamp: Date());
+                            let timestamp = Date();
+                            DBChatHistoryStore.instance.updateItemState(for: account, with: jid, stanzaId: message.id!, from: .outgoing_unsent, to: .outgoing, withTimestamp: timestamp);
+                            
+                            DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing, authorNickname: nil, authorJid: nil, recipientNickname: nil, type: url == nil ? .message : .attachment, timestamp: timestamp, stanzaId: nil, serverMsgId: nil, remoteMsgId: nil, data: msg, encryption: .decrypted, encryptionFingerprint: nil, chatAttachmentAppendix: chatAttachmentAppendix, linkPreviewAction: .only, completionHandler: messageStored);
                         case .failure(let err):
                             let condition = (err is ErrorCondition) ? (err as? ErrorCondition) : nil;
                             guard condition == nil || condition! != .gone else {
@@ -410,7 +240,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                 message.oob = url;
                 let type: ItemType = url == nil ? .message : .attachment;
                 if stanzaId == nil {
-                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing_unsent, recipientNickname: nil, type: type, timestamp: Date(), stanzaId: message.id, data: msg, encryption: .none, encryptionFingerprint: nil, chatAttachmentAppendix: chatAttachmentAppendix, completionHandler: messageStored);
+                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing_unsent, authorNickname: nil, authorJid: nil, recipientNickname: nil, type: type, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: msg, encryption: .none, encryptionFingerprint: nil, chatAttachmentAppendix: chatAttachmentAppendix, linkPreviewAction: .none, completionHandler: messageStored);
                 }
                 XmppService.instance.tasksQueue.schedule(for: jid, task: { (completionHandler) in
                     sendUnencryptedMessage(message, from: account, completionHandler: { result in
@@ -419,20 +249,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                             let timestamp = Date();
                             DBChatHistoryStore.instance.updateItemState(for: account, with: jid, stanzaId: message.id!, from: .outgoing_unsent, to: .outgoing, withTimestamp: timestamp);
                             
-                            if type == .message, #available(macOS 10.15, *) {
-                                let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
-                                let matches = detector.matches(in: body!, range: NSMakeRange(0, body!.utf16.count));
-                                matches.forEach { match in
-                                    if let url = match.url, let scheme = url.scheme, ["https", "http"].contains(scheme) {
-                                        DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing, recipientNickname: nil, type: .linkPreview, timestamp: timestamp, stanzaId: nil, data: url.absoluteString, encryption: .none, encryptionFingerprint: nil, completionHandler: nil);
-                                    }
-                                    if let address = match.components {
-                                        let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
-                                        let mapUrl = URL(string: "http://maps.apple.com/?q=\(query!)")!;
-                                        DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing, recipientNickname: nil, type: .linkPreview, timestamp: timestamp, stanzaId: nil, data: mapUrl.absoluteString, encryption: .none, encryptionFingerprint: nil, completionHandler: nil);
-                                    }
-                                }
-                            }
+                            DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing, authorNickname: nil, authorJid: nil, recipientNickname: nil, type: type, timestamp: timestamp, stanzaId: nil, serverMsgId: nil, remoteMsgId: nil, data: msg, encryption: .none, encryptionFingerprint: nil, chatAttachmentAppendix: chatAttachmentAppendix, linkPreviewAction: .only, completionHandler: nil);
                         case .failure(let err):
                             guard let condition = err as? ErrorCondition, condition != .gone else {
                                 completionHandler();
@@ -494,8 +311,29 @@ class MessageEventHandler: XmppServiceEventHandler {
             omemoModule.encode(message: message, completionHandler: completionHandler!);
         }
 
+    static func calculateDirection(direction: MessageDirection, for account: BareJID, with jid: BareJID, authorNickname: String?, authorJid: BareJID?) -> MessageDirection {
+        if let authorJid = authorJid {
+            return account == authorJid ? .outgoing : .incoming;
+        }
+        
+        guard let senderNickname = authorNickname else {
+            return direction;
+        }
+        
+        if let conversation = DBChatStore.instance.getChat(for: account, with: jid) {
+            switch conversation {
+            case let channel as DBChatStore.DBChannel:
+                return channel.participantId == senderNickname ? .outgoing : .incoming;
+            case let room as DBChatStore.DBRoom:
+                return room.nickname == senderNickname ? .outgoing : .incoming;
+            default:
+                break;
+            }
+        }
+        return direction;
+    }
 
-    fileprivate func calculateState(direction: MessageDirection, error: Bool, unread: Bool) -> MessageState {
+    static func calculateState(direction: MessageDirection, isError error: Bool, isUnread unread: Bool) -> MessageState {
         if direction == .incoming {
             if error {
                 return unread ? .incoming_error_unread : .incoming_error;
@@ -508,13 +346,33 @@ class MessageEventHandler: XmppServiceEventHandler {
             return .outgoing;
         }
     }
-    static func syncMessages(for account: BareJID) {
+    
+    private static var syncSinceQueue = DispatchQueue(label: "syncSinceQueue");
+    private static var syncSince: [BareJID: Date] = [:];
+    
+    static func scheduleMessageSync(for account: BareJID) {
         if AccountSettings.messageSyncAuto(account).bool() {
             var syncPeriod = AccountSettings.messageSyncPeriod(account).double();
             if syncPeriod == 0 {
                 syncPeriod = 72;
             }
             let syncMessagesSince = max(DBChatStore.instance.lastMessageTimestamp(for: account), Date(timeIntervalSinceNow: -1 * syncPeriod * 3600));
+            // use last "received" stable stanza id for account MAM archive in case of MAM:2?
+            syncSinceQueue.async {
+                self.syncSince[account] = syncMessagesSince;
+            }
+        } else {
+            syncSinceQueue.async {
+                syncSince.removeValue(forKey: account);
+            }
+        }
+    }
+    
+    static func syncMessagesScheduled(for account: BareJID) {
+        syncSinceQueue.async {
+            guard AccountSettings.messageSyncAuto(account).bool(), let syncMessagesSince = syncSince[account] else {
+                return;
+            }
             syncMessages(for: account, since: syncMessagesSince);
         }
     }
@@ -525,14 +383,49 @@ class MessageEventHandler: XmppServiceEventHandler {
         }
 
         let queryId = UUID().uuidString;
-        mamModule.queryItems(start: since, queryId: queryId, rsm: rsmQuery ?? RSM.Query(lastItems: 100), onSuccess: { (queryid,complete,rsmResponse) in
-            if rsmResponse != nil && rsmResponse!.index != 0 && rsmResponse?.first != nil {
-                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2) {
-                    self.syncMessages(for: account, since: since, rsmQuery: rsmResponse?.previous(100));
+        mamModule.queryItems(start: since, queryId: queryId, rsm: rsmQuery ?? RSM.Query(lastItems: 100), completionHandler: { (result) in
+            switch result {
+            case .success(let queryId, let completed, let rsmResponse):
+                if rsmResponse != nil && rsmResponse!.index != 0 && rsmResponse?.first != nil {
+                    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2) {
+                        self.syncMessages(for: account, since: since, rsmQuery: rsmResponse?.previous(100));
+                    }
+                }
+            case .failure(let errorCondition, let response):
+                print("could not synchronize message archive for:", errorCondition, "got", response as Any);
+            }
+        });
+    }
+    
+    static func extractRealAuthor(from message: Message, for account: BareJID, with jid: BareJID) -> (String?, BareJID?, String?) {
+        if message.type == .groupchat {
+            if let mix = message.mix {
+                let authorNickname = mix.nickname;
+                let authorJid = mix.jid;
+                return (authorNickname, authorJid, nil);
+            } else {
+                // in this case it is most likely MUC groupchat message..
+                return (message.from?.resource, nil, nil);
+            }
+        } else {
+            // this can be 1-1 message from MUC..
+            if let room = DBChatStore.instance.getChat(for: account, with: jid) as? DBChatStore.DBRoom {
+                if room.nickname == message.from?.resource {
+                    return (message.from?.resource, nil, message.to?.resource);
+                } else {
+                    return (message.to?.resource, nil, message.from?.resource);
                 }
             }
-        }) { (error, stanza) in
-            print("could not synchronize message archive for:", account, "got", error as Any);
         }
+        return (nil, nil, nil);
+    }
+    
+    static func itemType(fromMessage message: Message) -> ItemType {
+        if let oob = message.oob {
+            if (message.body == nil || oob == message.body), URL(string: oob) != nil {
+                return .attachment;
+            }
+        }
+        return .message;
     }
 }

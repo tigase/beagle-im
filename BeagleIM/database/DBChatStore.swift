@@ -806,7 +806,9 @@ open class DBChatStore {
 
         override func createPrivateMessage(_ body: String?, recipientNickname: String) -> Message {
             let stanza = super.createPrivateMessage(body, recipientNickname: recipientNickname);
-            stanza.id = UUID().uuidString;
+            let id = UUID().uuidString;
+            stanza.id = id;
+            stanza.originId = id;
             return stanza;
         }
     }
