@@ -24,9 +24,11 @@ import TigaseSwift
 
 class MixEventHandler: XmppServiceEventHandler {
     
+    static let PARTICIPANTS_CHANGED = Notification.Name(rawValue: "mixParticipantsChanged");
+    
     static let instance = MixEventHandler();
     
-    let events: [Event] = [MixModule.MessageReceivedEvent.TYPE];
+    let events: [Event] = [MixModule.MessageReceivedEvent.TYPE, MixModule.ParticipantsChangedEvent.TYPE, MixModule.ChannelStateChangedEvent.TYPE];
     
     func handle(event: Event) {
         switch event {
@@ -36,7 +38,11 @@ class MixEventHandler: XmppServiceEventHandler {
                 return;
             }
             
-            DBChatHistoryStore.instance.append(for: account, message: e.message, source: .stream);            
+            DBChatHistoryStore.instance.append(for: account, message: e.message, source: .stream);
+        case let e as MixModule.ParticipantsChangedEvent:
+            NotificationCenter.default.post(name: MixEventHandler.PARTICIPANTS_CHANGED, object: e);
+        case let e as MixModule.ChannelStateChangedEvent:
+            NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: e.channel);
         default:
             break;
         }

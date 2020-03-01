@@ -134,6 +134,10 @@
 		FEB4EAFC2162A3DC00F8A9E2 /* AutoresizineTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB4EAFB2162A3DC00F8A9E2 /* AutoresizineTextView.swift */; };
 		FEB4EAFE2163714300F8A9E2 /* RoundedScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB4EAFD2163714300F8A9E2 /* RoundedScrollView.swift */; };
 		FEB5B4E1235DB57F00DE6AAD /* NSWindowCloseOnEsc.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB5B4E0235DB57F00DE6AAD /* NSWindowCloseOnEsc.swift */; };
+		FEC336ED2408141700EC1A0D /* ChannelParticipantsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336EC2408141700EC1A0D /* ChannelParticipantsViewController.swift */; };
+		FEC336EF2408FCD800EC1A0D /* ParticipantsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336EE2408FCD800EC1A0D /* ParticipantsButton.swift */; };
+		FEC336F3240A785400EC1A0D /* ChannelAwareProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336F2240A785400EC1A0D /* ChannelAwareProtocol.swift */; };
+		FEC336F5240A78AB00EC1A0D /* ChannelEditInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336F4240A78AB00EC1A0D /* ChannelEditInfoViewController.swift */; };
 		FEC5DC7E21552A3300AA3E4F /* ChatViewDataSourceDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC5DC7D21552A3300AA3E4F /* ChatViewDataSourceDelegate.swift */; };
 		FEC5DC8021552A9B00AA3E4F /* ChatViewDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC5DC7F21552A9B00AA3E4F /* ChatViewDataSource.swift */; };
 		FEC5DC8221552D8300AA3E4F /* ChatViewItemProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC5DC8121552D8300AA3E4F /* ChatViewItemProtocol.swift */; };
@@ -335,6 +339,10 @@
 		FEB4EAFB2162A3DC00F8A9E2 /* AutoresizineTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoresizineTextView.swift; sourceTree = "<group>"; };
 		FEB4EAFD2163714300F8A9E2 /* RoundedScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundedScrollView.swift; sourceTree = "<group>"; };
 		FEB5B4E0235DB57F00DE6AAD /* NSWindowCloseOnEsc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSWindowCloseOnEsc.swift; sourceTree = "<group>"; };
+		FEC336EC2408141700EC1A0D /* ChannelParticipantsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelParticipantsViewController.swift; sourceTree = "<group>"; };
+		FEC336EE2408FCD800EC1A0D /* ParticipantsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantsButton.swift; sourceTree = "<group>"; };
+		FEC336F2240A785400EC1A0D /* ChannelAwareProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelAwareProtocol.swift; sourceTree = "<group>"; };
+		FEC336F4240A78AB00EC1A0D /* ChannelEditInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelEditInfoViewController.swift; sourceTree = "<group>"; };
 		FEC5DC7D21552A3300AA3E4F /* ChatViewDataSourceDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewDataSourceDelegate.swift; sourceTree = "<group>"; };
 		FEC5DC7F21552A9B00AA3E4F /* ChatViewDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewDataSource.swift; sourceTree = "<group>"; };
 		FEC5DC8121552D8300AA3E4F /* ChatViewItemProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewItemProtocol.swift; sourceTree = "<group>"; };
@@ -493,6 +501,7 @@
 				FE7F876B2343D99300254AF2 /* CustomScroller.swift */,
 				FE2ACA852355C5DA004623BC /* NSTableViewCustomGrid.swift */,
 				FEB5B4E0235DB57F00DE6AAD /* NSWindowCloseOnEsc.swift */,
+				FEC336EE2408FCD800EC1A0D /* ParticipantsButton.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -611,6 +620,9 @@
 			isa = PBXGroup;
 			children = (
 				FE890D4424040F1200107437 /* ChannelViewController.swift */,
+				FEC336EC2408141700EC1A0D /* ChannelParticipantsViewController.swift */,
+				FEC336F2240A785400EC1A0D /* ChannelAwareProtocol.swift */,
+				FEC336F4240A78AB00EC1A0D /* ChannelEditInfoViewController.swift */,
 			);
 			path = channel;
 			sourceTree = "<group>";
@@ -976,6 +988,7 @@
 				FE4073A921BACC50009CE335 /* VideoCallController.swift in Sources */,
 				FED7AEC12140569E001E164B /* AddAccountController.swift in Sources */,
 				FE41FB39215CD51700AD86D3 /* MucEventHandler.swift in Sources */,
+				FEC336ED2408141700EC1A0D /* ChannelParticipantsViewController.swift in Sources */,
 				FE6E6BFF21384D5F003B1696 /* ChatViewController.swift in Sources */,
 				FE28097D21652A7C002F5BD0 /* VCardEditorViewController.swift in Sources */,
 				FE29D35823C208840028D306 /* MetadataCache.swift in Sources */,
@@ -989,6 +1002,7 @@
 				FE890D1F23FEF0B900107437 /* AbstractConversationLogController.swift in Sources */,
 				FE5BE64E213AD19A00463183 /* ChatCellViewMessage.swift in Sources */,
 				FE5202D7227F339D00644C12 /* BaseChatMessageCellView.swift in Sources */,
+				FEC336EF2408FCD800EC1A0D /* ParticipantsButton.swift in Sources */,
 				FE890D4524040F1200107437 /* ChannelViewController.swift in Sources */,
 				FEA2F53722E5F6A2009F2E88 /* AdvancedSettingsController.swift in Sources */,
 				FED7AEC921418FA9001E164B /* DBVCardStore.swift in Sources */,
@@ -1040,6 +1054,7 @@
 				FE6E6BF921384D5F003B1696 /* AvatarView.swift in Sources */,
 				FEEF25392266528E00202B28 /* ContactDetailsViewController.swift in Sources */,
 				FE65A283230314D9001E68EF /* SettingsTabViewController.swift in Sources */,
+				FEC336F3240A785400EC1A0D /* ChannelAwareProtocol.swift in Sources */,
 				FE9CDF0D2269E282001039C3 /* MessageEncryption.swift in Sources */,
 				FE6E6C0821384DF1003B1696 /* ChatCellView.swift in Sources */,
 				FE41FB3D215CD82500AD86D3 /* PresenceRosterEventHandler.swift in Sources */,
@@ -1066,6 +1081,7 @@
 				FEEF25362266303A00202B28 /* OMEMOIdentititesTableView.swift in Sources */,
 				FEB4EAFC2162A3DC00F8A9E2 /* AutoresizineTextView.swift in Sources */,
 				FE2ACA842355B967004623BC /* EditKeywordsController.swift in Sources */,
+				FEC336F5240A78AB00EC1A0D /* ChannelEditInfoViewController.swift in Sources */,
 				FEB4EAFE2163714300F8A9E2 /* RoundedScrollView.swift in Sources */,
 				FEC5DC8021552A9B00AA3E4F /* ChatViewDataSource.swift in Sources */,
 				FE41FB37215BBFC800AD86D3 /* DBCapabilitiesCache.swift in Sources */,

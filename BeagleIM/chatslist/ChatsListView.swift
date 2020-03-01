@@ -61,6 +61,15 @@ class ChatItem: AbstractChatItem {
 
 class GroupchatItem: AbstractChatItem {
 
+   override var name: String {
+        get {
+            return (self.chat as? DBChatStore.DBChannel)?.name ?? super.name;
+        }
+        set {
+            super.name = newValue;
+        }
+    }
+    
     init(chat: DBChatProtocol) {
         super.init(chat: chat, name: (chat as? DBChatStore.DBRoom)?.name ?? chat.jid.stringValue);
     }
@@ -311,17 +320,38 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                     splitController.removeSplitViewItem(splitController.splitViewItems[1]);
                     splitController.addSplitViewItem(item);
                 }
-            } else if let room = item as? GroupchatItem {
-                let roomController = self.storyboard?.instantiateController(withIdentifier: "GroupchatViewController") as! GroupchatViewController;
-                roomController.room = (room.chat as! DBChatStore.DBRoom);
-                roomController.scrollChatToMessageWithId = self.scrollChatToMessageWithId;
-                self.scrollChatToMessageWithId = nil;
-                let item = NSSplitViewItem(viewController: roomController);
-                if splitController.splitViewItems.count == 1 {
-                    splitController.addSplitViewItem(item);
-                } else {
-                    splitController.removeSplitViewItem(splitController.splitViewItems[1]);
-                    splitController.addSplitViewItem(item);
+            } else if let groupItem = item as? GroupchatItem {
+                switch groupItem.chat {
+                case let room as DBChatStore.DBRoom:
+                    let roomController = self.storyboard?.instantiateController(withIdentifier: "GroupchatViewController") as! GroupchatViewController;
+                    roomController.room = room;
+                    roomController.scrollChatToMessageWithId = self.scrollChatToMessageWithId;
+                    self.scrollChatToMessageWithId = nil;
+                    let item = NSSplitViewItem(viewController: roomController);
+                    if splitController.splitViewItems.count == 1 {
+                        splitController.addSplitViewItem(item);
+                    } else {
+                        splitController.removeSplitViewItem(splitController.splitViewItems[1]);
+                        splitController.addSplitViewItem(item);
+                    }
+                case let channel as DBChatStore.DBChannel:
+                    let channelController = NSStoryboard(name: "MIX", bundle: nil).instantiateController(withIdentifier: "ChannelViewController") as! ChannelViewController;
+                    channelController.chat = channel;
+                    channelController.scrollChatToMessageWithId = self.scrollChatToMessageWithId
+                    self.scrollChatToMessageWithId = nil;
+                    let item = NSSplitViewItem(viewController: channelController);
+                    if splitController.splitViewItems.count == 1 {
+                        splitController.addSplitViewItem(item);
+                    } else {
+                        splitController.removeSplitViewItem(splitController.splitViewItems[1]);
+                        splitController.addSplitViewItem(item);
+                    }
+                default:
+                    let controller = self.storyboard!.instantiateController(withIdentifier: "EmptyViewController") as! NSViewController;
+                    if splitController.splitViewItems.count > 1 {
+                        splitController.removeSplitViewItem(splitController.splitViewItems[1]);
+                    }
+                    splitController.addSplitViewItem(NSSplitViewItem(viewController: controller));
                 }
             } else {
                 let controller = self.storyboard!.instantiateController(withIdentifier: "EmptyViewController") as! NSViewController;
@@ -408,6 +438,18 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 mucModule.leave(room: r);
                 PEPBookmarksModule.remove(from: r.account, bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: r.jid, autojoin: false));
             }
+        case let c as DBChatStore.DBChannel:
+            guard let mixModule: MixModule = XmppService.instance.getClient(for: c.account)?.modulesManager.getModule(MixModule.ID) else {
+                return;
+            }
+            mixModule.leave(channel: c, completionHandler: { result in
+                switch result {
+                case .success(let response):
+                    DBChatStore.instance.close(for: c.account, chat: c);
+                case .failure(let errorCondition, let response):
+                    break;
+                }
+            })
         default:
             print("unknown type of chat!");
         }

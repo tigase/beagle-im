@@ -177,11 +177,11 @@ open class DBChatStore {
         }
     }
     
-    func createChannel(for account: BareJID, channelJid: BareJID, participantId: String, nick: String?) -> Result<DBChannel, ErrorCondition> {
+    func createChannel(for account: BareJID, channelJid: BareJID, participantId: String, nick: String?, state: Channel.State) -> Result<DBChannel, ErrorCondition> {
         return dispatcher.sync {
             let accountChats = self.accountChats[account]!;
             guard let dbChat = accountChats.get(with: channelJid) else {
-                let options = ChannelOptions(participantId: participantId, nick: nick);
+                let options = ChannelOptions(participantId: participantId, nick: nick, state: state);
                 guard let data = try? JSONEncoder().encode(options), let dataStr = String(data: data, encoding: .utf8) else {
                     return .failure(.bad_request);
                 }
@@ -191,6 +191,7 @@ open class DBChatStore {
                 let channel = DBChannel(id: id!, account: account, jid: channelJid, timestamp: Date(), lastActivity: getLastActivity(for: account, jid: channelJid), unread: 0, options: options);
 
                 if let result = accountChats.open(chat: channel) as? DBChannel {
+                    NotificationCenter.default.post(name: DBChatStore.CHAT_OPENED, object: result);
                     return .success(result);
                 } else {
                     return .failure(.conflict);
@@ -213,6 +214,7 @@ open class DBChatStore {
                 let chat = DBChat(id: id!, account: account, jid: jid.bareJid, timestamp: Date(), lastActivity: getLastActivity(for: account, jid: jid.bareJid), unread: 0, options: ChatOptions());
 
                 if let result = accountChats.open(chat: chat) as? DBChat {
+                    NotificationCenter.default.post(name: DBChatStore.CHAT_OPENED, object: result);
                     return .success(result);
                 } else {
                     return .failure(.conflict);
@@ -234,6 +236,7 @@ open class DBChatStore {
                 let room = DBRoom(id: id!, context: context, account: account, roomJid: roomJid, name: nil, nickname: nickname, password: password, timestamp: Date(), lastActivity: getLastActivity(for: account, jid: roomJid), unread: 0, options: RoomOptions());
 
                 if let result = accountChats.open(chat: room) as? DBRoom {
+                    NotificationCenter.default.post(name: DBChatStore.CHAT_OPENED, object: result);
                     return .success(result);
                 } else {
                     return .failure(.conflict);
@@ -820,6 +823,12 @@ open class DBChatStore {
         var timestamp: Date
         var lastActivity: LastChatActivity?
         var unread: Int
+        var name: String? {
+            return options.name;
+        }
+        var description: String? {
+            return options.description;
+        }
         var options: ChannelOptions;
         
         // TODO: save nickname in options if "nickname" field changes!!
@@ -832,7 +841,7 @@ open class DBChatStore {
             self.timestamp = timestamp;
             self.options = options;
             
-            super.init(channelJid: jid, participantId: options.participantId, nickname: options.nick);
+            super.init(channelJid: jid, participantId: options.participantId, nickname: options.nick, state: options.state);
         }
         
         func markAsRead(count: Int) -> Bool {
@@ -932,24 +941,34 @@ public struct ChannelOptions: Codable, ChatOptionsProtocol {
     
     var participantId: String;
     var nick: String?;
+    var name: String?;
+    var description: String?;
+    var state: Channel.State;
     public var notifications: ConversationNotification = .always;
     
-    public init(participantId: String, nick: String?) {
+    public init(participantId: String, nick: String?, state: Channel.State) {
         self.participantId = participantId;
         self.nick = nick;
+        self.state = state;
     }
     
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self);
         participantId = try container.decode(String.self, forKey: .participantId);
+        state = try container.decodeIfPresent(Int.self, forKey: .state).map({ Channel.State(rawValue: $0) ?? .joined }) ?? .joined;
         nick = try container.decodeIfPresent(String.self, forKey: .nick);
+        name = try container.decodeIfPresent(String.self, forKey: .name);
+        description = try container.decodeIfPresent(String.self, forKey: .description);
         notifications = ConversationNotification(rawValue: try container.decodeIfPresent(String.self, forKey: .notifications) ?? "") ?? .always;
     }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self);
         try container.encode(participantId, forKey: .participantId);
+        try container.encode(state.rawValue, forKey: .state);
         try container.encodeIfPresent(nick, forKey: .nick);
+        try container.encodeIfPresent(name, forKey: .name);
+        try container.encodeIfPresent(description, forKey: .description);
         if notifications != .always {
             try container.encode(notifications.rawValue, forKey: .notifications);
         }
@@ -958,7 +977,10 @@ public struct ChannelOptions: Codable, ChatOptionsProtocol {
     enum CodingKeys: String, CodingKey {
         case participantId = "participantId"
         case nick = "nick";
+        case state = "state"
         case notifications = "notifications";
+        case name = "name";
+        case description = "desc";
     }
 }
 
