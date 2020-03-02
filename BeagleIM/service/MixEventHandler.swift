@@ -25,6 +25,7 @@ import TigaseSwift
 class MixEventHandler: XmppServiceEventHandler {
     
     static let PARTICIPANTS_CHANGED = Notification.Name(rawValue: "mixParticipantsChanged");
+    static let PERMISSIONS_CHANGED = Notification.Name(rawValue: "mixPermissionsChanged");
     
     static let instance = MixEventHandler();
     
@@ -43,6 +44,8 @@ class MixEventHandler: XmppServiceEventHandler {
             NotificationCenter.default.post(name: MixEventHandler.PARTICIPANTS_CHANGED, object: e);
         case let e as MixModule.ChannelStateChangedEvent:
             NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: e.channel);
+        case let e as MixModule.ChannelPermissionsChangedEvent:
+            NotificationCenter.default.post(name: MixEventHandler.PERMISSIONS_CHANGED, object: e.channel);
         default:
             break;
         }

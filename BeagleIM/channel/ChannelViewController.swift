@@ -22,7 +22,7 @@
 import AppKit
 import TigaseSwift
 
-class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewDelegate, ConversationLogContextMenuDelegate {
+class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewDelegate, ConversationLogContextMenuDelegate, NSMenuDelegate {
 
     @IBOutlet var channelAvatarView: AvatarViewWithStatus!
     @IBOutlet var channelNameLabel: NSTextFieldCell!
@@ -63,9 +63,10 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         NotificationCenter.default.addObserver(self, selector: #selector(participantsChanged(_:)), name: MixEventHandler.PARTICIPANTS_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(channelUpdated(_:)), name: DBChatStore.CHAT_UPDATED, object: channel);
         NotificationCenter.default.addObserver(self, selector: #selector(avatarChanged(_:)), name: AvatarManager.AVATAR_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(permissionsChanged(_:)), name: MixEventHandler.PERMISSIONS_CHANGED, object: channel);
         
         self.participantsButton.title = "\(channel.participants.count)";
-        
+        updatePermissions();
         super.viewWillAppear();
     }
     
@@ -196,7 +197,16 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             self.participantsButton.title = "\(self.channel.participants.count)";
         }
     }
-        
+    
+    @objc func permissionsChanged(_ notification: Notification) {
+        self.updatePermissions();
+    }
+    
+    private func updatePermissions() {
+        self.actionsButton.item(at: 1)?.isEnabled = channel.has(permission: .changeInfo);
+        self.actionsButton.lastItem?.isEnabled = channel.has(permission: .changeConfig);
+    }
+    
     @IBAction func showInfoClicked(_ sender: NSButton) {
         let storyboard = NSStoryboard(name: "ConversationDetails", bundle: nil);
         guard let viewController = storyboard.instantiateController(withIdentifier: "ContactDetailsViewController") as? ContactDetailsViewController else {
@@ -216,6 +226,46 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     
     @IBAction func showEditChannelHeader(_ sender: NSMenuItem) {
         self.performSegue(withIdentifier: NSStoryboardSegue.Identifier("ShowEditChannelHeaderSheet"), sender: self);
+    }
+    
+    @IBAction func showDestroyChannel(_ sender: NSMenuItem) {
+        guard let channel = self.channel else {
+            return;
+        }
+
+        let alert = NSAlert();
+        alert.alertStyle = .warning;
+        alert.icon = NSImage(named: NSImage.cautionName);
+        alert.messageText = "Destroy channel?";
+        alert.informativeText = "Are you sure that you want to leave and destroy channel \(channel.name ?? channel.channelJid.stringValue)?";
+        alert.addButton(withTitle: "Yes");
+        alert.addButton(withTitle: "No");
+        alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
+            if (response == .alertFirstButtonReturn) {
+                guard let client = XmppService.instance.getClient(for: channel.account), client.state == .connected, let mixModule: MixModule = client.modulesManager.getModule(MixModule.ID), channel.state == .joined else {
+                    return;
+                }
+                mixModule.destroy(channel: channel.channelJid, completionHandler: { result in
+                    DispatchQueue.main.async {
+                        guard let window = self.view.window else {
+                            return;
+                        }
+                        switch result {
+                        case .success(_):
+                            break;
+                        case .failure(let errorCondition):
+                            let alert = NSAlert();
+                            alert.alertStyle = .warning;
+                            alert.icon = NSImage(named: NSImage.cautionName);
+                            alert.messageText = "Channel destruction failed!";
+                            alert.informativeText = "It was not possible to destroy channel \(channel.name ?? channel.channelJid.stringValue). Server returned an error: \(errorCondition.rawValue)";
+                            alert.addButton(withTitle: "OK");
+                            alert.beginSheetModal(for: window, completionHandler: nil);
+                        }
+                    }
+                })
+            }
+        });
     }
 
     private func buttonToGrayscale(button: NSButton, template: Bool) {

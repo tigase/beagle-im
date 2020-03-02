@@ -79,7 +79,7 @@ class ChannelEditInfoViewController: NSViewController, ChannelAwareProtocol {
                 }
             }
         })
-        if let avatarModule: PEPUserAvatarModule = client.modulesManager.getModule(PEPUserAvatarModule.ID) {
+        if let avatarModule: PEPUserAvatarModule = client.modulesManager.getModule(PEPUserAvatarModule.ID), channel.has(permission: .changeAvatar) {
             group.enter();
             avatarModule.retrieveAvatarMetadata(from: channel.channelJid, completionHandler: { [weak self] result in
                 switch result {
@@ -96,6 +96,9 @@ class ChannelEditInfoViewController: NSViewController, ChannelAwareProtocol {
                 }
                 group.leave();
             })
+        } else {
+            self.avatarButton.isEnabled = false;
+            self.avatarButton.changeLabel.isHidden = true;
         }
         group.notify(queue: DispatchQueue.main, execute: { [weak self] in
             DispatchQueue.main.async {

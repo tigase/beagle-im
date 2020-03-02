@@ -831,8 +831,6 @@ open class DBChatStore {
         }
         var options: ChannelOptions;
         
-        // TODO: save nickname in options if "nickname" field changes!!
-        
         init(id: Int, account: BareJID, jid: BareJID, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: ChannelOptions) {
             self.id = id;
             self.account = account;
@@ -842,6 +840,7 @@ open class DBChatStore {
             self.options = options;
             
             super.init(channelJid: jid, participantId: options.participantId, nickname: options.nick, state: options.state);
+            self.lastMessageDate = lastActivity != nil ? timestamp : nil;
         }
         
         func markAsRead(count: Int) -> Bool {
@@ -863,6 +862,7 @@ open class DBChatStore {
             if lastActivity != nil {
                 self.lastActivity = lastActivity;
                 self.timestamp = timestamp;
+                self.lastMessageDate = timestamp;
             }
             
             return true;
