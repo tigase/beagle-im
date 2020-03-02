@@ -1179,7 +1179,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 77;
+				CURRENT_PROJECT_VERSION = 78;
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1189,7 +1189,7 @@
 				INFOPLIST_FILE = BeagleIM/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 3.6;
+				MARKETING_VERSION = 3.7;
 				OTHER_LDFLAGS = "-v";
 				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.BeagleIM;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1208,7 +1208,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 77;
+				CURRENT_PROJECT_VERSION = 78;
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1218,7 +1218,7 @@
 				INFOPLIST_FILE = BeagleIM/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 3.6;
+				MARKETING_VERSION = 3.7;
 				OTHER_LDFLAGS = "-v";
 				PRODUCT_BUNDLE_IDENTIFIER = org.tigase.messenger.BeagleIM;
 				PRODUCT_NAME = "$(TARGET_NAME)";
