@@ -183,21 +183,19 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         
         print("clicked button for", group.name);
         
-        guard let item = groups.first(where: { it -> Bool in
-            return it.name == group.name;
-        }) else {
-            return;
-        }
-        if item is ChatsListGroupGroupchat {
-            guard let windowController = storyboard?.instantiateController(withIdentifier: "OpenGroupchatController") as? NSWindowController else {
+        switch group {
+        case is ChatsListGroupGroupchat:
+            guard let windowController = storyboard?.instantiateController(withIdentifier:"OpenChannelWindowController") as? NSWindowController else {
                 return;
             }
             view.window?.beginSheet(windowController.window!, completionHandler: nil);
-        } else if item is ChatsListGroupChat {
+        case is ChatsListGroupChat:
             guard let windowController = storyboard?.instantiateController(withIdentifier: "Open1On1ChatController") as? NSWindowController else {
                 return;
             }
             view.window?.beginSheet(windowController.window!, completionHandler: nil);
+        default:
+            return;
         }
     }
     

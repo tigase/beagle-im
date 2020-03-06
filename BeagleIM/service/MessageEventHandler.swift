@@ -413,7 +413,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                 if room.nickname == message.from?.resource {
                     return (message.from?.resource, nil, message.to?.resource);
                 } else {
-                    return (message.to?.resource, nil, message.from?.resource);
+                    return (message.from?.resource, nil, message.to?.resource);
                 }
             }
         }

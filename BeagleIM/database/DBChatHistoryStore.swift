@@ -168,10 +168,6 @@ class DBChatHistoryStore {
         
         let (decryptedBody, encryption, fingerprint) = MessageEventHandler.prepareBody(message: message, forAccount: account);
         guard let body = decryptedBody else {
-            // discard message if there is not body..
-            if (message.type ?? .normal) != .error, let chatState = message.chatState, message.delay == nil {
-                DBChatHistoryStore.instance.process(chatState: chatState, for: account, with: jid);
-            }
             // only if carbon!!
             switch source {
             case .carbons(let action):
@@ -184,7 +180,15 @@ class DBChatHistoryStore {
                         break;
                     }
                 }
+                if action == .received {
+                    if (message.type ?? .normal) != .error, let chatState = message.chatState, message.delay == nil {
+                        DBChatHistoryStore.instance.process(chatState: chatState, for: account, with: jid);
+                    }
+                }
             default:
+                if (message.type ?? .normal) != .error, let chatState = message.chatState, message.delay == nil {
+                    DBChatHistoryStore.instance.process(chatState: chatState, for: account, with: jid);
+                }
                 break;
             }
             return;

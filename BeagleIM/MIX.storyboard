@@ -90,7 +90,7 @@ AAAAAAEGA
                                             </constraints>
                                             <buttonCell key="cell" type="square" title="12" bezelStyle="shadowlessSquare" image="NSUser" imagePosition="right" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="kmZ-Jc-EdG">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                <font key="font" metaFont="system" size="12"/>
+                                                <font key="font" metaFont="label" size="12"/>
                                             </buttonCell>
                                             <connections>
                                                 <segue destination="8HN-y9-jjO" kind="popover" popoverAnchorView="3nN-eU-fLZ" popoverBehavior="t" preferredEdge="maxY" id="eal-RS-54K"/>
@@ -432,6 +432,7 @@ AAAAAAEGA
                                 </constraints>
                                 <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="Oya-br-0Eq"/>
                                 <connections>
+                                    <action selector="avatarClicked:" target="jsb-WU-CVd" id="AZA-2k-bX5"/>
                                     <outlet property="changeLabel" destination="Zxo-bx-Kzm" id="QsV-Pw-yqK"/>
                                 </connections>
                             </imageView>

@@ -138,6 +138,9 @@
 		FEC336EF2408FCD800EC1A0D /* ParticipantsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336EE2408FCD800EC1A0D /* ParticipantsButton.swift */; };
 		FEC336F3240A785400EC1A0D /* ChannelAwareProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336F2240A785400EC1A0D /* ChannelAwareProtocol.swift */; };
 		FEC336F5240A78AB00EC1A0D /* ChannelEditInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336F4240A78AB00EC1A0D /* ChannelEditInfoViewController.swift */; };
+		FEC336F9240EBDEF00EC1A0D /* OpenChannelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336F8240EBDEF00EC1A0D /* OpenChannelViewController.swift */; };
+		FEC336FB240EC66000EC1A0D /* CreateChannelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336FA240EC66000EC1A0D /* CreateChannelView.swift */; };
+		FEC336FD240FA36800EC1A0D /* JoinChannelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336FC240FA36800EC1A0D /* JoinChannelView.swift */; };
 		FEC5DC7E21552A3300AA3E4F /* ChatViewDataSourceDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC5DC7D21552A3300AA3E4F /* ChatViewDataSourceDelegate.swift */; };
 		FEC5DC8021552A9B00AA3E4F /* ChatViewDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC5DC7F21552A9B00AA3E4F /* ChatViewDataSource.swift */; };
 		FEC5DC8221552D8300AA3E4F /* ChatViewItemProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC5DC8121552D8300AA3E4F /* ChatViewItemProtocol.swift */; };
@@ -343,6 +346,9 @@
 		FEC336EE2408FCD800EC1A0D /* ParticipantsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantsButton.swift; sourceTree = "<group>"; };
 		FEC336F2240A785400EC1A0D /* ChannelAwareProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelAwareProtocol.swift; sourceTree = "<group>"; };
 		FEC336F4240A78AB00EC1A0D /* ChannelEditInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelEditInfoViewController.swift; sourceTree = "<group>"; };
+		FEC336F8240EBDEF00EC1A0D /* OpenChannelViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenChannelViewController.swift; sourceTree = "<group>"; };
+		FEC336FA240EC66000EC1A0D /* CreateChannelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateChannelView.swift; sourceTree = "<group>"; };
+		FEC336FC240FA36800EC1A0D /* JoinChannelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinChannelView.swift; sourceTree = "<group>"; };
 		FEC5DC7D21552A3300AA3E4F /* ChatViewDataSourceDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewDataSourceDelegate.swift; sourceTree = "<group>"; };
 		FEC5DC7F21552A9B00AA3E4F /* ChatViewDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewDataSource.swift; sourceTree = "<group>"; };
 		FEC5DC8121552D8300AA3E4F /* ChatViewItemProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewItemProtocol.swift; sourceTree = "<group>"; };
@@ -623,6 +629,9 @@
 				FEC336EC2408141700EC1A0D /* ChannelParticipantsViewController.swift */,
 				FEC336F2240A785400EC1A0D /* ChannelAwareProtocol.swift */,
 				FEC336F4240A78AB00EC1A0D /* ChannelEditInfoViewController.swift */,
+				FEC336F8240EBDEF00EC1A0D /* OpenChannelViewController.swift */,
+				FEC336FA240EC66000EC1A0D /* CreateChannelView.swift */,
+				FEC336FC240FA36800EC1A0D /* JoinChannelView.swift */,
 			);
 			path = channel;
 			sourceTree = "<group>";
@@ -981,6 +990,7 @@
 				FE34BBD52157DDF200775B07 /* MucModule_RoomError_extension.swift in Sources */,
 				FEDE6AFC21455A2B0019170A /* RosterViewController.swift in Sources */,
 				FE87C7752285736200B0B64C /* XMLEntryViewController.swift in Sources */,
+				FEC336F9240EBDEF00EC1A0D /* OpenChannelViewController.swift in Sources */,
 				FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */,
 				FE41FB3F215CD95D00AD86D3 /* AvatarEventHandler.swift in Sources */,
 				FE30D8B7214D4BCD00670BEC /* Settings.swift in Sources */,
@@ -1014,6 +1024,7 @@
 				FE6201E423A693ED00C965A5 /* BaseChatAttachmentCellView.swift in Sources */,
 				FE7F876C2343D99300254AF2 /* CustomScroller.swift in Sources */,
 				FE6E6C0421384D5F003B1696 /* DatabaseSchemaManager.swift in Sources */,
+				FEC336FB240EC66000EC1A0D /* CreateChannelView.swift in Sources */,
 				FE5C6B2722897F1B003DAB30 /* ServiceDiscoveryViewController.swift in Sources */,
 				FE9CB7022388382A008F1049 /* BlockedEventHandler.swift in Sources */,
 				FE3AA0CD2154069D001667A9 /* ChatsListGroupGroupchat.swift in Sources */,
@@ -1044,6 +1055,7 @@
 				FE3AA0D12154077D001667A9 /* ChatsListGroupAbstractChat.swift in Sources */,
 				FE5C6B2B228C119A003DAB30 /* ExecuteAdHocCommandController.swift in Sources */,
 				FE41FB3B215CD7F300AD86D3 /* XmppServiceEventHandler.swift in Sources */,
+				FEC336FD240FA36800EC1A0D /* JoinChannelView.swift in Sources */,
 				FE30D8B1214CE93600670BEC /* FormView.swift in Sources */,
 				FE149D8522A515C900EE4E03 /* SearchHistoryController.swift in Sources */,
 				FE30D8B3214CF15700670BEC /* AddContactController.swift in Sources */,
