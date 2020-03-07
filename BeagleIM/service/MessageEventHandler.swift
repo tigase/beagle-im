@@ -204,7 +204,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             case .omemo:
                 if stanzaId == nil {
                     let fingerprint = DBOMEMOStore.instance.identityFingerprint(forAccount: account, andAddress: SignalAddress(name: account.stringValue, deviceId: Int32(bitPattern: DBOMEMOStore.instance.localRegistrationId(forAccount: account)!)));
-                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing_unsent, authorNickname: nil, authorJid: nil, recipientNickname: nil, type: url == nil ? .message : .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: msg, encryption: .decrypted, encryptionFingerprint: fingerprint, chatAttachmentAppendix: chatAttachmentAppendix, linkPreviewAction: .none, completionHandler: messageStored);
+                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing_unsent, authorNickname: nil, authorJid: nil, recipientNickname: nil, participantId: nil, type: url == nil ? .message : .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: msg, encryption: .decrypted, encryptionFingerprint: fingerprint, chatAttachmentAppendix: chatAttachmentAppendix, linkPreviewAction: .none, completionHandler: messageStored);
                 }
                 XmppService.instance.tasksQueue.schedule(for: jid, task: { (completionHandler) in
                     sendEncryptedMessage(message, from: account, completionHandler: { result in
@@ -213,7 +213,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                             let timestamp = Date();
                             DBChatHistoryStore.instance.updateItemState(for: account, with: jid, stanzaId: message.id!, from: .outgoing_unsent, to: .outgoing, withTimestamp: timestamp);
                             
-                            DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing, authorNickname: nil, authorJid: nil, recipientNickname: nil, type: url == nil ? .message : .attachment, timestamp: timestamp, stanzaId: nil, serverMsgId: nil, remoteMsgId: nil, data: msg, encryption: .decrypted, encryptionFingerprint: nil, chatAttachmentAppendix: chatAttachmentAppendix, linkPreviewAction: .only, completionHandler: messageStored);
+                            DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing, authorNickname: nil, authorJid: nil, recipientNickname: nil, participantId: nil, type: url == nil ? .message : .attachment, timestamp: timestamp, stanzaId: nil, serverMsgId: nil, remoteMsgId: nil, data: msg, encryption: .decrypted, encryptionFingerprint: nil, chatAttachmentAppendix: chatAttachmentAppendix, linkPreviewAction: .only, completionHandler: messageStored);
                         case .failure(let err):
                             let condition = (err is ErrorCondition) ? (err as? ErrorCondition) : nil;
                             guard condition == nil || condition! != .gone else {
@@ -240,7 +240,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                 message.oob = url;
                 let type: ItemType = url == nil ? .message : .attachment;
                 if stanzaId == nil {
-                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing_unsent, authorNickname: nil, authorJid: nil, recipientNickname: nil, type: type, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: msg, encryption: .none, encryptionFingerprint: nil, chatAttachmentAppendix: chatAttachmentAppendix, linkPreviewAction: .none, completionHandler: messageStored);
+                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing_unsent, authorNickname: nil, authorJid: nil, recipientNickname: nil, participantId: nil, type: type, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: msg, encryption: .none, encryptionFingerprint: nil, chatAttachmentAppendix: chatAttachmentAppendix, linkPreviewAction: .none, completionHandler: messageStored);
                 }
                 XmppService.instance.tasksQueue.schedule(for: jid, task: { (completionHandler) in
                     sendUnencryptedMessage(message, from: account, completionHandler: { result in
@@ -249,7 +249,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                             let timestamp = Date();
                             DBChatHistoryStore.instance.updateItemState(for: account, with: jid, stanzaId: message.id!, from: .outgoing_unsent, to: .outgoing, withTimestamp: timestamp);
                             
-                            DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing, authorNickname: nil, authorJid: nil, recipientNickname: nil, type: type, timestamp: timestamp, stanzaId: nil, serverMsgId: nil, remoteMsgId: nil, data: msg, encryption: .none, encryptionFingerprint: nil, chatAttachmentAppendix: chatAttachmentAppendix, linkPreviewAction: .only, completionHandler: nil);
+                            DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: .outgoing, authorNickname: nil, authorJid: nil, recipientNickname: nil, participantId: nil, type: type, timestamp: timestamp, stanzaId: nil, serverMsgId: nil, remoteMsgId: nil, data: msg, encryption: .none, encryptionFingerprint: nil, chatAttachmentAppendix: chatAttachmentAppendix, linkPreviewAction: .only, completionHandler: nil);
                         case .failure(let err):
                             guard let condition = err as? ErrorCondition, condition != .gone else {
                                 completionHandler();
@@ -397,27 +397,27 @@ class MessageEventHandler: XmppServiceEventHandler {
         });
     }
     
-    static func extractRealAuthor(from message: Message, for account: BareJID, with jid: BareJID) -> (String?, BareJID?, String?) {
+    static func extractRealAuthor(from message: Message, for account: BareJID, with jid: JID) -> (String?, BareJID?, String?, String?) {
         if message.type == .groupchat {
             if let mix = message.mix {
                 let authorNickname = mix.nickname;
                 let authorJid = mix.jid;
-                return (authorNickname, authorJid, nil);
+                return (authorNickname, authorJid, nil, jid.resource);
             } else {
                 // in this case it is most likely MUC groupchat message..
-                return (message.from?.resource, nil, nil);
+                return (message.from?.resource, nil, nil, nil);
             }
         } else {
             // this can be 1-1 message from MUC..
-            if let room = DBChatStore.instance.getChat(for: account, with: jid) as? DBChatStore.DBRoom {
+            if let room = DBChatStore.instance.getChat(for: account, with: jid.bareJid) as? DBChatStore.DBRoom {
                 if room.nickname == message.from?.resource {
-                    return (message.from?.resource, nil, message.to?.resource);
+                    return (message.from?.resource, nil, message.to?.resource, nil);
                 } else {
-                    return (message.from?.resource, nil, message.to?.resource);
+                    return (message.from?.resource, nil, message.to?.resource, nil);
                 }
             }
         }
-        return (nil, nil, nil);
+        return (nil, nil, nil, nil);
     }
     
     static func itemType(fromMessage message: Message) -> ItemType {

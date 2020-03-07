@@ -134,6 +134,7 @@
 		FEB4EAFC2162A3DC00F8A9E2 /* AutoresizineTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB4EAFB2162A3DC00F8A9E2 /* AutoresizineTextView.swift */; };
 		FEB4EAFE2163714300F8A9E2 /* RoundedScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB4EAFD2163714300F8A9E2 /* RoundedScrollView.swift */; };
 		FEB5B4E1235DB57F00DE6AAD /* NSWindowCloseOnEsc.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB5B4E0235DB57F00DE6AAD /* NSWindowCloseOnEsc.swift */; };
+		FEB994AF2413A03D00B8E7A7 /* ChannelEditConfigViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB994AE2413A03D00B8E7A7 /* ChannelEditConfigViewController.swift */; };
 		FEC336ED2408141700EC1A0D /* ChannelParticipantsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336EC2408141700EC1A0D /* ChannelParticipantsViewController.swift */; };
 		FEC336EF2408FCD800EC1A0D /* ParticipantsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336EE2408FCD800EC1A0D /* ParticipantsButton.swift */; };
 		FEC336F3240A785400EC1A0D /* ChannelAwareProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336F2240A785400EC1A0D /* ChannelAwareProtocol.swift */; };
@@ -342,6 +343,7 @@
 		FEB4EAFB2162A3DC00F8A9E2 /* AutoresizineTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoresizineTextView.swift; sourceTree = "<group>"; };
 		FEB4EAFD2163714300F8A9E2 /* RoundedScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundedScrollView.swift; sourceTree = "<group>"; };
 		FEB5B4E0235DB57F00DE6AAD /* NSWindowCloseOnEsc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSWindowCloseOnEsc.swift; sourceTree = "<group>"; };
+		FEB994AE2413A03D00B8E7A7 /* ChannelEditConfigViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelEditConfigViewController.swift; sourceTree = "<group>"; };
 		FEC336EC2408141700EC1A0D /* ChannelParticipantsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelParticipantsViewController.swift; sourceTree = "<group>"; };
 		FEC336EE2408FCD800EC1A0D /* ParticipantsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantsButton.swift; sourceTree = "<group>"; };
 		FEC336F2240A785400EC1A0D /* ChannelAwareProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelAwareProtocol.swift; sourceTree = "<group>"; };
@@ -632,6 +634,7 @@
 				FEC336F8240EBDEF00EC1A0D /* OpenChannelViewController.swift */,
 				FEC336FA240EC66000EC1A0D /* CreateChannelView.swift */,
 				FEC336FC240FA36800EC1A0D /* JoinChannelView.swift */,
+				FEB994AE2413A03D00B8E7A7 /* ChannelEditConfigViewController.swift */,
 			);
 			path = channel;
 			sourceTree = "<group>";
@@ -1092,6 +1095,7 @@
 				FE6E6C0621384D5F003B1696 /* Database.swift in Sources */,
 				FEEF25362266303A00202B28 /* OMEMOIdentititesTableView.swift in Sources */,
 				FEB4EAFC2162A3DC00F8A9E2 /* AutoresizineTextView.swift in Sources */,
+				FEB994AF2413A03D00B8E7A7 /* ChannelEditConfigViewController.swift in Sources */,
 				FE2ACA842355B967004623BC /* EditKeywordsController.swift in Sources */,
 				FEC336F5240A78AB00EC1A0D /* ChannelEditInfoViewController.swift in Sources */,
 				FEB4EAFE2163714300F8A9E2 /* RoundedScrollView.swift in Sources */,

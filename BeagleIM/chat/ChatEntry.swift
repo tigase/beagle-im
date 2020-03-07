@@ -35,12 +35,15 @@ class ChatEntry: ChatViewItemProtocol {
     let authorJid: BareJID?;
     let recipientNickname: String?;
 
+    // for MIX - id of participant
+    let participantId: String?;
+    
     let error: String?;
 
     let encryption: MessageEncryption;
     let encryptionFingerprint: String?;
 
-    init(id: Int, timestamp: Date, account: BareJID, jid: BareJID, state: MessageState, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, encryption: MessageEncryption, encryptionFingerprint: String?, error: String?) {
+    init(id: Int, timestamp: Date, account: BareJID, jid: BareJID, state: MessageState, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, encryption: MessageEncryption, encryptionFingerprint: String?, error: String?) {
         self.id = id;
         self.timestamp = timestamp;
         self.account = account;
@@ -49,6 +52,7 @@ class ChatEntry: ChatViewItemProtocol {
         self.authorNickname = authorNickname;
         self.authorJid = authorJid;
         self.recipientNickname = recipientNickname;
+        self.participantId = participantId;
         self.encryption = encryption;
         self.encryptionFingerprint = encryptionFingerprint;
         self.error = error;
@@ -58,7 +62,7 @@ class ChatEntry: ChatViewItemProtocol {
         guard let item = chatItem as? ChatEntry else {
             return false;
         }
-        return self.account == item.account && self.jid == item.jid && self.state.direction == item.state.direction && self.authorNickname == item.authorNickname && self.authorJid == item.authorJid && self.recipientNickname == item.recipientNickname && abs(self.timestamp.timeIntervalSince(item.timestamp)) < allowedTimeDiff() && self.encryption == item.encryption && self.encryptionFingerprint == item.encryptionFingerprint;
+        return self.account == item.account && self.jid == item.jid && self.state.direction == item.state.direction && self.authorNickname == item.authorNickname && self.authorJid == item.authorJid && self.recipientNickname == item.recipientNickname && self.participantId == item.participantId && abs(self.timestamp.timeIntervalSince(item.timestamp)) < allowedTimeDiff() && self.encryption == item.encryption && self.encryptionFingerprint == item.encryptionFingerprint;
     }
 
     func allowedTimeDiff() -> TimeInterval {

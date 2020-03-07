@@ -27,10 +27,10 @@ class ChatAttachment: ChatEntry {
     let url: String;
     var appendix: ChatAttachmentAppendix;
     
-    init(id: Int, timestamp: Date, account: BareJID, jid: BareJID, state: MessageState, url: String, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, encryption: MessageEncryption, encryptionFingerprint: String?, appendix: ChatAttachmentAppendix, error: String?) {
+    init(id: Int, timestamp: Date, account: BareJID, jid: BareJID, state: MessageState, url: String, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, encryption: MessageEncryption, encryptionFingerprint: String?, appendix: ChatAttachmentAppendix, error: String?) {
         self.url = url;
         self.appendix = appendix;
-        super.init(id: id, timestamp: timestamp, account: account, jid: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error);
+        super.init(id: id, timestamp: timestamp, account: account, jid: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error);
     }
     
 }

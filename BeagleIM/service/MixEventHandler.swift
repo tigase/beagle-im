@@ -42,6 +42,15 @@ class MixEventHandler: XmppServiceEventHandler {
             DBChatHistoryStore.instance.append(for: account, message: e.message, source: .stream);
         case let e as MixModule.ParticipantsChangedEvent:
             NotificationCenter.default.post(name: MixEventHandler.PARTICIPANTS_CHANGED, object: e);
+            for participant in e.joined {
+                let jid = participant.jid ?? BareJID(localPart: participant.id + "#" + e.channel.channelJid.localPart!, domain: e.channel.channelJid.domain);
+                DBVCardStore.instance.vcard(for: jid, completionHandler: { vcard in
+                    guard vcard == nil else {
+                        return;
+                    }
+                    VCardManager.instance.refreshVCard(for: jid, on: e.sessionObject.userBareJid!, completionHandler: nil);
+                })
+            }
         case let e as MixModule.ChannelStateChangedEvent:
             NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: e.channel);
         case let e as MixModule.ChannelPermissionsChangedEvent:

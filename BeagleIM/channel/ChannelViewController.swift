@@ -99,6 +99,8 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
                         c.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
 //                    } else if let nickname = item.authorNickname, let photoHash = self.room.presences[nickname]?.presence.vcardTempPhoto {
 //                        c.set(avatar: AvatarManager.instance.avatar(withHash: photoHash));
+                    } else if let participantId = item.participantId {
+                        c.set(avatar: AvatarManager.instance.avatar(for: BareJID(localPart: "\(participantId)#\(item.jid.localPart!)", domain: item.jid.domain), on: item.account));
                     } else {
                         c.set(avatar: nil);
                     }
@@ -123,6 +125,8 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
                         c.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
 //                    } else if let nickname = item.authorNickname, let photoHash = self.room.presences[nickname]?.presence.vcardTempPhoto {
 //                        c.set(avatar: AvatarManager.instance.avatar(withHash: photoHash));
+                    } else if let participantId = item.participantId {
+                        c.set(avatar: AvatarManager.instance.avatar(for: BareJID(localPart: "\(participantId)#\(item.jid.localPart!)", domain: item.jid.domain), on: item.account));
                     } else {
                         c.set(avatar: nil);
                     }
@@ -204,6 +208,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     
     private func updatePermissions() {
         self.actionsButton.item(at: 1)?.isEnabled = channel.has(permission: .changeInfo);
+        self.actionsButton.item(at: 2)?.isEnabled = channel.has(permission: .changeConfig);
         self.actionsButton.lastItem?.isEnabled = channel.has(permission: .changeConfig);
     }
     
@@ -214,7 +219,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         }
         viewController.account = self.account;
         viewController.jid = self.jid;
-        viewController.viewType = .chat;
+        viewController.viewType = .groupchat;
 
         let popover = NSPopover();
         popover.contentViewController = viewController;
@@ -226,6 +231,10 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     
     @IBAction func showEditChannelHeader(_ sender: NSMenuItem) {
         self.performSegue(withIdentifier: NSStoryboardSegue.Identifier("ShowEditChannelHeaderSheet"), sender: self);
+    }
+
+    @IBAction func showEditChannelConfig(_ sender: NSMenuItem) {
+        self.performSegue(withIdentifier: NSStoryboardSegue.Identifier("ShowEditChannelConfigSheet"), sender: self);
     }
     
     @IBAction func showDestroyChannel(_ sender: NSMenuItem) {

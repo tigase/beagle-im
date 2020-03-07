@@ -117,8 +117,12 @@ open class ConversationDetailsViewController: NSViewController, ContactDetailsAc
         //nameField.focusRingType = .none;
         jidField.stringValue = jid?.stringValue ?? "";
         if let jid = self.jid, let account = self.account {
-            DBChatStore.instance.getChat(for: account, with: jid)
             avatarView.image = AvatarManager.instance.avatar(for: jid, on: account);
+            if let channel = DBChatStore.instance.getChat(for: account, with: jid) as? DBChatStore.DBChannel {
+                if let name = channel.name {
+                    nameField.stringValue = name;
+                }
+            } else {
             DBVCardStore.instance.vcard(for: jid) { (vcard) in
                 DispatchQueue.main.async {
                     var fn: String = "";
@@ -137,6 +141,7 @@ open class ConversationDetailsViewController: NSViewController, ContactDetailsAc
                     }
                     self.nameField.stringValue = fn;
                 }
+            }
             }
         }
         settingsContainerView.isHidden = !showSettings;

@@ -62,6 +62,7 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
         default:
             typeDescription.stringValue = "UNKNOWN";
         }
+        useMixChanged();
     }
     
     func disclosureChanged(state: Bool) {
@@ -245,7 +246,7 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
     }
     
     func useMixChanged() {
-        idField.isEnabled = mixCheckbox.state == .off;
+        idField.isEnabled = mixCheckbox.state == .off || typeSelector.selectedSegment == 0;
         if !idField.isEnabled {
             idField.stringValue = "";
         }
