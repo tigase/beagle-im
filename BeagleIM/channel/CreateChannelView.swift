@@ -89,9 +89,9 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
         let description = descriptionField.stringValue.isEmpty ? nil : descriptionField.stringValue;
         let type: OpenChannelViewController.ComponentType = mixCheckbox.state == .on ? .mix : .muc;
         let isPrivate = typeSelector.indexOfSelectedItem == 1;
-        var localPart = idField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines);
-        if  localPart.isEmpty {
-            localPart = isPrivate ? UUID().uuidString : name.replacingOccurrences(of: " ", with: "-");
+        var localPart: String? = idField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines);
+        if localPart?.isEmpty ?? true {
+            localPart = isPrivate ? nil : name.replacingOccurrences(of: " ", with: "-");
         }
         let avatar: NSImage? = self.avatarButton.image;
         delegate.askForNickname(completionHandler: { nickname in
@@ -103,7 +103,7 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
         return account != nil && !components.isEmpty && !nameField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty;
     }
 
-    func create(account: BareJID, channelLocalPart: String, channelName: String, channelDescription: String?, nickname: String, type: OpenChannelViewController.ComponentType, private priv: Bool, avatar: NSImage?, completionHandler: @escaping (Bool)->Void) {
+    func create(account: BareJID, channelLocalPart: String?, channelName: String, channelDescription: String?, nickname: String, type: OpenChannelViewController.ComponentType, private priv: Bool, avatar: NSImage?, completionHandler: @escaping (Bool)->Void) {
         guard let client = XmppService.instance.getClient(for: account), let component = self.components.first(where: { $0.type == type }) else {
             completionHandler(false);
             return;
@@ -117,7 +117,7 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
             }
             self.delegate?.operationStarted();
             
-            mixModule.create(channel: priv ? nil : channelLocalPart, at: component.jid.bareJid, completionHandler: { [weak self] result in
+            mixModule.create(channel: channelLocalPart, at: component.jid.bareJid, completionHandler: { [weak self] result in
                 switch result {
                 case .success(let channelJid):
                     mixModule.join(channel: channelJid, withNick: nickname, completionHandler: { result in
@@ -152,6 +152,11 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                             print("avatar publication result:", result);
                         });
                     }
+                    if priv {
+                        mixModule.changeAccessPolicy(of: channelJid, isPrivate: priv, completionHandler: { result in
+                            print("changed channel access policy:", result);
+                        })
+                    }
                 case .failure(let errorCondition):
                     DispatchQueue.main.async {
                         completionHandler(false);
@@ -176,6 +181,8 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                 return;
             }
 
+            let roomName = channelLocalPart ?? UUID().uuidString;
+            
             self.delegate?.operationStarted();
 
             let form = JabberDataElement(type: .submit);
@@ -183,10 +190,10 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
             form.addField(BooleanField(name: "muc#roomconfig_membersonly", value: priv));
             form.addField(BooleanField(name: "muc#roomconfig_publicroom", value: !priv));
             form.addField(TextSingleField(name: "muc#roomconfig_roomdesc", value: channelDescription));
-            mucModule.setRoomConfiguration(roomJid: JID(BareJID(localPart: channelLocalPart, domain: component.jid.domain)), configuration: form, completionHandler: { [weak self] result in
+            mucModule.setRoomConfiguration(roomJid: JID(BareJID(localPart: roomName, domain: component.jid.domain)), configuration: form, completionHandler: { [weak self] result in
                 switch result {
                 case .success(_):
-                    _ = mucModule.join(roomName: channelLocalPart, mucServer: component.jid.domain, nickname: nickname, onJoined: { room in
+                    _ = mucModule.join(roomName: roomName, mucServer: component.jid.domain, nickname: nickname, onJoined: { room in
                         if let vCardTempModule: VCardTempModule = client.modulesManager.getModule(VCardTempModule.ID) {
                             let vcard = VCard();
                             if let binval = avatar?.scaled(maxWidthOrHeight: 512.0, format: .jpeg, properties: [.compressionFactor: 0.8])?.base64EncodedString(options: []) {
@@ -246,10 +253,10 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
     }
     
     func useMixChanged() {
-        idField.isEnabled = mixCheckbox.state == .off || typeSelector.selectedSegment == 0;
-        if !idField.isEnabled {
-            idField.stringValue = "";
-        }
+//        idField.isEnabled = mixCheckbox.state == .off || typeSelector.selectedSegment == 0;
+//        if !idField.isEnabled {
+//            idField.stringValue = "";
+//        }
     }
 
     func controlTextDidChange(_ obj: Notification) {

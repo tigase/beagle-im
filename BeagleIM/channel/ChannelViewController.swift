@@ -155,6 +155,9 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         if let channelAware = segue.destinationController as? ChannelAwareProtocol {
             channelAware.channel = self.channel;
         }
+        if let controller = segue.destinationController as? ChannelParticipantsViewController {
+            controller.channelViewController = self;
+        }
     }
 
     override func send(message: String) -> Bool {

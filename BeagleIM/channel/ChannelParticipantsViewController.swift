@@ -28,7 +28,11 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
     
     @IBOutlet var participantsTableViewHeightConstraint: NSLayoutConstraint!;
     
+    @IBOutlet var inviteParticipantsButton: NSButton!;
+    @IBOutlet var manageParticipantsButton: NSButton!;
+    
     var channel: DBChatStore.DBChannel!;
+    weak var channelViewController: NSViewController?;
     
     private var participants: [MixParticipant] = [] {
         didSet {
@@ -42,6 +46,13 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
         NotificationCenter.default.addObserver(self, selector: #selector(participantsChanged(_:)), name: MixEventHandler.PARTICIPANTS_CHANGED, object: nil);
         self.participants = self.channel!.participants.values.sorted(by: self.sortParticipants);
         self.participantsTableView.reloadData();
+        inviteParticipantsButton.isHidden = !channel.has(permission: .changeConfig);
+        if !channel.has(permission: .changeConfig) {
+            manageParticipantsButton.isHidden = true;
+            let constraint = participantsTableView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -10);
+            constraint.priority = .required;
+            constraint.isActive = true;
+        }
     }
     
     override func viewWillDisappear() {
@@ -108,6 +119,23 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
         let v2 = p2.nickname ?? p2.jid?.stringValue ?? p2.id;
         return v1 < v2;
     }
+    
+    override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
+        if let channelAware = segue.destinationController as? ChannelAwareProtocol {
+            channelAware.channel = channel;
+        }
+    }
+    
+    @IBAction func showInviteWindow(_ sender: Any) {
+        //self.dismiss(self);
+        channelViewController?.performSegue(withIdentifier: "ShowInviteToChannelSheet", sender: sender);
+    }
+    
+    @IBAction func showManageParticipantsWindow(_ sender: Any) {
+        //self.dismiss(self);
+        channelViewController?.performSegue(withIdentifier: "ShowManagerParticipantsSheet", sender: sender);
+    }
+
 }
 
 class ChannelParticipantTableCellView: NSTableCellView {
