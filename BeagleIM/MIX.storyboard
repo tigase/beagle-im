@@ -428,7 +428,7 @@ AAAAAAEGA
                                                     <rect key="frame" x="6" y="28" width="321" height="443"/>
                                                     <clipView key="contentView" id="sDp-qK-scp">
                                                         <rect key="frame" x="1" y="1" width="319" height="441"/>
-                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <autoresizingMask key="autoresizingMask"/>
                                                         <subviews>
                                                             <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" viewBased="YES" id="6gw-Rr-4Ke">
                                                                 <rect key="frame" x="0.0" y="0.0" width="319" height="441"/>
