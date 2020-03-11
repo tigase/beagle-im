@@ -581,58 +581,6 @@ open class DBChatStore {
         }
     }
     
-    private class AccountChats {
-        
-        private var chats = [BareJID: DBChatProtocol]();
-        
-        var count: Int {
-            return chats.count;
-        }
-        
-        var items: [DBChatProtocol] {
-            return chats.values.map({ (chat) -> DBChatProtocol in
-                return chat;
-            });
-        }
-        
-        init(items: [DBChatProtocol]) {
-            items.forEach { item in
-                self.chats[item.jid.bareJid] = item;
-            }
-        }
-        
-        func open(chat: DBChatProtocol) -> DBChatProtocol {
-            guard let existingChat = chats[chat.jid.bareJid] else {
-                chats[chat.jid.bareJid] = chat;
-                return chat;
-            }
-            return existingChat;
-        }
-        
-        func close(chat: DBChatProtocol) -> Bool {
-            return chats.removeValue(forKey: chat.jid.bareJid) != nil;
-        }
-        
-        func isFor(jid: BareJID) -> Bool {
-            return chats[jid] != nil;
-        }
-        
-        func get(with jid: BareJID) -> DBChatProtocol? {
-            return chats[jid];
-        }
-        
-        func lastMessageTimestamp() -> Date {
-            var timestamp = Date(timeIntervalSince1970: 0);
-            chats.values.forEach { (chat) in
-                guard chat.lastActivity != nil else {
-                    return;
-                }
-                timestamp = max(timestamp, chat.timestamp);
-            }
-            return timestamp;
-        }
-    }
-    
     class DBChat: Chat, DBChatProtocol {
         
         let id: Int;
@@ -868,6 +816,58 @@ open class DBChatStore {
             return true;
         }
         
+    }
+}
+
+fileprivate class AccountChats {
+    
+    private var chats = [BareJID: DBChatProtocol]();
+    
+    var count: Int {
+        return self.chats.count;
+    }
+    
+    var items: [DBChatProtocol] {
+        return self.chats.values.map({ (chat) -> DBChatProtocol in
+            return chat;
+        });
+    }
+    
+    init(items: [DBChatProtocol]) {
+        items.forEach { item in
+            self.chats[item.jid.bareJid] = item;
+        }
+    }
+    
+    func open(chat: DBChatProtocol) -> DBChatProtocol {
+        guard let existingChat = self.chats[chat.jid.bareJid] else {
+            self.chats[chat.jid.bareJid] = chat;
+            return chat;
+        }
+        return existingChat;
+    }
+    
+    func close(chat: DBChatProtocol) -> Bool {
+        return self.chats.removeValue(forKey: chat.jid.bareJid) != nil;
+    }
+    
+    func isFor(jid: BareJID) -> Bool {
+        return self.chats[jid] != nil;
+    }
+    
+    func get(with jid: BareJID) -> DBChatProtocol? {
+        return self.chats[jid];
+    }
+    
+    func lastMessageTimestamp() -> Date {
+        var timestamp = Date(timeIntervalSince1970: 0);
+        self.chats.values.forEach { (chat) in
+            guard chat.lastActivity != nil else {
+                return;
+            }
+            timestamp = max(timestamp, chat.timestamp);
+        }
+        return timestamp;
     }
 }
 
