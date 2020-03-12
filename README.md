@@ -36,11 +36,9 @@ To learn more about the XMPP client features visit https://beagle.im.
 When looking for support, please first search for answers to your question in the available online channels:
 
 * Our online documentation: [Tigase Docs](https://docs.tigase.net)
-* Our online forums: [Tigase Forums](https://help.tigase.net/portal/community)
-* Our online Knowledge Base [Tigase KB](https://help.tigase.net/portal/kb)
+* Existing tickets: [GitHub issues](https://github.com/tigase/beagle-im/issues)
 
-If you didn't find an answer in the resources above, feel free to submit your question to either our
-[community portal](https://help.tigase.net/portal/community) or open a [support ticket](https://help.tigase.net/portal/newticket).
+If you didn't find an answer in the resources above, feel free to submit an [issue](https://github.com/tigase/beagle-im/issues/new/choose).
 
 # Downloads
 
