@@ -823,13 +823,19 @@ fileprivate class AccountChats {
     
     private var chats = [BareJID: DBChatProtocol]();
     
+    private let queue = DispatchQueue(label: "accountChats");
+    
     var count: Int {
-        return self.chats.count;
+        return self.queue.sync(execute: {
+            return self.chats.count;
+        })
     }
     
     var items: [DBChatProtocol] {
-        return self.chats.values.map({ (chat) -> DBChatProtocol in
-            return chat;
+        return self.queue.sync(execute: {
+            return self.chats.values.map({ (chat) -> DBChatProtocol in
+                return chat;
+            });
         });
     }
     
@@ -840,34 +846,51 @@ fileprivate class AccountChats {
     }
     
     func open(chat: DBChatProtocol) -> DBChatProtocol {
-        guard let existingChat = self.chats[chat.jid.bareJid] else {
-            self.chats[chat.jid.bareJid] = chat;
-            return chat;
-        }
-        return existingChat;
+        return self.queue.sync(execute: {
+            var chats = self.chats;
+            guard let existingChat = chats[chat.jid.bareJid] else {
+                chats[chat.jid.bareJid] = chat;
+                self.chats = chats;
+                return chat;
+            }
+            return existingChat;
+        });
     }
     
     func close(chat: DBChatProtocol) -> Bool {
-        return self.chats.removeValue(forKey: chat.jid.bareJid) != nil;
+        return self.queue.sync(execute: {
+            var chats = self.chats;
+            defer {
+                self.chats = chats;
+            }
+            return chats.removeValue(forKey: chat.jid.bareJid) != nil;
+        });
     }
     
     func isFor(jid: BareJID) -> Bool {
-        return self.chats[jid] != nil;
+        return self.queue.sync(execute: {
+            return self.chats[jid] != nil;
+        });
     }
     
     func get(with jid: BareJID) -> DBChatProtocol? {
-        return self.chats[jid];
+        return self.queue.sync(execute: {
+            let chats = self.chats;
+            return chats[jid];
+        });
     }
     
     func lastMessageTimestamp() -> Date {
-        var timestamp = Date(timeIntervalSince1970: 0);
-        self.chats.values.forEach { (chat) in
-            guard chat.lastActivity != nil else {
-                return;
+        return self.queue.sync(execute: {
+            var timestamp = Date(timeIntervalSince1970: 0);
+            self.chats.values.forEach { (chat) in
+                guard chat.lastActivity != nil else {
+                    return;
+                }
+                timestamp = max(timestamp, chat.timestamp);
             }
-            timestamp = max(timestamp, chat.timestamp);
-        }
-        return timestamp;
+            return timestamp;
+        });
     }
 }
 
