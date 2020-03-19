@@ -27,6 +27,26 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
     
     weak var dragHandler: NSDraggingDestination? = nil;
     
+    override var rangeForUserCompletion: NSRange {
+        let currRange = super.rangeForUserCompletion;
+        if currRange.length == 0 {
+            return currRange;
+        }
+        let val = self.string as NSString
+        var spaceRange = val.rangeOfCharacter(from: .whitespacesAndNewlines, options: .backwards, range: NSRange(location: 0, length: currRange.location));
+        if spaceRange.location == NSNotFound {
+            spaceRange = NSRange(location: 0, length: 0);
+        }
+        let rangeWithAt = NSRange(location: spaceRange.location + spaceRange.length, length: currRange.length + (currRange.location - (spaceRange.location + spaceRange.length)));
+        
+        let atRange = val.rangeOfCharacter(from: CharacterSet(charactersIn: "@"), options: [], range: NSRange(location: rangeWithAt.location, length: 1));
+        if atRange.location != NSNotFound {
+            return NSRange(location: atRange.location + atRange.length, length: rangeWithAt.length - atRange.length);
+        } else {
+            return NSRange(location: NSNotFound, length: 0);
+        }
+    }
+    
     override var string: String {
         didSet {
             self.invalidateIntrinsicContentSize();
