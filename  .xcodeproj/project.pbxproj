@@ -166,6 +166,7 @@
 		FEDE6AF52143D8130019170A /* ChatsListTableRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE6AF42143D8130019170A /* ChatsListTableRowView.swift */; };
 		FEDE6AF921440AEF0019170A /* StatusHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE6AF821440AEF0019170A /* StatusHelper.swift */; };
 		FEDE6AFC21455A2B0019170A /* RosterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE6AFB21455A2B0019170A /* RosterViewController.swift */; };
+		FEE49DC824229D2A00900BBB /* OSLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE49DC724229D2A00900BBB /* OSLog.swift */; };
 		FEEF25322264A80500202B28 /* OMEMOController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25312264A80500202B28 /* OMEMOController.swift */; };
 		FEEF25362266303A00202B28 /* OMEMOIdentititesTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25352266303A00202B28 /* OMEMOIdentititesTableView.swift */; };
 		FEEF25392266528E00202B28 /* ContactDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25382266528E00202B28 /* ContactDetailsViewController.swift */; };
@@ -385,6 +386,7 @@
 		FEDE6AF42143D8130019170A /* ChatsListTableRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListTableRowView.swift; sourceTree = "<group>"; };
 		FEDE6AF821440AEF0019170A /* StatusHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusHelper.swift; sourceTree = "<group>"; };
 		FEDE6AFB21455A2B0019170A /* RosterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RosterViewController.swift; sourceTree = "<group>"; };
+		FEE49DC724229D2A00900BBB /* OSLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSLog.swift; sourceTree = "<group>"; };
 		FEEF25312264A80500202B28 /* OMEMOController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OMEMOController.swift; sourceTree = "<group>"; };
 		FEEF25352266303A00202B28 /* OMEMOIdentititesTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OMEMOIdentititesTableView.swift; sourceTree = "<group>"; };
 		FEEF25382266528E00202B28 /* ContactDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactDetailsViewController.swift; sourceTree = "<group>"; };
@@ -539,6 +541,7 @@
 				FE9E069923A3976500952E9C /* DownloadManager.swift */,
 				FE29D35723C208840028D306 /* MetadataCache.swift */,
 				FE10BCEE23FAB13800E214F3 /* InvitationsManager.swift */,
+				FEE49DC724229D2A00900BBB /* OSLog.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -1094,6 +1097,7 @@
 				FE30D8BA214ED28A00670BEC /* OpenGroupchatController.swift in Sources */,
 				FE41FB33215B8D5A00AD86D3 /* ServerCertificateErrorController.swift in Sources */,
 				FEDCCA3D22F48C8300CC5C2C /* NetworkSettingsController.swift in Sources */,
+				FEE49DC824229D2A00900BBB /* OSLog.swift in Sources */,
 				FE5C6B2D22916C47003DAB30 /* JoinGroupchatViewController.swift in Sources */,
 				FE3F2AF2228813E200737D51 /* EmptyViewController.swift in Sources */,
 				FEDE6AF921440AEF0019170A /* StatusHelper.swift in Sources */,
