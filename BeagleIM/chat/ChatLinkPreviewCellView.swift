@@ -44,7 +44,7 @@ class ChatLinkPreviewCellView: NSTableCellView {
         }
     }
 
-    func set(item: ChatLinkPreview) {
+    func set(item: ChatLinkPreview, fetchPreviewIfNeeded: Bool) {
         if #available(macOS 10.15, *) {
             var metadata = MetadataCache.instance.metadata(for: "\(item.id)");
             var isNew = false;
@@ -66,7 +66,7 @@ class ChatLinkPreviewCellView: NSTableCellView {
             linkView.metadata = metadata!;
 
 
-            if isNew {
+            if isNew && fetchPreviewIfNeeded {
                 MetadataCache.instance.generateMetadata(for: url, withId: "\(item.id)", completionHandler: { [weak linkView] meta1 in
                     guard let meta = meta1 else {
                         return;

@@ -44,13 +44,19 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     override var chat: DBChatProtocol! {
         didSet {
             if let sessionObject = XmppService.instance.getClient(for: account)?.sessionObject {
-                buddyName = RosterModule.getRosterStore(sessionObject).get(for: JID(jid))?.name ?? jid.stringValue;
+                if let rosterItem = RosterModule.getRosterStore(sessionObject).get(for: JID(jid)) {
+                    buddyName = rosterItem.name ?? jid.stringValue;
+                    fetchPreviewIfNeeded = true;
+                } else {
+                    buddyName = jid.stringValue;
+                }
             } else {
                 buddyName = jid.stringValue;
             }
         }
     };
     fileprivate var buddyName: String! = "";
+    private var fetchPreviewIfNeeded: Bool = false;
 
     override func conversationTableViewDelegate() -> NSTableViewDelegate? {
         return self;
@@ -181,7 +187,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             return nil;
         case let item as ChatLinkPreview:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatLinkPreviewCellView"), owner: nil) as? ChatLinkPreviewCellView {
-                cell.set(item: item);
+                cell.set(item: item, fetchPreviewIfNeeded: fetchPreviewIfNeeded);
                 return cell;
             }
             return nil;
@@ -216,6 +222,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             }
 
             self.buddyName = ((e.action != .removed) ? item.name : nil) ?? self.jid.stringValue;
+            self.fetchPreviewIfNeeded = e.action != .removed;
             self.buddyNameLabel.title = self.buddyName;
             self.buddyAvatarView.name = self.buddyName;
             self.dataSource.refreshDataNoReload();

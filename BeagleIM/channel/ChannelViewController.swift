@@ -114,7 +114,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             return nil;
         case let item as ChatLinkPreview:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatLinkPreviewCellView"), owner: nil) as? ChatLinkPreviewCellView {
-                cell.set(item: item);
+                cell.set(item: item, fetchPreviewIfNeeded: true);
                 return cell;
             }
             return nil;
