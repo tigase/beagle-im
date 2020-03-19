@@ -472,7 +472,7 @@ class BaseChatAttachmentCellView: NSTableCellView {
                 }
                 if let size = item.appendix.filesize {
                     if let mimetype = item.appendix.mimetype, let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimetype as CFString, nil)?.takeRetainedValue(), let typeName = UTTypeCopyDescription(uti)?.takeRetainedValue() as String? {
-                        let fileSize = fileSizeToString(UInt64(size));
+                        let fileSize = size >= 0 ? fileSizeToString(UInt64(size)) : "--";
                         details.stringValue = "\(typeName) - \(fileSize)";
                         iconView.image = NSWorkspace.shared.icon(forFileType: uti as String);
                     } else {
