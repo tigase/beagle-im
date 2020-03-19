@@ -335,17 +335,36 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         return true;
     }
         
-    var lastRange = 0;
+    private var skipNextSuggestion = false;
+    private var forceSuggestion = false;
 
+    override func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+        switch commandSelector {
+        case #selector(NSResponder.moveUp(_:)), #selector(NSResponder.moveDown(_:)):
+            self.skipNextSuggestion = true;
+            return true;
+            //return super.textView(textView, doCommandBy: commandSelector);
+        case #selector(NSResponder.deleteForward(_:)), #selector(NSResponder.deleteBackward(_:)):
+            self.skipNextSuggestion = true;
+            return super.textView(textView, doCommandBy: commandSelector);
+        default:
+            return super.textView(textView, doCommandBy: commandSelector);
+        }
+    }
+        
     override func textDidChange(_ obj: Notification) {
         super.textDidChange(obj);
-        if lastRange < messageField.rangeForUserCompletion.length {
+        if !skipNextSuggestion {
             self.messageField.complete(nil);
+        } else {
+            skipNextSuggestion = false;
         }
-        lastRange = messageField.rangeForUserCompletion.length;
     }
         
     func textView(_ textView: NSTextView, completions words: [String], forPartialWordRange charRange: NSRange, indexOfSelectedItem index: UnsafeMutablePointer<Int>?) -> [String] {
+        guard charRange.length != 0 && charRange.location != NSNotFound else {
+            return [];
+        }
         
         let tmp = textView.string;
         let utf16 = tmp.utf16;
@@ -354,22 +373,13 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         guard let query = String(utf16[start..<end])?.uppercased() else {
             return [];
         }
-        
-//        let start = tmp.index(tmp.startIndex, offsetBy: charRange.lowerBound);
-//        let end = tmp.index(tmp.startIndex, offsetBy: charRange.upperBound);
-//        let query = textView.string[start..<end].uppercased();
-        
-        print("tmp:", tmp, "start:", start, "startIndex:", "end:", end, "query:", query);
-        
-        guard start != utf16.startIndex, utf16[utf16.index(before: start)] == ("@" as NSString).character(at: 0) else {
-            return [];
-        }
-        
-        let suggestions = self.room?.presences.keys.filter({ (key) -> Bool in
-            return key.uppercased().contains(query);
-        }).sorted() ?? [];
+                
+        let occupantNicknames:[String] = self.room?.presences.keys.map({ $0 }) ?? [];
+        let suggestions = occupantNicknames.filter({ (key) -> Bool in
+            return key.uppercased().starts(with: query);
+        }).sorted();
 
-        index?.initialize(to: suggestions.isEmpty ? -1 : 0);
+        index?.initialize(to: -1);//suggestions.isEmpty ? -1 : 0);
 
         return suggestions.map({ name in "\(name) "});
     }
