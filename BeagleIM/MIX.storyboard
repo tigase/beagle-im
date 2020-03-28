@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15705"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="16096"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -185,17 +185,17 @@ AAAAAAEGA
                                 </connections>
                             </button>
                             <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gqn-bF-Cgb" customClass="RoundedScrollView" customModule="BeagleIM" customModuleProvider="target">
-                                <rect key="frame" x="26" y="4" width="309" height="22"/>
+                                <rect key="frame" x="26" y="4" width="331" height="22"/>
                                 <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="J6S-Ef-hiI">
-                                    <rect key="frame" x="0.0" y="0.0" width="309" height="22"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="331" height="22"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <textView drawsBackground="NO" importsGraphics="NO" richText="NO" verticallyResizable="YES" allowsUndo="YES" smartInsertDelete="YES" id="jGz-Lz-yXC" customClass="AutoresizingTextView" customModule="BeagleIM" customModuleProvider="target">
-                                            <rect key="frame" x="0.0" y="0.0" width="272" height="14"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="294" height="14"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" name="chatBackgroundColor"/>
-                                            <size key="minSize" width="272" height="14"/>
+                                            <size key="minSize" width="309" height="14"/>
                                             <size key="maxSize" width="100000" height="10000000"/>
                                             <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                         </textView>
@@ -215,47 +215,20 @@ AAAAAAEGA
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
-                            <popUpButton translatesAutoresizingMaskIntoConstraints="NO" id="CjQ-dd-vRv">
-                                <rect key="frame" x="339" y="6" width="18" height="18"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="18" id="Cbn-yA-Ihp"/>
-                                    <constraint firstAttribute="height" constant="18" id="y3p-FO-H0w"/>
-                                </constraints>
-                                <popUpButtonCell key="cell" type="square" title="Item 1" bezelStyle="shadowlessSquare" imagePosition="only" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="border" transparent="YES" imageScaling="proportionallyUpOrDown" inset="2" pullsDown="YES" arrowPosition="noArrow" selectedItem="MbH-3T-ktT" id="LX0-XL-HLY">
-                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                    <menu key="menu" id="p2P-Lx-svW">
-                                        <items>
-                                            <menuItem title="Item 1" state="on" image="NSLockLockedTemplate" hidden="YES" id="MbH-3T-ktT"/>
-                                            <menuItem title="Default" image="NSMenuMixedStateTemplate" id="nGF-eS-MKE">
-                                                <modifierMask key="keyEquivalentModifierMask"/>
-                                            </menuItem>
-                                            <menuItem title="Unencrypted" image="NSLockUnlockedTemplate" id="l0p-Hb-cRA"/>
-                                            <menuItem title="OMEMO" image="NSLockLockedTemplate" id="jHf-xE-Q4B"/>
-                                        </items>
-                                    </menu>
-                                </popUpButtonCell>
-                                <connections>
-                                    <action selector="encryptionChanged:" target="Uia-ff-60o" id="UXi-JY-JMI"/>
-                                </connections>
-                            </popUpButton>
                         </subviews>
                         <constraints>
                             <constraint firstItem="sR5-Lq-cEV" firstAttribute="top" secondItem="gqn-bF-Cgb" secondAttribute="top" constant="2" id="6NC-Ry-1Ub"/>
                             <constraint firstItem="UC5-0L-rL3" firstAttribute="top" secondItem="dRH-Ov-ia9" secondAttribute="bottom" id="ELy-tP-3KK"/>
                             <constraint firstItem="sR5-Lq-cEV" firstAttribute="leading" secondItem="pz6-TD-rI4" secondAttribute="leading" constant="4" id="FvM-li-PcF"/>
-                            <constraint firstItem="CjQ-dd-vRv" firstAttribute="leading" secondItem="gqn-bF-Cgb" secondAttribute="trailing" constant="4" id="JI2-XS-8gM"/>
                             <constraint firstItem="dRH-Ov-ia9" firstAttribute="top" secondItem="pz6-TD-rI4" secondAttribute="top" id="Jzc-3v-wio"/>
                             <constraint firstItem="dRH-Ov-ia9" firstAttribute="leading" secondItem="pz6-TD-rI4" secondAttribute="leading" id="NMg-Py-zVe"/>
                             <constraint firstAttribute="trailing" secondItem="dRH-Ov-ia9" secondAttribute="trailing" id="PDX-jO-cdH"/>
-                            <constraint firstItem="CjQ-dd-vRv" firstAttribute="top" secondItem="gqn-bF-Cgb" secondAttribute="top" constant="2" id="Pjc-hV-Qyr"/>
+                            <constraint firstAttribute="trailing" secondItem="gqn-bF-Cgb" secondAttribute="trailing" constant="4" id="RMH-h2-tca"/>
                             <constraint firstAttribute="trailing" secondItem="UC5-0L-rL3" secondAttribute="trailing" id="Rsn-h7-d3g"/>
                             <constraint firstItem="gqn-bF-Cgb" firstAttribute="leading" secondItem="sR5-Lq-cEV" secondAttribute="trailing" constant="4" id="S82-fj-TSB"/>
                             <constraint firstItem="UC5-0L-rL3" firstAttribute="leading" secondItem="pz6-TD-rI4" secondAttribute="leading" id="SFS-ai-ElZ"/>
-                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="CjQ-dd-vRv" secondAttribute="bottom" constant="4" id="Tk6-os-egG"/>
                             <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="sR5-Lq-cEV" secondAttribute="bottom" constant="4" id="Wc5-zJ-E2w"/>
                             <constraint firstItem="gqn-bF-Cgb" firstAttribute="top" secondItem="UC5-0L-rL3" secondAttribute="bottom" id="bGw-Wc-AdZ"/>
-                            <constraint firstAttribute="trailing" secondItem="CjQ-dd-vRv" secondAttribute="trailing" constant="4" id="e1j-rP-YFe"/>
                             <constraint firstItem="IXD-rO-O0n" firstAttribute="leading" secondItem="UC5-0L-rL3" secondAttribute="leading" id="k7k-zJ-Vh8"/>
                             <constraint firstItem="IXD-rO-O0n" firstAttribute="trailing" secondItem="UC5-0L-rL3" secondAttribute="trailing" id="tta-XO-Rbl"/>
                             <constraint firstAttribute="bottom" secondItem="gqn-bF-Cgb" secondAttribute="bottom" constant="4" id="uZS-1m-CI9"/>
@@ -273,7 +246,6 @@ AAAAAAEGA
                         <outlet property="channelDescriptionLabel" destination="qwE-mK-HCR" id="6tY-Z8-gcj"/>
                         <outlet property="channelJidLabel" destination="Uwz-yJ-FRm" id="Ie4-Fx-0D3"/>
                         <outlet property="channelNameLabel" destination="v3A-pb-RRk" id="XCt-MM-VT5"/>
-                        <outlet property="encryptButton" destination="CjQ-dd-vRv" id="f7s-Nh-H8O"/>
                         <outlet property="infoButton" destination="t9e-Jm-NRo" id="XAL-gS-eHN"/>
                         <outlet property="messageField" destination="jGz-Lz-yXC" id="JuW-ma-bVC"/>
                         <outlet property="messageFieldScroller" destination="gqn-bF-Cgb" id="48A-wc-SZb"/>
@@ -356,7 +328,6 @@ AAAAAAEGA
                                                                 <tableColumns>
                                                                     <tableColumn width="316" minWidth="40" maxWidth="1000" id="Zzw-GR-DHa">
                                                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
-                                                                            <font key="font" metaFont="message" size="11"/>
                                                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                             <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                                         </tableHeaderCell>
@@ -439,7 +410,6 @@ AAAAAAEGA
                                                                 <tableColumns>
                                                                     <tableColumn width="316" minWidth="40" maxWidth="1000" id="ZNa-TD-xpj">
                                                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
-                                                                            <font key="font" metaFont="message" size="11"/>
                                                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                             <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                                         </tableHeaderCell>
@@ -623,7 +593,6 @@ Gw
                                             <tableColumns>
                                                 <tableColumn width="247" minWidth="40" maxWidth="1000" id="b1S-AI-ZV2">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
-                                                        <font key="font" metaFont="message" size="11"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                     </tableHeaderCell>
@@ -785,7 +754,6 @@ Gw
                                             <tableColumns>
                                                 <tableColumn width="210" minWidth="40" maxWidth="1000" id="min-fd-xyg">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
-                                                        <font key="font" metaFont="message" size="11"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                     </tableHeaderCell>
@@ -823,7 +791,6 @@ Gw
                                                 </tableColumn>
                                                 <tableColumn width="264" minWidth="40" maxWidth="1000" id="spZ-0f-ebQ">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
-                                                        <font key="font" metaFont="message" size="11"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                     </tableHeaderCell>
@@ -1153,9 +1120,6 @@ Gw
         <image name="NSAddTemplate" width="11" height="11"/>
         <image name="NSEveryone" width="32" height="32"/>
         <image name="NSInfo" width="32" height="32"/>
-        <image name="NSLockLockedTemplate" width="10" height="14"/>
-        <image name="NSLockUnlockedTemplate" width="10" height="14"/>
-        <image name="NSMenuMixedStateTemplate" width="10" height="2"/>
         <image name="NSRemoveTemplate" width="11" height="11"/>
         <image name="NSUser" width="32" height="32"/>
         <namedColor name="chatBackgroundColor">

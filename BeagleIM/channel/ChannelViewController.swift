@@ -169,6 +169,16 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         return true;
     }
     
+    override func sendAttachment(originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?) -> Bool {
+        guard let client = XmppService.instance.getClient(for: account), client.state == .connected, channel.state == .joined else {
+            return false;
+        }
+        let msg = channel.createMessage(uploadedUrl.absoluteString);
+        msg.oob = uploadedUrl.absoluteString;
+        client.context.writer?.write(msg);
+        return true;
+    }
+    
     @objc func avatarChanged(_ notification: Notification) {
         guard let account = notification.userInfo?["account"] as? BareJID, let jid = notification.userInfo?["jid"] as? BareJID else {
             return;

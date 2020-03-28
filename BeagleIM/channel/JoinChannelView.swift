@@ -82,11 +82,14 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
                 completionHandler(false);
                 return;
             }
-            discoModule.getInfo(for: channel.jid, node: nil, completionHandler: { result in
+            discoModule.getInfo(for: channel.jid, node: nil, completionHandler: { [weak self] result in
                 switch result {
                 case .success(let node, let identities, let features):
                     if features.firstIndex(of: "muc_passwordprotected") != nil && password == nil {
                         DispatchQueue.main.async {
+                            guard let window = self?.window else {
+                                return;
+                            }
                             let alert = NSAlert();
                             alert.messageText = "Enter password for room";
                             alert.informativeText = "This room is password protected. You need to provide correct password to join this room.";
@@ -95,12 +98,12 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
                             alert.accessoryView = passwordField;
                             alert.addButton(withTitle: "OK").tag = NSApplication.ModalResponse.OK.rawValue;
                             alert.addButton(withTitle: "Cancel");
-                            alert.beginSheetModal(for: self.window!, completionHandler: { (response) in
+                            alert.beginSheetModal(for: window, completionHandler: { (response) in
                                 let password = passwordField.stringValue;
                                 if password.isEmpty || response != .OK {
                                     completionHandler(false);
                                 } else {
-                                    self.join(channel: channel, nickname: nickname, password: password, completionHandler: completionHandler);
+                                    self?.join(channel: channel, nickname: nickname, password: password, completionHandler: completionHandler);
                                 }
                             })
                         }
@@ -114,11 +117,14 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
                     }
                 case .failure(let errorCondition, let response):
                     DispatchQueue.main.async {
+                        guard let window = self?.window else {
+                            return;
+                        }
                         let alert = NSAlert();
                         alert.messageText = "Could not join";
                         alert.informativeText = "It was not possible to join a room. The server returned an error: \(response?.errorText ?? errorCondition.rawValue)";
                         alert.addButton(withTitle: "OK")
-                        alert.beginSheetModal(for: self.window!, completionHandler: { (response) in
+                        alert.beginSheetModal(for: window, completionHandler: { (response) in
                             completionHandler(false);
                         });
                     }
