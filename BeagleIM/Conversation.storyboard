@@ -212,7 +212,7 @@
                                                                     <constraints>
                                                                         <constraint firstAttribute="height" constant="30" id="qiR-pK-n4M"/>
                                                                     </constraints>
-                                                                    <popUpButtonCell key="cell" type="square" title="Item 1" bezelStyle="shadowlessSquare" image="popUpButtonCell:lYn-Io-FsM:image" imagePosition="only" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="border" transparent="YES" imageScaling="proportionallyDown" inset="2" pullsDown="YES" arrowPosition="noArrow" selectedItem="GD4-JW-IGJ" id="lYn-Io-FsM">
+                                                                    <popUpButtonCell key="cell" type="square" title="Item 1" bezelStyle="shadowlessSquare" image="popUpButtonCell:lYn-Io-FsM:image" imagePosition="only" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="border" transparent="YES" imageScaling="proportionallyDown" inset="2" pullsDown="YES" arrowPosition="noArrow" id="lYn-Io-FsM">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                         <font key="font" metaFont="system"/>
                                                                         <menu key="menu" id="4Qn-jU-icf">
@@ -221,6 +221,12 @@
                                                                                 <menuItem title="Open" id="Emv-Uo-Cfn">
                                                                                     <connections>
                                                                                         <action selector="openFile:" target="z6H-0f-uTR" id="7RT-w3-yoj"/>
+                                                                                    </connections>
+                                                                                </menuItem>
+                                                                                <menuItem title="Copy" id="5gx-w0-i1S">
+                                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                                    <connections>
+                                                                                        <action selector="copyFile:" target="z6H-0f-uTR" id="JdM-dL-91D"/>
                                                                                     </connections>
                                                                                 </menuItem>
                                                                                 <menuItem title="Save" id="oDV-Qj-YF8">
@@ -333,7 +339,7 @@
                                                                     <constraints>
                                                                         <constraint firstAttribute="height" constant="30" id="CLw-oN-APd"/>
                                                                     </constraints>
-                                                                    <popUpButtonCell key="cell" type="square" title="Item 1" bezelStyle="shadowlessSquare" image="popUpButtonCell:lYn-Io-FsM:image" imagePosition="only" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="border" transparent="YES" imageScaling="proportionallyDown" inset="2" pullsDown="YES" arrowPosition="noArrow" selectedItem="hPi-hb-VEB" id="gTh-83-ola">
+                                                                    <popUpButtonCell key="cell" type="square" title="Item 1" bezelStyle="shadowlessSquare" image="popUpButtonCell:lYn-Io-FsM:image" imagePosition="only" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="border" transparent="YES" imageScaling="proportionallyDown" inset="2" pullsDown="YES" arrowPosition="noArrow" id="gTh-83-ola">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                         <font key="font" metaFont="system"/>
                                                                         <menu key="menu" id="hQF-1g-o66">
@@ -342,6 +348,12 @@
                                                                                 <menuItem title="Open" id="rC8-ej-mBc">
                                                                                     <connections>
                                                                                         <action selector="openFile:" target="yjF-f0-ChF" id="zPO-FO-5qU"/>
+                                                                                    </connections>
+                                                                                </menuItem>
+                                                                                <menuItem title="Copy" id="PQ3-ki-Xrm">
+                                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                                    <connections>
+                                                                                        <action selector="copyFile:" target="yjF-f0-ChF" id="3VM-tN-pF2"/>
                                                                                     </connections>
                                                                                 </menuItem>
                                                                                 <menuItem title="Save" id="sjT-Dg-qd2">

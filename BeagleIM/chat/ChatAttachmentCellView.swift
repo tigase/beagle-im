@@ -236,6 +236,17 @@ class ChatAttachmentCellView: BaseChatCellView {
         NSWorkspace.shared.open(localUrl);
     }
     
+    @IBAction func copyFile(_ sender: Any) {
+        guard let item = self.item else {
+            return;
+        }
+        guard let localUrl = DownloadStore.instance.url(for: "\(item.id)") else {
+            return;
+        }
+        NSPasteboard.general.clearContents();
+        NSPasteboard.general.setString(localUrl.absoluteString, forType: .fileURL);
+    }
+    
     @IBAction func saveFile(_ sender: Any) {
         guard let item = self.item else {
             return;
