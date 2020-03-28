@@ -342,7 +342,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         switch commandSelector {
         case #selector(NSResponder.moveUp(_:)), #selector(NSResponder.moveDown(_:)):
             self.skipNextSuggestion = true;
-            return true;
+            return false;
             //return super.textView(textView, doCommandBy: commandSelector);
         case #selector(NSResponder.deleteForward(_:)), #selector(NSResponder.deleteBackward(_:)):
             self.skipNextSuggestion = true;
