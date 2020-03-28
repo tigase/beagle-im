@@ -23,10 +23,9 @@ import AppKit
 import TigaseSwift
 import LinkPresentation
 
-class BaseChatAttachmentCellView: NSTableCellView {
+class ChatAttachmentCellView: BaseChatCellView {
 
     @IBOutlet var customView: NSView!;
-    @IBOutlet var state: NSTextField?;
     @IBOutlet var downloadButton: NSButton?;
     @IBOutlet var actionButton: NSPopUpButton? {
         didSet {
@@ -68,19 +67,7 @@ class BaseChatAttachmentCellView: NSTableCellView {
     
     func set(item: ChatAttachment) {
         self.item = item;
-        switch item.state {
-        case .incoming_error, .incoming_error_unread:
-            self.state?.stringValue = "\u{203c}";
-        case .outgoing_unsent:
-            self.state?.stringValue = "\u{1f4e4}";
-        case .outgoing_delivered:
-            self.state?.stringValue = "\u{2713}";
-        case .outgoing_error, .outgoing_error_unread:
-            self.state?.stringValue = "\u{203c}";
-        default:
-            self.state?.stringValue = "";
-        }
-        self.state?.textColor = item.state.isError ? NSColor.systemRed : NSColor.secondaryLabelColor;
+        super.set(item: item);
         self.direction = item.state.direction;
                 
         let subviews = self.customView.subviews;
@@ -324,7 +311,7 @@ class BaseChatAttachmentCellView: NSTableCellView {
         let filename: NSTextField;
         let details: NSTextField;
         
-        weak var cellView: BaseChatAttachmentCellView?;
+        weak var cellView: ChatAttachmentCellView?;
         
         private var viewType: ViewType = .none {
             didSet {
@@ -558,95 +545,4 @@ class ImageAttachmentPreview: NSImageView {
     override func layout() {
         super.layout();
     }
-}
-
-class ChatAttachmentCellView: BaseChatAttachmentCellView {
-
-    @IBOutlet var avatar: AvatarView!
-    @IBOutlet var senderName: NSTextField!
-    @IBOutlet var timestamp: NSTextField!
-       
-    func set(avatar: NSImage?) {
-        self.avatar?.image = avatar;
-    }
-    
-    func set(senderName: String, attributedSenderName: NSAttributedString? = nil) {
-        if attributedSenderName == nil {
-            self.senderName.stringValue = senderName;
-        } else {
-            self.senderName.attributedStringValue = attributedSenderName!;
-        }
-        self.avatar?.name = senderName;
-    }
-       
-    override func set(item: ChatAttachment) {
-        var timestampStr: NSMutableAttributedString? = nil;
-
-        switch item.encryption {
-        case .decrypted, .notForThisDevice, .decryptionFailed:
-            let secured = NSMutableAttributedString(string: "\u{1F512}");
-            if timestampStr != nil {
-                timestampStr?.append(secured);
-            } else {
-                timestampStr = secured;
-            }
-        default:
-            break;
-        }
-           
-        if timestampStr != nil {
-            timestampStr!.append(item.state == .outgoing_unsent ? NSAttributedString(string: " Unsent") : NSMutableAttributedString(string: " " + formatTimestamp(item.timestamp)));
-            self.timestamp.attributedStringValue = timestampStr!;
-        } else {
-            self.timestamp.attributedStringValue = item.state == .outgoing_unsent ? NSAttributedString(string: "Unsent") : NSMutableAttributedString(string: formatTimestamp(item.timestamp));
-        }
-        super.set(item: item);
-    }
-    
-    func formatTimestamp(_ ts: Date) -> String {
-        let flags: Set<Calendar.Component> = [.day, .year];
-        let components = Calendar.current.dateComponents(flags, from: ts, to: Date());
-        if (components.day! == 1) {
-            return "Yesterday";
-        } else if (components.day! < 1) {
-            return ChatAttachmentCellView.todaysFormatter.string(from: ts);
-        }
-        if (components.year! != 0) {
-            return ChatAttachmentCellView.fullFormatter.string(from: ts);
-        } else {
-            return ChatAttachmentCellView.defaultFormatter.string(from: ts);
-        }
-    }
-
-    fileprivate static let todaysFormatter = ({()-> DateFormatter in
-        var f = DateFormatter();
-        f.dateStyle = .none;
-        f.timeStyle = .short;
-        return f;
-    })();
-    fileprivate static let defaultFormatter = ({()-> DateFormatter in
-        var f = DateFormatter();
-        f.dateFormat = DateFormatter.dateFormat(fromTemplate: "dd.MM", options: 0, locale: NSLocale.current);
-        //        f.timeStyle = .NoStyle;
-        return f;
-    })();
-    fileprivate static let fullFormatter = ({()-> DateFormatter in
-        var f = DateFormatter();
-        f.dateFormat = DateFormatter.dateFormat(fromTemplate: "dd.MM.yyyy", options: 0, locale: NSLocale.current);
-        //        f.timeStyle = .NoStyle;
-        return f;
-    })();
-
-    fileprivate static let tooltipFormatter = ({()-> DateFormatter in
-        var f = DateFormatter();
-        f.locale = NSLocale.current;
-        f.dateStyle = .medium
-        f.timeStyle = .medium;
-        return f;
-    })();
-    
-}
-
-class ChatAttachmentContinuationCellView: BaseChatAttachmentCellView {
-
 }

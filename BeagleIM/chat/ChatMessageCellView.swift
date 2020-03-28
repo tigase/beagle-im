@@ -1,8 +1,8 @@
 //
-// ChatMessageCellView.swift
+// BaseChatMessageCellView.swift
 //
 // BeagleIM
-// Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2019 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,49 +20,101 @@
 //
 
 import AppKit
+import LinkPresentation
 import TigaseSwift
 
-class ChatMessageCellView: BaseChatMessageCellView {
+class ChatMessageCellView: BaseChatCellView {
 
-    @IBOutlet var avatar: AvatarView!
-    @IBOutlet var senderName: NSTextField!
-    @IBOutlet var timestamp: NSTextField!
-    
-    func set(avatar: NSImage?) {
-        self.avatar?.image = avatar;
-    }
- 
-    func set(senderName: String, attributedSenderName: NSAttributedString? = nil) {
-        if attributedSenderName == nil {
-            self.senderName.stringValue = senderName;
-        } else {
-            self.senderName.attributedStringValue = attributedSenderName!;
-        }
-        self.avatar?.name = senderName;
-    }
+    var id: Int = 0;
+
+    @IBOutlet var message: NSTextField!
+    fileprivate var direction: MessageDirection? = nil;
+
+    func set(message item: ChatMessage, nickname: String? = nil, keywords: [String]? = nil) {
+        super.set(item: item);
+        let messageBody = self.messageBody(item: item);
+        let msg = NSMutableAttributedString(string: messageBody);
+        if let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue) {
         
-    override func set(message item: ChatMessage, nickname: String? = nil, keywords: [String]? = nil) {
-        var timestampStr: NSMutableAttributedString? = nil;
+            let matches = detector.matches(in: messageBody, range: NSMakeRange(0, messageBody.utf16.count));
 
-        switch item.encryption {
-        case .decrypted, .notForThisDevice, .decryptionFailed:
-            let secured = NSMutableAttributedString(string: "\u{1F512}");
-            if timestampStr != nil {
-                timestampStr?.append(secured);
-            } else {
-                timestampStr = secured;
+            matches.forEach { match in
+                if let url = match.url {
+                    msg.addAttribute(.link, value: url, range: match.range);
+                }
+                if let phoneNumber = match.phoneNumber {
+                    msg.addAttribute(.link, value: URL(string: "tel:\(phoneNumber.replacingOccurrences(of: " ", with: "-"))")!, range: match.range);
+                }
+                if let address = match.components {
+                    let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
+                    let mapUrl = URL(string: "http://maps.apple.com/?q=\(query!)")!;
+                    msg.addAttribute(.link, value: mapUrl, range: match.range);
+                }
             }
+        }
+        msg.addAttribute(NSAttributedString.Key.font, value: self.message.font!, range: NSMakeRange(0, msg.length));
+
+        if Settings.enableMarkdownFormatting.bool() {
+            Markdown.applyStyling(attributedString: msg, showEmoticons: Settings.showEmoticons.bool());
+        }
+        if let nick = nickname {
+            msg.markMention(of: nick, withColor: NSColor.systemBlue, bold: Settings.boldKeywords.bool());
+        }
+        if let keys = keywords {
+            msg.mark(keywords: keys, withColor: NSColor.systemRed, bold: Settings.boldKeywords.bool());
+        }
+        if let errorMessage = item.error {
+            msg.append(NSAttributedString(string: "\n------\n\(errorMessage)", attributes: [.foregroundColor : NSColor.systemRed]));
+        }
+
+        switch item.state {
+        case .incoming_error, .incoming_error_unread:
+            self.message.textColor = NSColor.systemRed;
+        case .outgoing_unsent:
+            self.message.textColor = NSColor.secondaryLabelColor;
+        case .outgoing_delivered:
+            self.message.textColor = nil;
+        case .outgoing_error, .outgoing_error_unread:
+            self.message.textColor = nil;
         default:
-            break;
+            self.message.textColor = nil;//NSColor.textColor;
         }
-        
-        if timestampStr != nil {
-            timestampStr!.append(item.state == .outgoing_unsent ? NSAttributedString(string: " Unsent") : NSMutableAttributedString(string: " " + formatTimestamp(item.timestamp)));
-            self.timestamp.attributedStringValue = timestampStr!;
-        } else {
-            self.timestamp.attributedStringValue = item.state == .outgoing_unsent ? NSAttributedString(string: "Unsent") : NSMutableAttributedString(string: formatTimestamp(item.timestamp));
-        }
-        super.set(message: item, nickname: nickname, keywords: keywords);
+        self.direction = item.state.direction;
+        self.message.attributedStringValue = msg;
     }
-    
+
+    override func layout() {
+        if Settings.alternateMessageColoringBasedOnDirection.bool() {
+            if let direction = self.direction {
+                switch direction {
+                case .incoming:
+                    self.wantsLayer = true;
+                    self.layer?.backgroundColor = NSColor(named: "chatBackgroundColor")!.cgColor;
+                case .outgoing:
+                    self.wantsLayer = true;
+                    self.layer?.backgroundColor = NSColor(named: "chatOutgoingBackgroundColor")!.cgColor;
+                }
+            }
+        }
+//        if let width = self.superview?.superview?.frame.width {
+//            if self.state != nil {
+//                self.message.preferredMaxLayoutWidth = width - 68;
+//            } else {
+//                self.message.preferredMaxLayoutWidth = width - 50;
+//            }
+//        }
+        super.layout();
+    }
+
+    fileprivate func messageBody(item: ChatMessage) -> String {
+        guard let msg = item.encryption.message() else {
+//            guard let error = item.error else {
+//                return item.message;
+//            }
+//            return "\(item.message)\n-----\n\(error)";
+            return item.message;
+        }
+        return msg;
+    }
+
 }

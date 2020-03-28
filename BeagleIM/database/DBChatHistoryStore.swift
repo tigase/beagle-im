@@ -104,7 +104,7 @@ class DBChatHistoryStore {
                     
                     if isAttachmentOnly {
                         let appendix = ChatAttachmentAppendix();
-                        DBChatHistoryStore.instance.appendItem(for: item.account, with: item.jid, state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, recipientNickname: nil, participantId: nil, type: .attachment, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: item.message, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, chatAttachmentAppendix: appendix, linkPreviewAction: .none, completionHandler: { newId in
+                        DBChatHistoryStore.instance.appendItem(for: item.account, with: item.jid, state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, recipientNickname: nil, participantId: nil, type: .attachment, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: item.message, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, appendix: appendix, linkPreviewAction: .none, completionHandler: { newId in
                                 DBChatHistoryStore.instance.remove(item: item);
                         });
                     } else {
@@ -169,7 +169,8 @@ class DBChatHistoryStore {
         let jid = jidFull.bareJid;
         
         let (decryptedBody, encryption, fingerprint) = MessageEventHandler.prepareBody(message: message, forAccount: account);
-        guard let body = decryptedBody else {
+        let mixInvitation = message.mixInvitation;
+        guard let body = decryptedBody ?? (mixInvitation != nil ? "Invitation" : nil) else {
             // only if carbon!!
             switch source {
             case .carbons(let action):
@@ -196,7 +197,7 @@ class DBChatHistoryStore {
             return;
         }
         
-        let itemType = MessageEventHandler.itemType(fromMessage: message);
+        var itemType = MessageEventHandler.itemType(fromMessage: message);
         let stanzaId = message.originId ?? message.id;
         var stableIds = message.stanzaId;
         var fromArchive = false;
@@ -231,6 +232,12 @@ class DBChatHistoryStore {
                 
         let state = MessageEventHandler.calculateState(direction: MessageEventHandler.calculateDirection(direction: direction, for: account, with: jid, authorNickname: authorNickname, authorJid: authorJid), isError: (message.type ?? .chat) == .error, isUnread: !fromArchive);
         
+        var appendix: AppendixProtocol? = nil;
+        if itemType == .message, let mixInivation = mixInvitation {
+            itemType = .invitation;
+            appendix = ChatInvitationAppendix(mixInvitation: mixInivation);
+        }
+        
         dispatcher.async {
             let timestamp = Date(timeIntervalSince1970: Double(Int64((inTimestamp ?? Date()).timeIntervalSince1970 * 1000)) / 1000);
 
@@ -247,7 +254,7 @@ class DBChatHistoryStore {
                 return;
             }
             
-            self.appendItemSync(for: account, with: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, type: itemType, timestamp: timestamp, stanzaId: stanzaId, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, data: body, chatState: message.chatState, errorCondition: message.errorCondition, errorMessage: message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, chatAttachmentAppendix: nil, linkPreviewAction: .auto, completionHandler: nil);
+            self.appendItemSync(for: account, with: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, type: itemType, timestamp: timestamp, stanzaId: stanzaId, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, data: body, chatState: message.chatState, errorCondition: message.errorCondition, errorMessage: message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, appendix: appendix, linkPreviewAction: .auto, completionHandler: nil);
         }
     }
     
@@ -290,16 +297,11 @@ class DBChatHistoryStore {
         return id;
     }
     
-    private func appendItemSync(for account: BareJID, with jid: BareJID, state: MessageState, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, type: ItemType, timestamp: Date, stanzaId: String?, serverMsgId: String?, remoteMsgId: String?, data: String, chatState: ChatState?, errorCondition: ErrorCondition?, errorMessage: String? , encryption: MessageEncryption, encryptionFingerprint: String?, chatAttachmentAppendix: ChatAttachmentAppendix?, linkPreviewAction: LinkPreviewAction, completionHandler: ((Int) -> Void)?) {
+    private func appendItemSync(for account: BareJID, with jid: BareJID, state: MessageState, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, type: ItemType, timestamp: Date, stanzaId: String?, serverMsgId: String?, remoteMsgId: String?, data: String, chatState: ChatState?, errorCondition: ErrorCondition?, errorMessage: String? , encryption: MessageEncryption, encryptionFingerprint: String?, appendix: AppendixProtocol?, linkPreviewAction: LinkPreviewAction, completionHandler: ((Int) -> Void)?) {
         if linkPreviewAction != .only {
-            var appendix: String? = nil;
-            if let attachmentAppendix = chatAttachmentAppendix {
-                if let appendixData = try? JSONEncoder().encode(attachmentAppendix) {
-                    appendix = String(data: appendixData, encoding: .utf8);
-                }
-            }
+            let  appendixStr: String? = appendix?.string();
 
-            let params: [String:Any?] = ["account": account, "jid": jid, "timestamp": timestamp, "data": data, "item_type": type.rawValue, "state": state.rawValue, "stanza_id": stanzaId, "author_nickname": authorNickname, "author_jid": authorJid, "recipient_nickname": recipientNickname, "participant_id": participantId, "encryption": encryption.rawValue, "fingerprint": encryptionFingerprint, "error": state.isError ? (errorMessage ?? errorCondition?.rawValue ?? "Unknown error") : nil, "appendix": appendix, "server_msg_id": serverMsgId, "remote_msg_id": remoteMsgId];
+            let params: [String:Any?] = ["account": account, "jid": jid, "timestamp": timestamp, "data": data, "item_type": type.rawValue, "state": state.rawValue, "stanza_id": stanzaId, "author_nickname": authorNickname, "author_jid": authorJid, "recipient_nickname": recipientNickname, "participant_id": participantId, "encryption": encryption.rawValue, "fingerprint": encryptionFingerprint, "error": state.isError ? (errorMessage ?? errorCondition?.rawValue ?? "Unknown error") : nil, "appendix": appendixStr, "server_msg_id": serverMsgId, "remote_msg_id": remoteMsgId];
             guard let msgId = try! self.appendMessageStmt.insert(params) else {
                 return;
             }
@@ -310,8 +312,10 @@ class DBChatHistoryStore {
             switch type {
             case .message:
                 item = ChatMessage(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, message: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage);
+            case .invitation:
+                item = ChatInvitation(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, message: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: appendix as! ChatInvitationAppendix, error: errorMessage);
             case .attachment:
-                item = ChatAttachment(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, url: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: chatAttachmentAppendix ?? ChatAttachmentAppendix(), error: errorMessage);
+                item = ChatAttachment(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, url: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: (appendix as? ChatAttachmentAppendix) ?? ChatAttachmentAppendix(), error: errorMessage);
             case .linkPreview:
                 if #available(macOS 10.15, *), Settings.linkPreviews.bool() {
                     item = ChatLinkPreview(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, url: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage);
@@ -345,9 +349,9 @@ class DBChatHistoryStore {
         }
     }
     
-    open func appendItem(for account: BareJID, with jid: BareJID, state: MessageState, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, type: ItemType, timestamp: Date, stanzaId: String?, serverMsgId: String?, remoteMsgId: String?, data: String, chatState: ChatState? = nil, errorCondition: ErrorCondition? = nil, errorMessage: String? = nil, encryption: MessageEncryption, encryptionFingerprint: String?, chatAttachmentAppendix: ChatAttachmentAppendix? = nil, linkPreviewAction: LinkPreviewAction, completionHandler: ((Int) -> Void)?) {
+    open func appendItem(for account: BareJID, with jid: BareJID, state: MessageState, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, type: ItemType, timestamp: Date, stanzaId: String?, serverMsgId: String?, remoteMsgId: String?, data: String, chatState: ChatState? = nil, errorCondition: ErrorCondition? = nil, errorMessage: String? = nil, encryption: MessageEncryption, encryptionFingerprint: String?, appendix: AppendixProtocol? = nil, linkPreviewAction: LinkPreviewAction, completionHandler: ((Int) -> Void)?) {
         dispatcher.async {
-            self.appendItemSync(for: account, with: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, type: type, timestamp: timestamp, stanzaId: stanzaId, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, data: data, chatState: chatState, errorCondition: errorCondition, errorMessage: errorMessage, encryption: encryption, encryptionFingerprint: encryptionFingerprint, chatAttachmentAppendix: chatAttachmentAppendix, linkPreviewAction: linkPreviewAction, completionHandler: completionHandler);
+            self.appendItemSync(for: account, with: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, type: type, timestamp: timestamp, stanzaId: stanzaId, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, data: data, chatState: chatState, errorCondition: errorCondition, errorMessage: errorMessage, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: appendix, linkPreviewAction: linkPreviewAction, completionHandler: completionHandler);
         }
     }
 
@@ -653,6 +657,12 @@ class DBChatHistoryStore {
             }
 
             return ChatMessage(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, message: message, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error);
+        case .invitation:
+            let message: String? = cursor["data"];
+            guard let appendix = ChatInvitationAppendix.decode(ChatInvitationAppendix.self, fromString: cursor["appendix"]) else {
+                return nil;
+            }
+            return ChatInvitation(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, message: message, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: appendix, error: error)
         case .attachment:
             let url: String = cursor["data"]!;
 
@@ -667,10 +677,10 @@ class DBChatHistoryStore {
     }
     
     fileprivate func parseAttachmentAppendix(string: String?) -> ChatAttachmentAppendix {
-        guard let data = string?.data(using: .utf8) else {
+        guard let appendix = ChatAttachmentAppendix.decode(ChatAttachmentAppendix.self, fromString: string) else {
             return ChatAttachmentAppendix();
         }
-        return (try? JSONDecoder().decode(ChatAttachmentAppendix.self, from: data)) ?? ChatAttachmentAppendix();
+        return appendix;
     }
 }
 
@@ -682,4 +692,5 @@ public enum ItemType: Int {
     @available(macOS 10.15, *)
     case linkPreview = 2
     // with that in place we can have separate metadata kept "per" message as it is only one, so message id can be id of associated metadata..
+    case invitation = 3
 }

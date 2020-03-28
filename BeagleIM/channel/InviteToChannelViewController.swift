@@ -92,7 +92,22 @@ class InviteToChannelViewControllerController: NSViewController, NSTextFieldDele
                         for jid in jids {
                             mixModule.allowAccess(to: channel.channelJid, for: jid.bareJid, completionHandler: { result in
                                 print("allowed access to", channel.channelJid, "for", jid, "result", result);
+                                let body = "Invitation to channel \(channel.channelJid.stringValue)";
+                                let mixInvitation = MixInvitation(inviter: channel.account, invitee: jid.bareJid, channel: channel.channelJid, token: nil);
+                                let message = mixModule.createInvitation(mixInvitation, message: body);
+                                message.messageDelivery = .request;
+                                DBChatHistoryStore.instance.appendItem(for: channel.account, with: jid.bareJid, state: .outgoing, authorNickname: nil, authorJid: nil, recipientNickname: nil, participantId: nil, type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, encryptionFingerprint: nil, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), linkPreviewAction: .none, completionHandler: nil);
+                                mixModule.context.writer?.write(message);
                             });
+                        }
+                    } else {
+                        for jid in jids {
+                            let body = "Invitation to channel \(channel.channelJid.stringValue)";
+                            let mixInvitation = MixInvitation(inviter: channel.account, invitee: jid.bareJid, channel: channel.channelJid, token: nil);
+                            let message = mixModule.createInvitation(mixInvitation, message: body);
+                            message.messageDelivery = .request;
+                            DBChatHistoryStore.instance.appendItem(for: channel.account, with: jid.bareJid, state: .outgoing, authorNickname: nil, authorJid: nil, recipientNickname: nil, participantId: nil, type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, encryptionFingerprint: nil, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), linkPreviewAction: .none, completionHandler: nil);
+                            mixModule.context.writer?.write(message);
                         }
                     }
                     DispatchQueue.main.async {

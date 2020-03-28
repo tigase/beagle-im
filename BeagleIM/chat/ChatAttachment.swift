@@ -35,7 +35,7 @@ class ChatAttachment: ChatEntry {
     
 }
 
-public struct ChatAttachmentAppendix: Codable {
+public struct ChatAttachmentAppendix: AppendixProtocol {
     
     var state: State = .new;
     var filesize: Int? = nil;

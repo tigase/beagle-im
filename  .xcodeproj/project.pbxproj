@@ -70,8 +70,7 @@
 		FE4E8DDA215EA4860010D88E /* HttpFileUploadEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4E8DD9215EA4860010D88E /* HttpFileUploadEventHandler.swift */; };
 		FE4E8DDC215F72130010D88E /* AbstractChatView_ShareExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4E8DDB215F72130010D88E /* AbstractChatView_ShareExtension.swift */; };
 		FE4E8DE12160E7AA0010D88E /* TigaseSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FEF9D12A2082804E00B09B6C /* TigaseSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		FE5202D5227F330E00644C12 /* ChatMessageContinuationCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5202D4227F330E00644C12 /* ChatMessageContinuationCellView.swift */; };
-		FE5202D7227F339D00644C12 /* BaseChatMessageCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5202D6227F339D00644C12 /* BaseChatMessageCellView.swift */; };
+		FE5202D7227F339D00644C12 /* ChatMessageCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5202D6227F339D00644C12 /* ChatMessageCellView.swift */; };
 		FE5BE64C213AC3EA00463183 /* ChatsCellViewCloseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5BE64B213AC3EA00463183 /* ChatsCellViewCloseButton.swift */; };
 		FE5BE64E213AD19A00463183 /* ChatCellViewMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5BE64D213AD19A00463183 /* ChatCellViewMessage.swift */; };
 		FE5C6B2422896B12003DAB30 /* ServiceDiscovery.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE5C6B2322896B12003DAB30 /* ServiceDiscovery.storyboard */; };
@@ -85,7 +84,7 @@
 		FE6201DE23A502FB00C965A5 /* ChatMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6201DD23A502FB00C965A5 /* ChatMessage.swift */; };
 		FE6201E023A5357B00C965A5 /* ChatLinkPreviewCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6201DF23A5357B00C965A5 /* ChatLinkPreviewCellView.swift */; };
 		FE6201E223A573BC00C965A5 /* ChatAttachment.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6201E123A573BC00C965A5 /* ChatAttachment.swift */; };
-		FE6201E423A693ED00C965A5 /* BaseChatAttachmentCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6201E323A693ED00C965A5 /* BaseChatAttachmentCellView.swift */; };
+		FE6201E423A693ED00C965A5 /* ChatAttachmentCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6201E323A693ED00C965A5 /* ChatAttachmentCellView.swift */; };
 		FE6201E623AA43C900C965A5 /* db-schema-7.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE6201E523AA43C900C965A5 /* db-schema-7.sql */; };
 		FE65A283230314D9001E68EF /* SettingsTabViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE65A282230314D9001E68EF /* SettingsTabViewController.swift */; };
 		FE6E6BF721384D5F003B1696 /* AutoresizingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */; };
@@ -95,7 +94,6 @@
 		FE6E6BFB21384D5F003B1696 /* XmppService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE821384D5E003B1696 /* XmppService.swift */; };
 		FE6E6BFC21384D5F003B1696 /* OutlineGroupItemButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BEA21384D5E003B1696 /* OutlineGroupItemButton.swift */; };
 		FE6E6BFD21384D5F003B1696 /* Open1On1ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BEB21384D5E003B1696 /* Open1On1ChatController.swift */; };
-		FE6E6BFE21384D5F003B1696 /* ChatMessageCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BEC21384D5E003B1696 /* ChatMessageCellView.swift */; };
 		FE6E6BFF21384D5F003B1696 /* ChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BED21384D5E003B1696 /* ChatViewController.swift */; };
 		FE6E6C0021384D5F003B1696 /* ChatsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BEF21384D5E003B1696 /* ChatsListView.swift */; };
 		FE6E6C0121384D5F003B1696 /* ChatsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BF021384D5E003B1696 /* ChatsWindowController.swift */; };
@@ -180,6 +178,10 @@
 		FEF9CE1D2082765000B09B6C /* db-schema-1.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEF9CE1C2082765000B09B6C /* db-schema-1.sql */; };
 		FEF9CE2220827F0000B09B6C /* libsqlite3.0.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF9CE2120827F0000B09B6C /* libsqlite3.0.tbd */; };
 		FEF9D12B2082804E00B09B6C /* TigaseSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF9D12A2082804E00B09B6C /* TigaseSwift.framework */; settings = {ATTRIBUTES = (Required, ); }; };
+		FEF9EC45242F8BAD0090C913 /* ChatInvitationCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF9EC44242F8BAD0090C913 /* ChatInvitationCellView.swift */; };
+		FEF9EC47242F8BBC0090C913 /* ChatInvitation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF9EC46242F8BBC0090C913 /* ChatInvitation.swift */; };
+		FEF9EC49242F8D620090C913 /* BaseChatCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF9EC48242F8D620090C913 /* BaseChatCellView.swift */; };
+		FEF9EC4B242F97840090C913 /* AppendixProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF9EC4A242F97840090C913 /* AppendixProtocol.swift */; };
 		FEFFF7CD232FCF25004CB9CE /* ConversationDetails.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEFFF7CC232FCF25004CB9CE /* ConversationDetails.storyboard */; };
 		FEFFF7CF23313B52004CB9CE /* db-schema-5.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEFFF7CE23313B52004CB9CE /* db-schema-5.sql */; };
 		FEFFF7D12334E71B004CB9CE /* ChatMessageSystemCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEFFF7D02334E71B004CB9CE /* ChatMessageSystemCellView.swift */; };
@@ -281,8 +283,7 @@
 		FE4D21372223FEE70058B662 /* PEPBookmarksModule_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PEPBookmarksModule_extension.swift; sourceTree = "<group>"; };
 		FE4E8DD9215EA4860010D88E /* HttpFileUploadEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HttpFileUploadEventHandler.swift; sourceTree = "<group>"; };
 		FE4E8DDB215F72130010D88E /* AbstractChatView_ShareExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractChatView_ShareExtension.swift; sourceTree = "<group>"; };
-		FE5202D4227F330E00644C12 /* ChatMessageContinuationCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageContinuationCellView.swift; sourceTree = "<group>"; };
-		FE5202D6227F339D00644C12 /* BaseChatMessageCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseChatMessageCellView.swift; sourceTree = "<group>"; };
+		FE5202D6227F339D00644C12 /* ChatMessageCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageCellView.swift; sourceTree = "<group>"; };
 		FE5BE64B213AC3EA00463183 /* ChatsCellViewCloseButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsCellViewCloseButton.swift; sourceTree = "<group>"; };
 		FE5BE64D213AD19A00463183 /* ChatCellViewMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatCellViewMessage.swift; sourceTree = "<group>"; };
 		FE5C6B2322896B12003DAB30 /* ServiceDiscovery.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ServiceDiscovery.storyboard; sourceTree = "<group>"; };
@@ -296,7 +297,7 @@
 		FE6201DD23A502FB00C965A5 /* ChatMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessage.swift; sourceTree = "<group>"; };
 		FE6201DF23A5357B00C965A5 /* ChatLinkPreviewCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatLinkPreviewCellView.swift; sourceTree = "<group>"; };
 		FE6201E123A573BC00C965A5 /* ChatAttachment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAttachment.swift; sourceTree = "<group>"; };
-		FE6201E323A693ED00C965A5 /* BaseChatAttachmentCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseChatAttachmentCellView.swift; sourceTree = "<group>"; };
+		FE6201E323A693ED00C965A5 /* ChatAttachmentCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAttachmentCellView.swift; sourceTree = "<group>"; };
 		FE6201E523AA43C900C965A5 /* db-schema-7.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-7.sql"; sourceTree = "<group>"; };
 		FE65A282230314D9001E68EF /* SettingsTabViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTabViewController.swift; sourceTree = "<group>"; };
 		FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoresizingTextField.swift; sourceTree = "<group>"; };
@@ -306,7 +307,6 @@
 		FE6E6BE821384D5E003B1696 /* XmppService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XmppService.swift; sourceTree = "<group>"; };
 		FE6E6BEA21384D5E003B1696 /* OutlineGroupItemButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OutlineGroupItemButton.swift; sourceTree = "<group>"; };
 		FE6E6BEB21384D5E003B1696 /* Open1On1ChatController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Open1On1ChatController.swift; sourceTree = "<group>"; };
-		FE6E6BEC21384D5E003B1696 /* ChatMessageCellView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatMessageCellView.swift; sourceTree = "<group>"; };
 		FE6E6BED21384D5E003B1696 /* ChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatViewController.swift; sourceTree = "<group>"; };
 		FE6E6BEF21384D5E003B1696 /* ChatsListView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatsListView.swift; sourceTree = "<group>"; };
 		FE6E6BF021384D5E003B1696 /* ChatsWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatsWindowController.swift; sourceTree = "<group>"; };
@@ -399,6 +399,10 @@
 		FEF9CE2120827F0000B09B6C /* libsqlite3.0.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.0.tbd; path = usr/lib/libsqlite3.0.tbd; sourceTree = SDKROOT; };
 		FEF9D12A2082804E00B09B6C /* TigaseSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TigaseSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FEF9D12C2082808C00B09B6C /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
+		FEF9EC44242F8BAD0090C913 /* ChatInvitationCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatInvitationCellView.swift; sourceTree = "<group>"; };
+		FEF9EC46242F8BBC0090C913 /* ChatInvitation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatInvitation.swift; sourceTree = "<group>"; };
+		FEF9EC48242F8D620090C913 /* BaseChatCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseChatCellView.swift; sourceTree = "<group>"; };
+		FEF9EC4A242F97840090C913 /* AppendixProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppendixProtocol.swift; sourceTree = "<group>"; };
 		FEFFF7CC232FCF25004CB9CE /* ConversationDetails.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ConversationDetails.storyboard; sourceTree = "<group>"; };
 		FEFFF7CE23313B52004CB9CE /* db-schema-5.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-5.sql"; sourceTree = "<group>"; };
 		FEFFF7D02334E71B004CB9CE /* ChatMessageSystemCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageSystemCellView.swift; sourceTree = "<group>"; };
@@ -568,23 +572,25 @@
 			isa = PBXGroup;
 			children = (
 				FE6E6BEB21384D5E003B1696 /* Open1On1ChatController.swift */,
-				FE6E6BEC21384D5E003B1696 /* ChatMessageCellView.swift */,
-				FE5202D4227F330E00644C12 /* ChatMessageContinuationCellView.swift */,
 				FE6E6BED21384D5E003B1696 /* ChatViewController.swift */,
 				FEC5DC7D21552A3300AA3E4F /* ChatViewDataSourceDelegate.swift */,
 				FEC5DC7F21552A9B00AA3E4F /* ChatViewDataSource.swift */,
 				FEC5DC8121552D8300AA3E4F /* ChatViewItemProtocol.swift */,
 				FEC5DC8321553A7500AA3E4F /* AbstractChatViewController.swift */,
 				FE4E8DDB215F72130010D88E /* AbstractChatView_ShareExtension.swift */,
-				FE5202D6227F339D00644C12 /* BaseChatMessageCellView.swift */,
+				FE5202D6227F339D00644C12 /* ChatMessageCellView.swift */,
 				FEFFF7D02334E71B004CB9CE /* ChatMessageSystemCellView.swift */,
 				FE6201DB23A5007900C965A5 /* ChatEntry.swift */,
 				FE6201DD23A502FB00C965A5 /* ChatMessage.swift */,
 				FE6201DF23A5357B00C965A5 /* ChatLinkPreviewCellView.swift */,
 				FE6201E123A573BC00C965A5 /* ChatAttachment.swift */,
-				FE6201E323A693ED00C965A5 /* BaseChatAttachmentCellView.swift */,
+				FE6201E323A693ED00C965A5 /* ChatAttachmentCellView.swift */,
 				FE890D1C23FEED1700107437 /* ConversationLogController.swift */,
 				FE890D1E23FEF0B900107437 /* AbstractConversationLogController.swift */,
+				FEF9EC44242F8BAD0090C913 /* ChatInvitationCellView.swift */,
+				FEF9EC46242F8BBC0090C913 /* ChatInvitation.swift */,
+				FEF9EC48242F8D620090C913 /* BaseChatCellView.swift */,
+				FEF9EC4A242F97840090C913 /* AppendixProtocol.swift */,
 			);
 			path = chat;
 			sourceTree = "<group>";
@@ -982,7 +988,6 @@
 				FE2ACA862355C5DA004623BC /* NSTableViewCustomGrid.swift in Sources */,
 				FE41FB31215AB32200AD86D3 /* ServerCertificateInfo.swift in Sources */,
 				FE9CB700238700E2008F1049 /* BlockedViewController.swift in Sources */,
-				FE6E6BFE21384D5F003B1696 /* ChatMessageCellView.swift in Sources */,
 				FEF5C3FA22632C0000889863 /* OpenSSL_AES_GCM_Engine.swift in Sources */,
 				FE2809852169FB75002F5BD0 /* Alert.swift in Sources */,
 				FE3AA0CB21540669001667A9 /* ChatItemProtocol.swift in Sources */,
@@ -996,7 +1001,6 @@
 				FE3AA0C92154062F001667A9 /* ChatsListGroupProtocol.swift in Sources */,
 				FED7AEC721418B83001E164B /* VCardManager.swift in Sources */,
 				FE6E6C0321384D5F003B1696 /* DBRosterStore.swift in Sources */,
-				FE5202D5227F330E00644C12 /* ChatMessageContinuationCellView.swift in Sources */,
 				FE988C19232C0A0C002D85AF /* ChangePasswordController.swift in Sources */,
 				FE5CAF982215BCD600FABD46 /* ScriptsManager.swift in Sources */,
 				FE34BBD52157DDF200775B07 /* MucModule_RoomError_extension.swift in Sources */,
@@ -1022,8 +1026,9 @@
 				FEFFF7D12334E71B004CB9CE /* ChatMessageSystemCellView.swift in Sources */,
 				FE8C9F5621B40F9000BE8332 /* RegisterAccountController.swift in Sources */,
 				FE890D1F23FEF0B900107437 /* AbstractConversationLogController.swift in Sources */,
+				FEF9EC4B242F97840090C913 /* AppendixProtocol.swift in Sources */,
 				FE5BE64E213AD19A00463183 /* ChatCellViewMessage.swift in Sources */,
-				FE5202D7227F339D00644C12 /* BaseChatMessageCellView.swift in Sources */,
+				FE5202D7227F339D00644C12 /* ChatMessageCellView.swift in Sources */,
 				FEC336EF2408FCD800EC1A0D /* ParticipantsButton.swift in Sources */,
 				FE890D4524040F1200107437 /* ChannelViewController.swift in Sources */,
 				FEA2F53722E5F6A2009F2E88 /* AdvancedSettingsController.swift in Sources */,
@@ -1033,7 +1038,7 @@
 				FEA2F53522E46A2E009F2E88 /* ShowRosterWindowSegue.swift in Sources */,
 				FE30D8AF214C3B7600670BEC /* NSImage.swift in Sources */,
 				FE6201E023A5357B00C965A5 /* ChatLinkPreviewCellView.swift in Sources */,
-				FE6201E423A693ED00C965A5 /* BaseChatAttachmentCellView.swift in Sources */,
+				FE6201E423A693ED00C965A5 /* ChatAttachmentCellView.swift in Sources */,
 				FE7F876C2343D99300254AF2 /* CustomScroller.swift in Sources */,
 				FE6E6C0421384D5F003B1696 /* DatabaseSchemaManager.swift in Sources */,
 				FEC336FB240EC66000EC1A0D /* CreateChannelView.swift in Sources */,
@@ -1049,9 +1054,11 @@
 				FEF844742173B9DC0067B005 /* Markdown.swift in Sources */,
 				FE6201DE23A502FB00C965A5 /* ChatMessage.swift in Sources */,
 				FE6E6C0221384D5F003B1696 /* DBChatHistoryStore.swift in Sources */,
+				FEF9EC45242F8BAD0090C913 /* ChatInvitationCellView.swift in Sources */,
 				FE5CAF9A2216EEF200FABD46 /* NSPopupButtonNoSizeWhenHidden.swift in Sources */,
 				FE6201E223A573BC00C965A5 /* ChatAttachment.swift in Sources */,
 				FE4E8DDC215F72130010D88E /* AbstractChatView_ShareExtension.swift in Sources */,
+				FEF9EC47242F8BBC0090C913 /* ChatInvitation.swift in Sources */,
 				FE6E6BF821384D5F003B1696 /* ViewController.swift in Sources */,
 				FE9486B221BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift in Sources */,
 				FE34BBD12157901100775B07 /* JabberDataFormView.swift in Sources */,
@@ -1079,6 +1086,7 @@
 				FEEF25392266528E00202B28 /* ContactDetailsViewController.swift in Sources */,
 				FE65A283230314D9001E68EF /* SettingsTabViewController.swift in Sources */,
 				FEC336F3240A785400EC1A0D /* ChannelAwareProtocol.swift in Sources */,
+				FEF9EC49242F8D620090C913 /* BaseChatCellView.swift in Sources */,
 				FE9CDF0D2269E282001039C3 /* MessageEncryption.swift in Sources */,
 				FE6E6C0821384DF1003B1696 /* ChatCellView.swift in Sources */,
 				FE41FB3D215CD82500AD86D3 /* PresenceRosterEventHandler.swift in Sources */,

@@ -1022,6 +1022,7 @@ protocol DBChatProtocol: ChatProtocol {
 enum LastChatActivity {
     case message(String, sender: String?)
     case attachment(String, sender: String?)
+    case invitation(String, sender: String?)
     
     static func from(itemType: ItemType?, data: String?, sender: String?) -> LastChatActivity? {
         guard itemType != nil else {
@@ -1030,6 +1031,8 @@ enum LastChatActivity {
         switch itemType! {
         case .message:
             return data == nil ? nil : .message(data!, sender: sender);
+        case .invitation:
+            return data == nil ? nil : .invitation(data!, sender: sender);
         case .attachment:
             return data == nil ? nil : .attachment(data!, sender: sender);
         case .linkPreview:

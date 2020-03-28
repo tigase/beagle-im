@@ -203,7 +203,7 @@ class MucEventHandler: XmppServiceEventHandler {
     
     open func sendPrivateMessage(room: DBChatStore.DBRoom, recipientNickname: String, body: String) {
         let message = room.createPrivateMessage(body, recipientNickname: recipientNickname);
-        DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: .outgoing, authorNickname: room.nickname, authorJid: nil, recipientNickname: recipientNickname, participantId: nil, type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, encryptionFingerprint: nil, chatAttachmentAppendix: nil, linkPreviewAction: .auto, completionHandler: nil);
+        DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: .outgoing, authorNickname: room.nickname, authorJid: nil, recipientNickname: recipientNickname, participantId: nil, type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, encryptionFingerprint: nil, appendix: nil, linkPreviewAction: .auto, completionHandler: nil);
         room.context.writer?.write(message);
     }
         

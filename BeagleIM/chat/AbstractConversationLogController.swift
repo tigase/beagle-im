@@ -148,7 +148,7 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
             if currentSession != nil {
                 let visibleRows = self.tableView.rows(in: self.tableView.visibleRect);
                 for row in visibleRows.lowerBound..<visibleRows.upperBound {
-                    if let view = self.tableView.view(atColumn: 0, row: row, makeIfNecessary: false) as? BaseChatMessageCellView {
+                    if let view = self.tableView.view(atColumn: 0, row: row, makeIfNecessary: false) as? ChatMessageCellView {
                         let str = NSMutableAttributedString(attributedString: view.message.attributedStringValue);
                         str.removeAttribute(.backgroundColor, range: NSRange(location: 0, length: str.length));
                         view.message.attributedStringValue = str;
@@ -266,7 +266,7 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
                 
             let visibleRows = self.tableView.rows(in: self.tableView.visibleRect);
             for row in visibleRows.lowerBound..<visibleRows.upperBound {
-                if let view = self.tableView.view(atColumn: 0, row: row, makeIfNecessary: false) as? BaseChatMessageCellView {
+                if let view = self.tableView.view(atColumn: 0, row: row, makeIfNecessary: false) as? ChatMessageCellView {
                     let str = NSMutableAttributedString(attributedString: view.message.attributedStringValue);
                     str.removeAttribute(.backgroundColor, range: NSRange(location: 0, length: str.length));
                     view.message.attributedStringValue = str;
@@ -276,7 +276,7 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
             let begin = max(startRow, currRow);
             let end = min(startRow, currRow);
             for row in end...begin {
-                if let view = self.tableView.view(atColumn: 0, row: row, makeIfNecessary: false) as? BaseChatMessageCellView {
+                if let view = self.tableView.view(atColumn: 0, row: row, makeIfNecessary: false) as? ChatMessageCellView {
                     let str = NSMutableAttributedString(attributedString: view.message.attributedStringValue);
                     str.removeAttribute(.backgroundColor, range: NSRange(location: 0, length: str.length));
                     if row == begin {
@@ -496,7 +496,7 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
         DBChatHistoryStore.instance.markAsRead(for: self.account, with: self.jid, before: since);
     }
     
-    func messageViewFor(event: NSEvent) -> BaseChatMessageCellView? {
+    func messageViewFor(event: NSEvent) -> ChatMessageCellView? {
         guard let contentView = event.window?.contentView else {
             return nil;
         }
@@ -504,7 +504,7 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
         guard let textView = contentView.hitTest(point) as? NSTextField else {
             return nil;
         }
-        guard let view = textView.superview as? BaseChatMessageCellView else {
+        guard let view = textView.superview as? ChatMessageCellView else {
             return nil;
         }
         return view;
@@ -515,7 +515,7 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
             return false;
         }
         let point = contentView.convert(event.locationInWindow, to: nil);
-        return contentView.hitTest(point) is BaseChatMessageCellView;
+        return contentView.hitTest(point) is ChatMessageCellView;
     }
     
     @objc func didBecomeKeyWindow(_ notification: Notification) {
@@ -589,7 +589,7 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
         fileprivate(set) var startOffset: Int?;
         fileprivate(set) var endOffset: Int?;
         
-        init?(messageView: BaseChatMessageCellView, event: NSEvent) {
+        init?(messageView: ChatMessageCellView, event: NSEvent) {
             guard let position = messageView.message!.characterIndexFor(event: event) else {
                 return nil;
             }
@@ -614,7 +614,7 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
             super.init(messageId: messageId);
         }
         
-        init(messageView: BaseChatMessageCellView, selected: String) {
+        init(messageView: ChatMessageCellView, selected: String) {
             self.selected = selected;
             super.init(messageId: messageView.id);
         }

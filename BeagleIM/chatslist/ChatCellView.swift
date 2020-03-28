@@ -88,6 +88,26 @@ class ChatCellView: NSTableCellView {
                     } else {
                         self.lastMessage?.attributedStringValue = msg;
                     }
+                case .invitation(let message, let sender):
+                    if let fieldfont = self.lastMessage?.font {
+                        let msg = NSAttributedString(string: "📨 Invitation", attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask, .boldFontMask]), .foregroundColor: self.lastMessage.textColor!.withAlphaComponent(0.8)]);
+
+                        if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                            prefix.append(msg);
+                            self.lastMessage?.attributedStringValue = prefix;
+                        } else {
+                            self.lastMessage?.attributedStringValue = msg;
+                        }
+                    } else {
+                        let msg = NSAttributedString(string: "📨 Invitation", attributes: [.foregroundColor: self.lastMessage.textColor!.withAlphaComponent(0.8)]);
+                        
+                        if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                            prefix.append(msg);
+                            self.lastMessage?.attributedStringValue = prefix;
+                        } else {
+                            self.lastMessage?.attributedStringValue = msg;
+                        }
+                    }
                 case .attachment(let url, let sender):
                     if let fieldfont = self.lastMessage?.font {
                         let msg = NSAttributedString(string: "📎 Attachment", attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask, .boldFontMask]), .foregroundColor: self.lastMessage.textColor!.withAlphaComponent(0.8)]);

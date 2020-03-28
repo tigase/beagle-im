@@ -91,21 +91,19 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             }
             return nil;
         case let item as ChatMessage:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? BaseChatMessageCellView {
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
 
                 cell.id = item.id;
-                if let c = cell as? ChatMessageCellView {
+                if cell.hasHeader {
                     if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
-                        c.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-//                    } else if let nickname = item.authorNickname, let photoHash = self.room.presences[nickname]?.presence.vcardTempPhoto {
-//                        c.set(avatar: AvatarManager.instance.avatar(withHash: photoHash));
+                        cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
                     } else if let participantId = item.participantId {
-                        c.set(avatar: AvatarManager.instance.avatar(for: BareJID(localPart: "\(participantId)#\(item.jid.localPart!)", domain: item.jid.domain), on: item.account));
+                        cell.set(avatar: AvatarManager.instance.avatar(for: BareJID(localPart: "\(participantId)#\(item.jid.localPart!)", domain: item.jid.domain), on: item.account));
                     } else {
-                        c.set(avatar: nil);
+                        cell.set(avatar: nil);
                     }
                     
-                    c.set(senderName: item.authorNickname ?? "Unknown");
+                    cell.set(senderName: item.authorNickname ?? "Unknown");
                 }
                 cell.set(message: item, nickname: channel.nickname, keywords: keywords);
 
@@ -119,21 +117,36 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             }
             return nil;
         case let item as ChatAttachment:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatAttachmentContinuationCellView" : "ChatAttachmentCellView"), owner: nil) as? BaseChatAttachmentCellView {
-                if let c = cell as? ChatAttachmentCellView {
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatAttachmentContinuationCellView" : "ChatAttachmentCellView"), owner: nil) as? ChatAttachmentCellView {
+                if cell.hasHeader {
                     if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
-                        c.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-//                    } else if let nickname = item.authorNickname, let photoHash = self.room.presences[nickname]?.presence.vcardTempPhoto {
-//                        c.set(avatar: AvatarManager.instance.avatar(withHash: photoHash));
+                        cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
                     } else if let participantId = item.participantId {
-                        c.set(avatar: AvatarManager.instance.avatar(for: BareJID(localPart: "\(participantId)#\(item.jid.localPart!)", domain: item.jid.domain), on: item.account));
+                        cell.set(avatar: AvatarManager.instance.avatar(for: BareJID(localPart: "\(participantId)#\(item.jid.localPart!)", domain: item.jid.domain), on: item.account));
                     } else {
-                        c.set(avatar: nil);
+                        cell.set(avatar: nil);
                     }
                                     
-                    c.set(senderName: item.authorNickname ?? "Unknown");
+                    cell.set(senderName: item.authorNickname ?? "Unknown");
                 }
                 cell.set(item: item);
+                return cell;
+            }
+            return nil;
+        case let item as ChatInvitation:
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatInvitationCellView"), owner: nil) as? ChatInvitationCellView {
+                if cell.hasHeader {
+                    if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
+                        cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
+                    } else if let participantId = item.participantId {
+                        cell.set(avatar: AvatarManager.instance.avatar(for: BareJID(localPart: "\(participantId)#\(item.jid.localPart!)", domain: item.jid.domain), on: item.account));
+                    } else {
+                        cell.set(avatar: nil);
+                    }
+                                    
+                    cell.set(senderName: item.authorNickname ?? "Unknown");
+                }
+                cell.set(invitation: item);
                 return cell;
             }
             return nil;

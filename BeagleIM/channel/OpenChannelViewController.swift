@@ -158,18 +158,22 @@ class OpenChannelViewController: NSViewController, NSTabViewDelegate, OpenChanne
         self.view.window?.sheetParent?.endSheet(self.view.window!);
     }
     
-    func askForNickname(completionHandler: @escaping (String)->Void) {
+    func askForNickname(completionHandler: @escaping (String) -> Void) {
+        OpenChannelViewController.askForNickname(for: self.account!, window: self.view.window!, completionHandler: completionHandler);
+    }
+    
+    static func askForNickname(for account: BareJID, window: NSWindow, completionHandler: @escaping (String)->Void) {
         let alert = NSAlert();
         alert.alertStyle = .informational;
         alert.icon = NSImage(named: NSImage.userName);
         alert.messageText = "Nickname"
         alert.informativeText = "Enter a nickname which you want to use in this channel."
         let nicknameField = NSTextField(frame: NSRect(x: 0, y: 0, width: 200, height: 7 + NSFont.systemFontSize));
-        nicknameField.stringValue = AccountManager.getAccount(for: self.account!)?.nickname ?? ""
+        nicknameField.stringValue = AccountManager.getAccount(for: account)?.nickname ?? ""
         alert.accessoryView = nicknameField;
         alert.addButton(withTitle: "Submit");
         alert.addButton(withTitle: "Cancel");
-        alert.beginSheetModal(for: self.view.window!, completionHandler: { response in
+        alert.beginSheetModal(for: window, completionHandler: { response in
             switch response {
             case .alertFirstButtonReturn:
                 let nickname = nicknameField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines);
