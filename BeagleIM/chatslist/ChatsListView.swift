@@ -111,7 +111,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         
         NotificationCenter.default.addObserver(self, selector: #selector(chatSelected), name: ChatsListViewController.CHAT_SELECTED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(closeSelectedChat), name: ChatsListViewController.CLOSE_SELECTED_CHAT, object: nil);
-        
+        NotificationCenter.default.addObserver(self, selector: #selector(invitationClicked(_:)), name: InvitationManager.INVITATION_CLICKED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(hourChanged), name: AppDelegate.HOUR_CHANGED, object: nil);
     }
     
@@ -252,6 +252,22 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
             }
         }
     }
+    
+    @objc func invitationClicked(_ notification: Notification) {
+        guard let invitation = notification.object as? InvitationItem else {
+            return;
+        }
+        
+        if let row = self.invitationGroup?.items.firstIndex(of: invitation) {
+            let row = self.outlineView.row(forItem: invitation);
+            guard row >= 0 else {
+                return;
+            }
+            self.view.window?.windowController?.showWindow(self);
+            self.outlineView.selectRowIndexes(IndexSet(), byExtendingSelection: false);
+            self.outlineView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false);
+        }
+    }
 
     @objc func hourChanged(_ notification: Notification) {
         DispatchQueue.main.async {
@@ -352,13 +368,22 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                     splitController.addSplitViewItem(NSSplitViewItem(viewController: controller));
                 }
             } else {
-                let controller = self.storyboard!.instantiateController(withIdentifier: "EmptyViewController") as! NSViewController;
-                if splitController.splitViewItems.count > 1 {
-                    splitController.removeSplitViewItem(splitController.splitViewItems[1]);
-                }
-                splitController.addSplitViewItem(NSSplitViewItem(viewController: controller));
-                if let invitation = item as? InvitationItem {
-                    InvitationManager.instance.handle(invitation: invitation, window: self.view.window!);
+                if let invitation = item as? InvitationItem, invitation.type == .presenceSubscription {
+                    let controller = NSStoryboard(name: "Roster", bundle: nil).instantiateController(withIdentifier: "PresenceAuthorizationRequestView") as! PresenceAuthorizationRequestController;
+                    controller.invitation = invitation;
+                    if splitController.splitViewItems.count > 1 {
+                        splitController.removeSplitViewItem(splitController.splitViewItems[1]);
+                    }
+                    splitController.addSplitViewItem(NSSplitViewItem(viewController: controller));
+                } else {
+                    let controller = self.storyboard!.instantiateController(withIdentifier: "EmptyViewController") as! NSViewController;
+                    if splitController.splitViewItems.count > 1 {
+                        splitController.removeSplitViewItem(splitController.splitViewItems[1]);
+                    }
+                    splitController.addSplitViewItem(NSSplitViewItem(viewController: controller));
+                    if let invitation = item as? InvitationItem {
+                        InvitationManager.instance.handle(invitation: invitation, window: self.view.window!);
+                    }
                 }
             }
         }

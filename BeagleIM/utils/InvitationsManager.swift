@@ -13,6 +13,7 @@ import UserNotifications
 class InvitationManager {
     
     static let INVITATIONS_CHANGED = Notification.Name(rawValue: "invitationsChanged");
+    static let INVITATION_CLICKED = Notification.Name(rawValue: "invitationClicked");
     
     static let instance = InvitationManager();
  
@@ -133,69 +134,7 @@ class InvitationManager {
                     self.remove(invitation: invitation);
                 })
             case .presenceSubscription:
-                let jid = invitation.jid;
-                let account = invitation.account;
-                let alert = NSAlert();
-                alert.icon = NSImage(named: NSImage.userName);
-                alert.messageText = "Authorization request";
-                alert.informativeText = "\(jid.bareJid) requests authorization to access information about you presence";
-                alert.addButton(withTitle: "Accept");
-                alert.addButton(withTitle: "Deny");
-                
-                if let blockingModule: BlockingCommandModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(BlockingCommandModule.ID), blockingModule.isAvailable {
-                    //alert.addSpacing();
-                    alert.addButton(withTitle: "Block");
-                }
-                
-                alert.beginSheetModal(for: window, completionHandler: { result in
-                    if result == .alertFirstButtonReturn {
-                        guard let presenceModule: PresenceModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PresenceModule.ID) else {
-                            return;
-                        }
-                        
-                        presenceModule.subscribed(by: jid);
-                        
-                        if Settings.requestPresenceSubscription.bool() {
-                            presenceModule.subscribe(to: jid);
-                        }
-                        self.remove(invitation: invitation);
-                    } else if result == .alertSecondButtonReturn {
-                        guard let presenceModule: PresenceModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PresenceModule.ID) else {
-                            return;
-                        }
-                        
-                        presenceModule.unsubscribed(by: jid);
-                        self.remove(invitation: invitation);
-                    } else if result == .alertThirdButtonReturn {
-                        guard let blockingModule: BlockingCommandModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(BlockingCommandModule.ID) else {
-                            return;
-                        }
-                        if let presenceModule: PresenceModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PresenceModule.ID) {
-                            presenceModule.unsubscribed(by: jid);
-                        }
-
-                        self.remove(invitation: invitation);
-                        blockingModule.block(jids: [jid.withoutResource], completionHandler: { result in
-                            DispatchQueue.main.async {
-                                switch result {
-                                case .success(_):
-                                    // everything went ok!
-                                    break;
-                                case .failure(let err):
-                                    let alert = Alert();
-                                    alert.messageText = "It was not possible to block \(jid.stringValue)";
-                                    alert.informativeText = "Server returned an error: \(err.rawValue)";
-                                    alert.addButton(withTitle: "OK");
-                                    alert.run(completionHandler: { res in
-                                        // do we have anything to do here?
-                                    });
-                                    break;
-                                }
-                            }
-                        });
-                    }
-                });
-
+                NotificationCenter.default.post(name: InvitationManager.INVITATION_CLICKED, object: invitation);
             }
         }
     }

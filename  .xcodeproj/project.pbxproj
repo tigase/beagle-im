@@ -182,6 +182,8 @@
 		FEF9EC47242F8BBC0090C913 /* ChatInvitation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF9EC46242F8BBC0090C913 /* ChatInvitation.swift */; };
 		FEF9EC49242F8D620090C913 /* BaseChatCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF9EC48242F8D620090C913 /* BaseChatCellView.swift */; };
 		FEF9EC4B242F97840090C913 /* AppendixProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF9EC4A242F97840090C913 /* AppendixProtocol.swift */; };
+		FEF9EC4F242FC9620090C913 /* Roster.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEF9EC4E242FC9620090C913 /* Roster.storyboard */; };
+		FEF9EC512430B1F10090C913 /* PresenceAuthorizationRequestController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF9EC502430B1F10090C913 /* PresenceAuthorizationRequestController.swift */; };
 		FEFFF7CD232FCF25004CB9CE /* ConversationDetails.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEFFF7CC232FCF25004CB9CE /* ConversationDetails.storyboard */; };
 		FEFFF7CF23313B52004CB9CE /* db-schema-5.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEFFF7CE23313B52004CB9CE /* db-schema-5.sql */; };
 		FEFFF7D12334E71B004CB9CE /* ChatMessageSystemCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEFFF7D02334E71B004CB9CE /* ChatMessageSystemCellView.swift */; };
@@ -403,6 +405,8 @@
 		FEF9EC46242F8BBC0090C913 /* ChatInvitation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatInvitation.swift; sourceTree = "<group>"; };
 		FEF9EC48242F8D620090C913 /* BaseChatCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseChatCellView.swift; sourceTree = "<group>"; };
 		FEF9EC4A242F97840090C913 /* AppendixProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppendixProtocol.swift; sourceTree = "<group>"; };
+		FEF9EC4E242FC9620090C913 /* Roster.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Roster.storyboard; sourceTree = "<group>"; };
+		FEF9EC502430B1F10090C913 /* PresenceAuthorizationRequestController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceAuthorizationRequestController.swift; sourceTree = "<group>"; };
 		FEFFF7CC232FCF25004CB9CE /* ConversationDetails.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ConversationDetails.storyboard; sourceTree = "<group>"; };
 		FEFFF7CE23313B52004CB9CE /* db-schema-5.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-5.sql"; sourceTree = "<group>"; };
 		FEFFF7D02334E71B004CB9CE /* ChatMessageSystemCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageSystemCellView.swift; sourceTree = "<group>"; };
@@ -723,6 +727,7 @@
 				FE1A8BA421CA880100604141 /* voip */,
 				FE87C76D22834DFA00B0B64C /* xmlconsole */,
 				FE890D3F2404069D00107437 /* MIX.storyboard */,
+				FEF9EC4E242FC9620090C913 /* Roster.storyboard */,
 			);
 			path = BeagleIM;
 			sourceTree = "<group>";
@@ -773,6 +778,7 @@
 				FEDE6AFB21455A2B0019170A /* RosterViewController.swift */,
 				FE30D8AC214C2D7100670BEC /* RosterViewController_ContextMenu.swift */,
 				FE30D8B2214CF15700670BEC /* AddContactController.swift */,
+				FEF9EC502430B1F10090C913 /* PresenceAuthorizationRequestController.swift */,
 			);
 			path = roster;
 			sourceTree = "<group>";
@@ -932,6 +938,7 @@
 				FE02DD11225B8D1100FA08EB /* db-schema-3.sql in Resources */,
 				FE149D8722A51AD900EE4E03 /* db-schema-4.sql in Resources */,
 				FE421B4921C92FBF0022DF77 /* LICENSE in Resources */,
+				FEF9EC4F242FC9620090C913 /* Roster.storyboard in Resources */,
 				FE890D30240020DE00107437 /* db-schema-9.sql in Resources */,
 				FE5C6B2422896B12003DAB30 /* ServiceDiscovery.storyboard in Resources */,
 				FE87C76C2283487300B0B64C /* XMLConsole.storyboard in Resources */,
@@ -1027,6 +1034,7 @@
 				FE8C9F5621B40F9000BE8332 /* RegisterAccountController.swift in Sources */,
 				FE890D1F23FEF0B900107437 /* AbstractConversationLogController.swift in Sources */,
 				FEF9EC4B242F97840090C913 /* AppendixProtocol.swift in Sources */,
+				FEF9EC512430B1F10090C913 /* PresenceAuthorizationRequestController.swift in Sources */,
 				FE5BE64E213AD19A00463183 /* ChatCellViewMessage.swift in Sources */,
 				FE5202D7227F339D00644C12 /* ChatMessageCellView.swift in Sources */,
 				FEC336EF2408FCD800EC1A0D /* ParticipantsButton.swift in Sources */,
