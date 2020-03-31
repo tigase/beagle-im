@@ -593,6 +593,10 @@ open class DBChatStore {
         fileprivate var localChatState: ChatState = .active;
         private(set) var remoteChatState: ChatState? = nil;
         
+        var notifications: ConversationNotification {
+            return options.notifications;
+        }
+
         override var jid: JID {
             get {
                 return super.jid;
@@ -703,6 +707,10 @@ open class DBChatStore {
         var name: String? = nil;
         fileprivate(set) var options: RoomOptions = RoomOptions();
 
+        var notifications: ConversationNotification {
+            return options.notifications;
+        }
+        
         init(id: Int, context: Context, account: BareJID, roomJid: BareJID, name: String?, nickname: String, password: String?, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: RoomOptions) {
             self.id = id;
             self.account = account;
@@ -779,6 +787,10 @@ open class DBChatStore {
         }
         var options: ChannelOptions;
         
+        var notifications: ConversationNotification {
+            return options.notifications;
+        }
+
         init(id: Int, account: BareJID, jid: BareJID, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: ChannelOptions) {
             self.id = id;
             self.account = account;
@@ -1013,10 +1025,11 @@ protocol DBChatProtocol: ChatProtocol {
     var timestamp: Date { get };
     var lastActivity: LastChatActivity? { get };
     var unread: Int { get }
-    
+
+    var notifications: ConversationNotification { get }
+
     func markAsRead(count: Int) -> Bool;
     func updateLastActivity(_ lastActivity: LastChatActivity?, timestamp: Date, isUnread: Bool) -> Bool;
-
 }
 
 enum LastChatActivity {

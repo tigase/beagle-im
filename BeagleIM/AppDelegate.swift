@@ -709,16 +709,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         guard item.state == .incoming_unread else {
             return;
         }
+        
+        let conversation = DBChatStore.instance.getChat(for: item.account, with: item.jid);
+        let notifications = conversation?.notifications ?? .none;
 
-        let chat = DBChatStore.instance.getChat(for: item.account, with: item.jid);
+        switch notifications {
+        case .none:
+            return;
+        case .mention:
+            if let nickname = (conversation as? DBChatStore.DBRoom)?.nickname ?? (conversation as? DBChatStore.DBChannel)?.nickname {
+                if !item.message.contains(nickname) {
+                    return;
+                }
+            } else {
+                return;
+            }
+        case .always:
+            break;
+        }
+        
         if item.authorNickname != nil {
-            guard let mucModule: MucModule = XmppService.instance.getClient(for: item.account)?.modulesManager.getModule(MucModule.ID), let room = mucModule.roomsManager.getRoom(for: item.jid) else {
-                return;
-            }
-            guard item.message.contains(room.nickname) && ((chat as? DBChatStore.DBRoom)?.options.notifications ?? .mention) != .none else {
-                return;
-            }
-            
             if #available(OSX 10.14, *) {
                 let content = UNMutableNotificationContent();
                 content.title = item.jid.stringValue;
@@ -746,11 +756,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             guard rosterItem != nil || Settings.notificationsFromUnknownSenders.bool() else {
                 return;
             }
-            
-            guard ((chat as? DBChatStore.DBChat)?.options.notifications ?? .mention) != .none else {
-                return;
-            }
-            
+                        
             if #available(OSX 10.14, *) {
                 let content = UNMutableNotificationContent();
                 content.title = rosterItem?.name ?? item.jid.stringValue;
