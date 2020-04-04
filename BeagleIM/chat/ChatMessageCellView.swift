@@ -28,7 +28,6 @@ class ChatMessageCellView: BaseChatCellView {
     var id: Int = 0;
 
     @IBOutlet var message: NSTextField!
-    fileprivate var direction: MessageDirection? = nil;
 
     func set(message item: ChatMessage, nickname: String? = nil, keywords: [String]? = nil) {
         super.set(item: item);
@@ -79,31 +78,7 @@ class ChatMessageCellView: BaseChatCellView {
         default:
             self.message.textColor = nil;//NSColor.textColor;
         }
-        self.direction = item.state.direction;
         self.message.attributedStringValue = msg;
-    }
-
-    override func layout() {
-        if Settings.alternateMessageColoringBasedOnDirection.bool() {
-            if let direction = self.direction {
-                switch direction {
-                case .incoming:
-                    self.wantsLayer = true;
-                    self.layer?.backgroundColor = NSColor(named: "chatBackgroundColor")!.cgColor;
-                case .outgoing:
-                    self.wantsLayer = true;
-                    self.layer?.backgroundColor = NSColor(named: "chatOutgoingBackgroundColor")!.cgColor;
-                }
-            }
-        }
-//        if let width = self.superview?.superview?.frame.width {
-//            if self.state != nil {
-//                self.message.preferredMaxLayoutWidth = width - 68;
-//            } else {
-//                self.message.preferredMaxLayoutWidth = width - 50;
-//            }
-//        }
-        super.layout();
     }
 
     fileprivate func messageBody(item: ChatMessage) -> String {

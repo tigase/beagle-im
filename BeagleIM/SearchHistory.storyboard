@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15705"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="16096"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -47,13 +47,13 @@
                                 </connections>
                             </searchField>
                             <scrollView autohidesScrollers="YES" horizontalLineScroll="45" horizontalPageScroll="10" verticalLineScroll="45" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Jee-AR-4WD">
-                                <rect key="frame" x="20" y="41" width="401" height="309"/>
+                                <rect key="frame" x="20" y="41" width="401" height="303"/>
                                 <clipView key="contentView" drawsBackground="NO" id="uJI-dg-0v2">
-                                    <rect key="frame" x="1" y="1" width="399" height="307"/>
+                                    <rect key="frame" x="1" y="1" width="399" height="301"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" rowHeight="43" usesAutomaticRowHeights="YES" viewBased="YES" id="2ct-hz-mXu">
-                                            <rect key="frame" x="0.0" y="0.0" width="399" height="307"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="399" height="301"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <size key="intercellSpacing" width="3" height="2"/>
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -62,7 +62,6 @@
                                             <tableColumns>
                                                 <tableColumn width="396" minWidth="40" maxWidth="1000" id="1J1-gv-IG5">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
-                                                        <font key="font" metaFont="message" size="11"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                     </tableHeaderCell>
@@ -104,7 +103,7 @@
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cEa-Qg-Q84">
                                                                     <rect key="frame" x="305" y="26" width="47" height="17"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="20:31:03" id="Jfs-fH-jds">
-                                                                        <font key="font" metaFont="message" size="11"/>
+                                                                        <font key="font" metaFont="toolTip"/>
                                                                         <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
@@ -125,6 +124,9 @@
                                                                 <constraint firstAttribute="bottom" secondItem="khk-Wf-S4y" secondAttribute="bottom" constant="4" id="nYq-Dc-9lX"/>
                                                                 <constraint firstItem="eMn-SL-gdX" firstAttribute="leading" secondItem="bFj-jT-4gP" secondAttribute="leading" constant="8" id="o6u-QA-Bmv"/>
                                                             </constraints>
+                                                            <userDefinedRuntimeAttributes>
+                                                                <userDefinedRuntimeAttribute type="boolean" keyPath="ignoreAlternativeRowColoring" value="YES"/>
+                                                            </userDefinedRuntimeAttributes>
                                                             <accessibility identifier="ChatMessageCellView"/>
                                                             <connections>
                                                                 <outlet property="avatar" destination="eMn-SL-gdX" id="f4x-SH-euU"/>

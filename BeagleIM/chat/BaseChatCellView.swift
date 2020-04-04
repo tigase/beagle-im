@@ -28,6 +28,10 @@ class BaseChatCellView: NSTableCellView {
     @IBOutlet var timestamp: NSTextField?
     @IBOutlet var state: NSTextField?;
 
+    @IBInspectable var ignoreAlternativeRowColoring: Bool = false;
+    
+    private var direction: MessageDirection? = nil;
+
     var hasHeader: Bool {
         return avatar != nil;
     }
@@ -82,6 +86,7 @@ class BaseChatCellView: NSTableCellView {
         self.state?.textColor = item.state.isError ? NSColor.systemRed : NSColor.secondaryLabelColor;
         
         self.toolTip = BaseChatCellView.tooltipFormatter.string(from: item.timestamp);
+        self.direction = item.state.direction;
     }
     
     func formatTimestamp(_ ts: Date) -> String {
@@ -98,7 +103,30 @@ class BaseChatCellView: NSTableCellView {
             return BaseChatCellView.defaultFormatter.string(from: ts);
         }
     }
-
+    
+    override func layout() {
+        if !ignoreAlternativeRowColoring && Settings.alternateMessageColoringBasedOnDirection.bool() {
+            if let direction = self.direction {
+                switch direction {
+                case .incoming:
+                    self.wantsLayer = true;
+                    self.layer?.backgroundColor = NSColor(named: "chatBackgroundColor")!.cgColor;
+                case .outgoing:
+                    self.wantsLayer = true;
+                    self.layer?.backgroundColor = NSColor(named: "chatOutgoingBackgroundColor")!.cgColor;
+                }
+            }
+        }
+    //        if let width = self.superview?.superview?.frame.width {
+    //            if self.state != nil {
+    //                self.message.preferredMaxLayoutWidth = width - 68;
+    //            } else {
+    //                self.message.preferredMaxLayoutWidth = width - 50;
+    //            }
+    //        }
+        super.layout();
+    }
+    
     fileprivate static let todaysFormatter = ({()-> DateFormatter in
         var f = DateFormatter();
         f.dateStyle = .none;
