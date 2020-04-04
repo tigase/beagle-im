@@ -28,7 +28,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     @IBOutlet var buddyAvatarView: AvatarViewWithStatus!
     @IBOutlet var buddyNameLabel: NSTextFieldCell!
     @IBOutlet var buddyJidLabel: NSTextFieldCell!
-    @IBOutlet var buddyStatusLabel: NSTextFieldCell!;
+    @IBOutlet var buddyStatusLabel: NSTextField!;
 
     fileprivate var lastTextChange: Date = Date();
     fileprivate var lastTextChangeTimer: Foundation.Timer?;
@@ -88,7 +88,9 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         buddyAvatarView.name = buddyName;
         buddyAvatarView.update(for: jid, on: account);
         let presenceModule: PresenceModule? = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PresenceModule.ID);
-        buddyStatusLabel.title = presenceModule?.presenceStore.getBestPresence(for: jid)?.status ?? "";
+        let status = presenceModule?.presenceStore.getBestPresence(for: jid)?.status;
+        buddyStatusLabel.stringValue = status ?? "";
+        buddyStatusLabel.toolTip = status;
 
         let itemsCount = self.scriptsButton.menu?.items.count ?? 0;
         if itemsCount > 1 {
@@ -268,7 +270,9 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
 
         DispatchQueue.main.async {
             self.buddyAvatarView.update(for: jid, on: account);
-            self.buddyStatusLabel.title = e.presence.status ?? "";
+            let status = e.presence.status;
+            self.buddyStatusLabel.stringValue = status ?? "";
+            self.buddyStatusLabel.toolTip = status;
         }
 
         self.updateCapabilities();

@@ -27,7 +27,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     @IBOutlet var channelAvatarView: AvatarViewWithStatus!
     @IBOutlet var channelNameLabel: NSTextFieldCell!
     @IBOutlet var channelJidLabel: NSTextFieldCell!
-    @IBOutlet var channelDescriptionLabel: NSTextFieldCell!;
+    @IBOutlet var channelDescriptionLabel: NSTextField!;
 
     @IBOutlet var infoButton: NSButton!;
     @IBOutlet var participantsButton: NSButton!;
@@ -58,7 +58,8 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         channelAvatarView.name = channel.name ?? jid.stringValue;
         channelAvatarView.update(for: jid, on: account);
         channelAvatarView.status = (XmppService.instance.getClient(for: channel.account)?.state ?? .disconnected == .connected) && channel.state == .joined ? .online : nil;
-        channelDescriptionLabel.title = channel.description ?? "";
+        channelDescriptionLabel.stringValue = channel.description ?? "";
+        channelDescriptionLabel.toolTip = channel.description;
 
         NotificationCenter.default.addObserver(self, selector: #selector(participantsChanged(_:)), name: MixEventHandler.PARTICIPANTS_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(channelUpdated(_:)), name: DBChatStore.CHAT_UPDATED, object: channel);
@@ -212,7 +213,8 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             self.channelAvatarView.name = self.channel.name ?? self.channel.channelJid.stringValue;
             self.channelAvatarView.status = (XmppService.instance.getClient(for: self.channel.account)?.state ?? .disconnected == .connected) && self.channel.state == .joined ? .online : nil;
             self.channelNameLabel.title = self.channel.name ?? self.channel.channelJid.stringValue;
-            self.channelDescriptionLabel.title = self.channel.description ?? "";
+            self.channelDescriptionLabel.stringValue = self.channel.description ?? "";
+            self.channelDescriptionLabel.toolTip = self.channel.description;
         }
     }
     

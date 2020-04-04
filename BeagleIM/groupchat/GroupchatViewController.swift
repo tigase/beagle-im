@@ -124,6 +124,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         titleView.stringValue = room.name ?? room.roomJid.localPart ?? "";
         jidView.stringValue = room.roomJid.stringValue;
         subjectView.stringValue = room.subject ?? "";
+        subjectView.toolTip = room.subject;
         
         refreshPermissions();
 

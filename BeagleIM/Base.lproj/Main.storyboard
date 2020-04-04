@@ -1018,6 +1018,9 @@ CA
                                         </textField>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="450" verticalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dWl-2m-reJ" customClass="ChatViewStatusView" customModule="BeagleIM" customModuleProvider="target">
                                             <rect key="frame" x="64" y="4" width="291" height="30"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="30" id="JjS-Ed-SUn"/>
+                                            </constraints>
                                             <animations>
                                                 <caTransition key="subviews">
                                                     <mutableData key="keyedArchiveRepresentation">
@@ -1031,7 +1034,7 @@ AAAAAAEGA
 </mutableData>
                                                 </caTransition>
                                             </animations>
-                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="Label" id="BoY-8I-sGR">
+                                            <textFieldCell key="cell" truncatesLastVisibleLine="YES" sendsActionOnEndEditing="YES" alignment="left" title="Label" id="BoY-8I-sGR">
                                                 <font key="font" metaFont="message" size="11"/>
                                                 <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -1249,7 +1252,7 @@ AAAAAAEGA
                         <outlet property="buddyAvatarView" destination="e8A-Bq-pPZ" id="fbx-O7-4LQ"/>
                         <outlet property="buddyJidLabel" destination="gde-5T-n8j" id="tpb-WS-0GV"/>
                         <outlet property="buddyNameLabel" destination="yXg-0b-XTX" id="yhZ-VW-XT9"/>
-                        <outlet property="buddyStatusLabel" destination="BoY-8I-sGR" id="nnV-tI-pbi"/>
+                        <outlet property="buddyStatusLabel" destination="dWl-2m-reJ" id="fDe-VP-cah"/>
                         <outlet property="encryptButton" destination="imk-OV-DnT" id="GMn-q7-lnW"/>
                         <outlet property="infoButton" destination="3Nn-mJ-xo7" id="Kfu-jE-cSI"/>
                         <outlet property="messageField" destination="55A-ac-2fc" id="Qm4-k2-jg1"/>
@@ -2585,6 +2588,9 @@ Gw
                                         </textField>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="450" horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="w1S-5v-cY4" customClass="ChatViewStatusView" customModule="BeagleIM" customModuleProvider="target">
                                             <rect key="frame" x="64" y="4" width="417" height="30"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="30" id="D1k-2q-AGX"/>
+                                            </constraints>
                                             <animations>
                                                 <caTransition key="subviews">
                                                     <mutableData key="keyedArchiveRepresentation">
@@ -3786,7 +3792,7 @@ Gw
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="u8v-bo-eRv"/>
+        <segue reference="dfU-FL-rSC"/>
     </inferredMetricsTieBreakers>
     <resources>
         <image name="NSActionTemplate" width="14" height="14"/>

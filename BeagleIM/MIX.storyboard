@@ -39,6 +39,9 @@
                                         </textField>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="450" verticalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ri7-Rr-BHY" customClass="ChatViewStatusView" customModule="BeagleIM" customModuleProvider="target">
                                             <rect key="frame" x="64" y="4" width="291" height="30"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="30" id="hDl-Yr-rpo"/>
+                                            </constraints>
                                             <animations>
                                                 <caTransition key="subviews">
                                                     <mutableData key="keyedArchiveRepresentation">
@@ -52,7 +55,7 @@ AAAAAAEGA
 </mutableData>
                                                 </caTransition>
                                             </animations>
-                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="Label" id="qwE-mK-HCR">
+                                            <textFieldCell key="cell" truncatesLastVisibleLine="YES" sendsActionOnEndEditing="YES" alignment="left" title="Label" id="qwE-mK-HCR">
                                                 <font key="font" metaFont="message" size="11"/>
                                                 <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -243,7 +246,7 @@ AAAAAAEGA
                     <connections>
                         <outlet property="actionsButton" destination="d4m-nZ-ark" id="w2n-i1-rLU"/>
                         <outlet property="channelAvatarView" destination="yp1-x3-zO9" id="5Et-7z-g3x"/>
-                        <outlet property="channelDescriptionLabel" destination="qwE-mK-HCR" id="6tY-Z8-gcj"/>
+                        <outlet property="channelDescriptionLabel" destination="Ri7-Rr-BHY" id="vzO-ef-sMa"/>
                         <outlet property="channelJidLabel" destination="Uwz-yJ-FRm" id="Ie4-Fx-0D3"/>
                         <outlet property="channelNameLabel" destination="v3A-pb-RRk" id="XCt-MM-VT5"/>
                         <outlet property="infoButton" destination="t9e-Jm-NRo" id="XAL-gS-eHN"/>
