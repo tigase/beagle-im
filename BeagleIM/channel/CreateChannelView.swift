@@ -45,7 +45,13 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
     @IBOutlet var avatarButton: AvatarChangeButton!;
     @IBOutlet var nameField: NSTextField!;
     @IBOutlet var descriptionField: NSTextField!;
-    @IBOutlet var typeSelector: NSSegmentedControl!;
+    @IBOutlet var typeSelector: NSSegmentedControl! {
+        didSet {
+            if typeSelector != nil {
+                self.updateTypeLabel(typeSelector: typeSelector);
+            }
+        }
+    }
     @IBOutlet var typeDescription: NSTextField!;
     @IBOutlet var mixCheckbox: NSButton!;
     @IBOutlet var idLabel: NSTextField!;
@@ -56,9 +62,9 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
     @IBAction func updateTypeLabel(typeSelector: NSSegmentedControl) {
         switch typeSelector.selectedSegment {
         case 0:
-            typeDescription.stringValue = "When channel is public, it can be joined by anyone."
+            typeDescription.stringValue = "Anyone will be able to join."
         case 1:
-            typeDescription.stringValue = "When channel is private, it can only be joined by invitation."
+            typeDescription.stringValue = "Only people with valid invitations will be able to join."
         default:
             typeDescription.stringValue = "UNKNOWN";
         }
@@ -74,6 +80,14 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
         mixCheckbox.isHidden = !state;
         idField.isHidden = !state;
         idLabel.isHidden = !state;
+    }
+    
+    func viewWillAppear() {
+        delegate?.updateSubmitState();
+    }
+    
+    func viewDidDisappear() {
+        // nothing to do..
     }
     
     func cancelClicked(completionHandler: (() -> Void)?) {

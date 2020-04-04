@@ -22,9 +22,21 @@
 import AppKit
 import TigaseSwift
 
-class OpenChannelViewController: NSViewController, NSTabViewDelegate, OpenChannelViewControllerTabViewDelegate {
+class OpenChannelViewController: NSViewController, OpenChannelViewControllerTabViewDelegate {
  
-    @IBOutlet var tabView: NSTabView!;
+    private var tabView: NSTabView? {
+        didSet {
+//            (tabView?.selectedTabViewItem?.view as? OpenChannelViewControllerTabView)?.delegate = self;
+            showDisclosure(false);
+            if let tabView = self.tabView {
+                for viewItem in tabView.tabViewItems {
+                    if let view = viewItem.view as? OpenChannelViewControllerTabView {
+                        view.delegate = self;
+                    }
+                }
+            }
+        }
+    }
     @IBOutlet var accountButton: NSPopUpButton!;
     @IBOutlet var componentDomainField: NSTextField!;
     @IBOutlet var progressIndication: NSProgressIndicator!;
@@ -33,7 +45,13 @@ class OpenChannelViewController: NSViewController, NSTabViewDelegate, OpenChanne
 
     var account: BareJID? {
         didSet {
-            (self.tabView.selectedTabViewItem?.view as? OpenChannelViewControllerTabView)?.account = account;
+            if let tabView = self.tabView {
+                for viewItem in tabView.tabViewItems {
+                    if let view = viewItem.view as? OpenChannelViewControllerTabView {
+                        view.account = self.account;
+                    }
+                }
+            }
         }
     }
     
@@ -41,20 +59,31 @@ class OpenChannelViewController: NSViewController, NSTabViewDelegate, OpenChanne
 
     private var components: [Component] = [] {
         didSet {
-            (self.tabView.selectedTabViewItem?.view as? OpenChannelViewControllerTabView)?.components = components;
+            if let tabView = self.tabView {
+                for viewItem in tabView.tabViewItems {
+                    if let view = viewItem.view as? OpenChannelViewControllerTabView {
+                        view.components = self.components;
+                    }
+                }
+            }
         }
     }
     
     override func viewDidLoad() {
         super.viewDidLoad();
         accountHeightConstraint = accountButton.heightAnchor.constraint(equalToConstant: 0);
-        (tabView.selectedTabViewItem?.view as? OpenChannelViewControllerTabView)?.delegate = self;
-        showDisclosure(false);
     }
 
     override func viewWillAppear() {
-        self.submitButton.title = tabView.selectedTabViewItem?.label ?? "";
+        self.submitButton.title = tabView?.selectedTabViewItem?.label ?? "";
         self.accountButton.addItem(withTitle: "");
+        if let tabView = self.tabView {
+            for viewItem in tabView.tabViewItems {
+                if let view = viewItem.view as? OpenChannelViewControllerTabView {
+                    view.delegate = self;
+                }
+            }
+        }
         AccountManager.getAccounts().filter { account -> Bool in
             return XmppService.instance.getClient(for: account) != nil
             }.forEach { (account) in
@@ -77,14 +106,14 @@ class OpenChannelViewController: NSViewController, NSTabViewDelegate, OpenChanne
         self.updateSubmitState();
     }
     
-    func tabView(_ tabView: NSTabView, didSelect tabViewItem: NSTabViewItem?) {
-        submitButton.title = tabViewItem?.label ?? "";
-        (tabViewItem?.view as? OpenChannelViewControllerTabView)?.delegate = self;
-        (tabViewItem?.view as? OpenChannelViewControllerTabView)?.account = self.account;
-        (tabViewItem?.view as? OpenChannelViewControllerTabView)?.components = self.components;
-        (tabViewItem?.view as? OpenChannelViewControllerTabView)?.disclosureChanged(state: !accountHeightConstraint.isActive);
-        self.updateSubmitState();
-    }
+//    func tabView(_ tabView: NSTabView, didSelect tabViewItem: NSTabViewItem?) {
+//        submitButton.title = tabViewItem?.label ?? "";
+////        (tabViewItem?.view as? OpenChannelViewControllerTabView)?.delegate = self;
+//        (tabViewItem?.view as? OpenChannelViewControllerTabView)?.account = self.account;
+//        (tabViewItem?.view as? OpenChannelViewControllerTabView)?.components = self.components;
+//        (tabViewItem?.view as? OpenChannelViewControllerTabView)?.disclosureChanged(state: !accountHeightConstraint.isActive);
+//        self.updateSubmitState();
+//    }
     
     @IBAction func accountSelectionChanged(_ sender: NSPopUpButton) {
         guard let title = sender.selectedItem?.title else {
@@ -117,11 +146,17 @@ class OpenChannelViewController: NSViewController, NSTabViewDelegate, OpenChanne
     func showDisclosure(_ state: Bool) {
         accountButton.isHidden = !state;
         accountHeightConstraint.isActive = !state;
-        (tabView.selectedTabViewItem?.view as? OpenChannelViewControllerTabView)?.disclosureChanged(state: state);
+        if let tabView = self.tabView {
+            for viewItem in tabView.tabViewItems {
+                if let view = viewItem.view as? OpenChannelViewControllerTabView {
+                    view.disclosureChanged(state: state);
+                }
+            }
+        }
     }
 
     @IBAction func cancelClicked(_ sender: NSButton) {
-        guard let view = self.tabView.selectedTabViewItem?.view as? OpenChannelViewControllerTabView else {
+        guard let view = self.tabView?.selectedTabViewItem?.view as? OpenChannelViewControllerTabView else {
             close();
             return;
         }
@@ -131,7 +166,7 @@ class OpenChannelViewController: NSViewController, NSTabViewDelegate, OpenChanne
     }
 
     @IBAction func submitClicked(_ sender: NSButton) {
-        guard let view = self.tabView.selectedTabViewItem?.view as? OpenChannelViewControllerTabView else {
+        guard let view = self.tabView?.selectedTabViewItem?.view as? OpenChannelViewControllerTabView else {
             close();
             return;
         }
@@ -151,7 +186,7 @@ class OpenChannelViewController: NSViewController, NSTabViewDelegate, OpenChanne
     }
     
     func updateSubmitState() {
-        submitButton.isEnabled = (self.tabView.selectedTabViewItem?.view as? OpenChannelViewControllerTabView)?.canSubmit() ?? false;
+        submitButton.isEnabled = (self.tabView?.selectedTabViewItem?.view as? OpenChannelViewControllerTabView)?.canSubmit() ?? false;
     }
     
     private func close() {
@@ -238,6 +273,13 @@ class OpenChannelViewController: NSViewController, NSTabViewDelegate, OpenChanne
         })
     }
     
+    override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
+        if let tabViewController = segue.destinationController as? OpenChannelViewTabViewController {
+            tabViewController.delegate = self;
+            self.tabView = tabViewController.tabView;
+        }
+    }
+    
     private func retrieveComponent(from jid: JID, name: String?, discoModule: DiscoveryModule, completionHandler: @escaping (Result<Component,ErrorCondition>)->Void) {
         discoModule.getInfo(for: jid, completionHandler: { result in
             switch result {
@@ -301,6 +343,9 @@ protocol OpenChannelViewControllerTabView: class {
     
     func cancelClicked(completionHandler: (()->Void)?);
     func submitClicked(completionHandler: ((Bool)->Void)?);
+    
+    func viewWillAppear();
+    func viewDidDisappear();
 }
 
 protocol OpenChannelViewControllerTabViewDelegate: class {
@@ -310,4 +355,21 @@ protocol OpenChannelViewControllerTabViewDelegate: class {
     func operationFinished();
  
     func updateSubmitState();
+}
+
+class OpenChannelViewTabViewController: NSTabViewController {
+    
+    weak var delegate: OpenChannelViewController?;
+    
+    override func tabView(_ tabView: NSTabView, didSelect tabViewItem: NSTabViewItem?) {
+        super.tabView(tabView, didSelect: tabViewItem);
+        let newTabLabel = tabViewItem?.label ?? "";
+        for view in tabView.tabViewItems {
+            if !(view.label == newTabLabel) {
+                (view.view as? OpenChannelViewControllerTabView)?.viewDidDisappear();
+            }
+        }
+        (tabViewItem?.view as? OpenChannelViewControllerTabView)?.viewWillAppear();
+    }
+    
 }

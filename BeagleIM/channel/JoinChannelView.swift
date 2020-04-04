@@ -28,13 +28,33 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
     @IBOutlet var channelNameField: NSTextField!;
     
     var account: BareJID?
+    
+    private var isVisible = false;
+    private var refreshNeeded = false;
     var components: [OpenChannelViewController.Component] = [] {
         didSet {
-            refreshRooms();
+            if isVisible {
+                refreshRooms();
+            } else {
+                refreshNeeded = true;
+            }
         }
     }
     
     var delegate: OpenChannelViewControllerTabViewDelegate?
+    
+    func viewWillAppear() {
+        isVisible = true;
+        delegate?.updateSubmitState();
+        if refreshNeeded {
+            refreshNeeded = false;
+            refreshRooms();
+        }
+    }
+    
+    func viewDidDisappear() {
+        isVisible = false;
+    }
     
     private var allItems: [DiscoveryModule.Item] = [] {
         didSet {
