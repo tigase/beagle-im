@@ -23,7 +23,7 @@ import AppKit
 import LinkPresentation
 
 class ChatLinkPreviewCellView: NSTableCellView {
-
+    
     var linkView: NSView? {
         didSet {
             if let value = oldValue {
@@ -41,6 +41,12 @@ class ChatLinkPreviewCellView: NSTableCellView {
                     value.trailingAnchor.constraint(lessThanOrEqualTo: self.trailingAnchor, constant: -26)
                 ]);
             }
+        }
+    }
+    
+    deinit {
+        if #available(macOS 10.15, *) {
+            (self.linkView as? LPLinkView)?.metadata = LPLinkMetadata();
         }
     }
 
@@ -83,12 +89,16 @@ class ChatLinkPreviewCellView: NSTableCellView {
 
 @available(macOS 10.15, *)
 class CustomLPLinkView: LPLinkView {
+    
+//    override var metadata: LPLinkMetadata {
+//        didSet {
+//            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1.0, execute: {
+//                print("linkView:", self);
+//            })
+//        }
+//    }
 
-    override var metadata: LPLinkMetadata {
-        didSet {
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1.0, execute: {
-                print("linkView:", self);
-            })
-        }
+    deinit {
+        self.metadata = LPLinkMetadata();
     }
 }

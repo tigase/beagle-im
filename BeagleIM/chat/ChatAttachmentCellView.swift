@@ -65,6 +65,12 @@ class ChatAttachmentCellView: BaseChatCellView {
 
     var customTrackingArea: NSTrackingArea?;
     
+    deinit {
+        if #available(macOS 10.15, *) {
+            (self.customView.subviews.first(where: { $0 is LPLinkView}) as? LPLinkView)?.metadata = LPLinkMetadata();
+        }
+    }
+    
     func set(item: ChatAttachment) {
         self.item = item;
         super.set(item: item);
