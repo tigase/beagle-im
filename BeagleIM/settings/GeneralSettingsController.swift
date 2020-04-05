@@ -74,6 +74,8 @@ class GeneralSettingsController: NSViewController {
         spellchecking = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Spellchecking", target: self, action: #selector(checkboxChanged(_:))));
         formView.groupItems(from:markdownFormatting, to: spellchecking);
         
+        _ = formView.addRow(label: "XMPP URI", field: NSButton(title: "Set as default app", target: self, action: #selector(showSetAsDefaultWindow)));
+        
         self.preferredContentSize = NSSize(width: self.view.frame.size.width, height: self.view.frame.size.height);
     }
     
@@ -163,5 +165,9 @@ class GeneralSettingsController: NSViewController {
         default:
             break;
         }
-    }    
+    }
+    
+    @objc func showSetAsDefaultWindow(_ sender: Any) {
+        NSWorkspace.shared.open(URL(string: "https://github.com/tigase/beagle-im/wiki/Default-application")!);
+    }
 }
