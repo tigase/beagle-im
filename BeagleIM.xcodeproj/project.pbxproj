@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 48;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -69,7 +69,6 @@
 		FE4D21382223FEE70058B662 /* PEPBookmarksModule_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4D21372223FEE70058B662 /* PEPBookmarksModule_extension.swift */; };
 		FE4E8DDA215EA4860010D88E /* HttpFileUploadEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4E8DD9215EA4860010D88E /* HttpFileUploadEventHandler.swift */; };
 		FE4E8DDC215F72130010D88E /* AbstractChatView_ShareExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4E8DDB215F72130010D88E /* AbstractChatView_ShareExtension.swift */; };
-		FE4E8DE12160E7AA0010D88E /* TigaseSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FEF9D12A2082804E00B09B6C /* TigaseSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE5202D7227F339D00644C12 /* ChatMessageCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5202D6227F339D00644C12 /* ChatMessageCellView.swift */; };
 		FE5BE64C213AC3EA00463183 /* ChatsCellViewCloseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5BE64B213AC3EA00463183 /* ChatsCellViewCloseButton.swift */; };
 		FE5BE64E213AD19A00463183 /* ChatCellViewMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5BE64D213AD19A00463183 /* ChatCellViewMessage.swift */; };
@@ -135,6 +134,8 @@
 		FEB994AF2413A03D00B8E7A7 /* ChannelEditConfigViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB994AE2413A03D00B8E7A7 /* ChannelEditConfigViewController.swift */; };
 		FEB994B1241418FE00B8E7A7 /* InviteToChannelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB994B0241418FE00B8E7A7 /* InviteToChannelViewController.swift */; };
 		FEB994B324154C1F00B8E7A7 /* ChannelManageParticipants.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB994B224154C1F00B8E7A7 /* ChannelManageParticipants.swift */; };
+		FEB9EA282440910A00435937 /* TigaseSwift in Frameworks */ = {isa = PBXBuildFile; productRef = FEB9EA272440910A00435937 /* TigaseSwift */; };
+		FEB9EA2B2440912B00435937 /* TigaseSwiftOMEMO in Frameworks */ = {isa = PBXBuildFile; productRef = FEB9EA2A2440912B00435937 /* TigaseSwiftOMEMO */; };
 		FEC336ED2408141700EC1A0D /* ChannelParticipantsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336EC2408141700EC1A0D /* ChannelParticipantsViewController.swift */; };
 		FEC336EF2408FCD800EC1A0D /* ParticipantsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336EE2408FCD800EC1A0D /* ParticipantsButton.swift */; };
 		FEC336F3240A785400EC1A0D /* ChannelAwareProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336F2240A785400EC1A0D /* ChannelAwareProtocol.swift */; };
@@ -168,8 +169,6 @@
 		FEEF25322264A80500202B28 /* OMEMOController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25312264A80500202B28 /* OMEMOController.swift */; };
 		FEEF25362266303A00202B28 /* OMEMOIdentititesTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25352266303A00202B28 /* OMEMOIdentititesTableView.swift */; };
 		FEEF25392266528E00202B28 /* ContactDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25382266528E00202B28 /* ContactDetailsViewController.swift */; };
-		FEF5C3D92260893800889863 /* TigaseSwiftOMEMO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF5C3D82260893800889863 /* TigaseSwiftOMEMO.framework */; };
-		FEF5C3DA2260893800889863 /* TigaseSwiftOMEMO.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FEF5C3D82260893800889863 /* TigaseSwiftOMEMO.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FEF5C3FA22632C0000889863 /* OpenSSL_AES_GCM_Engine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF5C3F922632C0000889863 /* OpenSSL_AES_GCM_Engine.swift */; };
 		FEF5C3FF22632CDE00889863 /* openssl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF5C3FE22632CDE00889863 /* openssl.framework */; };
 		FEF5C40022632CDE00889863 /* openssl.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FEF5C3FE22632CDE00889863 /* openssl.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -177,7 +176,6 @@
 		FEF8BED2216A6761001DA755 /* InviteToGroupchatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF8BED1216A6761001DA755 /* InviteToGroupchatController.swift */; };
 		FEF9CE1D2082765000B09B6C /* db-schema-1.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEF9CE1C2082765000B09B6C /* db-schema-1.sql */; };
 		FEF9CE2220827F0000B09B6C /* libsqlite3.0.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF9CE2120827F0000B09B6C /* libsqlite3.0.tbd */; };
-		FEF9D12B2082804E00B09B6C /* TigaseSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF9D12A2082804E00B09B6C /* TigaseSwift.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		FEF9EC45242F8BAD0090C913 /* ChatInvitationCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF9EC44242F8BAD0090C913 /* ChatInvitationCellView.swift */; };
 		FEF9EC47242F8BBC0090C913 /* ChatInvitation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF9EC46242F8BBC0090C913 /* ChatInvitation.swift */; };
 		FEF9EC49242F8D620090C913 /* BaseChatCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF9EC48242F8D620090C913 /* BaseChatCellView.swift */; };
@@ -214,8 +212,6 @@
 			dstSubfolderSpec = 10;
 			files = (
 				FEF5C40022632CDE00889863 /* openssl.framework in Embed Frameworks */,
-				FEF5C3DA2260893800889863 /* TigaseSwiftOMEMO.framework in Embed Frameworks */,
-				FE4E8DE12160E7AA0010D88E /* TigaseSwift.framework in Embed Frameworks */,
 				FE2DEDA123C5FC0F00AEF14F /* WebRTC.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -419,10 +415,10 @@
 			files = (
 				FEF5C3FF22632CDE00889863 /* openssl.framework in Frameworks */,
 				FE83E365217B0F89001DEF09 /* AVFoundation.framework in Frameworks */,
-				FEF5C3D92260893800889863 /* TigaseSwiftOMEMO.framework in Frameworks */,
-				FEF9D12B2082804E00B09B6C /* TigaseSwift.framework in Frameworks */,
 				FEF9CE2220827F0000B09B6C /* libsqlite3.0.tbd in Frameworks */,
 				FE2DEDA023C5FC0F00AEF14F /* WebRTC.framework in Frameworks */,
+				FEB9EA282440910A00435937 /* TigaseSwift in Frameworks */,
+				FEB9EA2B2440912B00435937 /* TigaseSwiftOMEMO in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -821,6 +817,10 @@
 			dependencies = (
 			);
 			name = BeagleIM;
+			packageProductDependencies = (
+				FEB9EA272440910A00435937 /* TigaseSwift */,
+				FEB9EA2A2440912B00435937 /* TigaseSwiftOMEMO */,
+			);
 			productName = BeagleIM;
 			productReference = FED2ECF02066B01C00F506A5 /* BeagleIM.app */;
 			productType = "com.apple.product-type.application";
@@ -907,6 +907,9 @@
 				Base,
 			);
 			mainGroup = FED2ECE72066B01C00F506A5;
+			packageReferences = (
+				FEB9EA292440912B00435937 /* XCRemoteSwiftPackageReference "TigaseSwiftOMEMO" */,
+			);
 			productRefGroup = FED2ECF12066B01C00F506A5 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -1287,7 +1290,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 			};
 			name = Release;
 		};
@@ -1307,7 +1311,11 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = BeagleIM/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MARKETING_VERSION = 4.0;
 				OTHER_LDFLAGS = "-v";
@@ -1336,7 +1344,11 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = BeagleIM/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MARKETING_VERSION = 4.0;
 				OTHER_LDFLAGS = "-v";
@@ -1357,7 +1369,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = BeagleIMTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = eu.hilow.BeagleIMTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -1373,7 +1389,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = BeagleIMTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = eu.hilow.BeagleIMTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -1388,7 +1408,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = BeagleIMUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = eu.hilow.BeagleIMUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -1403,7 +1427,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = BeagleIMUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = eu.hilow.BeagleIMUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -1451,6 +1479,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		FEB9EA292440912B00435937 /* XCRemoteSwiftPackageReference "TigaseSwiftOMEMO" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tigase/tigase-swift-omemo";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		FEB9EA2A2440912B00435937 /* TigaseSwiftOMEMO */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FEB9EA292440912B00435937 /* XCRemoteSwiftPackageReference "TigaseSwiftOMEMO" */;
+			productName = TigaseSwiftOMEMO;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = FED2ECE82066B01C00F506A5 /* Project object */;
 }
