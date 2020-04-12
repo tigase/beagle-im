@@ -108,7 +108,7 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
             return;
         }
         DispatchQueue.main.async {
-            guard let idx = self.accounts.index(of: account) else {
+            guard let idx = self.accounts.firstIndex(of: account) else {
                 return;
             }
             self.tableView?.reloadData(forRowIndexes: IndexSet(integer: idx), columnIndexes: IndexSet(integer: 0));

@@ -167,7 +167,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         let continuation = prevItem != nil && item.isMergeable(with: prevItem!);
 
         switch item {
-        case let item as SystemMessage:
+        case is SystemMessage:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMessageSystemCellView"), owner: nil) as? ChatMessageSystemCellView {
                 cell.message.stringValue = "Unread messages";
                 return cell;
@@ -296,9 +296,6 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             return;
         }
 
-        guard let account = self.account, let jid = self.jid else {
-            return;
-        }
         switch item {
         case let item as ChatMessage:
             MessageEventHandler.sendMessage(chat: chat, body: item.message, url: nil);

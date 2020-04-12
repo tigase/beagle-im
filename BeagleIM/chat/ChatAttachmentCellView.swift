@@ -160,7 +160,7 @@ class ChatAttachmentCellView: BaseChatCellView {
                 let sizeLimit = Settings.fileDownloadSizeLimit.integer();
                 if sizeLimit > 0 {
                     if let client = XmppService.instance.getClient(for: item.account), (client.rosterStore?.get(for: JID(item.jid))?.subscription ?? .none).isFrom || (DBChatStore.instance.getChat(for: item.account, with: item.jid) as? Room != nil) {
-                        DownloadManager.instance.download(item: item, maxSize: Int64(sizeLimit));
+                        _ = DownloadManager.instance.download(item: item, maxSize: Int64(sizeLimit));
                         progressIndicator = NSProgressIndicator();
                         return;
                     }
@@ -181,8 +181,8 @@ class ChatAttachmentCellView: BaseChatCellView {
             return;
         }
         
-        guard let localUrl = DownloadStore.instance.url(for: "\(item.id)") else {
-            DownloadManager.instance.download(item: item, maxSize: Int64.max);
+        guard DownloadStore.instance.url(for: "\(item.id)") != nil else {
+            _ = DownloadManager.instance.download(item: item, maxSize: Int64.max);
             self.progressIndicator = NSProgressIndicator();
             return;
         }
@@ -289,7 +289,7 @@ class ChatAttachmentCellView: BaseChatCellView {
         guard let item = self.item else {
             return;
         }
-        if let localUrl = DownloadStore.instance.url(for: "\(item.id)") {
+        if DownloadStore.instance.url(for: "\(item.id)") != nil {
             self.openFile(self);
         } else {
             self.downloadClicked(self);

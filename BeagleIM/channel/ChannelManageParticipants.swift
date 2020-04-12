@@ -66,7 +66,7 @@ class ChannelManagerParticipants: NSViewController, ChannelAwareProtocol, NSTabV
                         self.allowed = allowed.sorted(by: { $0.stringValue < $1.stringValue });
                         self.allowedTableView?.reloadData();
                     }
-                case .failure(let errorCondition):
+                case .failure(_):
                     DispatchQueue.main.async {
                         self.tabView.removeTabViewItem(self.tabView.tabViewItem(at: 0));
                     }
@@ -157,7 +157,7 @@ class ChannelManagerParticipants: NSViewController, ChannelAwareProtocol, NSTabV
                             }
                             allowed.append(jid);
                             self.allowed = allowed.sorted(by: { $0.stringValue < $1.stringValue });
-                            self.allowedTableView?.insertRows(at: IndexSet(integer: self.allowed?.index(of: jid) ?? 0), withAnimation: .effectFade);
+                            self.allowedTableView?.insertRows(at: IndexSet(integer: self.allowed?.firstIndex(of: jid) ?? 0), withAnimation: .effectFade);
                         }
                     case .failure(_):
                         break;
@@ -208,7 +208,7 @@ class ChannelManagerParticipants: NSViewController, ChannelAwareProtocol, NSTabV
                             }
                             banned.append(jid);
                             self.banned = banned.sorted(by: { $0.stringValue < $1.stringValue });
-                            self.bannedTableView?.insertRows(at: IndexSet(integer: self.banned.index(of: jid) ?? 0), withAnimation: .effectFade);
+                            self.bannedTableView?.insertRows(at: IndexSet(integer: self.banned.firstIndex(of: jid) ?? 0), withAnimation: .effectFade);
                         }
                     case .failure(_):
                         break;

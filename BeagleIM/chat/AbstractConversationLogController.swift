@@ -317,9 +317,6 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
             }
             return true;
         case .rightMouseDown:
-            guard let contentView = event.window?.contentView else {
-                return false;
-            }
             let point = self.view.convert(event.locationInWindow, from: nil);
     //            print("point:", point, "frame:", self.tableView.enclosingScrollView?.frame);
             guard self.tableView.enclosingScrollView?.frame.contains(point) ?? false else {
@@ -343,7 +340,7 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
             if let messageView = messageViewFor(event: event) {
                 if let idx = messageView.message.characterIndexFor(event: event)?.location, idx != 0 {
                     if let link = messageView.message.attributedStringValue.attribute(.link, at: idx, effectiveRange: nil) as? URL {
-                        var copy = menu.addItem(withTitle: "Copy link", action: #selector(copySelectedText), keyEquivalent: "");
+                        let copy = menu.addItem(withTitle: "Copy link", action: #selector(copySelectedText), keyEquivalent: "");
                         copy.target = self;
                         copy.representedObject = link;
                     }

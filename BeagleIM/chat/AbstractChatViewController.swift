@@ -168,7 +168,6 @@ extension NSTextField {
         textContainer.lineBreakMode = self.lineBreakMode;
         
         textContainer.size = self.cell?.titleRect(forBounds: self.bounds).size ?? .zero;
-        print(self.bounds.size, self.cell?.titleRect(forBounds: self.bounds).size);
         
         textStorage.beginEditing();
         textStorage.setAttributedString(self.attributedStringValue);

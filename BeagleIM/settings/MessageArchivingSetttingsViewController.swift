@@ -68,7 +68,7 @@ class MessageArchivingSettingsViewController: NSViewController, AccountAware {
         }
         mamModule.retrieveSettings(completionHandler: { result in
             switch result {
-            case .success(let defValue, let always, let never):
+            case .success(let defValue, _, _):
                 DispatchQueue.main.async {
                     let isOn = defValue == .always
                     self.archivingEnabled.state = isOn ? .on : .off;
@@ -76,7 +76,7 @@ class MessageArchivingSettingsViewController: NSViewController, AccountAware {
                     self.automaticSynchronization.isEnabled = isOn;
                     self.synchronizationPeriod.isEnabled = syncEnabled;
                 }
-            case .failure(let errorCondition, let response):
+            case .failure(let errorCondition, _):
                 print("got an error from the server:", errorCondition as Any, ", ignoring...");
             }
         });
@@ -101,13 +101,13 @@ class MessageArchivingSettingsViewController: NSViewController, AccountAware {
             case .success(let defValue, let always, let never):
                 mamModule.updateSettings(defaultValue: isOn ? .always : .never, always: always, never: never, completionHandler: { (result) in
                     switch result {
-                    case .success(let newValue, let always, let never):
+                    case .success(let newValue, _, _):
                         self.updateArchivingState(newValue == .always);
-                    case .failure(let errorCondition, let response):
+                    case .failure(_, _):
                         self.updateArchivingState(defValue == .always);
                     }
                 });
-            case .failure(let errorCondition, let response):
+            case .failure(_, _):
                 self.updateArchivingState(!isOn);
             }
         });

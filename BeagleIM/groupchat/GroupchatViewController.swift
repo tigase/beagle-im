@@ -47,7 +47,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     
     var room: DBChatStore.DBRoom! {
         get {
-            return self.chat as! DBChatStore.DBRoom;
+            return (self.chat as! DBChatStore.DBRoom);
         }
         set {
             self.chat = newValue;
@@ -227,7 +227,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         let continuation = prevItem != nil && item.isMergeable(with: prevItem!);
         
         switch item {
-        case let item as SystemMessage:
+        case is SystemMessage:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMessageSystemCellView"), owner: nil) as? ChatMessageSystemCellView {
                 cell.message.stringValue = "Unread messages";
                 return cell;

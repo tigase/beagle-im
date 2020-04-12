@@ -258,7 +258,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
             return;
         }
         
-        if let row = self.invitationGroup?.items.firstIndex(of: invitation) {
+        if self.invitationGroup?.items.firstIndex(of: invitation) != nil {
             let row = self.outlineView.row(forItem: invitation);
             guard row >= 0 else {
                 return;
@@ -467,9 +467,9 @@ extension ChatsListViewController: NSOutlineViewDelegate {
             }
             mixModule.leave(channel: c, completionHandler: { result in
                 switch result {
-                case .success(let response):
-                    DBChatStore.instance.close(for: c.account, chat: c);
-                case .failure(let errorCondition, let response):
+                case .success(_):
+                    _ = DBChatStore.instance.close(for: c.account, chat: c);
+                case .failure(_, _):
                     break;
                 }
             })

@@ -122,7 +122,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                         return session.jid == from && session.account == account;
                     });
                     toClose.forEach({ (session) in
-                        session.terminate();
+                        _ = session.terminate();
                     })
                 }
             default:

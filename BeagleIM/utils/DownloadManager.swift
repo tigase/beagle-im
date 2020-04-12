@@ -102,17 +102,17 @@ class DownloadManager {
 
                     DownloadManager.download(session: session, url: url, completionHandler: { result in
                         switch result {
-                        case .success(let localUrl, let filename):
+                        case .success((let localUrl, let filename)):
                             if let encryptionKey = encryptionKey, let omemoModule: OMEMOModule = XmppService.instance.getClient(for: item.account)?.modulesManager.getModule(OMEMOModule.ID) {
                                 switch omemoModule.decryptFile(url: localUrl, fragment: encryptionKey) {
                                 case .success(let data):
                                     try? data.write(to: localUrl);
-                                case .failure(let err):
+                                case .failure(_):
                                     break;
                                 }
                             }
                             //let id = UUID().uuidString;
-                            DownloadStore.instance.store(localUrl, filename: filename, with: "\(item.id)");
+                            _ = DownloadStore.instance.store(localUrl, filename: filename, with: "\(item.id)");
                             DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
                                 appendix.state = .downloaded;
                             });
@@ -168,9 +168,9 @@ class DownloadManager {
                 self.downloadFile(url: url, maxSize: maxSize, excludedMimetypes: excludedMimetypes) { (result) in
                     self.dispatcher.async {
                         switch result {
-                        case .success(let localUrl, let filename):
+                        case .success((let localUrl, let filename)):
                             //let id = UUID().uuidString;
-                            destination.store(localUrl, filename: filename, with: id);
+                            _ = destination.store(localUrl, filename: filename, with: id);
                             item.completed(with: .success(id))
                         case .failure(let err):
                             item.completed(with: .failure(err));
@@ -187,7 +187,7 @@ class DownloadManager {
 
         DownloadManager.retrieveHeaders(session: session, url: url, completionHandler: { headersResult in
             switch headersResult {
-            case .success(let suggestedFilename, let expectedSize, let mimeType):
+            case .success(_, _, let mimeType):
                 if let type = mimeType {
                     guard !excludedMimetypes.contains(type) else {
                         completionHandler(.failure(.badMimeType(mimeType: type)));
@@ -211,7 +211,7 @@ class DownloadManager {
                     completionHandler(.success((tempLocalUrl, filename)));
                 } else if let mimeType = response?.mimeType, let filenameExt =  DownloadManager.mimeTypeToExtension(mimeType: mimeType) {
                     completionHandler(.success((tempLocalUrl, "file.\(filenameExt)")));
-                } else if let uti = try? NSWorkspace.shared.type(ofFile: tempLocalUrl.path), let mimeType = UTTypeCopyPreferredTagWithClass(uti as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as? String, let filenameExt =  DownloadManager.mimeTypeToExtension(mimeType: mimeType) {
+                } else if let uti = try? NSWorkspace.shared.type(ofFile: tempLocalUrl.path), let mimeType = UTTypeCopyPreferredTagWithClass(uti as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as String?, let filenameExt =  DownloadManager.mimeTypeToExtension(mimeType: mimeType) {
                     completionHandler(.success((tempLocalUrl, "file.\(filenameExt)")));
                 } else {
                     completionHandler(.success((tempLocalUrl, tempLocalUrl.lastPathComponent)));

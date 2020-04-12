@@ -338,7 +338,7 @@ class XmppService: EventHandler {
                 ((messageModule.chatManager as! DefaultChatManager).chatStore as! DBChatStoreWrapper).deinitialize();
             }
             if let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) {
-                ((mucModule.roomsManager as! DefaultRoomsManager).store as! DBRoomStore).deinitialize();
+                (mucModule.roomsManager.store as! DBRoomStore).deinitialize();
             }
             if let mixModule: MixModule = client.modulesManager.getModule(MixModule.ID) {
                 ((mixModule.channelManager as! DefaultChannelManager).store as! DBChannelStore).deinitialize();

@@ -85,7 +85,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         let continuation = prevItem != nil && item.isMergeable(with: prevItem!);
 
         switch item {
-        case let item as SystemMessage:
+        case is SystemMessage:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMessageSystemCellView"), owner: nil) as? ChatMessageSystemCellView {
                 cell.message.stringValue = "Unread messages";
                 return cell;
@@ -206,9 +206,6 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     }
 
     @objc func channelUpdated(_ notification: Notification) {
-        guard let channel = notification.object as? Channel else {
-            return;
-        }
         DispatchQueue.main.async {
             self.channelAvatarView.name = self.channel.name ?? self.channel.channelJid.stringValue;
             self.channelAvatarView.status = (XmppService.instance.getClient(for: self.channel.account)?.state ?? .disconnected == .connected) && self.channel.state == .joined ? .online : nil;

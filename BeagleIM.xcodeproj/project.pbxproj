@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 53;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -134,7 +134,6 @@
 		FEB994AF2413A03D00B8E7A7 /* ChannelEditConfigViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB994AE2413A03D00B8E7A7 /* ChannelEditConfigViewController.swift */; };
 		FEB994B1241418FE00B8E7A7 /* InviteToChannelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB994B0241418FE00B8E7A7 /* InviteToChannelViewController.swift */; };
 		FEB994B324154C1F00B8E7A7 /* ChannelManageParticipants.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB994B224154C1F00B8E7A7 /* ChannelManageParticipants.swift */; };
-		FEB9EA282440910A00435937 /* TigaseSwift in Frameworks */ = {isa = PBXBuildFile; productRef = FEB9EA272440910A00435937 /* TigaseSwift */; };
 		FEB9EA2B2440912B00435937 /* TigaseSwiftOMEMO in Frameworks */ = {isa = PBXBuildFile; productRef = FEB9EA2A2440912B00435937 /* TigaseSwiftOMEMO */; };
 		FEC336ED2408141700EC1A0D /* ChannelParticipantsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336EC2408141700EC1A0D /* ChannelParticipantsViewController.swift */; };
 		FEC336EF2408FCD800EC1A0D /* ParticipantsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336EE2408FCD800EC1A0D /* ParticipantsButton.swift */; };
@@ -417,7 +416,6 @@
 				FE83E365217B0F89001DEF09 /* AVFoundation.framework in Frameworks */,
 				FEF9CE2220827F0000B09B6C /* libsqlite3.0.tbd in Frameworks */,
 				FE2DEDA023C5FC0F00AEF14F /* WebRTC.framework in Frameworks */,
-				FEB9EA282440910A00435937 /* TigaseSwift in Frameworks */,
 				FEB9EA2B2440912B00435937 /* TigaseSwiftOMEMO in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -818,7 +816,6 @@
 			);
 			name = BeagleIM;
 			packageProductDependencies = (
-				FEB9EA272440910A00435937 /* TigaseSwift */,
 				FEB9EA2A2440912B00435937 /* TigaseSwiftOMEMO */,
 			);
 			productName = BeagleIM;
@@ -898,8 +895,8 @@
 					};
 				};
 			};
-			buildConfigurationList = FED2ECEB2066B01C00F506A5 /* Build configuration list for PBXProject " " */;
-			compatibilityVersion = "Xcode 8.0";
+			buildConfigurationList = FED2ECEB2066B01C00F506A5 /* Build configuration list for PBXProject "BeagleIM" */;
+			compatibilityVersion = "Xcode 11.4";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -908,7 +905,7 @@
 			);
 			mainGroup = FED2ECE72066B01C00F506A5;
 			packageReferences = (
-				FEB9EA292440912B00435937 /* XCRemoteSwiftPackageReference "TigaseSwiftOMEMO" */,
+				FEB9EA292440912B00435937 /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */,
 			);
 			productRefGroup = FED2ECF12066B01C00F506A5 /* Products */;
 			projectDirPath = "";
@@ -1442,7 +1439,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		FED2ECEB2066B01C00F506A5 /* Build configuration list for PBXProject " " */ = {
+		FED2ECEB2066B01C00F506A5 /* Build configuration list for PBXProject "BeagleIM" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				FED2ED142066B01C00F506A5 /* Debug */,
@@ -1481,7 +1478,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		FEB9EA292440912B00435937 /* XCRemoteSwiftPackageReference "TigaseSwiftOMEMO" */ = {
+		FEB9EA292440912B00435937 /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tigase/tigase-swift-omemo";
 			requirement = {
@@ -1494,7 +1491,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		FEB9EA2A2440912B00435937 /* TigaseSwiftOMEMO */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = FEB9EA292440912B00435937 /* XCRemoteSwiftPackageReference "TigaseSwiftOMEMO" */;
+			package = FEB9EA292440912B00435937 /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */;
 			productName = TigaseSwiftOMEMO;
 		};
 /* End XCSwiftPackageProductDependency section */

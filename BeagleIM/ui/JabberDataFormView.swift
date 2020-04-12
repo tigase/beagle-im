@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import os
 
 class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegate {
     
@@ -53,7 +54,7 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
             if oldConstraint != nil {
                 self.enclosingScrollView?.removeConstraint(oldConstraint!);
             }
-            print("document height:", self.enclosingScrollView?.documentView?.frame.size.height, self.enclosingScrollView?.contentSize);
+            os_log(OSLogType.debug, log: .ui, "document height: %@, size: %@", self.enclosingScrollView?.documentView?.frame.size.height ?? (-1.0 as CGFloat), self.enclosingScrollView?.contentSize.height ?? (-1.0 as CGFloat));
         });
     }
     

@@ -104,7 +104,7 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
             }
             discoModule.getInfo(for: channel.jid, node: nil, completionHandler: { [weak self] result in
                 switch result {
-                case .success(let node, let identities, let features):
+                case .success(_, _, let features):
                     if features.firstIndex(of: "muc_passwordprotected") != nil && password == nil {
                         DispatchQueue.main.async {
                             guard let window = self?.window else {
@@ -157,7 +157,7 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
             }
             mixModule.join(channel: channel.jid.bareJid, withNick: nickname, completionHandler: { result in
                 switch result {
-                case .success(let response):
+                case .success(_):
                     // we have joined, so all what we need to do is close this window
                     DispatchQueue.main.async {
                         completionHandler(true);
@@ -243,11 +243,11 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
             group.enter();
             discoModule.getItems(for: component.jid, completionHandler: { result in
                 switch result {
-                case .success(let node, let items):
+                case .success(_, let items):
                     DispatchQueue.main.async {
                         allItems.append(contentsOf: items);
                     }
-                case .failure(let errorCondition, let response):
+                case .failure(_, _):
                     break;
                 }
                 group.leave();

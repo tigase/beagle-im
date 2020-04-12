@@ -88,7 +88,7 @@ class MucEventHandler: XmppServiceEventHandler {
                                     guard let data = result else {
                                         return;
                                     }
-                                    AvatarManager.instance.storeAvatar(data: data);
+                                    _ = AvatarManager.instance.storeAvatar(data: data);
                                 }
                             }
                         }, onError: { (errorCondition) in
@@ -137,7 +137,7 @@ class MucEventHandler: XmppServiceEventHandler {
             }
             mucModule.leave(room: e.room);
         case let e as MucModule.InvitationReceivedEvent:
-            guard let mucModule: MucModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(MucModule.ID), let roomName = e.invitation.roomJid.localPart else {
+            guard let mucModule: MucModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(MucModule.ID),  e.invitation.roomJid.localPart != nil else {
                 return;
             }
             

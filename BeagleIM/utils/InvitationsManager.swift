@@ -47,7 +47,7 @@ class InvitationManager {
             self.allItems = items;
             
             let rosterItem = XmppService.instance.getClient(for: account)?.rosterStore?.get(for: jid);
-            var content = UNMutableNotificationContent();
+            let content = UNMutableNotificationContent();
             content.title = "Authorization request";
             content.body = "\(rosterItem?.name ?? jid.stringValue) requests authorization to access information about you presence";
             content.sound = UNNotificationSound.default;
@@ -67,8 +67,8 @@ class InvitationManager {
             items.append(invitation);
             self.allItems = items;
             
-            let rosterItem = XmppService.instance.getClient(for: account)?.rosterStore?.get(for: jid);
-            var content = UNMutableNotificationContent();
+            _ = XmppService.instance.getClient(for: account)?.rosterStore?.get(for: jid);
+            let content = UNMutableNotificationContent();
             content.title = "Invitation to groupchat";
             content.body = "You (\(invitation.account)) were invited to the groupchat \(mucInvitation.roomJid)";
             content.sound = UNNotificationSound.default;

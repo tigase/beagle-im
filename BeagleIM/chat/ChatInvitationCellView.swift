@@ -89,7 +89,7 @@ class ChatInvitationCellView: BaseChatCellView {
         OpenChannelViewController.askForNickname(for: account, window: window, completionHandler: { nickname in
             mixModule.join(channel: mixInvitation.channel, withNick: nickname, completionHandler: { result in
                 switch result {
-                case .success(let response):
+                case .success(_):
                     break;
                 case .failure(let errorCondition, let response):
                     DispatchQueue.main.async {

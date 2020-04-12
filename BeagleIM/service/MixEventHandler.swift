@@ -35,7 +35,7 @@ class MixEventHandler: XmppServiceEventHandler {
         switch event {
         case let e as MixModule.MessageReceivedEvent:
             // only mix message (with `mix` element) are processed here...
-            guard let mix = e.message.mix, let from = e.message.from, let account = e.sessionObject.userBareJid else {
+            guard e.message.mix != nil && e.message.from != nil, let account = e.sessionObject.userBareJid else {
                 return;
             }
             

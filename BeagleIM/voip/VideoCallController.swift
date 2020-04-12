@@ -24,6 +24,7 @@ import WebRTC
 import TigaseSwift
 import Metal
 import UserNotifications
+import os
 
 class RTCVideoView: RTCMTLNSVideoView {
     
@@ -89,7 +90,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
             self.localVideoTrack = connectionFactory.videoTrack(with: self.localVideoSource!, trackId: "video-" + UUID().uuidString);
             
             self.startVideoCapture(videoCapturer: self.localVideoCapturer!) {
-                print("started!", self.localVideoTrack?.isEnabled);
+                os_log(OSLogType.debug, log: .jingle, "started local video track: %@", self.localVideoTrack?.isEnabled ?? false);
             }
         }
     }
@@ -107,12 +108,12 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
     var session: JingleManager.Session? {
         didSet {
-            print("setting session:", session, "peerConnection:", session?.peerConnection)
+            os_log(OSLogType.debug, log: .jingle, "setting session: %@, peerConnection: %@",  session?.description ?? "mil", session?.peerConnection?.description ?? "nil");
             if let conn = session?.peerConnection {
                 print("with sdp:", conn.configuration.sdpSemantics.rawValue);
                 if conn.configuration.sdpSemantics == .unifiedPlan {
                     if remoteVideoView != nil {
-                        print("setting remote view");
+                        os_log(OSLogType.debug, log: .jingle, "setting remote view");
                         conn.transceivers.forEach { (trans) in
                             if trans.mediaType == .video && (trans.direction == .sendRecv || trans.direction == .recvOnly) {
                                 guard let track = trans.receiver.track as? RTCVideoTrack else {
@@ -122,7 +123,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                             }
                         }
                     } else {
-                        print("no remote view");
+                        os_log(OSLogType.debug, log: .jingle, "no remote view");
                     }
                     if localVideoView != nil {
                         conn.transceivers.forEach { (trans) in
@@ -192,7 +193,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                     self.stateLabel.stringValue = "Connected";
                 }
                 self.stateLabel.isHidden = self.state == .connected;
-                print("controller state:", self.state, " ", self.stateLabel.stringValue);
+                os_log(OSLogType.debug, log: .jingle, "controller state: %@ %@", self.state.rawValue, self.stateLabel.stringValue);
             }
         }
     }
@@ -222,7 +223,6 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                 self.localVideoView.removeConstraint(self.localVideoViewAspect!);
                 self.localVideoViewAspect = self.localVideoView.widthAnchor.constraint(equalTo: self.localVideoView.heightAnchor, multiplier: size.width / size.height);
                 self.localVideoViewAspect?.isActive = true;
-                print("local frame:", self.localVideoView!.frame);
             } else if videoView === self.remoteVideoView! {
                 let currSize = self.remoteVideoView.frame.size;
                 
@@ -234,7 +234,6 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                 self.view.window?.setContentSize(NSSize(width: newWidth, height: newHeight));
                 self.remoteVideoViewAspect = self.remoteVideoView.widthAnchor.constraint(equalTo: self.remoteVideoView.heightAnchor, multiplier: size.width / size.height);
                 self.remoteVideoViewAspect?.isActive = true;
-                print("remote frame:", self.remoteVideoView!.frame);
             }
         }
     }
@@ -244,13 +243,13 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     var avplayer: AVPlayer? = nil {
         didSet {
             if let value = oldValue {
-                print("deregistering av player item:", value.currentItem);
+                os_log(OSLogType.debug, log: .jingle, "deregistering av player item: %@", value.currentItem?.description ?? "nil");
                 value.pause();
                 NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: value.currentItem);
             }
             if let value = avplayer {
                 value.actionAtItemEnd = .none;
-                print("registering av player item:", value.currentItem);
+                os_log(OSLogType.debug, log: .jingle, "registering av player item: %@", value.currentItem?.description ?? "nil");
                 NotificationCenter.default.addObserver(self, selector: #selector(playerItemDidReachEnd), name: .AVPlayerItemDidPlayToEndTime, object: value.currentItem);
                 value.play();
             }
@@ -341,7 +340,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                 return;
             }
             session.peerConnection?.delegate = session;
-            print("setting remote description:", sdpOffer.toString());
+            os_log(OSLogType.debug, log: .jingle, "setting remote description:  %@", sdpOffer.toString());
             self.setRemoteSessionDescription(sessDesc, for: session) { (result) in
                 switch result {
                 case .success(_):
@@ -362,11 +361,11 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                                 self.handle(error: .sdpAnswerNotGenerated(error: error!), for: session);
                                 return;
                             }
-                            print("generated local description:", sdpAnswer!.sdp, sdpAnswer!.type);
+                            os_log(OSLogType.debug, log: .jingle, "generated local description: %@", sdpAnswer!.sdp, sdpAnswer!.type.rawValue);
                             self.setLocalSessionDescription(sdpAnswer!, for: session, completionHandler: { result in
                                 switch result {
                                 case .success(_):
-                                    print("set local description:", session.peerConnection?.localDescription?.sdp as Any);
+                                    os_log(OSLogType.debug, log: .jingle, "set local description: %@", session.peerConnection?.localDescription?.sdp ?? "nil");
                                     
                                     let sdp = SDP(from: sdpAnswer!.sdp, creator: session.role);
                                     _  = session.accept(contents: sdp!.contents, bundle: sdp!.bundle);
@@ -386,13 +385,13 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
     func handle(error: PeerConnectionError, for session: JingleManager.Session) {
         switch error {
-        case .settingLocalDescriptionFailed(let error), .settingRemoteDescriptionFailed(let error):
+        case .settingLocalDescriptionFailed(_), .settingRemoteDescriptionFailed(_):
             _ = session.decline();
         case .mediaInitializationFailed:
             _ = session.decline();
-        case .sdpAnswerNotGenerated(let error):
+        case .sdpAnswerNotGenerated(_):
             _ = session.decline();
-        case .sdpOfferNotGenerated(let error):
+        case .sdpOfferNotGenerated(_):
             _ = session.decline();
         case .peerConnectionNotCreated:
             break;
@@ -409,7 +408,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
             return;
         }
         audioTracks.forEach { (track) in
-            print("audio is enbled:", track, track.isEnabled);
+            os_log(OSLogType.debug, log: .jingle, "audio is enbled:", track, track.isEnabled);
             track.isEnabled = value;
         }
     }
@@ -421,7 +420,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
             return;
         }
         videoTracks.forEach { (track) in
-            print("video is enbled:", track, track.isEnabled);
+            os_log(OSLogType.debug, log: .jingle, "video is enbled:", track, track.isEnabled);
             track.isEnabled = value;
         }
     }
@@ -439,7 +438,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
     func call(jid: BareJID, from account: BareJID, withAudio: Bool, withVideo: Bool) {
         loggerFile = FileManager.default.temporaryDirectory;
-        print("starting logging at:", loggerFile);
+        os_log(OSLogType.info, log: .jingle, "starting logging at: %@", loggerFile?.absoluteString ?? "nil");
         logger = RTCFileLogger(dirPath: loggerFile!.path, maxFileSize: 20 * 1024 * 1024);
         logger?.start();
         let name = XmppService.instance.getClient(for: account)?.rosterStore?.get(for: JID(jid))?.name ?? jid.stringValue;
@@ -477,7 +476,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                 return;
             }
             
-            print("creating peer connection for:", session.jid);
+            os_log(OSLogType.debug, log: .jingle, "creating peer connection for: %@", session.jid.stringValue);
             self.initializeMedia(for: session, audio: withAudio, video: withVideo) { result in
                 guard result else {
                     print("intialization of media failed!");
@@ -489,10 +488,10 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                     return;
                 }
 
-                print("preparing sdp offer for:", session.peerConnection, "....");
+                os_log(OSLogType.debug, log: .jingle, "preparing sdp offer for: %@", session.peerConnection?.description ?? "nil");
                 session.peerConnection?.offer(for: self.defaultCallConstraints, completionHandler: { (sdp, error) in
                     if sdp != nil && error == nil {
-                        print("setting local description:", sdp!.sdp);
+                        os_log(OSLogType.debug, log: .jingle, "setting local description: %@", sdp!.sdp);
                         let tmp = RTCSessionDescription(type: sdp!.type, sdp: sdp!.sdp.replacingOccurrences(of: "a=mid:0", with: "a=mid:m0").replacingOccurrences(of: "a=group:BUNDLE 0", with: "a=group:BUNDLE m0"));
                         self.setLocalSessionDescription(tmp, for: session, completionHandler: { result in
                             switch result {
@@ -547,7 +546,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         let configuration = RTCConfiguration();
         configuration.sdpSemantics = .unifiedPlan;
         
-        var iceServers: [RTCIceServer] = [ RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:stun2.l.google.com:19302","stun:stun3.l.google.com:19302","stun:stun4.l.google.com:19302"]), RTCIceServer(urlStrings: ["stun:stunserver.org:3478" ]) ];
+        let iceServers: [RTCIceServer] = [ RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:stun2.l.google.com:19302","stun:stun3.l.google.com:19302","stun:stun4.l.google.com:19302"]), RTCIceServer(urlStrings: ["stun:stunserver.org:3478" ]) ];
         
 //        if var urlComponents = URLComponents(string: Settings.turnServer.string() ?? "") {
 //            let username = urlComponents.user;
@@ -576,7 +575,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     // this may be called multiple times, needs to handle that with video capture!!!
     func initializeMedia(for session: JingleManager.Session, audio: Bool, video: Bool, completionHandler: @escaping (Bool)->Void) {
 //        DispatchQueue.main.async {
-        print("intializing session for:", session.peerConnection, "sdpSemantics:", session.peerConnection?.configuration.sdpSemantics)
+        os_log(OSLogType.debug, log: .jingle, "intializing session for: %@ sdpSemantics: %@", session.peerConnection?.description ?? "nil", session.peerConnection?.configuration.sdpSemantics.rawValue ?? -1)
             if (session.peerConnection?.configuration.sdpSemantics ?? RTCSdpSemantics.planB) == RTCSdpSemantics.unifiedPlan {
                 // send audio?
                 if audio, let localAudioTrack = self.localAudioTrack {
@@ -609,9 +608,9 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
             var bestFrameRate: AVFrameRateRange? = nil;
             RTCCameraVideoCapturer.supportedFormats(for: device).forEach({ (format) in
                 let size = CMVideoFormatDescriptionGetDimensions(format.formatDescription);
-                print("checking format:", size.width, "x", size.height, ", fps:", format.videoSupportedFrameRateRanges.map({ (range) -> Float64 in
+                os_log(OSLogType.debug, log: .jingle, "checking format: %@x%@, fps: %@, type: %@, expected: %@", size.width, size.height, format.videoSupportedFrameRateRanges.map({ (range) -> Float64 in
                     return range.maxFrameRate;
-                }).max() ?? 0, ", type:", CMFormatDescriptionGetMediaSubType(format.formatDescription), "expected:", videoCapturer.preferredOutputPixelFormat());
+                }).max() ?? 0, CMFormatDescriptionGetMediaSubType(format.formatDescription), videoCapturer.preferredOutputPixelFormat());
                 // larger size causes issues during encoding...
                 if (size.width > 640) {
                     return;
@@ -647,7 +646,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     }
     
     func didAdd(remoteVideoTrack: RTCVideoTrack) {
-        print("remote view configured with:", remoteVideoTrack);
+        os_log(OSLogType.debug, log: .jingle, "remote view configured with: %@", remoteVideoTrack);
         DispatchQueue.main.async {
             if self.remoteVideoTrack != nil && self.remoteVideoTrack! == remoteVideoTrack {
                 return;
@@ -657,7 +656,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     }
     
     func didAdd(localVideoTrack: RTCVideoTrack) {
-        print("skipping setting local video track!");
+        os_log(OSLogType.debug, log: .jingle, "skipping setting local video track!");
         DispatchQueue.main.async {
             if self.localVideoTrack != nil && self.localVideoTrack! ==  localVideoTrack {
                 return;
@@ -753,12 +752,12 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                     _ = sess.terminate();
                 })
                 
-                print("setting remote description:", sdpAnswer.toString());
+                os_log(OSLogType.debug, log: .jingle, "setting remote description: %@", sdpAnswer.toString());
                 let sessDesc = RTCSessionDescription(type: .answer, sdp: sdpAnswer.toString());
                 self.setRemoteSessionDescription(sessDesc, for: session, completionHandler: { (result) in
                     switch result {
                     case .success(_):
-                        print("remote session description set");
+                        os_log(OSLogType.debug, log: .jingle, "remote session description set");
                     case .failure(let err):
                         self.handle(error: err, for: session);
                     }
@@ -814,7 +813,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
     fileprivate func setRemoteSessionDescription(_ sessDesc: RTCSessionDescription, for session: JingleManager.Session, completionHandler: @escaping (Result<Void,PeerConnectionError>)->Void) {
         session.peerConnection?.setRemoteDescription(sessDesc, completionHandler: { (error) in
-            print("remote description set:", session.peerConnection?.remoteDescription?.sdp as Any);
+            os_log(OSLogType.debug, log: .jingle, "remote description set: %@", session.peerConnection?.remoteDescription?.sdp ?? "nil");
             guard error == nil else {
                 completionHandler(.failure(VideoCallController.PeerConnectionError.settingRemoteDescriptionFailed(error: error!)));
 //                _ = session.decline();

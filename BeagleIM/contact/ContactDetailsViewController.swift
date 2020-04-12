@@ -1310,8 +1310,7 @@ class ConversationAttachmentView: NSCollectionViewItem {
                 self.filenameField.stringValue = filename;
             }
             if let size = item.appendix.filesize {
-                if let mimetype = item.appendix.mimetype, let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimetype as CFString, nil)?.takeRetainedValue(), let typeName = UTTypeCopyDescription(uti)?.takeRetainedValue() as String? {
-                    let fileSize = fileSizeToString(UInt64(size));
+                if let mimetype = item.appendix.mimetype, let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimetype as CFString, nil)?.takeRetainedValue() {
                     imageField.image = NSWorkspace.shared.icon(forFileType: uti as String);
                 } else {
                     imageField.image = NSWorkspace.shared.icon(forFileType: "");

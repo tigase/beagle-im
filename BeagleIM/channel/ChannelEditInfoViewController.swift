@@ -83,12 +83,12 @@ class ChannelEditInfoViewController: NSViewController, ChannelAwareProtocol {
             group.enter();
             avatarModule.retrieveAvatarMetadata(from: channel.channelJid, completionHandler: { [weak self] result in
                 switch result {
-                case .success(let info):
+                case .success(_):
                     DispatchQueue.main.async {
                         self?.avatarButton.isEnabled = true;
                         self?.avatarButton.changeLabel.isHidden = true;
                     }
-                case .failure(let errorCondition):
+                case .failure(_):
                     DispatchQueue.main.async {
                         self?.avatarButton.isEnabled = false;
                         self?.avatarButton.changeLabel.isHidden = true;
@@ -153,10 +153,10 @@ class ChannelEditInfoViewController: NSViewController, ChannelAwareProtocol {
             if let avatarModule: PEPUserAvatarModule = client.modulesManager.getModule(PEPUserAvatarModule.ID), let binval = self.avatarButton.image?.scaled(maxWidthOrHeight: 512.0, format: .jpeg, properties: [.compressionFactor: 0.8]) {
                 avatarModule.publishAvatar(at: channel.channelJid, data: binval, mimeType: "image/jpeg", width: nil, height: nil, completionHandler: { result in
                     switch result {
-                    case .success(let response, let node, let itemId):
+                    case .success(_, _, _):
                         // new avatar published
                         break;
-                    case .failure(let errorCondition, let pubSubErrorCondition, let response):
+                    case .failure(_, _, _):
                         // avatar publication failed
                         break;
                     }

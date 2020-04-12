@@ -144,7 +144,7 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
                     alert.addButton(withTitle: "OK");
                     alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
                 }
-            case .success(let destUrl, let filesize, let mimeType):
+            case .success(_, _, _):
                 DispatchQueue.main.async {
                     onSuccess(result);
                 }
@@ -221,45 +221,11 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
     }
 
     func guessContentType(of url: URL) -> String? {
-//        guard let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, url.pathExtension as CFString, nil)?.takeRetainedValue() else {
-//            return nil;
-//        }
-        
-        //NSWorkspace.shared.ty
         guard let uti = try? url.resourceValues(forKeys: [.typeIdentifierKey]).typeIdentifier else {
             return nil;
         }
-//
-        guard let mimeType = UTTypeCopyPreferredTagWithClass(uti as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as? String else {
-            return nil;
-        }
-//
-        return mimeType;
-        
-//        if UTTypeConformsTo(uti, kUTTypeImage) {
-//            if UTTypeConformsTo(uti, kUTTypePNG) {
-//                return "image/png";
-//            }
-//            if UTTypeConformsTo(uti, kUTTypeJPEG) || UTTypeConformsTo(uti, kUTTypeJPEG2000) {
-//                return "image/jpeg";
-//            }
-//            if UTTypeConformsTo(uti, kUTTypeGIF) {
-//                return "image/gif";
-//            }
-//        }
-//        if UTTypeConformsTo(uti, kUTTypeMovie) || UTTypeConformsTo(uti, kUTTypeVideo) {
-//            if UTTypeConformsTo(uti, kUTTypeMPEG2Video) {
-//                return "video/mpeg";
-//            }
-//            if UTTypeConformsTo(uti, kUTTypeMPEG4) {
-//                return "video/mp4";
-//            }
-//            if UTTypeConformsTo(uti, kUTTypeAVIMovie) {
-//                return "video/x-msvideo";
-//            }
-//        }
-//
-//        return nil;
+
+        return UTTypeCopyPreferredTagWithClass(uti as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as String?;
     }
     
     func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {

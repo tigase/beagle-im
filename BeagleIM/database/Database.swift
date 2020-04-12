@@ -409,9 +409,9 @@ open class DBStatement {
                     guard code == SQLITE_CANTOPEN && i < 5 else {
                         throw DBResult.error(message: message, code: code, statement: statement);
                     }
-                    os_log(OSLogType.error, "Executing SQL statement returned result: %d, try: %d, message: %s", code, i, message);
+                    os_log(OSLogType.error, log: .sqlite, "Executing SQL statement returned result: %d, try: %d, message: %s", code, i, message);
                     if let path = self.connection.path {
-                        os_log(OSLogType.error, "Checking access to database file %s, exists: %s, read: %s, write: %s", path, FileManager.default.fileExists(atPath: path) ? "true" : "false", FileManager.default.isReadableFile(atPath: path) ? "true" : "false", FileManager.default.isWritableFile(atPath: path) ? "true" : "false");
+                        os_log(OSLogType.error, log: .sqlite, "Checking access to database file %s, exists: %s, read: %s, write: %s", path, FileManager.default.fileExists(atPath: path) ? "true" : "false", FileManager.default.isReadableFile(atPath: path) ? "true" : "false", FileManager.default.isWritableFile(atPath: path) ? "true" : "false");
                     }
                     usleep(10 * 1000);
                 }
@@ -430,9 +430,9 @@ open class DBStatement {
                     guard code == SQLITE_CANTOPEN && i < 5 else {
                         throw DBResult.error(message: message, code: code, statement: statement);
                     }
-                    os_log(OSLogType.error, "Executing SQL statement returned result: %d, try: %d, message: %s", code, i, message);
+                    os_log(OSLogType.error, log: .sqlite, "Executing SQL statement returned result: %d, try: %d, message: %s", code, i, message);
                     if let path = self.connection.path {
-                        os_log(OSLogType.error, "Checking access to database file %s, exists: %s, read: %s, write: %s", path, FileManager.default.fileExists(atPath: path) ? "true" : "false", FileManager.default.isReadableFile(atPath: path) ? "true" : "false", FileManager.default.isWritableFile(atPath: path) ? "true" : "false");
+                        os_log(OSLogType.error, log: .sqlite, "Checking access to database file %s, exists: %s, read: %s, write: %s", path, FileManager.default.fileExists(atPath: path) ? "true" : "false", FileManager.default.isReadableFile(atPath: path) ? "true" : "false", FileManager.default.isWritableFile(atPath: path) ? "true" : "false");
                     }
                     usleep(10 * 1000);
                 }

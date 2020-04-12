@@ -251,7 +251,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
         let nickname = self.nicknameField.stringValue;
         mixModule.join(channel: channel, withNick: nickname, completionHandler: { result in
             switch result {
-            case .success(let response):
+            case .success( _):
                 // we have joined, so all what we need to do is close this window
                 DispatchQueue.main.async {
                     self.close();
@@ -266,7 +266,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                         case .success(let channel):
                             mixModule.join(channel: channel, withNick: nickname, completionHandler: { result in
                                 switch result {
-                                case .success(let response):
+                                case .success( _):
                                     // we have joined, so all what we need to do is close this window
                                     DispatchQueue.main.async {
                                         self.close();
