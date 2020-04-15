@@ -55,6 +55,10 @@ class ChatViewDataSource {
         self.refreshData(unread: 0, completionHandler: nil);
     }
     
+    func position(withId: Int) -> Int {
+        return store.items.firstIndex(where: { $0.id == withId }) ?? 0;
+    }
+    
     func getItem(at row: Int) -> ChatViewItemProtocol? {
         let store = self.store;
         let item = store.item(at: row);

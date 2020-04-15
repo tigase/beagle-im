@@ -157,7 +157,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         lastTextChange = Date();
         self.change(chatState: .composing);
     }
-
+        
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         guard let item = dataSource.getItem(at: row) else {
             return nil;
@@ -169,7 +169,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         switch item {
         case is SystemMessage:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMessageSystemCellView"), owner: nil) as? ChatMessageSystemCellView {
-                cell.message.stringValue = "Unread messages";
+                cell.message.attributedString = NSAttributedString(string: "Unread messages");
                 return cell;
             }
             return nil;

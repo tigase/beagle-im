@@ -61,16 +61,19 @@ class ChatLinkPreviewCellView: NSTableCellView {
                 metadata!.originalURL = url;
                 isNew = true;
             }
+            metadata?.videoProvider = nil;
 //            if self.linkView == nil {
-                self.linkView = CustomLPLinkView(url: url);
-                linkView?.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
-                linkView?.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
-                linkView?.translatesAutoresizingMaskIntoConstraints = false;
+            let linkView = CustomLPLinkView(url: url);
+            linkView.translatesAutoresizingMaskIntoConstraints = false;
+            linkView.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
+            linkView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
   //          };
 
-            let linkView = self.linkView as! LPLinkView;
             linkView.metadata = metadata!;
 
+            self.linkView = linkView;
+
+            linkView.layout();
 
             if isNew && fetchPreviewIfNeeded {
                 MetadataCache.instance.generateMetadata(for: url, withId: "\(item.id)", completionHandler: { [weak linkView] meta1 in
@@ -78,6 +81,7 @@ class ChatLinkPreviewCellView: NSTableCellView {
                         return;
                     }
                     DispatchQueue.main.async {
+                        meta.videoProvider = nil;
                         linkView?.metadata = meta;                    
                     }
                 })

@@ -93,7 +93,7 @@ AAAAAAEGA
                                             </constraints>
                                             <buttonCell key="cell" type="square" title="12" bezelStyle="shadowlessSquare" image="NSUser" imagePosition="right" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="kmZ-Jc-EdG">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                <font key="font" metaFont="controlContent"/>
+                                                <font key="font" metaFont="system" size="12"/>
                                             </buttonCell>
                                             <connections>
                                                 <segue destination="8HN-y9-jjO" kind="popover" popoverAnchorView="3nN-eU-fLZ" popoverBehavior="t" preferredEdge="maxY" id="eal-RS-54K"/>
@@ -555,8 +555,8 @@ Gw
         <scene sceneID="Jgb-sx-LsO">
             <objects>
                 <viewController id="8HN-y9-jjO" customClass="ChannelParticipantsViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" misplaced="YES" id="tnC-1r-TeD">
-                        <rect key="frame" x="0.0" y="0.0" width="270" height="372"/>
+                    <view key="view" id="tnC-1r-TeD">
+                        <rect key="frame" x="0.0" y="0.0" width="258" height="368"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="BAD-0Q-HAX">
@@ -567,8 +567,8 @@ Gw
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
-                            <button misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Fwb-De-nek">
-                                <rect key="frame" x="234" y="343" width="16" height="16"/>
+                            <button translatesAutoresizingMaskIntoConstraints="NO" id="Fwb-De-nek">
+                                <rect key="frame" x="222" y="339" width="16" height="16"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="16" id="sf2-c5-SNK"/>
                                     <constraint firstAttribute="height" constant="16" id="x69-u9-7CM"/>
@@ -581,20 +581,20 @@ Gw
                                     <action selector="showInviteWindow:" target="8HN-y9-jjO" id="jM6-DT-7st"/>
                                 </connections>
                             </button>
-                            <scrollView misplaced="YES" borderType="none" autohidesScrollers="YES" horizontalLineScroll="30" horizontalPageScroll="10" verticalLineScroll="30" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="e9F-j6-Uae">
-                                <rect key="frame" x="10" y="41" width="250" height="294"/>
+                            <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="30" horizontalPageScroll="10" verticalLineScroll="30" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="e9F-j6-Uae">
+                                <rect key="frame" x="10" y="37" width="238" height="294"/>
                                 <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="ffH-9Q-bNy">
-                                    <rect key="frame" x="0.0" y="0.0" width="250" height="294"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="238" height="294"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" rowHeight="28" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" id="4bo-R4-vRT">
-                                            <rect key="frame" x="0.0" y="0.0" width="250" height="294"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="238" height="294"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <size key="intercellSpacing" width="3" height="2"/>
                                             <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                             <tableColumns>
-                                                <tableColumn width="247" minWidth="40" maxWidth="1000" id="b1S-AI-ZV2">
+                                                <tableColumn width="235" minWidth="40" maxWidth="1000" id="b1S-AI-ZV2">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -607,11 +607,11 @@ Gw
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView identifier="MixParticipantView" id="kGz-eY-akr" customClass="ChannelParticipantTableCellView" customModule="BeagleIM" customModuleProvider="target">
-                                                            <rect key="frame" x="1" y="1" width="247" height="28"/>
+                                                            <rect key="frame" x="1" y="1" width="235" height="28"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
-                                                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="rxM-gQ-f7g">
-                                                                    <rect key="frame" x="30" y="6" width="207" height="16"/>
+                                                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="rxM-gQ-f7g">
+                                                                    <rect key="frame" x="28" y="6" width="207" height="16"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="8VF-Tj-y0v">
                                                                         <font key="font" metaFont="system"/>
                                                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -655,7 +655,7 @@ Gw
                                     <constraint firstAttribute="height" constant="294" id="8if-Ax-t8W"/>
                                 </constraints>
                                 <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="AEU-Uz-Xw9">
-                                    <rect key="frame" x="0.0" y="278" width="239" height="16"/>
+                                    <rect key="frame" x="0.0" y="278" width="238" height="16"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="88y-cf-KqR">
@@ -663,8 +663,8 @@ Gw
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
-                            <button verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="buZ-ad-ivn">
-                                <rect key="frame" x="94" y="3" width="81" height="32"/>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="buZ-ad-ivn">
+                                <rect key="frame" x="85" y="3" width="89" height="32"/>
                                 <buttonCell key="cell" type="push" title="Manage" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="jBk-PJ-rEC">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -708,8 +708,8 @@ Gw
                         <rect key="frame" x="0.0" y="0.0" width="520" height="454"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="QWK-oB-xwe">
-                                <rect key="frame" x="18" y="418" width="131" height="16"/>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="QWK-oB-xwe">
+                                <rect key="frame" x="18" y="417" width="131" height="16"/>
                                 <textFieldCell key="cell" lineBreakMode="clipping" title="Edit channel details" id="9Pi-qU-Tf4">
                                     <font key="font" metaFont="systemBold"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>

@@ -24,7 +24,7 @@ import TigaseSwift
 
 class ChatInvitationCellView: BaseChatCellView {
     
-    @IBOutlet var message: NSTextField!;
+    @IBOutlet var message: MessageTextView!;
     @IBOutlet var acceptButton: NSButton!;
     
     @IBOutlet var defBottomButtonConstraint: NSLayoutConstraint?;
@@ -78,7 +78,7 @@ class ChatInvitationCellView: BaseChatCellView {
             }
         }
         msg.addAttribute(NSAttributedString.Key.font, value: self.message.font!, range: NSMakeRange(0, msg.length));
-        message.attributedStringValue = msg;
+        message.attributedString = msg;
     }
     
     @IBAction func acceptClicked(_ sender: Any) {

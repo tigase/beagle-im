@@ -26,13 +26,23 @@ import TigaseSwift
 class ChatMessageCellView: BaseChatCellView {
 
     var id: Int = 0;
+    var ts: Date?;
+    var sender: String?;
 
-    @IBOutlet var message: NSTextField!
+    @IBOutlet var message: MessageTextView!
 
+    override func set(senderName: String, attributedSenderName: NSAttributedString? = nil) {
+        super.set(senderName: senderName, attributedSenderName: attributedSenderName);
+        sender = senderName;
+    }
+    
     func set(message item: ChatMessage, nickname: String? = nil, keywords: [String]? = nil) {
         super.set(item: item);
+        ts = item.timestamp;
+        id = item.id;
         let messageBody = self.messageBody(item: item);
         let msg = NSMutableAttributedString(string: messageBody);
+        msg.addAttribute(.font, value: NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .light), range: NSRange(location: 0, length: msg.length));
         if let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue) {
         
             let matches = detector.matches(in: messageBody, range: NSMakeRange(0, messageBody.utf16.count));
@@ -51,7 +61,6 @@ class ChatMessageCellView: BaseChatCellView {
                 }
             }
         }
-        msg.addAttribute(NSAttributedString.Key.font, value: self.message.font!, range: NSMakeRange(0, msg.length));
 
         if Settings.enableMarkdownFormatting.bool() {
             Markdown.applyStyling(attributedString: msg, showEmoticons: Settings.showEmoticons.bool());
@@ -78,9 +87,9 @@ class ChatMessageCellView: BaseChatCellView {
         default:
             self.message.textColor = nil;//NSColor.textColor;
         }
-        self.message.attributedStringValue = msg;
+        self.message.attributedString = msg;
     }
-
+    
     fileprivate func messageBody(item: ChatMessage) -> String {
         guard let msg = item.encryption.message() else {
 //            guard let error = item.error else {

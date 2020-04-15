@@ -33,6 +33,8 @@
 		FE2DEDA023C5FC0F00AEF14F /* WebRTC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE2DED9E23C5FC0900AEF14F /* WebRTC.framework */; };
 		FE2DEDA123C5FC0F00AEF14F /* WebRTC.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE2DED9E23C5FC0900AEF14F /* WebRTC.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE2DEDA323C62D7100AEF14F /* incomingCall.aiff in Resources */ = {isa = PBXBuildFile; fileRef = FE2DEDA223C62D7000AEF14F /* incomingCall.aiff */; };
+		FE30309A24438ED6003B9D76 /* MessageTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30309924438ED6003B9D76 /* MessageTextView.swift */; };
+		FE30309C244612A8003B9D76 /* ConversationLogSelectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30309B244612A8003B9D76 /* ConversationLogSelectionManager.swift */; };
 		FE30D8AD214C2D7100670BEC /* RosterViewController_ContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8AC214C2D7100670BEC /* RosterViewController_ContextMenu.swift */; };
 		FE30D8AF214C3B7600670BEC /* NSImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8AE214C3B7600670BEC /* NSImage.swift */; };
 		FE30D8B1214CE93600670BEC /* FormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8B0214CE93600670BEC /* FormView.swift */; };
@@ -244,6 +246,8 @@
 		FE2DED8F23C5C6B300AEF14F /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebRTC.framework; path = "../../../../../Volumes/Dane/Users/andrzej/test/webrtc-checkout/src/outios/WebRTC.framework"; sourceTree = "<group>"; };
 		FE2DED9E23C5FC0900AEF14F /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
 		FE2DEDA223C62D7000AEF14F /* incomingCall.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = incomingCall.aiff; sourceTree = "<group>"; };
+		FE30309924438ED6003B9D76 /* MessageTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageTextView.swift; sourceTree = "<group>"; };
+		FE30309B244612A8003B9D76 /* ConversationLogSelectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationLogSelectionManager.swift; sourceTree = "<group>"; };
 		FE30D8AC214C2D7100670BEC /* RosterViewController_ContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RosterViewController_ContextMenu.swift; sourceTree = "<group>"; };
 		FE30D8AE214C3B7600670BEC /* NSImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSImage.swift; sourceTree = "<group>"; };
 		FE30D8B0214CE93600670BEC /* FormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormView.swift; sourceTree = "<group>"; };
@@ -518,6 +522,7 @@
 				FE2ACA852355C5DA004623BC /* NSTableViewCustomGrid.swift */,
 				FEB5B4E0235DB57F00DE6AAD /* NSWindowCloseOnEsc.swift */,
 				FEC336EE2408FCD800EC1A0D /* ParticipantsButton.swift */,
+				FE30309924438ED6003B9D76 /* MessageTextView.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -589,6 +594,7 @@
 				FEF9EC46242F8BBC0090C913 /* ChatInvitation.swift */,
 				FEF9EC48242F8D620090C913 /* BaseChatCellView.swift */,
 				FEF9EC4A242F97840090C913 /* AppendixProtocol.swift */,
+				FE30309B244612A8003B9D76 /* ConversationLogSelectionManager.swift */,
 			);
 			path = chat;
 			sourceTree = "<group>";
@@ -1001,6 +1007,7 @@
 				FE4E8DDA215EA4860010D88E /* HttpFileUploadEventHandler.swift in Sources */,
 				FED7AEC321415CB8001E164B /* AvatarManager.swift in Sources */,
 				FE83E363217A3809001DEF09 /* JingleManager.swift in Sources */,
+				FE30309C244612A8003B9D76 /* ConversationLogSelectionManager.swift in Sources */,
 				FE10BCED23FAA86900E214F3 /* InvitationCellView.swift in Sources */,
 				FEB5B4E1235DB57F00DE6AAD /* NSWindowCloseOnEsc.swift in Sources */,
 				FE4D21382223FEE70058B662 /* PEPBookmarksModule_extension.swift in Sources */,
@@ -1052,6 +1059,7 @@
 				FEC336FB240EC66000EC1A0D /* CreateChannelView.swift in Sources */,
 				FE5C6B2722897F1B003DAB30 /* ServiceDiscoveryViewController.swift in Sources */,
 				FE9CB7022388382A008F1049 /* BlockedEventHandler.swift in Sources */,
+				FE30309A24438ED6003B9D76 /* MessageTextView.swift in Sources */,
 				FE3AA0CD2154069D001667A9 /* ChatsListGroupGroupchat.swift in Sources */,
 				FED7AEC521417328001E164B /* AvatarStore.swift in Sources */,
 				FE6E6BFA21384D5F003B1696 /* AccountManager.swift in Sources */,
