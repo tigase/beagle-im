@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="16096"/>
@@ -403,8 +403,8 @@ CA
         <!--Chats Window-->
         <scene sceneID="R2V-B0-nI4">
             <objects>
-                <windowController showSeguePresentationStyle="single" id="B8D-0N-5wS" userLabel="Chats Window" customClass="ChatsWindowController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
-                    <window key="window" title="Chats" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="ChatsWindow" animationBehavior="default" titlebarAppearsTransparent="YES" titleVisibility="hidden" id="IQv-IB-iLA" userLabel="Chats">
+                <windowController storyboardIdentifier="ChatsWindowController" showSeguePresentationStyle="single" id="B8D-0N-5wS" userLabel="Chats Window" customClass="ChatsWindowController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
+                    <window key="window" title="Chats" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="" animationBehavior="default" titlebarAppearsTransparent="YES" titleVisibility="hidden" id="IQv-IB-iLA" userLabel="Chats">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" fullSizeContentView="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="196" y="240" width="800" height="600"/>
@@ -429,7 +429,7 @@ CA
                         <splitViewItem holdingPriority="255" behavior="contentList" id="GS7-Di-2kN"/>
                         <splitViewItem holdingPriority="200" id="gL4-0l-F41"/>
                     </splitViewItems>
-                    <splitView key="splitView" dividerStyle="thin" vertical="YES" id="u0Z-sZ-seg">
+                    <splitView key="splitView" autosaveName="ChatsWindowSplitView" dividerStyle="thin" vertical="YES" id="u0Z-sZ-seg">
                         <rect key="frame" x="0.0" y="0.0" width="450" height="300"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <connections>
@@ -2170,7 +2170,7 @@ Gw
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="bzV-jx-BVK">
                                                                     <rect key="frame" x="46" y="2" width="94" height="13"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="user@domain.com" id="VGT-gv-U2i">
-                                                                        <font key="font" metaFont="system" size="10"/>
+                                                                        <font key="font" metaFont="menu" size="10"/>
                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
@@ -2178,7 +2178,7 @@ Gw
                                                                 <textField horizontalHuggingPriority="252" verticalHuggingPriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="LHG-c9-M39">
                                                                     <rect key="frame" x="401" y="2" width="72" height="13"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingMiddle" title="using account" id="ROY-5k-SBe">
-                                                                        <font key="font" metaFont="system" size="10"/>
+                                                                        <font key="font" metaFont="menu" size="10"/>
                                                                         <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
@@ -3548,6 +3548,9 @@ Gw
         <image name="NSUser" width="32" height="32"/>
         <image name="audioCall" width="30" height="30"/>
         <image name="videoCall" width="30" height="30"/>
+        <namedColor name="chatBackgroundColor">
+            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
         <namedColor name="chatBackgroundColor">
             <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

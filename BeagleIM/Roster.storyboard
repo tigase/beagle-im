@@ -320,7 +320,7 @@
                             <textField horizontalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="yYL-kB-0WR">
                                 <rect key="frame" x="18" y="66" width="220" height="42"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Enter contact details:" id="n57-KC-z4m">
-                                    <font key="font" metaFont="controlContent"/>
+                                    <font key="font" metaFont="system" size="12"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
@@ -426,7 +426,7 @@ Gw
         <!--Roster Window Controller-->
         <scene sceneID="XYQ-CH-kbi">
             <objects>
-                <windowController storyboardIdentifier="RosterWindowController" showSeguePresentationStyle="single" id="7hM-hS-MjA" userLabel="Roster Window Controller" sceneMemberID="viewController">
+                <windowController storyboardIdentifier="RosterWindowController" showSeguePresentationStyle="single" id="7hM-hS-MjA" userLabel="Roster Window Controller" customClass="RosterWindowController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
                     <window key="window" title="Contacts" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="" animationBehavior="default" titlebarAppearsTransparent="YES" titleVisibility="hidden" id="cDT-Yv-76r" customClass="NSWindowCloseOnEsc" customModule="BeagleIM" customModuleProvider="target">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>

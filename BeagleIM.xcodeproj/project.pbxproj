@@ -35,6 +35,7 @@
 		FE2DEDA323C62D7100AEF14F /* incomingCall.aiff in Resources */ = {isa = PBXBuildFile; fileRef = FE2DEDA223C62D7000AEF14F /* incomingCall.aiff */; };
 		FE30309A24438ED6003B9D76 /* MessageTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30309924438ED6003B9D76 /* MessageTextView.swift */; };
 		FE30309C244612A8003B9D76 /* ConversationLogSelectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30309B244612A8003B9D76 /* ConversationLogSelectionManager.swift */; };
+		FE30309E2447517A003B9D76 /* RosterWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30309D2447517A003B9D76 /* RosterWindowController.swift */; };
 		FE30D8AD214C2D7100670BEC /* RosterViewController_ContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8AC214C2D7100670BEC /* RosterViewController_ContextMenu.swift */; };
 		FE30D8AF214C3B7600670BEC /* NSImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8AE214C3B7600670BEC /* NSImage.swift */; };
 		FE30D8B1214CE93600670BEC /* FormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8B0214CE93600670BEC /* FormView.swift */; };
@@ -248,6 +249,7 @@
 		FE2DEDA223C62D7000AEF14F /* incomingCall.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = incomingCall.aiff; sourceTree = "<group>"; };
 		FE30309924438ED6003B9D76 /* MessageTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageTextView.swift; sourceTree = "<group>"; };
 		FE30309B244612A8003B9D76 /* ConversationLogSelectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationLogSelectionManager.swift; sourceTree = "<group>"; };
+		FE30309D2447517A003B9D76 /* RosterWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RosterWindowController.swift; sourceTree = "<group>"; };
 		FE30D8AC214C2D7100670BEC /* RosterViewController_ContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RosterViewController_ContextMenu.swift; sourceTree = "<group>"; };
 		FE30D8AE214C3B7600670BEC /* NSImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSImage.swift; sourceTree = "<group>"; };
 		FE30D8B0214CE93600670BEC /* FormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormView.swift; sourceTree = "<group>"; };
@@ -779,6 +781,7 @@
 				FE30D8AC214C2D7100670BEC /* RosterViewController_ContextMenu.swift */,
 				FE30D8B2214CF15700670BEC /* AddContactController.swift */,
 				FEF9EC502430B1F10090C913 /* PresenceAuthorizationRequestController.swift */,
+				FE30309D2447517A003B9D76 /* RosterWindowController.swift */,
 			);
 			path = roster;
 			sourceTree = "<group>";
@@ -1086,6 +1089,7 @@
 				FE6E6C0121384D5F003B1696 /* ChatsWindowController.swift in Sources */,
 				FE3AA0D3215409B8001667A9 /* DBRoomStore.swift in Sources */,
 				FE2ACA8023546C4B004623BC /* NSString_extensions.swift in Sources */,
+				FE30309E2447517A003B9D76 /* RosterWindowController.swift in Sources */,
 				FE5BE64C213AC3EA00463183 /* ChatsCellViewCloseButton.swift in Sources */,
 				FE3AA0D12154077D001667A9 /* ChatsListGroupAbstractChat.swift in Sources */,
 				FE5C6B2B228C119A003DAB30 /* ExecuteAdHocCommandController.swift in Sources */,

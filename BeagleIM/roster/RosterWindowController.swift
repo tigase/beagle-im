@@ -1,8 +1,8 @@
 //
-// ChatsWindowController.swift
+// RosterWindowController.swift
 //
 // BeagleIM
-// Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2020 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 import AppKit
 
-class ChatsWindowController: NSWindowController, NSWindowDelegate {
+class RosterWindowController: NSWindowController, NSWindowDelegate {
     
     required init?(coder: NSCoder) {
         super.init(coder: coder);
@@ -30,8 +30,8 @@ class ChatsWindowController: NSWindowController, NSWindowDelegate {
     override func windowDidLoad() {
         super.windowDidLoad();
         self.window?.titleVisibility = .hidden;
-        self.windowFrameAutosaveName = "ChatsWindow";
-        self.window?.setFrameAutosaveName("ChatsWindow");
+        self.windowFrameAutosaveName = "RosterWindow";
+        self.window?.setFrameAutosaveName("RosterWindow");
     }
     
 }

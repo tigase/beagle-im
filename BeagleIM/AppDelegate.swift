@@ -68,7 +68,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     })();
     
     fileprivate var statusItem: NSStatusItem?;
-    fileprivate(set) var mainWindowController: NSWindowController?;
+    lazy var mainWindowController: NSWindowController? = { NSStoryboard(name: "Main", bundle: nil).instantiateController(withIdentifier: "ChatsWindowController") as! NSWindowController }();
+    
     var rosterWindow: NSWindow {
         get {
             if let rosterWindow = NSApplication.shared.windows.first(where: { (window) -> Bool in
@@ -76,7 +77,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             }) {
                 return rosterWindow;
             }
-            let rosterWindowController = mainWindowController?.storyboard?.instantiateController(withIdentifier: "RosterWindowController") as? NSWindowController;
+            let rosterWindowController = NSStoryboard(name: "Roster", bundle: nil).instantiateController(withIdentifier: "RosterWindowController") as? NSWindowController;
             rosterWindowController!.showWindow(self);
             return rosterWindowController!.window!;
         }
@@ -158,8 +159,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         NotificationCenter.default.addObserver(self, selector: #selector(updateStatusItem(_:)), name: XmppService.STATUS_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(unreadMessagesCountChanged), name: DBChatStore.UNREAD_MESSAGES_COUNT_CHANGED, object: nil);
         
-        self.mainWindowController = NSApplication.shared.windows[0].windowController;
-        
         if #available(OSX 10.14, *) {
             UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (result, error) in
                 print("could not get authorization for notifications", result, error as Any);
@@ -229,6 +228,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         NSApp.mainMenu?.item(withTitle: "Window")?.submenu?.delegate = self;
                 
         scheduleHourlyTimer();
+        for windowName in UserDefaults.standard.stringArray(forKey: "openedWindows") ?? ["chats"] {
+            switch windowName {
+            case "chats":
+                self.mainWindowController?.showWindow(self);
+            case "roster":
+                self.rosterWindow.windowController?.showWindow(self);
+            default:
+                break;
+            }
+        }
     }
     
     @objc func handleAppleEvent(event: NSAppleEventDescriptor, replyEvent: NSAppleEventDescriptor) {
@@ -382,6 +391,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         NSAppleEventManager.shared().removeEventHandler(forEventClass: AEEventClass(kInternetEventClass), andEventID: AEEventID(kAEGetURL))
         
         XmppService.instance.disconnectClients();
+        
+        let openedWindows = NSApp.windows.map { (window) -> String? in
+            guard let windowController = window.windowController else {
+                guard let contentView = window.contentViewController else {
+                    return nil;
+                }
+                return contentView is RosterViewController ? "roster" : nil;
+
+            }
+            switch windowController {
+            case is ChatsWindowController:
+                return "chats";
+//            case is RosterWindowController:
+//                return "roster";
+            default:
+                return nil;
+            }
+        }.filter({ $0 != nil }).map({ $0! });
+        UserDefaults.standard.set(openedWindows, forKey: "openedWindows");
+        
         descheduleHourlyTimer();
         RTCCleanupSSL();
     }
@@ -479,7 +508,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             return controller != nil
         }).first(where: { (controller) -> Bool in
             return (controller?.contentViewController as? NSTabViewController) != nil
-        }) ?? mainWindowController?.storyboard?.instantiateController(withIdentifier: "PreferencesWindowController") as? NSWindowController;
+        }) ?? NSStoryboard(name: "Settings", bundle: nil).instantiateController(withIdentifier: "PreferencesWindowController") as? NSWindowController;
     }
     
     func userNotificationCenter(_ center: NSUserNotificationCenter, didActivate notification: NSUserNotification) {
