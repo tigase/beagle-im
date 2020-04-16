@@ -87,7 +87,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         switch item {
         case is SystemMessage:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMessageSystemCellView"), owner: nil) as? ChatMessageSystemCellView {
-                cell.message.attributedString = NSAttributedString(string: "Unread messages");
+                cell.message.attributedString = NSAttributedString(string: "Unread messages", attributes: [.font: NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium), .foregroundColor: NSColor.secondaryLabelColor]);
                 return cell;
             }
             return nil;

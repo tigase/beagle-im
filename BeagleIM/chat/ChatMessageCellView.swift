@@ -42,7 +42,7 @@ class ChatMessageCellView: BaseChatCellView {
         id = item.id;
         let messageBody = self.messageBody(item: item);
         let msg = NSMutableAttributedString(string: messageBody);
-        msg.addAttribute(.font, value: NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .light), range: NSRange(location: 0, length: msg.length));
+        msg.setAttributes([.font: NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .light), .foregroundColor: NSColor.textColor], range: NSRange(location: 0, length: msg.length));
         if let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue) {
         
             let matches = detector.matches(in: messageBody, range: NSMakeRange(0, messageBody.utf16.count));
