@@ -100,13 +100,18 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     }
     
     
-    
     func textDidChange(_ notification: Notification) {
         self.updateMessageFieldSize();
     }
     
     func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
         switch commandSelector {
+        case #selector(NSResponder.deleteToBeginningOfLine(_:)):
+            guard textView.textStorage?.length ?? 0 == 0 else {
+                return false;
+            }
+            NotificationCenter.default.post(name: ChatsListViewController.CLOSE_SELECTED_CHAT, object: nil);
+            return true;
         case #selector(NSResponder.insertNewline(_:)):
             guard !NSEvent.modifierFlags.contains(.shift) else {
                 return false;

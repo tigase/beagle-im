@@ -851,11 +851,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
     }
     
-    
-    @IBAction func closeChat(_ sender: Any) {
-        NotificationCenter.default.post(name: ChatsListViewController.CLOSE_SELECTED_CHAT, object: nil);
-    }
-    
     fileprivate var hourlyTimer: Foundation.Timer? = nil;
     
     func descheduleHourlyTimer() {

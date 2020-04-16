@@ -83,7 +83,7 @@
 CA
 </string>
                                             <connections>
-                                                <action selector="closeChat:" target="Voe-Tx-rLC" id="psw-1x-K8y"/>
+                                                <action selector="delete:" target="Ady-hI-5gd" id="eVQ-YR-LVt"/>
                                             </connections>
                                         </menuItem>
                                     </items>

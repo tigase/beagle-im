@@ -134,4 +134,6 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
         return (dragHandler?.performDragOperation?(sender) ?? false) || super.performDragOperation(sender);
     }
+    
+    
 }
