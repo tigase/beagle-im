@@ -51,6 +51,9 @@ class ConversationLogSelectionManager {
         guard controller?.view.window?.isKeyWindow ?? false else {
             return false;
         }
+        guard let testPoint = controller?.view.convert(event.locationInWindow, from: nil), controller?.view.visibleRect.contains(testPoint) ?? false else {
+            return false;
+        }
         guard let table = controller?.tableView, let superview = table.superview else {
             return false;
         }
@@ -160,7 +163,9 @@ class ConversationLogSelectionManager {
             }
         });
 
-        // TODO: handle double and tripple clicks!
+        guard (table.enclosingScrollView?.verticalScroller?.testPart(event.locationInWindow) ?? .noPart) == .noPart else {
+            return false;
+        }
         
         guard event.clickCount == 1 else {
             switch event.clickCount {
@@ -225,6 +230,7 @@ class ConversationLogSelectionManager {
             selectedItems.removeAll();
             return false;
         }
+        print("selection hitTest():", view, view.hitTest(view.superview!.convert(event.locationInWindow, from: nil)) as Any, (table.enclosingScrollView?.verticalScroller?.testPart(event.locationInWindow) ?? .noPart) == .noPart );
         selectionStart = SelectionPoint(entryId: itemId, timestamp: ts, location: idx);
         inProgress = true;
         if !selectedItems.contains(where: { $0.entryId == itemId }) {
@@ -430,244 +436,4 @@ class ConversationLogSelectionManager {
         var sender: String;
         var attributedString: NSAttributedString;
     }
-//        switch event.type {
-//        case .leftMouseDown:
-//
-//        default:
-//
-//        }
-        //        switch event.type {
-        //        case .mouseMoved:
-        //            if currentSession == nil {
-        //                guard let messageView = messageViewFor(event: event) else {
-        //                    NSCursor.pointingHand.pop();
-        //                    return isInMesageView(event: event);
-        //                }
-        //                if let idx = messageView.message.characterIndexFor(event: event)?.location, idx != 0 {
-        //                    if (messageView.message.attributedStringValue.attribute(.link, at: idx, effectiveRange: nil) as? URL) != nil {
-        //                        if NSCursor.current != NSCursor.pointingHand {
-        //                            NSCursor.pointingHand.push();
-        //                        }
-        //                    } else {
-        //                        NSCursor.pointingHand.pop();
-        //                    }
-        //                } else {
-        //                    NSCursor.pointingHand.pop();
-        //                }
-        //            }
-        //            return false;
-        //        case .leftMouseDown:
-        //            if currentSession != nil {
-        //                let visibleRows = self.tableView.rows(in: self.tableView.visibleRect);
-        //                for row in visibleRows.lowerBound..<visibleRows.upperBound {
-        //                    if let view = self.tableView.view(atColumn: 0, row: row, makeIfNecessary: false) as? ChatMessageCellView {
-        //                        let str = NSMutableAttributedString(attributedString: view.message.attributedStringValue);
-        //                        str.removeAttribute(.backgroundColor, range: NSRange(location: 0, length: str.length));
-        //                        view.message.attributedStringValue = str;
-        //                    }
-        //                }
-        //            }
-        //            currentSession = nil;
-        //
-        //            guard event.clickCount == 1 else {
-        //                if event.clickCount == 2 {
-        //                    guard let messageView = messageViewFor(event: event) else {
-        //                        return isInMesageView(event: event);
-        //                    }
-        //                    if let idx = messageView.message.characterIndexFor(event: event)?.location, idx != 0 {
-        //                        let str = messageView.message.stringValue;
-        //                        let clickIdx = str.index(str.startIndex, offsetBy: idx);
-        //                        let before = str[str.startIndex...clickIdx]
-        //                        let after = str[str.index(after: clickIdx)..<str.endIndex];
-        //                        let beforeIdx = before.lastIndex { (c) -> Bool in
-        //                            return !CharacterSet.alphanumerics.contains(c.unicodeScalars.first!);
-        //                        }
-        //                        let prefix = beforeIdx != nil ? before[before.index(after: beforeIdx!)..<before.endIndex] : before;
-        //                        let afterIdx = after.firstIndex { (c) -> Bool in
-        //                            return !CharacterSet.alphanumerics.contains(c.unicodeScalars.first!);
-        //                        }
-        //                        let suffix = (afterIdx != nil) ? ((afterIdx! != after.startIndex) ? after[after.startIndex...after.index(before: afterIdx!)] : nil) : after;
-        //                        print("got:", prefix, suffix as Any, "\(String(prefix))\(String(suffix ?? ""))");
-        //                        let attrStr = NSMutableAttributedString(attributedString: messageView.message.attributedStringValue);
-        //                        let len = (prefix.count + (suffix?.count ?? 0));
-        //                        attrStr.addAttribute(.backgroundColor, value: NSColor.selectedTextBackgroundColor, range: NSRange(location: before.count - prefix.count,  length: len));
-        //                        messageView.message.attributedStringValue = attrStr;
-        //                        self.currentSession = TextSelectionSession(messageView: messageView, selected: "\(String(prefix))\(String(suffix ?? ""))");
-        //                            return true;
-        //                        }
-        //                    }
-        //                    if event.clickCount == 3 {
-        //                        guard let messageView = messageViewFor(event: event) else {
-        //                            return isInMesageView(event: event);
-        //                        }
-        //                    if let idx = messageView.message.characterIndexFor(event: event)?.location, idx != 0 {
-        //                        let str = messageView.message.stringValue;
-        //                        let clickIdx = str.index(str.startIndex, offsetBy: idx);
-        //                        let before = str[str.startIndex...clickIdx]
-        //                        let after = str[str.index(after: clickIdx)..<str.endIndex];
-        //                        let beforeIdx = before.lastIndex { (c) -> Bool in
-        //                            return CharacterSet.newlines.contains(c.unicodeScalars.first!);
-        //                        }
-        //                        let prefix = beforeIdx != nil ? before[before.index(after: beforeIdx!)..<before.endIndex] : before;
-        //                        let afterIdx = after.firstIndex { (c) -> Bool in
-        //                            return CharacterSet.newlines.contains(c.unicodeScalars.first!);
-        //                        }
-        //                        let suffix = (afterIdx != nil && (afterIdx! != after.startIndex)) ? after[after.startIndex...after.index(before: afterIdx!)] : after;
-        //                        print("got:", prefix, suffix, "\(String(prefix))\(String(suffix))");
-        //                        let attrStr = NSMutableAttributedString(attributedString: messageView.message.attributedStringValue);
-        //                        let len = (prefix.count + suffix.count);
-        //                        attrStr.addAttribute(.backgroundColor, value: NSColor.selectedTextBackgroundColor, range: NSRange(location: before.count - prefix.count,  length: len));
-        //                        messageView.message.attributedStringValue = attrStr;
-        //                        self.currentSession = TextSelectionSession(messageView: messageView, selected: "\(String(prefix))\(String(suffix))");
-        //                        return true;
-        //                    }
-        //                }
-        //                //return false;
-        //                return false;
-        //            }
-        //
-        //            guard let messageView = messageViewFor(event: event) else {
-        //                return isInMesageView(event: event);
-        //            }
-        //
-        //            self.currentSession = SelectionSession(messageView: messageView, event: event);
-        //
-        //            return true;//currentSession != nil;
-        //        case .leftMouseUp:
-        //            NSCursor.pointingHand.pop();
-        //
-        //            guard let session = currentSession as? SelectionSession else {
-        //                return false;
-        //            }
-        //            if session.selected?.isEmpty ?? true {
-        //                currentSession = nil;
-        //            }
-        //
-        //            guard let messageView = messageViewFor(event: event) else {
-        //                return isInMesageView(event: event);
-        //            }
-        //
-        //            if let idx = messageView.message.characterIndexFor(event: event)?.location, idx != 0 {
-        //                if let link = messageView.message.attributedStringValue.attribute(.link, at: idx, effectiveRange: nil) as? URL {
-        //                    if session.position.location == idx && session.messageId == messageView.id {
-        //                        NSWorkspace.shared.open(link);
-        //                    }
-        //                    NSCursor.pointingHand.push();
-        //                }
-        //            }
-        //
-        //            return true;
-        //        case .leftMouseDragged:
-        //            guard let session = self.currentSession as? SelectionSession else {
-        //                return false;
-        //            }
-        //            NSCursor.pointingHand.pop();
-        //
-        //            let point = self.tableView.convert(event.locationInWindow, from: nil);
-        //            let currRow = self.tableView.row(at: point);
-        //            let startRow = self.tableView.row(at: self.tableView.convert(session.point, from: nil));
-        //            guard currRow >= 0 && startRow >= 0 else {
-        //                return false;
-        //            }
-        //            guard let messageView = messageViewFor(event: event) else {
-        //                return false;
-        //            }
-        //            guard let idx = messageView.message.characterIndexFor(event: event) else {
-        //                return false;
-        //            }
-        //
-        //            let visibleRows = self.tableView.rows(in: self.tableView.visibleRect);
-        //            for row in visibleRows.lowerBound..<visibleRows.upperBound {
-        //                if let view = self.tableView.view(atColumn: 0, row: row, makeIfNecessary: false) as? ChatMessageCellView {
-        //                    let str = NSMutableAttributedString(attributedString: view.message.attributedStringValue);
-        //                    str.removeAttribute(.backgroundColor, range: NSRange(location: 0, length: str.length));
-        //                    view.message.attributedStringValue = str;
-        //                }
-        //            }
-        //
-        //            let begin = max(startRow, currRow);
-        //            let end = min(startRow, currRow);
-        //            for row in end...begin {
-        //                if let view = self.tableView.view(atColumn: 0, row: row, makeIfNecessary: false) as? ChatMessageCellView {
-        //                    let str = NSMutableAttributedString(attributedString: view.message.attributedStringValue);
-        //                    str.removeAttribute(.backgroundColor, range: NSRange(location: 0, length: str.length));
-        //                    if row == begin {
-        //                        if row == end {
-        //                            let s1 = min(session.position, idx);
-        //                            let s2 = max(session.position, idx);
-        //                            //print("s1:", s1, "s2:", s2, "length:", (s2-s1) + 1);
-        //                            str.addAttribute(.backgroundColor, value: NSColor.selectedTextBackgroundColor, range: NSRange(location: s1.location, length: (s2.upperBound - s1.location)));
-        //                            print("str:", str, s1, s2, idx.length, str.length, str.string.last as Any);
-        //                        } else {
-        //                            let start = begin == startRow ? session.position : idx;
-        //                            str.addAttribute(.backgroundColor, value: NSColor.selectedTextBackgroundColor, range: NSRange(location: start.location, length: (str.length - start.location)));
-        //                        }
-        //                    } else if row == end {
-        //                        let start = end == startRow ? session.position : idx;
-        //                        str.addAttribute(.backgroundColor, value: NSColor.selectedTextBackgroundColor, range: NSRange(location: 0, length: start.upperBound));
-        //                    } else {
-        //                        str.addAttribute(.backgroundColor, value: NSColor.selectedTextBackgroundColor, range:   NSRange(location: 0, length: str.length));
-        //                    }
-        //                    view.message.attributedStringValue = str;
-        //                }
-        //            }
-        //
-        //            let range = tableView.rows(in: tableView.visibleRect);
-        //            let selected = dataSource.getItems(fromId: session.messageId, toId: messageView.id, inRange: range).filter { (item) -> Bool in
-        //                return item is ChatMessage;
-        //                }.map { (item) -> ChatMessage in
-        //                    return item as! ChatMessage;
-        //            }
-        //            if selected.count == 1 {
-        //                let s1 = min(session.position, idx);
-        //                let s2 = max(session.position, idx);
-        //                session.selection(selected, startOffset: s1.lowerBound, endOffset: s2.upperBound);
-        //            } else {
-        //                let inverted = (selected.first?.id ?? 0) != session.messageId;
-        //
-        //                session.selection(selected, startOffset: (inverted ? idx : session.position).lowerBound, endOffset: (inverted ? session.position : idx).upperBound);
-        //            }
-        //            return true;
-        //        case .rightMouseDown:
-        //            let point = self.view.convert(event.locationInWindow, from: nil);
-        //    //            print("point:", point, "frame:", self.tableView.enclosingScrollView?.frame);
-        //            guard self.tableView.enclosingScrollView?.frame.contains(point) ?? false else {
-        //                return false;
-        //            }
-        //            let menu = NSMenu(title: "Actions");
-        //            let tag = currentSession != nil ? -1 : (self.messageId(for: event) ?? -1);
-        //            if tag != -1 {
-        //                if let row = row(for: event) {
-        //                    self.prepareContextMenu(menu, forRow: row);
-        //                }
-        //            }
-        //            if tag != -1 || currentSession != nil {
-        //                var copy = menu.addItem(withTitle: "Copy text", action: #selector(copySelectedText), keyEquivalent: "");
-        //                copy.target = self;
-        //                copy.tag = tag;
-        //                copy = menu.addItem(withTitle: "Copy messages", action: #selector(copySelectedMessages), keyEquivalent: "");
-        //                copy.target = self;
-        //                copy.tag = tag;
-        //            }
-        //            if let messageView = messageViewFor(event: event) {
-        //                if let idx = messageView.message.characterIndexFor(event: event)?.location, idx != 0 {
-        //                    if let link = messageView.message.attributedStringValue.attribute(.link, at: idx, effectiveRange: nil) as? URL {
-        //                        let copy = menu.addItem(withTitle: "Copy link", action: #selector(copySelectedText), keyEquivalent: "");
-        //                        copy.target = self;
-        //                        copy.representedObject = link;
-        //                    }
-        //                }
-        //            }
-        //
-        //            if !menu.items.isEmpty {
-        //                NSMenu.popUpContextMenu(menu, with: event, for: self.tableView);
-        //            }
-        //            return true;
-        //        default:
-        //            break;
-        //        }
-        //        return false;
-        //    }
-
-    
 }

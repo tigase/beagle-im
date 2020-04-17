@@ -43,25 +43,7 @@ class ChatMessageCellView: BaseChatCellView {
         let messageBody = self.messageBody(item: item);
         let msg = NSMutableAttributedString(string: messageBody);
         msg.setAttributes([.font: NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .light), .foregroundColor: NSColor.textColor], range: NSRange(location: 0, length: msg.length));
-        if let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue) {
         
-            let matches = detector.matches(in: messageBody, range: NSMakeRange(0, messageBody.utf16.count));
-
-            matches.forEach { match in
-                if let url = match.url {
-                    msg.addAttribute(.link, value: url, range: match.range);
-                }
-                if let phoneNumber = match.phoneNumber {
-                    msg.addAttribute(.link, value: URL(string: "tel:\(phoneNumber.replacingOccurrences(of: " ", with: "-"))")!, range: match.range);
-                }
-                if let address = match.components {
-                    let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
-                    let mapUrl = URL(string: "http://maps.apple.com/?q=\(query!)")!;
-                    msg.addAttribute(.link, value: mapUrl, range: match.range);
-                }
-            }
-        }
-
         if Settings.enableMarkdownFormatting.bool() {
             Markdown.applyStyling(attributedString: msg, showEmoticons: Settings.showEmoticons.bool());
         }
@@ -88,6 +70,44 @@ class ChatMessageCellView: BaseChatCellView {
             self.message.textColor = nil;//NSColor.textColor;
         }
         self.message.attributedString = msg;
+        autodetectLinksAndData(messageBody: msg.string);
+    }
+    
+    private func autodetectLinksAndData(messageBody: String) {
+        let id = self.id;
+        DispatchQueue.global(qos: .userInteractive).async { [weak self] in
+            guard self != nil else {
+                return;
+            }
+            if let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue) {
+
+                let matches = detector.matches(in: messageBody, range: NSMakeRange(0, messageBody.utf16.count));
+                guard !matches.isEmpty else {
+                    return;
+                }
+                DispatchQueue.main.async { [weak self] in
+                    guard let that = self, that.id == id, let textStorage = that.message.textStorage else {
+                        return;
+                    }
+                    textStorage.beginEditing();
+                    matches.forEach { match in
+                        if let url = match.url {
+                            textStorage.addAttribute(.link, value: url, range: match.range);
+                        }
+                        if let phoneNumber = match.phoneNumber {
+                            textStorage.addAttribute(.link, value: URL(string: "tel:\(phoneNumber.replacingOccurrences(of: " ", with: "-"))")!, range: match.range);
+                        }
+                        if let address = match.components {
+                            let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
+                            let mapUrl = URL(string: "http://maps.apple.com/?q=\(query!)")!;
+                            textStorage.addAttribute(.link, value: mapUrl, range: match.range);
+                        }
+                    }
+                    textStorage.endEditing();
+                    that.message.setNeedsDisplay(that.message.visibleRect);
+                }
+            }
+        }
     }
     
     fileprivate func messageBody(item: ChatMessage) -> String {

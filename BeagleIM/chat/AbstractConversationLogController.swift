@@ -87,12 +87,16 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
         scrollChatToMessageWithId = nil;
         selectionManager.initilizeHandlers(controller: self);
 
-        NotificationCenter.default.addObserver(self, selector: #selector(willStartLiveScroll(_:)), name: NSScrollView.willStartLiveScrollNotification, object: self.tableView.enclosingScrollView);
         NotificationCenter.default.addObserver(self, selector: #selector(didEndLiveScroll(_:)), name: NSScrollView.didEndLiveScrollNotification, object: self.tableView.enclosingScrollView);
         NotificationCenter.default.addObserver(self, selector: #selector(scrolledRowToVisible(_:)), name: ChatViewTableView.didScrollRowToVisible, object: self.tableView);
         NotificationCenter.default.addObserver(self, selector: #selector(didBecomeKeyWindow), name: NSWindow.didBecomeKeyNotification, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(hourChanged), name: AppDelegate.HOUR_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(boundsChange), name: NSView.boundsDidChangeNotification, object: self.tableView.enclosingScrollView?.contentView);
+    }
+    
+    override func viewDidAppear() {
+        super.viewDidAppear();
+        prevBounds = self.tableView.bounds;
     }
     
     override func viewWillDisappear() {
@@ -150,48 +154,15 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
         DBChatHistoryStore.instance.markAsRead(for: self.account, with: self.jid, before: since);
     }
     
-    func messageViewFor(event: NSEvent) -> ChatMessageCellView? {
-        guard let contentView = event.window?.contentView else {
-            return nil;
-        }
-        let point = contentView.convert(event.locationInWindow, to: nil);
-        guard let textView = contentView.hitTest(point) as? NSTextField else {
-            return nil;
-        }
-        guard let view = textView.superview as? ChatMessageCellView else {
-            return nil;
-        }
-        return view;
-    }
-    
-    func isInMesageView(event: NSEvent) -> Bool {
-        guard let contentView = event.window?.contentView else {
-            return false;
-        }
-        let point = contentView.convert(event.locationInWindow, to: nil);
-        return contentView.hitTest(point) is ChatMessageCellView;
-    }
-    
     @objc func didBecomeKeyWindow(_ notification: Notification) {
         if chat.unread > 0 {
             markAsReadUpToNewestVisibleRow();
         }
     }
     
-    private var prevVisibleRect: NSRect = .zero;
-    private var prevVisibleRowId: Int = NSNotFound;
     private var prevBounds: NSRect = .zero;
     
-    private var isLiveScroll: Bool = false;
-    
-    @objc func willStartLiveScroll(_ notification: Notification) {
-        isLiveScroll = true;
-    }
-    
     @objc func didEndLiveScroll(_ notification: Notification) {
-        isLiveScroll = false;
-        prevVisibleRect = tableView.visibleRect;
-        prevVisibleRowId = dataSource.getItem(at: tableView.row(at: prevVisibleRect.origin))?.id ?? NSNotFound;
         markAsReadUpToNewestVisibleRow();
     }
     
@@ -199,17 +170,14 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
         if chat.unread > 0 {
             markAsReadUpToNewestVisibleRow();
         }
-        if !isLiveScroll && !selectionManager.inProgress {
-            // good for newest entry, but not if the entry has moved from the row 0
-            if prevVisibleRect.contains(CGPoint.zero) || prevVisibleRowId == NSNotFound {
-                print("scroll to prev rect:", prevVisibleRect)
-                self.tableView.scrollToVisible(prevVisibleRect);
-            } else {
-                print("scroll to prev row id:", prevVisibleRowId);
-                self.tableView.scrollRowToVisible(dataSource.position(withId: prevVisibleRowId));
+        if prevBounds.width != self.tableView.bounds.width {
+            if tableView.rows(in: tableView.visibleRect).contains(0) {
+                DispatchQueue.main.async { [weak self] in
+                    self?.tableView.scrollRowToVisible(0);
+                }
             }
         }
-        prevVisibleRect = self.tableView.visibleRect;
+        prevBounds = self.tableView.bounds;
     }
 
     func itemAdded(at rows: IndexSet, shouldScroll scroll: Bool = true) {
