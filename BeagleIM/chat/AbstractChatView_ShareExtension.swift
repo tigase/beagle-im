@@ -127,9 +127,11 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
     
     func uploadFileToHttpServerWithErrorHandling(url: URL, onSuccess: @escaping (UploadResult)->Void) {
         let contentType = guessContentType(of: url);
-        let data = try! Data(contentsOf: url);
-        
-        self.uploadFileToHttpServerWithErrorHandling(data: data, filename: url.lastPathComponent, mimeType: contentType, onSuccess: onSuccess);
+        if let data = try? Data(contentsOf: url) {
+            self.uploadFileToHttpServerWithErrorHandling(data: data, filename: url.lastPathComponent, mimeType: contentType, onSuccess: onSuccess);
+        } else {
+            onSuccess(.failure(error: .undefined_condition, errorMessage: "It was not possible access selected file!"));
+        }
     }
     
     func uploadFileToHttpServerWithErrorHandling(data: Data, filename: String, mimeType: String?, onSuccess: @escaping (UploadResult)->Void) {
