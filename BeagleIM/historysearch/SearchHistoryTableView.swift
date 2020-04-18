@@ -1,8 +1,8 @@
 //
-// ChatViewDataSourceDelegate.swift
+// SearchHistoryTableView.swift
 //
 // BeagleIM
-// Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2020 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,26 +19,16 @@
 // If not, see https://www.gnu.org/licenses/.
 //
 
-import Foundation
-import TigaseSwift
+import AppKit
 
-protocol ChatViewDataSourceDelegate: class {
+class SearchHistoryTableView: NSTableView {
     
-    var account: BareJID! { get }
-    var jid: BareJID! { get }
-    var chat: DBChatProtocol! { get }
+    override func validateProposedFirstResponder(_ responder: NSResponder, for event: NSEvent?) -> Bool {
+        if responder is NSTextView {
+            return false;
+        } else {
+            return super.validateProposedFirstResponder(responder, for: event);
+        }
+    }
     
-    func itemAdded(at: IndexSet);
-
-    func itemsUpdated(forRowIndexes: IndexSet);
-    
-    func itemUpdated(indexPath: IndexPath);
-    
-    func itemsRemoved(at: IndexSet);
-    
-    func itemsReloaded();
-    
-    func isVisible(row: Int) -> Bool;
-    
-    func scrollRowToVisible(_ row: Int);
 }

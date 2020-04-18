@@ -30,7 +30,10 @@ class ChatMessageCellView: BaseChatCellView {
     var sender: String?;
 
     @IBOutlet var message: MessageTextView!
-
+        
+    func updateTextColor() {
+    }
+        
     override func set(senderName: String, attributedSenderName: NSAttributedString? = nil) {
         super.set(senderName: senderName, attributedSenderName: attributedSenderName);
         sender = senderName;
@@ -42,7 +45,7 @@ class ChatMessageCellView: BaseChatCellView {
         id = item.id;
         let messageBody = self.messageBody(item: item);
         let msg = NSMutableAttributedString(string: messageBody);
-        msg.setAttributes([.font: NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .light), .foregroundColor: NSColor.textColor], range: NSRange(location: 0, length: msg.length));
+        msg.setAttributes([.font: NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .light)], range: NSRange(location: 0, length: msg.length));
         
         if Settings.enableMarkdownFormatting.bool() {
             Markdown.applyStyling(attributedString: msg, showEmoticons: Settings.showEmoticons.bool());
@@ -69,7 +72,9 @@ class ChatMessageCellView: BaseChatCellView {
         default:
             self.message.textColor = nil;//NSColor.textColor;
         }
+        self.message.textColor = NSColor.controlTextColor;
         self.message.attributedString = msg;
+        updateTextColor();
         autodetectLinksAndData(messageBody: msg.string);
     }
     
@@ -119,6 +124,61 @@ class ChatMessageCellView: BaseChatCellView {
             return item.message;
         }
         return msg;
+    }
+
+}
+
+class ChatMessageSelectableCellView: ChatMessageCellView {
+    
+    var isEmphasized: Bool = false {
+        didSet {
+            updateTextColor();
+        }
+    }
+    
+    var isSelected: Bool = false {
+        didSet {
+            updateTextColor();
+        }
+    }
+    
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow();
+        if let window = self.window {
+            NotificationCenter.default.addObserver(self, selector: #selector(becomeKey(_:)), name: NSWindow.didBecomeKeyNotification, object: window);
+            NotificationCenter.default.addObserver(self, selector: #selector(resignKey(_:)), name: NSWindow.didResignKeyNotification, object: window);
+        }
+    }
+    
+    override func viewWillMove(toWindow newWindow: NSWindow?) {
+        if let window = self.window {
+            NotificationCenter.default.removeObserver(self, name: NSWindow.didBecomeKeyNotification, object: window);
+            NotificationCenter.default.removeObserver(self, name: NSWindow.didResignKeyNotification, object: window);
+        }
+        super.viewWillMove(toWindow: newWindow);
+    }
+    
+    @objc func becomeKey(_ notification: Notification) {
+        updateTextColor();
+    }
+    
+    @objc func resignKey(_ notification: Notification) {
+        updateTextColor();
+    }
+    
+    override var appearance: NSAppearance? {
+        didSet {
+            updateTextColor();
+        }
+    }
+    
+    override func updateTextColor() {
+        if isSelected && (window?.isKeyWindow ?? false) && self.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == NSAppearance.Name.aqua {
+            message.layoutManager!.setTemporaryAttributes([.foregroundColor: NSColor.controlBackgroundColor], forCharacterRange: NSRange(location: 0, length: message.textStorage!.length));
+        } else {
+            message.layoutManager!.removeTemporaryAttribute(.foregroundColor, forCharacterRange: NSRange(location: 0, length: message.textStorage!.length));
+        }
+        message.needsToDraw(message.visibleRect);
     }
 
 }

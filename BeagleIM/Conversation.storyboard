@@ -21,18 +21,18 @@
                                     <rect key="frame" x="0.0" y="0.0" width="333" height="417"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="none" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" enabled="NO" rowHeight="64" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" id="n3E-id-LN2" customClass="ChatViewTableView" customModule="BeagleIM" customModuleProvider="target">
+                                        <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="none" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="64" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" id="n3E-id-LN2" customClass="ChatViewTableView" customModule="BeagleIM" customModuleProvider="target">
                                             <rect key="frame" x="0.0" y="0.0" width="333" height="417"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="backgroundColor" name="chatBackgroundColor"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                             <tableColumns>
                                                 <tableColumn editable="NO" width="333" minWidth="40" maxWidth="4000" id="piU-CI-J2C">
-                                                    <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" enabled="NO" borderStyle="border">
+                                                    <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                     </tableHeaderCell>
-                                                    <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" enabled="NO" refusesFirstResponder="YES" title="Text Cell" id="Tzd-gW-Ac3">
+                                                    <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" refusesFirstResponder="YES" title="Text Cell" id="Tzd-gW-Ac3">
                                                         <font key="font" metaFont="system"/>
                                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="chatBackgroundColor"/>
@@ -61,13 +61,13 @@
                                                                 </textField>
                                                                 <textView horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" editable="NO" selectable="NO" drawsBackground="NO" verticallyResizable="YES" translatesAutoresizingMaskIntoConstraints="NO" id="JuY-h9-yrg" customClass="MessageTextView" customModule="BeagleIM" customModuleProvider="target">
                                                                     <rect key="frame" x="42" y="4" width="265" height="15"/>
-                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     <size key="maxSize" width="10000" height="10000"/>
                                                                     <attributedString key="textStorage">
                                                                         <fragment content="Some message to display from that person">
                                                                             <attributes>
-                                                                                <color key="NSColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                                <color key="NSColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                 <font key="NSFont" metaFont="systemLight" size="12"/>
                                                                                 <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
                                                                             </attributes>
@@ -126,13 +126,13 @@
                                                             <subviews>
                                                                 <textView horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" editable="NO" selectable="NO" drawsBackground="NO" verticallyResizable="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4qp-eQ-eZJ" customClass="MessageTextView" customModule="BeagleIM" customModuleProvider="target">
                                                                     <rect key="frame" x="42" y="4" width="265" height="15"/>
-                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     <size key="maxSize" width="10000" height="10000"/>
                                                                     <attributedString key="textStorage">
                                                                         <fragment content="Some message to display from that person">
                                                                             <attributes>
-                                                                                <color key="NSColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                                <color key="NSColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                 <font key="NSFont" metaFont="systemLight" size="12"/>
                                                                                 <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
                                                                             </attributes>
@@ -440,7 +440,7 @@
                                                             <rect key="frame" x="0.0" y="167" width="333" height="27"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
-                                                                <textView horizontalHuggingPriority="251" verticalHuggingPriority="750" editable="NO" selectable="NO" drawsBackground="NO" verticallyResizable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hGk-XK-U1c" customClass="MessageTextView" customModule="BeagleIM" customModuleProvider="target">
+                                                                <textView horizontalHuggingPriority="251" verticalHuggingPriority="750" editable="NO" selectable="NO" drawsBackground="NO" verticallyResizable="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hGk-XK-U1c" customClass="MessageTextView" customModule="BeagleIM" customModuleProvider="target">
                                                                     <rect key="frame" x="30" y="4" width="273" height="15"/>
                                                                     <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -487,15 +487,15 @@
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
                                                                 </textField>
-                                                                <textView horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" editable="NO" selectable="NO" drawsBackground="NO" verticallyResizable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6ID-f9-sVo" customClass="MessageTextView" customModule="BeagleIM" customModuleProvider="target">
-                                                                    <rect key="frame" x="42" y="25" width="265" height="17"/>
-                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <textView horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" editable="NO" selectable="NO" drawsBackground="NO" verticallyResizable="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6ID-f9-sVo" customClass="MessageTextView" customModule="BeagleIM" customModuleProvider="target">
+                                                                    <rect key="frame" x="42" y="27" width="265" height="15"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     <size key="maxSize" width="10000" height="10000"/>
                                                                     <attributedString key="textStorage">
                                                                         <fragment content="Some message to display from that person">
                                                                             <attributes>
-                                                                                <color key="NSColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                                <color key="NSColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                 <font key="NSFont" metaFont="systemLight" size="12"/>
                                                                                 <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
                                                                             </attributes>

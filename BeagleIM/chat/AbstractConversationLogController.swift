@@ -80,7 +80,11 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
             self.dataSource.refreshData(unread: chat.unread) { (firstUnread) in
                 DispatchQueue.main.async {
                     let unread = firstUnread ?? 0;//self.chat.unread;
-                    self.tableView.scrollRowToVisible(unread);
+                    if self.isVisible(row: unread) {
+                        self.tableView.scrollRowToVisible(0);
+                    } else {
+                        self.tableView.scrollRowToVisible(unread);
+                    }
                 }
             };
         }
@@ -180,15 +184,11 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
         prevBounds = self.tableView.bounds;
     }
 
-    func itemAdded(at rows: IndexSet, shouldScroll scroll: Bool = true) {
-        let shouldScroll = scroll && rows.contains(0) && tableView.rows(in: self.tableView.visibleRect).contains(0);
+    func itemAdded(at rows: IndexSet) {
         if dataSource.count == rows.count && rows.count > 1 {
             tableView.insertRows(at: rows, withAnimation: []);
         } else {
             tableView.insertRows(at: rows, withAnimation: NSTableView.AnimationOptions.effectFade)
-        }
-        if (shouldScroll) {
-            tableView.scrollRowToVisible(0);
         }
     }
     
@@ -209,6 +209,14 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
     
     func itemsReloaded() {
         tableView.reloadData();
+    }
+    
+    func isVisible(row: Int) -> Bool {
+        return tableView.rows(in:tableView.visibleRect).contains(row);
+    }
+    
+    func scrollRowToVisible(_ row: Int) {
+        tableView.scrollRowToVisible(row);
     }
 
     func numberOfRows(in tableView: NSTableView) -> Int {

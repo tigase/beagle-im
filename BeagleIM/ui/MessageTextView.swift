@@ -72,6 +72,7 @@ class MessageTextView: NSTextView, NSLayoutManagerDelegate {
         self.textContainer?.heightTracksTextView = true;
         self.textContainer?.lineFragmentPadding = 1;
         self.textContainerInset = .zero;
+        self.usesAdaptiveColorMappingForDarkAppearance = true;
     }
     
     func layoutManager(_ layoutManager: NSLayoutManager, didCompleteLayoutFor textContainer: NSTextContainer?, atEnd layoutFinishedFlag: Bool) {

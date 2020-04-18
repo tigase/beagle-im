@@ -21,7 +21,7 @@
 
 import AppKit
 
-class ConversationLogSelectionManager {
+class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
     
     private var mouseMonitor: Any?;
     private weak var controller: AbstractConversationLogController?;
@@ -33,7 +33,8 @@ class ConversationLogSelectionManager {
     
     func initilizeHandlers(controller: AbstractConversationLogController) {
         self.controller = controller;
-        mouseMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseDragged, .leftMouseUp, .rightMouseDown, .mouseMoved, .keyDown]) { [weak self] (event) -> NSEvent? in
+        (self.controller?.tableView as? ChatViewTableView)?.mouseDelegate = self;
+        mouseMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { [weak self] (event) -> NSEvent? in
             guard event.type != .keyDown else {
                 if let that = self {
                     if !that.selectedItems.isEmpty && event.modifierFlags.contains(.command) && event.characters?.first == "c" {

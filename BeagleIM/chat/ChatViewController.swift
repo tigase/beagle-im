@@ -525,10 +525,16 @@ class ChatViewTableView: NSTableView {
 
     static let didScrollRowToVisible = Notification.Name("ChatViewTableView::didScrollRowToVisible");
 
+    override var acceptsFirstResponder: Bool {
+        return true;
+    }
+    
+    weak var mouseDelegate: ChatViewTableViewMouseDelegate?;
+    
     override open var isFlipped: Bool {
         return false;
     }
-
+    
     override func reflectScrolledClipView(_ clipView: NSClipView) {
         super.reflectScrolledClipView(clipView);
         print("reflectScrolledClipView called!");
@@ -551,6 +557,43 @@ class ChatViewTableView: NSTableView {
             NotificationCenter.default.post(name: ChatViewTableView.didScrollRowToVisible, object: self);
         }
     }
+    
+    override func mouseDown(with event: NSEvent) {
+        if !(mouseDelegate?.handleMouse(event: event) ?? false) {
+            super.mouseDown(with: event);
+        }
+    }
+    
+    override func mouseUp(with event: NSEvent) {
+        if !(mouseDelegate?.handleMouse(event: event) ?? false) {
+            super.mouseUp(with: event);
+        }
+    }
+    
+    override func mouseDragged(with event: NSEvent) {
+        if !(mouseDelegate?.handleMouse(event: event) ?? false) {
+            super.mouseDragged(with: event);
+        }
+    }
+    
+    override func rightMouseDown(with event: NSEvent) {
+        if !(mouseDelegate?.handleMouse(event: event) ?? false) {
+            super.rightMouseDown(with: event);
+        }
+    }
+
+    override func validateProposedFirstResponder(_ responder: NSResponder, for event: NSEvent?) -> Bool {
+        if responder is NSTextView {
+            return false;
+        } else {
+            return super.validateProposedFirstResponder(responder, for: event);
+        }
+    }
+    
+}
+
+protocol ChatViewTableViewMouseDelegate: class {
+    func handleMouse(event: NSEvent) -> Bool;
 }
 
 class ChatViewStatusView: NSTextField {

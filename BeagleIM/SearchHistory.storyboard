@@ -52,7 +52,7 @@
                                     <rect key="frame" x="1" y="1" width="403" height="313"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" rowHeight="43" usesAutomaticRowHeights="YES" viewBased="YES" id="2ct-hz-mXu">
+                                        <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" rowHeight="43" usesAutomaticRowHeights="YES" viewBased="YES" id="2ct-hz-mXu" customClass="SearchHistoryTableView" customModule="BeagleIM" customModuleProvider="target">
                                             <rect key="frame" x="0.0" y="0.0" width="403" height="313"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <size key="intercellSpacing" width="3" height="2"/>
@@ -72,7 +72,7 @@
                                                     </textFieldCell>
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
-                                                        <tableCellView identifier="ChatMessageCellView" id="bFj-jT-4gP" customClass="ChatMessageCellView" customModule="BeagleIM" customModuleProvider="target">
+                                                        <tableCellView identifier="ChatMessageCellView" id="bFj-jT-4gP" customClass="ChatMessageSelectableCellView" customModule="BeagleIM" customModuleProvider="target">
                                                             <rect key="frame" x="1" y="1" width="400" height="43"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
@@ -94,13 +94,13 @@
                                                                 </textField>
                                                                 <textView horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" editable="NO" drawsBackground="NO" verticallyResizable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="khk-Wf-S4y" customClass="MessageTextView" customModule="BeagleIM" customModuleProvider="target">
                                                                     <rect key="frame" x="42" y="4" width="350" height="17"/>
-                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     <size key="maxSize" width="10000" height="10000"/>
                                                                     <attributedString key="textStorage">
                                                                         <fragment content="Some message to display from this perso">
                                                                             <attributes>
-                                                                                <color key="NSColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                                <color key="NSColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                 <font key="NSFont" metaFont="systemLight" size="12"/>
                                                                             </attributes>
                                                                         </fragment>
@@ -109,7 +109,7 @@
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="cEa-Qg-Q84">
                                                                     <rect key="frame" x="343" y="23" width="51" height="16"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="20:31:03" id="Jfs-fH-jds">
-                                                                        <font key="font" metaFont="label" size="11"/>
+                                                                        <font key="font" metaFont="message" size="11"/>
                                                                         <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>

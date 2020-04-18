@@ -127,6 +127,7 @@
 		FE9CB7022388382A008F1049 /* BlockedEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9CB7012388382A008F1049 /* BlockedEventHandler.swift */; };
 		FE9CDF0D2269E282001039C3 /* MessageEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9CDF0C2269E282001039C3 /* MessageEncryption.swift */; };
 		FE9E069A23A3976500952E9C /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E069923A3976500952E9C /* DownloadManager.swift */; };
+		FE9E1C41244B34C4003751AA /* SearchHistoryTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E1C40244B34C4003751AA /* SearchHistoryTableView.swift */; };
 		FEA2F53522E46A2E009F2E88 /* ShowRosterWindowSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2F53422E46A2E009F2E88 /* ShowRosterWindowSegue.swift */; };
 		FEA2F53722E5F6A2009F2E88 /* AdvancedSettingsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2F53622E5F6A2009F2E88 /* AdvancedSettingsController.swift */; };
 		FEA3D128233D0A10000BD20A /* TasksQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA3D127233D0A10000BD20A /* TasksQueue.swift */; };
@@ -342,6 +343,7 @@
 		FE9CDF0C2269E282001039C3 /* MessageEncryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEncryption.swift; sourceTree = "<group>"; };
 		FE9D88B3217652DF006CF0D9 /* BeagleIM-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BeagleIM-Bridging-Header.h"; sourceTree = "<group>"; };
 		FE9E069923A3976500952E9C /* DownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManager.swift; sourceTree = "<group>"; };
+		FE9E1C40244B34C4003751AA /* SearchHistoryTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchHistoryTableView.swift; sourceTree = "<group>"; };
 		FEA2F53422E46A2E009F2E88 /* ShowRosterWindowSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowRosterWindowSegue.swift; sourceTree = "<group>"; };
 		FEA2F53622E5F6A2009F2E88 /* AdvancedSettingsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedSettingsController.swift; sourceTree = "<group>"; };
 		FEA3D127233D0A10000BD20A /* TasksQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasksQueue.swift; sourceTree = "<group>"; };
@@ -447,6 +449,7 @@
 			isa = PBXGroup;
 			children = (
 				FE149D8422A515C900EE4E03 /* SearchHistoryController.swift */,
+				FE9E1C40244B34C4003751AA /* SearchHistoryTableView.swift */,
 			);
 			path = historysearch;
 			sourceTree = "<group>";
@@ -1018,6 +1021,7 @@
 				FE3AA0C92154062F001667A9 /* ChatsListGroupProtocol.swift in Sources */,
 				FED7AEC721418B83001E164B /* VCardManager.swift in Sources */,
 				FE6E6C0321384D5F003B1696 /* DBRosterStore.swift in Sources */,
+				FE9E1C41244B34C4003751AA /* SearchHistoryTableView.swift in Sources */,
 				FE988C19232C0A0C002D85AF /* ChangePasswordController.swift in Sources */,
 				FE5CAF982215BCD600FABD46 /* ScriptsManager.swift in Sources */,
 				FE34BBD52157DDF200775B07 /* MucModule_RoomError_extension.swift in Sources */,
