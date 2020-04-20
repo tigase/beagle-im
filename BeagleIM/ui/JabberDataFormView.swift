@@ -54,7 +54,7 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
             if oldConstraint != nil {
                 self.enclosingScrollView?.removeConstraint(oldConstraint!);
             }
-            os_log(OSLogType.debug, log: .ui, "document height: %@, size: %@", self.enclosingScrollView?.documentView?.frame.size.height ?? (-1.0 as CGFloat), self.enclosingScrollView?.contentSize.height ?? (-1.0 as CGFloat));
+            os_log(OSLogType.debug, log: .ui, "document height: %f, size: %f", self.enclosingScrollView?.documentView?.frame.size.height ?? (-1.0 as CGFloat), self.enclosingScrollView?.contentSize.height ?? (-1.0 as CGFloat));
         });
     }
     
