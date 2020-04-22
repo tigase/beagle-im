@@ -72,6 +72,12 @@ extension JingleManager {
             self.peerConnection?.close();
         }
         
+        func initiate(sid: String) {
+            if state == .created {
+                self.sid = sid;
+            }
+        }
+        
         func initiate(sid: String, contents: [Jingle.Content], bundle: [String]?) -> Bool {
             self.sid = sid;
             guard let client = self.client, let accountJid = ResourceBinderModule.getBindedJid(client.sessionObject), let jingleModule = self.jingleModule else {
@@ -126,9 +132,10 @@ extension JingleManager {
                 return false;
             }
 
+            let oldState = state;
             state = .disconnected;
             
-            if let jingleModule = self.jingleModule {
+            if oldState != .created, let jingleModule = self.jingleModule {
                 jingleModule.declineSession(with: jid, sid: sid);
             }
             
@@ -154,9 +161,10 @@ extension JingleManager {
                 return false;
             }
 
+            let oldState = state;
             state = .disconnected;
 
-            if let jingleModule: JingleModule = self.jingleModule {
+            if oldState != .created, let jingleModule: JingleModule = self.jingleModule {
                 jingleModule.terminateSession(with: jid, sid: sid);
             }
             

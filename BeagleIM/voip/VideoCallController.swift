@@ -44,23 +44,6 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         return AVCaptureDevice.authorizationStatus(for: .video) == .authorized;
     }
     
-    public static func accept(session: JingleManager.Session, sdpOffer: SDP) -> Bool {
-        guard !sdpOffer.contents.filter({ (content) -> Bool in
-            return (content.description?.media == "audio") || (content.description?.media == "video");
-        }).isEmpty else {
-            return false;
-        }
-        
-        guard VideoCallController.hasAudioSupport else {
-            return false;
-        }
-
-        open { (videoCallController) in
-            videoCallController.accept(session: session, sdpOffer: sdpOffer);
-        }
-        return true;
-    }
-    
     public static func open(completionHandler: @escaping (VideoCallController)->Void) {
         DispatchQueue.main.async {
             let windowController = NSStoryboard(name: "VoIP", bundle: nil).instantiateController(withIdentifier: "VideoCallWindowController") as! NSWindowController;
@@ -265,7 +248,21 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     var logger: RTCFileLogger?;
     var loggerFile: URL?;
     
-    func accept(session: JingleManager.Session, sdpOffer: SDP) {
+    private var media: [Media] = [];
+    
+    enum Media: String {
+        case audio
+        case video
+        
+        static func from(string: String?) -> Media? {
+            guard let v = string else {
+                return nil;
+            }
+            return Media(rawValue: v);
+        }
+    }
+    
+    func accept(session: JingleManager.Session, media: [Media], completionHandler: @escaping (Result<Void,ErrorCondition>)->Void) {
         loggerFile = FileManager.default.temporaryDirectory;
         logger = RTCFileLogger(dirPath: loggerFile!.path, maxFileSize: 20 * 1024 * 1024);
         logger?.start();
@@ -281,9 +278,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
             
             self.view.window?.title = "Call with \(name)"
             
-            let isVideo = VideoCallController.hasVideoSupport && sdpOffer.contents.first(where: { (content) -> Bool in
-                return content.description?.media == "video"
-            }) != nil;
+            let isVideo = media.contains(.video);
             
             self.initialize(connectionFactory: session.peerConnectionFactory, withAudio: true, withVideo: isVideo);
             
@@ -297,17 +292,21 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                 if isVideo {
                     switch response {
                     case .alertFirstButtonReturn:
-                        self.accept(session: session, sdpOffer: sdpOffer, withAudio: true, withVideo: true);
+                        self.media = media;
+                        completionHandler(.success(Void()));
                     case .alertSecondButtonReturn:
-                        self.accept(session: session, sdpOffer: sdpOffer, withAudio: true, withVideo: false);
+                        self.media = [.audio];
+                        completionHandler(.success(Void()));
                     default:
+                        completionHandler(.failure(.recipient_unavailable));
                         _ = session.decline();
                         self.closeWindow();
                     }
                 } else {
                     switch response {
                     case .alertFirstButtonReturn:
-                        self.accept(session: session, sdpOffer: sdpOffer, withAudio: true, withVideo: false);
+                        self.media = [.audio];
+                        completionHandler(.success(Void()));
                     default:
                         _ = session.decline();
                         self.closeWindow();
@@ -317,24 +316,26 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         }
     }
     
-    fileprivate func accept(session: JingleManager.Session, sdpOffer: SDP, withAudio: Bool, withVideo: Bool) {
-        session.initiated();
-        
+    func accepted(session: JingleManager.Session, sdpOffer: SDP) -> Bool {
         guard self.initiatePeerConnection(for: session) else {
             handle(error: .peerConnectionNotCreated, for: session);
-            return;
+            return true;
         }
         
         self.session = session;
-        
+                
         let sessDesc = RTCSessionDescription(type: .offer, sdp: sdpOffer.toString());
 
-        if !withVideo {
+        guard !self.media.isEmpty else {
+            return false;
+        }
+        
+        if !media.contains(.video) {
             self.localVideoCapturer?.stopCapture();
             self.localVideoCapturer = nil;
         }
         
-        self.initializeMedia(for: session, audio: withAudio, video: withVideo) { result in
+        self.initializeMedia(for: session, audio: media.contains(.audio), video: media.contains(.video)) { result in
             guard result else {
                 self.handle(error: .mediaInitializationFailed, for: session);
                 return;
@@ -347,10 +348,10 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                     DispatchQueue.main.async {
                         if (session.peerConnection?.configuration.sdpSemantics ?? RTCSdpSemantics.planB) == RTCSdpSemantics.unifiedPlan {
                             session.peerConnection?.transceivers.forEach({ transceiver in
-                                if !withAudio && transceiver.mediaType == .audio {
+                                if !self.media.contains(.audio) && transceiver.mediaType == .audio {
                                     transceiver.stop();
                                 }
-                                if !withVideo && transceiver.mediaType == .video {
+                                if !self.media.contains(.video) && transceiver.mediaType == .video {
                                     transceiver.stop();
                                 }
                             });
@@ -381,6 +382,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
 
             }
         }
+        return true;
     }
     
     func handle(error: PeerConnectionError, for session: JingleManager.Session) {
