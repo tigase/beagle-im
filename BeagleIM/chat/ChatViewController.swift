@@ -373,11 +373,41 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     }
 
     @IBAction func audioCallClicked(_ sender: Any) {
-        VideoCallController.call(jid: jid, from: account, withAudio: true, withVideo: false);
+        let call = Call(account: self.account, with: self.jid, sid: UUID().uuidString, direction: .outgoing, media: [.audio]);
+        CallManager.instance.reportOutgoingCall(call, completionHandler: self.handleCallInitiationResult(_:));
     }
 
     @IBAction func videoCallClicked(_ sender: NSButton) {
-        VideoCallController.call(jid: jid, from: account, withAudio: true, withVideo: true);
+        let call = Call(account: self.account, with: self.jid, sid: UUID().uuidString, direction: .outgoing, media: [.audio, .video]);
+        CallManager.instance.reportOutgoingCall(call, completionHandler: self.handleCallInitiationResult(_:));
+    }
+    
+    func handleCallInitiationResult(_ result: Result<Void,Error>) {
+        switch result {
+        case .success(_):
+            break;
+        case .failure(let err):
+            let alert = NSAlert();
+            alert.alertStyle = .warning;
+            alert.messageText = "Call failed";
+            alert.informativeText = "It was not possible to establish call";
+            switch err {
+            case let e as ErrorCondition:
+                switch e {
+                case .forbidden:
+                    alert.informativeText = "It was not possible to access camera or microphone. Please chack permissions in the system settings";
+                default:
+                    break;
+                }
+            default:
+                break;
+            }
+            guard let window = self.view.window else {
+                return;
+            }
+            alert.addButton(withTitle: "OK");
+            alert.beginSheetModal(for: window, completionHandler: nil);
+        }
     }
 
     @IBAction func encryptionChanged(_ sender: NSPopUpButton) {

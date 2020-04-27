@@ -60,17 +60,9 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
         }
     }
     
-    fileprivate func session(peerConnection: RTCPeerConnection) -> Session? {
+    func open(for account: BareJID, with jid: JID, sid: String?, role: Jingle.Content.Creator) -> Session {
         return dispatcher.sync {
-            return connections.first(where: {(sess) -> Bool in
-                return sess.peerConnection == peerConnection;
-            })
-        }
-    }
-
-    func open(for account: BareJID, with jid: JID, sid: String?, role: Jingle.Content.Creator, peerConnectionFactory: RTCPeerConnectionFactory? = nil) -> Session {
-        return dispatcher.sync {
-            let session = Session(account: account, jid: jid, sid: sid, role: role, peerConnectionFactory: peerConnectionFactory ??  RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(), decoderFactory: RTCDefaultVideoDecoderFactory()));
+            let session = Session(account: account, jid: jid, sid: sid, role: role);
             self.connections.append(session);
             return session;
         }
@@ -124,44 +116,48 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                     toClose.forEach({ (session) in
                         _ = session.terminate();
                     })
+                    if XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.presenceStore?.isAvailable(jid: from.bareJid) ?? true {
+                        CallManager.instance.terminateCalls(for: e.sessionObject.userBareJid!, with: from.bareJid);
+                    }
                 }
             case let e as JingleModule.JingleMessageInitiationEvent:
                 switch e.action! {
                 case .propose(let id, let descriptions):
                     let session = self.open(for: e.sessionObject.userBareJid!, with: e.jid, sid: nil, role: .responder);
                     session.initiate(sid: id);
-                        
-                    let media = descriptions.map({ VideoCallController.Media.from(string: $0.media) }).filter({ $0 != nil }).map({ $0! });
-                    if (media.contains(.video) || media.contains(.audio)) && VideoCallController.hasAudioSupport {
-                        VideoCallController.open(completionHandler: { controller in
-                            controller.accept(session: session, media: media, completionHandler: { result in
-                                switch result {
-                                case .success(_):
-                                    if let jingleModule: JingleModule = session.client?.modulesManager.getModule(JingleModule.ID) {
-                                        jingleModule.sendMessageInitiation(action: .proceed(id: id), to: e.jid);
-                                    } else {
-                                        _ = session.decline();
-                                    }
-                                case .failure(_):
-                                    _ = session.decline();
-                                    if let jingleModule: JingleModule = session.client?.modulesManager.getModule(JingleModule.ID) {
-                                        jingleModule.sendMessageInitiation(action: .reject(id: id), to: e.jid);
-                                    }
-                                }
-                            })
-                        })
-                    } else {
-                        _ = session.terminate();
-                    }
+                    let media = descriptions.map({ Call.Media.from(string: $0.media) }).filter({ $0 != nil }).map({ $0! });
+                    let call = Call(account: e.sessionObject.userBareJid!, with: e.jid.bareJid, sid: id, direction: .incoming, media: media);
+                    CallManager.instance.reportIncomingCall(call, completionHandler: { result in
+                        switch result {
+                        case .success(_):
+                            // nothing to do as manager will call us back..
+                            break;
+                        case .failure(_):
+                            _ = session.terminate();
+                            if let jingleModule: JingleModule = session.client?.modulesManager.getModule(JingleModule.ID) {
+                                jingleModule.sendMessageInitiation(action: .reject(id: id), to: e.jid);
+                            }
+                        }
+                    });
                 case .retract(let id):
                     self.sessionTerminated(account: e.sessionObject.userBareJid!, with: e.jid, sid: id);
                 case .accept(let id):
                     self.sessionTerminated(account: e.sessionObject.userBareJid!, with: e.jid, sid: id);
                 case .reject(let id):
+                    let call = Call(account: e.sessionObject.userBareJid!, with: e.jid.bareJid, sid: id, direction: .incoming, media: []);
+                    CallManager.instance.declinedOutgoingCall(call);
                     self.sessionTerminated(account: e.sessionObject.userBareJid!, with: e.jid, sid: id);
                 case .proceed(let id):
-                    // TODO: not implemented yet!
-                    self.sessionTerminated(account: e.sessionObject.userBareJid!, with: e.jid, sid: id);
+                    let call = Call(account: e.sessionObject.userBareJid!, with: e.jid.bareJid, sid: id, direction: .incoming, media: []);
+                    CallManager.instance.acceptedOutgoingCall(call, by: e.jid, completionHandler: { result in
+                        switch result {
+                        case .success(_):
+                            break;
+                        case .failure(_):
+                            self.sessionTerminated(account: e.sessionObject.userBareJid!, with: e.jid, sid: id);
+                            break;
+                        }
+                    });
                 default:
                     break;
                 }
@@ -231,35 +227,25 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
             return;
         }
       
-        let sdp = SDP(sid: e.sid!, contents: e.contents, bundle: e.bundle);
+        let sdp = SDP(contents: e.contents, bundle: e.bundle);
 
-        guard let session = session(for: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid) else {
-            let session = open(for: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid, role: .responder);
-                
-            let media = sdp.contents.map({ c -> VideoCallController.Media? in VideoCallController.Media.from(string: c.description?.media) }).filter({ $0 != nil }).map({ $0! });
-            if (media.contains(.video) || media.contains(.audio)) && VideoCallController.hasAudioSupport {
-                VideoCallController.open(completionHandler: { controller in
-                    controller.accept(session: session, media: media, completionHandler: { result in
-                        switch result {
-                        case .success(_):
-                            session.initiated();
-                            if !controller.accepted(session: session, sdpOffer: sdp) {
-                                _ = session.decline();
-                            }
-                        case .failure(_):
-                            _ = session.decline();
-                        }
-                    })
-                })
-            } else {
-                _ = session.terminate();
-            }
-            return;
-        }
-        
-        if let controller = session.delegate, controller.accepted(session: session, sdpOffer: sdp) {
+        let media = sdp.contents.map({ c -> Call.Media? in Call.Media.from(string: c.description?.media) }).filter({ $0 != nil }).map({ $0! });
+        let call = Call(account: e.sessionObject.userBareJid!, with: e.jid.bareJid, sid: e.sid, direction: .incoming, media:media);
+
+        if let session = session(for: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid) {
+            session.accepted(sdpAnswer: SDP(contents: e.contents, bundle: e.bundle));
         } else {
-            _ = session.terminate();
+            let session = open(for: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid, role: .responder);
+            session.initiated(remoteDescription: SDP(contents: e.contents, bundle: e.bundle));
+            
+            CallManager.instance.reportIncomingCall(call, completionHandler: { result in
+                switch result {
+                case .success(_):
+                    break;
+                case .failure(_):
+                    _ = session.terminate();
+                }
+            })
         }
     }
     
@@ -268,7 +254,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
             return;
         }
         
-        session.accepted(sdpAnswer: SDP(sid: e.sid!, contents: e.contents, bundle: e.bundle));
+        session.accepted(sdpAnswer: SDP(contents: e.contents, bundle: e.bundle));
     }
     
     fileprivate func sessionTerminated(event e: JingleModule.JingleEvent) {
@@ -299,6 +285,16 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
         }
     }
     
+}
+
+extension JingleManager {
+
+    func session(forCall call: Call) -> Session? {
+        return dispatcher.sync {
+            return self.connections.first(where: { $0.account == call.account && $0.jid.bareJid == call.jid && $0.sid == call.sid });
+        }
+    }
+        
 }
 
 extension String {

@@ -260,7 +260,6 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                 switch errorCondition {
                 case .item_not_found:
                     // there is no such channel, we need to create a new one..
-                    // TODO: add more details room creation view..
                     mixModule.create(channel: channel.localPart, at: BareJID(channel.domain), completionHandler: { result in
                         switch result {
                         case .success(let channel):

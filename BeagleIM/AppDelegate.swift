@@ -307,7 +307,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 print("uri:", uri.jid, "dict:", uri.dict as Any);
                 let rosterWindow = self.rosterWindow;
                 rosterWindow.makeKeyAndOrderFront(self);
-                if let addContact = self.mainWindowController?.storyboard?.instantiateController(withIdentifier: "AddContactController") as? AddContactController {
+                if let addContact = NSStoryboard(name: "Roster", bundle: nil).instantiateController(withIdentifier: "AddContactController") as? AddContactController {
                     _ = addContact.view;
                     addContact.jidField.stringValue = uri.jid.stringValue;
                     addContact.labelField.stringValue = uri.dict?["name"] ?? "";

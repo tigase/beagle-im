@@ -30,6 +30,8 @@
 		FE2ACA8223546C8E004623BC /* NSMutableAttributedString_extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA8123546C8E004623BC /* NSMutableAttributedString_extensions.swift */; };
 		FE2ACA842355B967004623BC /* EditKeywordsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA832355B967004623BC /* EditKeywordsController.swift */; };
 		FE2ACA862355C5DA004623BC /* NSTableViewCustomGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA852355C5DA004623BC /* NSTableViewCustomGrid.swift */; };
+		FE2D481E24544A7900C13CE5 /* CallManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2D481D24544A7800C13CE5 /* CallManager.swift */; };
+		FE2D4820245452DC00C13CE5 /* RTCCameraVideoCapturer_Format.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2D481F245452DC00C13CE5 /* RTCCameraVideoCapturer_Format.swift */; };
 		FE2DEDA023C5FC0F00AEF14F /* WebRTC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE2DED9E23C5FC0900AEF14F /* WebRTC.framework */; };
 		FE2DEDA123C5FC0F00AEF14F /* WebRTC.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE2DED9E23C5FC0900AEF14F /* WebRTC.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE2DEDA323C62D7100AEF14F /* incomingCall.aiff in Resources */ = {isa = PBXBuildFile; fileRef = FE2DEDA223C62D7000AEF14F /* incomingCall.aiff */; };
@@ -245,6 +247,8 @@
 		FE2ACA8123546C8E004623BC /* NSMutableAttributedString_extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSMutableAttributedString_extensions.swift; sourceTree = "<group>"; };
 		FE2ACA832355B967004623BC /* EditKeywordsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditKeywordsController.swift; sourceTree = "<group>"; };
 		FE2ACA852355C5DA004623BC /* NSTableViewCustomGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSTableViewCustomGrid.swift; sourceTree = "<group>"; };
+		FE2D481D24544A7800C13CE5 /* CallManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallManager.swift; sourceTree = "<group>"; };
+		FE2D481F245452DC00C13CE5 /* RTCCameraVideoCapturer_Format.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTCCameraVideoCapturer_Format.swift; sourceTree = "<group>"; };
 		FE2DED8F23C5C6B300AEF14F /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebRTC.framework; path = "../../../../../Volumes/Dane/Users/andrzej/test/webrtc-checkout/src/outios/WebRTC.framework"; sourceTree = "<group>"; };
 		FE2DED9E23C5FC0900AEF14F /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
 		FE2DEDA223C62D7000AEF14F /* incomingCall.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = incomingCall.aiff; sourceTree = "<group>"; };
@@ -460,6 +464,8 @@
 				FE83E362217A3809001DEF09 /* JingleManager.swift */,
 				FE4073A821BACC50009CE335 /* VideoCallController.swift */,
 				FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */,
+				FE2D481D24544A7800C13CE5 /* CallManager.swift */,
+				FE2D481F245452DC00C13CE5 /* RTCCameraVideoCapturer_Format.swift */,
 			);
 			path = voip;
 			sourceTree = "<group>";
@@ -1019,6 +1025,7 @@
 				FE4D21382223FEE70058B662 /* PEPBookmarksModule_extension.swift in Sources */,
 				FE10BCEB23FAA60A00E214F3 /* InvitationItem.swift in Sources */,
 				FE3AA0C92154062F001667A9 /* ChatsListGroupProtocol.swift in Sources */,
+				FE2D481E24544A7900C13CE5 /* CallManager.swift in Sources */,
 				FED7AEC721418B83001E164B /* VCardManager.swift in Sources */,
 				FE6E6C0321384D5F003B1696 /* DBRosterStore.swift in Sources */,
 				FE9E1C41244B34C4003751AA /* SearchHistoryTableView.swift in Sources */,
@@ -1031,6 +1038,7 @@
 				FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */,
 				FE41FB3F215CD95D00AD86D3 /* AvatarEventHandler.swift in Sources */,
 				FE30D8B7214D4BCD00670BEC /* Settings.swift in Sources */,
+				FE2D4820245452DC00C13CE5 /* RTCCameraVideoCapturer_Format.swift in Sources */,
 				FEDE6AF32142DC590019170A /* AvatarViewWithStatus.swift in Sources */,
 				FE4073A921BACC50009CE335 /* VideoCallController.swift in Sources */,
 				FED7AEC12140569E001E164B /* AddAccountController.swift in Sources */,
