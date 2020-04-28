@@ -73,8 +73,6 @@ class ChatLinkPreviewCellView: NSTableCellView {
 
             self.linkView = linkView;
 
-            linkView.layout();
-
             if isNew && fetchPreviewIfNeeded {
                 MetadataCache.instance.generateMetadata(for: url, withId: "\(item.id)", completionHandler: { [weak linkView] meta1 in
                     guard let meta = meta1 else {
