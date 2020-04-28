@@ -116,7 +116,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                     toClose.forEach({ (session) in
                         _ = session.terminate();
                     })
-                    if XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.presenceStore?.isAvailable(jid: from.bareJid) ?? true {
+                    if !(XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.presenceStore?.isAvailable(jid: from.bareJid) ?? false) {
                         CallManager.instance.terminateCalls(for: e.sessionObject.userBareJid!, with: from.bareJid);
                     }
                 }

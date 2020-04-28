@@ -395,7 +395,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             case let e as ErrorCondition:
                 switch e {
                 case .forbidden:
-                    alert.informativeText = "It was not possible to access camera or microphone. Please chack permissions in the system settings";
+                    alert.informativeText = "It was not possible to access camera or microphone. Please check permissions in the system settings";
                 default:
                     break;
                 }
