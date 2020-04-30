@@ -282,7 +282,7 @@ class Call: NSObject {
     }
 
     func initiateOutgoingCall(completionHandler: @escaping (Result<Void,Error>)->Void) {
-        guard let presences = XmppService.instance.getClient(for: account)?.presenceStore?.getPresences(for: jid)?.values, !presences.isEmpty else {
+        guard let client = XmppService.instance.getClient(for: account), let presences = client.presenceStore?.getPresences(for: jid)?.values, !presences.isEmpty else {
             completionHandler(.failure(ErrorCondition.item_not_found));
             return;
         };
@@ -311,8 +311,9 @@ class Call: NSObject {
             case .success(_):
                 completionHandler(.success(Void()));
                 if withJMI.count == withJingle.count {
-                    let jingleModule: JingleModule = XmppService.instance.getClient(for: self.account)!.modulesManager.getModule(JingleModule.ID)!;
-                    jingleModule.sendMessageInitiation(action: .propose(id: self.sid, descriptions: self.media.map({ Jingle.MessageInitiationAction.Description(xmlns: "urn:xmpp:jingle:apps:rtp:1", media: $0.rawValue)})), to: JID(self.jid));
+                    let session = JingleManager.instance.open(for: client.sessionObject, with: JID(self.jid), sid: self.sid, role: .initiator, initiationType: .message);
+                    session.delegate = self;
+                    session.initiate(descriptions: self.media.map({ Jingle.MessageInitiationAction.Description(xmlns: "urn:xmpp:jingle:apps:rtp:1", media: $0.rawValue) }), completionHandler: nil);
                 } else {
                     // we need to establish multiple 1-1 sessions...
                     self.generateLocalDescription(completionHandler: { result in
@@ -322,13 +323,10 @@ class Call: NSObject {
                         case .success(let sdp):
                             DispatchQueue.main.async {
                                 for jid in withJingle {
-                                    let session = JingleManager.instance.open(for: self.account, with: jid, sid: nil, role: .initiator);
+                                    let session = JingleManager.instance.open(for: client.sessionObject, with: jid, sid: self.sid, role: .initiator, initiationType: .message);
                                     session.delegate = self;
-                                    if session.initiate(sid: self.sid, contents: sdp.contents, bundle: sdp.bundle) {
-                                        self.establishingSessions.append(session);
-                                    } else {
-                                        _ = session.terminate();
-                                    }
+                                    self.establishingSessions.append(session);
+                                    session.initiate(contents: sdp.contents, bundle: sdp.bundle, completionHandler: nil);
                                 }
                             }
                         }
@@ -345,13 +343,11 @@ class Call: NSObject {
         generateLocalDescription(completionHandler: { result in
             switch result {
             case .success(let sdp):
-                let session = JingleManager.instance.open(for: self.account, with: jid, sid: nil, role: .initiator);
-                session.delegate = self;
-                if session.initiate(sid: self.sid, contents: sdp.contents, bundle: sdp.bundle) {
-                    self.session = session;
-                } else {
-                    _ = session.terminate();
+                guard let session = self.session else {
+                    completionHandler(.failure(.item_not_found));
+                    return
                 }
+                session.initiate(contents: sdp.contents, bundle: sdp.bundle, completionHandler: nil);
                 completionHandler(.success(Void()));
             case .failure(let err):
                 completionHandler(.failure(err));
@@ -431,21 +427,7 @@ class Call: NSObject {
                     return;
                 }
                 session.delegate = self;
-                if let remoteDescription = session.remoteDescription {
-                    self.setRemoteDescription(remoteDescription, peerConnection: peerConnection, session: session, completionHandler: { result in
-                        switch result {
-                        case .success(_):
-                            // nothing to do..
-                            break;
-                        case .failure(_):
-                            self.reject();
-                        }
-                    });
-                } else {
-                    if let jingleModule: JingleModule = session.client?.modulesManager.getModule(JingleModule.ID) {
-                        jingleModule.sendMessageInitiation(action: .proceed(id: session.sid), to: session.jid);
-                    }
-                }
+                session.accept();
             case .failure(_):
                 // there was an error, so we should reject this call
                 self.reject();
@@ -458,13 +440,7 @@ class Call: NSObject {
             reset();
             return;
         }
-        if session.remoteDescription != nil {
-            session.decline();
-        } else {
-            if let jingleModule: JingleModule = session.client?.modulesManager.getModule(JingleModule.ID) {
-                jingleModule.sendMessageInitiation(action: .reject(id: session.sid), to: session.jid);
-            }
-        }
+        session.decline();
         reset();
     }
     
@@ -499,7 +475,7 @@ class Call: NSObject {
                             } else {
                                 print("sending answer to remote client");
                                 let (sdp, sid) = SDP.parse(sdpString: sdpAnswer!.sdp, creator: .responder)!;
-                                _ = session.accept(contents: sdp.contents, bundle: sdp.bundle)
+                                _ = session.accept(contents: sdp.contents, bundle: sdp.bundle, completionHandler: nil)
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
                                     self.sendLocalCandidates();
                                 })
@@ -626,11 +602,11 @@ extension Call: JingleSessionDelegate {
             }
             
             for sess in self.establishingSessions {
-                if sess != session {
-                    _ = sess.terminate();
-                } else {
+                if sess.account == session.account && sess.jid == session.jid && sess.sid == session.sid {
                     self.session = sess;
                     self.sendLocalCandidates();
+                } else {
+                    _ = sess.terminate();
                 }
             }
             self.establishingSessions.removeAll();
@@ -651,8 +627,8 @@ extension Call: JingleSessionDelegate {
     
     func sessionTerminated(session: JingleManager.Session) {
         DispatchQueue.main.async {
-            if self.direction == .incoming {
-                if let idx = self.establishingSessions.firstIndex(of: session) {
+            if self.direction == .outgoing {
+                if let idx = self.establishingSessions.firstIndex(where: { $0.account == session.account && $0.jid == session.jid && $0.sid == session.sid }) {
                     self.establishingSessions.remove(at: idx);
                 }
                 if self.establishingSessions.isEmpty {
