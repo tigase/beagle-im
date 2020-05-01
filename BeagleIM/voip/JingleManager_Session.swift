@@ -41,7 +41,7 @@ extension JingleManager {
         }
 
         let account: BareJID;
-        let jid: JID;
+        private(set) var jid: JID;
         weak var delegate: JingleSessionDelegate?;
         fileprivate(set) var sid: String;
         let role: Jingle.Content.Creator;
@@ -124,6 +124,11 @@ extension JingleManager {
             }
         }
         
+        func accepted(by jid: JID) {
+            self.state = .accepted;
+            self.jid = jid;
+        }
+        
         func accepted(sdpAnswer: SDP) {
             self.state = .accepted;
             self.remoteDescription = sdpAnswer;
@@ -144,12 +149,13 @@ extension JingleManager {
         }
         
         func terminate(reason: JingleSessionTerminateReason) {
+            let oldState = self.state;
             guard state != .terminated else {
                 return;
             }
             self.state = .terminated;
             if let jingleModule: JingleModule = self.jingleModule {
-                if initiationType == .iq || state == .accepted {
+                if initiationType == .iq || oldState == .accepted {
                     jingleModule.terminateSession(with: jid, sid: sid, reason: reason);
                 } else {
                     jingleModule.sendMessageInitiation(action: .reject(id: sid), to: jid);
@@ -159,9 +165,18 @@ extension JingleManager {
             terminateSession();
         }
         
+        func terminated() {
+            guard state != .terminated else {
+                return;
+            }
+            self.state = .terminated;
+            self.terminateSession();
+        }
+        
         private func terminateSession() {
             os_log(OSLogType.debug, log: .jingle, "terminating session sid: %s", sid);
             self.delegate?.sessionTerminated(session: self);
+            self.delegate = nil;
             JingleManager.instance.close(session: self);
         }
         

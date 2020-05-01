@@ -33,7 +33,7 @@ class CallManager {
     
     func reportIncomingCall(_ call: Call, completionHandler: @escaping (Result<Void,Error>)->Void) {
         call.session = JingleManager.instance.session(forCall: call);
-        
+        call.session?.delegate = call;
         dispatcher.async {
             if !self.activeCalls.contains(call) {
                 self.activeCalls.append(call);
@@ -221,10 +221,6 @@ class Call: NSObject {
     
     func reset() {
         DispatchQueue.main.async {
-            if self.state == .ringing && self.session == nil {
-                let jingleModule: JingleModule = XmppService.instance.getClient(for: self.account)!.modulesManager.getModule(JingleModule.ID)!;
-                jingleModule.sendMessageInitiation(action: .retract(id: self.sid), to: JID(self.jid));
-            }
             self.currentConnection?.close();
             self.currentConnection = nil;
             if self.localCapturer != nil {
@@ -340,6 +336,7 @@ class Call: NSObject {
         
     fileprivate func acceptedOutgingCall(for jid: JID, completionHandler: @escaping (Result<Void,ErrorCondition>)->Void) {
         changeState(.connecting);
+        self.session = JingleManager.instance.session(forCall: self);
         generateLocalDescription(completionHandler: { result in
             switch result {
             case .success(let sdp):
