@@ -30,16 +30,10 @@ class MessageTextView: NSTextView, NSLayoutManagerDelegate {
                 return .zero
             }
 
-            textContainer.containerSize = NSSize(width: self.frame.width, height: CGFloat.greatestFiniteMagnitude);
+            layoutManager.typesetterBehavior = .latestBehavior;
             layoutManager.ensureLayout(for: textContainer);
             layoutManager.glyphRange(for: textContainer);
             let size = layoutManager.usedRect(for: textContainer).size;
-            if heightConstraint == nil {
-                heightConstraint = self.heightAnchor.constraint(equalToConstant: size.height);
-                heightConstraint?.isActive = true;
-            } else {
-                self.heightConstraint?.constant = size.height;
-            }
             return size;
         }
     }
@@ -59,17 +53,14 @@ class MessageTextView: NSTextView, NSLayoutManagerDelegate {
                 style.alignment = .center;
                 self.textStorage?.addAttribute(.paragraphStyle, value: style, range: NSRange(location: 0, length: textStorage!.length));
             }
-            self.invalidateIntrinsicContentSize();
+            //self.invalidateIntrinsicContentSize();
         }
     }
     
     private var heightConstraint: NSLayoutConstraint?;
 
     override func awakeFromNib() {
-        self.translatesAutoresizingMaskIntoConstraints = false;
         self.layoutManager?.delegate = self;
-        self.textContainer?.widthTracksTextView = true;
-        self.textContainer?.heightTracksTextView = true;
         self.textContainer?.lineFragmentPadding = 1;
         self.textContainerInset = .zero;
         self.usesAdaptiveColorMappingForDarkAppearance = true;

@@ -59,6 +59,7 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
         self.dataSource.delegate = self;
         self.tableView.delegate = logTableViewDelegate;
         self.tableView.dataSource = self;
+        self.tableView.usesAutomaticRowHeights = true;
         self.tableView.enclosingScrollView?.contentView.postsBoundsChangedNotifications = true;
     }
     
