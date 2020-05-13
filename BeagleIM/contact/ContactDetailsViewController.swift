@@ -193,6 +193,11 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
                     blockContact?.state = BlockedEventHandler.isBlocked(c.jid, on: client) ? .on : .off;
                     blockContact?.isEnabled = blockingModule.isAvailable;
                 }
+                if XmppService.instance.getClient(for: chat.account)?.rosterStore?.get(for: chat.jid.withoutResource) == nil {
+                    let button = NSButton(title: "Add to contacts", image: NSImage(named: NSImage.addTemplateName)!, target: self, action: #selector(self.addToRoster(_:)));
+                    button.isBordered = false;
+                    rows.append(button);
+                }
             default:
                 break;
             }
@@ -204,7 +209,7 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
         
         print("got:", account as Any, "and:", jid as Any);
     }
-    
+        
     private func setRows(_ rows: [NSView]) {
         if !rows.isEmpty {
             var constraints: [NSLayoutConstraint] = [];
@@ -273,6 +278,38 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
                         }
                     }
                 })
+            }
+        }
+    }
+    
+    @objc func addToRoster(_ sender: Any) {
+        guard let parent = self.view.window?.parent, let chat = self.chat as? DBChatStore.DBChat else {
+            return;
+        }
+        self.view.window?.close();
+        if let addContactController = NSStoryboard(name: "Roster", bundle: nil).instantiateController(withIdentifier: "AddContactController") as? AddContactController {
+            _ = addContactController.view;
+            addContactController.jidField.stringValue = chat.jid.bareJid.stringValue;
+            DBVCardStore.instance.vcard(for: chat.jid.bareJid) { (vcard) in
+                DispatchQueue.main.async {
+                    var fn: String = "";
+                    if let fn1 = vcard?.fn, !fn1.isEmpty {
+                        fn = fn1;
+                    } else {
+                        if let given = vcard?.givenName, !given.isEmpty {
+                            fn = given;
+                        }
+                        if let surname = vcard?.surname, !surname.isEmpty {
+                            fn = fn.isEmpty ? surname : "\(fn) \(surname)"
+                        }
+                    }
+                    if let idx = addContactController.accountSelector.itemTitles.firstIndex(of: chat.account.stringValue) {
+                        addContactController.accountSelector.selectItem(at: idx);
+                    }
+                    addContactController.labelField.stringValue = fn ?? chat.jid.localPart ?? chat.jid.bareJid.stringValue;
+                    let window = NSWindow(contentViewController: addContactController);
+                    parent.beginSheet(window, completionHandler: nil);
+                }
             }
         }
     }

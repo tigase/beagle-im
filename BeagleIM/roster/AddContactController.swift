@@ -77,6 +77,11 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
         //accountSelector.widthAnchor.constraint(equalTo: requestSubscriptionButton.widthAnchor, multiplier: 1.0).isActive = true;
     }
     
+    override func viewWillAppear() {
+        super.viewWillAppear();
+        self.verify();
+    }
+    
     func controlTextDidChange(_ obj: Notification) {
         verify();
     }
