@@ -42,6 +42,8 @@ class AdvancedSettingsController: NSViewController {
     fileprivate var markKeywordsWithBold: NSButton!;
     fileprivate var editKeywords: NSButton!;
     
+    fileprivate var commonChatsList: NSButton!;
+    
     override func viewDidLoad() {
         messageGrouping = formView.addRow(label: "Message grouping:", field: NSPopUpButton(frame: .zero, pullsDown: false));
         messageGrouping.target = self;
@@ -73,6 +75,8 @@ class AdvancedSettingsController: NSViewController {
         if #available(macOS 10.15, *) {
             enableLinkPreviews = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Enable link previews", target: self, action: #selector(checkboxChanged(_:))));
         }
+        commonChatsList = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show channels and chats in merged list", target: self, action: #selector(checkboxChanged(_:))));
+        
         let logsDir = formView.addRow(label: "", field: NSButton(title: "Open logs directory", target: self, action: #selector(openLogsDirectory)));
         formView.groupItems(from:ignoreJingleSupportCheck, to: logsDir);
 
@@ -104,6 +108,7 @@ class AdvancedSettingsController: NSViewController {
         markKeywordsWithBold.state = Settings.boldKeywords.bool() ? .on : .off;
         markKeywordsWithBold.isEnabled = markKeywords.state == .on;
         editKeywords.isEnabled = markKeywords.state == .on;
+        commonChatsList.state = Settings.commonChatsList.bool() ? .on : .off;
     }
     
     @objc func openLogsDirectory(_ sender: NSButton) {
@@ -139,6 +144,8 @@ class AdvancedSettingsController: NSViewController {
             editKeywords.isEnabled = markKeywords.state == .on;
         case markKeywordsWithBold:
             Settings.boldKeywords.set(value: sender.state == .on);
+        case commonChatsList:
+            Settings.commonChatsList.set(value: sender.state == .on);
         default:
             if #available(macOS 10.15, *) {
                 if let linkPreviews = enableLinkPreviews, sender == linkPreviews {

@@ -76,6 +76,40 @@ class GroupchatItem: AbstractChatItem {
     
 }
 
+class UnifiedChatItem: AbstractChatItem {
+    
+    let isInRoster: Bool;
+    
+    init(chat: DBChatProtocol) {
+        var name = chat.jid.stringValue;
+        switch chat {
+        case let c as DBChatStore.DBChat:
+            if let rosterItem = XmppService.instance.getClient(for: c.account)?.rosterStore?.get(for: c.jid) {
+                isInRoster = true;
+                if let value = rosterItem.name, !value.isEmpty {
+                    name = value;
+                }
+            } else {
+                isInRoster = false;
+            }
+        case let c as DBChatStore.DBRoom:
+            isInRoster = true;
+            if let value = c.name, !value.isEmpty {
+                name = value;
+            }
+        case let c as DBChatStore.DBChannel:
+            isInRoster = true;
+            if let value = c.name, !value.isEmpty {
+                name = value;
+            }
+        default:
+            isInRoster = false;
+        }
+        super.init(chat: chat, name: name);
+    }
+
+}
+
 protocol ChatsListViewDataSourceDelegate: class {
     
     func itemsInserted(at: IndexSet, inParent: Any?);
@@ -101,7 +135,8 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     var invitationGroup: InvitationGroup?;
 
     override func viewDidLoad() {
-        self.groups = [ChatsListGroupGroupchat(delegate: self), ChatsListGroupChat(delegate: self), ChatsListGroupChatUnknown(delegate: self)];
+//        self.groups = [ChatsListGroupGroupchat(delegate: self), ChatsListGroupChat(delegate: self), ChatsListGroupChatUnknown(delegate: self)];
+        self.groups = Settings.commonChatsList.bool() ? [ChatsListGroupCommon(delegate: self), ChatsListGroupChatUnknown(delegate: self)] : [ChatsListGroupGroupchat(delegate: self), ChatsListGroupChat(delegate: self), ChatsListGroupChatUnknown(delegate: self)];
         self.invitationGroup = InvitationGroup(delegate: self, items: InvitationManager.instance.items);
         if !InvitationManager.instance.items.isEmpty {
             self.groups.insert(invitationGroup!, at: 0);
@@ -113,6 +148,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         NotificationCenter.default.addObserver(self, selector: #selector(closeSelectedChat), name: ChatsListViewController.CLOSE_SELECTED_CHAT, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(invitationClicked(_:)), name: InvitationManager.INVITATION_CLICKED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(hourChanged), name: AppDelegate.HOUR_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(settingsChanged(_:)), name: Settings.CHANGED, object: nil);
     }
     
     override func viewWillAppear() {
@@ -185,20 +221,36 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         
         switch group {
         case is ChatsListGroupGroupchat:
-            guard let windowController = storyboard?.instantiateController(withIdentifier:"OpenChannelWindowController") as? NSWindowController else {
-                return;
-            }
-            view.window?.beginSheet(windowController.window!, completionHandler: nil);
+            self.openChannel(self);
         case is ChatsListGroupChat:
-            guard let windowController = storyboard?.instantiateController(withIdentifier: "Open1On1ChatController") as? NSWindowController else {
-                return;
+            self.openChat(self);
+        case is ChatsListGroupCommon:
+            let menu = NSMenu(title: "");
+            menu.addItem(withTitle: "Open chat", action: #selector(self.openChat(_:)), keyEquivalent: "").image = NSImage(named: NSImage.userName)?.square(20);
+            menu.addItem(withTitle: "Open channel", action: #selector(self.openChannel(_:)), keyEquivalent: "").image = NSImage(named: NSImage.userGroupName)?.square(20);
+            for item in menu.items {
+                item.target = self;
             }
-            view.window?.beginSheet(windowController.window!, completionHandler: nil);
+            menu.popUp(positioning: nil, at: NSPoint(x: 0, y: sender.frame.height), in: sender);
         default:
             return;
         }
     }
     
+    @objc func openChat(_ sender: Any) {
+        guard let windowController = storyboard?.instantiateController(withIdentifier: "Open1On1ChatController") as? NSWindowController else {
+            return;
+        }
+        view.window?.beginSheet(windowController.window!, completionHandler: nil);
+    }
+
+    @objc func openChannel(_ sender: Any) {
+        guard let windowController = storyboard?.instantiateController(withIdentifier:"OpenChannelWindowController") as? NSWindowController else {
+            return;
+        }
+        view.window?.beginSheet(windowController.window!, completionHandler: nil);
+    }
+
     @objc func closeSelectedChat(_ notification: Notification) {
         print("closing chats for: \(self.outlineView.selectedRowIndexes)");
         let toClose = self.outlineView.selectedRowIndexes;
@@ -279,6 +331,31 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         }
     }
     
+    @objc func settingsChanged(_ notification: Notification) {
+        guard let setting = notification.object as? Settings else {
+            return;
+        }
+        switch setting {
+        case .commonChatsList:
+            var tmp:[ChatsListGroupProtocol] = [];
+            if let invitations = self.groups.first(where: { $0 is InvitationGroup}) {
+                tmp.append(invitations);
+            }
+
+            if Settings.commonChatsList.bool() {
+                tmp.append(contentsOf: [ChatsListGroupCommon(delegate: self), ChatsListGroupChatUnknown(delegate: self)]);
+            } else {
+                tmp.append(contentsOf: [ChatsListGroupGroupchat(delegate: self), ChatsListGroupChat(delegate: self), ChatsListGroupChatUnknown(delegate: self)])
+            }
+            self.groups = tmp;
+            self.reload();
+            for group in groups {
+                self.outlineView.expandItem(group);
+            }
+        default:
+            break;
+        }
+    }
 }
 
 extension ChatsListViewController: NSOutlineViewDelegate {
@@ -301,6 +378,9 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         if item is InvitationItem {
             return true;
         }
+        if item is UnifiedChatItem {
+            return true;
+        }
         return false;
     }
     
@@ -321,21 +401,20 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         print("selected row:", selected);
         let item = self.outlineView.selectedRowIndexes.count == 1 ? self.outlineView.item(atRow: selected) : nil;
         if let splitController = self.outlineView.window?.contentViewController as? NSSplitViewController {
-            if let chat = item as? ChatItem {
-                print("selected chat item:", chat.name);
-                let chatController = self.storyboard!.instantiateController(withIdentifier: "ChatViewController") as! ChatViewController;
-                chatController.chat = chat.chat;
-                chatController.scrollChatToMessageWithId = self.scrollChatToMessageWithId;
-                self.scrollChatToMessageWithId = nil;
-                let item = NSSplitViewItem(viewController: chatController);
-                if splitController.splitViewItems.count == 1 {
-                    splitController.addSplitViewItem(item);
-                } else {
-                    splitController.removeSplitViewItem(splitController.splitViewItems[1]);
-                    splitController.addSplitViewItem(item);
-                }
-            } else if let groupItem = item as? GroupchatItem {
-                switch groupItem.chat {
+            if let chatItem = (item as? AbstractChatItem)?.chat {
+                switch chatItem {
+                case let chat as DBChatStore.DBChat:
+                    let chatController = self.storyboard!.instantiateController(withIdentifier: "ChatViewController") as! ChatViewController;
+                    chatController.chat = chat;
+                    chatController.scrollChatToMessageWithId = self.scrollChatToMessageWithId;
+                    self.scrollChatToMessageWithId = nil;
+                    let item = NSSplitViewItem(viewController: chatController);
+                    if splitController.splitViewItems.count == 1 {
+                        splitController.addSplitViewItem(item);
+                    } else {
+                        splitController.removeSplitViewItem(splitController.splitViewItems[1]);
+                        splitController.addSplitViewItem(item);
+                    }
                 case let room as DBChatStore.DBRoom:
                     let roomController = self.storyboard?.instantiateController(withIdentifier: "GroupchatViewController") as! GroupchatViewController;
                     roomController.room = room;

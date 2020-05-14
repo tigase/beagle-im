@@ -84,6 +84,7 @@
 		FE5C6B2D22916C47003DAB30 /* JoinGroupchatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5C6B2C22916C47003DAB30 /* JoinGroupchatViewController.swift */; };
 		FE5CAF982215BCD600FABD46 /* ScriptsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5CAF972215BCD600FABD46 /* ScriptsManager.swift */; };
 		FE5CAF9A2216EEF200FABD46 /* NSPopupButtonNoSizeWhenHidden.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5CAF992216EEF200FABD46 /* NSPopupButtonNoSizeWhenHidden.swift */; };
+		FE61D6E9246C0D9500FB59F8 /* ChatsListGroupCommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE61D6E8246C0D9500FB59F8 /* ChatsListGroupCommon.swift */; };
 		FE6201DC23A5007900C965A5 /* ChatEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6201DB23A5007900C965A5 /* ChatEntry.swift */; };
 		FE6201DE23A502FB00C965A5 /* ChatMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6201DD23A502FB00C965A5 /* ChatMessage.swift */; };
 		FE6201E023A5357B00C965A5 /* ChatLinkPreviewCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6201DF23A5357B00C965A5 /* ChatLinkPreviewCellView.swift */; };
@@ -301,6 +302,7 @@
 		FE5C6B2C22916C47003DAB30 /* JoinGroupchatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinGroupchatViewController.swift; sourceTree = "<group>"; };
 		FE5CAF972215BCD600FABD46 /* ScriptsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptsManager.swift; sourceTree = "<group>"; };
 		FE5CAF992216EEF200FABD46 /* NSPopupButtonNoSizeWhenHidden.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSPopupButtonNoSizeWhenHidden.swift; sourceTree = "<group>"; };
+		FE61D6E8246C0D9500FB59F8 /* ChatsListGroupCommon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListGroupCommon.swift; sourceTree = "<group>"; };
 		FE6201DB23A5007900C965A5 /* ChatEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatEntry.swift; sourceTree = "<group>"; };
 		FE6201DD23A502FB00C965A5 /* ChatMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessage.swift; sourceTree = "<group>"; };
 		FE6201DF23A5357B00C965A5 /* ChatLinkPreviewCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatLinkPreviewCellView.swift; sourceTree = "<group>"; };
@@ -491,6 +493,7 @@
 				FE3AA0D02154077D001667A9 /* ChatsListGroupAbstractChat.swift */,
 				FE10BCE823FAA47800E214F3 /* InvitationGroup.swift */,
 				FE10BCEA23FAA60A00E214F3 /* InvitationItem.swift */,
+				FE61D6E8246C0D9500FB59F8 /* ChatsListGroupCommon.swift */,
 			);
 			path = groups;
 			sourceTree = "<group>";
@@ -1104,6 +1107,7 @@
 				FE30309E2447517A003B9D76 /* RosterWindowController.swift in Sources */,
 				FE5BE64C213AC3EA00463183 /* ChatsCellViewCloseButton.swift in Sources */,
 				FE3AA0D12154077D001667A9 /* ChatsListGroupAbstractChat.swift in Sources */,
+				FE61D6E9246C0D9500FB59F8 /* ChatsListGroupCommon.swift in Sources */,
 				FE5C6B2B228C119A003DAB30 /* ExecuteAdHocCommandController.swift in Sources */,
 				FE41FB3B215CD7F300AD86D3 /* XmppServiceEventHandler.swift in Sources */,
 				FEC336FD240FA36800EC1A0D /* JoinChannelView.swift in Sources */,
