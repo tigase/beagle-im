@@ -158,6 +158,8 @@ class DBChatHistoryStore {
         case archive(source: BareJID, version: MessageArchiveManagementModule.Version, messageId: String, timestamp: Date)
         case carbons(action: MessageCarbonsModule.Action)
     }
+    private var enqueuedItems = 0;
+    
         
     open func append(for account: BareJID, message: Message, source: MessageSource) {
         let direction: MessageDirection = account == message.from?.bareJid ? .outgoing : .incoming;
@@ -230,7 +232,7 @@ class DBChatHistoryStore {
         
         let (authorNickname, authorJid, recipientNickname, participantId) = MessageEventHandler.extractRealAuthor(from: message, for: account, with: jidFull);
                 
-        let state = MessageEventHandler.calculateState(direction: MessageEventHandler.calculateDirection(direction: direction, for: account, with: jid, authorNickname: authorNickname, authorJid: authorJid), isError: (message.type ?? .chat) == .error, isUnread: !fromArchive);
+        let state = MessageEventHandler.calculateState(direction: MessageEventHandler.calculateDirection(direction: direction, for: account, with: jid, authorNickname: authorNickname, authorJid: authorJid), isError: (message.type ?? .chat) == .error, isFromArchive: fromArchive, isMuc: message.type == .groupchat && message.mix == nil);
         
         var appendix: AppendixProtocol? = nil;
         if itemType == .message, let mixInivation = mixInvitation {

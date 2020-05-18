@@ -45,6 +45,8 @@
 		FE30D8B5214D39A700670BEC /* GeneralSettingsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8B4214D39A700670BEC /* GeneralSettingsController.swift */; };
 		FE30D8B7214D4BCD00670BEC /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8B6214D4BCD00670BEC /* Settings.swift */; };
 		FE30D8BA214ED28A00670BEC /* OpenGroupchatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30D8B9214ED28A00670BEC /* OpenGroupchatController.swift */; };
+		FE32A94724702D5B00E40BB1 /* db-schema-10.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE32A94624702D5B00E40BB1 /* db-schema-10.sql */; };
+		FE32A94924702FF100E40BB1 /* DBChatHistorySyncStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE32A94824702FF100E40BB1 /* DBChatHistorySyncStore.swift */; };
 		FE34BBD12157901100775B07 /* JabberDataFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE34BBD02157901100775B07 /* JabberDataFormView.swift */; };
 		FE34BBD52157DDF200775B07 /* MucModule_RoomError_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE34BBD42157DDF200775B07 /* MucModule_RoomError_extension.swift */; };
 		FE380ADA21B15720008717FA /* DownloadStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE380AD921B15720008717FA /* DownloadStore.swift */; };
@@ -263,6 +265,8 @@
 		FE30D8B4214D39A700670BEC /* GeneralSettingsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralSettingsController.swift; sourceTree = "<group>"; };
 		FE30D8B6214D4BCD00670BEC /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		FE30D8B9214ED28A00670BEC /* OpenGroupchatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenGroupchatController.swift; sourceTree = "<group>"; };
+		FE32A94624702D5B00E40BB1 /* db-schema-10.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-10.sql"; sourceTree = "<group>"; };
+		FE32A94824702FF100E40BB1 /* DBChatHistorySyncStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBChatHistorySyncStore.swift; sourceTree = "<group>"; };
 		FE34BBD02157901100775B07 /* JabberDataFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JabberDataFormView.swift; sourceTree = "<group>"; };
 		FE34BBD42157DDF200775B07 /* MucModule_RoomError_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MucModule_RoomError_extension.swift; sourceTree = "<group>"; };
 		FE380AD921B15720008717FA /* DownloadStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadStore.swift; sourceTree = "<group>"; };
@@ -642,6 +646,7 @@
 				FE41FB36215BBFC800AD86D3 /* DBCapabilitiesCache.swift */,
 				FE02DD12225BC33F00FA08EB /* DBOMEMOStore.swift */,
 				FE890D3724014EAF00107437 /* DBChannelStore.swift */,
+				FE32A94824702FF100E40BB1 /* DBChatHistorySyncStore.swift */,
 			);
 			path = database;
 			sourceTree = "<group>";
@@ -716,6 +721,7 @@
 				FE6201E523AA43C900C965A5 /* db-schema-7.sql */,
 				FE10BCF023FC495700E214F3 /* db-schema-8.sql */,
 				FE890D2F240020DD00107437 /* db-schema-9.sql */,
+				FE32A94624702D5B00E40BB1 /* db-schema-10.sql */,
 				FE890D1A23FEA5DF00107437 /* Conversation.storyboard */,
 				FEFFF7CC232FCF25004CB9CE /* ConversationDetails.storyboard */,
 				FE149D8122A5120300EE4E03 /* SearchHistory.storyboard */,
@@ -959,6 +965,7 @@
 				FE02DD11225B8D1100FA08EB /* db-schema-3.sql in Resources */,
 				FE149D8722A51AD900EE4E03 /* db-schema-4.sql in Resources */,
 				FE421B4921C92FBF0022DF77 /* LICENSE in Resources */,
+				FE32A94724702D5B00E40BB1 /* db-schema-10.sql in Resources */,
 				FEF9EC4F242FC9620090C913 /* Roster.storyboard in Resources */,
 				FE890D30240020DE00107437 /* db-schema-9.sql in Resources */,
 				FE5C6B2422896B12003DAB30 /* ServiceDiscovery.storyboard in Resources */,
@@ -1085,6 +1092,7 @@
 				FE890D3824014EAF00107437 /* DBChannelStore.swift in Sources */,
 				FEC5DC8621553F4700AA3E4F /* GroupchatViewController.swift in Sources */,
 				FE380ADA21B15720008717FA /* DownloadStore.swift in Sources */,
+				FE32A94924702FF100E40BB1 /* DBChatHistorySyncStore.swift in Sources */,
 				FEF844742173B9DC0067B005 /* Markdown.swift in Sources */,
 				FE6201DE23A502FB00C965A5 /* ChatMessage.swift in Sources */,
 				FE6E6C0221384D5F003B1696 /* DBChatHistoryStore.swift in Sources */,

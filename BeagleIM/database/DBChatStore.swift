@@ -307,8 +307,7 @@ open class DBChatStore {
     
     func process(chatState remoteChatState: ChatState, for account: BareJID, with jid: BareJID) {
         dispatcher.async {
-            if let chat = self.getChat(for: account, with: jid) {
-                (chat as? DBChat)?.update(remoteChatState: remoteChatState);
+            if let chat = self.getChat(for: account, with: jid) as? DBChat, chat.update(remoteChatState: remoteChatState) {
                 NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: chat);
             }
         }
@@ -323,10 +322,10 @@ open class DBChatStore {
                         self.unreadMessagesCount = self.unreadMessagesCount + 1;
                     }
                     if remoteChatState != nil {
-                        (chat as? DBChat)?.update(remoteChatState: remoteChatState);
+                        _ = (chat as? DBChat)?.update(remoteChatState: remoteChatState);
                     } else {
                         if (chat as? DBChat)?.remoteChatState == .composing {
-                            (chat as? DBChat)?.update(remoteChatState: .active);
+                            _ = (chat as? DBChat)?.update(remoteChatState: .active);
                         }
                     }
                     NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: chat);
@@ -404,6 +403,11 @@ open class DBChatStore {
     private func destroyChat(account: BareJID, chat: DBChatProtocol) {
         let params: [String: Any?] = ["id": chat.id];
         _ = try! self.closeChatStmt.update(params);
+        if chat is DBRoom {
+            DispatchQueue.global().async {
+                DBChatHistorySyncStore.instance.removeSyncPeriods(forAccount: account, component: chat.jid.bareJid);
+            }
+        }
     }
     
     private func getLastActivity(for account: BareJID, jid: BareJID) -> LastChatActivity? {
@@ -663,8 +667,10 @@ open class DBChatStore {
         
         private var remoteChatStateTimer: Foundation.Timer?;
         
-        func update(remoteChatState state: ChatState?) {
-            if let oldState = remoteChatState, oldState == .composing {
+        func update(remoteChatState state: ChatState?) -> Bool {
+            // proper handle when we have the same state!!
+            let prevState = remoteChatState;
+            if prevState == .composing {
                 remoteChatStateTimer?.invalidate();
                 remoteChatStateTimer = nil;
             }
@@ -684,6 +690,7 @@ open class DBChatStore {
                 });
                 }
             }
+            return remoteChatState != prevState;
         }
         
         override func createMessage(_ body: String, type: StanzaType = .chat, subject: String? = nil, additionalElements: [Element]? = nil) -> Message {

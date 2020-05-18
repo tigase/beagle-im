@@ -214,7 +214,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         }
     }
     
-    func updateItem(for account: BareJID, jid: BareJID, executeIfExists: ((ChatItemProtocol) -> Void)?, executeIfNotExists: (()->Void)?) {
+    func updateItem(for account: BareJID, jid: BareJID, onlyIf: ((ChatItemProtocol)->Bool)? = nil, executeIfExists: ((ChatItemProtocol) -> Void)?, executeIfNotExists: (()->Void)?) {
         dispatcher.async {
             let items = DispatchQueue.main.sync { return self.items };
             guard let idx = items.firstIndex(where: { (item) -> Bool in
@@ -225,6 +225,11 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
             }
             
             let item = self.items[idx];
+            if let filter = onlyIf {
+                guard filter(item) else {
+                    return
+                }
+            }
             if let chat = item.chat as? DBChatStore.DBChat, chat.remoteChatState == .composing {
                 chat.update(remoteChatState: .active);
             }

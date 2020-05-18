@@ -53,7 +53,7 @@ class ChatsListGroupCommon: ChatsListGroupAbstractChat {
             return;
         }
         
-        self.updateItem(for: account, jid: jid, executeIfExists: nil, executeIfNotExists: nil);
+        self.updateItem(for: account, jid: jid, onlyIf: { item -> Bool in (item.chat is DBChatStore.DBChat) }, executeIfExists: nil, executeIfNotExists: nil);
     }
     
     @objc func rosterItemUpdated(_ notification: Notification) {

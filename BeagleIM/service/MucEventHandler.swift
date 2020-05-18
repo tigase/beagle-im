@@ -36,10 +36,34 @@ class MucEventHandler: XmppServiceEventHandler {
     func handle(event: Event) {
         switch event {
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
-            if let mucModule: MucModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(MucModule.ID) {
+            if let client = XmppService.instance.getClient(for: e.sessionObject.userBareJid!), let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) {
                 mucModule.roomsManager.getRooms().forEach { (room) in
-                    _ = room.rejoin();
-                    NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
+                    // first we need to check if room supports MAM
+                    if let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID), let mamModule: MessageArchiveManagementModule = client.modulesManager.getModule(MessageArchiveManagementModule.ID) {
+                        discoModule.getInfo(for: room.jid, completionHandler: { result in
+                            var mamVersions: [MessageArchiveManagementModule.Version] = [];
+                            switch result {
+                            case .success(_, _, let features):
+                                mamVersions = features.map({ MessageArchiveManagementModule.Version(rawValue: $0) }).filter({ $0 != nil}).map({ $0! });
+                            default:
+                                break;
+                            }
+                            if let timestamp = room.lastMessageDate, !mamVersions.isEmpty {
+                                let account = e.sessionObject.userBareJid!;
+                                room.onRoomJoined = { room in
+                                    MessageEventHandler.syncMessages(for: account, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: room.jid, since: timestamp);
+                                }
+                                _ = room.rejoin(skipHistoryFetch: true);
+                                NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
+                            } else {
+                                _ = room.rejoin();
+                                NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
+                            }
+                        });
+                    } else {
+                        _ = room.rejoin();
+                        NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
+                    }
                 }
             }
         case let e as MucModule.YouJoinedEvent:
