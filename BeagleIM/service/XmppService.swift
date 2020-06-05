@@ -257,13 +257,16 @@ class XmppService: EventHandler {
     
     fileprivate func updateCurrentStatus() {
         dispatcher.async {
-            guard self._clients.values.first(where: { (client) -> Bool in
-                return client.state == .connected;
-            }) != nil else {
-                DispatchQueue.main.async { self.currentStatus = self.status.with(show: nil); }
-                return;
+            let clients = self._clients.values;
+            DispatchQueue.global(qos: .default).async {
+                guard clients.first(where: { (client) -> Bool in
+                    return client.state == .connected;
+                }) != nil else {
+                    DispatchQueue.main.async { self.currentStatus = self.status.with(show: nil); }
+                    return;
+                }
+                DispatchQueue.main.async { self.currentStatus = self.status; }
             }
-            DispatchQueue.main.async { self.currentStatus = self.status; }
         }
     }
 

@@ -386,7 +386,9 @@ class MessageEventHandler: XmppServiceEventHandler {
         guard let first = DBChatHistorySyncStore.instance.loadSyncPeriods(forAccount: account, component: jid).first else {
             return;
         }
-        syncMessages(forPeriod: first, version: version);
+        syncSinceQueue.async {
+            syncMessages(forPeriod: first, version: version);
+        }
     }
     
     static func syncMessages(forPeriod period: DBChatHistorySyncStore.Period, version: MessageArchiveManagementModule.Version? = nil, rsmQuery: RSM.Query? = nil) {
