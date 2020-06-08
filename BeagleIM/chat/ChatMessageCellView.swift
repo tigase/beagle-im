@@ -109,7 +109,7 @@ class ChatMessageCellView: BaseChatCellView {
                         }
                     }
                     textStorage.endEditing();
-                    that.message.setNeedsDisplay(that.message.visibleRect);
+                    that.message.invalidateIntrinsicContentSize();
                 }
             }
         }
@@ -181,4 +181,9 @@ class ChatMessageSelectableCellView: ChatMessageCellView {
         message.needsToDraw(message.visibleRect);
     }
 
+    override func layout() {
+        super.layout();
+        self.message.invalidateIntrinsicContentSize();
+        super.layout();
+    }
 }

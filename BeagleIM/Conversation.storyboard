@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="16096"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="16097"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -16,13 +16,13 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <scrollView verticalHuggingPriority="249" borderType="none" autohidesScrollers="YES" horizontalLineScroll="64" horizontalPageScroll="10" verticalLineScroll="64" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fFm-Kw-0RT">
-                                <rect key="frame" x="0.0" y="0.0" width="333" height="422"/>
+                                <rect key="frame" x="0.0" y="0.0" width="333" height="424"/>
                                 <clipView key="contentView" copiesOnScroll="NO" id="qKJ-4o-3VI">
-                                    <rect key="frame" x="0.0" y="0.0" width="333" height="422"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="333" height="424"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="none" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="64" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" id="n3E-id-LN2" customClass="ChatViewTableView" customModule="BeagleIM" customModuleProvider="target">
-                                            <rect key="frame" x="0.0" y="0.0" width="333" height="422"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="333" height="424"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="backgroundColor" name="chatBackgroundColor"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
@@ -60,7 +60,7 @@
                                                                     </textFieldCell>
                                                                 </textField>
                                                                 <textView verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" editable="NO" selectable="NO" drawsBackground="NO" verticallyResizable="YES" translatesAutoresizingMaskIntoConstraints="NO" id="JuY-h9-yrg" customClass="MessageTextView" customModule="BeagleIM" customModuleProvider="target">
-                                                                    <rect key="frame" x="42" y="4" width="265" height="15"/>
+                                                                    <rect key="frame" x="42" y="3" width="265" height="16"/>
                                                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     <size key="maxSize" width="10000" height="10000"/>
@@ -105,6 +105,7 @@
                                                                 <constraint firstItem="ur8-uA-e0C" firstAttribute="leading" secondItem="zm1-VS-PWX" secondAttribute="leading" constant="8" id="WhT-TF-9IU"/>
                                                                 <constraint firstItem="JuY-h9-yrg" firstAttribute="top" secondItem="zBO-tP-VuA" secondAttribute="bottom" constant="1" id="XNT-Ko-azr"/>
                                                                 <constraint firstItem="0Dy-LN-gMD" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="zBO-tP-VuA" secondAttribute="trailing" constant="8" id="ZrB-nJ-RAE"/>
+                                                                <constraint firstItem="JuY-h9-yrg" firstAttribute="width" secondItem="zm1-VS-PWX" secondAttribute="width" constant="-68" id="e39-RH-L1c"/>
                                                                 <constraint firstItem="zBO-tP-VuA" firstAttribute="leading" secondItem="ur8-uA-e0C" secondAttribute="trailing" constant="4" id="e6T-hA-r37"/>
                                                                 <constraint firstAttribute="bottom" secondItem="JuY-h9-yrg" secondAttribute="bottom" constant="4" id="fhw-FE-PFb"/>
                                                                 <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="ur8-uA-e0C" secondAttribute="bottom" id="pIu-eV-7K9"/>
@@ -125,7 +126,7 @@
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textView horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" editable="NO" selectable="NO" drawsBackground="NO" verticallyResizable="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4qp-eQ-eZJ" customClass="MessageTextView" customModule="BeagleIM" customModuleProvider="target">
-                                                                    <rect key="frame" x="42" y="4" width="265" height="15"/>
+                                                                    <rect key="frame" x="42" y="3" width="265" height="16"/>
                                                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     <size key="maxSize" width="10000" height="10000"/>
@@ -156,6 +157,7 @@
                                                                 <constraint firstItem="4qp-eQ-eZJ" firstAttribute="top" secondItem="oaM-bI-JHh" secondAttribute="top" id="Lbk-7N-4Wx"/>
                                                                 <constraint firstItem="4qp-eQ-eZJ" firstAttribute="leading" secondItem="oaM-bI-JHh" secondAttribute="leading" constant="42" id="TQ5-Jr-V5P"/>
                                                                 <constraint firstItem="e0l-RR-CcX" firstAttribute="top" relation="greaterThanOrEqual" secondItem="oaM-bI-JHh" secondAttribute="top" constant="1" id="V9P-xM-d5Z"/>
+                                                                <constraint firstItem="4qp-eQ-eZJ" firstAttribute="width" secondItem="oaM-bI-JHh" secondAttribute="width" constant="-68" id="ict-OV-XMQ"/>
                                                                 <constraint firstAttribute="bottom" secondItem="4qp-eQ-eZJ" secondAttribute="bottom" constant="4" id="oKs-TS-yUz"/>
                                                                 <constraint firstItem="e0l-RR-CcX" firstAttribute="bottom" secondItem="4qp-eQ-eZJ" secondAttribute="bottom" id="pps-BW-3W3"/>
                                                                 <constraint firstItem="e0l-RR-CcX" firstAttribute="leading" secondItem="4qp-eQ-eZJ" secondAttribute="trailing" constant="2" id="w7L-KK-9xh"/>

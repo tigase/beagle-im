@@ -30,10 +30,11 @@ class MessageTextView: NSTextView, NSLayoutManagerDelegate {
                 return .zero
             }
 
-            layoutManager.typesetterBehavior = .latestBehavior;
+            textContainer.size = NSSize(width: self.superview!.superview!.bounds.width - 68, height: CGFloat.greatestFiniteMagnitude);
             layoutManager.ensureLayout(for: textContainer);
             layoutManager.glyphRange(for: textContainer);
             let size = layoutManager.usedRect(for: textContainer).size;
+            //print("rendered size:", size, self.superview!.superview!.bounds.width, textContainer.size, "for:", self.string, "superview:", self.superview);
             return size;
         }
     }
@@ -47,27 +48,34 @@ class MessageTextView: NSTextView, NSLayoutManagerDelegate {
         }
         set {
             let alignment = self.alignment;
+            self.textStorage?.beginEditing();
             self.textStorage?.setAttributedString(newValue);
             if alignment == .center {
                 let style = NSMutableParagraphStyle();
                 style.alignment = .center;
                 self.textStorage?.addAttribute(.paragraphStyle, value: style, range: NSRange(location: 0, length: textStorage!.length));
             }
-            //self.invalidateIntrinsicContentSize();
+            self.textStorage?.endEditing();
+            self.invalidateIntrinsicContentSize();
         }
     }
     
     private var heightConstraint: NSLayoutConstraint?;
 
     override func awakeFromNib() {
+        self.maxSize = NSSize(width: 0, height: CGFloat.greatestFiniteMagnitude);
         self.layoutManager?.delegate = self;
+        self.layoutManager?.typesetterBehavior = .latestBehavior;
+        self.layoutManager?.backgroundLayoutEnabled = false;
         self.textContainer?.lineFragmentPadding = 1;
         self.textContainerInset = .zero;
+        self.textContainer?.widthTracksTextView = false;
+        self.textContainer?.heightTracksTextView = false;
         self.usesAdaptiveColorMappingForDarkAppearance = true;
     }
     
-    func layoutManager(_ layoutManager: NSLayoutManager, didCompleteLayoutFor textContainer: NSTextContainer?, atEnd layoutFinishedFlag: Bool) {
-        self.invalidateIntrinsicContentSize();
-    }
+//    func layoutManager(_ layoutManager: NSLayoutManager, didCompleteLayoutFor textContainer: NSTextContainer?, atEnd layoutFinishedFlag: Bool) {
+//        self.invalidateIntrinsicContentSize();
+//    }
     
 }
