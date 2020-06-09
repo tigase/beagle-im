@@ -125,6 +125,11 @@ class ChatMessageCellView: BaseChatCellView {
         }
         return msg;
     }
+        
+    override func layout() {
+        super.layout();
+        self.message.invalidateIntrinsicContentSize();
+    }
 
 }
 
@@ -181,9 +186,4 @@ class ChatMessageSelectableCellView: ChatMessageCellView {
         message.needsToDraw(message.visibleRect);
     }
 
-    override func layout() {
-        super.layout();
-        self.message.invalidateIntrinsicContentSize();
-        super.layout();
-    }
 }
