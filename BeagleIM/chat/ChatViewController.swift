@@ -576,11 +576,11 @@ class ChatViewTableView: NSTableView {
             return;
         }
 
-        guard row == 0 else {
-            let rect = self.rect(ofRow: row);
-            self.scrollToVisible(NSRect(origin: NSPoint(x: rect.origin.x, y: (rect.origin.y - max(0, self.visibleRect.height - rect.size.height))), size: rect.size));
-            return;
-        }
+//        guard row == 0 else {
+//            let rect = self.rect(ofRow: row);
+//            self.scrollToVisible(NSRect(origin: NSPoint(x: rect.origin.x, y: (rect.origin.y - max(0, self.visibleRect.height - rect.size.height))), size: rect.size));
+//            return;
+//        }
 
         super.scrollRowToVisible(row);
         let visibleRows = self.rows(in: self.visibleRect);
