@@ -107,6 +107,15 @@ class ChatViewDataSource {
             return i1.timestamp.compare(i2.timestamp) == .orderedAscending;
         };
     }
+    
+    func isAnyMatching(_ fn: (ChatViewItemProtocol)->Bool, in range: Range<Int>) -> Bool {
+        for i in range {
+            if let item = store.item(at: i), fn(item) {
+                return true;
+            }
+        }
+        return false;
+    }
         
     func add(item: ChatViewItemProtocol, completionHandler: ((IndexSet,Int?)->Void)? = nil) {
         add(items: [item], completionHandler: completionHandler);

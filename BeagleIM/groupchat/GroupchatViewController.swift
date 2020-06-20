@@ -22,7 +22,7 @@
 import AppKit
 import TigaseSwift
 
-class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableViewDelegate {
+class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableViewDelegate, ConversationLogContextMenuDelegate {
 
     @IBOutlet var avatarView: AvatarViewWithStatus!;
     @IBOutlet var titleView: NSTextField!;
@@ -324,20 +324,45 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         }
     }
     
-    @IBAction func enterInInputTextField(_ sender: NSTextField) {
-        let msg = sender.stringValue
-        guard !msg.isEmpty else {
-            return;
+//    @IBAction func enterInInputTextField(_ sender: NSTextField) {
+//        let msg = sender.stringValue
+//        guard !msg.isEmpty else {
+//            return;
+//        }
+//        
+//        guard send(message: msg, correctedMessageOriginId: self.correctedMessageOriginId) else {
+//            return;
+//        }
+//        
+//        (sender as? AutoresizingTextField)?.reset();
+//    }
+    func prepareConversationLogContextMenu(dataSource: ChatViewDataSource, menu: NSMenu, forRow row: Int) {
+        if let item = dataSource.getItem(at: row) as? ChatMessage, item.state.direction == .outgoing {
+            if item.state.isError {
+            } else if item is ChatMessage, !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0 is ChatMessage }, in: 0..<row) {
+                let correct = menu.addItem(withTitle: "Correct message", action: #selector(correctMessage), keyEquivalent: "");
+                correct.target = self;
+                correct.tag = item.id;
+            }
         }
-        
-        guard send(message: msg) else {
-            return;
-        }
-        
-        (sender as? AutoresizingTextField)?.reset();
     }
     
-    override func send(message: String) -> Bool {
+    @objc func correctMessage(_ sender: NSMenuItem) {
+        let tag = sender.tag;
+        guard tag >= 0 else {
+            return
+        }
+     
+        guard let item = dataSource.getItem(withId: tag) as? ChatMessage else {
+            return;
+        }
+        
+        DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
+            self?.startMessageCorrection(message: item.message, originId: originId);
+        })
+    }
+    
+    override func send(message: String, correctedMessageOriginId: String?) -> Bool {
         guard (XmppService.instance.getClient(for: account)?.state ?? .disconnected) == .connected else {
             return false;
         }
@@ -345,6 +370,12 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             return false;
         }
         let message = room.createMessage(message);
+        if let id = message.id, UUID(uuidString: id) != nil {
+            message.originId = id;
+        }
+        if correctedMessageOriginId != nil {
+            message.lastMessageCorrectionId = correctedMessageOriginId;
+        }
         room.context.writer?.write(message);
         return true;
     }
@@ -357,6 +388,9 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             return false;
         }
         let message = room.createMessage(uploadedUrl.absoluteString);
+        if let id = message.id, UUID(uuidString: id) != nil {
+            message.originId = id;
+        }
         message.oob = uploadedUrl.absoluteString;
         room.context.writer?.write(message);
         return true;

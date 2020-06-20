@@ -279,10 +279,16 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     }
 
     func prepareConversationLogContextMenu(dataSource: ChatViewDataSource, menu: NSMenu, forRow row: Int) {
-        if let item = dataSource.getItem(at: row) as? ChatMessage, item.state.direction == .outgoing && item.state.isError {
-            let resend = menu.addItem(withTitle: "Resend message", action: #selector(resendMessage), keyEquivalent: "");
-            resend.target = self;
-            resend.tag = item.id;
+        if let item = dataSource.getItem(at: row) as? ChatMessage, item.state.direction == .outgoing {
+            if item.state.isError {
+                let resend = menu.addItem(withTitle: "Resend message", action: #selector(resendMessage), keyEquivalent: "");
+                resend.target = self;
+                resend.tag = item.id;
+            } else if item is ChatMessage, !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0 is ChatMessage }, in: 0..<row) {
+                let correct = menu.addItem(withTitle: "Correct message", action: #selector(correctMessage), keyEquivalent: "");
+                correct.target = self;
+                correct.tag = item.id;
+            }
         }
     }
 
@@ -309,13 +315,28 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             break;
         }
     }
+    
+    @objc func correctMessage(_ sender: NSMenuItem) {
+        let tag = sender.tag;
+        guard tag >= 0 else {
+            return
+        }
+     
+        guard let item = dataSource.getItem(withId: tag) as? ChatMessage else {
+            return;
+        }
+        
+        DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
+            self?.startMessageCorrection(message: item.message, originId: originId);
+        })
+    }
 
-    override func send(message: String) -> Bool {
+    override func send(message: String, correctedMessageOriginId: String?) -> Bool {
         guard let chat = self.chat as? DBChatStore.DBChat else {
             return false;
             
         }
-        MessageEventHandler.sendMessage(chat: chat, body: message, url: nil);
+        MessageEventHandler.sendMessage(chat: chat, body: message, url: nil, correctedMessageOriginId: correctedMessageOriginId);
         return true;
     }
     

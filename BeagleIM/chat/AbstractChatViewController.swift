@@ -51,6 +51,8 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     }
     
     var scrollChatToMessageWithId: Int?;
+    
+    private(set) var correctedMessageOriginId: String?;
                 
     override func viewDidLoad() {
         super.viewDidLoad();
@@ -100,6 +102,12 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     }
     
     
+    func startMessageCorrection(message: String, originId: String) {
+        correctedMessageOriginId = originId;
+        self.messageField.string = message;
+        self.updateMessageFieldSize();
+    }
+    
     func textDidChange(_ notification: Notification) {
         self.updateMessageFieldSize();
     }
@@ -121,10 +129,11 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
                 guard !msg.isEmpty else {
                     return;
                 }
-                guard self.send(message: msg) else {
+                guard self.send(message: msg, correctedMessageOriginId: self.correctedMessageOriginId) else {
                     return;
                 }
                 self.messageField.reset();
+                self.correctedMessageOriginId = nil;
                 self.updateMessageFieldSize();
             }
             return true;
@@ -133,7 +142,7 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
         }
     }
         
-    func send(message: String) -> Bool {
+    func send(message: String, correctedMessageOriginId: String?) -> Bool {
         return false;
     }
     

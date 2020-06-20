@@ -179,7 +179,9 @@ open class DBChatStore {
     
     func createChannel(for account: BareJID, channelJid: BareJID, participantId: String, nick: String?, state: Channel.State) -> Result<DBChannel, ErrorCondition> {
         return dispatcher.sync {
-            let accountChats = self.accountChats[account]!;
+            guard let accountChats = self.accountChats[account] else {
+                return .failure(.undefined_condition);
+            }
             guard let dbChat = accountChats.get(with: channelJid) else {
                 let options = ChannelOptions(participantId: participantId, nick: nick, state: state);
                 guard let data = try? JSONEncoder().encode(options), let dataStr = String(data: data, encoding: .utf8) else {
@@ -317,8 +319,9 @@ open class DBChatStore {
         dispatcher.async {
             if let chat = self.getChat(for: account, with: jid) {
                 let lastActivity = LastChatActivity.from(itemType: itemType, data: message, sender: senderNickname);
-                if chat.updateLastActivity(lastActivity, timestamp: timestamp, isUnread: state.isUnread) {
-                    if state.isUnread && !self.isMuted(chat: chat) {
+                let unread = lastActivity != nil && state.isUnread;
+                if chat.updateLastActivity(lastActivity, timestamp: timestamp, isUnread: unread) {
+                    if unread && !self.isMuted(chat: chat) {
                         self.unreadMessagesCount = self.unreadMessagesCount + 1;
                     }
                     if remoteChatState != nil {
@@ -624,7 +627,7 @@ open class DBChatStore {
             if isUnread {
                 unread = unread + 1;
             }
-            guard self.lastActivity == nil || self.timestamp.compare(timestamp) == .orderedAscending else {
+            guard self.lastActivity == nil || self.timestamp.compare(timestamp) != .orderedDescending else {
                 return isUnread;
             }
             if lastActivity != nil {
@@ -742,7 +745,7 @@ open class DBChatStore {
             if isUnread {
                 unread = unread + 1;
             }
-            guard self.lastActivity == nil || self.timestamp.compare(timestamp) == .orderedAscending else {
+            guard self.lastActivity == nil || self.timestamp.compare(timestamp) != .orderedDescending else {
                 return isUnread;
             }
             
@@ -822,7 +825,7 @@ open class DBChatStore {
             if isUnread {
                 unread = unread + 1;
             }
-            guard self.lastActivity == nil || self.timestamp.compare(timestamp) == .orderedAscending else {
+            guard self.lastActivity == nil || self.timestamp.compare(timestamp) != .orderedDescending else {
                 return isUnread;
             }
             

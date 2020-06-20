@@ -48,7 +48,7 @@ open class AccountManager {
             return [];
         }
         
-        return results.map { item -> BareJID in
+        return results.filter({ $0[kSecAttrAccount as String] != nil}).map { item -> BareJID in
             return BareJID(item[kSecAttrAccount as String] as! String);
             }.sorted(by: { (j1, j2) -> Bool in
                 j1.stringValue.compare(j2.stringValue) == .orderedAscending
