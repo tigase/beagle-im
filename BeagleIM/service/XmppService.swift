@@ -392,7 +392,7 @@ class XmppService: EventHandler {
         _ = client.modulesManager.register(PingModule());
         _ = client.modulesManager.register(BlockingCommandModule());
         
-        client.modulesManager.register(CapabilitiesModule()).cache = DBCapabilitiesCache.instance;
+        client.modulesManager.register(CapabilitiesModule(additionalFeatures: [.lastMessageCorrection, .messageRetraction])).cache = DBCapabilitiesCache.instance;
         _ = client.modulesManager.register(PubSubModule());
         _ = client.modulesManager.register(PEPUserAvatarModule());
         _ = client.modulesManager.register(PEPBookmarksModule());

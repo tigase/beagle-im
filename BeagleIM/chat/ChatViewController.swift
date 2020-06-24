@@ -279,16 +279,25 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     }
 
     func prepareConversationLogContextMenu(dataSource: ChatViewDataSource, menu: NSMenu, forRow row: Int) {
-        if let item = dataSource.getItem(at: row) as? ChatMessage, item.state.direction == .outgoing {
+        if let item = dataSource.getItem(at: row), item.state.direction == .outgoing && (item is ChatMessage || item is ChatAttachment) {
             if item.state.isError {
                 let resend = menu.addItem(withTitle: "Resend message", action: #selector(resendMessage), keyEquivalent: "");
                 resend.target = self;
                 resend.tag = item.id;
-            } else if item is ChatMessage, !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0 is ChatMessage }, in: 0..<row) {
-                let correct = menu.addItem(withTitle: "Correct message", action: #selector(correctMessage), keyEquivalent: "");
-                correct.target = self;
-                correct.tag = item.id;
+            } else {
+                if item is ChatMessage && !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0 is ChatMessage }, in: 0..<row) {
+                    let correct = menu.addItem(withTitle: "Correct message", action: #selector(correctMessage), keyEquivalent: "");
+                    correct.target = self;
+                    correct.tag = item.id;
+                }
+                
+                if XmppService.instance.getClient(for: item.account)?.state ?? .disconnected == .connected {
+                    let retract = menu.addItem(withTitle: "Retract message", action: #selector(retractMessage), keyEquivalent: "");
+                    retract.target = self;
+                    retract.tag = item.id;
+                }
             }
+            
         }
     }
 
@@ -331,6 +340,40 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         })
     }
 
+    @objc func retractMessage(_ sender: NSMenuItem) {
+        let tag = sender.tag;
+        guard tag >= 0 else {
+            return
+        }
+        
+        guard let item = dataSource.getItem(withId: tag) as? ChatEntry, let chat = self.chat as? Chat else {
+            return;
+        }
+        
+        let alert = NSAlert();
+        alert.messageText = "Are you sure you want to retract that message?"
+        alert.informativeText = "That message will be removed immediately and it's receives will be asked to remove it as well.";
+        alert.addButton(withTitle: "Retract");
+        alert.addButton(withTitle: "Cancel");
+        alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
+            switch result {
+            case .alertFirstButtonReturn:
+                DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
+                    let message = chat.createMessageRetraction(forMessageWithId: originId);
+                    message.id = UUID().uuidString;
+                    message.originId = message.id;
+                    guard let client = XmppService.instance.getClient(for: item.account), client.state == .connected else {
+                        return;
+                    }
+                    client.context.writer?.write(message);
+                    DBChatHistoryStore.instance.retractMessage(for: item.account, with: item.jid, stanzaId: originId, authorNickname: item.authorNickname, participantId: item.participantId, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
+                })
+            default:
+                break;
+            }
+        })
+    }
+        
     override func send(message: String, correctedMessageOriginId: String?) -> Bool {
         guard let chat = self.chat as? DBChatStore.DBChat else {
             return false;
@@ -537,12 +580,15 @@ public enum MessageState: Int {
 
     case outgoing_delivered = 9
     case outgoing_read = 11
+    
+//    case incoming_retracted = 12
+//    case outgoing_retracted = 13
 
     var direction: MessageDirection {
         switch self {
-        case .incoming, .incoming_unread, .incoming_error, .incoming_error_unread:
+        case .incoming, .incoming_unread, .incoming_error, .incoming_error_unread://, .incoming_retracted:
             return .incoming;
-        case .outgoing, .outgoing_unsent, .outgoing_delivered, .outgoing_read, .outgoing_error_unread, .outgoing_error:
+        case .outgoing, .outgoing_unsent, .outgoing_delivered, .outgoing_read, .outgoing_error_unread, .outgoing_error://, .outgoing_retracted:
             return .outgoing;
         }
     }

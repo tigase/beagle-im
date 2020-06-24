@@ -244,8 +244,8 @@ class ChatViewDataSource {
             DispatchQueue.main.async {
                 self.store = store;
                 self.delegate?.itemsRemoved(at: IndexSet([oldIdx]));
-                if oldIdx != 0 && self.store.count > 0 {
-                    self.delegate?.itemUpdated(indexPath: IndexPath(item: oldIdx, section: 0));
+                if oldIdx > 0 && self.store.count > 0 {
+                    self.delegate?.itemUpdated(indexPath: IndexPath(item: oldIdx - 1, section: 0));
                 }
             }
         }

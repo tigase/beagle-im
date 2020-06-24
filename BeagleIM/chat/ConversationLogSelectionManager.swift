@@ -336,9 +336,6 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
 
         let menu = NSMenu(title: "Actions");
         let row = table.row(at: superview.convert(event.locationInWindow, from: nil));
-        if row != NSNotFound {
-            self.controller?.prepareContextMenu(menu, forRow: row);
-        }
 
         if row != NSNotFound || (selectionStart != nil && selectionEnd != nil) {
             var copy = menu.addItem(withTitle: "Copy text", action: #selector(copySelectedText), keyEquivalent: "");
@@ -354,6 +351,9 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
                 copy.target = self;
                 copy.representedObject = link;
             }
+        }
+        if row != NSNotFound {
+            self.controller?.prepareContextMenu(menu, forRow: row);
         }
         if !menu.items.isEmpty {
             NSMenu.popUpContextMenu(menu, with: event, for: table);

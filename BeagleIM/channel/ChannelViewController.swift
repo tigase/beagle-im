@@ -161,12 +161,19 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     }
 
     func prepareConversationLogContextMenu(dataSource: ChatViewDataSource, menu: NSMenu, forRow row: Int) {
-        if let item = dataSource.getItem(at: row) as? ChatMessage, item.state.direction == .outgoing {
+        if let item = dataSource.getItem(at: row), item.state.direction == .outgoing {
             if item.state.isError {
-            } else if item is ChatMessage, !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0 is ChatMessage }, in: 0..<row) {
-                let correct = menu.addItem(withTitle: "Correct message", action: #selector(correctMessage), keyEquivalent: "");
-                correct.target = self;
-                correct.tag = item.id;
+            } else {
+                if item is ChatMessage, !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0 is ChatMessage }, in: 0..<row) {
+                    let correct = menu.addItem(withTitle: "Correct message", action: #selector(correctMessage), keyEquivalent: "");
+                    correct.target = self;
+                    correct.tag = item.id;
+                }
+                if (self.chat as? Channel)?.state ?? .left == .joined && XmppService.instance.getClient(for: item.account)?.state ?? .disconnected == .connected {
+                    let retract = menu.addItem(withTitle: "Retract message", action: #selector(retractMessage), keyEquivalent: "");
+                    retract.target = self;
+                    retract.tag = item.id;
+                }
             }
         }
     }
@@ -192,6 +199,40 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         
         DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
             self?.startMessageCorrection(message: item.message, originId: originId);
+        })
+    }
+    
+    @objc func retractMessage(_ sender: NSMenuItem) {
+        let tag = sender.tag;
+        guard tag >= 0 else {
+            return
+        }
+        
+        guard let item = dataSource.getItem(withId: tag) as? ChatEntry, let chat = self.chat as? Channel else {
+            return;
+        }
+        
+        let alert = NSAlert();
+        alert.messageText = "Are you sure you want to retract that message?"
+        alert.informativeText = "That message will be removed immediately and it's receives will be asked to remove it as well.";
+        alert.addButton(withTitle: "Retract");
+        alert.addButton(withTitle: "Cancel");
+        alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
+            switch result {
+            case .alertFirstButtonReturn:
+                DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
+                    let message = chat.createMessageRetraction(forMessageWithId: originId);
+                    message.id = UUID().uuidString;
+                    message.originId = message.id;
+                    guard let client = XmppService.instance.getClient(for: item.account), client.state == .connected else {
+                        return;
+                    }
+                    client.context.writer?.write(message);
+                    DBChatHistoryStore.instance.retractMessage(for: item.account, with: item.jid, stanzaId: originId, authorNickname: item.authorNickname, participantId: item.participantId, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
+                })
+            default:
+                break;
+            }
         })
     }
     
