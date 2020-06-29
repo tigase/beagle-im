@@ -160,7 +160,8 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         return self;
     }
 
-    func prepareConversationLogContextMenu(dataSource: ChatViewDataSource, menu: NSMenu, forRow row: Int) {
+    override func prepareConversationLogContextMenu(dataSource: ChatViewDataSource, menu: NSMenu, forRow row: Int) {
+        super.prepareConversationLogContextMenu(dataSource: dataSource, menu: menu, forRow: row);
         if let item = dataSource.getItem(at: row), item.state.direction == .outgoing {
             if item.state.isError {
             } else {

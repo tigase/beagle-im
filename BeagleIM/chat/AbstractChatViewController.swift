@@ -65,7 +65,7 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
         self.conversationLogController?.scrollChatToMessageWithId = self.scrollChatToMessageWithId;
         self.scrollChatToMessageWithId = nil
         super.viewWillAppear();
-        self.messageField?.placeholderAttributedString = account != nil ? NSAttributedString(string: "from \(account.stringValue)...", attributes: [.foregroundColor: NSColor.placeholderTextColor]) : nil;
+        self.messageField?.placeholderAttributedString = account != nil ? NSAttributedString(string: "from \(account.stringValue)...", attributes: [.foregroundColor: NSColor.placeholderTextColor, .font: NSFont.systemFont(ofSize: NSFont.systemFontSize)]) : nil;
         
         self.updateMessageFieldSize();
                 
@@ -161,6 +161,32 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
         }
     }
     
+    func prepareConversationLogContextMenu(dataSource: ChatViewDataSource, menu: NSMenu, forRow row: Int) {
+        if row != NSNotFound || (self.conversationLogController?.selectionManager.hasSelection ?? false) {
+            var reply = menu.addItem(withTitle: "Reply", action: #selector(replySelectedMessages), keyEquivalent: "");
+            reply.target = self
+            reply.tag = row;
+        }
+    }
+    
+    @objc func replySelectedMessages(_ sender: Any) {
+        NSPasteboard.general.clearContents();
+        guard let items = self.conversationLogController?.selectionManager.sortedSelectedTexts(row: (sender as? NSMenuItem)?.tag ?? NSNotFound) else {
+            return;
+        }
+        
+        // need to insert "> " on any "\n"
+        let text: String = items.flatMap { $0.string.split(separator: "\n")}.map {
+            if $0.starts(with: ">") {
+                return ">\($0)";
+            } else {
+                return "> \($0)"
+            }
+        }.joined(separator: "\n");
+        let current = messageField.string;
+        self.messageField.string = current.isEmpty ? "\(text)\n" : "\(current)\n\(text)\n";
+        self.updateMessageFieldSize();
+    }
 }
 
 extension NSTextField {

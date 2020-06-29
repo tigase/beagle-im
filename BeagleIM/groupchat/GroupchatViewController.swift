@@ -336,7 +336,8 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
 //        
 //        (sender as? AutoresizingTextField)?.reset();
 //    }
-    func prepareConversationLogContextMenu(dataSource: ChatViewDataSource, menu: NSMenu, forRow row: Int) {
+    override func prepareConversationLogContextMenu(dataSource: ChatViewDataSource, menu: NSMenu, forRow row: Int) {
+        super.prepareConversationLogContextMenu(dataSource: dataSource, menu: menu, forRow: row);
         if let item = dataSource.getItem(at: row), item.state.direction == .outgoing && (item is ChatMessage || item is ChatAttachment) {
             if item.state.isError {
             } else {

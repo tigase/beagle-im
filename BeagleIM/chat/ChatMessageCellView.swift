@@ -45,10 +45,11 @@ class ChatMessageCellView: BaseChatCellView {
         id = item.id;
         let messageBody = self.messageBody(item: item);
         let msg = NSMutableAttributedString(string: messageBody);
-        msg.setAttributes([.font: NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .light)], range: NSRange(location: 0, length: msg.length));
+        let fontSize = NSFont.systemFontSize;
+        msg.setAttributes([.font: NSFont.systemFont(ofSize: fontSize, weight: .light)], range: NSRange(location: 0, length: msg.length));
         
         if Settings.enableMarkdownFormatting.bool() {
-            Markdown.applyStyling(attributedString: msg, showEmoticons: Settings.showEmoticons.bool());
+            Markdown.applyStyling(attributedString: msg, fontSize: fontSize, showEmoticons: Settings.showEmoticons.bool());
         }
         if let nick = nickname {
             msg.markMention(of: nick, withColor: NSColor.systemBlue, bold: Settings.boldKeywords.bool());
