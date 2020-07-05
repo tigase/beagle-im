@@ -61,6 +61,9 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
     var hideFields: [String] = [];
     var instruction: String?;
     
+    var xmppClient: XMPPClient?;
+    var jid: JID?;
+    var bob: [BobData] = [];
     var form: JabberDataElement? {
         didSet {
             visibleFields = form?.visibleFieldNames.filter({ name -> Bool in !self.hideFields.contains(name)}) ?? [];
@@ -218,12 +221,39 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
                     return cellView;
                 } else {
                     let cellView = NSTableCellView(frame: .zero);
+                    var mediaView: MediaView?;
+                    if let medias = field?.media, let media = medias.first, let uri = media.uris.first(where: { $0.type.starts(with: "image/") }) {
+                        mediaView = MediaView();
+                        mediaView?.translatesAutoresizingMaskIntoConstraints = false;
+                        mediaView?.setContentHuggingPriority(.defaultHigh, for: .horizontal);
+                        mediaView?.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
+                        if let bob = self.bob.first(where: { $0.matches(uri: uri.value) }) {
+                            mediaView?.loadImage(bob: bob);
+                        } else {
+                            mediaView?.loadImage(from: uri.value, xmppClient: self.xmppClient, jid: self.jid);
+                        }
+                        if let mView = mediaView {
+                            cellView.addSubview(mView);
+                        }
+                    }
                     cellView.addSubview(view);
+                    
+                    if let mView = mediaView {
+                        NSLayoutConstraint.activate([
+                            view.leadingAnchor.constraint(equalTo: cellView.leadingAnchor, constant: horizontalSpacing),
+                            view.trailingAnchor.constraint(equalTo: cellView.trailingAnchor, constant: -1 * horizontalSpacing),
+                            mView.leadingAnchor.constraint(equalTo: cellView.leadingAnchor, constant: horizontalSpacing),
+                            mView.trailingAnchor.constraint(lessThanOrEqualTo: cellView.trailingAnchor, constant: -1 * horizontalSpacing),
+                            mView.topAnchor.constraint(equalTo: cellView.topAnchor, constant: ((view as? NSTextField)?.isEditable ?? false) ? 0.0 : 3.0),
+                            view.topAnchor.constraint(equalTo: mView.bottomAnchor, constant: 3.0),
+                            view.bottomAnchor.constraint(lessThanOrEqualTo: cellView.bottomAnchor)]);
+                    } else {
                     NSLayoutConstraint.activate([
                         view.leadingAnchor.constraint(equalTo: cellView.leadingAnchor, constant: horizontalSpacing),
                         view.trailingAnchor.constraint(equalTo: cellView.trailingAnchor, constant: -1 * horizontalSpacing),
                         view.topAnchor.constraint(equalTo: cellView.topAnchor, constant: ((view as? NSTextField)?.isEditable ?? false) ? 0.0 : 3.0),
                         view.bottomAnchor.constraint(lessThanOrEqualTo: cellView.bottomAnchor)]);
+                    }
                     return cellView;
                 }
             }
@@ -322,7 +352,11 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
 
     fileprivate func addFixedField(label: String, value: String?) -> NSTextField {
         let field = NSTextField(string: value ?? "");
+        field.setContentCompressionResistancePriority(.required, for: .vertical);
+        field.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
+        field.maximumNumberOfLines = 3;
         field.isEditable = false;
+        field.isSelectable = true;
         field.isEnabled = false;
         return field;
     }
@@ -502,5 +536,77 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
             NSGraphicsContext.restoreGraphicsState();
 
         }
+    }
+    
+    class MediaView: NSImageView {
+        
+        private let progressIndicator: NSProgressIndicator;
+        
+        convenience init() {
+            self.init(frame: .zero);
+        }
+        
+        override init(frame frameRect: NSRect) {
+            self.progressIndicator = NSProgressIndicator();
+            self.progressIndicator.isIndeterminate = true;
+            self.progressIndicator.style = .spinning;
+            self.progressIndicator.isDisplayedWhenStopped = false;
+            self.progressIndicator.translatesAutoresizingMaskIntoConstraints = false;
+            super.init(frame: frameRect);
+            self.addSubview(progressIndicator);
+            NSLayoutConstraint.activate([
+                self.progressIndicator.centerYAnchor.constraint(equalTo: self.centerYAnchor),
+                self.progressIndicator.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+                self.progressIndicator.heightAnchor.constraint(lessThanOrEqualTo: self.heightAnchor),
+                self.progressIndicator.widthAnchor.constraint(lessThanOrEqualTo: self.widthAnchor)
+            ])
+        }
+        
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+        
+        func loadImage(bob: BobData) {
+            if let data = bob.data, let image = NSImage(data: data) {
+                self.image = image;
+            } else {
+                self.image = NSImage(named: NSImage.cautionName);
+            }
+        }
+        
+        func loadImage(from uri: String, xmppClient: XMPPClient?, jid: JID?) {
+            if uri.starts(with: "cid:") {
+                if let client = xmppClient, client.state != .disconnected {
+                    self.progressIndicator.startAnimation(nil);
+                    let iq = Iq();
+                    iq.type = .get;
+                    iq.to = jid;
+                    iq.addChild(Element(name: "data", attributes: ["xmlns":"urn:xmpp:bob", "cid": String(uri.dropFirst(4))]));
+                    client.context.writer?.write(iq, completionHandler: { [weak self] result in
+                        guard let that = self else {
+                            return;
+                        }
+                        
+                        that.progressIndicator.stopAnimation(nil);
+                        switch result {
+                        case .success(let response):
+                            if let value = response.findChild(name: "data", xmlns: "urn:xmpp:bob")?.value, let data = Data(base64Encoded: value, options: [.ignoreUnknownCharacters]), let image = NSImage(data: data) {
+                                that.image = image;
+                                return;
+                            }
+                        case .failure(let errorCondition, let response):
+                            break;
+                        }
+                        that.image = NSImage(named: NSImage.cautionName);
+                    })
+                } else {
+                    self.image = NSImage(named: NSImage.cautionName);
+                }
+//                self.image = NSImage(named: NSImage.networkName);
+            } else if let url = URL(string: uri) {
+                self.image = NSImage(contentsOf: url);
+            }
+        }
+        
     }
 }
