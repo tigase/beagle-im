@@ -776,6 +776,14 @@ open class DBChatStore {
                 DBChatStore.instance.updateOptions(for: self.account, jid: self.jid.bareJid, options: options, completionHandler: completionHandler);
             }
         }
+        
+        override func createMessage(_ body: String?) -> Message {
+            let message = super.createMessage(body);
+            if message.id == nil {
+                message.id = UUID().uuidString;
+            }
+            return message;
+        }
 
         override func createPrivateMessage(_ body: String?, recipientNickname: String) -> Message {
             let stanza = super.createPrivateMessage(body, recipientNickname: recipientNickname);
