@@ -750,7 +750,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         case .mention:
             if let nickname = (conversation as? DBChatStore.DBRoom)?.nickname ?? (conversation as? DBChatStore.DBChannel)?.nickname {
                 if !item.message.contains(nickname) {
-                    return;
+                    if let keywords = Settings.markKeywords.stringArrays(), !keywords.isEmpty {
+                        if  keywords.first(where: { item.message.contains($0) }) == nil {
+                            return;
+                        }
+                    } else {
+                        return;
+                    }
                 }
             } else {
                 return;
