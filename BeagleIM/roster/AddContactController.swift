@@ -29,6 +29,7 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
     var labelField: NSTextField!;
     var requestSubscriptionButton: NSButton!;
     var allowSubscriptionButton: NSButton!;
+    var preauthToken: String?;
     
     @IBOutlet var imageView: NSImageView!;
     @IBOutlet var addButton: NSButton!;
@@ -140,7 +141,7 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
                 return;
             }
             if requrestSubscription {
-                presenceModule.subscribe(to: jid);
+                presenceModule.subscribe(to: jid, preauth: self.preauthToken);
             }
             if allowSubscription {
                 presenceModule.subscribed(by: jid);

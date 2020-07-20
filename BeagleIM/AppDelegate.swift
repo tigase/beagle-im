@@ -311,6 +311,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     _ = addContact.view;
                     addContact.jidField.stringValue = uri.jid.stringValue;
                     addContact.labelField.stringValue = uri.dict?["name"] ?? "";
+                    addContact.preauthToken = uri.dict?["preauth"];
                     rosterWindow.contentViewController?.presentAsSheet(addContact);
                     addContact.verify();
                 } else {
