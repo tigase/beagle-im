@@ -177,6 +177,8 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
         }
     }
     
+    private var remoteQuery: String? = nil;
+    
     func controlTextDidChange(_ notification: Notification) {
         guard let field = notification.object as? NSTextField else {
             return;
@@ -185,6 +187,58 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
         switch field {
         case channelNameField:
             updateItems();
+            self.remoteQuery = field.stringValue;
+            if self.remoteQuery?.isEmpty ?? false {
+                self.remoteQuery = nil;
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: { [weak self, weak field] in
+                guard let that = self, let remoteQuery = that.remoteQuery, let account = that.account, let field = field, !field.stringValue.isEmpty, remoteQuery == field.stringValue else {
+                    return;
+                }
+                that.remoteQuery = nil;
+                let text = field.stringValue;
+                guard let client = XmppService.instance.getClient(for: account), let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID) else {
+                    return;
+                }
+
+                print("executing query for:", text);
+                var allItems: [DiscoveryModule.Item] = [];
+                let group = DispatchGroup();
+                for component in that.components {
+                    group.enter();
+                    let channelJid = JID(BareJID(localPart: text, domain: component.jid.domain));
+                    discoModule.getInfo(for: channelJid, node: nil, completionHandler: { result in
+                         switch result {
+                         case .success(_, let identities, let items):
+                             DispatchQueue.main.async {
+                                allItems.append(DiscoveryModule.Item(jid: channelJid, name: identities.first?.name));
+                             }
+                         case .failure(_, _):
+                             break;
+                         }
+                         group.leave();
+                     });
+                }
+                group.notify(queue: DispatchQueue.main, execute: {
+                    print("got items:", allItems);
+                    DispatchQueue.main.async {
+                        guard let that = self else {
+                            return;
+                        }
+                        var changed = false;
+                        for item in allItems {
+                            if that.allItems.first(where: { $0.jid == item.jid }) == nil {
+                                that.allItems.append(item);
+                                changed = true;
+                            }
+                        }
+                        if changed {
+                            that.updateItems();
+                        }
+                    }
+                })
+            });
+
             break;
         default:
             break;
