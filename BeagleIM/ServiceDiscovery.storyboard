@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14868" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="16097.2" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14868"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="16097.2"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -31,12 +31,12 @@
         <scene sceneID="jcb-dB-nn1">
             <objects>
                 <viewController id="ld7-xh-MSE" customClass="ServiceDiscoveryViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" id="FS0-MY-2sF">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="580"/>
+                    <view key="view" misplaced="YES" id="FS0-MY-2sF">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="555"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="V8s-1l-wDf">
-                                <rect key="frame" x="20" y="549" width="560" height="21"/>
+                                <rect key="frame" x="20" y="499" width="560" height="21"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" drawsBackground="YES" id="WCt-km-pmi">
                                     <font key="font" usesAppearanceFont="YES"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -47,21 +47,20 @@
                                 </connections>
                             </textField>
                             <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dnZ-em-RC3">
-                                <rect key="frame" x="20" y="41" width="560" height="500"/>
+                                <rect key="frame" x="20" y="41" width="560" height="450"/>
                                 <clipView key="contentView" id="tF2-Mu-WOc">
-                                    <rect key="frame" x="1" y="0.0" width="558" height="499"/>
+                                    <rect key="frame" x="1" y="0.0" width="558" height="449"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" multipleSelection="NO" autosaveColumns="NO" usesAutomaticRowHeights="YES" headerView="23s-VH-hjc" viewBased="YES" indentationPerLevel="10" autoresizesOutlineColumn="YES" outlineTableColumn="clI-zp-GNg" id="v4L-e6-sKx">
-                                            <rect key="frame" x="0.0" y="0.0" width="569" height="474"/>
-                                            <autoresizingMask key="autoresizingMask"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="569" height="424"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <size key="intercellSpacing" width="3" height="2"/>
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                             <tableColumns>
                                                 <tableColumn identifier="ComponentOutlineColumn" width="18" minWidth="10" maxWidth="3.4028234663852886e+38" id="clI-zp-GNg">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
-                                                        <font key="font" metaFont="smallSystem"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     </tableHeaderCell>
@@ -99,7 +98,6 @@
                                                 </tableColumn>
                                                 <tableColumn identifier="ComponentIconColumn" width="57" minWidth="40" maxWidth="1000" id="EBN-p1-aAD">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
-                                                        <font key="font" metaFont="smallSystem"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                     </tableHeaderCell>
@@ -110,8 +108,8 @@
                                                     </textFieldCell>
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
-                                                        <tableCellView identifier="ServiceDiscoComponentIconCell" id="o7I-gj-BhE">
-                                                            <rect key="frame" x="22" y="1" width="32" height="32"/>
+                                                        <tableCellView identifier="ServiceDiscoComponentIconCell" misplaced="YES" id="o7I-gj-BhE">
+                                                            <rect key="frame" x="22" y="1" width="57" height="32"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="YTe-BY-17L">
@@ -134,7 +132,6 @@
                                                 </tableColumn>
                                                 <tableColumn identifier="ComponentNameColumn" width="375" minWidth="40" maxWidth="1000" id="604-W1-Zy4">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
-                                                        <font key="font" metaFont="smallSystem"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                     </tableHeaderCell>
@@ -160,7 +157,7 @@
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="8Af-uB-PZD">
                                                                     <rect key="frame" x="0.0" y="2" width="375" height="14"/>
                                                                     <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="AsC-g8-k9h">
-                                                                        <font key="font" metaFont="smallSystem"/>
+                                                                        <font key="font" metaFont="controlContent" size="11"/>
                                                                         <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
@@ -183,7 +180,6 @@
                                                 </tableColumn>
                                                 <tableColumn identifier="ComponentPubSubNameColumn" width="64" minWidth="10" maxWidth="3.4028234663852886e+38" id="OVH-3d-VQ7">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Name">
-                                                        <font key="font" metaFont="smallSystem"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     </tableHeaderCell>
@@ -221,7 +217,6 @@
                                                 </tableColumn>
                                                 <tableColumn identifier="ComponentPubSubNodeColumn" width="40" minWidth="40" maxWidth="1000" id="Fd4-9C-hG5">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Node">
-                                                        <font key="font" metaFont="smallSystem"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                     </tableHeaderCell>
@@ -266,8 +261,8 @@
                                         </outlineView>
                                     </subviews>
                                 </clipView>
-                                <scroller key="horizontalScroller" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="0.81818181818181823" horizontal="YES" id="ccT-M2-Rha">
-                                    <rect key="frame" x="1" y="483" width="558" height="16"/>
+                                <scroller key="horizontalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="ccT-M2-Rha">
+                                    <rect key="frame" x="1" y="433" width="558" height="16"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="wGg-wr-K9F">
@@ -280,7 +275,7 @@
                                 </tableHeaderView>
                             </scrollView>
                             <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="32d-OB-4kM">
-                                <rect key="frame" x="559" y="552" width="16" height="16"/>
+                                <rect key="frame" x="559" y="502" width="16" height="16"/>
                             </progressIndicator>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ZVE-xf-afV">
                                 <rect key="frame" x="511" y="3" width="75" height="32"/>
@@ -390,7 +385,7 @@
                                 <rect key="frame" x="169" y="48" width="214" height="25"/>
                                 <popUpButtonCell key="cell" type="push" title="Item 1" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="YNT-0e-3Ah" id="wkb-Qk-YOY">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="menu"/>
+                                    <font key="font" metaFont="system"/>
                                     <menu key="menu" id="wJq-2w-7IA">
                                         <items>
                                             <menuItem title="Item 1" state="on" id="YNT-0e-3Ah"/>
@@ -534,6 +529,9 @@ Gw
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
+                                <connections>
+                                    <outlet property="delegate" destination="42E-Hj-kdl" id="hZ9-tE-6TW"/>
+                                </connections>
                             </textField>
                             <secureTextField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="im4-g2-ZkP">
                                 <rect key="frame" x="20" y="49" width="397" height="22"/>
@@ -611,12 +609,12 @@ Gw
         <scene sceneID="qnd-MH-W80">
             <objects>
                 <viewController id="uU5-8Y-Yox" customClass="ExecuteAdHocCommandController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" id="FyP-gw-L7V">
-                        <rect key="frame" x="0.0" y="0.0" width="650" height="361"/>
+                    <view key="view" misplaced="YES" id="FyP-gw-L7V">
+                        <rect key="frame" x="0.0" y="0.0" width="650" height="360"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="f01-gu-n3V">
-                                <rect key="frame" x="18" y="341" width="40" height="0.0"/>
+                                <rect key="frame" x="18" y="339" width="40" height="0.0"/>
                                 <constraints>
                                     <constraint firstAttribute="height" id="DBp-QN-2LU"/>
                                 </constraints>
@@ -627,7 +625,7 @@ Gw
                                 </textFieldCell>
                             </textField>
                             <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="EwC-ez-4jf">
-                                <rect key="frame" x="18" y="333" width="78" height="0.0"/>
+                                <rect key="frame" x="18" y="331" width="78" height="0.0"/>
                                 <constraints>
                                     <constraint firstAttribute="height" id="dGe-ew-mSY"/>
                                 </constraints>
@@ -638,21 +636,20 @@ Gw
                                 </textFieldCell>
                             </textField>
                             <scrollView borderType="none" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cxR-qI-1Hi">
-                                <rect key="frame" x="20" y="51" width="610" height="274"/>
+                                <rect key="frame" x="20" y="51" width="610" height="272"/>
                                 <clipView key="contentView" id="FO8-V8-fnu">
-                                    <rect key="frame" x="0.0" y="0.0" width="610" height="274"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="610" height="272"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <tableView verticalHuggingPriority="750" ambiguous="YES" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="none" columnReordering="NO" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" typeSelect="NO" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" id="vbv-aY-s5g" customClass="JabberDataFormView" customModule="BeagleIM" customModuleProvider="target">
-                                            <rect key="frame" x="0.0" y="0.0" width="610" height="274"/>
-                                            <autoresizingMask key="autoresizingMask"/>
+                                        <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="none" columnReordering="NO" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" typeSelect="NO" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" id="vbv-aY-s5g" customClass="JabberDataFormView" customModule="BeagleIM" customModuleProvider="target">
+                                            <rect key="frame" x="0.0" y="0.0" width="610" height="272"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <size key="intercellSpacing" width="3" height="2"/>
                                             <color key="backgroundColor" name="windowBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                             <tableColumns>
                                                 <tableColumn width="210" minWidth="40" maxWidth="1000" id="Rgf-Ma-lCI">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
-                                                        <font key="font" metaFont="smallSystem"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                     </tableHeaderCell>
@@ -690,7 +687,6 @@ Gw
                                                 </tableColumn>
                                                 <tableColumn width="392" minWidth="40" maxWidth="1000" id="ujA-Eq-61M">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
-                                                        <font key="font" metaFont="smallSystem"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                     </tableHeaderCell>
@@ -731,15 +727,15 @@ Gw
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="uBD-bz-qvg">
-                                    <rect key="frame" x="594" y="0.0" width="16" height="274"/>
+                                    <rect key="frame" x="594" y="0.0" width="16" height="272"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
                             <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="TdY-ul-kh2">
-                                <rect key="frame" x="309" y="165" width="32" height="32"/>
+                                <rect key="frame" x="309" y="164" width="32" height="32"/>
                             </progressIndicator>
                             <button verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="L7o-0F-GCf">
-                                <rect key="frame" x="412" y="13" width="80" height="32"/>
+                                <rect key="frame" x="412" y="12" width="80" height="32"/>
                                 <buttonCell key="cell" type="push" title="Execute" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="wX5-ZE-aMC">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -749,7 +745,7 @@ Gw
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="wuK-0n-dkk">
-                                <rect key="frame" x="332" y="13" width="80" height="32"/>
+                                <rect key="frame" x="332" y="12" width="80" height="32"/>
                                 <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Sik-v2-cnM">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
