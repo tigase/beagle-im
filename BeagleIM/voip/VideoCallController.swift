@@ -205,13 +205,18 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
                 self.stateLabel.stringValue = "New call";
             case .ringing:
                 self.stateLabel.stringValue = "Ringing...";
+                if self.call?.direction == .outgoing {
+                    self.avplayer = AVPlayer(url: Bundle.main.url(forResource: "outgoingCall", withExtension: "mp3")!);
+                }
             case .connecting:
                 self.stateLabel.stringValue = "Connecting...";
             case .connected:
                 self.stateLabel.stringValue = "";
                 self.remoteAvatarView?.isHidden = self.remoteVideoTrack != nil;
+                self.avplayer = nil;
             case .ended:
                 self.stateLabel.stringValue = "Call ended";
+                self.avplayer = nil;
             }
         }
     }
@@ -243,7 +248,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
         
     func askForAcceptance(for call: Call) {
         DispatchQueue.main.async {
-            self.avplayer = AVPlayer(url: Bundle.main.url(forResource: "incomingCall", withExtension: "aiff")!);
+            self.avplayer = AVPlayer(url: Bundle.main.url(forResource: "incomingCall", withExtension: "mp3")!);
             let buttons = [ "Accept", "Reject" ];
             
             let name = XmppService.instance.getClient(for: call.account)?.rosterStore?.get(for: JID(call.jid))?.name ?? call.jid.stringValue;

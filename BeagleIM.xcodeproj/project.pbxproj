@@ -19,6 +19,8 @@
 		FE149D8222A5120300EE4E03 /* SearchHistory.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE149D8122A5120300EE4E03 /* SearchHistory.storyboard */; };
 		FE149D8522A515C900EE4E03 /* SearchHistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE149D8422A515C900EE4E03 /* SearchHistoryController.swift */; };
 		FE149D8722A51AD900EE4E03 /* db-schema-4.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE149D8622A51AD900EE4E03 /* db-schema-4.sql */; };
+		FE17870624DECE3400C4012C /* outgoingCall.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE17870424DECE3400C4012C /* outgoingCall.mp3 */; };
+		FE17870724DECE3400C4012C /* incomingCall.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE17870524DECE3400C4012C /* incomingCall.mp3 */; };
 		FE1A8BA321C96C1B00604141 /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA221C96C1B00604141 /* RoundButton.swift */; };
 		FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */; };
 		FE25B1712350D2FC00CD69CA /* db-schema-6.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE25B1702350D2FC00CD69CA /* db-schema-6.sql */; };
@@ -34,7 +36,6 @@
 		FE2D4820245452DC00C13CE5 /* RTCCameraVideoCapturer_Format.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2D481F245452DC00C13CE5 /* RTCCameraVideoCapturer_Format.swift */; };
 		FE2DEDA023C5FC0F00AEF14F /* WebRTC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE2DED9E23C5FC0900AEF14F /* WebRTC.framework */; };
 		FE2DEDA123C5FC0F00AEF14F /* WebRTC.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE2DED9E23C5FC0900AEF14F /* WebRTC.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		FE2DEDA323C62D7100AEF14F /* incomingCall.aiff in Resources */ = {isa = PBXBuildFile; fileRef = FE2DEDA223C62D7000AEF14F /* incomingCall.aiff */; };
 		FE30309A24438ED6003B9D76 /* MessageTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30309924438ED6003B9D76 /* MessageTextView.swift */; };
 		FE30309C244612A8003B9D76 /* ConversationLogSelectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30309B244612A8003B9D76 /* ConversationLogSelectionManager.swift */; };
 		FE30309E2447517A003B9D76 /* RosterWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30309D2447517A003B9D76 /* RosterWindowController.swift */; };
@@ -240,6 +241,8 @@
 		FE149D8122A5120300EE4E03 /* SearchHistory.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SearchHistory.storyboard; sourceTree = "<group>"; };
 		FE149D8422A515C900EE4E03 /* SearchHistoryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchHistoryController.swift; sourceTree = "<group>"; };
 		FE149D8622A51AD900EE4E03 /* db-schema-4.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-4.sql"; sourceTree = "<group>"; };
+		FE17870424DECE3400C4012C /* outgoingCall.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = outgoingCall.mp3; sourceTree = "<group>"; };
+		FE17870524DECE3400C4012C /* incomingCall.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = incomingCall.mp3; sourceTree = "<group>"; };
 		FE1A8BA221C96C1B00604141 /* RoundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
 		FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager_Session.swift; sourceTree = "<group>"; };
 		FE25B1702350D2FC00CD69CA /* db-schema-6.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-6.sql"; sourceTree = "<group>"; };
@@ -255,7 +258,6 @@
 		FE2D481F245452DC00C13CE5 /* RTCCameraVideoCapturer_Format.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTCCameraVideoCapturer_Format.swift; sourceTree = "<group>"; };
 		FE2DED8F23C5C6B300AEF14F /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebRTC.framework; path = "../../../../../Volumes/Dane/Users/andrzej/test/webrtc-checkout/src/outios/WebRTC.framework"; sourceTree = "<group>"; };
 		FE2DED9E23C5FC0900AEF14F /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
-		FE2DEDA223C62D7000AEF14F /* incomingCall.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = incomingCall.aiff; sourceTree = "<group>"; };
 		FE30309924438ED6003B9D76 /* MessageTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageTextView.swift; sourceTree = "<group>"; };
 		FE30309B244612A8003B9D76 /* ConversationLogSelectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationLogSelectionManager.swift; sourceTree = "<group>"; };
 		FE30309D2447517A003B9D76 /* RosterWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RosterWindowController.swift; sourceTree = "<group>"; };
@@ -707,8 +709,9 @@
 		FED2ECF22066B01C00F506A5 /* BeagleIM */ = {
 			isa = PBXGroup;
 			children = (
+				FE17870524DECE3400C4012C /* incomingCall.mp3 */,
+				FE17870424DECE3400C4012C /* outgoingCall.mp3 */,
 				FE890D4324040F1200107437 /* channel */,
-				FE2DEDA223C62D7000AEF14F /* incomingCall.aiff */,
 				FED2ECFD2066B01C00F506A5 /* BeagleIM.entitlements */,
 				FE9D88B3217652DF006CF0D9 /* BeagleIM-Bridging-Header.h */,
 				FE8C9F5321B3F6BD00BE8332 /* container-migration.plist */,
@@ -959,8 +962,8 @@
 				FE4D2132221F2A6E0058B662 /* db-schema-2.sql in Resources */,
 				FE6201E623AA43C900C965A5 /* db-schema-7.sql in Resources */,
 				FEFFF7CF23313B52004CB9CE /* db-schema-5.sql in Resources */,
+				FE17870724DECE3400C4012C /* incomingCall.mp3 in Resources */,
 				FEF9CE1D2082765000B09B6C /* db-schema-1.sql in Resources */,
-				FE2DEDA323C62D7100AEF14F /* incomingCall.aiff in Resources */,
 				FE25B1712350D2FC00CD69CA /* db-schema-6.sql in Resources */,
 				FE4073A721BACA2D009CE335 /* VoIP.storyboard in Resources */,
 				FE8C9F5421B3F6BD00BE8332 /* container-migration.plist in Resources */,
@@ -968,6 +971,7 @@
 				FE02DD11225B8D1100FA08EB /* db-schema-3.sql in Resources */,
 				FE149D8722A51AD900EE4E03 /* db-schema-4.sql in Resources */,
 				FE421B4921C92FBF0022DF77 /* LICENSE in Resources */,
+				FE17870624DECE3400C4012C /* outgoingCall.mp3 in Resources */,
 				FE32A94724702D5B00E40BB1 /* db-schema-10.sql in Resources */,
 				FEF9EC4F242FC9620090C913 /* Roster.storyboard in Resources */,
 				FE890D30240020DE00107437 /* db-schema-9.sql in Resources */,
