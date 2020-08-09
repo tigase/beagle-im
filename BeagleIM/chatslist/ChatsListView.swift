@@ -61,10 +61,53 @@ class ChatItem: AbstractChatItem {
 
 class GroupchatItem: AbstractChatItem {
 
+   override var name: String {
+        get {
+            return (self.chat as? DBChatStore.DBChannel)?.name ?? super.name;
+        }
+        set {
+            super.name = newValue;
+        }
+    }
+    
     init(chat: DBChatProtocol) {
         super.init(chat: chat, name: (chat as? DBChatStore.DBRoom)?.name ?? chat.jid.stringValue);
     }
     
+}
+
+class UnifiedChatItem: AbstractChatItem {
+    
+    let isInRoster: Bool;
+    
+    init(chat: DBChatProtocol) {
+        var name = chat.jid.stringValue;
+        switch chat {
+        case let c as DBChatStore.DBChat:
+            if let rosterItem = XmppService.instance.getClient(for: c.account)?.rosterStore?.get(for: c.jid) {
+                isInRoster = true;
+                if let value = rosterItem.name, !value.isEmpty {
+                    name = value;
+                }
+            } else {
+                isInRoster = false;
+            }
+        case let c as DBChatStore.DBRoom:
+            isInRoster = true;
+            if let value = c.name, !value.isEmpty {
+                name = value;
+            }
+        case let c as DBChatStore.DBChannel:
+            isInRoster = true;
+            if let value = c.name, !value.isEmpty {
+                name = value;
+            }
+        default:
+            isInRoster = false;
+        }
+        super.init(chat: chat, name: name);
+    }
+
 }
 
 protocol ChatsListViewDataSourceDelegate: class {
@@ -92,7 +135,8 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     var invitationGroup: InvitationGroup?;
 
     override func viewDidLoad() {
-        self.groups = [ChatsListGroupGroupchat(delegate: self), ChatsListGroupChat(delegate: self), ChatsListGroupChatUnknown(delegate: self)];
+//        self.groups = [ChatsListGroupGroupchat(delegate: self), ChatsListGroupChat(delegate: self), ChatsListGroupChatUnknown(delegate: self)];
+        self.groups = Settings.commonChatsList.bool() ? [ChatsListGroupCommon(delegate: self), ChatsListGroupChatUnknown(delegate: self)] : [ChatsListGroupGroupchat(delegate: self), ChatsListGroupChat(delegate: self), ChatsListGroupChatUnknown(delegate: self)];
         self.invitationGroup = InvitationGroup(delegate: self, items: InvitationManager.instance.items);
         if !InvitationManager.instance.items.isEmpty {
             self.groups.insert(invitationGroup!, at: 0);
@@ -102,8 +146,9 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         
         NotificationCenter.default.addObserver(self, selector: #selector(chatSelected), name: ChatsListViewController.CHAT_SELECTED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(closeSelectedChat), name: ChatsListViewController.CLOSE_SELECTED_CHAT, object: nil);
-        
+        NotificationCenter.default.addObserver(self, selector: #selector(invitationClicked(_:)), name: InvitationManager.INVITATION_CLICKED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(hourChanged), name: AppDelegate.HOUR_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(settingsChanged(_:)), name: Settings.CHANGED, object: nil);
     }
     
     override func viewWillAppear() {
@@ -174,24 +219,38 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         
         print("clicked button for", group.name);
         
-        guard let item = groups.first(where: { it -> Bool in
-            return it.name == group.name;
-        }) else {
+        switch group {
+        case is ChatsListGroupGroupchat:
+            self.openChannel(self);
+        case is ChatsListGroupChat:
+            self.openChat(self);
+        case is ChatsListGroupCommon:
+            let menu = NSMenu(title: "");
+            menu.addItem(withTitle: "Open chat", action: #selector(self.openChat(_:)), keyEquivalent: "").image = NSImage(named: NSImage.userName)?.square(20);
+            menu.addItem(withTitle: "Open channel", action: #selector(self.openChannel(_:)), keyEquivalent: "").image = NSImage(named: NSImage.userGroupName)?.square(20);
+            for item in menu.items {
+                item.target = self;
+            }
+            menu.popUp(positioning: nil, at: NSPoint(x: 0, y: sender.frame.height), in: sender);
+        default:
             return;
-        }
-        if item is ChatsListGroupGroupchat {
-            guard let windowController = storyboard?.instantiateController(withIdentifier: "OpenGroupchatController") as? NSWindowController else {
-                return;
-            }
-            view.window?.beginSheet(windowController.window!, completionHandler: nil);
-        } else if item is ChatsListGroupChat {
-            guard let windowController = storyboard?.instantiateController(withIdentifier: "Open1On1ChatController") as? NSWindowController else {
-                return;
-            }
-            view.window?.beginSheet(windowController.window!, completionHandler: nil);
         }
     }
     
+    @objc func openChat(_ sender: Any) {
+        guard let windowController = storyboard?.instantiateController(withIdentifier: "Open1On1ChatController") as? NSWindowController else {
+            return;
+        }
+        view.window?.beginSheet(windowController.window!, completionHandler: nil);
+    }
+
+    @objc func openChannel(_ sender: Any) {
+        guard let windowController = storyboard?.instantiateController(withIdentifier:"OpenChannelWindowController") as? NSWindowController else {
+            return;
+        }
+        view.window?.beginSheet(windowController.window!, completionHandler: nil);
+    }
+
     @objc func closeSelectedChat(_ notification: Notification) {
         print("closing chats for: \(self.outlineView.selectedRowIndexes)");
         let toClose = self.outlineView.selectedRowIndexes;
@@ -245,6 +304,22 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
             }
         }
     }
+    
+    @objc func invitationClicked(_ notification: Notification) {
+        guard let invitation = notification.object as? InvitationItem else {
+            return;
+        }
+        
+        if self.invitationGroup?.items.firstIndex(of: invitation) != nil {
+            let row = self.outlineView.row(forItem: invitation);
+            guard row >= 0 else {
+                return;
+            }
+            self.view.window?.windowController?.showWindow(self);
+            self.outlineView.selectRowIndexes(IndexSet(), byExtendingSelection: false);
+            self.outlineView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false);
+        }
+    }
 
     @objc func hourChanged(_ notification: Notification) {
         DispatchQueue.main.async {
@@ -256,6 +331,31 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         }
     }
     
+    @objc func settingsChanged(_ notification: Notification) {
+        guard let setting = notification.object as? Settings else {
+            return;
+        }
+        switch setting {
+        case .commonChatsList:
+            var tmp:[ChatsListGroupProtocol] = [];
+            if let invitations = self.groups.first(where: { $0 is InvitationGroup}) {
+                tmp.append(invitations);
+            }
+
+            if Settings.commonChatsList.bool() {
+                tmp.append(contentsOf: [ChatsListGroupCommon(delegate: self), ChatsListGroupChatUnknown(delegate: self)]);
+            } else {
+                tmp.append(contentsOf: [ChatsListGroupGroupchat(delegate: self), ChatsListGroupChat(delegate: self), ChatsListGroupChatUnknown(delegate: self)])
+            }
+            self.groups = tmp;
+            self.reload();
+            for group in groups {
+                self.outlineView.expandItem(group);
+            }
+        default:
+            break;
+        }
+    }
 }
 
 extension ChatsListViewController: NSOutlineViewDelegate {
@@ -278,6 +378,9 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         if item is InvitationItem {
             return true;
         }
+        if item is UnifiedChatItem {
+            return true;
+        }
         return false;
     }
     
@@ -298,39 +401,68 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         print("selected row:", selected);
         let item = self.outlineView.selectedRowIndexes.count == 1 ? self.outlineView.item(atRow: selected) : nil;
         if let splitController = self.outlineView.window?.contentViewController as? NSSplitViewController {
-            if let chat = item as? ChatItem {
-                print("selected chat item:", chat.name);
-                let chatController = self.storyboard!.instantiateController(withIdentifier: "ChatViewController") as! ChatViewController;
-                chatController.chat = chat.chat;
-                chatController.scrollChatToMessageWithId = self.scrollChatToMessageWithId;
-                self.scrollChatToMessageWithId = nil;
-                let item = NSSplitViewItem(viewController: chatController);
-                if splitController.splitViewItems.count == 1 {
-                    splitController.addSplitViewItem(item);
-                } else {
-                    splitController.removeSplitViewItem(splitController.splitViewItems[1]);
-                    splitController.addSplitViewItem(item);
-                }
-            } else if let room = item as? GroupchatItem {
-                let roomController = self.storyboard?.instantiateController(withIdentifier: "GroupchatViewController") as! GroupchatViewController;
-                roomController.room = (room.chat as! DBChatStore.DBRoom);
-                roomController.scrollChatToMessageWithId = self.scrollChatToMessageWithId;
-                self.scrollChatToMessageWithId = nil;
-                let item = NSSplitViewItem(viewController: roomController);
-                if splitController.splitViewItems.count == 1 {
-                    splitController.addSplitViewItem(item);
-                } else {
-                    splitController.removeSplitViewItem(splitController.splitViewItems[1]);
-                    splitController.addSplitViewItem(item);
+            if let chatItem = (item as? AbstractChatItem)?.chat {
+                switch chatItem {
+                case let chat as DBChatStore.DBChat:
+                    let chatController = self.storyboard!.instantiateController(withIdentifier: "ChatViewController") as! ChatViewController;
+                    chatController.chat = chat;
+                    chatController.scrollChatToMessageWithId = self.scrollChatToMessageWithId;
+                    self.scrollChatToMessageWithId = nil;
+                    let item = NSSplitViewItem(viewController: chatController);
+                    if splitController.splitViewItems.count == 1 {
+                        splitController.addSplitViewItem(item);
+                    } else {
+                        splitController.removeSplitViewItem(splitController.splitViewItems[1]);
+                        splitController.addSplitViewItem(item);
+                    }
+                case let room as DBChatStore.DBRoom:
+                    let roomController = self.storyboard?.instantiateController(withIdentifier: "GroupchatViewController") as! GroupchatViewController;
+                    roomController.room = room;
+                    roomController.scrollChatToMessageWithId = self.scrollChatToMessageWithId;
+                    self.scrollChatToMessageWithId = nil;
+                    let item = NSSplitViewItem(viewController: roomController);
+                    if splitController.splitViewItems.count == 1 {
+                        splitController.addSplitViewItem(item);
+                    } else {
+                        splitController.removeSplitViewItem(splitController.splitViewItems[1]);
+                        splitController.addSplitViewItem(item);
+                    }
+                case let channel as DBChatStore.DBChannel:
+                    let channelController = NSStoryboard(name: "MIX", bundle: nil).instantiateController(withIdentifier: "ChannelViewController") as! ChannelViewController;
+                    channelController.chat = channel;
+                    channelController.scrollChatToMessageWithId = self.scrollChatToMessageWithId
+                    self.scrollChatToMessageWithId = nil;
+                    let item = NSSplitViewItem(viewController: channelController);
+                    if splitController.splitViewItems.count == 1 {
+                        splitController.addSplitViewItem(item);
+                    } else {
+                        splitController.removeSplitViewItem(splitController.splitViewItems[1]);
+                        splitController.addSplitViewItem(item);
+                    }
+                default:
+                    let controller = self.storyboard!.instantiateController(withIdentifier: "EmptyViewController") as! NSViewController;
+                    if splitController.splitViewItems.count > 1 {
+                        splitController.removeSplitViewItem(splitController.splitViewItems[1]);
+                    }
+                    splitController.addSplitViewItem(NSSplitViewItem(viewController: controller));
                 }
             } else {
-                let controller = self.storyboard!.instantiateController(withIdentifier: "EmptyViewController") as! NSViewController;
-                if splitController.splitViewItems.count > 1 {
-                    splitController.removeSplitViewItem(splitController.splitViewItems[1]);
-                }
-                splitController.addSplitViewItem(NSSplitViewItem(viewController: controller));
-                if let invitation = item as? InvitationItem {
-                    InvitationManager.instance.handle(invitation: invitation, window: self.view.window!);
+                if let invitation = item as? InvitationItem, invitation.type == .presenceSubscription {
+                    let controller = NSStoryboard(name: "Roster", bundle: nil).instantiateController(withIdentifier: "PresenceAuthorizationRequestView") as! PresenceAuthorizationRequestController;
+                    controller.invitation = invitation;
+                    if splitController.splitViewItems.count > 1 {
+                        splitController.removeSplitViewItem(splitController.splitViewItems[1]);
+                    }
+                    splitController.addSplitViewItem(NSSplitViewItem(viewController: controller));
+                } else {
+                    let controller = self.storyboard!.instantiateController(withIdentifier: "EmptyViewController") as! NSViewController;
+                    if splitController.splitViewItems.count > 1 {
+                        splitController.removeSplitViewItem(splitController.splitViewItems[1]);
+                    }
+                    splitController.addSplitViewItem(NSSplitViewItem(viewController: controller));
+                    if let invitation = item as? InvitationItem {
+                        InvitationManager.instance.handle(invitation: invitation, window: self.view.window!);
+                    }
                 }
             }
         }
@@ -408,6 +540,18 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 mucModule.leave(room: r);
                 PEPBookmarksModule.remove(from: r.account, bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: r.jid, autojoin: false));
             }
+        case let c as DBChatStore.DBChannel:
+            guard let mixModule: MixModule = XmppService.instance.getClient(for: c.account)?.modulesManager.getModule(MixModule.ID) else {
+                return;
+            }
+            mixModule.leave(channel: c, completionHandler: { result in
+                switch result {
+                case .success(_):
+                    _ = DBChatStore.instance.close(for: c.account, chat: c);
+                case .failure(_, _):
+                    break;
+                }
+            })
         default:
             print("unknown type of chat!");
         }

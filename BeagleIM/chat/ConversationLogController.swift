@@ -1,8 +1,8 @@
 //
-// ChatMessageContinuationCellView.swift
+// ConversationLogController.swift
 //
 // BeagleIM
-// Copyright (C) 2019 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2020 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,7 +20,19 @@
 //
 
 import AppKit
+import TigaseSwift
 
-class ChatMessageContinuationCellView: BaseChatMessageCellView {
+class ConversationLogController: AbstractConversationLogController {
+    
+    override func prepareContextMenu(_ menu: NSMenu, forRow row: Int) {
+        super.prepareContextMenu(menu, forRow: row);
+        (self.logTableViewDelegate as? ConversationLogContextMenuDelegate)?.prepareConversationLogContextMenu(dataSource: self.dataSource, menu: menu, forRow: row);
+    }
+    
+}
+
+protocol ConversationLogContextMenuDelegate {
+    
+    func prepareConversationLogContextMenu(dataSource: ChatViewDataSource, menu: NSMenu, forRow row: Int);
     
 }

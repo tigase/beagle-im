@@ -27,6 +27,26 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
     
     weak var dragHandler: NSDraggingDestination? = nil;
     
+    override var rangeForUserCompletion: NSRange {
+        let currRange = super.rangeForUserCompletion;
+        if currRange.length == 0 {
+            return currRange;
+        }
+        let val = self.string as NSString
+        var spaceRange = val.rangeOfCharacter(from: .whitespacesAndNewlines, options: .backwards, range: NSRange(location: 0, length: currRange.location));
+        if spaceRange.location == NSNotFound {
+            spaceRange = NSRange(location: 0, length: 0);
+        }
+        let rangeWithAt = NSRange(location: spaceRange.location + spaceRange.length, length: currRange.length + (currRange.location - (spaceRange.location + spaceRange.length)));
+        
+        let atRange = val.rangeOfCharacter(from: CharacterSet(charactersIn: "@"), options: [], range: NSRange(location: rangeWithAt.location, length: 1));
+        if atRange.location != NSNotFound {
+            return NSRange(location: atRange.location + atRange.length, length: rangeWithAt.length - atRange.length);
+        } else {
+            return NSRange(location: NSNotFound, length: 0);
+        }
+    }
+    
     override var string: String {
         didSet {
             self.invalidateIntrinsicContentSize();
@@ -34,12 +54,13 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
     }
     
     override func awakeFromNib() {
-        self.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1.0, weight: .light);
+        self.font = NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .light);
         self.textStorage?.delegate = self;
+        self.textContainer!.replaceLayoutManager(MessageTextView.CustomLayoutManager());
     }
     
     override var intrinsicContentSize: NSSize {
-        print("font:", self.font as Any, "size:", self.font?.pointSize as Any, "system:", NSFont.systemFont(ofSize: NSFont.systemFontSize - 1.0, weight: .light), "inset:", self.textContainerInset, "origin:", self.textContainerOrigin);
+        print("font:", self.font as Any, "size:", self.font?.pointSize as Any, "system:", NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .light), "inset:", self.textContainerInset, "origin:", self.textContainerOrigin);
         self.layoutManager?.typesetterBehavior = .latestBehavior;
         self.layoutManager!.ensureLayout(for: self.textContainer!);
         self.layoutManager!.glyphRange(for: textContainer!);
@@ -60,14 +81,14 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
     }
     
     func textStorage(_ textStorage: NSTextStorage, didProcessEditing editedMask: NSTextStorageEditActions, range editedRange: NSRange, changeInLength delta: Int) {
-        self.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1.0, weight: .light);
+        self.font = NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .light);
         let fullRange = NSRange(0..<textStorage.length);
         textStorage.fixAttributes(in: fullRange);
         //textStorage.setAttributes([.font: self.font!], range: fullRange);
         textStorage.addAttributes([.foregroundColor: NSColor.textColor], range: fullRange);
         
         if Settings.enableMarkdownFormatting.bool() {
-            Markdown.applyStyling(attributedString: textStorage, showEmoticons: false);
+            Markdown.applyStyling(attributedString: textStorage, fontSize: NSFont.systemFontSize, showEmoticons: false);
         }
     }
     
@@ -114,4 +135,6 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
         return (dragHandler?.performDragOperation?(sender) ?? false) || super.performDragOperation(sender);
     }
+    
+    
 }

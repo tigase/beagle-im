@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15705"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="16096"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -31,12 +31,12 @@
         <scene sceneID="sQk-LN-DPH">
             <objects>
                 <viewController id="g40-LB-elH" customClass="SearchHistoryController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" misplaced="YES" id="B31-QU-Ubi">
-                        <rect key="frame" x="0.0" y="0.0" width="441" height="396"/>
+                    <view key="view" id="B31-QU-Ubi">
+                        <rect key="frame" x="0.0" y="0.0" width="445" height="396"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <searchField wantsLayer="YES" verticalHuggingPriority="750" misplaced="YES" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EOm-ws-D8B">
-                                <rect key="frame" x="20" y="363" width="401" height="22"/>
+                            <searchField wantsLayer="YES" verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EOm-ws-D8B">
+                                <rect key="frame" x="20" y="364" width="405" height="22"/>
                                 <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="gcw-W8-Wpu">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -47,22 +47,21 @@
                                 </connections>
                             </searchField>
                             <scrollView autohidesScrollers="YES" horizontalLineScroll="45" horizontalPageScroll="10" verticalLineScroll="45" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Jee-AR-4WD">
-                                <rect key="frame" x="20" y="41" width="401" height="309"/>
+                                <rect key="frame" x="20" y="41" width="405" height="315"/>
                                 <clipView key="contentView" drawsBackground="NO" id="uJI-dg-0v2">
-                                    <rect key="frame" x="1" y="1" width="399" height="307"/>
+                                    <rect key="frame" x="1" y="1" width="403" height="313"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" rowHeight="43" usesAutomaticRowHeights="YES" viewBased="YES" id="2ct-hz-mXu">
-                                            <rect key="frame" x="0.0" y="0.0" width="399" height="307"/>
+                                        <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" rowHeight="43" usesAutomaticRowHeights="YES" viewBased="YES" id="2ct-hz-mXu" customClass="SearchHistoryTableView" customModule="BeagleIM" customModuleProvider="target">
+                                            <rect key="frame" x="0.0" y="0.0" width="403" height="313"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <size key="intercellSpacing" width="3" height="2"/>
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             <tableViewGridLines key="gridStyleMask" horizontal="YES"/>
                                             <color key="gridColor" name="windowBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             <tableColumns>
-                                                <tableColumn width="396" minWidth="40" maxWidth="1000" id="1J1-gv-IG5">
+                                                <tableColumn width="400" minWidth="40" maxWidth="1000" id="1J1-gv-IG5">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
-                                                        <font key="font" metaFont="message" size="11"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                     </tableHeaderCell>
@@ -73,12 +72,12 @@
                                                     </textFieldCell>
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
-                                                        <tableCellView identifier="ChatMessageCellView" misplaced="YES" id="bFj-jT-4gP" customClass="ChatMessageCellView" customModule="BeagleIM" customModuleProvider="target">
-                                                            <rect key="frame" x="1" y="1" width="396" height="43"/>
+                                                        <tableCellView identifier="ChatMessageCellView" id="bFj-jT-4gP" customClass="ChatMessageSelectableCellView" customModule="BeagleIM" customModuleProvider="target">
+                                                            <rect key="frame" x="1" y="1" width="400" height="43"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="eMn-SL-gdX" customClass="AvatarView" customModule="BeagleIM" customModuleProvider="target">
-                                                                    <rect key="frame" x="8" y="7" width="30" height="30"/>
+                                                                    <rect key="frame" x="8" y="9" width="30" height="30"/>
                                                                     <constraints>
                                                                         <constraint firstAttribute="height" constant="30" id="VDI-f8-ZuZ"/>
                                                                         <constraint firstAttribute="width" constant="30" id="ySL-ll-Mev"/>
@@ -86,23 +85,29 @@
                                                                     <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="lUN-Ce-Bk3"/>
                                                                 </imageView>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="b0G-iM-zDs">
-                                                                    <rect key="frame" x="40" y="21" width="91" height="16"/>
+                                                                    <rect key="frame" x="40" y="23" width="91" height="16"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="Artur Hefczyc" placeholderString="Testing" id="rNb-Ca-Sy6">
                                                                         <font key="font" metaFont="systemMedium" size="13"/>
                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
                                                                 </textField>
-                                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="khk-Wf-S4y">
-                                                                    <rect key="frame" x="40" y="4" width="350" height="15"/>
-                                                                    <textFieldCell key="cell" enabled="NO" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="Some message to display from this person" allowsEditingTextAttributes="YES" id="vUh-4n-nUg">
-                                                                        <font key="font" metaFont="controlContent"/>
-                                                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                                                    </textFieldCell>
-                                                                </textField>
-                                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cEa-Qg-Q84">
-                                                                    <rect key="frame" x="305" y="26" width="47" height="17"/>
+                                                                <textView horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" editable="NO" drawsBackground="NO" verticallyResizable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="khk-Wf-S4y" customClass="MessageTextView" customModule="BeagleIM" customModuleProvider="target">
+                                                                    <rect key="frame" x="42" y="4" width="350" height="17"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                                    <size key="maxSize" width="10000" height="10000"/>
+                                                                    <attributedString key="textStorage">
+                                                                        <fragment content="Some message to display from this perso">
+                                                                            <attributes>
+                                                                                <color key="NSColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                                <font key="NSFont" metaFont="systemLight" size="12"/>
+                                                                            </attributes>
+                                                                        </fragment>
+                                                                    </attributedString>
+                                                                </textView>
+                                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="cEa-Qg-Q84">
+                                                                    <rect key="frame" x="343" y="23" width="51" height="16"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="20:31:03" id="Jfs-fH-jds">
                                                                         <font key="font" metaFont="message" size="11"/>
                                                                         <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
@@ -125,6 +130,9 @@
                                                                 <constraint firstAttribute="bottom" secondItem="khk-Wf-S4y" secondAttribute="bottom" constant="4" id="nYq-Dc-9lX"/>
                                                                 <constraint firstItem="eMn-SL-gdX" firstAttribute="leading" secondItem="bFj-jT-4gP" secondAttribute="leading" constant="8" id="o6u-QA-Bmv"/>
                                                             </constraints>
+                                                            <userDefinedRuntimeAttributes>
+                                                                <userDefinedRuntimeAttribute type="boolean" keyPath="ignoreAlternativeRowColoring" value="YES"/>
+                                                            </userDefinedRuntimeAttributes>
                                                             <accessibility identifier="ChatMessageCellView"/>
                                                             <connections>
                                                                 <outlet property="avatar" destination="eMn-SL-gdX" id="f4x-SH-euU"/>
@@ -155,7 +163,7 @@
                                 </scroller>
                             </scrollView>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="bcG-4L-O2t">
-                                <rect key="frame" x="256" y="3" width="75" height="32"/>
+                                <rect key="frame" x="260" y="3" width="75" height="32"/>
                                 <buttonCell key="cell" type="push" title="Close" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Omc-pD-3mY">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -168,7 +176,7 @@ Gw
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fZ8-FY-L7q">
-                                <rect key="frame" x="329" y="3" width="104" height="32"/>
+                                <rect key="frame" x="333" y="3" width="104" height="32"/>
                                 <buttonCell key="cell" type="push" title="Go to chat" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="zD5-a3-lrl">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>

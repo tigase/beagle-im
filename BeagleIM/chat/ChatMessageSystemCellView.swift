@@ -24,6 +24,6 @@ import AppKit
 
 class ChatMessageSystemCellView: NSTableCellView {
     
-    @IBOutlet var message: NSTextField!;
+    @IBOutlet var message: MessageTextView!;
     
 }

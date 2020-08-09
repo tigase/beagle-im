@@ -66,9 +66,12 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
             
             submitButton?.isEnabled = false;
             progressIndicator?.startAnimation(self);
-            retrieveRegistrationForm(domain: domainField.stringValue, completion: { form in
+            retrieveRegistrationForm(domain: domainField.stringValue, completion: { form, bob in
+                self.form?.xmppClient = self.task?.client;
+                self.form?.jid = JID(self.domainField.stringValue);
                 self.submitButton?.isEnabled = true;
                 self.progressIndicator?.stopAnimation(self);
+                self.form?.bob = bob;
                 self.form?.form = form;
                 self.formHeightConstraint?.isActive = form == nil;
                 self.domainFieldHeightConstraint?.isActive = form != nil;
@@ -174,21 +177,25 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
         }
     }
     
-    fileprivate func retrieveRegistrationForm(domain: String, completion: @escaping (JabberDataElement?)->Void) {
-        let onForm = {(form: JabberDataElement, task: InBandRegistrationModule.AccountRegistrationTask)->Void in
+    fileprivate func retrieveRegistrationForm(domain: String, completion: @escaping (JabberDataElement,[BobData])->Void) {
+        let onForm = {(form: JabberDataElement, bob: [BobData], task: InBandRegistrationModule.AccountRegistrationTask)->Void in
             DispatchQueue.main.async {
-                completion(form);
-            }
-        };
-        let onSuccess = {()->Void in
-            print("account registered!");
-            let certData: SslCertificateInfo? = self.task?.getAcceptedCertificate();
-            DispatchQueue.main.async {
-                self.saveAccount(acceptedCertificate: certData);
-                self.dismissView();
+                completion(form, bob);
             }
         };
         let client: XMPPClient? = nil;
-        self.task = InBandRegistrationModule.AccountRegistrationTask(client: client, domainName: domain, onForm: onForm, onSuccess: onSuccess, onError: self.onRegistrationError, sslCertificateValidator: SslCertificateValidator.validateSslCertificate, onCertificateValidationError: self.onCertificateError);
+        self.task = InBandRegistrationModule.AccountRegistrationTask(client: client, domainName: domain, onForm: onForm, sslCertificateValidator: SslCertificateValidator.validateSslCertificate, onCertificateValidationError: self.onCertificateError, completionHandler: { result in
+            switch result {
+            case .success:
+                print("account registered!");
+                let certData: SslCertificateInfo? = self.task?.getAcceptedCertificate();
+                DispatchQueue.main.async {
+                    self.saveAccount(acceptedCertificate: certData);
+                    self.dismissView();
+                }
+            case .failure(let errorCondition, let errorText):
+                self.onRegistrationError(errorCondition: errorCondition, message: errorText);
+            }
+        });
     }
 }

@@ -23,7 +23,7 @@ import AppKit
 import LinkPresentation
 
 class ChatLinkPreviewCellView: NSTableCellView {
-
+    
     var linkView: NSView? {
         didSet {
             if let value = oldValue {
@@ -43,8 +43,14 @@ class ChatLinkPreviewCellView: NSTableCellView {
             }
         }
     }
+    
+    deinit {
+        if #available(macOS 10.15, *) {
+            (self.linkView as? LPLinkView)?.metadata = LPLinkMetadata();
+        }
+    }
 
-    func set(item: ChatLinkPreview) {
+    func set(item: ChatLinkPreview, fetchPreviewIfNeeded: Bool) {
         if #available(macOS 10.15, *) {
             var metadata = MetadataCache.instance.metadata(for: "\(item.id)");
             var isNew = false;
@@ -55,23 +61,25 @@ class ChatLinkPreviewCellView: NSTableCellView {
                 metadata!.originalURL = url;
                 isNew = true;
             }
+            metadata?.videoProvider = nil;
 //            if self.linkView == nil {
-                self.linkView = CustomLPLinkView(url: url);
-                linkView?.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
-                linkView?.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
-                linkView?.translatesAutoresizingMaskIntoConstraints = false;
+            let linkView = CustomLPLinkView(url: url);
+            linkView.translatesAutoresizingMaskIntoConstraints = false;
+            linkView.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
+            linkView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
   //          };
 
-            let linkView = self.linkView as! LPLinkView;
             linkView.metadata = metadata!;
 
+            self.linkView = linkView;
 
-            if isNew {
+            if isNew && fetchPreviewIfNeeded {
                 MetadataCache.instance.generateMetadata(for: url, withId: "\(item.id)", completionHandler: { [weak linkView] meta1 in
                     guard let meta = meta1 else {
                         return;
                     }
                     DispatchQueue.main.async {
+                        meta.videoProvider = nil;
                         linkView?.metadata = meta;                    
                     }
                 })
@@ -83,12 +91,16 @@ class ChatLinkPreviewCellView: NSTableCellView {
 
 @available(macOS 10.15, *)
 class CustomLPLinkView: LPLinkView {
+    
+//    override var metadata: LPLinkMetadata {
+//        didSet {
+//            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1.0, execute: {
+//                print("linkView:", self);
+//            })
+//        }
+//    }
 
-    override var metadata: LPLinkMetadata {
-        didSet {
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1.0, execute: {
-                print("linkView:", self);
-            })
-        }
+    deinit {
+        self.metadata = LPLinkMetadata();
     }
 }

@@ -324,8 +324,6 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
             nodeColumn.title = "Node";
             nodeColumn.width = columnWidth;
             self.outlineView.addTableColumn(nodeColumn);
-        default:
-            break;
         }
         
         oldColumns.forEach { (column) in
@@ -430,7 +428,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                     DispatchQueue.main.async {
                         finished();
                     }
-                    print("error", error);
+                    print("error", error as Any);
                 }
             })
             if items.isEmpty {
@@ -456,7 +454,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                     // nothing to do..
                 });
             }
-            print("error", error);
+            print("error", error as Any);
         });
     }
     

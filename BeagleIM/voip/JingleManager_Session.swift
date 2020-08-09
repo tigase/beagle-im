@@ -22,124 +22,124 @@
 import Foundation
 import TigaseSwift
 import WebRTC
+import os
 
 extension JingleManager {
     
-    class Session: NSObject, RTCPeerConnectionDelegate, JingleSession {
-        
-        required convenience init(account: BareJID, jid: JID, sid: String?, role: Jingle.Content.Creator) {
-            self.init(account: account, jid: jid, sid: sid, role: role, peerConnectionFactory: RTCPeerConnectionFactory());
-        }
-        
-        fileprivate(set) weak var client: XMPPClient?;
-        fileprivate(set) var state: State = .created {
+    class Session: JingleSession, CustomStringConvertible {
+                
+        fileprivate(set) var state: JingleSessionState = .created {
             didSet {
-                print("RTPSession:", self, "state:", state);
-                delegate?.state = state;
+                os_log(OSLogType.debug, log: .jingle, "RTPSession: %s state: %d", self.description, state.rawValue);
             }
         }
         
-        fileprivate var jingleModule: JingleModule? {
-            guard let client = self.client, client.state == .connected else {
-                return nil;
-            }
-            return client.modulesManager.getModule(JingleModule.ID);
-        }
+        fileprivate weak var jingleModule: JingleModule?;
         
+        var description: String {
+            return "Session(sid: \(sid), jid: \(jid), account: \(account))";
+        }
+
         let account: BareJID;
-        let jid: JID;
-        let peerConnectionFactory: RTCPeerConnectionFactory;
-        fileprivate(set) var peerConnection: RTCPeerConnection?;
-        weak var delegate: VideoCallController?;
+        private(set) var jid: JID;
+        weak var delegate: JingleSessionDelegate?;
         fileprivate(set) var sid: String;
         let role: Jingle.Content.Creator;
         
-        var remoteCandidates: [[String]]? = [];
-        var localCandidates: [RTCIceCandidate]? = [];
+        var remoteCandidates: [[String]] = [];
+        var remoteDescription: SDP?;
         
-        required init(account: BareJID, jid: JID, sid: String? = nil, role: Jingle.Content.Creator, peerConnectionFactory: RTCPeerConnectionFactory) {
-            self.account = account;
-            self.client = XmppService.instance.getClient(for: account);
+        private(set) var initiationType: JingleSessionInitiationType;
+        
+        required init(sessionObject: SessionObject, jid: JID, sid: String, role: Jingle.Content.Creator, initiationType: JingleSessionInitiationType) {
+            self.account = sessionObject.userBareJid!;
+            self.jingleModule = sessionObject.context.modulesManager.getModule(JingleModule.ID);
             self.jid = jid;
-            self.sid = sid ?? "";
-            self.role = role;
-            self.state = sid == nil ? .created : .negotiating;
-            self.peerConnectionFactory = peerConnectionFactory;
-        }
-        
-        deinit {
-            self.peerConnection?.close();
-        }
-        
-        func initiate(sid: String, contents: [Jingle.Content], bundle: [String]?) -> Bool {
             self.sid = sid;
-            guard let client = self.client, let accountJid = ResourceBinderModule.getBindedJid(client.sessionObject), let jingleModule = self.jingleModule else {
-                return false;
-            }
-            
-            self.state = .negotiating;
-            jingleModule.initiateSession(to: jid, sid: sid, initiator: accountJid, contents: contents, bundle: bundle) { (error) in
-                if (error != nil) {
-                    self.onError(error!);
-                }
-            }
-            return true;
+            self.role = role;
+            self.initiationType = initiationType;
         }
         
-        func initiated() {
-            self.state = .negotiating;
-        }
-        
-        func initiatePeerConnection(with configuration: RTCConfiguration, constraints: RTCMediaConstraints) -> RTCPeerConnection? {
-            self.peerConnection = peerConnectionFactory.peerConnection(with: configuration, constraints: constraints, delegate: self);
-            return peerConnection;
-        }
-        
-        func accept(contents: [Jingle.Content], bundle: [String]?) -> Bool {
-            guard state != .disconnected else {
-                return false;
+        func initiate(contents: [Jingle.Content], bundle: [String]?, completionHandler: ((Result<Void,ErrorCondition>)->Void)?) {
+            guard let jingleModule = self.jingleModule else {
+                self.terminate(reason: .failedApplication);
+                completionHandler?(.failure(.unexpected_request));
+                return;
             }
 
-            guard let client = self.client, let accountJid = ResourceBinderModule.getBindedJid(client.sessionObject), let jingleModule: JingleModule = self.jingleModule else {
-                return false;
+            jingleModule.initiateSession(to: jid, sid: sid, contents: contents, bundle: bundle, completionHandler: { result in
+                switch result {
+                case .success(_):
+                    break;
+                case .failure(_):
+                    self.terminate();
+                }
+                completionHandler?(result);
+            });
+        }
+        
+        func initiate(descriptions: [Jingle.MessageInitiationAction.Description], completionHandler: ((Result<Void,ErrorCondition>)->Void)?) {
+            guard let jingleModule = self.jingleModule else {
+                self.terminate(reason: .failedApplication);
+                completionHandler?(.failure(.unexpected_request));
+                return;
             }
-            
-            jingleModule.acceptSession(with: jid, sid: sid, initiator: role == .initiator ? accountJid : jid, contents: contents, bundle: bundle) { (error) in
-                if (error != nil) {
-                    self.onError(error!);
-                } else {
-                    //                    self.state = .connecting;
+            jingleModule.sendMessageInitiation(action: .propose(id: self.sid, descriptions: descriptions), to: self.jid);
+            completionHandler?(.success(Void()));
+        }
+        
+        func initiated(remoteDescription: SDP) {
+            self.state = .initiating;
+            self.remoteDescription = remoteDescription;
+        }
+        
+        func accept() {
+            state = .accepted;
+            if let remoteDescription = self.remoteDescription {
+                delegate?.session(self, setRemoteDescription: remoteDescription);
+            } else {
+                if let jingleModule = self.jingleModule {
+                    jingleModule.sendMessageInitiation(action: .proceed(id: self.sid), to: self.jid);
                 }
             }
-            
-            return true;
+        }
+                
+        func accept(contents: [Jingle.Content], bundle: [String]?, completionHandler: ((Result<Void,ErrorCondition>)->Void)?) {
+            guard let jingleModule = self.jingleModule else {
+                self.terminate(reason: .failedApplication);
+                completionHandler?(.failure(.unexpected_request));
+                return;
+            }
+
+            jingleModule.acceptSession(with: jid, sid: sid, contents: contents, bundle: bundle) { (result) in
+                switch result {
+                case .success(_):
+                    self.state = .accepted;
+                case .failure(_):
+                    self.terminate();
+                    break;
+
+                }
+                completionHandler?(result);
+            }
+        }
+        
+        func accepted(by jid: JID) {
+            self.state = .accepted;
+            self.jid = jid;
         }
         
         func accepted(sdpAnswer: SDP) {
-            self.state = .connecting;
-            delegate?.sessionAccepted(session: self, sdpAnswer: sdpAnswer);
+            self.state = .accepted;
+            self.remoteDescription = sdpAnswer;
+            delegate?.session(self, setRemoteDescription: sdpAnswer);
         }
         
-        func decline() -> Bool {
-            guard state != .disconnected else {
-                return false;
-            }
-
-            state = .disconnected;
-            
-            if let jingleModule = self.jingleModule {
-                jingleModule.declineSession(with: jid, sid: sid);
-            }
-            
-            terminateSession();
-            return true;
+        func decline() {
+            self.terminate(reason: .decline);
         }
         
         func transportInfo(contentName: String, creator: Jingle.Content.Creator, transport: JingleTransport) -> Bool {
-            guard state != .disconnected else {
-                return false;
-            }
-            
             guard let jingleModule = self.jingleModule else {
                 return false;
             }
@@ -148,62 +148,54 @@ extension JingleManager {
             return true;
         }
         
-        func terminate() -> Bool {
-            guard state != .disconnected else {
-                return false;
+        func terminate(reason: JingleSessionTerminateReason) {
+            let oldState = self.state;
+            guard state != .terminated else {
+                return;
             }
-
-            state = .disconnected;
-
+            self.state = .terminated;
             if let jingleModule: JingleModule = self.jingleModule {
-                jingleModule.terminateSession(with: jid, sid: sid);
+                if initiationType == .iq || oldState == .accepted {
+                    jingleModule.terminateSession(with: jid, sid: sid, reason: reason);
+                } else {
+                    jingleModule.sendMessageInitiation(action: .reject(id: sid), to: jid);
+                }
             }
             
             terminateSession();
-            return true;
+        }
+        
+        func terminated() {
+            guard state != .terminated else {
+                return;
+            }
+            self.state = .terminated;
+            self.terminateSession();
         }
         
         private func terminateSession() {
-            print("terminating session sid:", sid);
+            os_log(OSLogType.debug, log: .jingle, "terminating session sid: %s", sid);
             self.delegate?.sessionTerminated(session: self);
-            if let peerConnection = self.peerConnection {
-                self.peerConnection = nil;
-                print("closing connection");
-                peerConnection.close();
-                print("connection freed!");
-            }
-            
+            self.delegate = nil;
             JingleManager.instance.close(session: self);
         }
         
         func addCandidate(_ candidate: Jingle.Transport.ICEUDPTransport.Candidate, for contentName: String) {
             let sdp = candidate.toSDP();
-            
-            if remoteCandidates != nil {
-                remoteCandidates?.append([contentName, sdp]);
-            } else {
-                self.addCandidate(sdp: sdp, for: contentName);
+
+            remoteCandidates.append([contentName, sdp]);
+            receivedRemoteCandidates();
+        }
+        
+        func receivedRemoteCandidates() {
+            guard let delegate = self.delegate, self.remoteDescription != nil else {
+                return;
             }
-        }
-        
-        func remoteDescriptionSet() {
-            JingleManager.instance.dispatcher.async {
-                if let tmp = self.remoteCandidates {
-                    self.remoteCandidates = nil;
-                    tmp.forEach { (arr) in
-                        self.addCandidate(sdp: arr[1], for: arr[0]);
-                    }
-                }
-            }
-        }
-        
-        fileprivate func onError(_ errorCondition: ErrorCondition) {
-            
-        }
-        
-        fileprivate func addCandidate(sdp: String, for contentName: String) {
-            DispatchQueue.main.async {
-                guard let lines = self.peerConnection?.remoteDescription?.sdp.split(separator: "\r\n").map({ (s) -> String in
+
+            for arr in remoteCandidates {
+                let contentName = arr[0];
+                let sdp = arr[1];
+                guard let lines = self.remoteDescription?.toString(withSid: "0").split(separator: "\r\n").map({ (s) -> String in
                     return String(s);
                 }) else {
                     return;
@@ -212,106 +204,34 @@ extension JingleManager {
                 let contents = lines.filter { (line) -> Bool in
                     return line.starts(with: "a=mid:");
                 };
-                
+                    
                 let idx = contents.firstIndex(of: "a=mid:\(contentName)") ?? lines.filter({ (line) -> Bool in
                     return line.starts(with: "m=")
                 }).firstIndex(where: { (line) -> Bool in
                     return line.starts(with: "m=\(contentName) ");
                 }) ?? 0;
+                    
+                os_log(OSLogType.debug, log: .jingle, "adding candidate for: %d name: %s sdp: %s", idx, contentName, sdp)
+                    delegate.session(self, didReceive: RTCIceCandidate(sdp: sdp, sdpMLineIndex: Int32(idx), sdpMid: contentName));
+            }
+            remoteCandidates.removeAll();
+        }
+        
+        fileprivate func onError(_ errorCondition: ErrorCondition) {
+            
+        }
                 
-                print("adding candidate for:", idx, "name:", contentName, "sdp:", sdp)
-                self.peerConnection?.add(RTCIceCandidate(sdp: sdp, sdpMLineIndex: Int32(idx), sdpMid: contentName));
-            }
-        }
-        
-        func peerConnection(_ peerConnection: RTCPeerConnection, didChange stateChanged: RTCSignalingState) {
-            print("signaling state:", stateChanged.rawValue);
-        }
-        
-        func peerConnection(_ peerConnection: RTCPeerConnection, didAdd stream: RTCMediaStream) {
-            //            if stream.videoTracks.count > 0 {
-            //                self.delegate?.didAdd(remoteVideoTrack: stream.videoTracks[0]);
-            //            }
-        }
-        
-        func peerConnection(_ peerConnection: RTCPeerConnection, didRemove stream: RTCMediaStream) {
-        }
-        
-        func peerConnection(_ peerConnection: RTCPeerConnection, didStartReceivingOn transceiver: RTCRtpTransceiver) {
-            if transceiver.direction == .recvOnly || transceiver.direction == .sendRecv {
-                if transceiver.mediaType == .video {
-                    print("got video transceiver");
-                    guard let track = transceiver.receiver.track as? RTCVideoTrack else {
-                        return;
-                    }
-                    self.delegate?.didAdd(remoteVideoTrack: track)
-                }
-            }
-            if transceiver.direction == .sendOnly || transceiver.direction == .sendRecv {
-                if transceiver.mediaType == .video {
-                    guard let track = transceiver.sender.track as? RTCVideoTrack else {
-                        return;
-                    }
-                    self.delegate?.didAdd(localVideoTrack: track);
-                }
-            }
-        }
-        
-        func peerConnectionShouldNegotiate(_ peerConnection: RTCPeerConnection) {
-        }
-        
-        func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceConnectionState) {
-            print("ice connection state:", newState.rawValue);
+        func sendLocalCandidate(_ candidate: RTCIceCandidate, peerConnection: RTCPeerConnection) {
+            os_log(OSLogType.debug, log: .jingle, "sending candidate for: %s, index: %d, full SDP: %s", candidate.sdpMid ?? "", candidate.sdpMLineIndex, (peerConnection.localDescription?.sdp ?? ""));
             
-            switch newState {
-            case .new, .checking:
-                self.state = .connecting
-            case .connected, .completed:
-                self.state = .connected;
-            case .disconnected, .failed, .closed:
-                _ = self.terminate();
-            case .count:
-                break;
-            }
-        }
-        
-        func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceGatheringState) {
-        }
-        
-        func peerConnection(_ peerConnection: RTCPeerConnection, didGenerate candidate: RTCIceCandidate) {
-            print("generated candidate for:", candidate.sdpMid as Any, ", index:", candidate.sdpMLineIndex, "full SDP:", (peerConnection.localDescription?.sdp ?? ""));
-            
-            JingleManager.instance.dispatcher.async {
-                if self.localCandidates == nil {
-                    self.sendLocalCandidate(candidate);
-                } else {
-                    self.localCandidates?.append(candidate);
-                }
-            }
-        }
-        
-        func localDescriptionSet() {
-            JingleManager.instance.dispatcher.async {
-                if let tmp = self.localCandidates {
-                    self.localCandidates = nil;
-                    tmp.forEach({ (candidate) in
-                        self.sendLocalCandidate(candidate);
-                    })
-                }
-            }
-        }
-        
-        fileprivate func sendLocalCandidate(_ candidate: RTCIceCandidate) {
-            print("sending candidate for:", candidate.sdpMid as Any, ", index:", candidate.sdpMLineIndex, "full SDP:", (self.peerConnection?.localDescription?.sdp ?? ""));
-            
-            guard let jingleCandidate = Jingle.Transport.ICEUDPTransport.Candidate(fromSDP: candidate.sdp), let peerConnection = self.peerConnection else {
+            guard let jingleCandidate = Jingle.Transport.ICEUDPTransport.Candidate(fromSDP: candidate.sdp) else {
                 return;
             }
             guard let mid = candidate.sdpMid else {
                 return;
             }
             
-            guard let desc = peerConnection.localDescription, let sdp = SDP(from: desc.sdp, creator: role) else {
+            guard let desc = peerConnection.localDescription, let (sdp,sid) = SDP.parse(sdpString: desc.sdp, creator: role) else {
                 return;
             }
             
@@ -329,20 +249,28 @@ extension JingleManager {
                 }
             }
         }
-        
-        func peerConnection(_ peerConnection: RTCPeerConnection, didRemove candidates: [RTCIceCandidate]) {
-        }
-        
-        func peerConnection(_ peerConnection: RTCPeerConnection, didOpen dataChannel: RTCDataChannel) {
-        }
-        
-        enum State {
-            case created
-            case negotiating
-            case connecting
-            case connected
-            case disconnected
-        }
     }
     
+}
+
+protocol JingleSessionDelegate: class {
+    
+    func session(_ session: JingleManager.Session, setRemoteDescription sdp: SDP);
+    func sessionTerminated(session: JingleManager.Session);
+    func session(_ session: JingleManager.Session, didReceive: RTCIceCandidate);
+}
+
+extension JingleSessionState {
+    var rawValue: String {
+        switch self {
+        case .accepted:
+            return "accepted";
+        case .created:
+            return "created";
+        case .initiating:
+            return "initiating";
+        case .terminated:
+            return "terminated";
+        }
+    }
 }

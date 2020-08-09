@@ -24,6 +24,7 @@ import WebRTC
 import TigaseSwift
 import Metal
 import UserNotifications
+import os
 
 class RTCVideoView: RTCMTLNSVideoView {
     
@@ -33,7 +34,11 @@ class RTCVideoView: RTCMTLNSVideoView {
 
 }
 
-class VideoCallController: NSViewController, RTCVideoViewDelegate {
+class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate {
+    
+    public static let peerConnectionFactory: RTCPeerConnectionFactory = {
+        return RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(), decoderFactory: RTCDefaultVideoDecoderFactory());
+    }();
     
     public static var hasAudioSupport: Bool {
         return AVCaptureDevice.authorizationStatus(for: .audio) == .authorized;
@@ -41,23 +46,6 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
     public static var hasVideoSupport: Bool {
         return AVCaptureDevice.authorizationStatus(for: .video) == .authorized;
-    }
-    
-    public static func accept(session: JingleManager.Session, sdpOffer: SDP) -> Bool {
-        guard !sdpOffer.contents.filter({ (content) -> Bool in
-            return (content.description?.media == "audio") || (content.description?.media == "video");
-        }).isEmpty else {
-            return false;
-        }
-        
-        guard VideoCallController.hasAudioSupport else {
-            return false;
-        }
-
-        open { (videoCallController) in
-            videoCallController.accept(session: session, sdpOffer: sdpOffer);
-        }
-        return true;
     }
     
     public static func open(completionHandler: @escaping (VideoCallController)->Void) {
@@ -72,78 +60,57 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         }
     }
     
-    public static func call(jid: BareJID, from account: BareJID, withAudio: Bool, withVideo: Bool) {
-        open { (videoCallController) in
-            videoCallController.call(jid: jid, from: account, withAudio: withAudio, withVideo: withVideo);
+    private var call: Call?;
+    
+    func callDidStart(_ call: Call) {
+        self.call = call;
+        self.updateAvatarView();
+        self.updateStateLabel();
+    }
+    
+    func callDidEnd(_ sender: Call) {
+        self.call = nil;
+        if sender.direction == .incoming {
+            self.closeWindow();
+        } else {
+            self.hideAlert();
+            var title = "Call ended";
+            switch sender.state {
+            case .ringing:
+                title = "Call declined";
+            case .connecting:
+                title = "Call failed";
+            default:
+                break;
+            }
+            self.showAlert(title: title, buttons: ["OK"], completionHandler: { response in
+                DispatchQueue.main.async {
+                    self.closeWindow();
+                }
+            });
         }
     }
     
-    fileprivate func initialize(connectionFactory: RTCPeerConnectionFactory, withAudio: Bool, withVideo: Bool) {
-        self.localAudioTrack = connectionFactory.audioTrack(withTrackId: "audio0");
-        if VideoCallController.hasVideoSupport && withVideo {
-            self.localVideoSource = connectionFactory.videoSource();
-            if let localVideoCapturer = self.localVideoCapturer {
-                localVideoCapturer.stopCapture();
-            }
-            self.localVideoCapturer = RTCCameraVideoCapturer(delegate: self.localVideoSource!);
-            self.localVideoTrack = connectionFactory.videoTrack(with: self.localVideoSource!, trackId: "video-" + UUID().uuidString);
-            
-            self.startVideoCapture(videoCapturer: self.localVideoCapturer!) {
-                print("started!", self.localVideoTrack?.isEnabled);
-            }
-        }
+    func callStateChanged(_ sender: Call) {
+        updateStateLabel();
+    }
+    
+    func call(_ call: Call, didReceiveLocalVideoTrack localTrack: RTCVideoTrack) {
+        self.localVideoTrack = localTrack;
+    }
+    
+    func call(_ call: Call, didReceiveRemoteVideoTrack remoteTrack: RTCVideoTrack) {
+        self.remoteVideoTrack = remoteTrack;
     }
     
     @IBOutlet var remoteVideoView: RTCMTLNSVideoView!
     @IBOutlet var localVideoView: RTCMTLNSVideoView!;
     
-    @IBOutlet var remoteAvatarView: NSImageView!;
+    @IBOutlet var remoteAvatarView: AvatarView!;
     
     var remoteVideoViewAspect: NSLayoutConstraint?
     var localVideoViewAspect: NSLayoutConstraint?
-        
-//    var audio: Bool = true;
-//    var video: Bool = true;
-    
-    var session: JingleManager.Session? {
-        didSet {
-            print("setting session:", session, "peerConnection:", session?.peerConnection)
-            if let conn = session?.peerConnection {
-                print("with sdp:", conn.configuration.sdpSemantics.rawValue);
-                if conn.configuration.sdpSemantics == .unifiedPlan {
-                    if remoteVideoView != nil {
-                        print("setting remote view");
-                        conn.transceivers.forEach { (trans) in
-                            if trans.mediaType == .video && (trans.direction == .sendRecv || trans.direction == .recvOnly) {
-                                guard let track = trans.receiver.track as? RTCVideoTrack else {
-                                    return;
-                                }
-                                self.didAdd(remoteVideoTrack: track);
-                            }
-                        }
-                    } else {
-                        print("no remote view");
-                    }
-                    if localVideoView != nil {
-                        conn.transceivers.forEach { (trans) in
-                            if trans.mediaType == .video && (trans.direction == .sendRecv || trans.direction == .sendOnly) {
-                                guard let track = trans.sender.track as? RTCVideoTrack else {
-                                    return;
-                                }
-                                self.didAdd(localVideoTrack: track);
-                            }
-                        }
-                    }
-                    self.state = self.session?.state ?? .disconnected;
-                }
-            }
-        }
-    }
-    
-    fileprivate var localAudioTrack: RTCAudioTrack?;
-    fileprivate var localVideoCapturer: RTCCameraVideoCapturer?;
-    fileprivate var localVideoSource: RTCVideoSource?;
-    
+                
     fileprivate var localVideoTrack: RTCVideoTrack? {
         willSet {
             if localVideoTrack != nil && localVideoView != nil {
@@ -171,32 +138,6 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
     @IBOutlet var stateLabel: NSTextField!;
     
-    var state: JingleManager.Session.State = .created {
-        didSet {
-            if state == .connected {
-                DispatchQueue.main.async {
-                    self.remoteAvatarView.isHidden = (self.remoteVideoTrack?.isEnabled ?? false) && ((self.remoteVideoTrack?.source.state ?? .ended) != .ended);
-                }
-            }
-            DispatchQueue.main.async {
-                switch self.state {
-                case .created:
-                    self.stateLabel.stringValue = "";
-                case .disconnected:
-                    self.stateLabel.stringValue = "Disconnected";
-                case .negotiating:
-                    self.stateLabel.stringValue = "Connecting...";
-                case .connecting:
-                    self.stateLabel.stringValue = "Connecting...";
-                case .connected:
-                    self.stateLabel.stringValue = "Connected";
-                }
-                self.stateLabel.isHidden = self.state == .connected;
-                print("controller state:", self.state, " ", self.stateLabel.stringValue);
-            }
-        }
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad();
 
@@ -212,7 +153,17 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
     override func viewWillAppear() {
         super.viewWillAppear();
-
+        
+        if let call = self.call, call.state == .ringing {
+            switch call.direction {
+            case .incoming:
+                self.askForAcceptance(for: call);
+            case .outgoing:
+                break;
+            }
+        }
+        self.updateAvatarView();
+        self.updateStateLabel();
     }
     
     func videoView(_ videoView: RTCVideoRenderer, didChangeVideoSize size: CGSize) {
@@ -222,7 +173,6 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                 self.localVideoView.removeConstraint(self.localVideoViewAspect!);
                 self.localVideoViewAspect = self.localVideoView.widthAnchor.constraint(equalTo: self.localVideoView.heightAnchor, multiplier: size.width / size.height);
                 self.localVideoViewAspect?.isActive = true;
-                print("local frame:", self.localVideoView!.frame);
             } else if videoView === self.remoteVideoView! {
                 let currSize = self.remoteVideoView.frame.size;
                 
@@ -234,23 +184,53 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
                 self.view.window?.setContentSize(NSSize(width: newWidth, height: newHeight));
                 self.remoteVideoViewAspect = self.remoteVideoView.widthAnchor.constraint(equalTo: self.remoteVideoView.heightAnchor, multiplier: size.width / size.height);
                 self.remoteVideoViewAspect?.isActive = true;
-                print("remote frame:", self.remoteVideoView!.frame);
             }
         }
     }
     
-    fileprivate var sessionsInProgress: [JingleManager.Session] = [];
+    private func updateAvatarView() {
+        if let call = self.call {
+            self.remoteAvatarView?.image = AvatarManager.instance.avatar(for: call.jid, on: call.account);
+            self.remoteAvatarView?.name = XmppService.instance.getClient(for: call.account)?.rosterStore?.get(for: JID(call.jid))?.name ?? call.jid.stringValue;
+        } else {
+            self.remoteAvatarView?.image = nil;
+            self.remoteAvatarView?.name = nil;
+        }
+    }
     
-    var avplayer: AVPlayer? = nil {
+    private func updateStateLabel() {
+        DispatchQueue.main.async {
+            switch self.call?.state ?? .new {
+            case .new:
+                self.stateLabel.stringValue = "New call";
+            case .ringing:
+                self.stateLabel.stringValue = "Ringing...";
+                if self.call?.direction == .outgoing {
+                    self.avplayer = AVPlayer(url: Bundle.main.url(forResource: "outgoingCall", withExtension: "mp3")!);
+                }
+            case .connecting:
+                self.stateLabel.stringValue = "Connecting...";
+            case .connected:
+                self.stateLabel.stringValue = "";
+                self.remoteAvatarView?.isHidden = self.remoteVideoTrack != nil;
+                self.avplayer = nil;
+            case .ended:
+                self.stateLabel.stringValue = "Call ended";
+                self.avplayer = nil;
+            }
+        }
+    }
+    
+    private var avplayer: AVPlayer? = nil {
         didSet {
             if let value = oldValue {
-                print("deregistering av player item:", value.currentItem);
+                os_log(OSLogType.debug, log: .jingle, "deregistering av player item: %s", value.currentItem?.description ?? "nil");
                 value.pause();
                 NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: value.currentItem);
             }
             if let value = avplayer {
                 value.actionAtItemEnd = .none;
-                print("registering av player item:", value.currentItem);
+                os_log(OSLogType.debug, log: .jingle, "registering av player item: %s", value.currentItem?.description ?? "nil");
                 NotificationCenter.default.addObserver(self, selector: #selector(playerItemDidReachEnd), name: .AVPlayerItemDidPlayToEndTime, object: value.currentItem);
                 value.play();
             }
@@ -265,164 +245,25 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
     
     var logger: RTCFileLogger?;
     var loggerFile: URL?;
-    
-    func accept(session: JingleManager.Session, sdpOffer: SDP) {
-        loggerFile = FileManager.default.temporaryDirectory;
-        logger = RTCFileLogger(dirPath: loggerFile!.path, maxFileSize: 20 * 1024 * 1024);
-        logger?.start();
+        
+    func askForAcceptance(for call: Call) {
         DispatchQueue.main.async {
-            self.avplayer = AVPlayer(url: Bundle.main.url(forResource: "incomingCall", withExtension: "aiff")!);
-
-            self.session = session;
-            session.delegate = self;
+            self.avplayer = AVPlayer(url: Bundle.main.url(forResource: "incomingCall", withExtension: "mp3")!);
+            let buttons = [ "Accept", "Reject" ];
             
-            let name = session.client?.rosterStore?.get(for: session.jid.withoutResource)?.name ?? session.jid.bareJid.stringValue;
+            let name = XmppService.instance.getClient(for: call.account)?.rosterStore?.get(for: JID(call.jid))?.name ?? call.jid.stringValue;
             
-            self.remoteAvatarView.image = AvatarManager.instance.avatar(for: session.jid.bareJid, on: session.account) ?? AvatarManager.instance.defaultAvatar;
-            
-            self.view.window?.title = "Call with \(name)"
-            
-            let isVideo = VideoCallController.hasVideoSupport && sdpOffer.contents.first(where: { (content) -> Bool in
-                return content.description?.media == "video"
-            }) != nil;
-            
-            self.initialize(connectionFactory: session.peerConnectionFactory, withAudio: true, withVideo: isVideo);
-            
-            var buttons = [ "Accept audio", "Deny" ];
-            if isVideo {
-                buttons.insert("Accept video", at: 0);
-            }
-            
-            self.showAlert(title: "Incoming call from \(name)", message: "Do you want to accept this call?", buttons: buttons, completionHandler: { (response) in
+            self.showAlert(title: "Incoming \(call.media.contains(.video) ? "video" : "audio") call from \(name)", message: "Do you want to accept this call?", buttons: buttons, completionHandler: { (response) in
                 self.avplayer = nil;
-                if isVideo {
-                    switch response {
-                    case .alertFirstButtonReturn:
-                        self.accept(session: session, sdpOffer: sdpOffer, withAudio: true, withVideo: true);
-                    case .alertSecondButtonReturn:
-                        self.accept(session: session, sdpOffer: sdpOffer, withAudio: true, withVideo: false);
-                    default:
-                        _ = session.decline();
-                        self.closeWindow();
+                switch response {
+                case .alertFirstButtonReturn:
+                    DispatchQueue.global().async {
+                        call.accept()
                     }
-                } else {
-                    switch response {
-                    case .alertFirstButtonReturn:
-                        self.accept(session: session, sdpOffer: sdpOffer, withAudio: true, withVideo: false);
-                    default:
-                        _ = session.decline();
-                        self.closeWindow();
-                    }
+                default:
+                    call.reject();
                 }
             });
-        }
-    }
-    
-    fileprivate func accept(session: JingleManager.Session, sdpOffer: SDP, withAudio: Bool, withVideo: Bool) {
-        session.initiated();
-        
-        guard self.initiatePeerConnection(for: session) else {
-            handle(error: .peerConnectionNotCreated, for: session);
-            return;
-        }
-        
-        self.session = session;
-        
-        let sessDesc = RTCSessionDescription(type: .offer, sdp: sdpOffer.toString());
-
-        if !withVideo {
-            self.localVideoCapturer?.stopCapture();
-            self.localVideoCapturer = nil;
-        }
-        
-        self.initializeMedia(for: session, audio: withAudio, video: withVideo) { result in
-            guard result else {
-                self.handle(error: .mediaInitializationFailed, for: session);
-                return;
-            }
-            session.peerConnection?.delegate = session;
-            print("setting remote description:", sdpOffer.toString());
-            self.setRemoteSessionDescription(sessDesc, for: session) { (result) in
-                switch result {
-                case .success(_):
-                    DispatchQueue.main.async {
-                        if (session.peerConnection?.configuration.sdpSemantics ?? RTCSdpSemantics.planB) == RTCSdpSemantics.unifiedPlan {
-                            session.peerConnection?.transceivers.forEach({ transceiver in
-                                if !withAudio && transceiver.mediaType == .audio {
-                                    transceiver.stop();
-                                }
-                                if !withVideo && transceiver.mediaType == .video {
-                                    transceiver.stop();
-                                }
-                            });
-                        }
-                        
-                        session.peerConnection?.answer(for: self.defaultCallConstraints, completionHandler: { (sdpAnswer, error) in
-                            guard error == nil else {
-                                self.handle(error: .sdpAnswerNotGenerated(error: error!), for: session);
-                                return;
-                            }
-                            print("generated local description:", sdpAnswer!.sdp, sdpAnswer!.type);
-                            self.setLocalSessionDescription(sdpAnswer!, for: session, completionHandler: { result in
-                                switch result {
-                                case .success(_):
-                                    print("set local description:", session.peerConnection?.localDescription?.sdp as Any);
-                                    
-                                    let sdp = SDP(from: sdpAnswer!.sdp, creator: session.role);
-                                    _  = session.accept(contents: sdp!.contents, bundle: sdp!.bundle);
-                                case .failure(let error):
-                                    self.handle(error: error, for: session);
-                                }
-                            })
-                        })
-                    }
-                case .failure(let error):
-                    self.handle(error: error, for: session);
-                }
-
-            }
-        }
-    }
-    
-    func handle(error: PeerConnectionError, for session: JingleManager.Session) {
-        switch error {
-        case .settingLocalDescriptionFailed(let error), .settingRemoteDescriptionFailed(let error):
-            _ = session.decline();
-        case .mediaInitializationFailed:
-            _ = session.decline();
-        case .sdpAnswerNotGenerated(let error):
-            _ = session.decline();
-        case .sdpOfferNotGenerated(let error):
-            _ = session.decline();
-        case .peerConnectionNotCreated:
-            break;
-        }
-        self.showAlert(title: "Call failed!", message: error.description, icon: NSImage(named: NSImage.infoName), buttons: ["OK"], completionHandler: { (reponse) in
-            self.closeWindow();
-        });
-    }
-
-    func setAudioEnabled(value: Bool) {
-        guard let audioTracks = self.session?.peerConnection?.senders.compactMap({ (sender) -> RTCAudioTrack? in
-            return sender.track as? RTCAudioTrack;
-        }) else {
-            return;
-        }
-        audioTracks.forEach { (track) in
-            print("audio is enbled:", track, track.isEnabled);
-            track.isEnabled = value;
-        }
-    }
-
-    func setVideoEnabled(value: Bool) {
-        guard let videoTracks = self.session?.peerConnection?.senders.compactMap({ (sender) -> RTCVideoTrack? in
-            return sender.track as? RTCVideoTrack;
-        }) else {
-            return;
-        }
-        videoTracks.forEach { (track) in
-            print("video is enbled:", track, track.isEnabled);
-            track.isEnabled = value;
         }
     }
     
@@ -433,121 +274,16 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         sender.backgroundColor = muted ? NSColor.red : NSColor.white;
         sender.contentTintColor = muted ? NSColor.white : NSColor.black;
         
-        setAudioEnabled(value: !muted);
-        setVideoEnabled(value: !muted);
+        self.call?.muted(value: muted);
     }
-    
-    func call(jid: BareJID, from account: BareJID, withAudio: Bool, withVideo: Bool) {
-        loggerFile = FileManager.default.temporaryDirectory;
-        print("starting logging at:", loggerFile);
-        logger = RTCFileLogger(dirPath: loggerFile!.path, maxFileSize: 20 * 1024 * 1024);
-        logger?.start();
-        let name = XmppService.instance.getClient(for: account)?.rosterStore?.get(for: JID(jid))?.name ?? jid.stringValue;
-        self.view.window?.title = "Call with \(name)";
-        self.remoteAvatarView.image = AvatarManager.instance.avatar(for: jid, on: account) ?? AvatarManager.instance.defaultAvatar;
-        
-        guard let presences = XmppService.instance.getClient(for: account)?.presenceStore?.getPresences(for: jid)?.keys, !presences.isEmpty
-            else {
-                self.showAlert(title: "Call failed", message: "It was not possible to establish the connection. Recipient is unavailable.", icon: NSImage(named: NSImage.cautionName), buttons: ["OK"]) { (response) in
-                    self.closeWindow();
-                };
-                return;
-        }
-        
-        let connectionFactory = RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(), decoderFactory: RTCDefaultVideoDecoderFactory());
-
-        self.initialize(connectionFactory: connectionFactory, withAudio: withAudio, withVideo: withVideo);
-        
-        var errors: [PeerConnectionError] = [];
-        
-        let group = DispatchGroup();
-        
-        group.enter();
-        presences.forEach { resource in
-            group.enter();
-            let session = JingleManager.instance.open(for: account, with: JID(jid, resource: resource), sid: nil, role: .initiator, peerConnectionFactory: connectionFactory);
             
-            session.delegate = self;
-            guard self.initiatePeerConnection(for: session) else {
-                DispatchQueue.main.async {
-                    errors.append(.peerConnectionNotCreated);
-                }
-                _ = session.terminate();
-                group.leave();
-                return;
-            }
-            
-            print("creating peer connection for:", session.jid);
-            self.initializeMedia(for: session, audio: withAudio, video: withVideo) { result in
-                guard result else {
-                    print("intialization of media failed!");
-                    DispatchQueue.main.async {
-                        errors.append(.mediaInitializationFailed);
-                    }
-                    _ = session.terminate();
-                    group.leave();
-                    return;
-                }
-
-                print("preparing sdp offer for:", session.peerConnection, "....");
-                session.peerConnection?.offer(for: self.defaultCallConstraints, completionHandler: { (sdp, error) in
-                    if sdp != nil && error == nil {
-                        print("setting local description:", sdp!.sdp);
-                        let tmp = RTCSessionDescription(type: sdp!.type, sdp: sdp!.sdp.replacingOccurrences(of: "a=mid:0", with: "a=mid:m0").replacingOccurrences(of: "a=group:BUNDLE 0", with: "a=group:BUNDLE m0"));
-                        self.setLocalSessionDescription(tmp, for: session, completionHandler: { result in
-                            switch result {
-                            case .success(_):
-                                let sdpOffer = SDP(from: tmp.sdp, creator: .initiator)!;
-                                
-                                if session.initiate(sid: sdpOffer.sid, contents: sdpOffer.contents, bundle: sdpOffer.bundle) {
-                                    DispatchQueue.main.async {
-                                        self.sessionsInProgress.append(session);
-                                        session.delegate = self;
-                                        group.leave();
-                                    }
-                                } else {
-                                    _ = session.terminate();
-                                    group.leave();
-                                }
-                            case .failure(let error):
-                                DispatchQueue.main.async {
-                                    errors.append(.sdpOfferNotGenerated(error: error));
-                                }
-                                _ = session.terminate();
-                                group.leave();
-                            }
-                        })
-                    } else {
-                        DispatchQueue.main.async {
-                            errors.append(.sdpOfferNotGenerated(error: error!));
-                        }
-                        _ = session.terminate();
-                        group.leave();
-                    }
-                });
-            }
-        }
-        group.leave();
-        
-        group.notify(queue: DispatchQueue.main, execute: { [weak self] in
-            guard let that = self else {
-                return;
-            }
-            if that.sessionsInProgress.isEmpty {
-                that.showAlert(title: "Call failed", message: "It was not possible to establish the connection.\nErrors:\n \(errors.map({ $0.description }).joined(separator: "\n"))", icon: NSImage(named: NSImage.cautionName), buttons: ["OK"]) { (response) in
-                    that.closeWindow();
-                };
-            }
-        })
-    }
-        
-    fileprivate var defaultCallConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement": "true"]);
+    static let defaultCallConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement": "true"]);
     
-    func initiatePeerConnection(for session: JingleManager.Session) -> Bool {
+    static func initiatePeerConnection(withDelegate delegate: RTCPeerConnectionDelegate) -> RTCPeerConnection? {
         let configuration = RTCConfiguration();
         configuration.sdpSemantics = .unifiedPlan;
         
-        var iceServers: [RTCIceServer] = [ RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:stun2.l.google.com:19302","stun:stun3.l.google.com:19302","stun:stun4.l.google.com:19302"]), RTCIceServer(urlStrings: ["stun:stunserver.org:3478" ]) ];
+        let iceServers: [RTCIceServer] = [ RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:stun2.l.google.com:19302","stun:stun3.l.google.com:19302","stun:stun4.l.google.com:19302"]), RTCIceServer(urlStrings: ["stun:stunserver.org:3478" ]) ];
         
 //        if var urlComponents = URLComponents(string: Settings.turnServer.string() ?? "") {
 //            let username = urlComponents.user;
@@ -570,113 +306,21 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         configuration.rtcpMuxPolicy = .require;
         configuration.iceCandidatePoolSize = 3;
         
-        return session.initiatePeerConnection(with: configuration, constraints: self.defaultCallConstraints) != nil;
-    }
-    
-    // this may be called multiple times, needs to handle that with video capture!!!
-    func initializeMedia(for session: JingleManager.Session, audio: Bool, video: Bool, completionHandler: @escaping (Bool)->Void) {
-//        DispatchQueue.main.async {
-        print("intializing session for:", session.peerConnection, "sdpSemantics:", session.peerConnection?.configuration.sdpSemantics)
-            if (session.peerConnection?.configuration.sdpSemantics ?? RTCSdpSemantics.planB) == RTCSdpSemantics.unifiedPlan {
-                // send audio?
-                if audio, let localAudioTrack = self.localAudioTrack {
-                    session.peerConnection?.add(localAudioTrack, streamIds: ["RTCmS"]);
-                }
-                
-                // send video?
-                if video, let localVideoTrack = self.localVideoTrack {
-                    session.peerConnection?.add(localVideoTrack, streamIds: ["RTCmS"]);
-                }
-                DispatchQueue.main.async {
-                    completionHandler(true);
-                }
-            } else {
-                DispatchQueue.main.async {
-                    completionHandler(false);
-                }
-//                let localStream = JingleManager.instance.createLocalStream(audio: audio, video: video);
-//                session.peerConnection?.add(localStream);
-//                if let videoTrack = localStream.videoTracks.first {
-//                    self.didAdd(localVideoTrack: videoTrack);
-//                }
-            }
-//        }
-    }
-    
-    fileprivate func startVideoCapture(videoCapturer: RTCCameraVideoCapturer, completionHandler: @escaping ()-> Void) {
-        if let device = RTCCameraVideoCapturer.captureDevices().first {
-            var bestFormat: AVCaptureDevice.Format? = nil;
-            var bestFrameRate: AVFrameRateRange? = nil;
-            RTCCameraVideoCapturer.supportedFormats(for: device).forEach({ (format) in
-                let size = CMVideoFormatDescriptionGetDimensions(format.formatDescription);
-                print("checking format:", size.width, "x", size.height, ", fps:", format.videoSupportedFrameRateRanges.map({ (range) -> Float64 in
-                    return range.maxFrameRate;
-                }).max() ?? 0, ", type:", CMFormatDescriptionGetMediaSubType(format.formatDescription), "expected:", videoCapturer.preferredOutputPixelFormat());
-                // larger size causes issues during encoding...
-                if (size.width > 640) {
-                    return;
-                }
-                let currSize = bestFormat == nil ? nil : CMVideoFormatDescriptionGetDimensions(bestFormat!.formatDescription);
-                let currRating = currSize == nil ? nil : (currSize!.width * currSize!.height);
-                let rating = size.width * size.height;
-                
-                format.videoSupportedFrameRateRanges.forEach({ (range) in
-                    if (bestFrameRate == nil || bestFrameRate!.maxFrameRate < range.maxFrameRate) {
-                        bestFrameRate = range;
-                        bestFormat = format;
-                    } else if (bestFrameRate != nil && bestFrameRate!.maxFrameRate == range.maxFrameRate && (
-                        (currRating! < rating)
-                        || (CMFormatDescriptionGetMediaSubType(format.formatDescription)) == videoCapturer.preferredOutputPixelFormat())) {
-                        bestFormat = format;
-                    }
-                });
-            });
-            
-            if bestFormat != nil && bestFrameRate != nil {
-                videoCapturer.startCapture(with: device, format: bestFormat!, fps: Int(bestFrameRate!.maxFrameRate), completionHandler: { error in
-                    
-                    // takes too long to initialize?
-                    //print("video capturer started:", error);
-                    
-                    completionHandler();
-                });
-            } else {
-                completionHandler();
-            }
-        }
-    }
-    
-    func didAdd(remoteVideoTrack: RTCVideoTrack) {
-        print("remote view configured with:", remoteVideoTrack);
-        DispatchQueue.main.async {
-            if self.remoteVideoTrack != nil && self.remoteVideoTrack! == remoteVideoTrack {
-                return;
-            }
-            self.remoteVideoTrack = remoteVideoTrack;
-        }
-    }
-    
-    func didAdd(localVideoTrack: RTCVideoTrack) {
-        print("skipping setting local video track!");
-        DispatchQueue.main.async {
-            if self.localVideoTrack != nil && self.localVideoTrack! ==  localVideoTrack {
-                return;
-            }
-            self.localVideoTrack = localVideoTrack;
-        }
+        return peerConnectionFactory.peerConnection(with: configuration, constraints: defaultCallConstraints, delegate: delegate);
     }
     
     @IBAction func closeClicked(_ sender: Any) {
-        self.localVideoCapturer?.stopCapture();
-        self.localVideoCapturer = nil;
-        if let session = self.session {
-            session.delegate = nil;
-            _ = session.terminate();
-        }
-        self.sessionsInProgress.forEach { sess in
-            sess.delegate = nil;
-            _ = sess.terminate();
-        }
+        call?.reset();
+//        self.localVideoCapturer?.stopCapture();
+//        self.localVideoCapturer = nil;
+//        if let session = self.session {
+//            session.delegate = nil;
+//            _ = session.terminate();
+//        }
+//        self.sessionsInProgress.forEach { sess in
+//            sess.delegate = nil;
+//            _ = sess.terminate();
+//        }
         self.closeWindow();
     }
 
@@ -716,146 +360,14 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate {
         }
     }
     
-    func sessionTerminated(session: JingleManager.Session) {
-        DispatchQueue.main.async {
-            if let idx = self.sessionsInProgress.firstIndex(of: session) {
-                self.sessionsInProgress.remove(at: idx);
-                if self.session == nil && self.sessionsInProgress.isEmpty {
-                    self.showAlert(title: "Call rejected!", message: "Call was rejected by the recipient.", icon: NSImage(named: NSImage.infoName), buttons: ["OK"], completionHandler: { (response) in
-                        self.closeWindow();
-                    })
-                }
-            } else if let sess = self.session {
-                if sess.sid == session.sid && sess.jid == session.jid && sess.account == session.account {
-                    self.session = nil;
-                    if let videoCapturer = self.localVideoCapturer {
-                        videoCapturer.stopCapture(completionHandler: nil);
-                        self.localVideoCapturer = nil;
-                    }
-                    if self.state == .created {
-                        self.hideAlert();
-                    } else {
-                        self.showAlert(title: "Call ended!", message: "Call ended.", icon: NSImage(named: NSImage.infoName), buttons: ["OK"], completionHandler: { (response) in
-                            self.closeWindow();
-                        });
-                    }
-                }
-            }
-        }
-    }
-    
-    func sessionAccepted(session: JingleManager.Session, sdpAnswer: SDP) {
-        DispatchQueue.main.async {
-            if let idx = self.sessionsInProgress.firstIndex(of: session) {
-                self.sessionsInProgress.remove(at: idx);
-                self.session = session;
-                self.sessionsInProgress.forEach({ (sess) in
-                    _ = sess.terminate();
-                })
-                
-                print("setting remote description:", sdpAnswer.toString());
-                let sessDesc = RTCSessionDescription(type: .answer, sdp: sdpAnswer.toString());
-                self.setRemoteSessionDescription(sessDesc, for: session, completionHandler: { (result) in
-                    switch result {
-                    case .success(_):
-                        print("remote session description set");
-                    case .failure(let err):
-                        self.handle(error: err, for: session);
-                    }
-                });
-            }
-        }
-    }
-    
     func closeWindow() {
         logger?.stop();
         
         DispatchQueue.main.async {
             self.avplayer = nil;
-            if let localVideoCapturer = self.localVideoCapturer {
-                localVideoCapturer.stopCapture();
-            }
             self.localVideoTrack = nil;
             self.remoteVideoTrack = nil;
-            self.localVideoSource = nil;
-            self.localVideoCapturer = nil;
             self.view.window?.orderOut(self);
-        }
-    }
-    
-    fileprivate func setLocalSessionDescription(_ sessDesc: RTCSessionDescription, for session: JingleManager.Session, completionHandler: @escaping (Result<Void,PeerConnectionError>)->Void) {
-        DispatchQueue.main.async {
-            session.peerConnection?.setLocalDescription(sessDesc, completionHandler: { (error) in
-                if error == nil {
-                    session.localDescriptionSet();
-                    completionHandler(.success(Void()));
-                } else {
-                    completionHandler(.failure(PeerConnectionError.settingLocalDescriptionFailed(error: error!)));
-                }
-//                guard error == nil else {
-//                    guard onError == nil else {
-//                        onError!();
-//                        return;
-//                    }
-//
-//                    _ = session.decline();
-//
-//                    self.showAlert(title: "Call failed!", message: "Negotiation of the call failed", icon: NSImage(named: NSImage.infoName), buttons: ["OK"], completionHandler: { (reponse) in
-//                        self.closeWindow();
-//                    })
-//                    return;
-//                }
-//
-//
-//                onSuccess();
-            });
-        }
-    }
-    
-    fileprivate func setRemoteSessionDescription(_ sessDesc: RTCSessionDescription, for session: JingleManager.Session, completionHandler: @escaping (Result<Void,PeerConnectionError>)->Void) {
-        session.peerConnection?.setRemoteDescription(sessDesc, completionHandler: { (error) in
-            print("remote description set:", session.peerConnection?.remoteDescription?.sdp as Any);
-            guard error == nil else {
-                completionHandler(.failure(VideoCallController.PeerConnectionError.settingRemoteDescriptionFailed(error: error!)));
-//                _ = session.decline();
-//
-//                self.showAlert(title: "Call failed!", message: "Negotiation of the call failed", icon: NSImage(named: NSImage.infoName), buttons: ["OK"], completionHandler: { (reponse) in
-//                    self.closeWindow();
-//                })
-                return;
-            }
-
-            session.remoteDescriptionSet();
-            completionHandler(.success(Void()));
-//            onSuccess();
-        });
-    }
-    
-    enum PeerConnectionError: Error {
-        case settingLocalDescriptionFailed(error: Error)
-        case settingRemoteDescriptionFailed(error: Error)
-        case mediaInitializationFailed
-        case peerConnectionNotCreated
-        case sdpOfferNotGenerated(error: Error)
-        case sdpAnswerNotGenerated(error: Error)
-        
-        var description: String {
-            switch self {
-            case .settingLocalDescriptionFailed(let error), .settingRemoteDescriptionFailed(let error):
-                return "Negotiation of the call failed: \(error.localizedDescription)";
-            case .mediaInitializationFailed:
-                return "Could not initialize recording devices";
-            case .sdpAnswerNotGenerated(let error):
-                return "Negotiation of the call failed: \(error.localizedDescription)";
-            case .sdpOfferNotGenerated(let error):
-                return "Negotiation of the call failed: \(error.localizedDescription)";
-            case .peerConnectionNotCreated:
-                return "Cound not initialize connection: peer connection not created!";
-            }
-        }
-            
-        var isFatal: Bool {
-            return true;
         }
     }
 }

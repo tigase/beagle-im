@@ -35,7 +35,7 @@ class XmppService: EventHandler {
  
     fileprivate let observedEvents: [Event] = [ SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE ];
     
-    fileprivate let eventHandlers: [XmppServiceEventHandler] = [MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), MessageEventHandler(), HttpFileUploadEventHandler(), JingleManager.instance, BlockedEventHandler.instance];
+    fileprivate let eventHandlers: [XmppServiceEventHandler] = [MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), MessageEventHandler(), HttpFileUploadEventHandler(), JingleManager.instance, BlockedEventHandler.instance, MixEventHandler.instance];
     
     var clients: [BareJID: XMPPClient] {
         get {
@@ -226,44 +226,8 @@ class XmppService: EventHandler {
             updateCurrentStatus();
             NotificationCenter.default.post(name: XmppService.ACCOUNT_STATUS_CHANGED, object: e.sessionObject.userBareJid);
 
-            let accountName = e.sessionObject.userBareJid!;
-            self.dispatcher.sync {
-                let active = AccountManager.getAccount(for: accountName)?.active
-                if !(active ?? false) {
-                    guard let client = self._clients.removeValue(forKey: accountName) else {
-                        return;
-                    }
-                    if active != nil {
-                        if let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) {
-                            ((messageModule.chatManager as! DefaultChatManager).chatStore as! DBChatStoreWrapper).deinitialize();
-                        }
-                    } else {
-                        DBRosterStore.instance.removeAll(for: accountName);
-                        DBChatStore.instance.closeAll(for: accountName);
-                        DBChatHistoryStore.instance.removeHistory(for: accountName, with: nil);
-                    }
-                    DispatchQueue.global().asyncAfter(deadline: DispatchTime.now() + 0.5, execute: {
-                        client.eventBus.unregister(handler: self, for: self.observedEvents);
-                        self.eventHandlers.forEach { handler in
-                            client.eventBus.unregister(handler: handler, for: handler.events);
-                        }
-                    })
-                }
-            }
-            guard self.status.show != nil || !self.isNetworkAvailable else {
-                return;
-            }
-            DBChatStore.instance.resetChatStates(for: accountName);
-            if let client = self.getClient(for: accountName) {
-                let retry = client.retryNo;
-                client.retryNo = retry + 1;
-                var timeout = 2.0 * Double(retry) + 0.5;
-                if timeout > 16 {
-                    timeout = 15;
-                }
-                DispatchQueue.global().asyncAfter(deadline: DispatchTime.now() + timeout) {
-                    self.connect(client: client);
-                }
+            if let client = self.getClient(for: e.sessionObject.userBareJid!) {
+                self.disconnected(client: client);
             }
         default:
             break;
@@ -293,13 +257,16 @@ class XmppService: EventHandler {
     
     fileprivate func updateCurrentStatus() {
         dispatcher.async {
-            guard self._clients.values.first(where: { (client) -> Bool in
-                return client.state == .connected;
-            }) != nil else {
-                DispatchQueue.main.async { self.currentStatus = self.status.with(show: nil); }
-                return;
+            let clients = self._clients.values;
+            DispatchQueue.global(qos: .default).async {
+                guard clients.first(where: { (client) -> Bool in
+                    return client.state == .connected;
+                }) != nil else {
+                    DispatchQueue.main.async { self.currentStatus = self.status.with(show: nil); }
+                    return;
+                }
+                DispatchQueue.main.async { self.currentStatus = self.status; }
             }
-            DispatchQueue.main.async { self.currentStatus = self.status; }
         }
     }
 
@@ -314,8 +281,11 @@ class XmppService: EventHandler {
                 guard let client = self._clients[account.name] else {
                     return;
                 }
-                
+                let prevState = client.state;
                 client.disconnect();
+                if prevState == .disconnected && client.state == .disconnected {
+                    self.unregisterClient(client);
+                }
             }
             return;
         }
@@ -326,14 +296,66 @@ class XmppService: EventHandler {
                 client.disconnect();
             } else {
                 let client = self.register(client: self.initializeClient(jid: account.name)!, for: account.name);
-                if let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) {
-                    ((messageModule.chatManager as! DefaultChatManager).chatStore as! DBChatStoreWrapper).initialize();
-                }
                 if self.isNetworkAvailable {
                     DispatchQueue.global().async {
                         self.connect(client: client);
                     }
                 }
+            }
+        }
+    }
+    
+    private func disconnected(client: XMPPClient) {
+        let accountName = client.sessionObject.userBareJid!;
+        self.dispatcher.sync {
+            let active = AccountManager.getAccount(for: accountName)?.active
+            if !(active ?? false) {
+                self.unregisterClient(client, removed: active == nil);
+            }
+        }
+        guard self.status.show != nil || !self.isNetworkAvailable else {
+            return;
+        }
+        DBChatStore.instance.resetChatStates(for: accountName);
+        let retry = client.retryNo;
+        client.retryNo = retry + 1;
+        var timeout = 2.0 * Double(retry) + 0.5;
+        if timeout > 16 {
+            timeout = 15;
+        }
+        DispatchQueue.global().asyncAfter(deadline: DispatchTime.now() + timeout) { [weak client] in
+            if let c = client {
+                self.connect(client: c);
+            }
+        }
+    }
+    
+    private func unregisterClient(_ client: XMPPClient, removed: Bool = false) {
+        dispatcher.sync {
+            let accountName = client.sessionObject.userBareJid!;
+            guard let client = self._clients.removeValue(forKey: accountName) else {
+                return;
+            }
+
+            if let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) {
+                ((messageModule.chatManager as! DefaultChatManager).chatStore as! DBChatStoreWrapper).deinitialize();
+            }
+            if let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) {
+                (mucModule.roomsManager.store as! DBRoomStore).deinitialize();
+            }
+            if let mixModule: MixModule = client.modulesManager.getModule(MixModule.ID) {
+                ((mixModule.channelManager as! DefaultChannelManager).store as! DBChannelStore).deinitialize();
+            }
+            
+            if removed {
+                DBRosterStore.instance.removeAll(for: accountName);
+                DBChatStore.instance.closeAll(for: accountName);
+                DBChatHistoryStore.instance.removeHistory(for: accountName, with: nil);
+            }
+
+            client.eventBus.unregister(handler: self, for: self.observedEvents);
+            self.eventHandlers.forEach { handler in
+                client.eventBus.unregister(handler: handler, for: handler.events);
             }
         }
     }
@@ -370,7 +392,7 @@ class XmppService: EventHandler {
         _ = client.modulesManager.register(PingModule());
         _ = client.modulesManager.register(BlockingCommandModule());
         
-        client.modulesManager.register(CapabilitiesModule()).cache = DBCapabilitiesCache.instance;
+        client.modulesManager.register(CapabilitiesModule(additionalFeatures: [.lastMessageCorrection, .messageRetraction])).cache = DBCapabilitiesCache.instance;
         _ = client.modulesManager.register(PubSubModule());
         _ = client.modulesManager.register(PEPUserAvatarModule());
         _ = client.modulesManager.register(PEPBookmarksModule());
@@ -394,13 +416,20 @@ class XmppService: EventHandler {
         
         _ = client.modulesManager.register(PresenceModule());
         
-        client.modulesManager.register(MucModule()).roomsManager = DBRoomsManager();
+        let roomStore = DBRoomStore(sessionObject: client.context.sessionObject);
+        client.modulesManager.register(MucModule(roomsManager: DefaultRoomsManager(store: roomStore)));
+        roomStore.initialize();
+    
+        let channelStore = DBChannelStore(sessionObject: client.context.sessionObject);
+        client.modulesManager.register(MixModule(channelManager: DefaultChannelManager(context: client.context, store: channelStore)));
+        channelStore.initialize();
         
         _ = client.modulesManager.register(AdHocCommandsModule());
         
         let jingleModule = client.modulesManager.register(JingleModule(sessionManager: JingleManager.instance));
         jingleModule.register(transport: Jingle.Transport.ICEUDPTransport.self, features: [Jingle.Transport.ICEUDPTransport.XMLNS, "urn:xmpp:jingle:apps:dtls:0"]);
         jingleModule.register(description: Jingle.RTP.Description.self, features: ["urn:xmpp:jingle:apps:rtp:1", "urn:xmpp:jingle:apps:rtp:audio", "urn:xmpp:jingle:apps:rtp:video"]);
+        jingleModule.supportsMessageInitiation = true;
         
         _ = client.modulesManager.register(InBandRegistrationModule());
         

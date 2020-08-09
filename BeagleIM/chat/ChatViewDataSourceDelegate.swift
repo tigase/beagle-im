@@ -28,7 +28,7 @@ protocol ChatViewDataSourceDelegate: class {
     var jid: BareJID! { get }
     var chat: DBChatProtocol! { get }
     
-    func itemAdded(at: IndexSet, shouldScroll: Bool);
+    func itemAdded(at: IndexSet);
 
     func itemsUpdated(forRowIndexes: IndexSet);
     
@@ -37,4 +37,8 @@ protocol ChatViewDataSourceDelegate: class {
     func itemsRemoved(at: IndexSet);
     
     func itemsReloaded();
+    
+    func isVisible(row: Int) -> Bool;
+    
+    func scrollRowToVisible(_ row: Int);
 }

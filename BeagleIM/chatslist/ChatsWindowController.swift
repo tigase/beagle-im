@@ -30,12 +30,8 @@ class ChatsWindowController: NSWindowController, NSWindowDelegate {
     override func windowDidLoad() {
         super.windowDidLoad();
         self.window?.titleVisibility = .hidden;
+        self.windowFrameAutosaveName = "ChatsWindow";
+        self.window?.setFrameAutosaveName("ChatsWindow");
     }
-    
-//    func windowShouldClose(_ sender: NSWindow) -> Bool {
-////        sender.orderOut(nil);
-//        sender.setIsMiniaturized(true);
-//        return false;
-//    }
     
 }

@@ -27,7 +27,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
 
     static let instance = JingleManager();
     
-    let events: [Event] = [JingleModule.JingleEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE];
+    let events: [Event] = [JingleModule.JingleEvent.TYPE, JingleModule.JingleMessageInitiationEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE];
     
     fileprivate var connections: [Session] = [];
     
@@ -55,22 +55,14 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
     func session(for account: BareJID, with jid: JID, sid: String?) -> Session? {
         return dispatcher.sync {
             return connections.first(where: {(sess) -> Bool in
-                return (sid == nil || sess.sid == sid) && sess.account == account && sess.jid == jid;
+                return sess.account == account && (sid == nil || sess.sid == sid) && (sess.jid == jid || (sess.jid.resource == nil && sess.jid.bareJid == jid.bareJid));
             });
         }
     }
     
-    fileprivate func session(peerConnection: RTCPeerConnection) -> Session? {
+    func open(for sessionObject: SessionObject, with jid: JID, sid: String, role: Jingle.Content.Creator, initiationType: JingleSessionInitiationType) -> Session {
         return dispatcher.sync {
-            return connections.first(where: {(sess) -> Bool in
-                return sess.peerConnection == peerConnection;
-            })
-        }
-    }
-
-    func open(for account: BareJID, with jid: JID, sid: String?, role: Jingle.Content.Creator, peerConnectionFactory: RTCPeerConnectionFactory? = nil) -> Session {
-        return dispatcher.sync {
-            let session = Session(account: account, jid: jid, sid: sid, role: role, peerConnectionFactory: peerConnectionFactory ??  RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(), decoderFactory: RTCDefaultVideoDecoderFactory()));
+            let session = Session(sessionObject: sessionObject, jid: jid, sid: sid, role: role, initiationType: initiationType);
             self.connections.append(session);
             return session;
         }
@@ -84,19 +76,12 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                 return nil;
             }
             let session =  self.connections.remove(at: idx);
-            _ = session.terminate();
             return session;
         }
     }
     
     func close(session: Session) {
-        dispatcher.async {
-            guard let idx = self.connections.firstIndex(of: session) else {
-                return;
-            }
-            let session = self.connections.remove(at: idx);
-            _ = session.terminate();
-        }
+        _ = self.close(for: session.account, with: session.jid, sid: session.sid);
     }
     
     func handle(event: Event) {
@@ -122,8 +107,59 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                         return session.jid == from && session.account == account;
                     });
                     toClose.forEach({ (session) in
-                        session.terminate();
+                        _ = session.terminate();
                     })
+                    if !(XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.presenceStore?.isAvailable(jid: from.bareJid) ?? false) {
+                        CallManager.instance.terminateCalls(for: e.sessionObject.userBareJid!, with: from.bareJid);
+                    }
+                }
+            case let e as JingleModule.JingleMessageInitiationEvent:
+                switch e.action! {
+                case .propose(let id, let descriptions):
+                    guard self.session(for: e.sessionObject.userBareJid!, with: e.jid, sid: id) == nil else {
+                        return;
+                    }
+                    let session = self.open(for: e.sessionObject, with: e.jid, sid: id, role: .responder, initiationType: .message);
+                    let media = descriptions.map({ Call.Media.from(string: $0.media) }).filter({ $0 != nil }).map({ $0! });
+                    let call = Call(account: e.sessionObject.userBareJid!, with: e.jid.bareJid, sid: id, direction: .incoming, media: media);
+                    CallManager.instance.reportIncomingCall(call, completionHandler: { result in
+                        switch result {
+                        case .success(_):
+                            // nothing to do as manager will call us back..
+                            break;
+                        case .failure(_):
+                            _ = session.decline();
+                        }
+                    });
+                case .retract(let id):
+                    self.sessionTerminated(account: e.sessionObject.userBareJid!, with: e.jid, sid: id);
+                case .accept(let id):
+                    let account = e.sessionObject.userBareJid!;
+                    self.sessionTerminated(account: account, sid: id);
+                case .reject(let id):
+                    let account = e.sessionObject.userBareJid!;
+                    if account != e.jid.bareJid {
+                        let call = Call(account: account, with: e.jid.bareJid, sid: id, direction: .incoming, media: []);
+                        CallManager.instance.declinedOutgoingCall(call);
+                    }
+                    self.sessionTerminated(account: account, sid: id);
+                case .proceed(let id):
+                    guard let session = self.session(for: e.sessionObject.userBareJid!, with: e.jid, sid: id) else {
+                        return;
+                    }
+                    session.accepted(by: e.jid);
+                    let call = Call(account: e.sessionObject.userBareJid!, with: e.jid.bareJid, sid: id, direction: .incoming, media: []);
+                    CallManager.instance.acceptedOutgoingCall(call, by: e.jid, completionHandler: { result in
+                        switch result {
+                        case .success(_):
+                            break;
+                        case .failure(_):
+                            self.sessionTerminated(account: e.sessionObject.userBareJid!, with: e.jid, sid: id);
+                            break;
+                        }
+                    });
+                default:
+                    break;
                 }
             default:
                 break;
@@ -185,13 +221,31 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
     fileprivate func sessionInitiated(event e: JingleModule.JingleEvent) {
         
         guard let content = e.contents.first, let _ = content.description as? Jingle.RTP.Description else {
+            if let session = session(for: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid) {
+                _ = session.terminate();
+            }
             return;
         }
-        
-        let session = open(for: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid, role: .responder);
-        
-        if !VideoCallController.accept(session: session, sdpOffer: SDP(sid: e.sid!, contents: e.contents, bundle: e.bundle)) {
-            _ = session.terminate();
+      
+        let sdp = SDP(contents: e.contents, bundle: e.bundle);
+
+        let media = sdp.contents.map({ c -> Call.Media? in Call.Media.from(string: c.description?.media) }).filter({ $0 != nil }).map({ $0! });
+        let call = Call(account: e.sessionObject.userBareJid!, with: e.jid.bareJid, sid: e.sid, direction: .incoming, media:media);
+
+        if let session = session(for: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid) {
+            session.accepted(sdpAnswer: SDP(contents: e.contents, bundle: e.bundle));
+        } else {
+            let session = open(for: e.sessionObject, with: e.jid, sid: e.sid, role: .responder, initiationType: .iq);
+            session.initiated(remoteDescription: SDP(contents: e.contents, bundle: e.bundle));
+            
+            CallManager.instance.reportIncomingCall(call, completionHandler: { result in
+                switch result {
+                case .success(_):
+                    break;
+                case .failure(_):
+                    _ = session.terminate();
+                }
+            })
         }
     }
     
@@ -200,14 +254,29 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
             return;
         }
         
-        session.accepted(sdpAnswer: SDP(sid: e.sid!, contents: e.contents, bundle: e.bundle));
+        session.accepted(sdpAnswer: SDP(contents: e.contents, bundle: e.bundle));
     }
     
     fileprivate func sessionTerminated(event e: JingleModule.JingleEvent) {
-        guard let session = session(for: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid) else {
+        sessionTerminated(account: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid);
+    }
+    
+    private func sessionTerminated(account: BareJID, sid: String) {
+        let toTerminate = dispatcher.sync(execute: {
+            return connections.filter({(sess) -> Bool in
+                return sess.account == account && sess.sid == sid;
+            });
+        });
+        for session in toTerminate {
+            session.terminated();
+        }
+    }
+
+    fileprivate func sessionTerminated(account: BareJID, with: JID, sid: String) {
+        guard let session = session(for: account, with: with, sid: sid) else {
             return;
         }
-        _ = session.terminate();
+        session.terminated();
     }
     
     fileprivate func transportInfo(event e: JingleModule.JingleEvent) {
@@ -227,6 +296,16 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
         }
     }
     
+}
+
+extension JingleManager {
+
+    func session(forCall call: Call) -> Session? {
+        return dispatcher.sync {
+            return self.connections.first(where: { $0.account == call.account && $0.jid.bareJid == call.jid && $0.sid == call.sid });
+        }
+    }
+        
 }
 
 extension String {

@@ -36,10 +36,34 @@ class MucEventHandler: XmppServiceEventHandler {
     func handle(event: Event) {
         switch event {
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
-            if let mucModule: MucModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(MucModule.ID) {
+            if let client = XmppService.instance.getClient(for: e.sessionObject.userBareJid!), let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) {
                 mucModule.roomsManager.getRooms().forEach { (room) in
-                    _ = room.rejoin();
-                    NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
+                    // first we need to check if room supports MAM
+                    if let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID), let mamModule: MessageArchiveManagementModule = client.modulesManager.getModule(MessageArchiveManagementModule.ID) {
+                        discoModule.getInfo(for: room.jid, completionHandler: { result in
+                            var mamVersions: [MessageArchiveManagementModule.Version] = [];
+                            switch result {
+                            case .success(_, _, let features):
+                                mamVersions = features.map({ MessageArchiveManagementModule.Version(rawValue: $0) }).filter({ $0 != nil}).map({ $0! });
+                            default:
+                                break;
+                            }
+                            if let timestamp = room.lastMessageDate, !mamVersions.isEmpty {
+                                let account = e.sessionObject.userBareJid!;
+                                room.onRoomJoined = { room in
+                                    MessageEventHandler.syncMessages(for: account, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: room.jid, since: timestamp);
+                                }
+                                _ = room.rejoin(skipHistoryFetch: true);
+                                NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
+                            } else {
+                                _ = room.rejoin();
+                                NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
+                            }
+                        });
+                    } else {
+                        _ = room.rejoin();
+                        NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
+                    }
                 }
             }
         case let e as MucModule.YouJoinedEvent:
@@ -63,43 +87,15 @@ class MucEventHandler: XmppServiceEventHandler {
                 room.subject = e.message.subject;
                 NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
             }
-            
+
             if let xUser = XMucUserElement.extract(from: e.message) {
                 if xUser.statuses.contains(104) {
                     self.updateRoomName(room: room);
                     VCardManager.instance.refreshVCard(for: room.roomJid, on: room.account, completionHandler: nil);
                 }
             }
-            
-            guard let body = e.message.body ?? e.message.oob else {
-                return;
-            }
-            
-            let authorJid = e.nickname == nil ? nil : room.presences[e.nickname!]?.jid?.bareJid;
-            
-            var type: ItemType = .message;
-            if let oob = e.message.oob {
-                if oob == body && URL(string: oob) != nil {
-                    type = .attachment;
-                }
-            }
-            
-            DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: ((e.nickname == nil) || (room.nickname != e.nickname!)) ? .incoming_unread : .outgoing, authorNickname: e.nickname, authorJid: authorJid, recipientNickname: nil, type: type, timestamp: e.timestamp, stanzaId: e.message.id, data: body, encryption: MessageEncryption.none, encryptionFingerprint: nil, completionHandler: nil);
-            
-            if type == .message && e.message.type != StanzaType.error, #available(macOS 10.15, *) {
-                let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.address.rawValue);
-                let matches = detector.matches(in: body, range: NSMakeRange(0, body.utf16.count));
-                matches.forEach { match in
-                    if let url = match.url, let scheme = url.scheme, ["https", "http"].contains(scheme) {
-                        DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: ((e.nickname == nil) || (room.nickname != e.nickname!)) ? .incoming_unread : .outgoing, authorNickname: e.nickname, authorJid: authorJid, recipientNickname: nil, type: .linkPreview, timestamp: e.timestamp, stanzaId: nil, data: url.absoluteString, chatState: e.message.chatState, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: .none, encryptionFingerprint: nil, completionHandler: nil);
-                    }
-                    if let address = match.components {
-                        let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
-                        let mapUrl = URL(string: "http://maps.apple.com/?q=\(query!)")!;
-                        DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: ((e.nickname == nil) || (room.nickname != e.nickname!)) ? .incoming_unread : .outgoing, authorNickname: e.nickname, authorJid: authorJid, recipientNickname: nil, type: .linkPreview, timestamp: e.timestamp, stanzaId: nil, data: mapUrl.absoluteString, chatState: e.message.chatState, errorCondition: e.message.errorCondition, errorMessage: e.message.errorText, encryption: .none, encryptionFingerprint: nil, completionHandler: nil);
-                    }
-                }
-            }
+
+            DBChatHistoryStore.instance.append(for: room.account, message: e.message, source: .stream);
         case let e as MucModule.AbstractOccupantEvent:
             NotificationCenter.default.post(name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: e);
             if let photoHash = e.presence.vcardTempPhoto {
@@ -116,7 +112,7 @@ class MucEventHandler: XmppServiceEventHandler {
                                     guard let data = result else {
                                         return;
                                     }
-                                    AvatarManager.instance.storeAvatar(data: data);
+                                    _ = AvatarManager.instance.storeAvatar(data: data);
                                 }
                             }
                         }, onError: { (errorCondition) in
@@ -148,7 +144,7 @@ class MucEventHandler: XmppServiceEventHandler {
                         }
                         let roomJid = e.room.roomJid;
                         openRoomController.searchField.stringValue = roomJid.stringValue;
-                        openRoomController.mucJids = [BareJID(roomJid.domain)];
+                        openRoomController.componentJids = [BareJID(roomJid.domain)];
                         openRoomController.account = e.sessionObject.userBareJid!;
                         openRoomController.nicknameField.stringValue = e.room.nickname;
                         guard let window = (NSApplication.shared.delegate as? AppDelegate)?.mainWindowController?.window else {
@@ -165,7 +161,7 @@ class MucEventHandler: XmppServiceEventHandler {
             }
             mucModule.leave(room: e.room);
         case let e as MucModule.InvitationReceivedEvent:
-            guard let mucModule: MucModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(MucModule.ID), let roomName = e.invitation.roomJid.localPart else {
+            guard let mucModule: MucModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(MucModule.ID),  e.invitation.roomJid.localPart != nil else {
                 return;
             }
             
@@ -231,7 +227,7 @@ class MucEventHandler: XmppServiceEventHandler {
     
     open func sendPrivateMessage(room: DBChatStore.DBRoom, recipientNickname: String, body: String) {
         let message = room.createPrivateMessage(body, recipientNickname: recipientNickname);
-        DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: .outgoing, authorNickname: room.nickname, recipientNickname: recipientNickname, type: .message, timestamp: Date(), stanzaId: message.id, data: body, encryption: .none, encryptionFingerprint: nil, chatAttachmentAppendix: nil, completionHandler: nil);
+        DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: .outgoing, authorNickname: room.nickname, authorJid: nil, recipientNickname: recipientNickname, participantId: nil, type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, encryptionFingerprint: nil, appendix: nil, linkPreviewAction: .auto, completionHandler: nil);
         room.context.writer?.write(message);
     }
         

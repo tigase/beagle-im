@@ -22,6 +22,7 @@
 import Foundation
 import SQLite3
 import TigaseSwift
+import OSLog
 
 let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
@@ -33,6 +34,8 @@ open class DBConnection {
             return handle_!;
         }
     }
+    
+    fileprivate var path: String?;
     
     public let dispatcher: QueueDispatcher;
     
@@ -61,9 +64,11 @@ open class DBConnection {
                 }
             }
             
+            self.path = path;
             let flags = SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE;
             
             _ = try self.check(sqlite3_open_v2(path, &self.handle_, flags | SQLITE_OPEN_FULLMUTEX, nil));
+            os_log(OSLogType.error, log: .sqlite, "Initialized database: %s", path);
         }
     }
     
@@ -151,7 +156,7 @@ open class DBStatement {
             return result == expect;
         }
     }
-    
+
     fileprivate func bind(_ params:Any?...) throws -> DBStatement {
         _ = try bind(params);
         return self;
@@ -344,12 +349,26 @@ open class DBStatement {
     
     open func insert(_ params:Any?...) throws -> Int? {
         return try connection.dispatcher.sync {
-            if params.count > 0 {
-                _ = try self.bind(params);
-            }
-            self.reset(false);
-            if try self.step(SQLITE_DONE) {
-                return self.lastInsertRowId;
+            for i in 1...5 {
+                do {
+                    if params.count > 0 {
+                        _ = try self.bind(params);
+                    }
+                    self.reset(false);
+                    if try self.step(SQLITE_DONE) {
+                        return self.lastInsertRowId;
+                    }
+                    return nil;
+                } catch DBResult.error(let message, let code, let statement) {
+                    guard code == SQLITE_CANTOPEN && i < 5 else {
+                        throw DBResult.error(message: message, code: code, statement: statement);
+                    }
+                    os_log(OSLogType.error, log: .sqlite, "Executing SQL statement returned result: %d, try: %d, message: %{public}s", code, i, message);
+                    if let path = self.connection.path {
+                        os_log(OSLogType.error, log: .sqlite, "Checking access to database file %s, exists: %{public}s, read: %{public}s, write: %{public}s", path, FileManager.default.fileExists(atPath: path) ? "true" : "false", FileManager.default.isReadableFile(atPath: path) ? "true" : "false", FileManager.default.isWritableFile(atPath: path) ? "true" : "false");
+                    }
+                    usleep(10 * 1000);
+                }
             }
             return nil;
         }
@@ -357,10 +376,24 @@ open class DBStatement {
     
     open func insert(_ params:[String:Any?]) throws -> Int? {
         return try connection.dispatcher.sync {
-            _ = try self.bind(params);
-            self.reset(false);
-            if try self.step(SQLITE_DONE) {
-                return self.lastInsertRowId;
+            for i in 1...5 {
+                do {
+                    _ = try self.bind(params);
+                    self.reset(false);
+                    if try self.step(SQLITE_DONE) {
+                        return self.lastInsertRowId;
+                    }
+                    return nil;
+                } catch DBResult.error(let message, let code, let statement) {
+                    guard code == SQLITE_CANTOPEN && i < 5 else {
+                        throw DBResult.error(message: message, code: code, statement: statement);
+                    }
+                    os_log(OSLogType.error, log: .sqlite, "Executing SQL statement returned result: %d, try: %d, message: %s", code, i, message);
+                    if let path = self.connection.path {
+                        os_log(OSLogType.error, log: .sqlite, "Checking access to database file %s, exists: %{public}s, read: %{public}s, write: %{public}s", path, FileManager.default.fileExists(atPath: path) ? "true" : "false", FileManager.default.isReadableFile(atPath: path) ? "true" : "false", FileManager.default.isWritableFile(atPath: path) ? "true" : "false");
+                    }
+                    usleep(10 * 1000);
+                }
             }
             return nil;
         }
@@ -368,15 +401,43 @@ open class DBStatement {
     
     open func update(_ params:Any?...) throws -> Int {
         return try connection.dispatcher.sync {
-            _ = try self.execute(params);
-            return self.changesCount;
+            for i in 1...5 {
+                do {
+                    _ = try self.execute(params);
+                    return self.changesCount;
+                } catch DBResult.error(let message, let code, let statement) {
+                    guard code == SQLITE_CANTOPEN && i < 5 else {
+                        throw DBResult.error(message: message, code: code, statement: statement);
+                    }
+                    os_log(OSLogType.error, log: .sqlite, "Executing SQL statement returned result: %d, try: %d, message: %s", code, i, message);
+                    if let path = self.connection.path {
+                        os_log(OSLogType.error, log: .sqlite, "Checking access to database file %s, exists: %s, read: %s, write: %s", path, FileManager.default.fileExists(atPath: path) ? "true" : "false", FileManager.default.isReadableFile(atPath: path) ? "true" : "false", FileManager.default.isWritableFile(atPath: path) ? "true" : "false");
+                    }
+                    usleep(10 * 1000);
+                }
+            }
+            return 0;
         }
     }
     
     open func update(_ params:[String:Any?]) throws -> Int {
         return try connection.dispatcher.sync {
-            _ = try self.execute(params);
-            return self.changesCount;
+            for i in 1...5 {
+                do {
+                    _ = try self.execute(params);
+                    return self.changesCount;
+                } catch DBResult.error(let message, let code, let statement) {
+                    guard code == SQLITE_CANTOPEN && i < 5 else {
+                        throw DBResult.error(message: message, code: code, statement: statement);
+                    }
+                    os_log(OSLogType.error, log: .sqlite, "Executing SQL statement returned result: %d, try: %d, message: %s", code, i, message);
+                    if let path = self.connection.path {
+                        os_log(OSLogType.error, log: .sqlite, "Checking access to database file %s, exists: %s, read: %s, write: %s", path, FileManager.default.fileExists(atPath: path) ? "true" : "false", FileManager.default.isReadableFile(atPath: path) ? "true" : "false", FileManager.default.isWritableFile(atPath: path) ? "true" : "false");
+                    }
+                    usleep(10 * 1000);
+                }
+            }
+            return 0;
         }
     }
     

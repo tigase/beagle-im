@@ -59,6 +59,8 @@ enum Settings: String {
     case turnServer
     @available(macOS 10.15, *)
     case linkPreviews
+
+    case commonChatsList
     
     public static let CHANGED = Notification.Name("settingChanged");
     

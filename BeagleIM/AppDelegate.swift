@@ -68,7 +68,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     })();
     
     fileprivate var statusItem: NSStatusItem?;
-    fileprivate(set) var mainWindowController: NSWindowController?;
+    lazy var mainWindowController: NSWindowController? = { NSStoryboard(name: "Main", bundle: nil).instantiateController(withIdentifier: "ChatsWindowController") as! NSWindowController }();
+    
     var rosterWindow: NSWindow {
         get {
             if let rosterWindow = NSApplication.shared.windows.first(where: { (window) -> Bool in
@@ -76,7 +77,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             }) {
                 return rosterWindow;
             }
-            let rosterWindowController = mainWindowController?.storyboard?.instantiateController(withIdentifier: "RosterWindowController") as? NSWindowController;
+            let rosterWindowController = NSStoryboard(name: "Roster", bundle: nil).instantiateController(withIdentifier: "RosterWindowController") as? NSWindowController;
             rosterWindowController!.showWindow(self);
             return rosterWindowController!.window!;
         }
@@ -127,7 +128,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
     }
     
-    func applicationDidFinishLaunching(_ aNotification: Notification) {
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        NSAppleEventManager.shared().setEventHandler(self, andSelector: #selector(self.handleAppleEvent(event:replyEvent:)), forEventClass: AEEventClass(kInternetEventClass), andEventID: AEEventID(kAEGetURL));
+    }
+    
+    func applicationDidFinishLaunching(_ aNotification: Notification) {        
         Settings.initialize();
         
         if #available(macOS 10.14, *) {
@@ -153,8 +158,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         NotificationCenter.default.addObserver(self, selector: #selector(settingsChanged), name: Settings.CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(updateStatusItem(_:)), name: XmppService.STATUS_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(unreadMessagesCountChanged), name: DBChatStore.UNREAD_MESSAGES_COUNT_CHANGED, object: nil);
-        
-        self.mainWindowController = NSApplication.shared.windows[0].windowController;
         
         if #available(OSX 10.14, *) {
             UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (result, error) in
@@ -223,10 +226,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
         
         NSApp.mainMenu?.item(withTitle: "Window")?.submenu?.delegate = self;
-        
-        NSAppleEventManager.shared().setEventHandler(self, andSelector: #selector(self.handleAppleEvent(event:replyEvent:)), forEventClass: AEEventClass(kInternetEventClass), andEventID: AEEventID(kAEGetURL));
-        
+                
         scheduleHourlyTimer();
+        for windowName in UserDefaults.standard.stringArray(forKey: "openedWindows") ?? ["chats"] {
+            switch windowName {
+            case "chats":
+                self.mainWindowController?.showWindow(self);
+            case "roster":
+                self.rosterWindow.windowController?.showWindow(self);
+            default:
+                break;
+            }
+        }
     }
     
     @objc func handleAppleEvent(event: NSAppleEventDescriptor, replyEvent: NSAppleEventDescriptor) {
@@ -277,8 +288,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 guard let windowController = self.mainWindowController?.storyboard?.instantiateController(withIdentifier: "OpenGroupchatController") as? NSWindowController else {
                     return;
                 }
-                (windowController.contentViewController as? OpenGroupchatController)?.mucJidField.stringValue = uri.jid.domain;
-                (windowController.contentViewController as? OpenGroupchatController)?.mucJid = BareJID(uri.jid.domain);
+                (windowController.contentViewController as? OpenGroupchatController)?.componentJidField.stringValue = uri.jid.domain;
+                (windowController.contentViewController as? OpenGroupchatController)?.componentJid = BareJID(uri.jid.domain);
                 (windowController.contentViewController as? OpenGroupchatController)?.searchField.stringValue = uri.jid.localPart ?? "";
                 (windowController.contentViewController as? OpenGroupchatController)?.password = uri.dict?["password"];
                 self.mainWindowController?.window?.beginSheet(windowController.window!, completionHandler: nil);
@@ -296,10 +307,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 print("uri:", uri.jid, "dict:", uri.dict as Any);
                 let rosterWindow = self.rosterWindow;
                 rosterWindow.makeKeyAndOrderFront(self);
-                if let addContact = self.mainWindowController?.storyboard?.instantiateController(withIdentifier: "AddContactController") as? AddContactController {
+                if let addContact = NSStoryboard(name: "Roster", bundle: nil).instantiateController(withIdentifier: "AddContactController") as? AddContactController {
                     _ = addContact.view;
                     addContact.jidField.stringValue = uri.jid.stringValue;
                     addContact.labelField.stringValue = uri.dict?["name"] ?? "";
+                    addContact.preauthToken = uri.dict?["preauth"];
                     rosterWindow.contentViewController?.presentAsSheet(addContact);
                     addContact.verify();
                 } else {
@@ -380,6 +392,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         NSAppleEventManager.shared().removeEventHandler(forEventClass: AEEventClass(kInternetEventClass), andEventID: AEEventID(kAEGetURL))
         
         XmppService.instance.disconnectClients();
+        
+        let openedWindows = NSApp.windows.map { (window) -> String? in
+            guard let windowController = window.windowController else {
+                guard let contentView = window.contentViewController else {
+                    return nil;
+                }
+                return contentView is RosterViewController ? "roster" : nil;
+
+            }
+            switch windowController {
+            case is ChatsWindowController:
+                return "chats";
+//            case is RosterWindowController:
+//                return "roster";
+            default:
+                return nil;
+            }
+        }.filter({ $0 != nil }).map({ $0! });
+        UserDefaults.standard.set(openedWindows, forKey: "openedWindows");
+        
         descheduleHourlyTimer();
         RTCCleanupSSL();
     }
@@ -477,7 +509,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             return controller != nil
         }).first(where: { (controller) -> Bool in
             return (controller?.contentViewController as? NSTabViewController) != nil
-        }) ?? mainWindowController?.storyboard?.instantiateController(withIdentifier: "PreferencesWindowController") as? NSWindowController;
+        }) ?? NSStoryboard(name: "Settings", bundle: nil).instantiateController(withIdentifier: "PreferencesWindowController") as? NSWindowController;
     }
     
     func userNotificationCenter(_ center: NSUserNotificationCenter, didActivate notification: NSUserNotification) {
@@ -510,7 +542,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             }
             let roomJid = BareJID(roomJidStr);
             openRoomController.searchField.stringValue = roomJidStr;
-            openRoomController.mucJids = [BareJID(roomJid.domain)];
+            openRoomController.componentJids = [BareJID(roomJid.domain)];
             openRoomController.account = BareJID(accountStr);
             openRoomController.nicknameField.stringValue = nickname;
             guard let window = self.mainWindowController?.window else {
@@ -562,7 +594,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             }
             let roomJid = BareJID(roomJidStr);
             openRoomController.searchField.stringValue = roomJidStr;
-            openRoomController.mucJids = [BareJID(roomJid.domain)];
+            openRoomController.componentJids = [BareJID(roomJid.domain)];
             openRoomController.account = BareJID(accountStr);
             openRoomController.nicknameField.stringValue = nickname;
             guard let window = self.mainWindowController?.window else {
@@ -709,16 +741,32 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         guard item.state == .incoming_unread else {
             return;
         }
+        
+        let conversation = DBChatStore.instance.getChat(for: item.account, with: item.jid);
+        let notifications = conversation?.notifications ?? .none;
 
-        let chat = DBChatStore.instance.getChat(for: item.account, with: item.jid);
+        switch notifications {
+        case .none:
+            return;
+        case .mention:
+            if let nickname = (conversation as? DBChatStore.DBRoom)?.nickname ?? (conversation as? DBChatStore.DBChannel)?.nickname {
+                if !item.message.contains(nickname) {
+                    if let keywords = Settings.markKeywords.stringArrays(), !keywords.isEmpty {
+                        if  keywords.first(where: { item.message.contains($0) }) == nil {
+                            return;
+                        }
+                    } else {
+                        return;
+                    }
+                }
+            } else {
+                return;
+            }
+        case .always:
+            break;
+        }
+        
         if item.authorNickname != nil {
-            guard let mucModule: MucModule = XmppService.instance.getClient(for: item.account)?.modulesManager.getModule(MucModule.ID), let room = mucModule.roomsManager.getRoom(for: item.jid) else {
-                return;
-            }
-            guard item.message.contains(room.nickname) && ((chat as? DBChatStore.DBRoom)?.options.notifications ?? .mention) != .none else {
-                return;
-            }
-            
             if #available(OSX 10.14, *) {
                 let content = UNMutableNotificationContent();
                 content.title = item.jid.stringValue;
@@ -746,11 +794,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             guard rosterItem != nil || Settings.notificationsFromUnknownSenders.bool() else {
                 return;
             }
-            
-            guard ((chat as? DBChatStore.DBChat)?.options.notifications ?? .mention) != .none else {
-                return;
-            }
-            
+                        
             if #available(OSX 10.14, *) {
                 let content = UNMutableNotificationContent();
                 content.title = rosterItem?.name ?? item.jid.stringValue;
@@ -812,11 +856,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             
             windowController.showWindow(self);
         }
-    }
-    
-    
-    @IBAction func closeChat(_ sender: Any) {
-        NotificationCenter.default.post(name: ChatsListViewController.CLOSE_SELECTED_CHAT, object: nil);
     }
     
     fileprivate var hourlyTimer: Foundation.Timer? = nil;

@@ -29,6 +29,7 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
     var labelField: NSTextField!;
     var requestSubscriptionButton: NSButton!;
     var allowSubscriptionButton: NSButton!;
+    var preauthToken: String?;
     
     @IBOutlet var imageView: NSImageView!;
     @IBOutlet var addButton: NSButton!;
@@ -75,6 +76,11 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
         disclosureConstraint.isActive = true;
         disclosureView.isHidden = true;
         //accountSelector.widthAnchor.constraint(equalTo: requestSubscriptionButton.widthAnchor, multiplier: 1.0).isActive = true;
+    }
+    
+    override func viewWillAppear() {
+        super.viewWillAppear();
+        self.verify();
     }
     
     func controlTextDidChange(_ obj: Notification) {
@@ -135,7 +141,7 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
                 return;
             }
             if requrestSubscription {
-                presenceModule.subscribe(to: jid);
+                presenceModule.subscribe(to: jid, preauth: self.preauthToken);
             }
             if allowSubscription {
                 presenceModule.subscribed(by: jid);

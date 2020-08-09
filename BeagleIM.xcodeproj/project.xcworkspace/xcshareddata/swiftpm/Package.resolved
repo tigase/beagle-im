@@ -1,0 +1,34 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "libsignal",
+        "repositoryURL": "https://github.com/tigase/libsignal",
+        "state": {
+          "branch": "master",
+          "revision": "d23d5af0d729cf66b93cea607f3f84a34b9fddfd",
+          "version": null
+        }
+      },
+      {
+        "package": "TigaseSwift",
+        "repositoryURL": "https://github.com/tigase/tigase-swift",
+        "state": {
+          "branch": "mix",
+          "revision": "a86281cb5556fa2cd71cf1c301beded31aa1e8b8",
+          "version": null
+        }
+      },
+      {
+        "package": "TigaseSwiftOMEMO",
+        "repositoryURL": "https://github.com/tigase/tigase-swift-omemo",
+        "state": {
+          "branch": "master",
+          "revision": "02dc74ebbaa898ce1e82349f9ae77db871b63f26",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -63,6 +63,10 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
         goToButton.isEnabled = tableView.selectedRow >= 0;
     }
     
+    func tableView(_ tableView: NSTableView, rowViewForRow row: Int) -> NSTableRowView? {
+        return TableRowView();
+    }
+    
     @IBAction func search(_ sender: Any) {
         goToButton.isEnabled = false;
         guard !searchField.stringValue.isEmpty else {
@@ -121,5 +125,29 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
         } else {
             return item.jid.stringValue;
         }
+    }
+    
+    class TableRowView: NSTableRowView {
+        
+        override var isEmphasized: Bool {
+            didSet {
+                for view in subviews {
+                    if let cell = view as? ChatMessageSelectableCellView {
+                        cell.isEmphasized = isEmphasized;
+                    }
+                }
+            }
+        }
+        
+        override var isSelected: Bool {
+            didSet {
+                for view in subviews {
+                    if let cell = view as? ChatMessageSelectableCellView {
+                        cell.isSelected = isSelected;
+                    }
+                }
+            }
+        }
+        
     }
  }

@@ -23,12 +23,12 @@ import AppKit
 import TigaseSwift
 import TigaseSwiftOMEMO
 
-class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDelegate {
+class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDelegate, ConversationLogContextMenuDelegate {
 
     @IBOutlet var buddyAvatarView: AvatarViewWithStatus!
     @IBOutlet var buddyNameLabel: NSTextFieldCell!
     @IBOutlet var buddyJidLabel: NSTextFieldCell!
-    @IBOutlet var buddyStatusLabel: NSTextFieldCell!;
+    @IBOutlet var buddyStatusLabel: NSTextField!;
 
     fileprivate var lastTextChange: Date = Date();
     fileprivate var lastTextChangeTimer: Foundation.Timer?;
@@ -44,18 +44,25 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     override var chat: DBChatProtocol! {
         didSet {
             if let sessionObject = XmppService.instance.getClient(for: account)?.sessionObject {
-                buddyName = RosterModule.getRosterStore(sessionObject).get(for: JID(jid))?.name ?? jid.stringValue;
+                if let rosterItem = RosterModule.getRosterStore(sessionObject).get(for: JID(jid)) {
+                    buddyName = rosterItem.name ?? jid.stringValue;
+                    fetchPreviewIfNeeded = true;
+                } else {
+                    buddyName = jid.stringValue;
+                }
             } else {
                 buddyName = jid.stringValue;
             }
         }
     };
     fileprivate var buddyName: String! = "";
+    private var fetchPreviewIfNeeded: Bool = false;
 
+    override func conversationTableViewDelegate() -> NSTableViewDelegate? {
+        return self;
+    }
+    
     override func viewDidLoad() {
-        self.dataSource = ChatViewDataSource();
-        self.tableView.delegate = self;
-
         super.viewDidLoad();
 
         audioCall.isHidden = true;
@@ -81,7 +88,9 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         buddyAvatarView.name = buddyName;
         buddyAvatarView.update(for: jid, on: account);
         let presenceModule: PresenceModule? = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PresenceModule.ID);
-        buddyStatusLabel.title = presenceModule?.presenceStore.getBestPresence(for: jid)?.status ?? "";
+        let status = presenceModule?.presenceStore.getBestPresence(for: jid)?.status;
+        buddyStatusLabel.stringValue = status ?? "";
+        buddyStatusLabel.toolTip = status;
 
         let itemsCount = self.scriptsButton.menu?.items.count ?? 0;
         if itemsCount > 1 {
@@ -148,7 +157,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         lastTextChange = Date();
         self.change(chatState: .composing);
     }
-
+        
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         guard let item = dataSource.getItem(at: row) else {
             return nil;
@@ -158,20 +167,20 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         let continuation = prevItem != nil && item.isMergeable(with: prevItem!);
 
         switch item {
-        case let item as SystemMessage:
+        case is SystemMessage:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMessageSystemCellView"), owner: nil) as? ChatMessageSystemCellView {
-                cell.message.stringValue = "Unread messages";
+                cell.message.attributedString = NSAttributedString(string: "Unread messages", attributes: [.font: NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium), .foregroundColor: NSColor.secondaryLabelColor]);
                 return cell;
             }
             return nil;
         case let item as ChatMessage:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? BaseChatMessageCellView {
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
 
                 cell.id = item.id;
-                if let c = cell as? ChatMessageCellView {
+                if cell.hasHeader {
                     let senderJid = item.state.direction == .incoming ? item.jid : item.account;
-                    c.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-                    c.set(senderName: item.state.direction == .incoming ? buddyName : "Me");
+                    cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
+                    cell.set(senderName: item.state.direction == .incoming ? buddyName : "Me");
                 }
                 cell.set(message: item);
 
@@ -180,18 +189,29 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             return nil;
         case let item as ChatLinkPreview:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatLinkPreviewCellView"), owner: nil) as? ChatLinkPreviewCellView {
-                cell.set(item: item);
+                cell.set(item: item, fetchPreviewIfNeeded: fetchPreviewIfNeeded);
                 return cell;
             }
             return nil;
         case let item as ChatAttachment:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatAttachmentContinuationCellView" : "ChatAttachmentCellView"), owner: nil) as? BaseChatAttachmentCellView {
-                if let c = cell as? ChatAttachmentCellView {
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatAttachmentContinuationCellView" : "ChatAttachmentCellView"), owner: nil) as? ChatAttachmentCellView {
+                if cell.hasHeader {
                     let senderJid = item.state.direction == .incoming ? item.jid : item.account;
-                    c.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-                    c.set(senderName: item.state.direction == .incoming ? buddyName : "Me");
+                    cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
+                    cell.set(senderName: item.state.direction == .incoming ? buddyName : "Me");
                 }
                 cell.set(item: item);
+                return cell;
+            }
+            return nil;
+        case let item as ChatInvitation:
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatInvitationCellView"), owner: nil) as? ChatInvitationCellView {
+                if cell.hasHeader {
+                    let senderJid = item.state.direction == .incoming ? item.jid : item.account;
+                    cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
+                    cell.set(senderName: item.state.direction == .incoming ? buddyName : "Me");
+                }
+                cell.set(invitation: item);
                 return cell;
             }
             return nil;
@@ -215,6 +235,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             }
 
             self.buddyName = ((e.action != .removed) ? item.name : nil) ?? self.jid.stringValue;
+            self.fetchPreviewIfNeeded = e.action != .removed;
             self.buddyNameLabel.title = self.buddyName;
             self.buddyAvatarView.name = self.buddyName;
             self.dataSource.refreshDataNoReload();
@@ -230,7 +251,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         }
         DispatchQueue.main.async {
             self.buddyAvatarView.avatar = AvatarManager.instance.avatar(for: jid, on: account);
-            self.tableView.reloadData();
+            self.conversationLogController?.tableView.reloadData();
         }
     }
 
@@ -249,18 +270,34 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
 
         DispatchQueue.main.async {
             self.buddyAvatarView.update(for: jid, on: account);
-            self.buddyStatusLabel.title = e.presence.status ?? "";
+            let status = e.presence.status;
+            self.buddyStatusLabel.stringValue = status ?? "";
+            self.buddyStatusLabel.toolTip = status;
         }
 
         self.updateCapabilities();
     }
 
-    override func prepareContextMenu(_ menu: NSMenu, forRow row: Int) {
-        super.prepareContextMenu(menu, forRow: row);
-        if let item = self.dataSource.getItem(at: row) as? ChatMessage, item.state.direction == .outgoing && item.state.isError {
-            let resend = menu.addItem(withTitle: "Resend message", action: #selector(resendMessage), keyEquivalent: "");
-            resend.target = self;
-            resend.tag = item.id;
+    override func prepareConversationLogContextMenu(dataSource: ChatViewDataSource, menu: NSMenu, forRow row: Int) {
+        super.prepareConversationLogContextMenu(dataSource: dataSource, menu: menu, forRow: row);
+        if let item = dataSource.getItem(at: row), item.state.direction == .outgoing && (item is ChatMessage || item is ChatAttachment) {
+            if item.state.isError {
+                let resend = menu.addItem(withTitle: "Resend message", action: #selector(resendMessage), keyEquivalent: "");
+                resend.target = self;
+                resend.tag = item.id;
+            } else {
+                if item is ChatMessage && !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0 is ChatMessage }, in: 0..<row) {
+                    let correct = menu.addItem(withTitle: "Correct message", action: #selector(correctMessage), keyEquivalent: "");
+                    correct.target = self;
+                    correct.tag = item.id;
+                }
+                
+                if XmppService.instance.getClient(for: item.account)?.state ?? .disconnected == .connected {
+                    let retract = menu.addItem(withTitle: "Retract message", action: #selector(retractMessage), keyEquivalent: "");
+                    retract.target = self;
+                    retract.tag = item.id;
+                }
+            }
         }
     }
 
@@ -274,9 +311,6 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             return;
         }
 
-        guard let account = self.account, let jid = self.jid else {
-            return;
-        }
         switch item {
         case let item as ChatMessage:
             MessageEventHandler.sendMessage(chat: chat, body: item.message, url: nil);
@@ -290,13 +324,62 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             break;
         }
     }
+    
+    @objc func correctMessage(_ sender: NSMenuItem) {
+        let tag = sender.tag;
+        guard tag >= 0 else {
+            return
+        }
+     
+        guard let item = dataSource.getItem(withId: tag) as? ChatMessage else {
+            return;
+        }
+        
+        DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
+            self?.startMessageCorrection(message: item.message, originId: originId);
+        })
+    }
 
-    override func send(message: String) -> Bool {
+    @objc func retractMessage(_ sender: NSMenuItem) {
+        let tag = sender.tag;
+        guard tag >= 0 else {
+            return
+        }
+        
+        guard let item = dataSource.getItem(withId: tag) as? ChatEntry, let chat = self.chat as? Chat else {
+            return;
+        }
+        
+        let alert = NSAlert();
+        alert.messageText = "Are you sure you want to retract that message?"
+        alert.informativeText = "That message will be removed immediately and it's receives will be asked to remove it as well.";
+        alert.addButton(withTitle: "Retract");
+        alert.addButton(withTitle: "Cancel");
+        alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
+            switch result {
+            case .alertFirstButtonReturn:
+                DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
+                    let message = chat.createMessageRetraction(forMessageWithId: originId);
+                    message.id = UUID().uuidString;
+                    message.originId = message.id;
+                    guard let client = XmppService.instance.getClient(for: item.account), client.state == .connected else {
+                        return;
+                    }
+                    client.context.writer?.write(message);
+                    DBChatHistoryStore.instance.retractMessage(for: item.account, with: item.jid, stanzaId: originId, authorNickname: item.authorNickname, participantId: item.participantId, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
+                })
+            default:
+                break;
+            }
+        })
+    }
+        
+    override func send(message: String, correctedMessageOriginId: String?) -> Bool {
         guard let chat = self.chat as? DBChatStore.DBChat else {
             return false;
             
         }
-        MessageEventHandler.sendMessage(chat: chat, body: message, url: nil);
+        MessageEventHandler.sendMessage(chat: chat, body: message, url: nil, correctedMessageOriginId: correctedMessageOriginId);
         return true;
     }
     
@@ -354,11 +437,41 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     }
 
     @IBAction func audioCallClicked(_ sender: Any) {
-        VideoCallController.call(jid: jid, from: account, withAudio: true, withVideo: false);
+        let call = Call(account: self.account, with: self.jid, sid: UUID().uuidString, direction: .outgoing, media: [.audio]);
+        CallManager.instance.reportOutgoingCall(call, completionHandler: self.handleCallInitiationResult(_:));
     }
 
     @IBAction func videoCallClicked(_ sender: NSButton) {
-        VideoCallController.call(jid: jid, from: account, withAudio: true, withVideo: true);
+        let call = Call(account: self.account, with: self.jid, sid: UUID().uuidString, direction: .outgoing, media: [.audio, .video]);
+        CallManager.instance.reportOutgoingCall(call, completionHandler: self.handleCallInitiationResult(_:));
+    }
+    
+    func handleCallInitiationResult(_ result: Result<Void,Error>) {
+        switch result {
+        case .success(_):
+            break;
+        case .failure(let err):
+            let alert = NSAlert();
+            alert.alertStyle = .warning;
+            alert.messageText = "Call failed";
+            alert.informativeText = "It was not possible to establish call";
+            switch err {
+            case let e as ErrorCondition:
+                switch e {
+                case .forbidden:
+                    alert.informativeText = "It was not possible to access camera or microphone. Please check permissions in the system settings";
+                default:
+                    break;
+                }
+            default:
+                break;
+            }
+            guard let window = self.view.window else {
+                return;
+            }
+            alert.addButton(withTitle: "OK");
+            alert.beginSheetModal(for: window, completionHandler: nil);
+        }
     }
 
     @IBAction func encryptionChanged(_ sender: NSPopUpButton) {
@@ -467,12 +580,15 @@ public enum MessageState: Int {
 
     case outgoing_delivered = 9
     case outgoing_read = 11
+    
+//    case incoming_retracted = 12
+//    case outgoing_retracted = 13
 
     var direction: MessageDirection {
         switch self {
-        case .incoming, .incoming_unread, .incoming_error, .incoming_error_unread:
+        case .incoming, .incoming_unread, .incoming_error, .incoming_error_unread://, .incoming_retracted:
             return .incoming;
-        case .outgoing, .outgoing_unsent, .outgoing_delivered, .outgoing_read, .outgoing_error_unread, .outgoing_error:
+        case .outgoing, .outgoing_unsent, .outgoing_delivered, .outgoing_read, .outgoing_error_unread, .outgoing_error://, .outgoing_retracted:
             return .outgoing;
         }
     }
@@ -506,10 +622,16 @@ class ChatViewTableView: NSTableView {
 
     static let didScrollRowToVisible = Notification.Name("ChatViewTableView::didScrollRowToVisible");
 
+    override var acceptsFirstResponder: Bool {
+        return true;
+    }
+    
+    weak var mouseDelegate: ChatViewTableViewMouseDelegate?;
+    
     override open var isFlipped: Bool {
         return false;
     }
-
+    
     override func reflectScrolledClipView(_ clipView: NSClipView) {
         super.reflectScrolledClipView(clipView);
         print("reflectScrolledClipView called!");
@@ -520,6 +642,13 @@ class ChatViewTableView: NSTableView {
             print("cannot scroll to row", row, "as data source has only", numberOfRows, "rows");
             return;
         }
+
+//        guard row == 0 else {
+//            let rect = self.rect(ofRow: row);
+//            self.scrollToVisible(NSRect(origin: NSPoint(x: rect.origin.x, y: (rect.origin.y - max(0, self.visibleRect.height - rect.size.height))), size: rect.size));
+//            return;
+//        }
+
         super.scrollRowToVisible(row);
         let visibleRows = self.rows(in: self.visibleRect);
         if !visibleRows.contains(row) {
@@ -532,6 +661,43 @@ class ChatViewTableView: NSTableView {
             NotificationCenter.default.post(name: ChatViewTableView.didScrollRowToVisible, object: self);
         }
     }
+    
+    override func mouseDown(with event: NSEvent) {
+        if !(mouseDelegate?.handleMouse(event: event) ?? false) {
+            super.mouseDown(with: event);
+        }
+    }
+    
+    override func mouseUp(with event: NSEvent) {
+        if !(mouseDelegate?.handleMouse(event: event) ?? false) {
+            super.mouseUp(with: event);
+        }
+    }
+    
+    override func mouseDragged(with event: NSEvent) {
+        if !(mouseDelegate?.handleMouse(event: event) ?? false) {
+            super.mouseDragged(with: event);
+        }
+    }
+    
+    override func rightMouseDown(with event: NSEvent) {
+        if !(mouseDelegate?.handleMouse(event: event) ?? false) {
+            super.rightMouseDown(with: event);
+        }
+    }
+
+    override func validateProposedFirstResponder(_ responder: NSResponder, for event: NSEvent?) -> Bool {
+        if responder is NSTextView {
+            return false;
+        } else {
+            return super.validateProposedFirstResponder(responder, for: event);
+        }
+    }
+    
+}
+
+protocol ChatViewTableViewMouseDelegate: class {
+    func handleMouse(event: NSEvent) -> Bool;
 }
 
 class ChatViewStatusView: NSTextField {

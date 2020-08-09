@@ -21,7 +21,7 @@
 import AppKit
 import TigaseSwift
 
-class ChatsListGroupAbstractChat<I: DBChatProtocol>: ChatsListGroupProtocol {
+class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
     
     let name: String;
     weak var delegate: ChatsListViewDataSourceDelegate?;
@@ -43,12 +43,7 @@ class ChatsListGroupAbstractChat<I: DBChatProtocol>: ChatsListGroupProtocol {
 
         dispatcher.async {
             DispatchQueue.main.sync {
-                self.items = DBChatStore.instance.getChats().filter({dbChatProtocol -> Bool in
-                    return dbChatProtocol is I;
-                }).map({ (dbChat) -> ChatItemProtocol? in
-                    let item = self.newChatItem(chat: dbChat as! I);
-                    return item;
-                }).filter({ (item) -> Bool in
+                self.items = DBChatStore.instance.getChats().filter(self.isAccepted(chat:)).map(self.newChatItem(chat:)).filter({ (item) -> Bool in
                     item != nil
                 }).map({ item -> ChatItemProtocol in item! }).sorted(by: self.chatsSorter);
                 print("loaded", self.items.count, "during initialization of the view");
@@ -61,7 +56,7 @@ class ChatsListGroupAbstractChat<I: DBChatProtocol>: ChatsListGroupProtocol {
         return items.count;
     }
     
-    func newChatItem(chat: I) -> ChatItemProtocol? {
+    func newChatItem(chat: DBChatProtocol) -> ChatItemProtocol? {
         return nil;
     }
     
@@ -106,8 +101,12 @@ class ChatsListGroupAbstractChat<I: DBChatProtocol>: ChatsListGroupProtocol {
         self.updateItem(for: account, jid: jid, executeIfExists: nil, executeIfNotExists: nil);
     }
     
+    func isAccepted(chat: DBChatProtocol) -> Bool {
+        return false;
+    }
+    
     @objc func chatOpened(_ notification: Notification) {
-        guard let opened = notification.object as? I else {
+        guard let opened = notification.object as? DBChatProtocol, isAccepted(chat: opened) else {
             return;
         }
         
@@ -115,7 +114,7 @@ class ChatsListGroupAbstractChat<I: DBChatProtocol>: ChatsListGroupProtocol {
     }
     
     @objc func chatClosed(_ notification: Notification) {
-        guard let opened = notification.object as? I else {
+        guard let opened = notification.object as? DBChatProtocol, isAccepted(chat: opened) else {
             return;
         }
         
@@ -137,7 +136,7 @@ class ChatsListGroupAbstractChat<I: DBChatProtocol>: ChatsListGroupProtocol {
     }
     
     @objc func chatUpdated(_ notification: Notification) {
-        guard let e = notification.object as? I else {
+        guard let e = notification.object as? DBChatProtocol, isAccepted(chat: e) else {
             return;
         }
         
@@ -170,7 +169,7 @@ class ChatsListGroupAbstractChat<I: DBChatProtocol>: ChatsListGroupProtocol {
         }
     }
 
-    func addItem(chat opened: I) {
+    func addItem(chat opened: DBChatProtocol) {
         dispatcher.async {
             print("opened chat account =", opened.account, ", jid =", opened.jid)
             
@@ -215,7 +214,7 @@ class ChatsListGroupAbstractChat<I: DBChatProtocol>: ChatsListGroupProtocol {
         }
     }
     
-    func updateItem(for account: BareJID, jid: BareJID, executeIfExists: ((ChatItemProtocol) -> Void)?, executeIfNotExists: (()->Void)?) {
+    func updateItem(for account: BareJID, jid: BareJID, onlyIf: ((ChatItemProtocol)->Bool)? = nil, executeIfExists: ((ChatItemProtocol) -> Void)?, executeIfNotExists: (()->Void)?) {
         dispatcher.async {
             let items = DispatchQueue.main.sync { return self.items };
             guard let idx = items.firstIndex(where: { (item) -> Bool in
@@ -226,6 +225,11 @@ class ChatsListGroupAbstractChat<I: DBChatProtocol>: ChatsListGroupProtocol {
             }
             
             let item = self.items[idx];
+            if let filter = onlyIf {
+                guard filter(item) else {
+                    return
+                }
+            }
             if let chat = item.chat as? DBChatStore.DBChat, chat.remoteChatState == .composing {
                 chat.update(remoteChatState: .active);
             }

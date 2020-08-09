@@ -91,7 +91,7 @@ class FormView: NSGridView, NSTextFieldDelegate {
                 if idx >= self.numberOfRows {
                     idx = 0;
                 }
-                responder = self.cell(atColumnIndex: 1, rowIndex: idx).contentView as? NSResponder;
+                responder = self.cell(atColumnIndex: 1, rowIndex: idx).contentView;
                 if !(responder?.acceptsFirstResponder ?? false) {
                     responder = nil;
                 }

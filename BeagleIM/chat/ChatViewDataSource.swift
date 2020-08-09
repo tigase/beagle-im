@@ -55,6 +55,10 @@ class ChatViewDataSource {
         self.refreshData(unread: 0, completionHandler: nil);
     }
     
+    func position(withId: Int) -> Int {
+        return store.items.firstIndex(where: { $0.id == withId }) ?? 0;
+    }
+    
     func getItem(at row: Int) -> ChatViewItemProtocol? {
         let store = self.store;
         let item = store.item(at: row);
@@ -103,12 +107,21 @@ class ChatViewDataSource {
             return i1.timestamp.compare(i2.timestamp) == .orderedAscending;
         };
     }
+    
+    func isAnyMatching(_ fn: (ChatViewItemProtocol)->Bool, in range: Range<Int>) -> Bool {
+        for i in range {
+            if let item = store.item(at: i), fn(item) {
+                return true;
+            }
+        }
+        return false;
+    }
         
-    func add(item: ChatViewItemProtocol) {
-        add(items: [item]);
+    func add(item: ChatViewItemProtocol, completionHandler: ((IndexSet,Int?)->Void)? = nil) {
+        add(items: [item], completionHandler: completionHandler);
     }
 
-    func add(items newItems: [ChatViewItemProtocol], markUnread: Bool = false, completionHandler: ((Int?)->Void)? = nil) {
+    func add(items newItems: [ChatViewItemProtocol], markUnread: Bool = false, completionHandler: ((IndexSet,Int?)->Void)? = nil) {
         queue.async {
             let start = Date();
             var store = DispatchQueue.main.sync { return self.store };
@@ -143,8 +156,8 @@ class ChatViewDataSource {
             print("added", newItems.count, store.count, "items in:", Date().timeIntervalSince(start))
             DispatchQueue.main.async {
                 self.store = store;
-                self.delegate?.itemAdded(at: IndexSet(newRows), shouldScroll: firstUnread == nil);
-                completionHandler?(firstUnread);
+                self.delegate?.itemAdded(at: IndexSet(newRows));
+                completionHandler?(IndexSet(newRows), firstUnread);
             }
             
             //        if newItems.first(where: { item -> Bool in return item.state.isUnread }) != nil {
@@ -170,7 +183,7 @@ class ChatViewDataSource {
         }
     }
 
-    func update(item: ChatViewItemProtocol) {
+    func update(item: ChatViewItemProtocol, completionHandler: ((IndexSet)->Void)?) {
         queue.async {
             var store = DispatchQueue.main.sync { return self.store; };
             
@@ -180,7 +193,8 @@ class ChatViewDataSource {
                 if let newIdx = store.add(item: item) {
                     DispatchQueue.main.async {
                         self.store = store;
-                        self.delegate?.itemAdded(at: IndexSet([newIdx]), shouldScroll: true);
+                        self.delegate?.itemAdded(at: IndexSet([newIdx]));
+                        completionHandler?(IndexSet([newIdx]));
                     }
                 }
                 return;
@@ -199,7 +213,8 @@ class ChatViewDataSource {
                             self.delegate?.itemUpdated(indexPath: IndexPath(item: oldIdx - 1, section: 0));
                         }
                         self.store = store;
-                        self.delegate?.itemAdded(at: IndexSet([newIdx]), shouldScroll: true);
+                        self.delegate?.itemAdded(at: IndexSet([newIdx]));
+                        completionHandler?(IndexSet([newIdx]));
                     }
                 }
             } else {
@@ -229,8 +244,8 @@ class ChatViewDataSource {
             DispatchQueue.main.async {
                 self.store = store;
                 self.delegate?.itemsRemoved(at: IndexSet([oldIdx]));
-                if oldIdx != 0 && self.store.count > 0 {
-                    self.delegate?.itemUpdated(indexPath: IndexPath(item: oldIdx, section: 0));
+                if oldIdx > 0 && self.store.count > 0 {
+                    self.delegate?.itemUpdated(indexPath: IndexPath(item: oldIdx - 1, section: 0));
                 }
             }
         }
@@ -271,7 +286,15 @@ class ChatViewDataSource {
         guard account == item.account && jid == item.jid else {
             return;
         }
-        add(item: item);
+        
+        DispatchQueue.main.async {
+            let isNewestMessageVisible = self.delegate?.isVisible(row: 0) ?? false;
+            self.add(item: item, completionHandler: { [weak self] (newRows, unread) in
+                if isNewestMessageVisible && newRows.contains(0) {
+                    self?.delegate?.scrollRowToVisible(0);
+                }
+            });
+        }
     }
     
     @objc fileprivate func messageUpdated(_ notification: Notification) {
@@ -284,7 +307,15 @@ class ChatViewDataSource {
         guard account == item.account && jid == item.jid else {
             return;
         }
-        update(item: item);
+        
+        DispatchQueue.main.async {
+            let isNewestMessageVisible = self.delegate?.isVisible(row: 0) ?? false;
+            self.update(item: item, completionHandler: { [weak self] (newRows) in
+                if isNewestMessageVisible && newRows.contains(0) {
+                    self?.delegate?.scrollRowToVisible(0);
+                }
+            });
+        }
     }
     
     @objc fileprivate func messageRemoved(_ notification: Notification) {
@@ -340,7 +371,7 @@ class ChatViewDataSource {
             let start = Date();
             DBChatHistoryStore.instance.history(for: account, jid: jid, before: before, limit: limit) { dbItems in
                 print("load completed in:", Date().timeIntervalSince(start));
-                self.add(items: dbItems, markUnread: unread > 0, completionHandler: { (firstUnread) in
+                self.add(items: dbItems, markUnread: unread > 0, completionHandler: { (_, firstUnread) in
                     self.loadInProgress = false;
                     if self.waitingToLoad != nil {
                         self.waitingToLoad!();

@@ -26,7 +26,7 @@ class VCardManager {
     
     public static let instance = VCardManager();
     
-    open func refreshVCard(for jid: BareJID, on account: BareJID, completionHandler: ((VCard?)->Void)?) {
+    open func retrieveVCard(for jid: BareJID, on account: BareJID, completionHandler: ((VCard?)->Void)?) {
         guard let modulesManager = XmppService.instance.getClient(for: account)?.modulesManager else {
             completionHandler?(nil);
             return;
@@ -34,27 +34,36 @@ class VCardManager {
         
         let queryJid = jid == account ? nil : JID(jid);
         if let vcard4Module: VCard4Module = modulesManager.getModule(VCard4Module.ID) {
-            self.refreshVCard(module: vcard4Module, for: queryJid, on: account) { (vcard) in
+            self.retrieveVCard(module: vcard4Module, for: queryJid, on: account) { (vcard) in
                 guard vcard != nil else {
                     guard let vcardTempModule: VCardTempModule = modulesManager.getModule(VCardTempModule.ID) else {
                         completionHandler?(nil);
                         return;
                     }
-                    self.refreshVCard(module: vcardTempModule, for: queryJid, on: account, completionHandler: completionHandler);
+                    self.retrieveVCard(module: vcardTempModule, for: queryJid, on: account, completionHandler: completionHandler);
                     return;
                 }
+                completionHandler?(vcard);
             }
         }
         else if let vcardTempModule: VCardTempModule = modulesManager.getModule(VCardTempModule.ID) {
-            self.refreshVCard(module: vcardTempModule, for: queryJid, on: account, completionHandler: completionHandler);
+            self.retrieveVCard(module: vcardTempModule, for: queryJid, on: account, completionHandler: completionHandler);
         } else {
             completionHandler?(nil);
         }
     }
     
-    fileprivate func refreshVCard(module: VCardModuleProtocol, for jid: JID?, on account: BareJID, completionHandler: ((VCard?)->Void)?) {
+    open func refreshVCard(for jid: BareJID, on account: BareJID, completionHandler: ((VCard?)->Void)?) {
+        retrieveVCard(for: jid, on: account, completionHandler: { vcard in
+            if let vcard = vcard {
+                DBVCardStore.instance.updateVCard(for: jid, on: account, vcard: vcard);
+            }
+            completionHandler?(vcard);
+        })
+    }
+    
+    fileprivate func retrieveVCard(module: VCardModuleProtocol, for jid: JID?, on account: BareJID, completionHandler: ((VCard?)->Void)?) {
         module.retrieveVCard(from: jid, onSuccess: { vcard in
-            DBVCardStore.instance.updateVCard(for: jid?.bareJid ?? account, on: account, vcard: vcard);
             completionHandler?(vcard);
         }, onError: { errorCondition in
             completionHandler?(nil);

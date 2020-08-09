@@ -80,7 +80,7 @@ class ChatCellView: NSTableCellView {
                 case .message(let lastMessage, let sender):
                     let msg = NSMutableAttributedString(string: lastMessage);
                     if Settings.enableMarkdownFormatting.bool() {
-                        Markdown.applyStyling(attributedString: msg, showEmoticons: Settings.showEmoticons.bool());
+                        Markdown.applyStyling(attributedString: msg, fontSize: NSFont.systemFontSize - 1, showEmoticons: Settings.showEmoticons.bool());
                     }
                     if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
                         prefix.append(msg);
@@ -88,7 +88,27 @@ class ChatCellView: NSTableCellView {
                     } else {
                         self.lastMessage?.attributedStringValue = msg;
                     }
-                case .attachment(let url, let sender):
+                case .invitation(_, let sender):
+                    if let fieldfont = self.lastMessage?.font {
+                        let msg = NSAttributedString(string: "📨 Invitation", attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask, .boldFontMask]), .foregroundColor: self.lastMessage.textColor!.withAlphaComponent(0.8)]);
+
+                        if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                            prefix.append(msg);
+                            self.lastMessage?.attributedStringValue = prefix;
+                        } else {
+                            self.lastMessage?.attributedStringValue = msg;
+                        }
+                    } else {
+                        let msg = NSAttributedString(string: "📨 Invitation", attributes: [.foregroundColor: self.lastMessage.textColor!.withAlphaComponent(0.8)]);
+                        
+                        if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                            prefix.append(msg);
+                            self.lastMessage?.attributedStringValue = prefix;
+                        } else {
+                            self.lastMessage?.attributedStringValue = msg;
+                        }
+                    }
+                case .attachment(_, let sender):
                     if let fieldfont = self.lastMessage?.font {
                         let msg = NSAttributedString(string: "📎 Attachment", attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask, .boldFontMask]), .foregroundColor: self.lastMessage.textColor!.withAlphaComponent(0.8)]);
 
@@ -168,6 +188,9 @@ class ChatCellView: NSTableCellView {
         } else if let room  = item.chat as? Room {
             self.avatar.update(for: item.chat.jid.bareJid, on: item.chat.account, orDefault: NSImage(named: NSImage.userGroupName));
             self.avatar.status = room.state == .joined ? .online : (room.state == .requested ? .away : nil);
+        } else if let channel = item.chat as? Channel {
+            self.avatar.update(for: item.chat.jid.bareJid, on: item.chat.account, orDefault: NSImage(named: NSImage.userGroupName));
+            self.avatar.status = (XmppService.instance.getClient(for: item.chat.account)?.state ?? .disconnected == .connected) && channel.state == .joined ? .online : nil;
         }
     }
 

@@ -22,7 +22,7 @@
 import AppKit
 import TigaseSwift
 
-class ChatsListGroupChat: ChatsListGroupAbstractChat<DBChatStore.DBChat> {
+class ChatsListGroupChat: ChatsListGroupAbstractChat {
     
     init(delegate: ChatsListViewDataSourceDelegate) {
         super.init(name: "Direct messages", dispatcher: QueueDispatcher(label: "chats_list_group_chats_queue"), delegate: delegate, canOpenChat: true);
@@ -30,7 +30,11 @@ class ChatsListGroupChat: ChatsListGroupAbstractChat<DBChatStore.DBChat> {
         NotificationCenter.default.addObserver(self, selector: #selector(contactPresenceChanged), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
     }
     
-    override func newChatItem(chat: DBChatStore.DBChat) -> ChatItemProtocol? {
+    override func isAccepted(chat: DBChatProtocol) -> Bool {
+        return chat is DBChatStore.DBChat;
+    }
+
+    override func newChatItem(chat: DBChatProtocol) -> ChatItemProtocol? {
         let item = ChatItem(chat: chat);
         guard item.isInRoster else {
             return nil;
@@ -79,7 +83,7 @@ class ChatsListGroupChat: ChatsListGroupAbstractChat<DBChatStore.DBChat> {
     }
 }
 
-class ChatsListGroupChatUnknown: ChatsListGroupAbstractChat<DBChatStore.DBChat> {
+class ChatsListGroupChatUnknown: ChatsListGroupAbstractChat {
     
     init(delegate: ChatsListViewDataSourceDelegate) {
         super.init(name: "From unknown", dispatcher: QueueDispatcher(label: "chats_list_group_chats_unkonwn_queue"), delegate: delegate, canOpenChat: false);
@@ -87,7 +91,11 @@ class ChatsListGroupChatUnknown: ChatsListGroupAbstractChat<DBChatStore.DBChat> 
         NotificationCenter.default.addObserver(self, selector: #selector(contactPresenceChanged), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
     }
     
-    override func newChatItem(chat: DBChatStore.DBChat) -> ChatItemProtocol? {
+    override func isAccepted(chat: DBChatProtocol) -> Bool {
+        return chat is DBChatStore.DBChat;
+    }
+    
+    override func newChatItem(chat: DBChatProtocol) -> ChatItemProtocol? {
         let item = ChatItem(chat: chat);
         guard !item.isInRoster else {
             return nil;

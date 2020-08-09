@@ -58,7 +58,7 @@ class DBRosterStoreWrapper: RosterStore {
         })
     }
     
-    open func getJids() -> [JID] {
+    open override func getJids() -> [JID] {
         var result = [JID]();
         queue.sync {
             self.roster.keys.forEach({ (jid) in
@@ -122,12 +122,12 @@ open class DBRosterStore {
     public init() {
         self.dispatcher = QueueDispatcher(label: "db_roster_store");
         
-        insertItemStmt = try! DBConnection.main.prepareStatement("INSERT INTO roster_items (account, jid, name, subscription, timestamp, ask) VALUES (:account, :jid, :name, :subscription, :timestamp, :ask)");
-        updateItemStmt = try! DBConnection.main.prepareStatement("UPDATE roster_items SET name = :name, subscription = :subscription, timestamp = :timestamp, ask = :ask WHERE id = :id");
+        insertItemStmt = try! DBConnection.main.prepareStatement("INSERT INTO roster_items (account, jid, name, subscription, timestamp, ask, annotations) VALUES (:account, :jid, :name, :subscription, :timestamp, :ask, :annotations)");
+        updateItemStmt = try! DBConnection.main.prepareStatement("UPDATE roster_items SET name = :name, subscription = :subscription, timestamp = :timestamp, ask = :ask, annotations = :annotations WHERE id = :id");
         deleteItemStmt = try! DBConnection.main.prepareStatement("DELETE FROM roster_items WHERE id = :id");
         
         getAllItemsGroupsStmt = try! DBConnection.main.prepareStatement("SELECT rig.item_id as item_id, rg.name as name FROM roster_items ri INNER JOIN roster_items_groups rig ON ri.id = rig.item_id INNER JOIN roster_groups rg ON rig.group_id = rg.id WHERE ri.account = :account");
-        getAllItemsStmt = try! DBConnection.main.prepareStatement("SELECT id, jid, name, subscription, ask FROM roster_items WHERE account = :account");
+        getAllItemsStmt = try! DBConnection.main.prepareStatement("SELECT id, jid, name, subscription, ask, annotations FROM roster_items WHERE account = :account");
         
         getGroupIdStmt = try! DBConnection.main.prepareStatement("SELECT id from roster_groups WHERE name = :name");
         insertGroupStmt = try! DBConnection.main.prepareStatement("INSERT INTO roster_groups (name) VALUES (:name)");
@@ -154,10 +154,16 @@ open class DBRosterStore {
                 let name: String? = cursor["name"];
                 let subscription = RosterItem.Subscription(rawValue: cursor["subscription"]!)!;
                 let ask: Bool = cursor["ask"]!;
+                var annotations: [RosterItemAnnotation] = [];
+                if let annotationsStr: String = cursor["annotations"], let annotationsData = annotationsStr.data(using: .utf8) {
+                    if let val = try? JSONDecoder().decode([RosterItemAnnotation].self, from: annotationsData) {
+                        annotations = val;
+                    }
+                }
                 
                 let itemGroups = groups[itemId] ?? [];
                 
-                return DBRosterItem(id: itemId, jid: jid, name: name, subscription: subscription, groups: itemGroups, ask: ask);
+                return DBRosterItem(id: itemId, jid: jid, name: name, subscription: subscription, groups: itemGroups, ask: ask, annotations: annotations);
             });
         }
     }
@@ -181,7 +187,8 @@ open class DBRosterStore {
     func set(for account: BareJID, item: RosterItem) -> DBRosterItem {
         return dispatcher.sync {
             guard let i = item as? DBRosterItem else {
-                let params: [String: Any?] = ["account": account, "jid": item.jid, "name": item.name, "subscription": item.subscription.rawValue, "timestamp": Date(), "ask": item.ask];
+                let annotations = String(data: (try? JSONEncoder().encode(item.annotations)) ?? Data(), encoding: .utf8);
+                let params: [String: Any?] = ["account": account, "jid": item.jid, "name": item.name, "subscription": item.subscription.rawValue, "timestamp": Date(), "ask": item.ask, "annotations": annotations];
                 
                 let id = try! self.insertItemStmt.insert(params)!;
                 let dbItem = DBRosterItem(id: id, item: item);
@@ -189,7 +196,8 @@ open class DBRosterStore {
                 return dbItem;
             }
 
-            let params: [String: Any?] = ["id": i.id, "name": i.name, "subscription": item.subscription.rawValue, "timestamp": Date(), "ask": item.ask];
+            let annotations = String(data: (try? JSONEncoder().encode(item.annotations)) ?? Data(), encoding: .utf8);
+            let params: [String: Any?] = ["id": i.id, "name": i.name, "subscription": item.subscription.rawValue, "timestamp": Date(), "ask": item.ask, "annotations": annotations];
             
             _ = try! self.updateItemStmt.update(params);
             
@@ -230,16 +238,16 @@ class DBRosterItem: RosterItem {
     
     let id: Int;
     
-    init(id: Int, jid: JID, name: String?, subscription: RosterItem.Subscription, groups: [String], ask: Bool) {
+    init(id: Int, jid: JID, name: String?, subscription: RosterItem.Subscription, groups: [String], ask: Bool, annotations: [RosterItemAnnotation]) {
         self.id = id;
-        super.init(jid: jid, name: name, subscription: subscription, groups: groups, ask: ask);
+        super.init(jid: jid, name: name, subscription: subscription, groups: groups, ask: ask, annotations: annotations);
     }
     
     convenience init(id: Int, item: RosterItem) {
-        self.init(id: id, jid: item.jid, name: item.name, subscription: item.subscription, groups: item.groups, ask: item.ask);
+        self.init(id: id, jid: item.jid, name: item.name, subscription: item.subscription, groups: item.groups, ask: item.ask, annotations: item.annotations);
     }
     
-    override func update(name: String?, subscription: RosterItem.Subscription, groups: [String], ask: Bool) -> RosterItem {
-        return DBRosterItem(id: id, jid: jid, name: name, subscription: subscription, groups: groups, ask: ask);
+    override func update(name: String?, subscription: RosterItem.Subscription, groups: [String], ask: Bool, annotations: [RosterItemAnnotation]) -> RosterItem {
+        return DBRosterItem(id: id, jid: jid, name: name, subscription: subscription, groups: groups, ask: ask, annotations: annotations);
     }
 }
