@@ -160,7 +160,15 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                             self?.delegate?.operationFinished();
                         }
                     })
-                    mixModule.publishInfo(for: channelJid, info: ChannelInfo(name: channelName, description: channelDescription, contact: []), completionHandler: nil);
+                    let info = ChannelInfo(name: channelName, description: channelDescription, contact: []);
+                    mixModule.publishInfo(for: channelJid, info: info, completionHandler: { result in
+                        switch result {
+                        case .success(_):
+                            mixModule.channelManager.update(channel: channelJid, info: info);
+                        default:
+                            break;
+                        }
+                    });
                     if let avatarData = avatar?.scaled(maxWidthOrHeight: 512.0, format: .jpeg, properties: [.compressionFactor: 0.8]) {
                         avatarModule.publishAvatar(at: channelJid, data: avatarData, mimeType: "image/jpeg", completionHandler: { result in
                             print("avatar publication result:", result);

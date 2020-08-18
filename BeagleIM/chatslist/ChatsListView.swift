@@ -80,6 +80,15 @@ class UnifiedChatItem: AbstractChatItem {
     
     let isInRoster: Bool;
     
+    override var name: String {
+         get {
+             return (self.chat as? DBChatStore.DBChannel)?.name ?? super.name;
+         }
+         set {
+             super.name = newValue;
+         }
+     }
+
     init(chat: DBChatProtocol) {
         var name = chat.jid.stringValue;
         switch chat {
