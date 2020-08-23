@@ -63,11 +63,13 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
     var headerView: NSTableHeaderView?;
     
     override func viewDidLoad() {
+        super.viewDidLoad();
         NotificationCenter.default.addObserver(self, selector: #selector(itemWillExpand(_:)), name: NSOutlineView.itemWillExpandNotification, object: self.outlineView);
     }
     
     override func viewWillAppear() {
         refreshButtonStates();
+        super.viewDidAppear();
     }
     
     @objc func itemWillExpand(_ notification: Notification) {
@@ -94,12 +96,16 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
         guard row >= 0 else {
             return;
         }
-        guard let item = self.outlineView.item(atRow: row) as? Item else {
+        guard let account = self.account, let item = self.outlineView.item(atRow: row) as? Item else {
             return;
         }
-        self.jidField.stringValue = item.jid.stringValue;
-        self.node = item.node;
-        self.jid = item.jid;
+        if item.jid.domain != rootItem?.jid.domain {
+            self.jidField.stringValue = item.jid.stringValue;
+            self.node = item.node;
+            self.jid = item.jid;
+        } else {
+            self.discoItems(for: item, on: account);
+        }
     }
     
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
@@ -117,10 +123,8 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
     }
     
     func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
-        if let it = item as? Item {
-            return it.hasFeature("http://jabber.org/protocol/disco#items") || it.identities.firstIndex(where: { (identity) -> Bool in
-                return identity.category == "pubsub" && identity.type == "collection";
-            }) != nil;
+        if let it = item as? Item, let parentItem = outlineView.parent(forItem: it) as? Item ?? rootItem, parentItem.jid.domain == it.jid.domain && !(it.subitems?.isEmpty ?? false) {
+            return it.hasFeature("http://jabber.org/protocol/disco#items") || it.identities.contains(where: { $0.category == "pubsub" && $0.type == "leaf" });
         }
         return false;
     }
@@ -133,9 +137,11 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
         switch (tableColumn?.identifier.rawValue ?? "") {
         case "ComponentOutlineColumn":
             let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("ServiceDiscoveryOutlineCell"), owner: self);
+            outlineView.level(forItem: item);
             return view;
-        case "ComponentIconColumn":
-            let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("ServiceDiscoComponentIconCell"), owner: self);
+        case "ComponentNameColumn":
+            let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("ServiceDiscoComponentInfoCell"), owner: self);
+            let it = item as? Item;
             var image: NSImage? = nil;
             if let it = item as? Item {
                 let categories = it.identities.map({ (identity) -> String in
@@ -152,12 +158,8 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                 }
             }
             (view?.subviews[0] as? NSImageView)?.image = image;
-            return view;
-        case "ComponentNameColumn":
-            let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("ServiceDiscoComponentInfoCell"), owner: self);
-            let it = item as? Item;
-            (view?.subviews[0] as? NSTextField)?.stringValue = it?.name ?? "";
-            (view?.subviews[1] as? NSTextField)?.stringValue = it?.jid.stringValue ?? "";
+            (view?.subviews[1] as? NSTextField)?.stringValue = it?.name ?? "";
+            (view?.subviews[2] as? NSTextField)?.stringValue = it?.jid.stringValue ?? "";
             return view;
         case "ComponentPubSubNameColumn":
             let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("ServiceDiscoComponentPubSubNameColumn"), owner: self);
@@ -181,12 +183,16 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
         guard row >= 0 else {
             return;
         }
-        guard let item = self.outlineView.item(atRow: row) as? Item else {
+        guard let account = self.account, let item = self.outlineView.item(atRow: row) as? Item else {
             return;
         }
-        self.jidField.stringValue = item.jid.stringValue;
-        self.node = item.node;
-        self.jid = item.jid;
+        if item.jid.domain != rootItem?.jid.domain {
+            self.jidField.stringValue = item.jid.stringValue;
+            self.node = item.node;
+            self.jid = item.jid;
+        } else {
+            self.discoItems(for: item, on: account);
+        }
     }
     
     @IBAction func clickedExecuteButton(_ sender: NSButton) {
@@ -298,16 +304,12 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                 self.outlineView.headerView = nil;
             }
 
-//            self.outlineView.outlineTableColumn?.width = 20.0;
-//            self.outlineView.headerView?.isHidden = true;
-            let iconColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("ComponentIconColumn"));
-            iconColumn.width = 32.0;
-            self.outlineView.addTableColumn(iconColumn);
             let nameColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("ComponentNameColumn"));
-            nameColumn.width = self.outlineView.visibleRect.width - self.outlineView.tableColumns.reduce(10.0, { (prev, column) -> CGFloat in
-                return prev + (oldColumns.contains(column) ? 0 : column.width);
+            nameColumn.width = self.outlineView.visibleRect.width - self.outlineView.tableColumns.reduce(10, { (prev, column) -> CGFloat in
+                return prev + (oldColumns.contains(column) ? 0 : column.width + 6);
             })
             self.outlineView.addTableColumn(nameColumn);
+            self.outlineView.outlineTableColumn = nameColumn;
         case .pubsub:
             if let headerView = self.headerView {
                 self.outlineView.headerView = headerView;
@@ -315,7 +317,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
             }
             //self.outlineView.outlineTableColumn?.width = 20.0;
 //            self.outlineView.headerView?.isHidden = false;
-            let columnWidth = (self.outlineView.visibleRect.width - ((self.outlineView.outlineTableColumn?.width ?? 20.0) + 10.0)) / 2;
+            let columnWidth = (self.outlineView.visibleRect.width - 10) / 2;
             let nameColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("ComponentPubSubNameColumn"));
             nameColumn.title = "Name";
             nameColumn.width = columnWidth;
@@ -324,6 +326,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
             nodeColumn.title = "Node";
             nodeColumn.width = columnWidth;
             self.outlineView.addTableColumn(nodeColumn);
+            self.outlineView.outlineTableColumn = nameColumn;
         }
         
         oldColumns.forEach { (column) in
@@ -332,7 +335,6 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
             }
             self.outlineView.removeTableColumn(column);
         }
-        
         self.outlineView.reloadData();
     }
     
@@ -409,31 +411,42 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                     self?.progressIndicator.stopAnimation(self);
                 }
             }
-            items.forEach({ (item) in
-                discoModule.getInfo(for: item.jid, node: item.node, onInfoReceived: { (node, identities, features) in
-                    DispatchQueue.main.async {
-                        guard let idx = parentItem.subitems?.firstIndex(where: { (it) -> Bool in
-                            return it.jid == item.jid && it.node == item.node;
-                        }) else {
-                            return;
-                        }
-                        if let it = parentItem.subitems?[idx] {
-                            it.update(identities: identities, features: features);
-                            self?.outlineView.reloadItem(it);
-                        }
-                        finished();
-                    }
-                }) { (error) in
-                    // FIXME: HANDLE IT SOMEHOW!
-                    DispatchQueue.main.async {
-                        finished();
-                    }
-                    print("error", error as Any);
-                }
-            })
-            if items.isEmpty {
+            if parentItem.identities.contains(where: { ($0.category == "hierarchy" || $0.category == "pubsub") && $0.type == "leaf" }) {
+                // parent was a leaf so there is no subquery for items info!
                 DispatchQueue.main.async {
-                    finished();
+                    parentItem.subitems?.forEach({ item in
+                        item.subitems = [];
+                        self?.outlineView.reloadItem(item);
+                        finished();
+                    });
+                }
+            } else {
+                items.forEach({ (item) in
+                    discoModule.getInfo(for: item.jid, node: item.node, onInfoReceived: { (node, identities, features) in
+                        DispatchQueue.main.async {
+                            guard let idx = parentItem.subitems?.firstIndex(where: { (it) -> Bool in
+                                return it.jid == item.jid && it.node == item.node;
+                            }) else {
+                                return;
+                            }
+                            if let it = parentItem.subitems?[idx] {
+                                it.update(identities: identities, features: features);
+                                self?.outlineView.reloadItem(it);
+                            }
+                            finished();
+                        }
+                    }) { (error) in
+                        // FIXME: HANDLE IT SOMEHOW!
+                        DispatchQueue.main.async {
+                            finished();
+                        }
+                        print("error", error as Any);
+                    }
+                })
+                if items.isEmpty {
+                    DispatchQueue.main.async {
+                        finished();
+                    }
                 }
             }
         }, onError: { [weak self] (error) in
