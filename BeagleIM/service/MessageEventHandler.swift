@@ -395,8 +395,8 @@ class MessageEventHandler: XmppServiceEventHandler {
         }
     }
     
-    static func syncMessages(forPeriod period: DBChatHistorySyncStore.Period, version: MessageArchiveManagementModule.Version? = nil, rsmQuery: RSM.Query? = nil) {
-        guard let mamModule: MessageArchiveManagementModule = XmppService.instance.getClient(for: period.account)?.modulesManager.getModule(MessageArchiveManagementModule.ID) else {
+    static func syncMessages(forPeriod period: DBChatHistorySyncStore.Period, version: MessageArchiveManagementModule.Version? = nil, rsmQuery: RSM.Query? = nil, retry: Int = 3) {
+        guard let client = XmppService.instance.getClient(for: period.account), let mamModule: MessageArchiveManagementModule = client.modulesManager.getModule(MessageArchiveManagementModule.ID) else {
             return;
         }
         
@@ -413,12 +413,18 @@ class MessageEventHandler: XmppServiceEventHandler {
                         DBChatHistorySyncStore.instance.updatePeriod(period, after: last);
                     }
                     DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                        self.syncMessages(forPeriod: period, rsmQuery: rsmResponse?.next(150));
+                        self.syncMessages(forPeriod: period, version: version, rsmQuery: rsmResponse?.next(150));
                     }
                 }
-                os_log("for account %s fetch with id %s executed in %f s", log: .chatHistorySync, type: .debug, period.account.stringValue, queryId, Date().timeIntervalSince(start));
+                os_log("for account %s fetch for component %s with id %s executed in %f s", log: .chatHistorySync, type: .debug, period.account.stringValue, period.component?.stringValue ?? "nil", queryId, Date().timeIntervalSince(start));
             case .failure(let errorCondition, let response):
-                print("could not synchronize message archive for:", errorCondition, "got", response as Any);
+                guard client.state == .connected, retry > 0 && errorCondition != .feature_not_implemented else {
+                    os_log("for account %s fetch for component %s with id %s could not synchronize message archive for: %{public}s got: %s", log: .chatHistorySync, type: .debug, period.account.stringValue, period.component?.stringValue ?? "nil", queryId, errorCondition.rawValue, response?.description ?? "nil");
+                    return;
+                }
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
+                    self.syncMessages(forPeriod: period, version: version, rsmQuery: rsmQuery, retry: retry - 1);
+                }
             }
         });
     }
