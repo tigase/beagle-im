@@ -27,12 +27,16 @@ class VCardManager {
     public static let instance = VCardManager();
     
     open func retrieveVCard(for jid: BareJID, on account: BareJID, completionHandler: ((VCard?)->Void)?) {
+        self.retrieveVCard(for: JID(jid), on: account, completionHandler: completionHandler);
+    }
+    
+    open func retrieveVCard(for jid: JID, on account: BareJID, completionHandler: ((VCard?)->Void)?) {
         guard let modulesManager = XmppService.instance.getClient(for: account)?.modulesManager else {
             completionHandler?(nil);
             return;
         }
         
-        let queryJid = jid == account ? nil : JID(jid);
+        let queryJid = jid.bareJid == account ? nil : jid;
         if let vcard4Module: VCard4Module = modulesManager.getModule(VCard4Module.ID) {
             self.retrieveVCard(module: vcard4Module, for: queryJid, on: account) { (vcard) in
                 guard vcard != nil else {

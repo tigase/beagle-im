@@ -238,8 +238,8 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
 
                 cell.id = item.id;
                 if cell.hasHeader {
-                    if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
-                        cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
+                    if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account, let avatar = AvatarManager.instance.avatar(for: senderJid, on: item.account) {
+                        cell.set(avatar: avatar);
                     } else if let nickname = item.authorNickname, let photoHash = self.room.presences[nickname]?.presence.vcardTempPhoto {
                         cell.set(avatar: AvatarManager.instance.avatar(withHash: photoHash));
                     } else {
@@ -265,8 +265,8 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         case let item as ChatAttachment:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatAttachmentContinuationCellView" : "ChatAttachmentCellView"), owner: nil) as? ChatAttachmentCellView {
                 if cell.hasHeader {
-                    if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
-                        cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
+                    if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account, let avatar = AvatarManager.instance.avatar(for: senderJid, on: item.account) {
+                        cell.set(avatar: avatar);
                     } else if let nickname = item.authorNickname, let photoHash = self.room.presences[nickname]?.presence.vcardTempPhoto {
                         cell.set(avatar: AvatarManager.instance.avatar(withHash: photoHash));
                     } else {
@@ -296,8 +296,8 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         case let item as ChatInvitation:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatInvitationCellView"), owner: nil) as? ChatInvitationCellView {
                 if cell.hasHeader {
-                    if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
-                        cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
+                    if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account, let avatar = AvatarManager.instance.avatar(for: senderJid, on: item.account) {
+                        cell.set(avatar: avatar);
                     } else if let nickname = item.authorNickname, let photoHash = self.room.presences[nickname]?.presence.vcardTempPhoto {
                         cell.set(avatar: AvatarManager.instance.avatar(withHash: photoHash));
                     } else {
@@ -585,8 +585,8 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
             let name = participant.nickname + "" + roleToEmoji(participant.role);
             
             view.avatar.name = name;
-            if let jid = participant.jid {
-                view.avatar.avatar = AvatarManager.instance.avatar(for: jid.bareJid, on: room!.account);
+            if let jid = participant.jid, let avatar = AvatarManager.instance.avatar(for: jid.bareJid, on: room!.account) {
+                view.avatar.avatar = avatar;
             } else {
                 if let photoHash = participant.presence.vcardTempPhoto {
                     view.avatar.avatar = AvatarManager.instance.avatar(withHash: photoHash);
