@@ -23,7 +23,7 @@ import AppKit
 import TigaseSwift
 import TigaseSwiftOMEMO
 
-class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDelegate, ConversationLogContextMenuDelegate {
+class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDelegate, ConversationLogContextMenuDelegate, NSMenuItemValidation {
 
     @IBOutlet var buddyAvatarView: AvatarViewWithStatus!
     @IBOutlet var buddyNameLabel: NSTextFieldCell!
@@ -322,6 +322,26 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             });
         default:
             break;
+        }
+    }
+    
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        switch menuItem.action {
+        case #selector(correctLastMessage(_:)):
+            return messageField.string.isEmpty;
+        default:
+            return true;
+        }
+    }
+    
+    @IBAction func correctLastMessage(_ sender: AnyObject) {
+        for i in 0..<dataSource.count {
+            if let item = dataSource.getItem(at: i) as? ChatMessage, item.state.direction == .outgoing {
+                DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
+                    self?.startMessageCorrection(message: item.message, originId: originId);
+                })
+                return;
+            }
         }
     }
     
