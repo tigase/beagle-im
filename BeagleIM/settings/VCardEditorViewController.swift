@@ -149,18 +149,21 @@ class VCardEditorViewController: NSViewController, AccountAware {
                 progressIndicator.stopAnimation(self);
                 return;
             }
-            vcard4Module.retrieveVCard(onSuccess: { (vcard) in
-                DBVCardStore.instance.updateVCard(for: account, on: account, vcard: vcard);
-                DispatchQueue.main.async {
-                    self.vcard = vcard;
+            vcard4Module.retrieveVCard(completionHandler: { (result) in
+                switch result {
+                case .success(let vcard):
+                    DBVCardStore.instance.updateVCard(for: account, on: account, vcard: vcard);
+                    DispatchQueue.main.async {
+                        self.vcard = vcard;
+                        self.progressIndicator.stopAnimation(self);
+                        onSuccess?();
+                    }
+                case .failure(let error):
+                    print("got error:", error as Any);
                     self.progressIndicator.stopAnimation(self);
-                    onSuccess?();
+                    onFailure?("Server returned an error: \(error)");
                 }
-            }) { (error) in
-                print("got error:", error as Any);
-                self.progressIndicator.stopAnimation(self);
-                onFailure?("Server returned an error: \(error ?? ErrorCondition.remote_server_timeout)");
-            }
+            })
         }
     }
     
@@ -260,17 +263,22 @@ class VCardEditorViewController: NSViewController, AccountAware {
                 return;
             }
             self.progressIndicator.startAnimation(self);
-            vcard4Module.publishVCard(vcard, onSuccess: {
-                DBVCardStore.instance.updateVCard(for: account, on: account, vcard: self.vcard);
-                DispatchQueue.main.async {
-                    self.isEnabled = false;
-                    sender.isEnabled = true;
-                    self.progressIndicator.stopAnimation(self);
+            vcard4Module.publishVCard(vcard, completionHandler: { result in
+                switch result {
+                case .success(_):
+                    DBVCardStore.instance.updateVCard(for: account, on: account, vcard: self.vcard);
+                    DispatchQueue.main.async {
+                        self.isEnabled = false;
+                        sender.isEnabled = true;
+                        self.progressIndicator.stopAnimation(self);
+                    }
+                case .failure(let error):
+                    DispatchQueue.main.async {
+                        self.progressIndicator.stopAnimation(self);
+                        sender.isEnabled = true;
+                        self.handleError(title: "Publication of new version of VCard failed", message: "Server returned an error: \(error)");
+                    }
                 }
-            }, onError: { error in
-                self.progressIndicator.stopAnimation(self);
-                sender.isEnabled = true;
-                self.handleError(title: "Publication of new version of VCard failed", message: "Server returned an error: \(error ?? ErrorCondition.remote_server_timeout)");
             });
         } else {
             sender.isEnabled = false;

@@ -905,11 +905,14 @@ open class ContactDetailsViewController1: NSViewController, NSTableViewDelegate 
     }
     
     @IBAction func refreshVCard(_ sender: NSButton) {
-        VCardManager.instance.refreshVCard(for: jid, on: account) { (vcard) in
-            if vcard != nil {
+        VCardManager.instance.refreshVCard(for: jid, on: account) { (result) in
+            switch result {
+            case .success(_):
                 DispatchQueue.main.async {
                     self.refresh();
                 }
+            default:
+                break;
             }
         }
     }

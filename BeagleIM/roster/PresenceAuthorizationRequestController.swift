@@ -108,15 +108,20 @@ class PresenceAuthorizationRequestController: NSViewController {
     
     func refreshVCard() {
         progressIndicator.startAnimation(self);
-        VCardManager.instance.retrieveVCard(for: jid.bareJid, on: account, completionHandler: { vcard in
+        VCardManager.instance.retrieveVCard(for: jid.bareJid, on: account, completionHandler: { result in
             DispatchQueue.main.async {
-                let displayName = vcard?.displayName;
-                self.avatarView.name = displayName;
-                if let photo = vcard?.photos.first, let dataStr = photo.binval, let data = Data(base64Encoded: dataStr), let image = NSImage(data: data) {
-                    self.avatarView.image = image;
+                switch result {
+                case .success(let vcard):
+                    let displayName = vcard.displayName;
+                    self.avatarView.name = displayName;
+                    if let photo = vcard.photos.first, let dataStr = photo.binval, let data = Data(base64Encoded: dataStr), let image = NSImage(data: data) {
+                        self.avatarView.image = image;
+                    }
+                    self.nameField.stringValue = displayName ?? self.jid.stringValue;
+                    self.jidField.isHidden = displayName == nil;
+                default:
+                    break;
                 }
-                self.nameField.stringValue = displayName ?? self.jid.stringValue;
-                self.jidField.isHidden = displayName == nil;
                 self.progressIndicator.stopAnimation(self);
             }
         })

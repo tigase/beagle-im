@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import OSLog
 
 class AvatarStore {
     
@@ -85,7 +86,9 @@ class AvatarStore {
     
     func storeAvatar(data: Data, for hash: String) {
         dispatcher.async(flags: .barrier) {
-            _ = FileManager.default.createFile(atPath: self.cacheDirectory.appendingPathComponent(hash).path, contents: data, attributes: nil);
+            if !FileManager.default.createFile(atPath: self.cacheDirectory.appendingPathComponent(hash).path, contents: data, attributes: nil) {
+                os_log(OSLogType.error, log: .avatar, "Could not save avatar to local cache for hash: %{public}s", hash);
+            }
             if let image = NSImage(data: data) {
                 self.cache.setObject(image, forKey: hash as NSString);
             }
@@ -98,9 +101,11 @@ class AvatarStore {
                 guard hash == nil || (hash! != oldHash) else {
                     return;
                 }
-                DispatchQueue.global().async {
-                    self.removeAvatar(for: oldHash)
-                }
+                // removal of cached avatar was removed as it caused issues, when a few users (or members of rooms) had the same avatar
+                // it is better to keep it in the cache and clean it up later at some point
+//                DispatchQueue.global().async {
+//                    self.removeAvatar(for: oldHash)
+//                }
                 let params: [String: Any?] = ["account": account, "jid": jid, "type": type.rawValue];
                 _ = try! self.deleteAvatarHashStmt.update(params);
             }

@@ -49,6 +49,7 @@
 		FE31409624952DD0007C5CBC /* db-schema-11.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE31409524952DD0007C5CBC /* db-schema-11.sql */; };
 		FE32A94724702D5B00E40BB1 /* db-schema-10.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE32A94624702D5B00E40BB1 /* db-schema-10.sql */; };
 		FE32A94924702FF100E40BB1 /* DBChatHistorySyncStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE32A94824702FF100E40BB1 /* DBChatHistorySyncStore.swift */; };
+		FE33C4472521FE7400509AAF /* openssl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF5C3FE22632CDE00889863 /* openssl.framework */; };
 		FE34BBD12157901100775B07 /* JabberDataFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE34BBD02157901100775B07 /* JabberDataFormView.swift */; };
 		FE34BBD52157DDF200775B07 /* MucModule_RoomError_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE34BBD42157DDF200775B07 /* MucModule_RoomError_extension.swift */; };
 		FE380ADA21B15720008717FA /* DownloadStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE380AD921B15720008717FA /* DownloadStore.swift */; };
@@ -446,6 +447,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FE33C4472521FE7400509AAF /* openssl.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

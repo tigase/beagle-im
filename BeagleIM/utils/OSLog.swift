@@ -26,6 +26,7 @@ extension OSLog {
     
     private static var subsystem = Bundle.main.bundleIdentifier!;
     
+    static let avatar = OSLog(subsystem: subsystem, category: "avatar")
     static let jingle = OSLog(subsystem: subsystem, category: "jingle")
     static let sqlite = OSLog(subsystem: subsystem, category: "sqlite")
     static let ui = OSLog(subsystem: subsystem, category: "ui")

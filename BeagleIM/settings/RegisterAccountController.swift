@@ -73,8 +73,8 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
                 self.progressIndicator?.stopAnimation(self);
                 self.form?.bob = bob;
                 self.form?.form = form;
-                self.formHeightConstraint?.isActive = form == nil;
-                self.domainFieldHeightConstraint?.isActive = form != nil;
+                self.formHeightConstraint?.isActive = true;
+                self.domainFieldHeightConstraint?.isActive = true;
             });
             return
         }

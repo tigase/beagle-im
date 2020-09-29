@@ -141,8 +141,8 @@ class ConfigureRoomViewController: NSViewController {
     }
     
     private func checkVCardSupport(vCardTempModule: VCardTempModule, completionHandler: @escaping (Result<Bool,ErrorCondition>)->Void) {
-        vCardTempModule.retrieveVCard(from: JID(roomJid!), callback: { (stanza) in
-            completionHandler(((stanza?.type ?? .error) == .error) ? .failure(stanza?.errorCondition ?? ErrorCondition.undefined_condition) : .success(true));
+        vCardTempModule.retrieveVCard(from: JID(roomJid!), completionHandler: { (result) in
+            completionHandler(result.map({ _ in true }));
         });
     }
     

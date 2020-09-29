@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import OSLog
 
 class AvatarEventHandler: XmppServiceEventHandler {
     
@@ -36,14 +37,25 @@ class AvatarEventHandler: XmppServiceEventHandler {
             if e.presence.findChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") == nil {
                 AvatarManager.instance.avatarHashChanged(for: from, on: to, type: .vcardTemp, hash: photoId);
             } else {
-                if !AvatarManager.instance.hasAvatar(withHash: photoId) {
-                    VCardManager.instance.retrieveVCard(for: e.presence.from!, on: to, completionHandler: { vcard in
-                        if vcard != nil, let photo = vcard?.photos.first {
-                            AvatarManager.fetchData(photo: photo, completionHandler: { result in
-                                if let data = result {
-                                    _ = AvatarManager.instance.storeAvatar(data: data);
-                                }
+                os_log(OSLogType.debug, log: .avatar, "received presence from %s with avaar hash: %{public}s", e.presence.from!.stringValue, photoId);
+                if !AvatarManager.instance.hasAvatar(withHash: photoId), let vcardTempModule: VCardTempModule = XmppService.instance.getClient(for: to)?.modulesManager.getModule(VCardTempModule.ID) {
+                    os_log(OSLogType.debug, log: .avatar, "querying %s for VCard for avaar hash: %{public}s", e.presence.from!.stringValue, photoId);
+                    vcardTempModule.retrieveVCard(from: e.presence.from!, completionHandler: { result in
+                        switch result {
+                        case .success(let vcard):
+                            os_log(OSLogType.debug, log: .avatar, "got result %s with %d photos from %s VCard for avaar hash: %{public}s",
+                                   String(describing: type(of: vcard).self), vcard.photos.count, e.presence.from!.stringValue, photoId);
+                            vcard.photos.forEach({ photo in
+                                os_log(OSLogType.debug, log: .avatar, "got photo from %s VCard for avaar hash: %{public}s", e.presence.from!.stringValue, photoId);
+                                AvatarManager.fetchData(photo: photo, completionHandler: { result in
+                                    if let data = result {
+                                        _ = AvatarManager.instance.storeAvatar(data: data);
+                                    }
+                                })
                             })
+                        case .failure(let error):
+                            os_log(OSLogType.debug, log: .avatar, "got error %{public}s from %s VCard for avaar hash: %{public}s", error.rawValue, e.presence.from!.stringValue, photoId);
+                            break;
                         }
                     })
                 }
