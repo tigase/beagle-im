@@ -279,27 +279,15 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
             
     static let defaultCallConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement": "true"]);
     
-    static func initiatePeerConnection(withDelegate delegate: RTCPeerConnectionDelegate) -> RTCPeerConnection? {
+    static let publicStunServers: [RTCIceServer] = [ RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:stun2.l.google.com:19302","stun:stun3.l.google.com:19302","stun:stun4.l.google.com:19302"]), RTCIceServer(urlStrings: ["stun:stunserver.org:3478" ]) ];
+    
+    static func initiatePeerConnection(iceServers foundIceServers: [RTCIceServer], withDelegate delegate: RTCPeerConnectionDelegate) -> RTCPeerConnection? {
         let configuration = RTCConfiguration();
         configuration.sdpSemantics = .unifiedPlan;
         
-        let iceServers: [RTCIceServer] = [ RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:stun2.l.google.com:19302","stun:stun3.l.google.com:19302","stun:stun4.l.google.com:19302"]), RTCIceServer(urlStrings: ["stun:stunserver.org:3478" ]) ];
+        let iceServers: [RTCIceServer] = (foundIceServers.isEmpty && Settings.usePublicStunServers.bool()) ? publicStunServers : foundIceServers;
         
-//        if var urlComponents = URLComponents(string: Settings.turnServer.string() ?? "") {
-//            let username = urlComponents.user;
-//            let password = urlComponents.password;
-//            urlComponents.user = nil;
-//            urlComponents.password = nil;
-//            let server = urlComponents.string!.replacingOccurrences(of: "/", with: "");
-//            print("turn server:", server, "user:", username as Any, "pass:", password as Any);
-//            iceServers.append(RTCIceServer(urlStrings: [server], username: username, credential: password, tlsCertPolicy: .insecureNoCheck));
-//            let forceRelay = urlComponents.queryItems?.filter({ item in
-//                item.name == "forceRelay" && item.value == "true"
-//            }) != nil;
-//            if forceRelay {
-//                configuration.iceTransportPolicy = .relay;
-//            }
-//        }
+        os_log(OSLogType.debug, log: .jingle, "using ICE servers: %s", iceServers.map({ $0.urlStrings.description }).description);
         
         configuration.iceServers = iceServers;
         configuration.bundlePolicy = .maxCompat;

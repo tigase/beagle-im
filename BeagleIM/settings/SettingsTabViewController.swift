@@ -25,8 +25,6 @@ class SettingsTabViewController: NSTabViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad();
-        // remove last `Network` tab for now as it is not ready yet
-        self.removeTabViewItem(self.tabViewItems.last!);
     }
     
 }

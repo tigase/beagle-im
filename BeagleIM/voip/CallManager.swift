@@ -20,6 +20,7 @@
 //
 
 import Foundation
+import Network
 import WebRTC
 import TigaseSwift
 
@@ -372,8 +373,31 @@ class Call: NSObject {
         }
     }
     
+    static let VALID_SERVICE_TYPES = ["stun", "stuns", "turn", "turns"];
+    
     func initiateWebRTC(completionHandler: @escaping (Result<Void,Error>)->Void) {
-        currentConnection = VideoCallController.initiatePeerConnection(withDelegate: self);
+        if let module: ExternalServiceDiscoveryModule = XmppService.instance.getClient(for: self.account)?.modulesManager.getModule(ExternalServiceDiscoveryModule.ID), module.isAvailable {
+            module.discover(from: nil, type: nil, completionHandler: { result in
+                switch result {
+                case .success(let services):
+                    var servers: [RTCIceServer] = [];
+                    for service in services {
+                        if let server = service.rtcIceServer() {
+                            servers.append(server);
+                        }
+                    }
+                    self.initiateWebRTC(iceServers: servers, completionHandler: completionHandler);
+                case .failure(_):
+                    self.initiateWebRTC(iceServers: [], completionHandler: completionHandler);
+                }
+            })
+        } else {
+            initiateWebRTC(iceServers: [], completionHandler: completionHandler);
+        }
+    }
+    
+    private func initiateWebRTC(iceServers: [RTCIceServer], completionHandler: @escaping (Result<Void,Error>)->Void) {
+        currentConnection = VideoCallController.initiatePeerConnection(iceServers: iceServers, withDelegate: self);
         if currentConnection != nil {
             self.localAudioTrack = VideoCallController.peerConnectionFactory.audioTrack(withTrackId: "audio-" + UUID().uuidString);
             if let localAudioTrack = self.localAudioTrack {

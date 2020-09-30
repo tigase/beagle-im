@@ -35,6 +35,7 @@ class AdvancedSettingsController: NSViewController {
     fileprivate var imagePreviewMaxSize: NSSlider!;
     
     fileprivate var ignoreJingleSupportCheck: NSButton!;
+    fileprivate var usePublicStunServers: NSButton!;
     fileprivate var enableBookmarksSync: NSButton!;
     fileprivate var enableLinkPreviews: NSButton?;
 
@@ -70,7 +71,7 @@ class AdvancedSettingsController: NSViewController {
         formView.cell(for: imagePreviewMaxSizeLabel)!.xPlacement = .center;
         
         ignoreJingleSupportCheck = formView.addRow(label: "Experimental", field: NSButton(checkboxWithTitle: "Ignore VoIP support check", target: self, action: #selector(checkboxChanged(_:))));
-        
+        usePublicStunServers = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Use public STUN servers", target: self, action: #selector(checkboxChanged(_:))));
         enableBookmarksSync = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Enable groupchat bookmarks sync", target: self, action: #selector(checkboxChanged(_:))));
         if #available(macOS 10.15, *) {
             enableLinkPreviews = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Enable link previews", target: self, action: #selector(checkboxChanged(_:))));
@@ -99,6 +100,7 @@ class AdvancedSettingsController: NSViewController {
         requestSubscriptionButton.state = Settings.requestPresenceSubscription.bool() ? .on : .off;
         allowSubscriptionButton.state = Settings.allowPresenceSubscription.bool() ? .on : .off;
         ignoreJingleSupportCheck.state = Settings.ignoreJingleSupportCheck.bool() ? .on : .off;
+        usePublicStunServers.state = Settings.usePublicStunServers.bool() ? .on : .off;
         enableBookmarksSync.state = Settings.enableBookmarksSync.bool() ? .on : .off;
         if #available(macOS 10.15, *) {
             enableLinkPreviews?.state = Settings.linkPreviews.bool() ? .on : .off;
@@ -136,6 +138,8 @@ class AdvancedSettingsController: NSViewController {
             Settings.allowPresenceSubscription.set(value: sender.state == .on);
         case ignoreJingleSupportCheck:
             Settings.ignoreJingleSupportCheck.set(value: sender.state == .on);
+        case usePublicStunServers:
+            Settings.usePublicStunServers.set(value: sender.state == .on);
         case enableBookmarksSync:
             Settings.enableBookmarksSync.set(value: sender.state == .on);
         case markKeywords:

@@ -171,12 +171,12 @@
 		FED7AEC521417328001E164B /* AvatarStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED7AEC421417328001E164B /* AvatarStore.swift */; };
 		FED7AEC721418B83001E164B /* VCardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED7AEC621418B83001E164B /* VCardManager.swift */; };
 		FED7AEC921418FA9001E164B /* DBVCardStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED7AEC821418FA9001E164B /* DBVCardStore.swift */; };
-		FEDCCA3D22F48C8300CC5C2C /* NetworkSettingsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDCCA3C22F48C8300CC5C2C /* NetworkSettingsController.swift */; };
 		FEDE6AF32142DC590019170A /* AvatarViewWithStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE6AF22142DC590019170A /* AvatarViewWithStatus.swift */; };
 		FEDE6AF52143D8130019170A /* ChatsListTableRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE6AF42143D8130019170A /* ChatsListTableRowView.swift */; };
 		FEDE6AF921440AEF0019170A /* StatusHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE6AF821440AEF0019170A /* StatusHelper.swift */; };
 		FEDE6AFC21455A2B0019170A /* RosterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE6AFB21455A2B0019170A /* RosterViewController.swift */; };
 		FEE49DC824229D2A00900BBB /* OSLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE49DC724229D2A00900BBB /* OSLog.swift */; };
+		FEEDFCBF2524A8EC00CEB43D /* ExternalServiceDiscoveryModule_Service_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEDFCBE2524A8EC00CEB43D /* ExternalServiceDiscoveryModule_Service_extension.swift */; };
 		FEEF25322264A80500202B28 /* OMEMOController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25312264A80500202B28 /* OMEMOController.swift */; };
 		FEEF25362266303A00202B28 /* OMEMOIdentititesTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25352266303A00202B28 /* OMEMOIdentititesTableView.swift */; };
 		FEEF25392266528E00202B28 /* ContactDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25382266528E00202B28 /* ContactDetailsViewController.swift */; };
@@ -401,12 +401,12 @@
 		FED7AEC621418B83001E164B /* VCardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VCardManager.swift; sourceTree = "<group>"; };
 		FED7AEC821418FA9001E164B /* DBVCardStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBVCardStore.swift; sourceTree = "<group>"; };
 		FEDC03172257B2B400F24BF4 /* Settings.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Settings.storyboard; sourceTree = "<group>"; };
-		FEDCCA3C22F48C8300CC5C2C /* NetworkSettingsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkSettingsController.swift; sourceTree = "<group>"; };
 		FEDE6AF22142DC590019170A /* AvatarViewWithStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarViewWithStatus.swift; sourceTree = "<group>"; };
 		FEDE6AF42143D8130019170A /* ChatsListTableRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListTableRowView.swift; sourceTree = "<group>"; };
 		FEDE6AF821440AEF0019170A /* StatusHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusHelper.swift; sourceTree = "<group>"; };
 		FEDE6AFB21455A2B0019170A /* RosterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RosterViewController.swift; sourceTree = "<group>"; };
 		FEE49DC724229D2A00900BBB /* OSLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSLog.swift; sourceTree = "<group>"; };
+		FEEDFCBE2524A8EC00CEB43D /* ExternalServiceDiscoveryModule_Service_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalServiceDiscoveryModule_Service_extension.swift; sourceTree = "<group>"; };
 		FEEF25312264A80500202B28 /* OMEMOController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OMEMOController.swift; sourceTree = "<group>"; };
 		FEEF25352266303A00202B28 /* OMEMOIdentititesTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OMEMOIdentititesTableView.swift; sourceTree = "<group>"; };
 		FEEF25382266528E00202B28 /* ContactDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactDetailsViewController.swift; sourceTree = "<group>"; };
@@ -478,6 +478,7 @@
 				FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */,
 				FE2D481D24544A7800C13CE5 /* CallManager.swift */,
 				FE2D481F245452DC00C13CE5 /* RTCCameraVideoCapturer_Format.swift */,
+				FEEDFCBE2524A8EC00CEB43D /* ExternalServiceDiscoveryModule_Service_extension.swift */,
 			);
 			path = voip;
 			sourceTree = "<group>";
@@ -791,7 +792,6 @@
 				FE8C9F5521B40F9000BE8332 /* RegisterAccountController.swift */,
 				FEEF25312264A80500202B28 /* OMEMOController.swift */,
 				FEA2F53622E5F6A2009F2E88 /* AdvancedSettingsController.swift */,
-				FEDCCA3C22F48C8300CC5C2C /* NetworkSettingsController.swift */,
 				FE65A282230314D9001E68EF /* SettingsTabViewController.swift */,
 				FE988C18232C0A0C002D85AF /* ChangePasswordController.swift */,
 				FE2ACA832355B967004623BC /* EditKeywordsController.swift */,
@@ -1079,6 +1079,7 @@
 				FEF9EC512430B1F10090C913 /* PresenceAuthorizationRequestController.swift in Sources */,
 				FE5BE64E213AD19A00463183 /* ChatCellViewMessage.swift in Sources */,
 				FE5202D7227F339D00644C12 /* ChatMessageCellView.swift in Sources */,
+				FEEDFCBF2524A8EC00CEB43D /* ExternalServiceDiscoveryModule_Service_extension.swift in Sources */,
 				FEC336EF2408FCD800EC1A0D /* ParticipantsButton.swift in Sources */,
 				FE890D4524040F1200107437 /* ChannelViewController.swift in Sources */,
 				FEA2F53722E5F6A2009F2E88 /* AdvancedSettingsController.swift in Sources */,
@@ -1158,7 +1159,6 @@
 				FED2ECF42066B01C00F506A5 /* AppDelegate.swift in Sources */,
 				FE30D8BA214ED28A00670BEC /* OpenGroupchatController.swift in Sources */,
 				FE41FB33215B8D5A00AD86D3 /* ServerCertificateErrorController.swift in Sources */,
-				FEDCCA3D22F48C8300CC5C2C /* NetworkSettingsController.swift in Sources */,
 				FEE49DC824229D2A00900BBB /* OSLog.swift in Sources */,
 				FE5C6B2D22916C47003DAB30 /* JoinGroupchatViewController.swift in Sources */,
 				FE3F2AF2228813E200737D51 /* EmptyViewController.swift in Sources */,

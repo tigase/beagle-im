@@ -48,6 +48,7 @@ enum Settings: String {
     case appearance
     
     case ignoreJingleSupportCheck
+    case usePublicStunServers
     
     // new and highly experimental
     case alternateMessageColoringBasedOnDirection
@@ -56,7 +57,6 @@ enum Settings: String {
     case boldKeywords
     case markKeywords
     
-    case turnServer
     @available(macOS 10.15, *)
     case linkPreviews
 
@@ -83,7 +83,8 @@ enum Settings: String {
             "appearance": Appearance.auto.rawValue,
             "fileDownloadSizeLimit": Int(10*1024*1024),
             "messageGrouping": "smart",
-            "linkPreviews": true
+            "linkPreviews": true,
+            "usePublicStunServers": true
         ];
         UserDefaults.standard.register(defaults: defaults);
         if UserDefaults.standard.object(forKey: "imageDownloadSizeLimit") != nil {
@@ -91,6 +92,7 @@ enum Settings: String {
             UserDefaults.standard.removeObject(forKey: "imageDownloadSizeLimit");
             Settings.fileDownloadSizeLimit.set(value: downloadLimit);
         }
+        UserDefaults.standard.removeObject(forKey: "turnServer");
     }
     
     func set(value: Bool) {

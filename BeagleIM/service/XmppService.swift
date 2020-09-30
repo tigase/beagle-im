@@ -430,6 +430,7 @@ class XmppService: EventHandler {
         jingleModule.register(transport: Jingle.Transport.ICEUDPTransport.self, features: [Jingle.Transport.ICEUDPTransport.XMLNS, "urn:xmpp:jingle:apps:dtls:0"]);
         jingleModule.register(description: Jingle.RTP.Description.self, features: ["urn:xmpp:jingle:apps:rtp:1", "urn:xmpp:jingle:apps:rtp:audio", "urn:xmpp:jingle:apps:rtp:video"]);
         jingleModule.supportsMessageInitiation = true;
+        _ = client.modulesManager.register(ExternalServiceDiscoveryModule());
         
         _ = client.modulesManager.register(InBandRegistrationModule());
         
