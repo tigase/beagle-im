@@ -170,7 +170,6 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     }
     
     @objc func replySelectedMessages(_ sender: Any) {
-        NSPasteboard.general.clearContents();
         guard let items = self.conversationLogController?.selectionManager.sortedSelectedTexts(row: (sender as? NSMenuItem)?.tag ?? NSNotFound) else {
             return;
         }
