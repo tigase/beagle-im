@@ -323,7 +323,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     func menuNeedsUpdate(_ menu: NSMenu) {
         if let xmlConsoleItem = menu.item(withTitle: "XML Console") {
-            xmlConsoleItem.isHidden = !NSEvent.modifierFlags.contains(.option);
+            xmlConsoleItem.isHidden = (!NSEvent.modifierFlags.contains(.option)) && (!Settings.showAdvancedXmppFeatures.bool());
             let accountsMenu = NSMenu(title: "XML Console");
             
             AccountManager.getAccounts().sorted(by: { (a1, a2) -> Bool in
@@ -336,7 +336,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
 
         if let serviceDiscoveryItem = menu.item(withTitle: "Service Discovery") {
-            serviceDiscoveryItem.isHidden = !NSEvent.modifierFlags.contains(.option);
+            serviceDiscoveryItem.isHidden = (!NSEvent.modifierFlags.contains(.option)) && (!Settings.showAdvancedXmppFeatures.bool());
             let accountsMenu = NSMenu(title: "Service Discovery");
             
             AccountManager.getAccounts().filter({ (a1) -> Bool in

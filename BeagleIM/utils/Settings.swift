@@ -61,6 +61,7 @@ enum Settings: String {
     case linkPreviews
 
     case commonChatsList
+    case showAdvancedXmppFeatures
     
     public static let CHANGED = Notification.Name("settingChanged");
     

@@ -44,6 +44,7 @@ class AdvancedSettingsController: NSViewController {
     fileprivate var editKeywords: NSButton!;
     
     fileprivate var commonChatsList: NSButton!;
+    fileprivate var showAdvancedXmppFeatures: NSButton!;
     
     override func viewDidLoad() {
         messageGrouping = formView.addRow(label: "Message grouping:", field: NSPopUpButton(frame: .zero, pullsDown: false));
@@ -77,6 +78,7 @@ class AdvancedSettingsController: NSViewController {
             enableLinkPreviews = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Enable link previews", target: self, action: #selector(checkboxChanged(_:))));
         }
         commonChatsList = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show channels and chats in merged list", target: self, action: #selector(checkboxChanged(_:))));
+        showAdvancedXmppFeatures = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show advanced XMPP features", target: self, action: #selector(checkboxChanged(_:))));
         
         let logsDir = formView.addRow(label: "", field: NSButton(title: "Open logs directory", target: self, action: #selector(openLogsDirectory)));
         formView.groupItems(from:ignoreJingleSupportCheck, to: logsDir);
@@ -111,6 +113,7 @@ class AdvancedSettingsController: NSViewController {
         markKeywordsWithBold.isEnabled = markKeywords.state == .on;
         editKeywords.isEnabled = markKeywords.state == .on;
         commonChatsList.state = Settings.commonChatsList.bool() ? .on : .off;
+        showAdvancedXmppFeatures.state = Settings.showAdvancedXmppFeatures.bool() ? .on : .off;
     }
     
     @objc func openLogsDirectory(_ sender: NSButton) {
@@ -150,6 +153,8 @@ class AdvancedSettingsController: NSViewController {
             Settings.boldKeywords.set(value: sender.state == .on);
         case commonChatsList:
             Settings.commonChatsList.set(value: sender.state == .on);
+        case showAdvancedXmppFeatures:
+            Settings.showAdvancedXmppFeatures.set(value: sender.state == .on);
         default:
             if #available(macOS 10.15, *) {
                 if let linkPreviews = enableLinkPreviews, sender == linkPreviews {
