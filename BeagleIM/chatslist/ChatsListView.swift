@@ -536,13 +536,18 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 alert.informativeText = "You are leaving the group chat \(r.name ?? r.jid.bareJid.stringValue)";
                 alert.addButton(withTitle: "Delete chat")
                 alert.addButton(withTitle: "Leave chat")
+                alert.addButton(withTitle: "Cancel")
                 alert.beginSheetModal(for: self.view.window!) { (response) in
-                    if (response == .alertFirstButtonReturn) {
+                    switch response {
+                    case .alertFirstButtonReturn:
                         mucModule.destroy(room: r);
                         PEPBookmarksModule.remove(from: r.account, bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: r.jid, autojoin: false));
-                    } else {
+                    case .alertSecondButtonReturn:
                         mucModule.leave(room: r);
                         PEPBookmarksModule.remove(from: r.account, bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: r.jid, autojoin: false));
+                    default:
+                        // cancel, nothing to do..
+                        break;
                     }
                 };
             } else {
