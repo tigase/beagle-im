@@ -47,9 +47,9 @@ class DBChatHistoryStore {
     fileprivate let markAsErrorStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET state = :state, error = :error WHERE id = :id");
     fileprivate let countItemsStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid")
 
-    fileprivate let getChatMessagesStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, author_nickname, author_jid, recipient_nickname, participant_id, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix FROM chat_history WHERE account = :account AND jid = :jid AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))) ORDER BY timestamp DESC LIMIT :limit OFFSET :offset");
-    fileprivate let getChatMessageWithIdStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, author_nickname, author_jid, recipient_nickname, participant_id, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, correction_stanza_id FROM chat_history WHERE id = :id");
-    fileprivate let getChatAttachmentsStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, author_nickname, author_jid, recipient_nickname, participant_id, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix FROM chat_history WHERE account = :account AND jid = :jid AND item_type = \(ItemType.attachment.rawValue) ORDER BY timestamp DESC");
+    fileprivate let getChatMessagesStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, author_nickname, author_jid, recipient_nickname, participant_id, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, correction_timestamp FROM chat_history WHERE account = :account AND jid = :jid AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.messageRetracted.rawValue), \(ItemType.attachment.rawValue))) ORDER BY timestamp DESC LIMIT :limit OFFSET :offset");
+    fileprivate let getChatMessageWithIdStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, author_nickname, author_jid, recipient_nickname, participant_id, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, correction_stanza_id, correction_timestamp FROM chat_history WHERE id = :id");
+    fileprivate let getChatAttachmentsStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, author_nickname, author_jid, recipient_nickname, participant_id, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, correction_timestamp FROM chat_history WHERE account = :account AND jid = :jid AND item_type = \(ItemType.attachment.rawValue) ORDER BY timestamp DESC");
 
     fileprivate let getChatMessagePosition: DBStatement = try! DBConnection.main.prepareStatement("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND id <> :msgId AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))) AND timestamp > (SELECT timestamp FROM chat_history WHERE id = :msgId)")
     fileprivate let removeChatHistoryStmt: DBStatement = try! DBConnection.main.prepareStatement("DELETE FROM chat_history WHERE account = :account AND (:jid IS NULL OR jid = :jid)");
@@ -75,7 +75,7 @@ class DBChatHistoryStore {
         let previewsToConvert = try! DBConnection.main.prepareStatement("SELECT id FROM chat_history WHERE preview IS NOT NULL").query(map: { cursor -> Int in
             return cursor["id"]!;
         });
-        let convertStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, account, jid, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, preview, stanza_id FROM chat_history WHERE id = ?");
+        let convertStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT id, account, jid, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, preview, stanza_id, correction_timestamp FROM chat_history WHERE id = ?");
         let removePreviewStmt: DBStatement = try! DBConnection.main.prepareStatement("UPDATE chat_history SET preview = NULL WHERE id = ?");
                         
         previewsToConvert.forEach { id in
@@ -321,7 +321,7 @@ class DBChatHistoryStore {
 
             switch type {
             case .message:
-                item = ChatMessage(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, message: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage);
+                item = ChatMessage(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, message: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage, correctionTimestamp: nil);
             case .invitation:
                 item = ChatInvitation(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, message: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: appendix as! ChatInvitationAppendix, error: errorMessage);
             case .attachment:
@@ -430,7 +430,8 @@ class DBChatHistoryStore {
                         DBChatStore.instance.markAsRead(for: account, with: jid, count: 1);
                     }
                     
-                    self.itemRemoved(withId: itemId, for: account, with: jid);
+                    self.itemUpdated(withId: itemId, for: account, with: jid);
+//                    self.itemRemoved(withId: itemId, for: account, with: jid);
                     self.previewGenerationDispatcher.async(flags: .barrier, execute: {
                         self.dispatcher.sync {
                             print("removing previews for master id:", itemId);
@@ -784,6 +785,11 @@ class DBChatHistoryStore {
             return nil;
         }
 
+        var correctionTimestamp: Date? = cursor["correction_timestamp"];
+        if correctionTimestamp?.timeIntervalSince1970 == 0 {
+            correctionTimestamp = nil;
+        }
+        
         let authorNickname: String? = cursor["author_nickname"];
         let authorJid: BareJID? = cursor["author_jid"];
         let recipientNickname: String? = cursor["recipient_nickname"];
@@ -808,7 +814,9 @@ class DBChatHistoryStore {
                 }
             }
 
-            return ChatMessage(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, message: message, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error);
+            return ChatMessage(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, message: message, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error, correctionTimestamp: correctionTimestamp);
+        case .messageRetracted:
+            return ChatMessageRetracted(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error);
         case .invitation:
             let message: String? = cursor["data"];
             guard let appendix = ChatInvitationAppendix.decode(ChatInvitationAppendix.self, fromString: cursor["appendix"]) else {
@@ -824,7 +832,7 @@ class DBChatHistoryStore {
         case .linkPreview:
             let url: String = cursor["data"]!;
             return ChatLinkPreview(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, url: url, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error)
-        case .messageRetracted, .attachmentRetracted:
+        case .attachmentRetracted:
             // nothing in here, as were are removing retracted messages from the UI
             return nil;
         }

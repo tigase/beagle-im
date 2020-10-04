@@ -85,8 +85,12 @@ class BaseChatCellView: NSTableCellView {
         }
         self.state?.textColor = item.state.isError ? NSColor.systemRed : NSColor.secondaryLabelColor;
         
-        self.toolTip = BaseChatCellView.tooltipFormatter.string(from: item.timestamp);
+        self.toolTip = prepareTooltip(item: item);
         self.direction = item.state.direction;
+    }
+    
+    func prepareTooltip(item: ChatEntry) -> String {
+        return BaseChatCellView.tooltipFormatter.string(from: item.timestamp);
     }
     
     func formatTimestamp(_ ts: Date) -> String {
@@ -146,7 +150,7 @@ class BaseChatCellView: NSTableCellView {
         return f;
     })();
 
-    fileprivate static let tooltipFormatter = ({()-> DateFormatter in
+    static let tooltipFormatter = ({()-> DateFormatter in
         var f = DateFormatter();
         f.locale = NSLocale.current;
         f.dateStyle = .medium

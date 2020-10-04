@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="17156" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="16097"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="17156"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -16,13 +16,13 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <scrollView verticalHuggingPriority="249" borderType="none" autohidesScrollers="YES" horizontalLineScroll="64" horizontalPageScroll="10" verticalLineScroll="64" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fFm-Kw-0RT">
-                                <rect key="frame" x="0.0" y="0.0" width="333" height="430"/>
+                                <rect key="frame" x="0.0" y="0.0" width="333" height="432"/>
                                 <clipView key="contentView" copiesOnScroll="NO" id="qKJ-4o-3VI">
-                                    <rect key="frame" x="0.0" y="0.0" width="333" height="430"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="333" height="432"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="none" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="64" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" id="n3E-id-LN2" customClass="ChatViewTableView" customModule="BeagleIM" customModuleProvider="target">
-                                            <rect key="frame" x="0.0" y="0.0" width="333" height="430"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="333" height="432"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="backgroundColor" name="chatBackgroundColor"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
@@ -231,7 +231,7 @@
                                                                     </constraints>
                                                                     <popUpButtonCell key="cell" type="square" title="Item 1" bezelStyle="shadowlessSquare" image="popUpButtonCell:lYn-Io-FsM:image" imagePosition="only" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="border" transparent="YES" imageScaling="proportionallyDown" inset="2" pullsDown="YES" arrowPosition="noArrow" id="lYn-Io-FsM">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                                        <font key="font" metaFont="system"/>
+                                                                        <font key="font" metaFont="menu"/>
                                                                         <menu key="menu" id="4Qn-jU-icf">
                                                                             <items>
                                                                                 <menuItem title="Item 1" state="on" image="NSActionTemplate" hidden="YES" id="GD4-JW-IGJ"/>
@@ -358,7 +358,7 @@
                                                                     </constraints>
                                                                     <popUpButtonCell key="cell" type="square" title="Item 1" bezelStyle="shadowlessSquare" image="popUpButtonCell:lYn-Io-FsM:image" imagePosition="only" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="border" transparent="YES" imageScaling="proportionallyDown" inset="2" pullsDown="YES" arrowPosition="noArrow" id="gTh-83-ola">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                                        <font key="font" metaFont="system"/>
+                                                                        <font key="font" metaFont="menu"/>
                                                                         <menu key="menu" id="hQF-1g-o66">
                                                                             <items>
                                                                                 <menuItem title="Item 1" state="on" image="NSActionTemplate" hidden="YES" id="hPi-hb-VEB"/>

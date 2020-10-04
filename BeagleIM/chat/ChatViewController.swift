@@ -173,6 +173,20 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
                 return cell;
             }
             return nil;
+        case let item as ChatMessageRetracted:
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
+
+                cell.id = item.id;
+                if cell.hasHeader {
+                    let senderJid = item.state.direction == .incoming ? item.jid : item.account;
+                    cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
+                    cell.set(senderName: item.state.direction == .incoming ? buddyName : "Me");
+                }
+                cell.set(retraction: item);
+
+                return cell;
+            }
+            return nil;
         case let item as ChatMessage:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
 

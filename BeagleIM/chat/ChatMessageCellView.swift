@@ -38,11 +38,27 @@ class ChatMessageCellView: BaseChatCellView {
         super.set(senderName: senderName, attributedSenderName: attributedSenderName);
         sender = senderName;
     }
-    
+
+    func set(retraction item: ChatMessageRetracted, nickname: String? = nil, keywords: [String]? = nil) {
+        super.set(item: item);
+        ts = item.timestamp;
+        id = item.id;
+        
+        let msg = NSAttributedString(string: "(this message has been removed)", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium), toHaveTrait: .italicFontMask), .foregroundColor: NSColor.secondaryLabelColor]);
+        
+        self.message.textColor = NSColor.secondaryLabelColor;
+        self.message.attributedString = msg;
+    }
+
     func set(message item: ChatMessage, nickname: String? = nil, keywords: [String]? = nil) {
         super.set(item: item);
         ts = item.timestamp;
         id = item.id;
+        
+        if item.isCorrected && item.state.direction == .incoming {
+            self.state!.stringValue = "✏️\(self.state!.stringValue)";
+        }
+        
         let messageBody = self.messageBody(item: item);
         let msg = NSMutableAttributedString(string: messageBody);
         let fontSize = NSFont.systemFontSize;
@@ -113,6 +129,14 @@ class ChatMessageCellView: BaseChatCellView {
                     that.message.invalidateIntrinsicContentSize();
                 }
             }
+        }
+    }
+    
+    override func prepareTooltip(item: ChatEntry) -> String {
+        if let message = item as? ChatMessage, let correctionTimestamp = message.correctionTimestamp {
+            return "edited at " + BaseChatCellView.tooltipFormatter.string(from: correctionTimestamp);
+        } else {
+            return super.prepareTooltip(item: item);
         }
     }
     

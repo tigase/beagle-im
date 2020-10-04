@@ -25,9 +25,15 @@ import TigaseSwift
 class ChatMessage: ChatEntry {
 
     let message: String;
+    let correctionTimestamp: Date?;
     
-    init(id: Int, timestamp: Date, account: BareJID, jid: BareJID, state: MessageState, message: String, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, encryption: MessageEncryption, encryptionFingerprint: String?, error: String?) {
+    var isCorrected: Bool {
+        return correctionTimestamp != nil;
+    }
+    
+    init(id: Int, timestamp: Date, account: BareJID, jid: BareJID, state: MessageState, message: String, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, encryption: MessageEncryption, encryptionFingerprint: String?, error: String?, correctionTimestamp: Date?) {
         self.message = message;
+        self.correctionTimestamp = correctionTimestamp;
         super.init(id: id, timestamp: timestamp, account: account, jid: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error);
     }
 

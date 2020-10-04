@@ -15,6 +15,7 @@
 		FE10BCED23FAA86900E214F3 /* InvitationCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCEC23FAA86900E214F3 /* InvitationCellView.swift */; };
 		FE10BCEF23FAB13800E214F3 /* InvitationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCEE23FAB13800E214F3 /* InvitationsManager.swift */; };
 		FE10BCF123FC495700E214F3 /* db-schema-8.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE10BCF023FC495700E214F3 /* db-schema-8.sql */; };
+		FE12FB4B2529E69F002077E7 /* ChatMessageRetracted.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12FB4A2529E69F002077E7 /* ChatMessageRetracted.swift */; };
 		FE137A4621F5FE05006B7F7C /* ShowMainWindowSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4521F5FE05006B7F7C /* ShowMainWindowSegue.swift */; };
 		FE149D8222A5120300EE4E03 /* SearchHistory.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE149D8122A5120300EE4E03 /* SearchHistory.storyboard */; };
 		FE149D8522A515C900EE4E03 /* SearchHistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE149D8422A515C900EE4E03 /* SearchHistoryController.swift */; };
@@ -238,6 +239,7 @@
 		FE10BCEC23FAA86900E214F3 /* InvitationCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationCellView.swift; sourceTree = "<group>"; };
 		FE10BCEE23FAB13800E214F3 /* InvitationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationsManager.swift; sourceTree = "<group>"; };
 		FE10BCF023FC495700E214F3 /* db-schema-8.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-8.sql"; sourceTree = "<group>"; };
+		FE12FB4A2529E69F002077E7 /* ChatMessageRetracted.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageRetracted.swift; sourceTree = "<group>"; };
 		FE137A4521F5FE05006B7F7C /* ShowMainWindowSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowMainWindowSegue.swift; sourceTree = "<group>"; };
 		FE149D8122A5120300EE4E03 /* SearchHistory.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SearchHistory.storyboard; sourceTree = "<group>"; };
 		FE149D8422A515C900EE4E03 /* SearchHistoryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchHistoryController.swift; sourceTree = "<group>"; };
@@ -620,6 +622,7 @@
 				FEF9EC48242F8D620090C913 /* BaseChatCellView.swift */,
 				FEF9EC4A242F97840090C913 /* AppendixProtocol.swift */,
 				FE30309B244612A8003B9D76 /* ConversationLogSelectionManager.swift */,
+				FE12FB4A2529E69F002077E7 /* ChatMessageRetracted.swift */,
 			);
 			path = chat;
 			sourceTree = "<group>";
@@ -1036,6 +1039,7 @@
 				FEF5C3FA22632C0000889863 /* OpenSSL_AES_GCM_Engine.swift in Sources */,
 				FE2809852169FB75002F5BD0 /* Alert.swift in Sources */,
 				FE3AA0CB21540669001667A9 /* ChatItemProtocol.swift in Sources */,
+				FE12FB4B2529E69F002077E7 /* ChatMessageRetracted.swift in Sources */,
 				FE4E8DDA215EA4860010D88E /* HttpFileUploadEventHandler.swift in Sources */,
 				FED7AEC321415CB8001E164B /* AvatarManager.swift in Sources */,
 				FE83E363217A3809001DEF09 /* JingleManager.swift in Sources */,
