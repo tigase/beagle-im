@@ -39,6 +39,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
                     }
                 }
             }
+            accountStatusChanged();
         }
     }
     
@@ -139,6 +140,32 @@ class VCardEditorViewController: NSViewController, AccountAware {
                 }
             }
         }
+        NotificationCenter.default.addObserver(self, selector: #selector(accountStatusChanged(_:)), name: XmppService.ACCOUNT_STATUS_CHANGED, object: nil);
+        accountStatusChanged();
+    }
+    
+    override func viewDidDisappear() {
+        NotificationCenter.default.removeObserver(self, name: XmppService.ACCOUNT_STATUS_CHANGED, object: nil);
+    }
+    
+    func accountStatusChanged() {
+        guard let account = self.account else {
+            return;
+        }
+        DispatchQueue.main.async {
+            self.refreshButton.isEnabled = XmppService.instance.getClient(for: account)?.state == SocketConnector.State.connected;
+            self.submitButton.isEnabled = XmppService.instance.getClient(for: account)?.state == SocketConnector.State.connected;
+        }
+    }
+    
+    @objc func accountStatusChanged(_ notification: Notification) {
+        guard let account = notification.object as? BareJID else {
+            return;
+        }
+        guard account == self.account else {
+            return;
+        }
+        accountStatusChanged();
     }
     
     func refreshVCard(onSuccess: (()->Void)? = nil, onFailure: ((String)->Void)? = nil) {
@@ -288,6 +315,10 @@ class VCardEditorViewController: NSViewController, AccountAware {
                     self.isEnabled = true;
                 }
             }, onFailure: { error in
+                DispatchQueue.main.async {
+                    sender.isEnabled = true;
+                    self.isEnabled = false;
+                }
                 self.handleError(title: "Could not retrive current version from the server.", message: error);
             })
         }
