@@ -20,29 +20,8 @@
 //
 
 import Foundation
+import TigaseSQLite3
 
-public protocol AppendixProtocol: Codable {
+public protocol AppendixProtocol: Codable, DatabaseConvertibleStringValue {
 
-}
-
-extension AppendixProtocol {
-    
-    static func decode<T>(_ type: T.Type, fromString: String?, using encoding: String.Encoding = .utf8) -> T? where T: AppendixProtocol {
-        guard let data = fromString?.data(using: encoding) else {
-            return nil;
-        }
-        return try? JSONDecoder().decode(type, from: data);
-    }
-    
-    public func string(encoding: String.Encoding = .utf8) -> String? {
-        guard let data = try? data() else {
-            return nil;
-        }
-        return String(data: data, encoding: encoding);
-    }
-    
-    public func data() throws -> Data {
-        return try JSONEncoder().encode(self);
-    }
-    
 }

@@ -11,6 +11,9 @@
 		FE02DD13225BC33F00FA08EB /* DBOMEMOStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE02DD12225BC33F00FA08EB /* DBOMEMOStore.swift */; };
 		FE0C817F2257B48400948C41 /* Settings.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEDC03172257B2B400F24BF4 /* Settings.storyboard */; };
 		FE0E3122253CA0F70030F8C5 /* PrivateVCard4Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E3121253CA0F70030F8C5 /* PrivateVCard4Helper.swift */; };
+		FE0E30A5252E2E320030F8C5 /* TigaseSQLite3 in Frameworks */ = {isa = PBXBuildFile; productRef = FE0E30A4252E2E320030F8C5 /* TigaseSQLite3 */; };
+		FE0E30AF252F125D0030F8C5 /* DBRosterStoreWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30AE252F125D0030F8C5 /* DBRosterStoreWrapper.swift */; };
+		FE0E30C925307A800030F8C5 /* DBChatStoreWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30C825307A800030F8C5 /* DBChatStoreWrapper.swift */; };
 		FE10BCE923FAA47800E214F3 /* InvitationGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCE823FAA47800E214F3 /* InvitationGroup.swift */; };
 		FE10BCEB23FAA60A00E214F3 /* InvitationItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCEA23FAA60A00E214F3 /* InvitationItem.swift */; };
 		FE10BCED23FAA86900E214F3 /* InvitationCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCEC23FAA86900E214F3 /* InvitationCellView.swift */; };
@@ -111,7 +114,7 @@
 		FE6E6C0121384D5F003B1696 /* ChatsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BF021384D5E003B1696 /* ChatsWindowController.swift */; };
 		FE6E6C0221384D5F003B1696 /* DBChatHistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BF221384D5E003B1696 /* DBChatHistoryStore.swift */; };
 		FE6E6C0321384D5F003B1696 /* DBRosterStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BF321384D5E003B1696 /* DBRosterStore.swift */; };
-		FE6E6C0421384D5F003B1696 /* DatabaseSchemaManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BF421384D5E003B1696 /* DatabaseSchemaManager.swift */; };
+		FE6E6C0421384D5F003B1696 /* DatabaseMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BF421384D5E003B1696 /* DatabaseMigrator.swift */; };
 		FE6E6C0521384D5F003B1696 /* DBChatStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BF521384D5E003B1696 /* DBChatStore.swift */; };
 		FE6E6C0621384D5F003B1696 /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BF621384D5E003B1696 /* Database.swift */; };
 		FE6E6C0821384DF1003B1696 /* ChatCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6C0721384DF1003B1696 /* ChatCellView.swift */; };
@@ -241,6 +244,8 @@
 		FE02DD10225B8D1100FA08EB /* db-schema-3.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-3.sql"; sourceTree = "<group>"; };
 		FE02DD12225BC33F00FA08EB /* DBOMEMOStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBOMEMOStore.swift; sourceTree = "<group>"; };
 		FE0E3121253CA0F70030F8C5 /* PrivateVCard4Helper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateVCard4Helper.swift; sourceTree = "<group>"; };
+		FE0E30AE252F125D0030F8C5 /* DBRosterStoreWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBRosterStoreWrapper.swift; sourceTree = "<group>"; };
+		FE0E30C825307A800030F8C5 /* DBChatStoreWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBChatStoreWrapper.swift; sourceTree = "<group>"; };
 		FE10BCE823FAA47800E214F3 /* InvitationGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationGroup.swift; sourceTree = "<group>"; };
 		FE10BCEA23FAA60A00E214F3 /* InvitationItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationItem.swift; sourceTree = "<group>"; };
 		FE10BCEC23FAA86900E214F3 /* InvitationCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationCellView.swift; sourceTree = "<group>"; };
@@ -340,7 +345,7 @@
 		FE6E6BF021384D5E003B1696 /* ChatsWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatsWindowController.swift; sourceTree = "<group>"; };
 		FE6E6BF221384D5E003B1696 /* DBChatHistoryStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBChatHistoryStore.swift; sourceTree = "<group>"; };
 		FE6E6BF321384D5E003B1696 /* DBRosterStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBRosterStore.swift; sourceTree = "<group>"; };
-		FE6E6BF421384D5E003B1696 /* DatabaseSchemaManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatabaseSchemaManager.swift; sourceTree = "<group>"; };
+		FE6E6BF421384D5E003B1696 /* DatabaseMigrator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatabaseMigrator.swift; sourceTree = "<group>"; };
 		FE6E6BF521384D5E003B1696 /* DBChatStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DBChatStore.swift; sourceTree = "<group>"; };
 		FE6E6BF621384D5E003B1696 /* Database.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Database.swift; sourceTree = "<group>"; };
 		FE6E6C0721384DF1003B1696 /* ChatCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatCellView.swift; sourceTree = "<group>"; };
@@ -450,6 +455,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FEF5C3FF22632CDE00889863 /* openssl.framework in Frameworks */,
+				FE0E30A5252E2E320030F8C5 /* TigaseSQLite3 in Frameworks */,
 				FE83E365217B0F89001DEF09 /* AVFoundation.framework in Frameworks */,
 				FEF9CE2220827F0000B09B6C /* libsqlite3.0.tbd in Frameworks */,
 				FE2DEDA023C5FC0F00AEF14F /* WebRTC.framework in Frameworks */,
@@ -666,7 +672,7 @@
 			children = (
 				FE6E6BF221384D5E003B1696 /* DBChatHistoryStore.swift */,
 				FE6E6BF321384D5E003B1696 /* DBRosterStore.swift */,
-				FE6E6BF421384D5E003B1696 /* DatabaseSchemaManager.swift */,
+				FE6E6BF421384D5E003B1696 /* DatabaseMigrator.swift */,
 				FE6E6BF521384D5E003B1696 /* DBChatStore.swift */,
 				FE6E6BF621384D5E003B1696 /* Database.swift */,
 				FED7AEC821418FA9001E164B /* DBVCardStore.swift */,
@@ -675,6 +681,8 @@
 				FE02DD12225BC33F00FA08EB /* DBOMEMOStore.swift */,
 				FE890D3724014EAF00107437 /* DBChannelStore.swift */,
 				FE32A94824702FF100E40BB1 /* DBChatHistorySyncStore.swift */,
+				FE0E30AE252F125D0030F8C5 /* DBRosterStoreWrapper.swift */,
+				FE0E30C825307A800030F8C5 /* DBChatStoreWrapper.swift */,
 			);
 			path = database;
 			sourceTree = "<group>";
@@ -873,6 +881,7 @@
 			name = BeagleIM;
 			packageProductDependencies = (
 				FEB9EA2A2440912B00435937 /* TigaseSwiftOMEMO */,
+				FE0E30A4252E2E320030F8C5 /* TigaseSQLite3 */,
 			);
 			productName = BeagleIM;
 			productReference = FED2ECF02066B01C00F506A5 /* BeagleIM.app */;
@@ -962,6 +971,7 @@
 			mainGroup = FED2ECE72066B01C00F506A5;
 			packageReferences = (
 				FEB9EA292440912B00435937 /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */,
+				FE0E30A3252E2E320030F8C5 /* XCRemoteSwiftPackageReference "tigase-sqlite3.swift" */,
 			);
 			productRefGroup = FED2ECF12066B01C00F506A5 /* Products */;
 			projectDirPath = "";
@@ -1114,7 +1124,7 @@
 				FE6201E023A5357B00C965A5 /* ChatLinkPreviewCellView.swift in Sources */,
 				FE6201E423A693ED00C965A5 /* ChatAttachmentCellView.swift in Sources */,
 				FE7F876C2343D99300254AF2 /* CustomScroller.swift in Sources */,
-				FE6E6C0421384D5F003B1696 /* DatabaseSchemaManager.swift in Sources */,
+				FE6E6C0421384D5F003B1696 /* DatabaseMigrator.swift in Sources */,
 				FEC336FB240EC66000EC1A0D /* CreateChannelView.swift in Sources */,
 				FE0E3122253CA0F70030F8C5 /* PrivateVCard4Helper.swift in Sources */,
 				FE5C6B2722897F1B003DAB30 /* ServiceDiscoveryViewController.swift in Sources */,
@@ -1126,6 +1136,7 @@
 				FE6E6BFA21384D5F003B1696 /* AccountManager.swift in Sources */,
 				FEEF25322264A80500202B28 /* OMEMOController.swift in Sources */,
 				FE890D3824014EAF00107437 /* DBChannelStore.swift in Sources */,
+				FE0E30C925307A800030F8C5 /* DBChatStoreWrapper.swift in Sources */,
 				FEC5DC8621553F4700AA3E4F /* GroupchatViewController.swift in Sources */,
 				FE380ADA21B15720008717FA /* DownloadStore.swift in Sources */,
 				FE32A94924702FF100E40BB1 /* DBChatHistorySyncStore.swift in Sources */,
@@ -1159,6 +1170,7 @@
 				FEC336FD240FA36800EC1A0D /* JoinChannelView.swift in Sources */,
 				FE30D8B1214CE93600670BEC /* FormView.swift in Sources */,
 				FE149D8522A515C900EE4E03 /* SearchHistoryController.swift in Sources */,
+				FE0E30AF252F125D0030F8C5 /* DBRosterStoreWrapper.swift in Sources */,
 				FE30D8B3214CF15700670BEC /* AddContactController.swift in Sources */,
 				FE6201DC23A5007900C965A5 /* ChatEntry.swift in Sources */,
 				FEC661F821AABFB0004FDE1E /* NSViewWithTextBackground.swift in Sources */,
@@ -1552,6 +1564,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		FE0E30A3252E2E320030F8C5 /* XCRemoteSwiftPackageReference "tigase-sqlite3.swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tigase/tigase-sqlite3.swift.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 		FEB9EA292440912B00435937 /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tigase/tigase-swift-omemo";
@@ -1563,6 +1583,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		FE0E30A4252E2E320030F8C5 /* TigaseSQLite3 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FE0E30A3252E2E320030F8C5 /* XCRemoteSwiftPackageReference "tigase-sqlite3.swift" */;
+			productName = TigaseSQLite3;
+		};
 		FEB9EA2A2440912B00435937 /* TigaseSwiftOMEMO */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = FEB9EA292440912B00435937 /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */;

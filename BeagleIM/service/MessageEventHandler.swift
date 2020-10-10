@@ -127,23 +127,26 @@ class MessageEventHandler: XmppServiceEventHandler {
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
             let account = e.sessionObject.userBareJid!;
             MessageEventHandler.scheduleMessageSync(for: account);
-            DBChatHistoryStore.instance.loadUnsentMessage(for: account, completionHandler: { (account, jid, data, stanzaId, encryption, correctionStanzaId, type) in
+            DBChatHistoryStore.instance.loadUnsentMessage(for: account, completionHandler: { (account, messages) in
+                DispatchQueue.global(qos: .background).async {
+                    for message in messages {
+                        var chat = DBChatStore.instance.getChat(for: account, with: message.jid);
+                        if chat == nil {
+                            switch DBChatStore.instance.createChat(for: account, jid: JID(message.jid), thread: nil) {
+                            case .success(let newChat):
+                                chat = newChat;
+                            case .failure(_):
+                                return;
+                            }
+                        }
+                        if let dbChat = chat as? DBChatStore.DBChat {
+                            if message.type == .message {
+                                MessageEventHandler.sendMessage(chat: dbChat, body: message.data, url: nil, stanzaId: message.correctionStanzaId == nil ? message.stanzaId : message.correctionStanzaId, correctedMessageOriginId: message.correctionStanzaId == nil ? nil : message.stanzaId);
+                            } else if message.type == .attachment {
+                                MessageEventHandler.sendMessage(chat: dbChat, body: message.data, url: message.data, stanzaId: message.stanzaId);
+                            }
+                        }
 
-                var chat = DBChatStore.instance.getChat(for: account, with: jid);
-                if chat == nil {
-                    switch DBChatStore.instance.createChat(for: account, jid: JID(jid), thread: nil) {
-                    case .success(let newChat):
-                        chat = newChat;
-                    case .failure(_):
-                        return;
-                    }
-                }
-
-                if let dbChat = chat as? DBChatStore.DBChat {
-                    if type == .message {
-                        MessageEventHandler.sendMessage(chat: dbChat, body: data, url: nil, stanzaId: correctionStanzaId == nil ? stanzaId : correctionStanzaId, correctedMessageOriginId: correctionStanzaId == nil ? nil : stanzaId);
-                    } else if type == .attachment {
-                        MessageEventHandler.sendMessage(chat: dbChat, body: data, url: data, stanzaId: stanzaId);
                     }
                 }
             });
@@ -366,7 +369,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             if syncPeriod == 0 {
                 syncPeriod = 72;
             }
-            let syncMessagesSince = max(DBChatStore.instance.lastMessageTimestamp(for: account), Date(timeIntervalSinceNow: -1 * syncPeriod * 3600));
+            let syncMessagesSince = max(DBChatHistoryStore.instance.lastMessageTimestamp(for: account), Date(timeIntervalSinceNow: -1 * syncPeriod * 3600));
             // use last "received" stable stanza id for account MAM archive in case of MAM:2?
             syncSinceQueue.async {
                 self.syncSince[account] = syncMessagesSince;

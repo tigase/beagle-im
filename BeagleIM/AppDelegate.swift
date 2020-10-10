@@ -26,15 +26,6 @@ import UserNotifications
 import AVFoundation
 import AVKit
 
-extension DBConnection {
-    
-    static var main: DBConnection = {
-        let conn = try! DBConnection(dbFilename: "beagleim.sqlite");
-        try! DBSchemaManager(dbConnection: conn).upgradeSchema();
-        return conn;
-    }();
-    
-}
 
 extension NSApplication {
     var isDarkMode: Bool {

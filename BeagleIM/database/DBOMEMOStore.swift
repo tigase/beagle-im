@@ -22,50 +22,52 @@
 import Foundation
 import TigaseSwift
 import TigaseSwiftOMEMO
+import TigaseSQLite3
 
+extension Query {
+    static let omemoKeyPairForAccount = Query("SELECT key FROM omemo_identities WHERE account = :account AND name = :name AND device_id = :deviceId AND own = 1");
+    static let omemoKeyPairUpdate = Query("UPDATE omemo_identities SET key = :key, fingerprint = :fingerprint, own = :own WHERE account = :account AND name = :name AND device_id = :deviceId");
+    static let omemoKeyPairInsert = Query("INSERT INTO omemo_identities (account, name, device_id, key, fingerprint, own, status) VALUES (:account,:name,:deviceId,:key,:fingerprint,:own,:status) ON CONFLICT(account, name, fingerprint) DO UPDATE SET device_id = :deviceId, status = :status");
+    static let omemoKeyPairLoadStatus = Query("SELECT status FROM omemo_identities WHERE account = :account AND name = :name AND device_id = :deviceId");
+    static let omemoKeyPairUpdateStatus = Query("UPDATE omemo_identities SET status = :status WHERE account = :account AND name = :name AND device_id = :deviceId");
+    
+    static let omemoIdentitiesWipe = Query("DELETE FROM omemo_identities WHERE account = :account");
+    static let omemoIdentityFind = Query("SELECT device_id, fingerprint, status, key, own FROM omemo_identities WHERE account = :account AND name = :name");
+    static let omemoIdentityFingerprintFind = Query("SELECT fingerprint FROM omemo_identities WHERE account = :account AND name = :name AND device_id = :deviceId");
+    
+    static let omemoPreKeyCurrent = Query("SELECT max(id) FROM omemo_pre_keys WHERE account = :account");
+    static let omemoPreKeyLoad = Query("SELECT key FROM omemo_pre_keys WHERE account = :account AND id = :id");
+    static let omemoPreKeyInsert = Query("INSERT INTO omemo_pre_keys (account, id, key) VALUES (:account,:id,:key)");
+    static let omemoPreKeyDelete = Query("DELETE FROM omemo_pre_keys WHERE account = :account AND id = :id");
+    static let omemoPreKeyWipe = Query("DELETE FROM omemo_pre_keys WHERE account = :account");
+    
+    static let omemoSignedPreKeyLoad = Query("SELECT key FROM omemo_signed_pre_keys WHERE account = :account AND id = :id");
+    static let omemoSignedPreKeyInsert = Query("INSERT INTO omemo_signed_pre_keys (account, id, key) VALUES (:account,:id,:key)");
+    static let omemoSignedPreKeyDelete = Query("DELETE FROM omemo_signed_pre_keys WHERE account = :account AND id = :id");
+    static let omemoSignedPreKeyCount = Query("SELECT count(1) FROM omemo_signed_pre_keys WHERE account = :account");
+    static let omemoSignedPreKeyWipe = Query("DELETE FROM omemo_signed_pre_keys WHERE account = :account");
+    
+    static let omemoSessionRecordLoad = Query("SELECT key FROM omemo_sessions WHERE account = :account AND name = :name AND device_id = :deviceId");
+    static let omemoSessionRecordInsert = Query("INSERT INTO omemo_sessions (account, name, device_id, key) VALUES (:account, :name, :deviceId, :key)");
+    static let omemoSessionRecordDelete = Query("DELETE FROM omemo_sessions WHERE account = :account AND name = :name AND device_id = :deviceId");
+    static let omemoSessionRecordDeleteAll = Query("DELETE FROM omemo_sessions WHERE account = :account AND name = :name");
+    static let omemoSessionRecordWipe = Query("DELETE FROM omemo_sessions WHERE account = :account");
+    
+    static let omemoDevicesFind = Query("SELECT device_id FROM omemo_sessions WHERE account = :account AND name = :name");
+    static let omemoDevicesFindActiveAndTrusted = Query("SELECT s.device_id FROM omemo_sessions s LEFT JOIN omemo_identities i ON s.account = i.account AND s.name = i.name AND s.device_id = i.device_id WHERE s.account = :account AND s.name = :name AND ((i.status >= 0 AND i.status % 2 = 0) OR i.status IS NULL)");
+}
+    
 class DBOMEMOStore {
     
     public static let instance = DBOMEMOStore();
-    
-    fileprivate let keyPairForAccountStmt = try! DBConnection.main.prepareStatement("SELECT key FROM omemo_identities WHERE account = :account AND name = :name AND device_id = :deviceId AND own = 1");
-    fileprivate let updateKeyPairStmt = try! DBConnection.main.prepareStatement("UPDATE omemo_identities SET key = :key, fingerprint = :fingerprint, own = :own WHERE account = :account AND name = :name AND device_id = :deviceId");
-    fileprivate let loadKeyPairStatusStmt = try! DBConnection.main.prepareStatement("SELECT status FROM omemo_identities WHERE account = :account AND name = :name AND device_id = :deviceId");
-    fileprivate let updateKeyPairStatusStmt = try! DBConnection.main.prepareStatement("UPDATE omemo_identities SET status = :status WHERE account = :account AND name = :name AND device_id = :deviceId");
-    fileprivate let insertKeyPairStmt = try! DBConnection.main.prepareStatement("INSERT INTO omemo_identities (account, name, device_id, key, fingerprint, own, status) VALUES (:account,:name,:deviceId,:key,:fingerprint,:own,:status) ON CONFLICT(account, name, fingerprint) DO UPDATE SET device_id = :deviceId, status = :status");
-
-    fileprivate let wipeIdentitiesKeyStoreStmt = try! DBConnection.main.prepareStatement("DELETE FROM omemo_identities WHERE account = :account");
-    fileprivate let getIdentityStmt = try! DBConnection.main.prepareStatement("SELECT device_id, fingerprint, status, key, own FROM omemo_identities WHERE account = :account AND name = :name");
-    fileprivate let getIdentityFingerprintStmt = try! DBConnection.main.prepareStatement("SELECT fingerprint FROM omemo_identities WHERE account = :account AND name = :name AND device_id = :deviceId");
-
-    fileprivate let currentPreKeyStmt = try! DBConnection.main.prepareStatement("SELECT max(id) FROM omemo_pre_keys WHERE account = :account");
-    fileprivate let loadPreKeyStmt = try! DBConnection.main.prepareStatement("SELECT key FROM omemo_pre_keys WHERE account = :account AND id = :id");
-    fileprivate let insertPreKeyStmt = try! DBConnection.main.prepareStatement("INSERT INTO omemo_pre_keys (account, id, key) VALUES (:account,:id,:key)");
-    fileprivate let containsPreKeyStmt = try! DBConnection.main.prepareStatement("SELECT count(1) FROM omemo_pre_keys WHERE account = :account AND id = :id");
-    fileprivate let deletePreKeyStmt = try! DBConnection.main.prepareStatement("DELETE FROM omemo_pre_keys WHERE account = :account AND id = :id");
-    fileprivate let wipePreKeyStoreStmt = try! DBConnection.main.prepareStatement("DELETE FROM omemo_pre_keys WHERE account = :account");
-
-    fileprivate let loadSignedPreKeyStmt = try! DBConnection.main.prepareStatement("SELECT key FROM omemo_signed_pre_keys WHERE account = :account AND id = :id");
-    fileprivate let insertSignedPreKeyStmt = try! DBConnection.main.prepareStatement("INSERT INTO omemo_signed_pre_keys (account, id, key) VALUES (:account,:id,:key)");
-    fileprivate let containsSignedPreKeyStmt = try! DBConnection.main.prepareStatement("SELECT count(1) FROM omemo_signed_pre_keys WHERE account = :account AND id = :id");
-    fileprivate let deleteSignedPreKeyStmt = try! DBConnection.main.prepareStatement("DELETE FROM omemo_signed_pre_keys WHERE account = :account AND id = :id");
-    fileprivate let countSignedPreKeysStmt = try! DBConnection.main.prepareStatement("SELECT count(1) FROM omemo_signed_pre_keys WHERE account = :account");
-    fileprivate let wipeSignedPreKeyStoreStmt = try! DBConnection.main.prepareStatement("DELETE FROM omemo_signed_pre_keys WHERE account = :account");
-
-    fileprivate let loadSessionRecordStmt = try! DBConnection.main.prepareStatement("SELECT key FROM omemo_sessions WHERE account = :account AND name = :name AND device_id = :deviceId");
-    fileprivate let getAllDevicesStmt = try! DBConnection.main.prepareStatement("SELECT device_id FROM omemo_sessions WHERE account = :account AND name = :name");
-    fileprivate let getAllActivateAndTrustedDevicesStmt = try! DBConnection.main.prepareStatement("SELECT s.device_id FROM omemo_sessions s LEFT JOIN omemo_identities i ON s.account = i.account AND s.name = i.name AND s.device_id = i.device_id WHERE s.account = :account AND s.name = :name AND ((i.status >= 0 AND i.status % 2 = 0) OR i.status IS NULL)");
-    fileprivate let insertSessionRecordStmt = try! DBConnection.main.prepareStatement("INSERT INTO omemo_sessions (account, name, device_id, key) VALUES (:account, :name, :deviceId, :key)");
-    fileprivate let containsSessionRecordStmt = try! DBConnection.main.prepareStatement("SELECT count(1) FROM omemo_sessions WHERE account = :account AND name = :name AND device_id = :deviceId");
-    fileprivate let deleteSessionRecordStmt = try! DBConnection.main.prepareStatement("DELETE FROM omemo_sessions WHERE account = :account AND name = :name AND device_id = :deviceId");
-    fileprivate let deleteAllSessionRecordStmt = try! DBConnection.main.prepareStatement("DELETE FROM omemo_sessions WHERE account = :account AND name = :name");
-    fileprivate let wipeSessionsStoreStmt = try! DBConnection.main.prepareStatement("DELETE FROM omemo_sessions WHERE account = :account");
-    
+        
     func keyPair(forAccount account: BareJID) -> SignalIdentityKeyPairProtocol? {
         guard let deviceId = localRegistrationId(forAccount: account) else {
             return nil;
         }
-        guard let data = try! keyPairForAccountStmt.queryFirstMatching(["account": account, "name": account.stringValue, "deviceId": deviceId] as [String: Any?], forEachRowUntil: { (cursor) -> Data? in
-            return cursor["key"];
+        
+        guard let data = try! Database.main.reader({ database in
+            return try database.select(query: .omemoKeyPairForAccount, params: ["account": account, "name": account.stringValue, "deviceId": deviceId]).mapFirst({ $0.data(for: "key") });
         }) else {
             return nil;
         }
@@ -75,19 +77,21 @@ class DBOMEMOStore {
     
     func identityFingerprint(forAccount account: BareJID, andAddress address: SignalAddress) -> String? {
         let params: [String: Any?] = ["account": account, "name": address.name, "deviceId": address.deviceId];
-        return try! getIdentityFingerprintStmt.queryFirstMatching(params, forEachRowUntil: { (cursor) -> String? in
-            return cursor["fingerprint"];
-        });
+        return try! Database.main.reader({ database in
+            return try database.select(query: .omemoIdentityFingerprintFind, params: params).mapFirst({ $0.string(for: "fingerprint")});
+        })
     }
     
     func identities(forAccount account: BareJID, andName name: String) -> [Identity] {
         let params: [String: Any?] = ["account": account, "name": name];
-        return try! getIdentityStmt.query(params, map: { (cursor) -> Identity? in
-            guard let deviceId: Int32 = cursor["device_id"], let fingerprint: String = cursor["fingerprint"], let statusInt: Int = cursor["status"], let status = IdentityStatus(rawValue: statusInt), let own: Int = cursor["own"], let key: Data = cursor["key"] else {
-                return nil;
-            }
-            return Identity(address: SignalAddress(name: name, deviceId: deviceId), status: status, fingerprint: fingerprint, key: key, own: own > 0);
-        })
+        return try! Database.main.reader({ database in
+            return try database.select(query: .omemoIdentityFind, params: params).mapAll({ cursor -> Identity? in
+                guard let fingerprint: String = cursor["fingerprint"], let statusInt: Int = cursor["status"], let status = IdentityStatus(rawValue: statusInt), let deviceId: Int32 = cursor["device_id"], let own: Int = cursor["own"], let key: Data = cursor["key"] else {
+                    return nil;
+                }
+                return Identity(address: SignalAddress(name: name, deviceId: deviceId), status: status, fingerprint: fingerprint, key: key, own: own > 0);
+            })
+        });
     }
     
     func localRegistrationId(forAccount account: BareJID) -> UInt32? {
@@ -111,12 +115,14 @@ class DBOMEMOStore {
         defer {
             _ = self.setStatus(.verifiedActive, forIdentity: identity, andAccount: account);
         }
-        if try! updateKeyPairStmt.update(params) == 0 {
-            params["status"] = IdentityStatus.verifiedActive.rawValue;
-            return try! insertKeyPairStmt.insert(params) != 0;
-        }
-        
-        return true;
+        return try! Database.main.writer({ database -> Int in
+            try database.update(query: .omemoKeyPairUpdate, params: params);
+            if database.changes == 0 {
+                params["status"] = IdentityStatus.verifiedActive.rawValue;
+                try database.insert(query: .omemoKeyPairInsert, params: params);
+            }
+            return database.changes;
+        }) != 0;
     }
 
     func save(identity: SignalAddress, publicKeyData: Data?, forAccount account: BareJID) -> Bool {
@@ -130,118 +136,141 @@ class DBOMEMOStore {
             }.joined();
         var params: [String: Any?] = ["account": account, "name": identity.name, "deviceId": identity.deviceId, "key": publicKeyData!, "fingerprint": fingerprint, "own": 0];
         print("updating identity for account \(account) and address \(identity) with fingerprint \(fingerprint)");
-        if try! updateKeyPairStmt.update(params) == 0 {
-            // we are blindtrusting the remote identity
-            print("inserting identity for account \(account) and address \(identity) with fingerprint \(fingerprint)");
-            params["status"] = IdentityStatus.trustedActive.rawValue;
-            return try! insertKeyPairStmt.insert(params) != 0;
-        }
-        return true;
+        return try! Database.main.writer({ database -> Int in
+            try database.update(query: .omemoKeyPairUpdate, params: params);
+            if database.changes == 0 {
+                print("inserting identity for account \(account) and address \(identity) with fingerprint \(fingerprint)");
+                params["status"] = IdentityStatus.trustedActive.rawValue;
+                try database.insert(query: .omemoKeyPairInsert, params: params);
+            }
+            return database.changes;
+        }) == 0;
     }
     
     func setStatus(_ status: IdentityStatus, forIdentity identity: SignalAddress,  andAccount account: BareJID) -> Bool {
-        return try! updateKeyPairStatusStmt.update(["account": account, "name": identity.name, "deviceId": identity.deviceId, "status": status.rawValue] as [String: Any?]) > 0;
+        return try! Database.main.writer({ database in
+            try database.update(query: .omemoKeyPairUpdateStatus, params: ["account": account, "name": identity.name, "deviceId": identity.deviceId, "status": status.rawValue]);
+            return database.changes;
+        }) > 0;
     }
 
     func setStatus(active: Bool, forIdentity identity: SignalAddress,  andAccount account: BareJID) -> Bool {
-        var params = ["account": account, "name": identity.name, "deviceId": identity.deviceId] as [String: Any?];
-        guard let status = try! loadKeyPairStatusStmt.findFirst(params, map: { (cursor) -> IdentityStatus in
-            guard let val: Int = cursor["status"] else {
-                return IdentityStatus.undecidedActive;
-            };
-            return IdentityStatus(rawValue: val) ?? .undecidedActive;
+        guard let status = try! Database.main.reader({ database in
+            return try database.select(query: .omemoKeyPairLoadStatus, params: ["account": account, "name": identity.name, "deviceId": identity.deviceId]).mapFirst({ cursor in
+                return IdentityStatus(rawValue: cursor.int(for: "status") ?? 0);
+            });
         }) else {
             return false;
         }
-        params["status"] = (active ? status.toActive() : status.toInactive()).rawValue;
-        return try! updateKeyPairStatusStmt.update(params) > 0;
+        return setStatus(active ? status.toActive() : status.toInactive(), forIdentity: identity, andAccount: account);
     }
     
     func currentPreKeyId(forAccount account: BareJID) -> UInt32 {
-        return try! UInt32(currentPreKeyStmt.scalar(["account": account] as [String: Any?]) ?? 0);
+        return UInt32(try! Database.main.reader({ database in
+            return try database.select(query: .omemoPreKeyCurrent, params: ["account": account]).mapFirst({ $0.int(at: 0) })
+        }) ?? 0);
     }
     
     func loadPreKey(forAccount account: BareJID, withId: UInt32) -> Data? {
-        return try! loadPreKeyStmt.findFirst(["account": account, "id": withId] as [String: Any?], map: { (cursor) -> Data? in
-            return cursor["key"];
-        })
+        return try! Database.main.reader({ database in
+            try database.select(query: .omemoPreKeyLoad, params: ["account": account, "id": withId]).mapFirst({ $0.data(for: "key") });
+        });
     }
     
     func store(preKey: Data, forAccount account: BareJID, withId: UInt32) -> Bool {
-        return try! insertPreKeyStmt.insert(["account": account, "id": withId, "key": preKey] as [String: Any?]) != 0;
+        return try! Database.main.writer({ database in
+            try database.insert(query: .omemoPreKeyInsert, params: ["account": account, "id": withId, "key": preKey]);
+            return database.changes != 0;
+        })
     }
 
     func containsPreKey(forAccount account: BareJID, withId: UInt32) -> Bool {
-        return (try! containsPreKeyStmt.scalar(["account": account, "id": withId] as [String: Any?]) ?? 0) > 0;
+        return loadPreKey(forAccount: account, withId: withId) != nil;
     }
 
     func deletePreKey(forAccount account: BareJID, withId: UInt32) -> Bool {
-        return try! deletePreKeyStmt.update(["account": account, "id": withId] as [String: Any?]) > 0;
+        return try! Database.main.writer({ database in
+            try database.delete(query: .omemoPreKeyDelete, cached: false, params: ["account": account, "id": withId]);
+            return database.changes != 0;
+        })
     }
     
     func countSignedPreKeys(forAccount account: BareJID) -> Int {
-        return try! countSignedPreKeysStmt.scalar(["account": account] as [String: Any?]) ?? 0;
+        return try! Database.main.reader({ database in
+            try database.count(query: .omemoSignedPreKeyCount, cached: false, params: ["account": account]);
+        });
     }
 
     func loadSignedPreKey(forAccount account: BareJID, withId: UInt32) -> Data? {
-        return try! loadSignedPreKeyStmt.findFirst(["account": account, "id": withId] as [String: Any?], map: { (cursor) -> Data? in
-            return cursor["key"];
+        return try! Database.main.reader({ database in
+            return try database.select(query: .omemoSignedPreKeyLoad, params: ["account": account, "id": withId]).mapFirst({ $0.data(for: "key") });
         })
     }
     
     func store(signedPreKey: Data, forAccount account: BareJID, withId: UInt32) -> Bool {
-        return try! insertSignedPreKeyStmt.insert(["account": account, "id": withId, "key": signedPreKey] as [String: Any?]) != 0;
+        return try! Database.main.writer({ database in
+            try database.insert(query: .omemoSignedPreKeyInsert, params: ["account": account, "id": withId, "key": signedPreKey]);
+            return database.changes > 0;
+        });
     }
     
     func containsSignedPreKey(forAccount account: BareJID, withId: UInt32) -> Bool {
-        return (try! containsSignedPreKeyStmt.scalar(["account": account, "id": withId] as [String: Any?]) ?? 0) > 0;
+        return loadPreKey(forAccount: account, withId: withId) != nil;
     }
     
     func deleteSignedPreKey(forAccount account: BareJID, withId: UInt32) -> Bool {
-        return try! deleteSignedPreKeyStmt.update(["account": account, "id": withId] as [String: Any?]) > 0;
+        return try! Database.main.writer({ database in
+            try database.delete(query: .omemoSignedPreKeyDelete, cached: false, params: ["account": account, "id": withId]);
+            return database.changes > 0;
+        })
     }
     
     func sessionRecord(forAccount account: BareJID, andAddress address: SignalAddress) -> Data? {
-        return try! loadSessionRecordStmt.findFirst(["account": account, "name": address.name, "deviceId": address.deviceId] as [String: Any?], map: { (cursor) -> Data? in
-            return cursor["key"];
-        });
+        return try! Database.main.reader({ database in
+            return try database.select(query: .omemoSessionRecordLoad, params: ["account": account, "name": address.name, "deviceId": address.deviceId]).mapFirst({ $0.data(for: "key") });
+        })
     }
 
     func allDevices(forAccount account: BareJID, andName name: String, activeAndTrusted: Bool) -> [Int32] {
         let params: [String: Any?] = ["account": account, "name": name];
-        if activeAndTrusted {
-            return try! getAllActivateAndTrustedDevicesStmt.query(params, map: { (cursor) in
-                return cursor["device_id"];
-            });
-        } else {
-            return try! getAllDevicesStmt.query(params, map: { (cursor) in
-                return cursor["device_id"];
-            });
-        }
+        return try! Database.main.reader({ database in
+            return try database.select(query: activeAndTrusted ? .omemoDevicesFindActiveAndTrusted : .omemoDevicesFind, params: params).mapAll({ $0["device_id"] });
+        })
     }
     
     func store(sessionRecord: Data, forAccount account: BareJID, andAddress address: SignalAddress) -> Bool {
         print("storing session for account \(account) and address \(address)");
-        return (try! insertSessionRecordStmt.insert(["account": account, "name": address.name, "deviceId": address.deviceId, "key": sessionRecord] as [String: Any?]) ?? 0) > 0;
+        return try! Database.main.writer({ database in
+            try database.insert(query: .omemoSessionRecordInsert, params: ["account": account, "name": address.name, "deviceId": address.deviceId, "key": sessionRecord]);
+            return database.changes > 0;
+        })
     }
     
     func containsSessionRecord(forAccount account: BareJID, andAddress address: SignalAddress) -> Bool {
-        return (try! containsSessionRecordStmt.scalar(["account": account, "name": address.name, "deviceId": address.deviceId] as [String: Any?]) ?? 0) > 0;
+        return sessionRecord(forAccount: account, andAddress: address) != nil;
     }
     
     func deleteSessionRecord(forAccount account: BareJID, andAddress address: SignalAddress) -> Bool {
-        return try! deleteSessionRecordStmt.update(["account": account, "name": address.name, "deviceId": address.deviceId] as [String: Any?]) > 0;
+        return try! Database.main.writer({ database in
+            try database.delete(query: .omemoSessionRecordDelete, params: ["account": account, "name": address.name, "deviceId": address.deviceId]);
+            return database.changes > 0;
+        })
     }
     
     func deleteAllSessions(forAccount account: BareJID, andName name: String) -> Bool {
-        return try! deleteAllSessionRecordStmt.update(["account": account, "name": name] as [String: Any?]) > 0;
+        return try! Database.main.writer({ database in
+            try database.delete(query: .omemoSessionRecordDeleteAll, params: ["account": account, "name": name]);
+            return database.changes > 0;
+        });
     }
     
     func wipe(forAccount account: BareJID) {
-        _ = try! wipeSessionsStoreStmt.update(["account": account] as [String: Any?]);
-        _ = try! wipePreKeyStoreStmt.update(["account": account] as [String: Any?]);
-        _ = try! wipeSignedPreKeyStoreStmt.update(["account": account] as [String: Any?]);
-        _ = try! wipeIdentitiesKeyStoreStmt.update(["account": account] as [String: Any?]);
+        try! Database.main.writer({ database in
+            try database.delete(query: .omemoSessionRecordWipe, params:["account": account]);
+            try database.delete(query: .omemoPreKeyWipe, params: ["account": account]);
+            try database.delete(query: .omemoSignedPreKeyWipe, params: ["account": account]);
+            try database.delete(query: .omemoIdentitiesWipe, cached: false, params: ["account": account]);
+        })
     }
 }
 

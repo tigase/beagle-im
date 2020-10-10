@@ -22,26 +22,24 @@
 import Foundation
 import TigaseSwift
 import os
+import TigaseSQLite3
+
+extension Query {
+    static let mamSyncInsertPeriod = Query("INSERT INTO chat_history_sync (id, account, component, from_timestamp, from_id, to_timestamp) VALUES (:id, :account, :component, :from_timestamp, :from_id, :to_timestamp)");
+    static let mamSyncFindPeriodsForAccount = Query("SELECT id, account, component, from_timestamp, from_id, to_timestamp FROM chat_history_sync WHERE account = :account AND component IS NULL ORDER BY from_timestamp ASC");
+    static let mamSyncFindPeriodsForAccountWith = Query("SELECT id, account, component, from_timestamp, from_id, to_timestamp FROM chat_history_sync WHERE account = :account AND component = :component ORDER BY from_timestamp ASC");
+    static let mamSyncDeletePeriod = Query("DELETE FROM chat_history_sync WHERE id = :id");
+    static let mamSyncDeletePeriodsForAccount = Query("DELETE FROM chat_history_sync WHERE account = :account");
+    static let mamSyncDeletePeriodsForAccountWith = Query("DELETE FROM chat_history_sync WHERE account = :account AND component = :component");
+    static let mamSyncUpdatePeriodAfter = Query("UPDATE chat_history_sync SET from_id = :after WHERE id = :id");
+    static let mamSyncUpdatePeriodTo = Query("UPDATE chat_history_sync SET to_timestamp = :to_timestamp WHERE id = :id");
+}
 
 class DBChatHistorySyncStore {
     
     static let instance = DBChatHistorySyncStore()
-    
-    private let addSyncPeriod: DBStatement;
-    private let loadSyncPeriods: DBStatement;
-    private let loadSyncPeriodsWith: DBStatement;
-    private let removeSyncPeriod: DBStatement;
-    private let updateSyncPeriodAfter: DBStatement;
-    private let updateSyncPeriodTo: DBStatement;
-    
-    init() {
-        addSyncPeriod = try! DBConnection.main.prepareStatement("INSERT INTO chat_history_sync (id, account, component, from_timestamp, from_id, to_timestamp) VALUES (:id, :account, :component, :from_timestamp, :from_id, :to_timestamp)");
-        loadSyncPeriods = try! DBConnection.main.prepareStatement("SELECT id, account, from_timestamp, from_id, to_timestamp FROM chat_history_sync WHERE account = :account AND component IS NULL ORDER BY from_timestamp ASC");
-        loadSyncPeriodsWith = try! DBConnection.main.prepareStatement("SELECT id, account, component, from_timestamp, from_id, to_timestamp FROM chat_history_sync WHERE account = :account AND component = :component ORDER BY from_timestamp ASC");
-        removeSyncPeriod = try! DBConnection.main.prepareStatement("DELETE FROM chat_history_sync WHERE id = :id");
-        updateSyncPeriodAfter = try! DBConnection.main.prepareStatement("UPDATE chat_history_sync SET from_id = :after WHERE id = :id");
-        updateSyncPeriodTo = try! DBConnection.main.prepareStatement("UPDATE chat_history_sync SET to_timestamp = :to_timestamp WHERE id = :id");
         
+    init() {
         NotificationCenter.default.addObserver(self, selector: #selector(accountChanged(_:)), name: AccountManager.ACCOUNT_CHANGED, object: nil);
     }
     
@@ -57,47 +55,56 @@ class DBChatHistorySyncStore {
         if let last = loadSyncPeriods(forAccount: period.account, component: period.component).last, last.from <= period.from && last.to >= period.from {
             // we only need to update `to` value
             os_log("updating sync period to for account %s and component %s", log: .chatHistorySync, type: .debug, period.account.stringValue, period.component?.stringValue ?? "nil");
-            _ = try! updateSyncPeriodTo.update(["id": last.id.uuidString, "to_timestamp": max(last.to, period.to)] as [String: Any?]);
+            try! Database.main.writer({ database in
+                try database.update(query: .mamSyncUpdatePeriodTo, cached: false, params: ["id": last.id.uuidString, "to_timestamp": max(last.to, period.to)]);
+            })
             return;
         }
         os_log("adding sync period %s for account %s and component %s from %{time_t}d to %{time_t}d", log: .chatHistorySync, type: .debug, period.id.uuidString, period.account.stringValue, period.component?.stringValue ?? "nil", time_t(period.from.timeIntervalSince1970), time_t(period.to.timeIntervalSince1970));
-        _ = try! addSyncPeriod.insert(["id": period.id.uuidString, "account": period.account, "component": period.component, "from_timestamp": period.from, "to_timestamp": period.to] as [String: Any?]);
+        try! Database.main.writer({ database in
+            try database.insert(query: .mamSyncInsertPeriod, cached: false, params: ["id": period.id.uuidString, "account": period.account, "component": period.component, "from_timestamp": period.from, "to_timestamp": period.to]);
+        })
     }
     
     func loadSyncPeriods(forAccount account: BareJID, component: BareJID?) -> [Period] {
-        // how about periods with less than a few minutes/seconds apart? should we merge them?
+        var params = ["account": account];
         if let component = component {
-            let periods = try! loadSyncPeriodsWith.query(["account": account, "component": component] as [String: Any?], map: {
-                return Period(id: UUID(uuidString: $0["id"]!)!, account: $0["account"]!, component: $0["component"], from: $0["from_timestamp"]!, after: $0["from_id"], to: $0["to_timestamp"]!);
-            });
-            os_log("loaded %d sync periods for account %s and component %s", log: .chatHistorySync, type: .debug, periods.count, account.stringValue, component.stringValue);
-            return periods;
+            params["component"] = component;
         }
-        else {
-            let periods = try! loadSyncPeriods.query(["account": account] as [String: Any?], map: {
-                return Period(id: UUID(uuidString: $0["id"]!)!, account: $0["account"]!, from: $0["from_timestamp"]!, after: $0["from_id"], to: $0["to_timestamp"]!);
-            });
-            os_log("loaded %d sync periods for account %s", log: .chatHistorySync, type: .debug, periods.count, account.stringValue);
-            return periods;
-        }
+        
+        // how about periods with less than a few minutes/seconds apart? should we merge them?
+        let query: Query = component == nil ? .mamSyncFindPeriodsForAccount : .mamSyncFindPeriodsForAccountWith;
+        let periods = try! Database.main.reader({ database in
+            try database.select(query: query, cached: false, params: params).mapAll({ cursor -> Period? in
+                return Period(id: UUID(uuidString: cursor["id"]!)!, account: cursor["account"]!, component: cursor["component"], from: cursor["from_timestamp"]!, after: cursor["from_id"], to: cursor["to_timestamp"]!);
+            })
+        })
+        os_log("loaded %d sync periods for account %s and component %s", log: .chatHistorySync, type: .debug, periods.count, account.stringValue, component?.stringValue ?? "nil");
+        return periods;
     }
     
     func removeSyncPerod(_ period: Period) {
         os_log("removing sync period %s for account %s and component %s", log: .chatHistorySync, type: .debug, period.id.uuidString, period.account.stringValue, period.component?.stringValue ?? "nil");
-        _ = try! removeSyncPeriod.update(["id": period.id.uuidString] as [String: Any?]);
+        try! Database.main.writer({ database in
+            try database.delete(query: .mamSyncDeletePeriod, cached: false, params: ["id": period.id.uuidString])
+        })
     }
     
     func removeSyncPeriods(forAccount account: BareJID, component: BareJID? = nil) {
-        if let component = component {
-            _ = try! DBConnection.main.prepareStatement("DELETE FROM chat_history_sync WHERE account = :account AND component = :component").update(["account": account, "component": component] as [String: Any?]);
-        } else {
-            _ = try! DBConnection.main.prepareStatement("DELETE FROM chat_history_sync WHERE account = :account").update(["account": account] as [String: Any?]);
-        }
+        try! Database.main.writer({ database in
+            if let component = component {
+                try database.delete(query: .mamSyncDeletePeriodsForAccountWith, cached: false, params: ["account": account, "component": component]);
+            } else {
+                try database.delete(query: .mamSyncDeletePeriodsForAccount, cached: false, params: ["account": account]);
+            }
+        })
     }
     
     func updatePeriod(_ period: Period, after: String) {
         os_log("updating sync period %s for account %s and component %s to after %s", log: .chatHistorySync, type: .debug, period.id.uuidString, period.account.stringValue, period.component?.stringValue ?? "nil", after);
-        _ = try! updateSyncPeriodAfter.update(["id": period.id.uuidString, "after": after] as [String: Any?]);
+        try! Database.main.writer({ database in
+            try database.update(query: .mamSyncUpdatePeriodAfter, cached: false, params: ["id": period.id.uuidString, "after": after]);
+        })
     }
     
     class Period {

@@ -32,7 +32,6 @@ class GeneralSettingsController: NSViewController {
     
     fileprivate var enableMessageCarbonsButton: NSButton!;
     fileprivate var messageCarbonsMarkAsReadButton: NSButton!;
-    fileprivate var messageCarbonsMarkDeliveredToOtherResourceAsRead: NSButton!;
 
     fileprivate var notificationsFromUnknownSenders: NSButton!;
     fileprivate var systemMenuIcon: NSButton!;
@@ -63,8 +62,7 @@ class GeneralSettingsController: NSViewController {
         
         enableMessageCarbonsButton = formView.addRow(label: "Message carbons:", field: NSButton(checkboxWithTitle: "Enable", target: self, action: #selector(checkboxChanged(_:))));
         messageCarbonsMarkAsReadButton = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Mark carbon messages as read", target: self, action: #selector(checkboxChanged(_:))));
-        messageCarbonsMarkDeliveredToOtherResourceAsRead = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Mark messages confirmed as delivered to another client as read", target: self, action: #selector(checkboxChanged(_:))));
-        formView.groupItems(from: enableMessageCarbonsButton, to: messageCarbonsMarkDeliveredToOtherResourceAsRead);
+        formView.groupItems(from: enableMessageCarbonsButton, to: messageCarbonsMarkAsReadButton);
         
         encryptionButton = formView.addRow(label: "Default encryption:", field: NSPopUpButton(frame: .zero, pullsDown: false));
         encryptionButton?.target = self;
@@ -113,8 +111,6 @@ class GeneralSettingsController: NSViewController {
         enableMessageCarbonsButton.state = Settings.enableMessageCarbons.bool() ? .on : .off;
         messageCarbonsMarkAsReadButton.state = Settings.markMessageCarbonsAsRead.bool() ? .on : .off;
         messageCarbonsMarkAsReadButton.isEnabled = Settings.enableMessageCarbons.bool();
-        messageCarbonsMarkDeliveredToOtherResourceAsRead.state = Settings.markMessageDeliveredToOtherResourceAsRead.bool() ? .on : .off;
-        messageCarbonsMarkDeliveredToOtherResourceAsRead.isEnabled = Settings.enableMessageCarbons.bool();
         notificationsFromUnknownSenders.state = Settings.notificationsFromUnknownSenders.bool() ? .on : .off;
         markdownFormatting.state = Settings.enableMarkdownFormatting.bool() ? .on : .off;
         showEmoticons.state = Settings.showEmoticons.bool() ? .on : .off;
@@ -150,11 +146,8 @@ class GeneralSettingsController: NSViewController {
         case enableMessageCarbonsButton:
             Settings.enableMessageCarbons.set(value: sender.state == .on);
             messageCarbonsMarkAsReadButton.isEnabled = sender.state == .on;
-            messageCarbonsMarkDeliveredToOtherResourceAsRead.isEnabled = sender.state == .on;
         case messageCarbonsMarkAsReadButton:
             Settings.markMessageCarbonsAsRead.set(value: sender.state == .on);
-        case messageCarbonsMarkDeliveredToOtherResourceAsRead:
-            Settings.markMessageDeliveredToOtherResourceAsRead.set(value: sender.state == .on);
         case notificationsFromUnknownSenders:
             Settings.notificationsFromUnknownSenders.set(value: sender.state == .on);
         case systemMenuIcon:

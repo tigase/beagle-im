@@ -21,15 +21,16 @@
 
 import AppKit
 import TigaseSwift
+import TigaseSQLite3
 import OSLog
 
+extension Query {
+    static let avatarFindHash = Query("SELECT type, hash FROM avatars_cache WHERE account = :account AND jid = :jid");
+    static let avatarDeleteHash = Query("DELETE FROM avatars_cache WHERE jid = :jid AND account = :account AND (:type IS NULL OR type = :type)");
+    static let avatarInsertHash = Query("INSERT INTO avatars_cache (jid, account, hash, type) VALUES (:jid,:account,:hash,:type)");
+}
+
 class AvatarStore {
-    
-    //open static let instance = AvatarStore();
-    
-    fileprivate let findAvatarHashStmt: DBStatement = try! DBConnection.main.prepareStatement("SELECT type, hash FROM avatars_cache WHERE account = :account AND jid = :jid");
-    fileprivate let deleteAvatarHashStmt: DBStatement = try! DBConnection.main.prepareStatement("DELETE FROM avatars_cache WHERE jid = :jid AND account = :account AND (:type IS NULL OR type = :type)");
-    fileprivate let insertAvatarHashStmt: DBStatement = try! DBConnection.main.prepareStatement("INSERT INTO avatars_cache (jid, account, hash, type) VALUES (:jid,:account,:hash,:type)");
     
     fileprivate let dispatcher = QueueDispatcher(label: "avatar_store", attributes: .concurrent);
     fileprivate let cacheDirectory: URL;
@@ -52,15 +53,14 @@ class AvatarStore {
     
     func avatarHash(for jid: BareJID, on account: BareJID) -> [AvatarType: String] {
         return dispatcher.sync {
-            let params: [String: Any?] = ["account": account, "jid": jid];
-            var hashes: [AvatarType: String] = [:];
-            try! findAvatarHashStmt.query(params, forEach: { cursor in
-            guard let type = AvatarType(rawValue: cursor["type"]!), let hash: String = cursor["hash"] else {
-                    return;
+            return Dictionary(uniqueKeysWithValues: try! Database.main.reader({ database in
+                try database.select(query: .avatarFindHash, params: ["account": account, "jid": jid]).mapAll { cursor -> (AvatarType, String)? in
+                    guard let type = AvatarType(rawValue: cursor["type"]!), let hash: String = cursor["hash"] else {
+                        return nil;
+                    }
+                    return (type, hash);
                 }
-                hashes[type] = hash;
-            });
-            return hashes;
+            }));
         }
     }
     
@@ -106,16 +106,18 @@ class AvatarStore {
 //                DispatchQueue.global().async {
 //                    self.removeAvatar(for: oldHash)
 //                }
-                let params: [String: Any?] = ["account": account, "jid": jid, "type": type.rawValue];
-                _ = try! self.deleteAvatarHashStmt.update(params);
+                try! Database.main.writer({ database in
+                    try database.delete(query: .avatarDeleteHash, params: ["account": account, "jid": jid, "type": type.rawValue]);
+                })
             }
             
             guard hash != nil else {
                 return;
             }
             
-            let params: [String: Any?] = ["account": account, "jid": jid, "type": type.rawValue, "hash": hash!];
-            _ = try! self.insertAvatarHashStmt.insert(params);
+            try! Database.main.writer({ database in
+                try database.insert(query: .avatarInsertHash, params: ["account": account, "jid": jid, "type": type.rawValue, "hash": hash!]);
+            });
             
             DispatchQueue.global(qos: .background).async {
                 completionHandler();
