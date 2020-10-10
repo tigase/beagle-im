@@ -29,9 +29,9 @@ class ChangePasswordController: NSViewController, NSTextFieldDelegate {
     @IBOutlet var message: NSTextField!;
 
     @IBOutlet var newPassword: NSSecureTextField!;
-    @IBOutlet var newPasswordConfirm: NSSecureTextField!;
+    @IBOutlet var newPasswordConfirm: NSSecureTextField?;
     
-    @IBOutlet var changeOnServer: NSButton!;
+    @IBOutlet var changeOnServer: NSButton?;
     
     @IBOutlet var changeButton: NSButton!;
     
@@ -42,16 +42,24 @@ class ChangePasswordController: NSViewController, NSTextFieldDelegate {
         self.message.stringValue = "To change password for account \(self.account?.stringValue ?? "") please fill out this form:";
         if let account = self.account {
             let connected = (XmppService.instance.getClient(for: account)?.state ?? .disconnected) == .connected;
-            changeOnServer.isEnabled = connected;
-            changeOnServer.state = connected ? .on : .off;
+            if connected {
+                changeOnServer?.isEnabled = connected;
+                changeOnServer?.state = .on;
+            } else {
+                changeOnServer?.removeFromSuperview();
+                newPasswordConfirm?.removeFromSuperview();
+                changeOnServer = nil;
+                newPasswordConfirm = nil;
+                newPassword.bottomAnchor.constraint(equalTo: changeButton.topAnchor, constant: -8).isActive = true;
+            }
         } else {
-            changeOnServer.isEnabled = false;
-            changeOnServer.state = .off;
+            changeOnServer?.isEnabled = false;
+            changeOnServer?.state = .off;
         }
     }
     
     func controlTextDidChange(_ obj: Notification) {
-        changeButton.isEnabled = (!self.newPassword.stringValue.isEmpty) && self.newPassword.stringValue == self.newPasswordConfirm.stringValue;
+        changeButton.isEnabled = (!self.newPassword.stringValue.isEmpty) && (self.newPasswordConfirm == nil || (self.newPassword.stringValue == self.newPasswordConfirm?.stringValue));
     }
     
     @IBAction func closeClicked(_ sender: NSButton) {
@@ -63,11 +71,11 @@ class ChangePasswordController: NSViewController, NSTextFieldDelegate {
             return;
         }
         let password = newPassword.stringValue;
-        guard !password.isEmpty && password == newPasswordConfirm.stringValue else {
+        guard !password.isEmpty && (newPasswordConfirm == nil || password == newPasswordConfirm?.stringValue) else {
             return;
         }
         
-        if self.changeOnServer.state == .on {
+        if self.changeOnServer?.state == .on {
             guard let client = XmppService.instance.getClient(for: account), let register: InBandRegistrationModule = client.modulesManager.getModule(InBandRegistrationModule.ID) else {
                 return;
             }
@@ -102,15 +110,21 @@ class ChangePasswordController: NSViewController, NSTextFieldDelegate {
         guard let acc = AccountManager.getAccount(for: account) else {
             return;
         }
+
         acc.password = newPassword;
         _ = AccountManager.save(account: acc);
-        let alert = NSAlert();
-        alert.icon = NSImage(named: NSImage.infoName);
-        alert.messageText = "Password changed";
-        alert.addButton(withTitle: "OK")
-        alert.beginSheetModal(for: self.view.window!, completionHandler: { (modalResp) in
+
+        if self.changeOnServer?.state == .on {
+            let alert = NSAlert();
+            alert.icon = NSImage(named: NSImage.infoName);
+            alert.messageText = "Password changed";
+            alert.addButton(withTitle: "OK")
+            alert.beginSheetModal(for: self.view.window!, completionHandler: { (modalResp) in
+                self.close();
+            });
+        } else {
             self.close();
-        });
+        }
     }
     
     fileprivate func close() {
