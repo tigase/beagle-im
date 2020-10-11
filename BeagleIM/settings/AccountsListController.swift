@@ -120,8 +120,7 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
         case 0:
             // add account
             let addAccountController = self.storyboard!.instantiateController(withIdentifier: "AddAccountController") as! NSViewController;
-            let window = NSWindow(contentViewController: addAccountController);
-            self.view.window!.beginSheet(window, completionHandler: nil);
+            self.presentAsSheet(addAccountController);
             break;
         case 1:
             // remove account

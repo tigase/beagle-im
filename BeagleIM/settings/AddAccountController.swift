@@ -27,9 +27,12 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
     @IBOutlet var logInButton: NSButton!;
     @IBOutlet var stackView: NSStackView!
     @IBOutlet var registerButton: NSButton!;
+    @IBOutlet var progressIndicator: NSProgressIndicator!;
     
     var usernameField: NSTextField!;
     var passwordField: NSSecureTextField!;
+    
+    var accountValidatorTask: AccountValidatorTask?;
     
     override func viewWillAppear() {
         super.viewWillAppear();
@@ -82,8 +85,50 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
         let jid = BareJID(usernameField.stringValue);
         let account = AccountManager.Account(name: jid);
         account.password = passwordField.stringValue;
-        _ = AccountManager.save(account: account);
-        self.view.window?.sheetParent?.endSheet(self.view.window!);
+        self.showProgressIndicator();
+        self.accountValidatorTask = AccountValidatorTask(controller: self);
+        self.accountValidatorTask?.check(account: account.name, password: account.password!, callback: { result in
+            let certificateInfo = self.accountValidatorTask?.acceptedCertificate;
+            DispatchQueue.main.async {
+                self.accountValidatorTask?.finish();
+                self.accountValidatorTask = nil;
+                self.hideProgressIndicator();
+                switch result {
+                case .success(_):
+                    if let certInfo = certificateInfo {
+                        account.serverCertificate = ServerCertificateInfo(sslCertificateInfo: certInfo, accepted: true);
+                    }
+                    _ = AccountManager.save(account: account);
+                    self.view.window?.sheetParent?.endSheet(self.view.window!);
+                case .failure(let error):
+                    let alert = NSAlert();
+                    alert.alertStyle = .critical;
+                    alert.messageText = "Authentication failed";
+                    switch error {
+                    case .not_authorized:
+                        alert.informativeText = "Login and password do not match.";
+                    default:
+                        alert.informativeText = "It was not possible to contact XMPP server and sign in.";
+                    }
+                    alert.beginSheetModal(for: self.view.window!, completionHandler: { _ in
+                        // nothing to do.. just wait for user interaction
+                    })
+                    break;
+                }
+            }
+        })
+    }
+    
+    private func showProgressIndicator() {
+        self.registerButton.isEnabled = false;
+        self.logInButton.isEnabled = false;
+        progressIndicator.startAnimation(self);
+    }
+    
+    private func hideProgressIndicator() {
+        self.logInButton.isEnabled = true;
+        self.registerButton.isEnabled = true;
+        progressIndicator.stopAnimation(self);
     }
     
     @IBAction func registerClicked(_ button: NSButton) {
@@ -116,5 +161,103 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
     }
     
     class RowView: NSStackView {
+    }
+
+    class AccountValidatorTask: EventHandler {
+        
+        var client: XMPPClient? {
+            willSet {
+                if newValue != nil {
+                    newValue?.eventBus.register(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE);
+                }
+            }
+            didSet {
+                if oldValue != nil {
+                    oldValue?.disconnect(true);
+                    oldValue?.eventBus.unregister(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE);
+                }
+            }
+        }
+        
+        var callback: ((Result<Void,ErrorCondition>)->Void)? = nil;
+        weak var controller: AddAccountController?;
+        var dispatchQueue = DispatchQueue(label: "accountValidatorSync");
+        
+        var acceptedCertificate: SslCertificateInfo? = nil;
+        
+        init(controller: AddAccountController) {
+            self.controller = controller;
+            initClient();
+        }
+        
+        fileprivate func initClient() {
+            self.client = XMPPClient();
+            _ = client?.modulesManager.register(StreamFeaturesModule());
+            _ = client?.modulesManager.register(SaslModule());
+            _ = client?.modulesManager.register(AuthModule());
+            SslCertificateValidator.registerSslCertificateValidator(client!.sessionObject);
+        }
+        
+        public func check(account: BareJID, password: String, callback: @escaping (Result<Void,ErrorCondition>)->Void) {
+            self.callback = callback;
+            client?.connectionConfiguration.setUserJID(account);
+            client?.connectionConfiguration.setUserPassword(password);
+            client?.login();
+        }
+        
+        public func handle(event: Event) {
+            dispatchQueue.sync {
+                guard let callback = self.callback else {
+                    return;
+                }
+                var param: ErrorCondition? = nil;
+                switch event {
+                case is SaslModule.SaslAuthSuccessEvent:
+                    param = nil;
+                case is SaslModule.SaslAuthFailedEvent:
+                    param = ErrorCondition.not_authorized;
+                case let e as SocketConnector.CertificateErrorEvent:
+                    self.callback = nil;
+                    let certData = SslCertificateInfo(trust: e.trust);
+                    let alert = NSStoryboard(name: "Main", bundle: nil).instantiateController(withIdentifier: "ServerCertificateErrorController") as! ServerCertificateErrorController;
+                    alert.account = client?.sessionObject.userBareJid;
+                    alert.certficateInfo = certData;
+                    alert.completionHandler = { accepted in
+                        self.acceptedCertificate = certData;
+                        if (accepted) {
+                            SslCertificateValidator.setAcceptedSslCertificate(self.client!.sessionObject, fingerprint: certData.details.fingerprintSha1);
+                            self.callback = callback;
+                            self.client?.login();
+                        } else {
+                            self.finish();
+                            DispatchQueue.main.async {
+                                callback(.failure(.service_unavailable));
+                            }
+                        }
+                    };
+                    DispatchQueue.main.async {
+                        self.controller?.presentAsSheet(alert);
+                    }
+                    return;
+                default:
+                    param = ErrorCondition.service_unavailable;
+                }
+                
+                DispatchQueue.main.async {
+                    if let error = param {
+                        callback(.failure(error));
+                    } else {
+                        callback(.success(Void()));
+                    }
+                    self.finish();
+                }
+            }
+        }
+        
+        public func finish() {
+            self.callback = nil;
+            self.client = nil;
+            self.controller = nil;
+        }
     }
 }
