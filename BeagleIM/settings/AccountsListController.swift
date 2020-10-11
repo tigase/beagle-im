@@ -54,6 +54,12 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
         defaultAccountField.selectItem(withTitle: Settings.defaultAccount.bareJid()?.stringValue ?? "");
         self.tableView?.reloadData();
         self.tableView?.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false);
+        DispatchQueue.main.async {
+            if self.accounts.isEmpty {
+                let addAccountController = self.storyboard!.instantiateController(withIdentifier: "AddAccountController") as! NSViewController;
+                self.presentAsSheet(addAccountController);
+            }
+        }
     }
     
     func numberOfRows(in tableView: NSTableView) -> Int {

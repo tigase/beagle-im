@@ -48,9 +48,14 @@ class AccountDetailsViewController: NSViewController, AccountAware {
             resourceType?.selectedItem?.state = .on;
             resourceType?.title = resourceType?.titleOfSelectedItem ?? "";
             resourceName?.stringValue = acc?.resourceName ?? "BeagleIM";
+            active.isEnabled = account != nil;
+            changePasswordButton.isEnabled = account != nil;
+            nickname.isEnabled = account != nil;
+            resourceName.isEnabled = account != nil;
         }
     }
     
+    @IBOutlet var changePasswordButton: NSButton!;
     @IBOutlet weak var username: NSTextField!;
     @IBOutlet weak var nickname: NSTextField!;
     @IBOutlet weak var active: NSButton!;

@@ -977,6 +977,7 @@ Gw
                     </view>
                     <connections>
                         <outlet property="active" destination="wyp-c3-LVw" id="Ndm-QO-Jzv"/>
+                        <outlet property="changePasswordButton" destination="x96-P6-jnJ" id="bpi-ax-cbM"/>
                         <outlet property="nickname" destination="bIL-k0-niu" id="aJL-8O-oJ2"/>
                         <outlet property="resourceName" destination="2Nj-aQ-VKd" id="3ow-By-jOH"/>
                         <outlet property="resourceType" destination="hPn-zm-Pax" id="gJs-a4-YgI"/>
