@@ -27,13 +27,13 @@ class ScriptsManager {
     
     static let instance = ScriptsManager();
     
-    let scriptsDirectory: URL;
+    let scriptsDirectory: URL?;
     
     fileprivate var _contactsScripts: [ContactScriptItem] = [];
     
     init() {
-        scriptsDirectory = try! FileManager.default.url(for: .applicationScriptsDirectory, in: .userDomainMask, appropriateFor: nil, create: true);
-        if let contactScriptsUrls = try? FileManager.default.contentsOfDirectory(at: scriptsDirectory.appendingPathComponent("contact", isDirectory: true), includingPropertiesForKeys: [.localizedNameKey], options: [.skipsSubdirectoryDescendants, .skipsHiddenFiles]) {
+        scriptsDirectory = try? FileManager.default.url(for: .applicationScriptsDirectory, in: .userDomainMask, appropriateFor: nil, create: true);
+        if let scriptsDirectory = self.scriptsDirectory, let contactScriptsUrls = try? FileManager.default.contentsOfDirectory(at: scriptsDirectory.appendingPathComponent("contact", isDirectory: true), includingPropertiesForKeys: [.localizedNameKey], options: [.skipsSubdirectoryDescendants, .skipsHiddenFiles]) {
             _contactsScripts = contactScriptsUrls.map({ (url) -> ContactScriptItem in
                 return ContactScriptItem(url);
             }).sorted(by: { (i1, i2) -> Bool in
