@@ -34,6 +34,15 @@ class MessageEventHandler: XmppServiceEventHandler {
 
         guard (message.type ?? .chat) != .error else {
             guard let body = message.body else {
+                if let delivery = message.messageDelivery {
+                    switch delivery {
+                    case .received(_):
+                        // if our message delivery confirmation is not delivered just drop this info
+                        return (nil, encryption, nil);
+                    default:
+                        break;
+                    }
+                }
                 return (message.to?.resource == nil ? nil : "", encryption, nil);
             }
             return (body, encryption, nil);
