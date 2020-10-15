@@ -36,10 +36,13 @@ class InvitationGroup: ChatsListGroupProtocol {
     
     weak var delegate: ChatsListViewController?;
     
-    init(delegate: ChatsListViewController, items: [InvitationItem]) {
+    init(delegate: ChatsListViewController) {
         self.delegate = delegate;
-        self.items = items;
-        NotificationCenter.default.addObserver(self, selector: #selector(invitationsChanged(_:)), name: InvitationManager.INVITATIONS_CHANGED, object: nil);
+        InvitationManager.instance.dispatcher.sync {
+            NotificationCenter.default.addObserver(self, selector: #selector(invitationsAdded(_:)), name: InvitationManager.INVITATIONS_ADDED, object: nil);
+            NotificationCenter.default.addObserver(self, selector: #selector(invitationsRemoved(_:)), name: InvitationManager.INVITATIONS_REMOVED, object: nil);
+            self.items = Array(InvitationManager.instance.items);
+        }
     }
     
     func getItem(at: Int) -> ChatsListItemProtocol? {
@@ -54,40 +57,44 @@ class InvitationGroup: ChatsListGroupProtocol {
         // nothing to do..
     }
     
-    @objc func invitationsChanged(_ notification: Notification) {
+    @objc func invitationsAdded(_ notification: Notification) {
         DispatchQueue.main.async {
-            let oldItems = self.items;
-            let items = InvitationManager.instance.items;
-            var added = false;
-            if oldItems.isEmpty && !items.isEmpty {
-                added = true;
+            guard let toAdd = notification.object as? [InvitationItem], !toAdd.isEmpty else {
+                return;
+            }
+        
+            let added = self.items.isEmpty && !toAdd.isEmpty;
+            if added {
                 self.delegate?.groups.insert(self, at: 0);
                 self.delegate?.itemsInserted(at: IndexSet(integer: 0), inParent: nil);
-            } else if items.isEmpty && !oldItems.isEmpty {
-                self.delegate?.groups.remove(at: 0);
-                self.delegate?.itemsRemoved(at: IndexSet(integer: 0), inParent: nil);
             }
             
-            for i in (0..<oldItems.count).reversed() {
-                if !items.contains(oldItems[i]) {
-                    self.items.remove(at: i);
-                    self.delegate?.itemsRemoved(at: IndexSet(integer: i), inParent: self);
-                }
-            }
-            for i in 0..<items.count {
-                if self.items.count <= i {
-                    self.items.append(items[i]);
-                    self.delegate?.itemsInserted(at: IndexSet(integer: i), inParent: self);
-                } else if !self.items.contains(items[i]) {
-                    self.items.insert(items[i], at: i);
-                    self.delegate?.itemsInserted(at: IndexSet(integer: i), inParent: self);
-                }
-            }
+            self.items = toAdd + self.items;
+            self.delegate?.itemsInserted(at: IndexSet(integersIn: 0..<toAdd.count), inParent: self);
             if added {
                 self.delegate?.outlineView.expandItem(self);
             }
         }
     }
-    
+
+    @objc func invitationsRemoved(_ notification: Notification) {
+        DispatchQueue.main.async {
+            guard let toRemove = notification.object as? [InvitationItem], !toRemove.isEmpty else {
+                return;
+            }
+            
+            let dict = Dictionary(uniqueKeysWithValues: self.items.enumerated().map({ ($0.1, $0.0 )}));
+            
+            let removeSet = Set(toRemove);
+            self.items = self.items.filter({ !removeSet.contains($0) });
+            let removedIdx = toRemove.map({ dict[$0]! });
+            self.delegate?.itemsRemoved(at: IndexSet(removedIdx), inParent: self)
+            
+            if self.items.isEmpty {
+                self.delegate?.groups.remove(at: 0);
+                self.delegate?.itemsRemoved(at: IndexSet(integer: 0), inParent: nil);
+            }
+        }
+    }
     
 }

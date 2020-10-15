@@ -12,85 +12,66 @@ import UserNotifications
 
 class InvitationManager {
     
-    static let INVITATIONS_CHANGED = Notification.Name(rawValue: "invitationsChanged");
     static let INVITATION_CLICKED = Notification.Name(rawValue: "invitationClicked");
+    static let INVITATIONS_ADDED = Notification.Name(rawValue: "invitationsAdded");
+    static let INVITATIONS_REMOVED = Notification.Name(rawValue: "invitationsRemoved");
     
     static let instance = InvitationManager();
  
-    private var allItems: [InvitationItem] = [] {
-        didSet {
-            self.items = self.allItems.filter({ it in
-                return (XmppService.instance.getClient(for: it.account)?.state ?? .disconnected) == .connected;
-            }).sorted(by: { (i1, i2) -> Bool in
-                return i1.jid.stringValue < i2.jid.stringValue;
-            });
-        }
-    }
+    private var peristentItems: Set<InvitationItem> = [];
+    private var volatileItems: Set<InvitationItem> = [];
+
+    let dispatcher = QueueDispatcher(label: "InvitationManagerQueue");
     
-    private(set) var items: [InvitationItem] = [] {
-        didSet {
-            NotificationCenter.default.post(name: InvitationManager.INVITATIONS_CHANGED, object: self);
+    var items: Set<InvitationItem> {
+        return dispatcher.sync {
+            let connectedAccounts = Set(XmppService.instance.clients.values.filter({ $0.state == .connected }).map({ $0.sessionObject.userBareJid! }));
+            let result = peristentItems.filter({ connectedAccounts.contains($0.account) })
+            return result.union(volatileItems)
         }
     }
     
     init() {
-        NotificationCenter.default.addObserver(self, selector: #selector(accountStatusChanged(_:)), name: XmppService.ACCOUNT_STATUS_CHANGED, object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(accountStatusChanged(_:)), name: XmppService.ACCOUNT_STATUS_CHANGED, object: nil);        
     }
     
     func addPresenceSubscribe(for account: BareJID, from jid: JID) {
-        DispatchQueue.main.async {
-            var items = self.allItems.filter({ (it) -> Bool in
-                return it.jid != jid || it.type != .presenceSubscription;
-            })
+        dispatcher.async {
             let invitation = InvitationItem(type: .presenceSubscription, account: account, jid: jid, object: nil);
-            items.append(invitation);
-            self.allItems = items;
-            
-            let rosterItem = XmppService.instance.getClient(for: account)?.rosterStore?.get(for: jid);
-            let content = UNMutableNotificationContent();
-            content.title = "Authorization request";
-            content.body = "\(rosterItem?.name ?? jid.stringValue) requests authorization to access information about you presence";
-            content.sound = UNNotificationSound.default;
-            content.userInfo = ["account": account.stringValue, "jid": jid.stringValue, "id": "presence-subscription-request"];
-            let request = UNNotificationRequest(identifier: invitation.id, content: content, trigger: nil);
-            UNUserNotificationCenter.current().add(request, withCompletionHandler: nil);
+            guard !self.volatileItems.contains(invitation) else {
+                return;
+            }
+            self.volatileItems.insert(invitation);
+
+            self.addded(invitations: [invitation]);
         }
     }
 
     func addMucInvitation(for account: BareJID, roomJid: BareJID, invitation mucInvitation: MucModule.Invitation) {
         let jid = JID(roomJid);
-        DispatchQueue.main.async {
-            var items = self.allItems.filter({ (it) -> Bool in
-                return it.jid != jid || it.type != .mucInvitation;
-            })
+        dispatcher.async {
             let invitation = InvitationItem(type: .mucInvitation, account: account, jid: jid, object: mucInvitation);
-            items.append(invitation);
-            self.allItems = items;
+            guard !self.peristentItems.contains(invitation) else {
+                return;
+            }
+            self.peristentItems.insert(invitation);
             
-            _ = XmppService.instance.getClient(for: account)?.rosterStore?.get(for: jid);
-            let content = UNMutableNotificationContent();
-            content.title = "Invitation to groupchat";
-            content.body = "You (\(invitation.account)) were invited to the groupchat \(mucInvitation.roomJid)";
-            content.sound = UNNotificationSound.default;
-            content.userInfo = ["account": account.stringValue, "jid": jid.stringValue, "id": "presence-subscription-request"];
-            let request = UNNotificationRequest(identifier: invitation.id, content: content, trigger: nil);
-            UNUserNotificationCenter.current().add(request, withCompletionHandler: nil);
+            self.addded(invitations: [invitation]);
         }
     }
     
     func mucJoined(on account: BareJID, roomJid: BareJID) {
-        DispatchQueue.main.async {
-            self.allItems = self.allItems.filter({ (it) -> Bool in
-                return !(it.type == .mucInvitation && it.account == account && it.jid.bareJid == roomJid);
-            })
+        dispatcher.async {
+            let tmp = InvitationItem(type: .mucInvitation, account: account, jid: JID(roomJid), object: nil);
+            if let invitation = self.peristentItems.remove(tmp) {
+                self.removed(invitations: [invitation]);
+            }
         }
     }
     
     func handle(invitationWithId id: String, window: NSWindow) {
-        DispatchQueue.main.async {
-            guard let invitation = self.allItems.first(where: { (it) -> Bool in
-                return it.id == id;
-            }) else {
+        dispatcher.async {
+            guard let invitation = self.peristentItems.first(where: { $0.id == id }) else {
                 return;
             }
             self.handle(invitation: invitation, window: window);
@@ -140,28 +121,90 @@ class InvitationManager {
     }
     
     func remove(invitation: InvitationItem) {
-        DispatchQueue.main.async {
-            self.allItems = self.allItems.filter({ (it) -> Bool in
-                return it.jid != invitation.jid || it.type != invitation.type;
-            });
-            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [invitation.id]);
+        dispatcher.async {
+            guard self.peristentItems.remove(invitation) != nil || self.volatileItems.remove(invitation) != nil else {
+                return;
+            }
+            self.removed(invitations: [invitation]);
         }
     }
  
     @objc func accountStatusChanged(_ notification: Notification) {
-        guard let account = notification.object as? BareJID, XmppService.instance.getClient(for: account)?.state ?? .disconnected == .disconnected else {
+        guard let account = notification.object as? BareJID else {
             return;
         }
-        DispatchQueue.main.async {
-            var removed = self.allItems;
-            self.allItems = self.allItems.filter({ (it) -> Bool in
-                return it.account != account && it.type != .presenceSubscription;
-            });
-            removed.removeAll(where: { (it) -> Bool in
-                return !self.allItems.contains(it);
-            });
-            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: removed.map({ it in it.id }));
+
+        let connected = XmppService.instance.getClient(for: account)?.state ?? .disconnected == .connected;
+        dispatcher.async {
+            if connected {
+                let toAdd = self.peristentItems.filter({ $0.account == account });
+                self.addded(invitations: Array(toAdd));
+            } else {
+                let toRemove = self.volatileItems.filter({ $0.account == account });
+                self.volatileItems.subtract(toRemove);
+                self.removed(invitations: Array(toRemove.union(self.peristentItems.filter({ $0.account == account }))));
+            }
         }
     }
     
+    private var delayedInvitations: [InvitationItem] = [];
+    private var delayedTimer: Foundation.Timer?
+    private func addded(invitations: [InvitationItem]) {
+        delayedInvitations = invitations + delayedInvitations;
+        dispatcher.asyncAfter(deadline: .now() + 0.2, execute: {
+            guard !self.delayedInvitations.isEmpty else {
+                return;
+            }
+            self.delayedAdded(invitations: self.delayedInvitations);
+            self.delayedInvitations = [];
+        })
+    }
+    
+    private func delayedAdded(invitations: [InvitationItem]) {
+        NotificationCenter.default.post(name: InvitationManager.INVITATIONS_ADDED, object: invitations);
+        for invitation in invitations {
+            switch invitation.type {
+            case .mucInvitation:
+                deliverMucInvitationNotification(invitation: invitation);
+            case .presenceSubscription:
+                deliverPresenceSubscriptionNotification(invitation: invitation);
+            }
+        }
+    }
+    
+    private func removed(invitations invites: [InvitationItem]) {
+        var invitations = invites;
+        if !delayedInvitations.isEmpty {
+            let toSkip = Set(delayedInvitations).intersection(invitations);
+            if !toSkip.isEmpty {
+                delayedInvitations.removeAll(where: { toSkip.contains($0)}) ;
+                invitations = invitations.filter({ !toSkip.contains($0) });
+            }
+        }
+        NotificationCenter.default.post(name: InvitationManager.INVITATIONS_REMOVED, object: invitations);
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: invitations.map({ $0.id }));
+    }
+    
+    private func deliverPresenceSubscriptionNotification(invitation: InvitationItem) {
+        let rosterItem = XmppService.instance.getClient(for: invitation.account)?.rosterStore?.get(for: invitation.jid);
+        let content = UNMutableNotificationContent();
+        content.title = "Authorization request";
+        content.body = "\(rosterItem?.name ?? invitation.jid.stringValue) requests authorization to access information about you presence";
+        content.sound = UNNotificationSound.default;
+        content.userInfo = ["account": invitation.account.stringValue, "jid": invitation.jid.stringValue, "id": "presence-subscription-request"];
+        let request = UNNotificationRequest(identifier: invitation.id, content: content, trigger: nil);
+        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil);
+    }
+    
+    private func deliverMucInvitationNotification(invitation: InvitationItem) {
+        let mucInvitation = invitation.object as! MucModule.Invitation;
+        _ = XmppService.instance.getClient(for: invitation.account)?.rosterStore?.get(for: invitation.jid);
+        let content = UNMutableNotificationContent();
+        content.title = "Invitation to groupchat";
+        content.body = "You (\(invitation.account)) were invited to the groupchat \(mucInvitation.roomJid)";
+        content.sound = UNNotificationSound.default;
+        content.userInfo = ["account": invitation.account.stringValue, "jid": invitation.jid.stringValue, "id": "presence-subscription-request"];
+        let request = UNNotificationRequest(identifier: invitation.id, content: content, trigger: nil);
+        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil);
+    }
 }

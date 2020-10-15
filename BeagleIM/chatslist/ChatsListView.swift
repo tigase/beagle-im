@@ -146,7 +146,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     override func viewDidLoad() {
 //        self.groups = [ChatsListGroupGroupchat(delegate: self), ChatsListGroupChat(delegate: self), ChatsListGroupChatUnknown(delegate: self)];
         self.groups = Settings.commonChatsList.bool() ? [ChatsListGroupCommon(delegate: self), ChatsListGroupChatUnknown(delegate: self)] : [ChatsListGroupGroupchat(delegate: self), ChatsListGroupChat(delegate: self), ChatsListGroupChatUnknown(delegate: self)];
-        self.invitationGroup = InvitationGroup(delegate: self, items: InvitationManager.instance.items);
+        self.invitationGroup = InvitationGroup(delegate: self);
         if !InvitationManager.instance.items.isEmpty {
             self.groups.insert(invitationGroup!, at: 0);
         }

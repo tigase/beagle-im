@@ -22,7 +22,7 @@
 import Foundation
 import TigaseSwift
 
-class InvitationItem: ChatsListItemProtocol, Equatable {
+class InvitationItem: ChatsListItemProtocol, Identifiable, Equatable, Hashable {
     
     static func == (lhs: InvitationItem, rhs: InvitationItem) -> Bool {
         return lhs.type == rhs.type && lhs.account == rhs.account && lhs.jid == rhs.jid;
@@ -47,6 +47,11 @@ class InvitationItem: ChatsListItemProtocol, Equatable {
         self.object = object;
     }
     
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(type);
+        hasher.combine(jid);
+        hasher.combine(account);
+    }
 }
 
 enum InvitationItemType {
@@ -61,4 +66,14 @@ enum InvitationItemType {
             return "Groupchat invitation";
         }
     }
+    
+    var isPersistent: Bool {
+        switch self {
+        case .presenceSubscription:
+            return false;
+        case .mucInvitation:
+            return true;
+        }
+    }
+    
 }
