@@ -188,19 +188,28 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             }
             return nil;
         case let item as ChatMessage:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
-
-                cell.id = item.id;
-                if cell.hasHeader {
-                    let senderJid = item.state.direction == .incoming ? item.jid : item.account;
-                    cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-                    cell.set(senderName: item.state.direction == .incoming ? buddyName : "Me");
+            if item.message.starts(with: "/me ") {
+                if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMeSystemCellView"), owner: nil) as? ChatMeMessageCellView {
+                    let nickname = item.state.direction == .incoming ? buddyName : "Me"
+                    cell.set(item: item, nickname: nickname);
+                    return cell;
                 }
-                cell.set(message: item);
+                return nil;
+            } else {
+                if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
 
-                return cell;
+                    cell.id = item.id;
+                    if cell.hasHeader {
+                        let senderJid = item.state.direction == .incoming ? item.jid : item.account;
+                        cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
+                        cell.set(senderName: item.state.direction == .incoming ? buddyName : "Me");
+                    }
+                    cell.set(message: item);
+
+                    return cell;
+                }
+                return nil;
             }
-            return nil;
         case let item as ChatLinkPreview:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatLinkPreviewCellView"), owner: nil) as? ChatLinkPreviewCellView {
                 cell.set(item: item, fetchPreviewIfNeeded: fetchPreviewIfNeeded);

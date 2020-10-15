@@ -27,3 +27,14 @@ class ChatMessageSystemCellView: NSTableCellView {
     @IBOutlet var message: MessageTextView!;
     
 }
+
+class ChatMeMessageCellView: NSTableCellView {
+    
+    @IBOutlet var message: MessageTextView!;
+    
+    func set(item: ChatMessage, nickname: String?) {
+        let message = NSMutableAttributedString(string: "\(nickname ?? item.jid.stringValue) ", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium), toHaveTrait: .italicFontMask), .foregroundColor: NSColor.secondaryLabelColor]);
+        message.append(NSAttributedString(string: "\(item.message.dropFirst(4))", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .regular), toHaveTrait: .italicFontMask), .foregroundColor: NSColor.secondaryLabelColor]));
+        self.message.attributedString = message;
+    }
+}

@@ -422,7 +422,7 @@ class DBChatHistoryStore {
                 let updated = try! self.retractMessageStmt.update(params);
                 if updated > 0 {
                     // what should be sent to "newMessage" how to reatract message from there??
-                    let activity: LastChatActivity = DBChatStore.instance.getLastActivity(for: account, jid: jid) ?? .message("", sender: nil);
+                    let activity: LastChatActivity = DBChatStore.instance.getLastActivity(for: account, jid: jid) ?? .message("", direction: .incoming, sender: nil);
                     DBChatStore.instance.newMessage(for: account, with: jid, timestamp: oldItem.timestamp, lastActivity: activity, state: oldItem.state.direction == .incoming ? .incoming : .outgoing, completionHandler: {
                         print("chat store state updated with message retraction");
                     })

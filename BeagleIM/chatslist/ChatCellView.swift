@@ -77,18 +77,25 @@ class ChatCellView: NSTableCellView {
             self.lastMessage?.stopAnimating();
             if let activity = lastActivity {
                 switch activity {
-                case .message(let lastMessage, let sender):
-                    let msg = NSMutableAttributedString(string: lastMessage);
-                    if Settings.enableMarkdownFormatting.bool() {
-                        Markdown.applyStyling(attributedString: msg, fontSize: NSFont.systemFontSize - 1, showEmoticons: Settings.showEmoticons.bool());
-                    }
-                    if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
-                        prefix.append(msg);
-                        self.lastMessage?.attributedStringValue = prefix;
-                    } else {
+                case .message(let lastMessage, let direction, let sender):
+                    if lastMessage.starts(with: "/me ") {
+                        let nick = sender ?? (direction == .incoming ? (self.label?.stringValue ?? "") : "Me");
+                        let msg = NSMutableAttributedString(string: "\(nick) ", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium), toHaveTrait: .italicFontMask), .foregroundColor: self.lastMessage.textColor!.withAlphaComponent(0.8)]);
+                        msg.append(NSAttributedString(string: "\(lastMessage.dropFirst(4))", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .regular), toHaveTrait: .italicFontMask), .foregroundColor: self.lastMessage.textColor!.withAlphaComponent(0.8)]));
                         self.lastMessage?.attributedStringValue = msg;
+                    } else {
+                        let msg = NSMutableAttributedString(string: lastMessage);
+                        if Settings.enableMarkdownFormatting.bool() {
+                            Markdown.applyStyling(attributedString: msg, fontSize: NSFont.systemFontSize - 1, showEmoticons: Settings.showEmoticons.bool());
+                        }
+                        if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                            prefix.append(msg);
+                            self.lastMessage?.attributedStringValue = prefix;
+                        } else {
+                            self.lastMessage?.attributedStringValue = msg;
+                        }
                     }
-                case .invitation(_, let sender):
+                case .invitation(_, _, let sender):
                     if let fieldfont = self.lastMessage?.font {
                         let msg = NSAttributedString(string: "📨 Invitation", attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask, .boldFontMask]), .foregroundColor: self.lastMessage.textColor!.withAlphaComponent(0.8)]);
 
@@ -108,7 +115,7 @@ class ChatCellView: NSTableCellView {
                             self.lastMessage?.attributedStringValue = msg;
                         }
                     }
-                case .attachment(_, let sender):
+                case .attachment(_, _, let sender):
                     if let fieldfont = self.lastMessage?.font {
                         let msg = NSAttributedString(string: "📎 Attachment", attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask, .boldFontMask]), .foregroundColor: self.lastMessage.textColor!.withAlphaComponent(0.8)]);
 

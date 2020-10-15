@@ -15,14 +15,14 @@
                         <rect key="frame" x="0.0" y="0.0" width="333" height="418"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <scrollView verticalHuggingPriority="249" borderType="none" autohidesScrollers="YES" horizontalLineScroll="64" horizontalPageScroll="10" verticalLineScroll="64" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fFm-Kw-0RT">
-                                <rect key="frame" x="0.0" y="0.0" width="333" height="432"/>
+                            <scrollView verticalHuggingPriority="249" borderType="none" autohidesScrollers="YES" horizontalLineScroll="27" horizontalPageScroll="10" verticalLineScroll="27" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fFm-Kw-0RT">
+                                <rect key="frame" x="0.0" y="0.0" width="333" height="435"/>
                                 <clipView key="contentView" copiesOnScroll="NO" id="qKJ-4o-3VI">
-                                    <rect key="frame" x="0.0" y="0.0" width="333" height="432"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="333" height="435"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="none" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="64" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" id="n3E-id-LN2" customClass="ChatViewTableView" customModule="BeagleIM" customModuleProvider="target">
-                                            <rect key="frame" x="0.0" y="0.0" width="333" height="432"/>
+                                        <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="none" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="27" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" id="n3E-id-LN2" customClass="ChatViewTableView" customModule="BeagleIM" customModuleProvider="target">
+                                            <rect key="frame" x="0.0" y="0.0" width="333" height="435"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="backgroundColor" name="chatBackgroundColor"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
@@ -470,8 +470,39 @@
                                                                 <outlet property="message" destination="hGk-XK-U1c" id="4WN-4n-Fm9"/>
                                                             </connections>
                                                         </tableCellView>
+                                                        <tableCellView identifier="ChatMeSystemCellView" id="0b2-Xg-GKW" customClass="ChatMeMessageCellView" customModule="BeagleIM" customModuleProvider="target">
+                                                            <rect key="frame" x="0.0" y="194" width="333" height="27"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                            <subviews>
+                                                                <textView horizontalHuggingPriority="251" verticalHuggingPriority="750" editable="NO" selectable="NO" drawsBackground="NO" verticallyResizable="YES" translatesAutoresizingMaskIntoConstraints="NO" id="chS-VN-Mvn" customClass="MessageTextView" customModule="BeagleIM" customModuleProvider="target">
+                                                                    <rect key="frame" x="30" y="6" width="273" height="15"/>
+                                                                    <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                                    <size key="maxSize" width="10000" height="10000"/>
+                                                                    <attributedString key="textStorage">
+                                                                        <fragment content="Some message to display from that person">
+                                                                            <attributes>
+                                                                                <color key="NSColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                                                <font key="NSFont" metaFont="systemMedium" size="13"/>
+                                                                                <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                                            </attributes>
+                                                                        </fragment>
+                                                                    </attributedString>
+                                                                </textView>
+                                                            </subviews>
+                                                            <constraints>
+                                                                <constraint firstItem="chS-VN-Mvn" firstAttribute="leading" secondItem="0b2-Xg-GKW" secondAttribute="leading" constant="30" id="1U5-CM-HTY"/>
+                                                                <constraint firstAttribute="bottom" secondItem="chS-VN-Mvn" secondAttribute="bottom" constant="6" id="9Ly-Mb-irI"/>
+                                                                <constraint firstAttribute="trailing" secondItem="chS-VN-Mvn" secondAttribute="trailing" constant="30" id="iDO-WA-9Gl"/>
+                                                                <constraint firstItem="chS-VN-Mvn" firstAttribute="top" secondItem="0b2-Xg-GKW" secondAttribute="top" constant="6" id="vDb-Ml-BAN"/>
+                                                            </constraints>
+                                                            <accessibility identifier="ChatMeSystemCellView"/>
+                                                            <connections>
+                                                                <outlet property="message" destination="chS-VN-Mvn" id="9lW-m7-FqI"/>
+                                                            </connections>
+                                                        </tableCellView>
                                                         <tableCellView identifier="ChatInvitationCellView" id="YPX-Lw-780" customClass="ChatInvitationCellView" customModule="BeagleIM" customModuleProvider="target">
-                                                            <rect key="frame" x="0.0" y="194" width="333" height="64"/>
+                                                            <rect key="frame" x="0.0" y="221" width="333" height="64"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ABv-7Y-Zaz" customClass="AvatarView" customModule="BeagleIM" customModuleProvider="target">
