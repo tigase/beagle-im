@@ -575,17 +575,39 @@ class ConversationVCardViewController: NSViewController, ContactDetailsAccountJi
                 if line != nil {
                     let roleAndCompany = NSTextField(wrappingLabelWithString: line!);
                     roleAndCompany.setContentCompressionResistancePriority(.required, for: .vertical);
+                    roleAndCompany.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 2, weight: .medium);
                     self.stack.addArrangedSubview(roleAndCompany);
                 }
-
+                
+                if let phones = vcard?.telephones.filter({ !$0.isEmpty }).filter({ $0.uri != "null" && $0.number != "null"  }), !phones.isEmpty {
+                    let label = NSTextField(labelWithString: "Telephone")
+                    label.setContentCompressionResistancePriority(.required, for: .vertical);
+                    label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium);
+                    label.textColor = NSColor.secondaryLabelColor;
+                    self.stack.addArrangedSubview(label);
+                    for phone in phones {
+                        self.add(phone: phone);
+                    }
+                }
+                if let emails = vcard?.emails.filter({ !$0.isEmpty }).filter({ $0.address != "null" }), !emails.isEmpty {
+                    let label = NSTextField(labelWithString: "Emails")
+                    label.setContentCompressionResistancePriority(.required, for: .vertical);
+                    label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium);
+                    label.textColor = NSColor.secondaryLabelColor;
+                    self.stack.addArrangedSubview(label);
+                    for email in emails {
+                        self.add(email: email);
+                    }
+                }
                 if let addresses = vcard?.addresses, !addresses.isEmpty {
                     let label = NSTextField(labelWithString: "Addresses");
                     label.setContentCompressionResistancePriority(.required, for: .vertical);
-                    label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium);
+                    label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium);
+                    label.textColor = NSColor.secondaryLabelColor;
                     self.stack.addArrangedSubview(label);
-                    addresses.forEach({ (addr) in
-                        self.addAddress(address: addr);
-                    })
+                    for addr in addresses {
+                        self.add(address: addr);
+                    }
                 }
 //                self.view.needsLayout = true;
 //                self.stack.invalidateIntrinsicContentSize();
@@ -604,12 +626,7 @@ class ConversationVCardViewController: NSViewController, ContactDetailsAccountJi
         }
     }
     
-    func addAddress(address addr: VCard.Address) {
-        let label = NSTextField(labelWithString: (addr.types.first ?? .home) == .home ? "Home" : "Work");
-        label.setContentHuggingPriority(.defaultLow, for: .vertical);
-        label.setContentHuggingPriority(.defaultLow, for: .horizontal);
-        label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 2.0, weight: .bold);
-
+    func add(address addr: VCard.Address) {
         var str = "";
         if let street = addr.street, !street.isEmpty {
             str = street;
@@ -636,25 +653,63 @@ class ConversationVCardViewController: NSViewController, ContactDetailsAccountJi
         parts.scheme = "http";
         parts.host = "maps.apple.com";
         parts.queryItems = [ URLQueryItem(name: "q", value: str.replacingOccurrences(of: ", ", with: ",")) ];
-        let value = NSTextField(wrappingLabelWithString: str);
+        
+        let field = prepareValueLabel(text: str, url: parts.url);
+        self.addRow(label: (addr.types.first ?? .home) == .home ? "Home" : "Work", valueField: field);
+    }
+    
+    func add(email: VCard.Email) {
+        guard var address = email.address, !address.isEmpty else {
+            return;
+        }
+        
+        var label = address;
+        if !address.starts(with: "mailto:") {
+            address = "mailto:\(address)";
+        } else {
+            if let idx = label.firstIndex(of: ":") {
+                label = String(label.suffix(from: label.index(after: idx)));
+            }
+        }
+        
+        let field = prepareValueLabel(text: label, url: URL(string: address));
+        addRow(label: (email.types.first ?? .home) == .home ? "Home" : "Work", valueField: field);
+    }
+    
+    func add(phone: VCard.Telephone) {
+        guard let uri = phone.uri, !uri.isEmpty, let number = phone.number else {
+            return;
+        }
+        let field = prepareValueLabel(text: number, url: URL(string: uri.replacingOccurrences(of: " ", with: "-")));
+        addRow(label: (phone.types.first ?? .home) == .home ? "Home" : "Work", valueField: field);
+    }
+    
+    func prepareValueLabel(text: String, url: URL?) -> NSTextField {
+        let value = NSTextField(wrappingLabelWithString: text);
         value.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 2.0);
         value.setContentHuggingPriority(.defaultLow, for: .vertical);
         value.setContentHuggingPriority(.defaultLow, for: .horizontal);
-        value.isEditable = false;
-        value.isEnabled = true;
-        value.isSelectable = true;
         value.allowsEditingTextAttributes = true;
-        if let url = parts.url {
-            value.attributedStringValue = NSAttributedString(string: str, attributes: [.link : url]);
+        value.isSelectable = true;
+        if let url = url {
+            value.attributedStringValue = NSAttributedString(string: text, attributes: [.link : url]);
         }
+        return value;
+    }
+    
+    func addRow(label text: String, valueField: NSTextField) {
+        let label = NSTextField(labelWithString: text);
+        label.setContentHuggingPriority(.defaultLow, for: .vertical);
+        label.setContentHuggingPriority(.defaultLow, for: .horizontal);
+        label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 2.0, weight: .bold);
+        label.textColor = NSColor.secondaryLabelColor;
         
-        let row = NSStackView(views: [label, value]);
+        let row = NSStackView(views: [label, valueField]);
         row.setContentHuggingPriority(.defaultLow, for: .vertical);
         row.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
         row.orientation = .horizontal;
         self.stack.addArrangedSubview(row);
     }
-    
 }
 
 class CustomNSStackView: NSStackView {
