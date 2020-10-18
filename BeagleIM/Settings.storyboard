@@ -261,6 +261,12 @@
                                                     <action selector="changeAccountVCardClicked:" target="Yzz-sO-CKA" id="9rg-sg-CVX"/>
                                                 </connections>
                                             </menuItem>
+                                            <menuItem title="Friends-only VCard" id="hoB-vg-3zm">
+                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                                <connections>
+                                                    <action selector="changeAccountPrivateVCardClicked:" target="Yzz-sO-CKA" id="Y6N-t5-WcU"/>
+                                                </connections>
+                                            </menuItem>
                                             <menuItem title="OMEMO settings" id="uOu-4t-LCA">
                                                 <modifierMask key="keyEquivalentModifierMask"/>
                                                 <connections>
@@ -319,6 +325,7 @@
                         <segue destination="R8r-Nj-xQa" kind="sheet" identifier="showEditAccountVCard" id="rWs-ov-TQ2"/>
                         <segue destination="fWu-v1-OxO" kind="sheet" identifier="showEditAccountMamSettings" id="eaY-Bi-u4o"/>
                         <segue destination="ytu-J9-3un" kind="sheet" identifier="showEditAccountOmemoSettings" id="FvT-2y-VPO"/>
+                        <segue destination="R8r-Nj-xQa" kind="sheet" identifier="showEditAccountPrivateVCard" id="XGT-Xg-zBp"/>
                     </connections>
                 </viewController>
                 <customObject id="Th0-aj-GeM" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
@@ -1872,6 +1879,7 @@ Gw
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="k5o-QA-H37"/>
+        <segue reference="XGT-Xg-zBp"/>
     </inferredMetricsTieBreakers>
     <resources>
         <image name="NSActionTemplate" width="14" height="14"/>

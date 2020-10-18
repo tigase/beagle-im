@@ -10,6 +10,7 @@
 		FE02DD11225B8D1100FA08EB /* db-schema-3.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE02DD10225B8D1100FA08EB /* db-schema-3.sql */; };
 		FE02DD13225BC33F00FA08EB /* DBOMEMOStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE02DD12225BC33F00FA08EB /* DBOMEMOStore.swift */; };
 		FE0C817F2257B48400948C41 /* Settings.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEDC03172257B2B400F24BF4 /* Settings.storyboard */; };
+		FE0E3122253CA0F70030F8C5 /* PrivateVCard4Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E3121253CA0F70030F8C5 /* PrivateVCard4Helper.swift */; };
 		FE10BCE923FAA47800E214F3 /* InvitationGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCE823FAA47800E214F3 /* InvitationGroup.swift */; };
 		FE10BCEB23FAA60A00E214F3 /* InvitationItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCEA23FAA60A00E214F3 /* InvitationItem.swift */; };
 		FE10BCED23FAA86900E214F3 /* InvitationCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCEC23FAA86900E214F3 /* InvitationCellView.swift */; };
@@ -234,6 +235,7 @@
 /* Begin PBXFileReference section */
 		FE02DD10225B8D1100FA08EB /* db-schema-3.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-3.sql"; sourceTree = "<group>"; };
 		FE02DD12225BC33F00FA08EB /* DBOMEMOStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBOMEMOStore.swift; sourceTree = "<group>"; };
+		FE0E3121253CA0F70030F8C5 /* PrivateVCard4Helper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateVCard4Helper.swift; sourceTree = "<group>"; };
 		FE10BCE823FAA47800E214F3 /* InvitationGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationGroup.swift; sourceTree = "<group>"; };
 		FE10BCEA23FAA60A00E214F3 /* InvitationItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationItem.swift; sourceTree = "<group>"; };
 		FE10BCEC23FAA86900E214F3 /* InvitationCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationCellView.swift; sourceTree = "<group>"; };
@@ -576,6 +578,7 @@
 				FE29D35723C208840028D306 /* MetadataCache.swift */,
 				FE10BCEE23FAB13800E214F3 /* InvitationsManager.swift */,
 				FEE49DC724229D2A00900BBB /* OSLog.swift */,
+				FE0E3121253CA0F70030F8C5 /* PrivateVCard4Helper.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -1097,6 +1100,7 @@
 				FE7F876C2343D99300254AF2 /* CustomScroller.swift in Sources */,
 				FE6E6C0421384D5F003B1696 /* DatabaseSchemaManager.swift in Sources */,
 				FEC336FB240EC66000EC1A0D /* CreateChannelView.swift in Sources */,
+				FE0E3122253CA0F70030F8C5 /* PrivateVCard4Helper.swift in Sources */,
 				FE5C6B2722897F1B003DAB30 /* ServiceDiscoveryViewController.swift in Sources */,
 				FE9CB7022388382A008F1049 /* BlockedEventHandler.swift in Sources */,
 				FE30309A24438ED6003B9D76 /* MessageTextView.swift in Sources */,

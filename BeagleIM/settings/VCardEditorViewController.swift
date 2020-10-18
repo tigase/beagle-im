@@ -59,6 +59,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
             }
         }
     }
+    var isPrivate: Bool = false;
     
     @IBOutlet var avatarView: NSButton!;
     @IBOutlet var givenNameField: NSTextField!;
@@ -119,28 +120,53 @@ class VCardEditorViewController: NSViewController, AccountAware {
     
     func refreshVCard() {
         if let account = self.account {
-            progressIndicator.startAnimation(self);
-            self.isEnabled = false;
-            guard let client = XmppService.instance.getClient(for: account), client.state == .connected, let vcard4Module: VCard4Module = client.modulesManager.getModule(VCard4Module.ID) else {
-                self.handleError(title: "Could not retrive current version from the server.", message: "Account is not connected");
-                progressIndicator.stopAnimation(self);
-                return;
-            }
-            vcard4Module.retrieveVCard(completionHandler: { (result) in
-                switch result {
-                case .success(let vcard):
-                    DBVCardStore.instance.updateVCard(for: account, on: account, vcard: vcard);
+            if isPrivate {
+                progressIndicator.startAnimation(self);
+                self.isEnabled = false;
+                PrivateVCard4Helper.retrieve(on: account, from: account, completionHandler: { res in
+                    let result: Result<VCard,ErrorCondition> = res.flatMapError({ err in
+                        if err == .item_not_found {
+                            // there may be no node yet..
+                            return .success(VCard());
+                        } else {
+                            return .failure(err);
+                        }
+                    });
                     DispatchQueue.main.async {
-                        self.vcard = vcard;
                         self.progressIndicator.stopAnimation(self);
-                        self.isEnabled = true;
+                        switch result {
+                        case .success(let vcard):
+                            self.vcard = vcard;
+                            self.isEnabled = true;
+                        case .failure(let error):
+                            self.handleError(title: "Could not retrive current version of a private VCard from the server.", message: "Server returned an error: \(error)");
+                        }
                     }
-                case .failure(let error):
-                    print("got error:", error as Any);
-                    self.progressIndicator.stopAnimation(self);
-                    self.handleError(title: "Could not retrive current version from the server.", message: "Server returned an error: \(error)");
+                });
+            } else {
+                progressIndicator.startAnimation(self);
+                self.isEnabled = false;
+                guard let client = XmppService.instance.getClient(for: account), client.state == .connected, let vcard4Module: VCard4Module = client.modulesManager.getModule(VCard4Module.ID) else {
+                    self.handleError(title: "Could not retrive current version from the server.", message: "Account is not connected");
+                    progressIndicator.stopAnimation(self);
+                    return;
                 }
-            })
+                vcard4Module.retrieveVCard(completionHandler: { (result) in
+                    switch result {
+                    case .success(let vcard):
+                        DBVCardStore.instance.updateVCard(for: account, on: account, vcard: vcard);
+                        DispatchQueue.main.async {
+                            self.vcard = vcard;
+                            self.progressIndicator.stopAnimation(self);
+                            self.isEnabled = true;
+                        }
+                    case .failure(let error):
+                        print("got error:", error as Any);
+                        self.progressIndicator.stopAnimation(self);
+                        self.handleError(title: "Could not retrive current version from the server.", message: "Server returned an error: \(error)");
+                    }
+                })
+            }
         }
     }
     
@@ -175,7 +201,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
                 let data = image?.scaled(maxWidthOrHeight: 512, format: .jpeg, properties: [.compressionFactor: 0.8]);
                 self.vcard.photos = data == nil ? [] : [ VCard.Photo(uri: nil, type: "image/jpeg", binval: data!.base64EncodedString(options: []), types: [.home]) ];
                 
-                if data != nil {
+                if data != nil && !self.isPrivate {
                     guard let account = self.account, let avatarModule: PEPUserAvatarModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PEPUserAvatarModule.ID), avatarModule.isPepAvailable else {
                         return;
                     }
@@ -222,29 +248,48 @@ class VCardEditorViewController: NSViewController, AccountAware {
     @IBAction func submitClicked(_ sender: NSButton) {
         self.view.window?.makeFirstResponder(sender);
 
-        guard let account = self.account, let vcard4Module: VCard4Module = XmppService.instance.getClient(for: account)?.modulesManager.getModule(VCard4Module.ID) else {
-            self.handleError(title: "Publication of new version of VCard failed", message: "Account is not connected");
-            return;
-        }
-        self.isEnabled = false;
-        self.progressIndicator.startAnimation(self);
-        vcard4Module.publishVCard(vcard, completionHandler: { result in
-            switch result {
-            case .success(_):
-                DBVCardStore.instance.updateVCard(for: account, on: account, vcard: self.vcard);
-                DispatchQueue.main.async {
-                    self.progressIndicator.stopAnimation(self);
-                    self.isEnabled = true;
-                    self.dismiss(self);
-                }
-            case .failure(let error):
-                DispatchQueue.main.async {
-                    self.progressIndicator.stopAnimation(self);
-                    self.isEnabled = true;
-                    self.handleError(title: "Publication of new version of VCard failed", message: "Server returned an error: \(error)");
-                }
+        if isPrivate {
+            if let account = self.account {
+                self.isEnabled = false;
+                self.progressIndicator.startAnimation(self);
+                PrivateVCard4Helper.publish(on: account, vcard: vcard, completionHandler: { result in
+                    DispatchQueue.main.async {
+                        self.progressIndicator.stopAnimation(self);
+                        self.isEnabled = true;
+                        switch result {
+                        case .success(_,_,_):
+                            self.dismiss(self);
+                        case .failure(let error, _, _):
+                            self.handleError(title: "Publication of new version of private VCard failed", message: "Server returned an error: \(error)");
+                        }
+                    }
+                })
             }
-        });
+        } else {
+            guard let account = self.account, let vcard4Module: VCard4Module = XmppService.instance.getClient(for: account)?.modulesManager.getModule(VCard4Module.ID) else {
+                self.handleError(title: "Publication of new version of VCard failed", message: "Account is not connected");
+                return;
+            }
+            self.isEnabled = false;
+            self.progressIndicator.startAnimation(self);
+            vcard4Module.publishVCard(vcard, completionHandler: { result in
+                switch result {
+                case .success(_):
+                    DBVCardStore.instance.updateVCard(for: account, on: account, vcard: self.vcard);
+                    DispatchQueue.main.async {
+                        self.progressIndicator.stopAnimation(self);
+                        self.isEnabled = true;
+                        self.dismiss(self);
+                    }
+                case .failure(let error):
+                    DispatchQueue.main.async {
+                        self.progressIndicator.stopAnimation(self);
+                        self.isEnabled = true;
+                        self.handleError(title: "Publication of new version of VCard failed", message: "Server returned an error: \(error)");
+                    }
+                }
+            });
+        }
     }
 
     fileprivate func handleError(title: String, message msg: String) {

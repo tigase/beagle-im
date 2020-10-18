@@ -122,6 +122,9 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
             let items = self.editButton.menu?.items ?? [];
             for i in 0..<items.count {
                 items[i].isEnabled = i < 3 || connected;
+                if items[i].action == #selector(changeAccountPrivateVCardClicked(_:)) {
+                    items[i].isHidden = !Settings.showAdvancedXmppFeatures.bool();
+                }
             }
         }
     }
@@ -134,6 +137,9 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
     override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
         if let aware = segue.destinationController as? AccountAware {
             aware.account = self.currentAccount;
+        }
+        if segue.identifier == "showEditAccountPrivateVCard", let controller = segue.destinationController as? VCardEditorViewController {
+            controller.isPrivate = true;
         }
     }
     
@@ -159,6 +165,10 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
 
     @IBAction func changeAccountVCardClicked(_ sender: NSMenuItem) {
         performSegue(withIdentifier: "showEditAccountVCard", sender: self);
+    }
+
+    @IBAction func changeAccountPrivateVCardClicked(_ sender: NSMenuItem) {
+        performSegue(withIdentifier: "showEditAccountPrivateVCard", sender: self);
     }
 
     @IBAction func changeAccountOmemoClicked(_ sender: NSMenuItem) {

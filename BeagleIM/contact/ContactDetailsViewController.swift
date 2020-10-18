@@ -504,113 +504,115 @@ class ConversationVCardViewController: NSViewController, ContactDetailsAccountJi
     
     @IBOutlet var stack: NSStackView!;
 
+    private var vcard: VCard? {
+        didSet {
+            updateDisplayedValue();
+        }
+    }
+    
     override func viewWillAppear() {
         super.viewWillAppear();
         _ = self.view;
-        refresh();
-    }
-    
-    func refresh() {
-        guard let jid = self.jid, let account = self.account else {
-            let views = self.stack.arrangedSubviews;
-            views.forEach { (view) in
-                self.stack.removeView(view);
+        if let jid = self.jid {
+            DBVCardStore.instance.vcard(for: jid) { (vcard) in
+                DispatchQueue.main.async {
+                    self.vcard = vcard;
+                }
             }
+        }
+    }
+        
+    private func updateDisplayedValue() {
+        let views = self.stack.arrangedSubviews;
+        views.forEach { (view) in
+            self.stack.removeView(view);
+        }
+        
+        guard let jid = self.jid, let account = self.account else {
             return;
         }
         
-        DBVCardStore.instance.vcard(for: jid) { (vcard) in
-            DispatchQueue.main.async {
-                let views = self.stack.arrangedSubviews;
-                views.forEach { (view) in
-                    self.stack.removeView(view);
-                }
-                
-                var fn: String = "";
-                if let fn1 = vcard?.fn, !fn1.isEmpty {
-                    fn = fn1;
-                } else {
-                    if let given = vcard?.givenName, !given.isEmpty {
-                        fn = given;
-                    }
-                    if let surname = vcard?.surname, !surname.isEmpty {
-                        fn = fn.isEmpty ? surname : "\(fn) \(surname)"
-                    }
-                    if fn.isEmpty {
-                        fn = XmppService.instance.getClient(for: account)?.rosterStore?.get(for: JID(jid))?.name ?? jid.stringValue;
-                    }
-                }
-                let name = NSTextField(wrappingLabelWithString: fn);
-                name.font = NSFont.boldSystemFont(ofSize: NSFont.systemFontSize);
-                name.setContentCompressionResistancePriority(.required, for: .vertical);
-                name.setContentHuggingPriority(.required, for: .horizontal);
-                name.translatesAutoresizingMaskIntoConstraints = false;
-                let refresh = NSButton(image: NSImage(named: NSImage.refreshTemplateName)!, target: self, action: #selector(self.refreshVCard));
-                refresh.widthAnchor.constraint(equalToConstant: 16).isActive = true;
-                refresh.heightAnchor.constraint(equalToConstant: 16).isActive = true;
-                refresh.translatesAutoresizingMaskIntoConstraints = false;
-                refresh.isBordered = false;
-                let vbox = NSView(frame: .zero);
-                vbox.setContentCompressionResistancePriority(.required, for: .vertical);
-                vbox.setContentHuggingPriority(.required, for: .horizontal);
-                vbox.translatesAutoresizingMaskIntoConstraints = true;
-                vbox.autoresizingMask = [.width, .height];
-                vbox.autoresizesSubviews = true;
-                vbox.addSubview(name);
-                vbox.addSubview(refresh);
-                vbox.leftAnchor.constraint(equalTo: name.leftAnchor).isActive = true;
-                vbox.rightAnchor.constraint(equalTo: refresh.rightAnchor).isActive = true;
-                vbox.topAnchor.constraint(equalTo: refresh.topAnchor).isActive = true;
-                vbox.bottomAnchor.constraint(equalTo: refresh.bottomAnchor).isActive = true;
-                name.centerYAnchor.constraint(equalTo: refresh.centerYAnchor).isActive = true;
-                refresh.leftAnchor.constraint(greaterThanOrEqualTo: name.rightAnchor, constant: 8.0).isActive = true;
-                
-                self.stack.addArrangedSubview(vbox);
-                
-                var line = vcard?.role;
-                if let org = vcard?.organizations.first?.name, !org.isEmpty {
-                    line = (line?.isEmpty ?? true) ? org : "\(line!) at \(org)"
-                }
+        var fn: String = "";
+        if let fn1 = vcard?.fn, !fn1.isEmpty {
+            fn = fn1;
+        } else {
+            if let given = vcard?.givenName, !given.isEmpty {
+                fn = given;
+            }
+            if let surname = vcard?.surname, !surname.isEmpty {
+                fn = fn.isEmpty ? surname : "\(fn) \(surname)"
+            }
+            if fn.isEmpty {
+                fn = XmppService.instance.getClient(for: account)?.rosterStore?.get(for: JID(jid))?.name ?? jid.stringValue;
+            }
+        }
+        let name = NSTextField(wrappingLabelWithString: fn);
+        name.font = NSFont.boldSystemFont(ofSize: NSFont.systemFontSize);
+        name.setContentCompressionResistancePriority(.required, for: .vertical);
+        name.setContentHuggingPriority(.required, for: .horizontal);
+        name.translatesAutoresizingMaskIntoConstraints = false;
+        let refresh = NSButton(image: NSImage(named: NSImage.refreshTemplateName)!, target: self, action: #selector(self.refreshVCard));
+        refresh.widthAnchor.constraint(equalToConstant: 16).isActive = true;
+        refresh.heightAnchor.constraint(equalToConstant: 16).isActive = true;
+        refresh.translatesAutoresizingMaskIntoConstraints = false;
+        refresh.isBordered = false;
+        let vbox = NSView(frame: .zero);
+        vbox.setContentCompressionResistancePriority(.required, for: .vertical);
+        vbox.setContentHuggingPriority(.required, for: .horizontal);
+        vbox.translatesAutoresizingMaskIntoConstraints = true;
+        vbox.autoresizingMask = [.width, .height];
+        vbox.autoresizesSubviews = true;
+        vbox.addSubview(name);
+        vbox.addSubview(refresh);
+        vbox.leftAnchor.constraint(equalTo: name.leftAnchor).isActive = true;
+        vbox.rightAnchor.constraint(equalTo: refresh.rightAnchor).isActive = true;
+        vbox.topAnchor.constraint(equalTo: refresh.topAnchor).isActive = true;
+        vbox.bottomAnchor.constraint(equalTo: refresh.bottomAnchor).isActive = true;
+        name.centerYAnchor.constraint(equalTo: refresh.centerYAnchor).isActive = true;
+        refresh.leftAnchor.constraint(greaterThanOrEqualTo: name.rightAnchor, constant: 8.0).isActive = true;
+        
+        self.stack.addArrangedSubview(vbox);
+        
+        var line = vcard?.role;
+        if let org = vcard?.organizations.first?.name, !org.isEmpty {
+            line = (line?.isEmpty ?? true) ? org : "\(line!) at \(org)"
+        }
 
-                if line != nil {
-                    let roleAndCompany = NSTextField(wrappingLabelWithString: line!);
-                    roleAndCompany.setContentCompressionResistancePriority(.required, for: .vertical);
-                    roleAndCompany.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 2, weight: .medium);
-                    self.stack.addArrangedSubview(roleAndCompany);
-                }
-                
-                if let phones = vcard?.telephones.filter({ !$0.isEmpty }).filter({ $0.uri != "null" && $0.number != "null"  }), !phones.isEmpty {
-                    let label = NSTextField(labelWithString: "Telephone")
-                    label.setContentCompressionResistancePriority(.required, for: .vertical);
-                    label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium);
-                    label.textColor = NSColor.secondaryLabelColor;
-                    self.stack.addArrangedSubview(label);
-                    for phone in phones {
-                        self.add(phone: phone);
-                    }
-                }
-                if let emails = vcard?.emails.filter({ !$0.isEmpty }).filter({ $0.address != "null" }), !emails.isEmpty {
-                    let label = NSTextField(labelWithString: "Emails")
-                    label.setContentCompressionResistancePriority(.required, for: .vertical);
-                    label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium);
-                    label.textColor = NSColor.secondaryLabelColor;
-                    self.stack.addArrangedSubview(label);
-                    for email in emails {
-                        self.add(email: email);
-                    }
-                }
-                if let addresses = vcard?.addresses, !addresses.isEmpty {
-                    let label = NSTextField(labelWithString: "Addresses");
-                    label.setContentCompressionResistancePriority(.required, for: .vertical);
-                    label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium);
-                    label.textColor = NSColor.secondaryLabelColor;
-                    self.stack.addArrangedSubview(label);
-                    for addr in addresses {
-                        self.add(address: addr);
-                    }
-                }
-//                self.view.needsLayout = true;
-//                self.stack.invalidateIntrinsicContentSize();
+        if line != nil {
+            let roleAndCompany = NSTextField(wrappingLabelWithString: line!);
+            roleAndCompany.setContentCompressionResistancePriority(.required, for: .vertical);
+            roleAndCompany.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 2, weight: .medium);
+            self.stack.addArrangedSubview(roleAndCompany);
+        }
+        
+        if let phones = vcard?.telephones.filter({ !$0.isEmpty }).filter({ $0.uri != "null" && $0.number != "null"  }), !phones.isEmpty {
+            let label = NSTextField(labelWithString: "Telephone")
+            label.setContentCompressionResistancePriority(.required, for: .vertical);
+            label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium);
+            label.textColor = NSColor.secondaryLabelColor;
+            self.stack.addArrangedSubview(label);
+            for phone in phones {
+                self.add(phone: phone);
+            }
+        }
+        if let emails = vcard?.emails.filter({ !$0.isEmpty }).filter({ $0.address != "null" }), !emails.isEmpty {
+            let label = NSTextField(labelWithString: "Emails")
+            label.setContentCompressionResistancePriority(.required, for: .vertical);
+            label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium);
+            label.textColor = NSColor.secondaryLabelColor;
+            self.stack.addArrangedSubview(label);
+            for email in emails {
+                self.add(email: email);
+            }
+        }
+        if let addresses = vcard?.addresses, !addresses.isEmpty {
+            let label = NSTextField(labelWithString: "Addresses");
+            label.setContentCompressionResistancePriority(.required, for: .vertical);
+            label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium);
+            label.textColor = NSColor.secondaryLabelColor;
+            self.stack.addArrangedSubview(label);
+            for addr in addresses {
+                self.add(address: addr);
             }
         }
     }
@@ -619,11 +621,45 @@ class ConversationVCardViewController: NSViewController, ContactDetailsAccountJi
         guard let jid = self.jid, let account = self.account else {
             return;
         }
-        VCardManager.instance.refreshVCard(for: jid, on: account) { (vcard) in
-            DispatchQueue.main.async {
-                self.refresh();
+        var retrievedVCard: VCard? = nil;
+        let group = DispatchGroup();
+        group.enter();
+        VCardManager.instance.refreshVCard(for: jid, on: account) { (result) in
+            switch result {
+            case .success(let vcard):
+                DispatchQueue.main.async {
+                    if retrievedVCard == nil {
+                        retrievedVCard = vcard;
+                    }
+                }
+            default:
+                break;
             }
+            group.leave();
         }
+        group.enter();
+        PrivateVCard4Helper.retrieve(on: account, from: jid, completionHandler: { result in
+            switch result {
+            case .success(let vcard):
+                DispatchQueue.main.async {
+                    retrievedVCard = vcard;
+                }
+            case .failure(_):
+                break;
+            }
+            group.leave();
+        })
+        group.notify(queue: DispatchQueue.main, execute: {
+            if let vcard = retrievedVCard {
+                self.vcard = vcard;
+            } else {
+                DBVCardStore.instance.vcard(for: jid) { (vcard) in
+                    DispatchQueue.main.async {
+                        self.vcard = vcard;
+                    }
+                }
+            }
+        })
     }
     
     func add(address addr: VCard.Address) {
