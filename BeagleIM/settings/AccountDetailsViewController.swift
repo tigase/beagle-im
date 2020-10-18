@@ -24,36 +24,7 @@ import TigaseSwift
 
 class AccountDetailsViewController: NSViewController, AccountAware {
     
-    var account: BareJID? {
-        didSet {
-            username?.stringValue = account?.stringValue ?? "";
-            let acc = account == nil ? nil : AccountManager.getAccount(for: account!);
-            nickname?.stringValue = acc?.nickname ?? "";
-            active?.state = (acc?.active ?? false) ? .on : .off;
-            resourceType?.itemArray.forEach { (item) in
-                item.state = .off;
-            }
-            if let rt = acc?.resourceType {
-                switch rt {
-                case .automatic:
-                    resourceType?.selectItem(at: 1);
-                case .hostname:
-                    resourceType?.selectItem(at: 2);
-                case .custom:
-                    resourceType?.selectItem(at: 3);
-                }
-            } else {
-                resourceType?.selectItem(at: 1);
-            }
-            resourceType?.selectedItem?.state = .on;
-            resourceType?.title = resourceType?.titleOfSelectedItem ?? "";
-            resourceName?.stringValue = acc?.resourceName ?? "BeagleIM";
-            active.isEnabled = account != nil;
-            changePasswordButton.isEnabled = account != nil;
-            nickname.isEnabled = account != nil;
-            resourceName.isEnabled = account != nil;
-        }
-    }
+    var account: BareJID?;
     
     @IBOutlet var changePasswordButton: NSButton!;
     @IBOutlet weak var username: NSTextField!;
@@ -62,14 +33,40 @@ class AccountDetailsViewController: NSViewController, AccountAware {
     @IBOutlet weak var resourceType: NSPopUpButton!;
     @IBOutlet weak var resourceName: NSTextField!;
     
-    @IBAction func nicknameChanged(_ sender: NSTextField) {
-        save();
+    override func viewDidLoad() {
+        super.viewDidLoad();
+        self.refresh();
     }
     
-    @IBAction func activeStateChanged(_ sender: NSButton) {
-        save();
+    func refresh() {
+        username?.stringValue = account?.stringValue ?? "";
+        let acc = account == nil ? nil : AccountManager.getAccount(for: account!);
+        nickname?.stringValue = acc?.nickname ?? "";
+        active?.state = (acc?.active ?? false) ? .on : .off;
+        resourceType?.itemArray.forEach { (item) in
+            item.state = .off;
+        }
+        if let rt = acc?.resourceType {
+            switch rt {
+            case .automatic:
+                resourceType?.selectItem(at: 1);
+            case .hostname:
+                resourceType?.selectItem(at: 2);
+            case .custom:
+                resourceType?.selectItem(at: 3);
+            }
+        } else {
+            resourceType?.selectItem(at: 1);
+        }
+        resourceType?.selectedItem?.state = .on;
+        resourceType?.title = resourceType?.titleOfSelectedItem ?? "";
+        resourceName?.stringValue = acc?.resourceName ?? "BeagleIM";
+        active.isEnabled = account != nil;
+        changePasswordButton.isEnabled = account != nil;
+        nickname.isEnabled = account != nil;
+        resourceName.isEnabled = resourceType.indexOfSelectedItem == 3;
     }
-    
+        
     @IBAction func resourceTypeChanged(_ sender: NSPopUpButton) {
         let idx = sender.indexOfSelectedItem;
         resourceName.isEnabled = idx == 3;
@@ -78,14 +75,13 @@ class AccountDetailsViewController: NSViewController, AccountAware {
             item.state = .off;
         }
         sender.selectedItem?.state = .on;
-        save();
     }
 
-    @IBAction func resourceNameChanged(_ sender: NSTextField) {
-        save();
+    @IBAction func cancel(_ sender: NSButton) {
+        self.dismiss(self);
     }
     
-    func save() {
+    @IBAction func save(_ sender: NSButton) {
         guard let jid = self.account, let account = AccountManager.getAccount(for: jid) else {
             // do not save if we cannot find the account
             return;
@@ -96,6 +92,7 @@ class AccountDetailsViewController: NSViewController, AccountAware {
         account.resourceType = idx == 1 ? .automatic : (idx == 2 ? .hostname : .custom);
         account.resourceName = resourceName.stringValue;
         _ = AccountManager.save(account: account);
+        self.dismiss(self);
     }
     
     override func prepare(for segue: NSStoryboardSegue, sender: Any?) {

@@ -24,15 +24,22 @@ import TigaseSwift
 
 class MessageArchivingSettingsViewController: NSViewController, AccountAware {
     
-    var account: BareJID? {
-        didSet {
-            refresh()
-        }
-    }
+    var account: BareJID?;
     
     @IBOutlet var archivingEnabled: NSButton!;
     @IBOutlet var automaticSynchronization: NSButton!;
     @IBOutlet var synchronizationPeriod: NSPopUpButton!;
+    
+    @IBOutlet var saveButton: NSButton!;
+    @IBOutlet var progressIndicator: NSProgressIndicator!;
+    
+    var isEnabled: Bool = true {
+        didSet {
+            saveButton.isEnabled = isEnabled;
+            archivingEnabled.isEnabled = isEnabled;
+            archivingStateChanged();
+        }
+    }
     
     override func viewWillAppear() {
         super.viewWillAppear();
@@ -40,11 +47,8 @@ class MessageArchivingSettingsViewController: NSViewController, AccountAware {
     }
     
     func refresh() {
-        guard automaticSynchronization != nil else {
-            return;
-        }
+        self.isEnabled = false;
         guard let account = self.account else {
-            self.disable();
             return;
         }
         
@@ -62,71 +66,82 @@ class MessageArchivingSettingsViewController: NSViewController, AccountAware {
         synchronizationPeriod.selectItem(at: idx == 0 ? 1 : idx);
         synchronizationPeriod.title = synchronizationPeriod.titleOfSelectedItem ?? "";
         
+        progressIndicator.startAnimation(self);
+        
         guard let mamModule: MessageArchiveManagementModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageArchiveManagementModule.ID), mamModule.isAvailable else {
-            self.disable();
+            self.progressIndicator.stopAnimation(self);
             return;
         }
         mamModule.retrieveSettings(completionHandler: { result in
             switch result {
             case .success(let defValue, _, _):
                 DispatchQueue.main.async {
+                    self.progressIndicator.stopAnimation(self);
                     let isOn = defValue == .always
                     self.archivingEnabled.state = isOn ? .on : .off;
-                    self.archivingEnabled.isEnabled = true;
-                    self.automaticSynchronization.isEnabled = isOn;
-                    self.synchronizationPeriod.isEnabled = syncEnabled;
+                    self.isEnabled = true;
                 }
             case .failure(let errorCondition, _):
+                self.progressIndicator.stopAnimation(self);
+                self.isEnabled = false;
                 print("got an error from the server:", errorCondition as Any, ", ignoring...");
             }
         });
     }
     
-    func disable() {
-        archivingEnabled.isEnabled = false;
-        automaticSynchronization.isEnabled = false;
-        synchronizationPeriod.isEnabled = false;
+    @IBAction func cancelClicked(_ sender: NSButton) {
+        self.dismiss(self);
     }
-    
-    @IBAction func archivingStateChanged(_ sender: NSButton) {
-        let isOn = sender.state == .on;
         
+    @IBAction func submitClicked(_ sender: NSButton) {
+        self.isEnabled = false;
+        let enable = sender.state == .on;
         guard let mamModule: MessageArchiveManagementModule = XmppService.instance.getClient(for: account!)?.modulesManager.getModule(MessageArchiveManagementModule.ID), mamModule.isAvailable else {
-            self.updateArchivingState(!isOn);
             return;
         }
+        self.progressIndicator.startAnimation(self);
         
         mamModule.retrieveSettings(completionHandler: { result in
             switch result {
             case .success(let defValue, let always, let never):
-                mamModule.updateSettings(defaultValue: isOn ? .always : .never, always: always, never: never, completionHandler: { (result) in
-                    switch result {
-                    case .success(let newValue, _, _):
-                        self.updateArchivingState(newValue == .always);
-                    case .failure(_, _):
-                        self.updateArchivingState(defValue == .always);
+                mamModule.updateSettings(defaultValue: enable ? .always : .never, always: always, never: never, completionHandler: { (result) in
+                    DispatchQueue.main.async {
+                        self.isEnabled = true;
+                        switch result {
+                        case .success(let newValue, _, _):
+                            AccountSettings.messageSyncAuto(self.account!).set(value: self.automaticSynchronization.state == .on && self.automaticSynchronization.isEnabled);
+                            let value = Double(self.synchronizationPeriod.selectedItem?.tag ?? 72)
+                            AccountSettings.messageSyncPeriod(self.account!).set(value: value);
+                            self.progressIndicator.stopAnimation(self);
+                            self.dismiss(self);
+                        case .failure(_, _):
+                            self.progressIndicator.stopAnimation(self);
+                        }
                     }
                 });
             case .failure(_, _):
-                self.updateArchivingState(!isOn);
+                DispatchQueue.main.async {
+                    self.isEnabled = true;
+                    self.progressIndicator.stopAnimation(self);
+                }
             }
         });
     }
+        
+    @IBAction func archivingStateChanged(_ sender: NSButton) {
+        let isOn = sender.state == .on;
+
+        updateArchivingState(isOn);
+    }
     
     func updateArchivingState(_ value: Bool) {
-        DispatchQueue.main.async {
-            self.archivingEnabled.state = value ? .on : .off;
-            self.automaticSynchronization.isEnabled = value;
-            self.synchronizationPeriod.isEnabled = value && (self.automaticSynchronization.state == .on);
-        }
+        self.archivingEnabled.state = value ? .on : .off;
+        archivingStateChanged();
     }
     
     func updateAutomaticSyncState(_ value: Bool) {
-        AccountSettings.messageSyncAuto(account!).set(value: value);
-        DispatchQueue.main.async {
-            self.automaticSynchronization.state = value ? .on : .off;
-            self.synchronizationPeriod.isEnabled = value;
-        }
+        self.automaticSynchronization.state = value ? .on : .off;
+        archivingAutoSyncStateChanged();
     }
     
     @IBAction func automaticSynchronizationChanged(_ sender: NSButton) {
@@ -134,8 +149,12 @@ class MessageArchivingSettingsViewController: NSViewController, AccountAware {
         updateAutomaticSyncState(isOn);
     }
     
-    @IBAction func synchronizationPeriodChanged(_ sender: NSPopUpButton) {
-        let value = Double(sender.selectedItem?.tag ?? 72)
-        AccountSettings.messageSyncPeriod(account!).set(value: value);
+    private func archivingStateChanged() {
+        self.automaticSynchronization.isEnabled = self.archivingEnabled.state == .on && self.archivingEnabled.isEnabled;
+        archivingAutoSyncStateChanged();
+    }
+    
+    private func archivingAutoSyncStateChanged() {
+        self.synchronizationPeriod.isEnabled = self.automaticSynchronization.state == .on && self.automaticSynchronization.isEnabled;
     }
 }

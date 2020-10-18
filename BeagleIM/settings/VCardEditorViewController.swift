@@ -24,24 +24,7 @@ import TigaseSwift
 
 class VCardEditorViewController: NSViewController, AccountAware {
     
-    var account: BareJID? {
-        didSet {
-            guard self.avatarView != nil else {
-                return;
-            }
-            if account == nil {
-                self.vcard = VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"))!;
-            } else {
-                self.isEnabled = false;
-                DBVCardStore.instance.vcard(for: account!) { (vcard) in
-                    DispatchQueue.main.async {
-                        self.vcard = vcard ?? VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"))!;
-                    }
-                }
-            }
-            accountStatusChanged();
-        }
-    }
+    var account: BareJID?;
     
     var vcard: VCard = VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"))! {
         didSet {
@@ -93,8 +76,6 @@ class VCardEditorViewController: NSViewController, AccountAware {
     @IBOutlet var addressesStackView: NSStackView!;
     
     @IBOutlet var progressIndicator: NSProgressIndicator!;
-    @IBOutlet var refreshButton: NSButton!;
-    @IBOutlet var refreshButtonWidth: NSLayoutConstraint!;
     @IBOutlet var submitButton: NSButton!;
     
     var counter = 0;
@@ -122,57 +103,26 @@ class VCardEditorViewController: NSViewController, AccountAware {
                 }.forEach { (r) in
                     r.isEnabled = isEnabled;
             }
-            refreshButton.imagePosition = isEnabled ? .noImage : .imageOnly;
-            refreshButtonWidth.isActive = !isEnabled;
-            submitButton.title = isEnabled ? "Submit" : "Edit";
+            submitButton.isEnabled = isEnabled;
         }
     }
     
     override func viewWillAppear() {
         super.viewWillAppear();
-        isEnabled = false;
-        if account == nil {
-            self.vcard = VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"))!;
+        if let account = self.account {
+            refreshVCard();
         } else {
-            DBVCardStore.instance.vcard(for: account!) { (vcard) in
-                DispatchQueue.main.async {
-                    self.vcard = vcard ?? VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"))!;
-                }
-            }
-        }
-        NotificationCenter.default.addObserver(self, selector: #selector(accountStatusChanged(_:)), name: XmppService.ACCOUNT_STATUS_CHANGED, object: nil);
-        accountStatusChanged();
-    }
-    
-    override func viewDidDisappear() {
-        NotificationCenter.default.removeObserver(self, name: XmppService.ACCOUNT_STATUS_CHANGED, object: nil);
-    }
-    
-    func accountStatusChanged() {
-        guard let account = self.account else {
-            return;
-        }
-        DispatchQueue.main.async {
-            self.refreshButton.isEnabled = XmppService.instance.getClient(for: account)?.state == SocketConnector.State.connected;
-            self.submitButton.isEnabled = XmppService.instance.getClient(for: account)?.state == SocketConnector.State.connected;
+            self.vcard = VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"))!;
         }
     }
+        
     
-    @objc func accountStatusChanged(_ notification: Notification) {
-        guard let account = notification.object as? BareJID else {
-            return;
-        }
-        guard account == self.account else {
-            return;
-        }
-        accountStatusChanged();
-    }
-    
-    func refreshVCard(onSuccess: (()->Void)? = nil, onFailure: ((String)->Void)? = nil) {
+    func refreshVCard() {
         if let account = self.account {
             progressIndicator.startAnimation(self);
+            self.isEnabled = false;
             guard let client = XmppService.instance.getClient(for: account), client.state == .connected, let vcard4Module: VCard4Module = client.modulesManager.getModule(VCard4Module.ID) else {
-                onFailure?("Account is not connected");
+                self.handleError(title: "Could not retrive current version from the server.", message: "Account is not connected");
                 progressIndicator.stopAnimation(self);
                 return;
             }
@@ -183,12 +133,12 @@ class VCardEditorViewController: NSViewController, AccountAware {
                     DispatchQueue.main.async {
                         self.vcard = vcard;
                         self.progressIndicator.stopAnimation(self);
-                        onSuccess?();
+                        self.isEnabled = true;
                     }
                 case .failure(let error):
                     print("got error:", error as Any);
                     self.progressIndicator.stopAnimation(self);
-                    onFailure?("Server returned an error: \(error)");
+                    self.handleError(title: "Could not retrive current version from the server.", message: "Server returned an error: \(error)");
                 }
             })
         }
@@ -207,9 +157,6 @@ class VCardEditorViewController: NSViewController, AccountAware {
     }
     
     @IBAction func avatarClicked(_ sender: NSButton) {
-        guard isEnabled else {
-            return;
-        }
         let openFile = NSOpenPanel();
         openFile.worksWhenModal = true;
         openFile.prompt = "Select avatar";
@@ -269,64 +216,40 @@ class VCardEditorViewController: NSViewController, AccountAware {
     }
     
     @IBAction func cancelClicked(_ sender: NSButton) {
-        if isEnabled {
-            isEnabled = false;
+        self.dismiss(self);
+    }
+
+    @IBAction func submitClicked(_ sender: NSButton) {
+        self.view.window?.makeFirstResponder(sender);
+
+        guard let account = self.account, let vcard4Module: VCard4Module = XmppService.instance.getClient(for: account)?.modulesManager.getModule(VCard4Module.ID) else {
+            self.handleError(title: "Publication of new version of VCard failed", message: "Account is not connected");
+            return;
         }
-        refreshVCard(onFailure: { msg in
-            DispatchQueue.main.async {
-                self.account = self.account;
+        self.isEnabled = false;
+        self.progressIndicator.startAnimation(self);
+        vcard4Module.publishVCard(vcard, completionHandler: { result in
+            switch result {
+            case .success(_):
+                DBVCardStore.instance.updateVCard(for: account, on: account, vcard: self.vcard);
+                DispatchQueue.main.async {
+                    self.progressIndicator.stopAnimation(self);
+                    self.isEnabled = true;
+                    self.dismiss(self);
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    self.progressIndicator.stopAnimation(self);
+                    self.isEnabled = true;
+                    self.handleError(title: "Publication of new version of VCard failed", message: "Server returned an error: \(error)");
+                }
             }
         });
     }
 
-    @IBAction func submitClicked(_ sender: NSButton) {
-        if isEnabled {
-            sender.isEnabled = false;
-            self.view.window?.makeFirstResponder(sender);
-
-            guard let account = self.account, let vcard4Module: VCard4Module = XmppService.instance.getClient(for: account)?.modulesManager.getModule(VCard4Module.ID) else {
-                self.handleError(title: "Publication of new version of VCard failed", message: "Account is not connected");
-                sender.isEnabled = true;
-                return;
-            }
-            self.progressIndicator.startAnimation(self);
-            vcard4Module.publishVCard(vcard, completionHandler: { result in
-                switch result {
-                case .success(_):
-                    DBVCardStore.instance.updateVCard(for: account, on: account, vcard: self.vcard);
-                    DispatchQueue.main.async {
-                        self.isEnabled = false;
-                        sender.isEnabled = true;
-                        self.progressIndicator.stopAnimation(self);
-                    }
-                case .failure(let error):
-                    DispatchQueue.main.async {
-                        self.progressIndicator.stopAnimation(self);
-                        sender.isEnabled = true;
-                        self.handleError(title: "Publication of new version of VCard failed", message: "Server returned an error: \(error)");
-                    }
-                }
-            });
-        } else {
-            sender.isEnabled = false;
-            refreshVCard(onSuccess: {
-                DispatchQueue.main.async {
-                    sender.isEnabled = true;
-                    self.isEnabled = true;
-                }
-            }, onFailure: { error in
-                DispatchQueue.main.async {
-                    sender.isEnabled = true;
-                    self.isEnabled = false;
-                }
-                self.handleError(title: "Could not retrive current version from the server.", message: error);
-            })
-        }
-    }
-    
     fileprivate func handleError(title: String, message msg: String) {
-        DispatchQueue.main.async {
-            guard let window = self.view.window else {
+        DispatchQueue.main.async { [weak self] in
+            guard let window = self?.view.window else {
                 return;
             }
             let alert = NSAlert();
@@ -397,7 +320,6 @@ class VCardEditorViewController: NSViewController, AccountAware {
         stack.alignment = .top;
         stack.spacing = 4;
         addressesStackView.addView(stack, in: .bottom);
-        stack.isEnabled = isEnabled;
     }
     
     fileprivate func addRow(email item: VCard.Email) {
@@ -410,7 +332,6 @@ class VCardEditorViewController: NSViewController, AccountAware {
         stack.orientation = .horizontal;
         stack.spacing = 4;
         emailsStackView.addView(stack, in: .bottom);
-        stack.isEnabled = isEnabled;
     }
     
     fileprivate func addRow(phone item: VCard.Telephone) {
@@ -423,7 +344,6 @@ class VCardEditorViewController: NSViewController, AccountAware {
         stack.orientation = .horizontal;
         stack.spacing = 4;
         phonesStackView.addView(stack, in: .bottom);
-        stack.isEnabled = isEnabled;
     }
     
     fileprivate func connect(field: NSTextField, tag: Int, action: Selector) {

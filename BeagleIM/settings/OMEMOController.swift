@@ -180,4 +180,7 @@ open class OMEMOContoller: NSViewController, AccountAware, NSTableViewDataSource
         }
     }
     
+    @IBAction func closeClicked(_ sender: NSButton) {
+        self.dismiss(self);
+    }
 }

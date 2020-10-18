@@ -25,13 +25,17 @@ import TigaseSwift
 class AccountsListController: NSViewController, NSTableViewDataSource, NSTableViewDelegate {
     
     @IBOutlet var tableView: NSTableView?;
-    @IBOutlet var defaultAccountField: NSPopUpButton!;
     
-    var tabViewController: NSTabViewController? {
-        return self.children.last as? NSTabViewController;
-    }
+    @IBOutlet var editButton: NSPopUpButton!;
+    @IBOutlet var removeButton: NSButton!;
+    @IBOutlet var setDefaultButton: NSButton!;
     
     var accounts: [BareJID] = [];
+    var currentAccount: BareJID? {
+        didSet {
+            updateButtonsForCurrentAccount();
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad();
@@ -46,12 +50,7 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
     
     func refreshAccounts() {
         accounts = AccountManager.getAccounts();
-        defaultAccountField.removeAllItems();
-        accounts.forEach { jid in
-            defaultAccountField.addItem(withTitle: jid.stringValue);
-        }
-        defaultAccountField.title = Settings.defaultAccount.bareJid()?.stringValue ?? "";
-        defaultAccountField.selectItem(withTitle: Settings.defaultAccount.bareJid()?.stringValue ?? "");
+        self.currentAccount = nil;
         self.tableView?.reloadData();
         self.tableView?.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false);
         DispatchQueue.main.async {
@@ -72,33 +71,22 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("AccountCellView"), owner: self) as! AccountCellView;
-        view.avatar?.update(for: accounts[row], on: accounts[row]);
-        view.label?.textColor = tableView.isRowSelected(row) ? NSColor.selectedTextColor : NSColor.textColor;
-        view.label?.stringValue = accounts[row].stringValue;
+        view.set(account: accounts[row]);
         return view;
     }
     
     func tableViewSelectionDidChange(_ notification: Notification) {
         guard (tableView?.selectedRow ?? -1) >= 0 else {
+            self.currentAccount = nil;
             return;
         }
-        let account: BareJID = accounts[tableView!.selectedRow];
-        tabViewController?.tabViewItems.forEach({ (controller) in
-            (controller.viewController as? AccountAware)?.account = account;
-        })
+        self.currentAccount = accounts[tableView!.selectedRow];
     }
     
     func tableView(_ tableView: NSTableView, rowViewForRow row: Int) -> NSTableRowView? {
         return AccountRowView();
     }
-    
-    @IBAction func defaultAccountChanged(_ sender: NSPopUpButton) {
-        DispatchQueue.main.async {
-            Settings.defaultAccount.set(bareJid: BareJID(sender.titleOfSelectedItem ?? ""));
-            self.defaultAccountField.title = Settings.defaultAccount.bareJid()?.stringValue ?? "";
-        }
-    }
-    
+        
     @objc func accountChanged(_ notification: Notification) {
         DispatchQueue.main.async {
             let selectedRow = self.tableView?.selectedRow;
@@ -114,6 +102,9 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
             return;
         }
         DispatchQueue.main.async {
+            if account == self.currentAccount {
+                self.updateButtonsForCurrentAccount();
+            }
             guard let idx = self.accounts.firstIndex(of: account) else {
                 return;
             }
@@ -121,86 +112,132 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
         }
     }
     
-    @IBAction func actionButtonCliecked(_ sender: NSSegmentedCell) {
-        switch sender.selectedSegment {
-        case 0:
-            // add account
-            let addAccountController = self.storyboard!.instantiateController(withIdentifier: "AddAccountController") as! NSViewController;
-            self.presentAsSheet(addAccountController);
-            break;
-        case 1:
-            // remove account
-            let selectedRow = tableView!.selectedRow
-            guard selectedRow >= 0 && selectedRow < self.accounts.count else {
-                return;
+    func updateButtonsForCurrentAccount() {
+        self.removeButton.isEnabled = currentAccount != nil;
+        self.editButton.isEnabled = currentAccount != nil;
+        self.setDefaultButton.isEnabled = currentAccount != nil;
+        
+        if let account = currentAccount {
+            let connected = XmppService.instance.getClient(for: account)?.state == .connected;
+            let items = self.editButton.menu?.items ?? [];
+            for i in 0..<items.count {
+                items[i].isEnabled = i < 3 || connected;
             }
-            
-            let jid = accounts[selectedRow];
-            
-            let alert = NSAlert();
-            alert.messageText = "Account removal";
-            alert.informativeText = "Should the account be removed from the server as well?";
-            alert.addButton(withTitle: "Remove from server")
-            alert.addButton(withTitle: "Remove from application")
-            alert.addButton(withTitle: "Cancel");
-            alert.beginSheetModal(for: self.view.window!) { (response) in
-                switch response {
-                case .alertFirstButtonReturn:
-                    // remove from the server
-                    guard let client = XmppService.instance.getClient(for: jid), client.state == .connected else {
-                        let alert = NSAlert();
-                        alert.messageText = "Account removal failure";
-                        alert.informativeText = "Account needs to be active and connected to remove the acocunt from the server";
-                        alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
-                        return;
-                    }
-                    
-                    let regModule = client.modulesManager.register(InBandRegistrationModule());
-                    regModule.unregister({ (result) in
-                        if let account = AccountManager.getAccount(for: jid) {
-                            _ = AccountManager.delete(account: account);
-                        }
-                    })
-                    break;
-                case .alertSecondButtonReturn:
-                    // remove from the application
-                    if let account = AccountManager.getAccount(for: jid) {
-                        _ = AccountManager.delete(account: account);
-                    }
-                default:
-                    // cancel
-                    break;
-                }
-            }
-            break;
-        default:
-            break;
         }
     }
     
+    @IBAction func addAccountClicked(_ sender: NSButton) {
+        let addAccountController = self.storyboard!.instantiateController(withIdentifier: "AddAccountController") as! NSViewController;
+        self.presentAsSheet(addAccountController);
+    }
+
+    override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
+        if let aware = segue.destinationController as? AccountAware {
+            aware.account = self.currentAccount;
+        }
+    }
+    
+    @IBAction func setDefaultClicked(_ sender: NSButton) {
+        guard let account = self.currentAccount else {
+            return;
+        }
+        AccountManager.defaultAccount = account;
+        let selectedRow = self.tableView?.selectedRow;
+        self.refreshAccounts();
+        if selectedRow != nil {
+            self.tableView?.selectRowIndexes(IndexSet(integer: selectedRow!), byExtendingSelection: false);
+        }
+    }
+
+    @IBAction func editAccountDetailsClicked(_ sender: NSMenuItem) {
+        performSegue(withIdentifier: "showEditAccountConnectionDetails", sender: self);
+    }
+
+    @IBAction func changeAccountPasswordClicked(_ sender: NSMenuItem) {
+        performSegue(withIdentifier: "showChangeAccountPassword", sender: self);
+    }
+
+    @IBAction func changeAccountVCardClicked(_ sender: NSMenuItem) {
+        performSegue(withIdentifier: "showEditAccountVCard", sender: self);
+    }
+
+    @IBAction func changeAccountOmemoClicked(_ sender: NSMenuItem) {
+        performSegue(withIdentifier: "showEditAccountOmemoSettings", sender: self);
+    }
+
+    @IBAction func changeAccountMamClicked(_ sender: NSMenuItem) {
+        performSegue(withIdentifier: "showEditAccountMamSettings", sender: self);
+    }
+
+
+    @IBAction func removeAccountClicked(_ sender: NSButton) {
+        let selectedRow = tableView!.selectedRow
+        guard selectedRow >= 0 && selectedRow < self.accounts.count else {
+            return;
+        }
+        
+        let jid = accounts[selectedRow];
+        
+        let alert = NSAlert();
+        alert.messageText = "Account removal";
+        alert.informativeText = "Should the account be removed from the server as well?";
+        alert.addButton(withTitle: "Remove from server")
+        alert.addButton(withTitle: "Remove from application")
+        alert.addButton(withTitle: "Cancel");
+        alert.beginSheetModal(for: self.view.window!) { (response) in
+            switch response {
+            case .alertFirstButtonReturn:
+                // remove from the server
+                guard let client = XmppService.instance.getClient(for: jid), client.state == .connected else {
+                    let alert = NSAlert();
+                    alert.messageText = "Account removal failure";
+                    alert.informativeText = "Account needs to be active and connected to remove the acocunt from the server";
+                    alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
+                    return;
+                }
+                
+                let regModule = client.modulesManager.register(InBandRegistrationModule());
+                regModule.unregister({ (result) in
+                    if let account = AccountManager.getAccount(for: jid) {
+                        _ = AccountManager.delete(account: account);
+                    }
+                })
+                break;
+            case .alertSecondButtonReturn:
+                // remove from the application
+                if let account = AccountManager.getAccount(for: jid) {
+                    _ = AccountManager.delete(account: account);
+                }
+            default:
+                // cancel
+                break;
+            }
+        }
+    }
+        
 }
 
 class AccountRowView: NSTableRowView {
     override var isSelected: Bool {
         didSet {
             if let accountView = self.subviews.last as? AccountCellView {
-                if isSelected {
-                    accountView.selectedBackgroundColor = isEmphasized ? NSColor.alternateSelectedControlColor : NSColor.secondarySelectedControlColor;
-                } else {
-                    accountView.selectedBackgroundColor = nil;
-                }
+                accountView.isSelected = isSelected;
             }
+        }
+    }
+    
+    override func addSubview(_ view: NSView) {
+        super.addSubview(view);
+        if let accountView = view  as? AccountCellView {
+            accountView.isSelected = isSelected;
+            accountView.isEmphasized = isEmphasized;
         }
     }
     
     override var isEmphasized: Bool {
         didSet {
             if let accountView = self.subviews.last as? AccountCellView {
-                if isSelected {
-                    accountView.selectedBackgroundColor = isEmphasized ? NSColor.alternateSelectedControlColor : NSColor.secondarySelectedControlColor;
-                } else {
-                    accountView.selectedBackgroundColor = nil;
-                }
+                accountView.isEmphasized = isEmphasized;
             }
         }
     }
@@ -208,20 +245,54 @@ class AccountRowView: NSTableRowView {
 
 class AccountCellView: NSTableCellView {
     
-    @IBOutlet weak var avatar: AvatarViewWithStatus?;
-    @IBOutlet weak var label: NSTextField?;
- 
-    var selectedBackgroundColor: NSColor? {
+    @IBOutlet var enabledCheckbox: NSButton!;
+    @IBOutlet weak var avatar: AvatarViewWithStatus? {
         didSet {
-            avatar?.backgroundColor = selectedBackgroundColor ?? backgroundColor;
+            refreshBackgroundSelectionColor();
+        }
+    }
+    @IBOutlet var defaultLabel: NSTextField!;
+    @IBOutlet var nickname: NSTextField!;
+    @IBOutlet var jid: NSTextField!;
+     
+    private var accountJid: BareJID?;
+    
+    var isSelected: Bool = false {
+        didSet {
+            refreshBackgroundSelectionColor();
         }
     }
     
-    var backgroundColor: NSColor? {
+    var isEmphasized: Bool = false {
         didSet {
-            avatar?.backgroundColor = selectedBackgroundColor ?? backgroundColor;
+            refreshBackgroundSelectionColor();
         }
     }
+    
+    private func refreshBackgroundSelectionColor() {
+        avatar?.backgroundColor = isSelected ? (isEmphasized ? NSColor.alternateSelectedControlColor : NSColor.selectedControlColor) : NSColor.controlBackgroundColor;
+
+    }
+
+    func set(account accountJid: BareJID) {
+        self.accountJid = accountJid;
+        avatar?.update(for: accountJid, on: accountJid);
+        let acc = AccountManager.getAccount(for: accountJid);
+        enabledCheckbox.state = (acc?.active ?? false) ? .on : .off;
+        nickname.stringValue = acc?.nickname ?? "";
+        jid.stringValue = accountJid.stringValue
+        defaultLabel.isHidden = accountJid != AccountManager.defaultAccount;
+    }
+    
+    @IBAction func enabledSwitched(_ sender: NSButton) {
+        if let accountJid = self.accountJid, let account = AccountManager.getAccount(for: accountJid) {
+            account.active = sender.state == .on;
+            if !AccountManager.save(account: account) {
+                sender.state = sender.state == .on ? .off : .on;
+            }
+        }
+    }
+
 }
 
 protocol AccountAware: class {

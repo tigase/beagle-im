@@ -22,7 +22,7 @@
 import AppKit
 import TigaseSwift
 
-class ChangePasswordController: NSViewController, NSTextFieldDelegate {
+class ChangePasswordController: NSViewController, NSTextFieldDelegate, AccountAware {
     
     var account: BareJID?;
     

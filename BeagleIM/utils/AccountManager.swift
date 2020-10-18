@@ -165,7 +165,10 @@ open class AccountManager {
         
         open var nickname: String? {
             get {
-                return data["nickname"] as? String;
+                guard let nick = data["nickname"] as? String, !nick.isEmpty else {
+                    return name.localPart;
+                }
+                return nick;
             }
             set {
                 if newValue == nil {
