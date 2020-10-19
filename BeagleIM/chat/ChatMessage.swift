@@ -37,6 +37,9 @@ class ChatMessage: ChatEntry {
         super.init(id: id, timestamp: timestamp, account: account, jid: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error);
     }
 
+    override func isMergeable() -> Bool {
+        return !message.starts(with: "/me ");
+    }
 }
 
 //public struct ChatMessageAppendix: Codable {

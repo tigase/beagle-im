@@ -62,7 +62,14 @@ class ChatEntry: ChatViewItemProtocol {
         guard let item = chatItem as? ChatEntry else {
             return false;
         }
+        guard self.isMergeable() && item.isMergeable() else {
+            return false;
+        }
         return self.account == item.account && self.jid == item.jid && self.state.direction == item.state.direction && self.authorNickname == item.authorNickname && self.authorJid == item.authorJid && self.recipientNickname == item.recipientNickname && self.participantId == item.participantId && abs(self.timestamp.timeIntervalSince(item.timestamp)) < allowedTimeDiff() && self.encryption == item.encryption && self.encryptionFingerprint == item.encryptionFingerprint;
+    }
+    
+    func isMergeable() -> Bool {
+        return true;
     }
 
     func allowedTimeDiff() -> TimeInterval {
