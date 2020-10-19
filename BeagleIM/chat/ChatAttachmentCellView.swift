@@ -67,9 +67,15 @@ class ChatAttachmentCellView: BaseChatCellView {
     
     deinit {
         if #available(macOS 10.15, *) {
-            (self.customView.subviews.first(where: { $0 is LPLinkView}) as? LPLinkView)?.metadata = LPLinkMetadata();
+            for item in self.customView.subviews.filter({ $0 is LPLinkView}) {
+                if let it = item as? LPLinkViewPool.PoolableLPLinkView {
+                    LPLinkViewPool.instance.release(linkView: it);
+                }
+            }
         }
     }
+    
+    
     
     func set(item: ChatAttachment) {
         self.item = item;
@@ -78,6 +84,9 @@ class ChatAttachmentCellView: BaseChatCellView {
                 
         let subviews = self.customView.subviews;
         subviews.forEach { (view) in
+            if #available(macOS 10.15, *), let it = view as? LPLinkViewPool.PoolableLPLinkView {
+                LPLinkViewPool.instance.release(linkView: it)
+            }
             view.removeFromSuperview();
         }
         customView.trackingAreas.forEach { (area) in
@@ -93,6 +102,7 @@ class ChatAttachmentCellView: BaseChatCellView {
             self.actionButton?.isHidden = false;
             if #available(macOS 10.15, *) {
                 var metadata = MetadataCache.instance.metadata(for: "\(item.id)");
+//                metadata?.videoProvider = nil;
                 var isNew = false;
 
                 if (metadata == nil) {
@@ -101,12 +111,13 @@ class ChatAttachmentCellView: BaseChatCellView {
                     isNew = true;
                 }
                 
-                let linkView = LPLinkView(metadata: metadata!);
+                let linkView = LPLinkViewPool.instance.acquire(url: localUrl);
                 
                 linkView.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
                 linkView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
                 linkView.translatesAutoresizingMaskIntoConstraints = false;
-
+                linkView.metadata = metadata!;
+                
                 self.customView.addSubview(linkView);
 
                 NSLayoutConstraint.activate([
@@ -122,7 +133,10 @@ class ChatAttachmentCellView: BaseChatCellView {
                             return;
                         }
                         DispatchQueue.main.async {
-                            linkView?.metadata = meta;
+                            guard let linkView = linkView, linkView.metadata.originalURL == localUrl else {
+                                return;
+                            }
+                            linkView.metadata = meta;
                         }
                     })
                 }

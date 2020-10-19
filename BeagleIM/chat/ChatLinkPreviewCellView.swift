@@ -26,31 +26,34 @@ class ChatLinkPreviewCellView: NSTableCellView {
     
     var linkView: NSView? {
         didSet {
-            if let value = oldValue {
-                if #available(macOS 10.15, *) {
-                    (value as! LPLinkView).metadata = LPLinkMetadata();
+            if #available(macOS 10.15, *) {
+                if let value = oldValue as? LPLinkViewPool.PoolableLPLinkView {
+                    LPLinkViewPool.instance.release(linkView: value);
+                    value.removeFromSuperview();
                 }
-                value.removeFromSuperview();
-            }
-            if let value = linkView {
-                self.addSubview(value);
-                NSLayoutConstraint.activate([
-                    value.topAnchor.constraint(equalTo: self.topAnchor, constant: 0),
-                    value.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -4),
-                    value.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 40),
-                    value.trailingAnchor.constraint(lessThanOrEqualTo: self.trailingAnchor, constant: -26)
-                ]);
+                if let value = linkView {
+                    self.addSubview(value);
+                    NSLayoutConstraint.activate([
+                        value.topAnchor.constraint(equalTo: self.topAnchor, constant: 0),
+                        value.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -4),
+                        value.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 40),
+                        value.trailingAnchor.constraint(lessThanOrEqualTo: self.trailingAnchor, constant: -26)
+                    ]);
+                }
             }
         }
     }
     
     deinit {
         if #available(macOS 10.15, *) {
-            (self.linkView as? LPLinkView)?.metadata = LPLinkMetadata();
+            if let linkView = self.linkView as? LPLinkViewPool.PoolableLPLinkView {
+                LPLinkViewPool.instance.release(linkView: linkView);
+            }
         }
     }
 
     func set(item: ChatLinkPreview, fetchPreviewIfNeeded: Bool) {
+        self.linkView = nil;
         if #available(macOS 10.15, *) {
             var metadata = MetadataCache.instance.metadata(for: "\(item.id)");
             var isNew = false;
@@ -61,14 +64,11 @@ class ChatLinkPreviewCellView: NSTableCellView {
                 metadata!.originalURL = url;
                 isNew = true;
             }
-            metadata?.videoProvider = nil;
-//            if self.linkView == nil {
-            let linkView = CustomLPLinkView(url: url);
+            let linkView = LPLinkViewPool.instance.acquire(url: url);
             linkView.translatesAutoresizingMaskIntoConstraints = false;
             linkView.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
             linkView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
-  //          };
-
+            
             linkView.metadata = metadata!;
 
             self.linkView = linkView;
@@ -79,8 +79,10 @@ class ChatLinkPreviewCellView: NSTableCellView {
                         return;
                     }
                     DispatchQueue.main.async {
-                        meta.videoProvider = nil;
-                        linkView?.metadata = meta;                    
+                        guard let linkView = linkView, linkView.metadata.originalURL == url else {
+                            return;
+                        }
+                        linkView.metadata = meta;
                     }
                 })
             }
@@ -89,18 +91,75 @@ class ChatLinkPreviewCellView: NSTableCellView {
 
 }
 
+/// Custom class for delaying release/deinit of LPLinkView to deal with crashes when LPLinkView with a movie is being released too soon.
 @available(macOS 10.15, *)
-class CustomLPLinkView: LPLinkView {
+class LPLinkViewPool {
     
-//    override var metadata: LPLinkMetadata {
-//        didSet {
-//            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1.0, execute: {
-//                print("linkView:", self);
-//            })
-//        }
-//    }
+    class Item {
+        let linkView: LPLinkView;
+        var isInUse: Bool;
+        
+        init(linkView: LPLinkView) {
+            self.linkView = linkView;
+            self.isInUse = true;
+        }
+    }
+    
+    static let instance = LPLinkViewPool();
+    
+    private var pool: [PoolableLPLinkView] = [];
+    
+    func acquire(url: URL) -> PoolableLPLinkView {
+        return acquire({ PoolableLPLinkView(url: url) });
+    }
+    
+    func acquire(metadata: LPLinkMetadata) -> PoolableLPLinkView {
+        return acquire({ PoolableLPLinkView(metadata: metadata) });
+    }
+    
+    private func acquire(_ supplier: ()-> PoolableLPLinkView) -> PoolableLPLinkView {
+        if let item = pool.first(where: { !$0.isInUse }) {
+            item.isInUse = true;
+            return item;
+        } else {
+            let item = supplier();
+            pool.append(item);
+            return item;
+        }
+    }
+    
+    func release(linkView: PoolableLPLinkView) {
+        linkView.metadata = LPLinkMetadata();
+        linkView.isInUse = false;
+    }
 
-    deinit {
-        self.metadata = LPLinkMetadata();
+    private func remove(linkView: PoolableLPLinkView) {
+        self.pool.removeAll(where: { $0 === linkView });
+    }
+    
+    class PoolableLPLinkView: LPLinkView {
+        
+        private var timer: Timer?;
+        
+        var isInUse: Bool = true {
+            didSet {
+                if isInUse {
+                    timer?.invalidate();
+                    timer = nil;
+                } else {
+                    timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false, block: { _ in
+                        LPLinkViewPool.instance.remove(linkView: self);
+                    });
+                }
+            }
+        }
+        
+        override init(url: URL) {
+            super.init(url: url);
+        }
+
+        override init(metadata: LPLinkMetadata) {
+            super.init(metadata: metadata);
+        }
     }
 }
