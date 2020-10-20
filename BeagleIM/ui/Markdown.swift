@@ -64,7 +64,7 @@ class Markdown {
             let c = message[idx];
             switch c {
             case ">":
-                if quoteStart == nil && idx == message.startIndex || message[message.index(before: idx)] == "\n" {
+                if quoteStart == nil && (idx == message.startIndex || message[message.index(before: idx)] == "\n") {
                     let start = idx;
                     while idx != message.endIndex, message[idx] == ">" {
                         idx = message.index(after: idx);
@@ -207,7 +207,10 @@ class Markdown {
                     italicStart = nil
                     if (quoteStart != nil) {
                         print("quote level:", quoteLevel);
-                        msg.addAttribute(.paragraphStyle, value: Markdown.quoteParagraphStyle, range: NSRange(quoteStart!..<idx, in: message));
+                        if idx <= message.endIndex {
+                            print("message possibly causing a crash:", message);
+                            msg.addAttribute(.paragraphStyle, value: Markdown.quoteParagraphStyle, range: NSRange(quoteStart!..<idx, in: message));
+                        }
                         quoteStart = nil;
                     }
                 }

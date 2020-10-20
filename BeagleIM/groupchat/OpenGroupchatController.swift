@@ -459,8 +459,8 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
         group.enter();
         discoModule.getItems(for: JID(mucJid), onItemsReceived: { (node, items) in
             let sortedItems = items.sorted(by: { (i1, i2) -> Bool in
-                let n1 = i1.name ?? i1.jid.localPart!;
-                let n2 = i2.name ?? i2.jid.localPart!;
+                let n1 = i1.name ?? i1.jid.localPart ?? "";
+                let n2 = i2.name ?? i2.jid.localPart ?? "";
                 return n1.compare(n2) == ComparisonResult.orderedAscending;
             })
             DispatchQueue.main.async {

@@ -477,6 +477,9 @@ class ChatViewDataSource {
         }
         
         mutating func trim() -> [Int] {
+            guard items.count > 100 else {
+                return [];
+            }
             let removed = Array(100..<items.count);
             self.items = Array(items[0..<100]);
             knownItems = Set(items.map({ it -> Int in return it.id; }));
