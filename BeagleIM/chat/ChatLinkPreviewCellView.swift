@@ -110,26 +110,27 @@ class LPLinkViewPool {
     private var pool: [PoolableLPLinkView] = [];
     
     func acquire(url: URL) -> PoolableLPLinkView {
-        return acquire({ PoolableLPLinkView(url: url) });
+        return acquire(url: url, { PoolableLPLinkView(url: url) });
     }
     
-    func acquire(metadata: LPLinkMetadata) -> PoolableLPLinkView {
-        return acquire({ PoolableLPLinkView(metadata: metadata) });
-    }
+//    func acquire(metadata: LPLinkMetadata) -> PoolableLPLinkView {
+//        return acquire({ PoolableLPLinkView(metadata: metadata) });
+//    }
     
-    private func acquire(_ supplier: ()-> PoolableLPLinkView) -> PoolableLPLinkView {
-        if let item = pool.first(where: { !$0.isInUse }) {
-            item.isInUse = true;
-            return item;
-        } else {
+    private func acquire(url: URL,_ supplier: ()-> PoolableLPLinkView) -> PoolableLPLinkView {
+        // with new XCode it started to crash even if we try to reuse LPLinkView..
+//        if let item = pool.first(where: { !$0.isInUse }) {
+//            item.isInUse = true;
+//            return item;
+//        } else {
             let item = supplier();
             pool.append(item);
             return item;
-        }
+//        }
     }
     
     func release(linkView: PoolableLPLinkView) {
-        linkView.metadata = LPLinkMetadata();
+//        linkView.metadata = LPLinkMetadata();
         linkView.isInUse = false;
     }
 
@@ -147,7 +148,7 @@ class LPLinkViewPool {
                     timer?.invalidate();
                     timer = nil;
                 } else {
-                    timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false, block: { _ in
+                    timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false, block: { _ in
                         LPLinkViewPool.instance.remove(linkView: self);
                     });
                 }
