@@ -612,12 +612,14 @@ class ChatsListView: NSOutlineView {
         print("mouse entered");
         mouseInside = true;
         updateMouseOver(from: event);
+        super.mouseEntered(with: event);
     }
     
     override func mouseExited(with event: NSEvent) {
         print("mouse exited");
         mouseInside = false;
         updateMouseOver(from: event);
+        super.mouseExited(with: event);
     }
     
     override func mouseMoved(with event: NSEvent) {
@@ -626,6 +628,7 @@ class ChatsListView: NSOutlineView {
         }
 
         updateMouseOver(from: event);
+        super.mouseMoved(with: event);
     }
     
     enum SelectionDirection {
