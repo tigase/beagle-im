@@ -179,11 +179,11 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
 
                 cell.id = item.id;
+                let senderJid = item.state.direction == .incoming ? item.jid : item.account;
                 if cell.hasHeader {
-                    let senderJid = item.state.direction == .incoming ? item.jid : item.account;
                     cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-                    cell.set(senderName: item.state.direction == .incoming ? buddyName : localNickname);
                 }
+                cell.set(senderName: item.state.direction == .incoming ? buddyName : localNickname);
                 cell.set(retraction: item);
 
                 return cell;
@@ -201,11 +201,11 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
                 if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
 
                     cell.id = item.id;
+                    let senderJid = item.state.direction == .incoming ? item.jid : item.account;
                     if cell.hasHeader {
-                        let senderJid = item.state.direction == .incoming ? item.jid : item.account;
                         cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-                        cell.set(senderName: item.state.direction == .incoming ? buddyName : localNickname);
                     }
+                    cell.set(senderName: item.state.direction == .incoming ? buddyName : localNickname);
                     cell.set(message: item);
 
                     return cell;
@@ -220,22 +220,22 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             return nil;
         case let item as ChatAttachment:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatAttachmentContinuationCellView" : "ChatAttachmentCellView"), owner: nil) as? ChatAttachmentCellView {
+                let senderJid = item.state.direction == .incoming ? item.jid : item.account;
                 if cell.hasHeader {
-                    let senderJid = item.state.direction == .incoming ? item.jid : item.account;
                     cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-                    cell.set(senderName: item.state.direction == .incoming ? buddyName : localNickname);
                 }
+                cell.set(senderName: item.state.direction == .incoming ? buddyName : localNickname);
                 cell.set(item: item);
                 return cell;
             }
             return nil;
         case let item as ChatInvitation:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatInvitationCellView"), owner: nil) as? ChatInvitationCellView {
+                let senderJid = item.state.direction == .incoming ? item.jid : item.account;
                 if cell.hasHeader {
-                    let senderJid = item.state.direction == .incoming ? item.jid : item.account;
                     cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-                    cell.set(senderName: item.state.direction == .incoming ? buddyName : localNickname);
                 }
+                cell.set(senderName: item.state.direction == .incoming ? buddyName : localNickname);
                 cell.set(invitation: item);
                 return cell;
             }

@@ -263,6 +263,9 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                         } else {
                             cell.set(senderName: sender);
                         }
+                    } else {
+                        let sender = item.authorNickname ?? "From \(item.jid.stringValue)";
+                        cell.set(senderName: sender);
                     }
                     cell.set(message: item, nickname: room.nickname, keywords: keywords);
 
@@ -290,6 +293,9 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                     } else {
                         cell.set(senderName: sender);
                     }
+                } else {
+                    let sender = item.authorNickname ?? "From \(item.jid.stringValue)";
+                    cell.set(senderName: sender);
                 }
                 cell.set(item: item);
                 return cell;
@@ -322,6 +328,9 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                     } else {
                         cell.set(senderName: sender);
                     }
+                } else {
+                    let sender = item.authorNickname ?? "From \(item.jid.stringValue)";
+                    cell.set(senderName: sender);
                 }
                 cell.set(invitation: item);
                 return cell;

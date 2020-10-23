@@ -110,9 +110,8 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
                         } else {
                             cell.set(avatar: nil);
                         }
-                        
-                        cell.set(senderName: item.authorNickname ?? "Unknown");
                     }
+                    cell.set(senderName: item.authorNickname ?? "Unknown");
                     cell.set(message: item, nickname: channel.nickname, keywords: keywords);
 
                     return cell;
@@ -135,9 +134,8 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
                     } else {
                         cell.set(avatar: nil);
                     }
-                                    
-                    cell.set(senderName: item.authorNickname ?? "Unknown");
                 }
+                cell.set(senderName: item.authorNickname ?? "Unknown");
                 cell.set(item: item);
                 return cell;
             }
@@ -152,9 +150,8 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
                     } else {
                         cell.set(avatar: nil);
                     }
-                                    
-                    cell.set(senderName: item.authorNickname ?? "Unknown");
                 }
+                cell.set(senderName: item.authorNickname ?? "Unknown");
                 cell.set(invitation: item);
                 return cell;
             }
