@@ -53,9 +53,11 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             } else {
                 buddyName = jid.stringValue;
             }
+            localNickname = AccountManager.getAccount(for: account)?.nickname ?? "Me";
         }
     };
-    fileprivate var buddyName: String! = "";
+    private var buddyName: String = "";
+    private var localNickname: String = "";
     private var fetchPreviewIfNeeded: Bool = false;
 
     override func conversationTableViewDelegate() -> NSTableViewDelegate? {
@@ -180,7 +182,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
                 if cell.hasHeader {
                     let senderJid = item.state.direction == .incoming ? item.jid : item.account;
                     cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-                    cell.set(senderName: item.state.direction == .incoming ? buddyName : "Me");
+                    cell.set(senderName: item.state.direction == .incoming ? buddyName : localNickname);
                 }
                 cell.set(retraction: item);
 
@@ -190,7 +192,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         case let item as ChatMessage:
             if item.message.starts(with: "/me ") {
                 if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMeSystemCellView"), owner: nil) as? ChatMeMessageCellView {
-                    let nickname = item.state.direction == .incoming ? buddyName : "Me"
+                    let nickname = item.state.direction == .incoming ? buddyName : localNickname;
                     cell.set(item: item, nickname: nickname);
                     return cell;
                 }
@@ -202,7 +204,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
                     if cell.hasHeader {
                         let senderJid = item.state.direction == .incoming ? item.jid : item.account;
                         cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-                        cell.set(senderName: item.state.direction == .incoming ? buddyName : "Me");
+                        cell.set(senderName: item.state.direction == .incoming ? buddyName : localNickname);
                     }
                     cell.set(message: item);
 
@@ -221,7 +223,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
                 if cell.hasHeader {
                     let senderJid = item.state.direction == .incoming ? item.jid : item.account;
                     cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-                    cell.set(senderName: item.state.direction == .incoming ? buddyName : "Me");
+                    cell.set(senderName: item.state.direction == .incoming ? buddyName : localNickname);
                 }
                 cell.set(item: item);
                 return cell;
@@ -232,7 +234,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
                 if cell.hasHeader {
                     let senderJid = item.state.direction == .incoming ? item.jid : item.account;
                     cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-                    cell.set(senderName: item.state.direction == .incoming ? buddyName : "Me");
+                    cell.set(senderName: item.state.direction == .incoming ? buddyName : localNickname);
                 }
                 cell.set(invitation: item);
                 return cell;

@@ -71,7 +71,7 @@ class ChatCellView: NSTableCellView {
         self.avatar?.name = name;
     }
     
-    func set(lastActivity: LastChatActivity?, ts: Date?, chatState: ChatState) {
+    func set(lastActivity: LastChatActivity?, ts: Date?, chatState: ChatState, account: BareJID) {
         self.chatState = chatState;
         if chatState != .composing {
             self.lastMessage?.stopAnimating();
@@ -79,7 +79,7 @@ class ChatCellView: NSTableCellView {
                 switch activity {
                 case .message(let lastMessage, let direction, let sender):
                     if lastMessage.starts(with: "/me ") {
-                        let nick = sender ?? (direction == .incoming ? (self.label?.stringValue ?? "") : "Me");
+                        let nick = sender ?? (direction == .incoming ? (self.label?.stringValue ?? "") : (AccountManager.getAccount(for: account)?.nickname ??  "Me"));
                         let msg = NSMutableAttributedString(string: "\(nick) ", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium), toHaveTrait: .italicFontMask), .foregroundColor: self.lastMessage.textColor!.withAlphaComponent(0.8)]);
                         msg.append(NSAttributedString(string: "\(lastMessage.dropFirst(4))", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .regular), toHaveTrait: .italicFontMask), .foregroundColor: self.lastMessage.textColor!.withAlphaComponent(0.8)]));
                         self.lastMessage?.attributedStringValue = msg;
@@ -189,7 +189,7 @@ class ChatCellView: NSTableCellView {
     func update(from item: ChatItemProtocol) {
         self.set(name: item.name);
         self.set(unread: item.unread);
-        self.set(lastActivity: item.lastActivity, ts: item.lastMessageTs, chatState: (item.chat as? DBChatStore.DBChat)?.remoteChatState ?? .active);
+        self.set(lastActivity: item.lastActivity, ts: item.lastMessageTs, chatState: (item.chat as? DBChatStore.DBChat)?.remoteChatState ?? .active, account: item.chat.account);
         if item.chat is Chat {
             self.avatar.update(for: item.chat.jid.bareJid, on: item.chat.account);
         } else if let room  = item.chat as? Room {
