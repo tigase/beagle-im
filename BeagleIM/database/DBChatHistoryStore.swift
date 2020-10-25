@@ -193,7 +193,11 @@ class DBChatHistoryStore {
                 }
             }
             inTimestamp = timestamp;
-            fromArchive = true;
+            if message.type == .groupchat {
+                fromArchive = false; //source != account;
+            } else {
+                fromArchive = true;
+            }
         default:
             inTimestamp = message.delay?.stamp;
             break;
