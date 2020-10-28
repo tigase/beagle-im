@@ -42,6 +42,8 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     override func viewDidLoad() {
         super.viewDidLoad();
         
+        self.attachmentSender = ChannelAttachmentSender.instance;
+        
         let cgRef = infoButton.image!.cgImage(forProposedRect: nil, context: nil, hints: nil);
         let representation = NSBitmapImageRep(cgImage: cgRef!);
         let newRep = representation.converting(to: .genericGray, renderingIntent: .default);
@@ -277,16 +279,27 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         return true;
     }
     
-    override func sendAttachment(originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?) -> Bool {
-        guard let client = XmppService.instance.getClient(for: account), client.state == .connected, channel.state == .joined else {
-            return false;
+    class ChannelAttachmentSender: AttachmentSender {
+        
+        static let instance = ChannelAttachmentSender();
+        
+        func prepareAttachment(chat: DBChatProtocol, originalURL: URL, completionHandler: @escaping (Result<(URL, Bool, ((URL) -> URL)?), ShareError>) -> Void) {
+            completionHandler(.success((originalURL, false, nil)))
         }
-        let msg = channel.createMessage(uploadedUrl.absoluteString);
-        msg.oob = uploadedUrl.absoluteString;
-        client.context.writer?.write(msg);
-        return true;
+        
+        func sendAttachment(chat: DBChatProtocol, originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?, completionHandler: (() -> Void)?) {
+            guard let channel = chat as? DBChatStore.DBChannel, let client = XmppService.instance.getClient(for: channel.account), client.state == .connected, channel.state == .joined else {
+                completionHandler?();
+                return;
+            }
+            let msg = channel.createMessage(uploadedUrl.absoluteString);
+            msg.oob = uploadedUrl.absoluteString;
+            client.context.writer?.write(msg);
+            completionHandler?();
+        }
+        
     }
-    
+        
     @objc func avatarChanged(_ notification: Notification) {
         guard let account = notification.userInfo?["account"] as? BareJID, let jid = notification.userInfo?["jid"] as? BareJID else {
             return;

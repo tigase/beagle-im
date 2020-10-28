@@ -198,7 +198,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
             if response == .OK, let url = openFile.url {
                 let image = NSImage(contentsOf: url);
                 self.avatarView.image = image ?? NSImage(named: NSImage.userName);
-                let data = image?.scaled(maxWidthOrHeight: 512, format: .jpeg, properties: [.compressionFactor: 0.8]);
+                let data = image?.scaled(maxWidthOrHeight: 512).jpegData(compressionQuality: 0.8);
                 self.vcard.photos = data == nil ? [] : [ VCard.Photo(uri: nil, type: "image/jpeg", binval: data!.base64EncodedString(options: []), types: [.home]) ];
                 
                 if data != nil && !self.isPrivate {

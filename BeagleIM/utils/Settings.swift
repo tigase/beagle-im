@@ -63,6 +63,9 @@ enum Settings: String {
     case commonChatsList
     case showAdvancedXmppFeatures
     
+    case imageQuality
+    case videoQuality
+    
     public static let CHANGED = Notification.Name("settingChanged");
     
     fileprivate static var observers: [Settings: [UUID: (Settings, Any?)->Void]] = [:];
@@ -85,7 +88,9 @@ enum Settings: String {
             "fileDownloadSizeLimit": Int(10*1024*1024),
             "messageGrouping": "smart",
             "linkPreviews": true,
-            "usePublicStunServers": true
+            "usePublicStunServers": true,
+            "imageQuality": ImageQuality.medium.rawValue,
+            "videoQuality": VideoQuality.medium.rawValue
         ];
         UserDefaults.standard.register(defaults: defaults);
         if UserDefaults.standard.object(forKey: "imageDownloadSizeLimit") != nil {

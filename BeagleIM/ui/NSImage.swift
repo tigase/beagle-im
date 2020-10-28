@@ -47,13 +47,7 @@ extension NSImage {
         return NSImage(cgImage: composedImage, size: size);
     }
 
-    func scaled(to size: NSSize, format: NSBitmapImageRep.FileType, properties: [NSBitmapImageRep.PropertyKey:Any] = [:]) -> Data? {
-//        guard let cgImage = self.cgImage else {
-//            return nil;
-//        }
-//        let newRep = NSBitmapImageRep(cgImage: cgImage);
-//        newRep.size = size;
-//        return newRep.representation(using: format, properties: properties);
+    func scaled(to size: NSSize) -> NSImage {
         let small = NSImage(size: size);
         small.lockFocus();
         NSGraphicsContext.current?.imageInterpolation = .high;
@@ -63,27 +57,30 @@ extension NSImage {
         transform.concat();
         draw(at: .zero, from: NSRect(origin: .zero, size: self.size), operation: .sourceOver, fraction: 1.0);
         small.unlockFocus();
-        guard let cgImage = small.cgImage else {
-            return nil;
-        }
-        return NSBitmapImageRep(cgImage: cgImage).representation(using: format, properties: properties);
+        return small;
     }
     
-    func scaled(maxWidthOrHeight: CGFloat, format: NSBitmapImageRep.FileType, properties: [NSBitmapImageRep.PropertyKey: Any] = [:]) -> Data? {
+    func scaled(maxWidthOrHeight: CGFloat) -> NSImage {
         let maxDimmension = max(self.size.height, self.size.width);
         let scale = maxDimmension / maxWidthOrHeight;
         let expSize = NSSize(width: self.size.width / scale, height: self.size.height / scale);
-        return scaled(to: expSize, format: format);
+        return scaled(to: expSize);
     }
     
-    func scaledToPng(to size: NSSize) -> Data? {
-        return scaled(to: size, format: .png);
-    }
-
-    func scaledToPng(to maxWidthOrHeight: CGFloat) -> Data? {
-        return scaled(maxWidthOrHeight: maxWidthOrHeight, format: .png);
+    func jpegData(compressionQuality: CGFloat) -> Data? {
+        guard let cgImage = self.cgImage else {
+            return nil;
+        }
+        return NSBitmapImageRep(cgImage: cgImage).representation(using: .jpeg, properties: [.compressionFactor: compressionQuality]);
     }
     
+    func pngData() -> Data? {
+        guard let cgImage = self.cgImage else {
+            return nil;
+        }
+        return NSBitmapImageRep(cgImage: cgImage).representation(using: .png, properties: [:]);
+    }
+        
     func scaledAndFlipped(maxWidth: CGFloat, maxHeight: CGFloat, flipX: Bool, flipY: Bool, roundedRadius radius: CGFloat = 0.0) -> NSImage {
         var scale: CGFloat = 1.0;
         if self.size.width > self.size.height {

@@ -145,11 +145,7 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     func send(message: String, correctedMessageOriginId: String?) -> Bool {
         return false;
     }
-    
-    func sendAttachment(originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?) -> Bool {
-        return false;
-    }
-    
+        
     func updateMessageFieldSize() {
         let height = min(max(messageField.intrinsicContentSize.height, 14), 100) + self.messageFieldScroller.contentInsets.top + self.messageFieldScroller.contentInsets.bottom;
         self.messageFieldScrollerHeight.constant = height;

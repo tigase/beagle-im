@@ -21,12 +21,18 @@
 
 import AppKit
 
+protocol PastingDelegate {
+    
+    func paste(in: AutoresizingTextView, pasteboard: NSPasteboard) -> Bool;
+    
+}
+
 class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
   
     @objc var placeholderAttributedString: NSAttributedString?;
     
-    weak var dragHandler: NSDraggingDestination? = nil;
-    
+    weak var dragHandler: (NSDraggingDestination & PastingDelegate)? = nil;
+      
     override var rangeForUserCompletion: NSRange {
         let currRange = super.rangeForUserCompletion;
         if currRange.length == 0 {
@@ -70,6 +76,18 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
     override func didChangeText() {
         super.didChangeText();
         self.invalidateIntrinsicContentSize();
+    }
+    
+    override func paste(_ sender: Any?) {
+        if dragHandler?.paste(in: self, pasteboard: NSPasteboard.general) ?? false {
+            // nothing to do..
+        } else {
+            super.paste(sender);
+        }
+    }
+    
+    func pasteURLs(_ sender: Any?) {
+        super.paste(sender);
     }
     
     func reset() {
@@ -136,5 +154,8 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
         return (dragHandler?.performDragOperation?(sender) ?? false) || super.performDragOperation(sender);
     }
     
+    override func pasteAsPlainText(_ sender: Any?) {
+        super.pasteAsPlainText(sender);
+    }
     
 }

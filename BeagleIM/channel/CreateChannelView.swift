@@ -169,7 +169,7 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                             break;
                         }
                     });
-                    if let avatarData = avatar?.scaled(maxWidthOrHeight: 512.0, format: .jpeg, properties: [.compressionFactor: 0.8]) {
+                    if let avatarData = avatar?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8) {
                         avatarModule.publishAvatar(at: channelJid, data: avatarData, mimeType: "image/jpeg", completionHandler: { result in
                             print("avatar publication result:", result);
                         });
@@ -218,7 +218,7 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                     _ = mucModule.join(roomName: roomName, mucServer: component.jid.domain, nickname: nickname, onJoined: { room in
                         if let vCardTempModule: VCardTempModule = client.modulesManager.getModule(VCardTempModule.ID) {
                             let vcard = VCard();
-                            if let binval = avatar?.scaled(maxWidthOrHeight: 512.0, format: .jpeg, properties: [.compressionFactor: 0.8])?.base64EncodedString(options: []) {
+                            if let binval = avatar?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
                                 vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
                             }
                             vCardTempModule.publishVCard(vcard, to: room.roomJid);

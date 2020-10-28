@@ -67,6 +67,8 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     override func viewDidLoad() {
         super.viewDidLoad();
 
+        self.attachmentSender = ChatAttachmentSender.instance;
+        
         audioCall.isHidden = true;
         videoCall.isHidden = true;
         scriptsButton.isHidden = true;
@@ -427,52 +429,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         MessageEventHandler.sendMessage(chat: chat, body: message, url: nil, correctedMessageOriginId: correctedMessageOriginId);
         return true;
     }
-    
-    override func uploadFileToHttpServerWithErrorHandling(data: Data, filename: String, mimeType: String?, onSuccess: @escaping (AbstractChatViewControllerWithSharing.UploadResult) -> Void) {
-        let encryption: ChatEncryption = (chat as? DBChatStore.DBChat)?.options.encryption ?? .none;
-        switch encryption {
-        case .none:
-            super.uploadFileToHttpServerWithErrorHandling(data: data, filename: filename, mimeType: mimeType, onSuccess: onSuccess);
-        case .omemo:
-            let omemoModule: OMEMOModule = XmppService.instance.getClient(for: chat!.account)!.modulesManager.getModule(OMEMOModule.ID)!;
-            let result = omemoModule.encryptFile(data: data);
-            switch result {
-            case .success(let (encryptedData, hash)):
-                super.uploadFileToHttpServerWithErrorHandling(data: encryptedData, filename: filename, mimeType: mimeType, onSuccess: { uploadResult in
-                    switch uploadResult {
-                    case .success(let url, let filesize, let mimeType):
-                        var parts = URLComponents(url: url, resolvingAgainstBaseURL: true)!;
-                        parts.scheme = "aesgcm";
-                        parts.fragment = hash;
-                        let shareUrl = parts.url!;
-                        
-                        print("sending url:", shareUrl.absoluteString);
-                        onSuccess(.success(url: shareUrl, filesize: filesize, mimeType: mimeType));
-                    case .failure(let error, let errorMessage):
-                        onSuccess(.failure(error: error, errorMessage: errorMessage));
-                    }
-                });
-            case .failure(let err):
-                onSuccess(.failure(error: err, errorMessage: nil));
-            }
-        }
-
-    }
-        
-    override func sendAttachment(originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?) -> Bool {
-        guard let chat = self.chat as? DBChatStore.DBChat else {
-            return false;
-        }
-        
-        var appendix = ChatAttachmentAppendix();
-        appendix.state = .downloaded;
-        appendix.filename = originalUrl.lastPathComponent;
-        appendix.filesize = Int(filesize);
-        appendix.mimetype = mimeType;
-        MessageEventHandler.sendAttachment(chat: chat, originalUrl: originalUrl, uploadedUrl: uploadedUrl.absoluteString, appendix: appendix, completionHandler: nil);
-        return false;
-    }
-
+            
     fileprivate func updateCapabilities() {
         let supported = JingleManager.instance.support(for: JID(jid), on: account);
         DispatchQueue.main.async {
@@ -586,6 +543,54 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         popover.show(relativeTo: rect, of: self.view.window!.contentView!, preferredEdge: .minY);
     }
 
+    class ChatAttachmentSender: AttachmentSender {
+        
+        static let instance = ChatAttachmentSender();
+        
+        func prepareAttachment(chat: DBChatProtocol, originalURL: URL, completionHandler: @escaping (Result<(URL, Bool,((URL)->URL)?), ShareError>) -> Void) {
+            let encryption: ChatEncryption = (chat as? DBChatStore.DBChat)?.options.encryption ?? .none;
+            switch encryption {
+            case .none:
+                completionHandler(.success((originalURL, false, nil)));
+            case .omemo:
+                guard let omemoModule: OMEMOModule = XmppService.instance.getClient(for: chat.account)?.modulesManager.getModule(OMEMOModule.ID), let data = try? Data(contentsOf: originalURL) else {
+                    completionHandler(.failure(.unknownError));
+                    return;
+                }
+                let result = omemoModule.encryptFile(data: data);
+                switch result {
+                case .success(let (encryptedData, hash)):
+                    let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString);
+                    do {
+                        try encryptedData.write(to: tmpFile);
+                        completionHandler(.success((tmpFile, true, { url in
+                            var parts = URLComponents(url: url, resolvingAgainstBaseURL: true)!;
+                            parts.scheme = "aesgcm";
+                            parts.fragment = hash;
+                            let shareUrl = parts.url!;
+
+                            print("sending url:", shareUrl.absoluteString);
+                            return shareUrl;
+                        })));
+                    } catch {
+                        completionHandler(.failure(.noAccessError));
+                    }
+                case .failure(let err):
+                    completionHandler(.failure(.unknownError));
+                }
+            }
+        }
+        
+        func sendAttachment(chat: DBChatProtocol, originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?, completionHandler: (() -> Void)?) {
+            var appendix = ChatAttachmentAppendix();
+            appendix.state = .downloaded;
+            appendix.filename = originalUrl.lastPathComponent;
+            appendix.filesize = Int(filesize);
+            appendix.mimetype = mimeType;
+            MessageEventHandler.sendAttachment(chat: chat as! DBChatStore.DBChat, originalUrl: originalUrl, uploadedUrl: uploadedUrl.absoluteString, appendix: appendix, completionHandler: completionHandler);
+        }
+        
+    }
 }
 
 enum MessageSendError: Error {

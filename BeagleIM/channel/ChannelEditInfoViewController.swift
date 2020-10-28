@@ -150,7 +150,7 @@ class ChannelEditInfoViewController: NSViewController, ChannelAwareProtocol {
         })
         
         if avatarButton.isEnabled && avatarButton.image != AvatarManager.instance.avatar(for: channel.channelJid, on: channel.account) {
-            if let avatarModule: PEPUserAvatarModule = client.modulesManager.getModule(PEPUserAvatarModule.ID), let binval = self.avatarButton.image?.scaled(maxWidthOrHeight: 512.0, format: .jpeg, properties: [.compressionFactor: 0.8]) {
+            if let avatarModule: PEPUserAvatarModule = client.modulesManager.getModule(PEPUserAvatarModule.ID), let binval = self.avatarButton.image?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8) {
                 avatarModule.publishAvatar(at: channel.channelJid, data: binval, mimeType: "image/jpeg", width: nil, height: nil, completionHandler: { result in
                     switch result {
                     case .success(_, _, _):

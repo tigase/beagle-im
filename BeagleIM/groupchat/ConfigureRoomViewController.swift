@@ -185,7 +185,7 @@ class ConfigureRoomViewController: NSViewController {
         if avatarView.isEnabled && avatarView.image != AvatarManager.instance.avatar(for: roomJid, on: account) {
             if let vCardTempModule: VCardTempModule = client.modulesManager.getModule(VCardTempModule.ID) {
                 let vcard = VCard();
-                if let binval = avatarView.image?.scaled(maxWidthOrHeight: 512.0, format: .jpeg, properties: [.compressionFactor: 0.8])?.base64EncodedString(options: []) {
+                if let binval = avatarView.image?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
                     vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
                 }
                 queue.addOperation {

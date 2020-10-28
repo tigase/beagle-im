@@ -69,6 +69,8 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
 
         super.viewDidLoad();
         
+        self.attachmentSender = GroupchatAttachmentSender.instance;
+        
         NotificationCenter.default.addObserver(self, selector: #selector(roomStatusChanged), name: MucEventHandler.ROOM_STATUS_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(roomOccupantsChanged), name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(roomStatusChanged(_:)), name: MucEventHandler.ROOM_NAME_CHANGED, object: nil);
@@ -461,22 +463,29 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         return true;
     }
     
-    override func sendAttachment(originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?) -> Bool {
-        guard (XmppService.instance.getClient(for: account)?.state ?? .disconnected) == .connected else {
-            return false;
-        }
-        guard room.state == .joined else {
-            return false;
-        }
-        let message = room.createMessage(uploadedUrl.absoluteString);
-        if let id = message.id, UUID(uuidString: id) != nil {
-            message.originId = id;
-        }
-        message.oob = uploadedUrl.absoluteString;
-        room.context.writer?.write(message);
-        return true;
-    }
+    class GroupchatAttachmentSender: AttachmentSender {
         
+        static let instance = GroupchatAttachmentSender();
+        
+        func prepareAttachment(chat: DBChatProtocol, originalURL: URL, completionHandler: @escaping (Result<(URL, Bool, ((URL) -> URL)?), ShareError>) -> Void) {
+            completionHandler(.success((originalURL, false, nil)));
+        }
+        
+        func sendAttachment(chat: DBChatProtocol, originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?, completionHandler: (() -> Void)?) {
+            guard let room = chat as? DBChatStore.DBRoom, (XmppService.instance.getClient(for: room.account)?.state ?? .disconnected) == .connected, room.state == .joined else {
+                completionHandler?();
+                return;
+            }
+            let message = room.createMessage(uploadedUrl.absoluteString);
+            if let id = message.id, UUID(uuidString: id) != nil {
+                message.originId = id;
+            }
+            message.oob = uploadedUrl.absoluteString;
+            room.context.writer?.write(message);
+            completionHandler?();
+        }
+    }
+            
     private var skipNextSuggestion = false;
     private var forceSuggestion = false;
 
