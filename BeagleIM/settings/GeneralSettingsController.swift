@@ -43,6 +43,12 @@ class GeneralSettingsController: NSViewController {
     
     fileprivate var encryptionButton: NSPopUpButton!;
     
+    private var imageQuality: NSPopUpButton!;
+    private var videoQuality: NSPopUpButton!;
+    
+    let imageQualityOptions: [ImageQuality] = [.original,.highest,.high,.medium,.low];
+    let videoQualityOptions: [VideoQuality] = [.original,.high,.medium,.low];
+
     override func viewDidLoad() {
         if #available(macOS 10.14, *) {
             appearance = formView.addRow(label: "Appearance:", field: NSPopUpButton(frame: .zero, pullsDown: false));
@@ -74,6 +80,14 @@ class GeneralSettingsController: NSViewController {
         spellchecking = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Spellchecking", target: self, action: #selector(checkboxChanged(_:))));
         formView.groupItems(from:markdownFormatting, to: spellchecking);
         
+        imageQuality = formView.addRow(label: "Sent images quality:", field: NSPopUpButton(frame: .zero, pullsDown: false));
+        imageQuality.target = self;
+        imageQuality.action = #selector(checkboxChanged(_:));
+        videoQuality = formView.addRow(label: "Sent videos quality:", field: NSPopUpButton(frame: .zero, pullsDown: false));
+        videoQuality.target = self;
+        videoQuality.action = #selector(checkboxChanged(_:));
+        formView.groupItems(from: imageQuality, to: videoQuality);
+
         _ = formView.addRow(label: "XMPP URI", field: NSButton(title: "Set as default app", target: self, action: #selector(showSetAsDefaultWindow)));
         
         self.preferredContentSize = NSSize(width: self.view.frame.size.width, height: self.view.frame.size.height);
@@ -111,6 +125,13 @@ class GeneralSettingsController: NSViewController {
         encryptionButton.removeAllItems();
         encryptionButton.addItems(withTitles: ["None", "OMEMO"]);
         encryptionButton.selectItem(at: ChatEncryption(rawValue: Settings.messageEncryption.string() ?? "none") == ChatEncryption.omemo ? 1 : 0);
+        
+        imageQuality.removeAllItems();
+        imageQuality.addItems(withTitles: imageQualityOptions.map({ $0.rawValue.capitalized }));
+        imageQuality.selectItem(at: imageQualityOptions.firstIndex(of: ImageQuality.current ?? .medium) ?? 0);
+        videoQuality.removeAllItems();
+        videoQuality.addItems(withTitles: videoQualityOptions.map({ $0.rawValue.capitalized }));
+        videoQuality.selectItem(at: videoQualityOptions.firstIndex(of: VideoQuality.current ?? .medium) ?? 0);
     }
     
     @objc func checkboxChanged(_ sender: NSButton) {
@@ -148,6 +169,10 @@ class GeneralSettingsController: NSViewController {
         case encryptionButton:
             let encryption: ChatEncryption = encryptionButton.indexOfSelectedItem == 1 ? .omemo : .none;
             Settings.messageEncryption.set(value: encryption.rawValue);
+        case imageQuality:
+            Settings.imageQuality.set(value: imageQualityOptions[imageQuality.indexOfSelectedItem].rawValue);
+        case videoQuality:
+            Settings.videoQuality.set(value: videoQualityOptions[videoQuality.indexOfSelectedItem].rawValue);
         default:
             if #available(macOS 10.14, *) {
                 if let appearance = self.appearance, appearance == sender {

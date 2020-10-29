@@ -87,7 +87,7 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
             alert.beginSheetModal(for: self.view.window!, completionHandler: { response in
                 if response == .alertFirstButtonReturn {
                     let tasks = urls.map({ FileURLSharingTaskItem(chat: self.chat, sender: self.attachmentSender, url: $0 as URL)});
-                    SharingTaskManager.instance.share(task: SharingTaskManager.SharingTask(controller: self, items: tasks));
+                    SharingTaskManager.instance.share(task: SharingTaskManager.SharingTask(controller: self, items: tasks, askForQuality: false));
                 } else {
                     textView.pasteURLs(pasteboard);
                 }
@@ -133,7 +133,8 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
             }
         }
         if !tasks.isEmpty {
-            SharingTaskManager.instance.share(task: SharingTaskManager.SharingTask(controller: self, items: tasks));
+            let askForQuality = NSEvent.modifierFlags.contains(.option);
+            SharingTaskManager.instance.share(task: SharingTaskManager.SharingTask(controller: self, items: tasks, askForQuality: askForQuality));
         }
         return true;
     }
@@ -151,9 +152,10 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
     }
     
     @IBAction func attachFile(_ sender: NSButton) {
+        let askForQuality = NSEvent.modifierFlags.contains(.option);
         self.selectFile { (urls) in
             let tasks = urls.map({ FileURLSharingTaskItem(chat: self.chat, sender: self.attachmentSender, url: $0)});
-            SharingTaskManager.instance.share(task: SharingTaskManager.SharingTask(controller: self, items: tasks));
+            SharingTaskManager.instance.share(task: SharingTaskManager.SharingTask(controller: self, items: tasks, askForQuality: askForQuality));
         }
     }
     

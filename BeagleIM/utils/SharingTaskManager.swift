@@ -86,15 +86,25 @@ class SharingTaskManager {
             }
             return items.reduce(0.0, { result, task in result + task.progress! }) / Double(items.count);
         }
-        private var isSslTrusted = false;
+        
         private let semaphore = DispatchSemaphore(value: 1);
 
-        init(controller: AbstractChatViewControllerWithSharing, items: [AbstractSharingTaskItem]) {
+        private var imageQuality: ImageQuality?;
+        private var videoQuality: VideoQuality?;
+        
+        private var isSslTrusted = false;
+        private var isInvalidHttpResponseAccepted: Bool?;
+
+        init(controller: AbstractChatViewControllerWithSharing, items: [AbstractSharingTaskItem], askForQuality: Bool) {
             self.chat = controller.chat;
             self.window = controller.view.window;
             self.items = items;
             for item in items {
                 item.task = self;
+            }
+            if !askForQuality {
+                imageQuality = ImageQuality.current;
+                videoQuality = VideoQuality.current;
             }
         }
         
@@ -140,8 +150,57 @@ class SharingTaskManager {
                 SharingTaskManager.instance.ended(task: self);
             }
         }
-        
-        private var isInvalidHttpResponseAccepted: Bool?;
+                
+        func askForImageQuality(completionHandler: @escaping (Result<ImageQuality,ShareError>)->Void) {
+            SharingTaskManager.instance.dispatcher.async {
+                self.semaphore.wait();
+                guard let imageQuality = self.imageQuality else {
+                    guard let window = self.window else {
+                        completionHandler(.success(ImageQuality.current ?? .medium));
+                        return;
+                    }
+                    MediaHelper.askImageQuality(window: window, forceQualityQuestion: true, { result in
+                        switch result {
+                        case .success(let quality):
+                            self.imageQuality = quality;
+                        default:
+                            break;
+                        }
+                        self.semaphore.signal();
+                        completionHandler(result);
+                    })
+                    return;
+                }
+                self.semaphore.signal();
+                completionHandler(.success(imageQuality));
+            }
+        }
+
+        func askForVideoQuality(completionHandler: @escaping (Result<VideoQuality,ShareError>)->Void) {
+            SharingTaskManager.instance.dispatcher.async {
+                self.semaphore.wait();
+                guard let videoQuality = self.videoQuality else {
+                    guard let window = self.window else {
+                        completionHandler(.success(VideoQuality.current ?? .medium));
+                        return;
+                    }
+                    MediaHelper.askVideoQuality(window: window, forceQualityQuestion: true, { result in
+                        switch result {
+                        case .success(let quality):
+                            self.videoQuality = quality;
+                        default:
+                            break;
+                        }
+                        self.semaphore.signal();
+                        completionHandler(result);
+                    })
+                    return;
+                }
+                self.semaphore.signal();
+                completionHandler(.success(videoQuality));
+            }
+        }
+
         
         func askForInvalidHttpResponse(url: URL, completionHandler: @escaping (Bool)->Void) {
             guard let window = self.window else {
@@ -261,8 +320,78 @@ class AbstractSharingTaskItem: NSObject, URLSessionDelegate {
         completed(with: .failure(.notSupported));
     }
     
-    func prepareAndSendFile(url: URL, completionHandler: (()->Void)?) {
+    func downscaleIfRequired(at source: URL, completionHandler: @escaping (Result<(URL,Bool),ShareError>)->Void) {
+        guard let mimeType = SharingTaskManager.guessContentType(of: source) else {
+            completionHandler(.success((source, false)));
+            return;
+        }
+        
+        if mimeType.starts(with: "image/") {
+            if let task = self.task {
+                task.askForImageQuality(completionHandler: { result in
+                    switch result {
+                    case .success(let quality):
+                        MediaHelper.compressImage(url: source, filename: UUID().uuidString, quality: quality, deleteSource: false, completionHandler: { result in
+                            switch result {
+                            case .success(let url):
+                                completionHandler(.success((url, true)));
+                            case .failure(let error):
+                                completionHandler(.failure(error));
+                            }
+                        });
+                    case .failure(let error):
+                        completionHandler(.failure(error));
+                    }
+                })
+            } else {
+                completionHandler(.success((source, false)));
+            }
+        } else if mimeType.starts(with: "video/") {
+            if let task = self.task {
+                task.askForVideoQuality(completionHandler: { result in
+                    switch result {
+                    case .success(let quality):
+                        MediaHelper.compressMovie(url: source, filename: UUID().uuidString, quality: quality, deleteSource: false, progressCallback: { progress in
+                            // lets ignore it for now..
+                        }, completionHandler: { result in
+                            switch result {
+                            case .success(let url):
+                                completionHandler(.success((url, true)));
+                            case .failure(let error):
+                                completionHandler(.failure(error));
+                            }
+                        })
+                    case .failure(let error):
+                        completionHandler(.failure(error));
+                    }
+                })
+            } else {
+                completionHandler(.success((source, false)));
+            }
+        } else {
+            completionHandler(.success((source, false)));
+        }
+    }
+    
+    func preprocessAndSendFile(url: URL, completionHandler: (()->Void)?) {
         let filename = url.lastPathComponent;
+        downscaleIfRequired(at: url, completionHandler: { result in
+            switch result {
+            case .success((let newUrl, let isCopy)):
+                self.prepareAndSendFile(url: newUrl, filename: filename, completionHandler: {
+                    if isCopy {
+                        try? FileManager.default.removeItem(at: newUrl);
+                    }
+                    completionHandler?();
+                });
+            case .failure(let error):
+                self.completed(with: .failure(error));
+                completionHandler?();
+            }
+        });
+    }
+    
+    func prepareAndSendFile(url: URL, filename: String, completionHandler: (()->Void)?) {
         attachmentSender.prepareAttachment(chat: chat, originalURL: url, completionHandler: { result in
             switch result {
             case .success(let (newUrl, isCopy, urlConverter)):
@@ -286,7 +415,6 @@ class AbstractSharingTaskItem: NSObject, URLSessionDelegate {
             completionHandler?();
             return;
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 20.0) {
         self.uploadFileToHttpServer(url: url, filename: filename, filesize: filesize, mimeType: mimeType, completionHandler: { result in
             switch result {
             case .success(let uploadedUrl):
@@ -315,7 +443,6 @@ class AbstractSharingTaskItem: NSObject, URLSessionDelegate {
             }
             self.completed(with: result);
         })
-        }
     }
     
     func uploadFileToHttpServer(url: URL, filename: String, filesize: Int, mimeType: String?, completionHandler: @escaping (Result<URL,ShareError>)->Void) {
@@ -375,7 +502,7 @@ class FileURLSharingTaskItem: AbstractSharingTaskItem {
     }
     
     func share(url: URL) {
-        self.prepareAndSendFile(url: url, completionHandler: nil);
+        self.preprocessAndSendFile(url: url, completionHandler: nil);
     }
     
 }
@@ -405,7 +532,7 @@ class FilePromiseReceiverTaskItem: AbstractSharingTaskItem {
                 self.completed(with: .failure(.noAccessError));
                 return;
             }
-            self.prepareAndSendFile(url: fileUrl, completionHandler: {
+            self.preprocessAndSendFile(url: fileUrl, completionHandler: {
                 try? FileManager.default.removeItem(at: fileUrl);
             });
         }

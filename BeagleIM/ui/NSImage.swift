@@ -61,6 +61,9 @@ extension NSImage {
     }
     
     func scaled(maxWidthOrHeight: CGFloat) -> NSImage {
+        guard maxWidthOrHeight < size.height || maxWidthOrHeight < size.width else {
+            return self;
+        }
         let maxDimmension = max(self.size.height, self.size.width);
         let scale = maxDimmension / maxWidthOrHeight;
         let expSize = NSSize(width: self.size.width / scale, height: self.size.height / scale);
