@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import os
 
 class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource, NSOutlineViewDelegate {
     
@@ -160,6 +161,18 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
             (view?.subviews[0] as? NSImageView)?.image = image;
             (view?.subviews[1] as? NSTextField)?.stringValue = it?.name ?? "";
             (view?.subviews[2] as? NSTextField)?.stringValue = it?.jid.stringValue ?? "";
+            if let version = it?.version {
+                let versionStr = "\(version.name) \(version.version)";
+                (view?.subviews[3] as? NSTextField)?.stringValue = versionStr;
+                if let os = version.os {
+                    view?.toolTip = "\(versionStr) \(os)";
+                } else {
+                    view?.toolTip = versionStr;
+                }
+            } else {
+                (view?.subviews[3] as? NSTextField)?.stringValue = "";
+                view?.toolTip = "";
+            }
             return view;
         case "ComponentPubSubNameColumn":
             let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("ServiceDiscoComponentPubSubNameColumn"), owner: self);
@@ -411,43 +424,69 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                     self?.progressIndicator.stopAnimation(self);
                 }
             }
+            let group = DispatchGroup();
+            group.notify(queue: DispatchQueue.main, execute: {
+                self?.progressIndicator.stopAnimation(self);
+            });
             if parentItem.identities.contains(where: { ($0.category == "hierarchy" || $0.category == "pubsub") && $0.type == "leaf" }) {
                 // parent was a leaf so there is no subquery for items info!
+                group.enter();
                 DispatchQueue.main.async {
                     parentItem.subitems?.forEach({ item in
                         item.subitems = [];
                         self?.outlineView.reloadItem(item);
-                        finished();
                     });
+                    group.leave()
                 }
             } else {
+                group.enter();
                 items.forEach({ (item) in
-                    discoModule.getInfo(for: item.jid, node: item.node, onInfoReceived: { (node, identities, features) in
-                        DispatchQueue.main.async {
-                            guard let idx = parentItem.subitems?.firstIndex(where: { (it) -> Bool in
-                                return it.jid == item.jid && it.node == item.node;
-                            }) else {
-                                return;
+                    group.enter();
+                    discoModule.getInfo(for: item.jid, node: item.node, completionHandler: { result in
+                        switch result {
+                        case .success(let node, let identities, let features):
+                            if features.contains("jabber:iq:version"), let softwareVersionModule: SoftwareVersionModule = client.modulesManager.getModule(SoftwareVersionModule.ID) {
+                                group.enter();
+                                softwareVersionModule.checkSoftwareVersion(for: item.jid, completionHandler: { result in
+                                    DispatchQueue.main.async {
+                                        switch result {
+                                        case .success(let version):
+                                            guard let idx = parentItem.subitems?.firstIndex(where: { (it) -> Bool in
+                                                return it.jid == item.jid && it.node == item.node;
+                                            }) else {
+                                                return;
+                                            }
+                                            if let it = parentItem.subitems?[idx] {
+                                                it.update(version: version);
+                                                self?.outlineView.reloadItem(it);
+                                            }
+                                        case .failure(_):
+                                            break;
+                                        }
+                                    }
+                                    group.leave();
+                                });
+                            } else {
+                                print("jabber:iq:version not supported by \(item.jid)");
                             }
-                            if let it = parentItem.subitems?[idx] {
-                                it.update(identities: identities, features: features);
-                                self?.outlineView.reloadItem(it);
+                            DispatchQueue.main.async {
+                                guard let idx = parentItem.subitems?.firstIndex(where: { (it) -> Bool in
+                                    return it.jid == item.jid && it.node == item.node;
+                                }) else {
+                                    return;
+                                }
+                                if let it = parentItem.subitems?[idx] {
+                                    it.update(identities: identities, features: features);
+                                    self?.outlineView.reloadItem(it);
+                                }
                             }
-                            finished();
+                        default:
+                            break;
                         }
-                    }) { (error) in
-                        // FIXME: HANDLE IT SOMEHOW!
-                        DispatchQueue.main.async {
-                            finished();
-                        }
-                        print("error", error as Any);
-                    }
+                        group.leave();
+                    });
                 })
-                if items.isEmpty {
-                    DispatchQueue.main.async {
-                        finished();
-                    }
-                }
+                group.leave();
             }
         }, onError: { [weak self] (error) in
             parentItem.subitems = [];
@@ -495,6 +534,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
         private(set) var identities: [DiscoveryModule.Identity] = [];
         private(set) var features: [String] = [];
         fileprivate var subitems: [Item]? = nil;
+        private(set) var version: SoftwareVersionModule.SoftwareVersion?;
         
         override init(jid: JID, node: String?, name: String?) {
             super.init(jid: jid, node: node, name: name);
@@ -511,6 +551,10 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
         func update(identities: [DiscoveryModule.Identity], features: [String]) {
             self.identities = identities;
             self.features = features;
+        }
+        
+        func update(version: SoftwareVersionModule.SoftwareVersion) {
+            self.version = version;
         }
     }
     
