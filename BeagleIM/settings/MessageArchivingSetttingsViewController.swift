@@ -74,17 +74,17 @@ class MessageArchivingSettingsViewController: NSViewController, AccountAware {
         }
         mamModule.retrieveSettings(completionHandler: { result in
             switch result {
-            case .success(let defValue, _, _):
+            case .success(let settings):
                 DispatchQueue.main.async {
                     self.progressIndicator.stopAnimation(self);
-                    let isOn = defValue == .always
+                    let isOn = settings.defaultValue == .always
                     self.archivingEnabled.state = isOn ? .on : .off;
                     self.isEnabled = true;
                 }
-            case .failure(let errorCondition, _):
+            case .failure(let error):
                 self.progressIndicator.stopAnimation(self);
                 self.isEnabled = false;
-                print("got an error from the server:", errorCondition as Any, ", ignoring...");
+                print("got an error from the server: \(error), ignoring...");
             }
         });
     }
@@ -103,23 +103,23 @@ class MessageArchivingSettingsViewController: NSViewController, AccountAware {
         
         mamModule.retrieveSettings(completionHandler: { result in
             switch result {
-            case .success(let defValue, let always, let never):
-                mamModule.updateSettings(defaultValue: enable ? .always : .never, always: always, never: never, completionHandler: { (result) in
+            case .success(let settings):
+                mamModule.updateSettings(settings: MessageArchiveManagementModule.Settings(defaultValue: enable ? .always : .never, always: settings.always, never: settings.never), completionHandler: { (result) in
                     DispatchQueue.main.async {
                         self.isEnabled = true;
                         switch result {
-                        case .success(let newValue, _, _):
+                        case .success(let settings):
                             AccountSettings.messageSyncAuto(self.account!).set(value: self.automaticSynchronization.state == .on && self.automaticSynchronization.isEnabled);
                             let value = Double(self.synchronizationPeriod.selectedItem?.tag ?? 72)
                             AccountSettings.messageSyncPeriod(self.account!).set(value: value);
                             self.progressIndicator.stopAnimation(self);
                             self.dismiss(self);
-                        case .failure(_, _):
+                        case .failure(_):
                             self.progressIndicator.stopAnimation(self);
                         }
                     }
                 });
-            case .failure(_, _):
+            case .failure(_):
                 DispatchQueue.main.async {
                     self.isEnabled = true;
                     self.progressIndicator.stopAnimation(self);

@@ -43,8 +43,8 @@ class MucEventHandler: XmppServiceEventHandler {
                         discoModule.getInfo(for: room.jid, completionHandler: { result in
                             var mamVersions: [MessageArchiveManagementModule.Version] = [];
                             switch result {
-                            case .success(_, _, let features):
-                                mamVersions = features.map({ MessageArchiveManagementModule.Version(rawValue: $0) }).filter({ $0 != nil}).map({ $0! });
+                            case .success(let info):
+                                mamVersions = info.features.map({ MessageArchiveManagementModule.Version(rawValue: $0) }).filter({ $0 != nil}).map({ $0! });
                             default:
                                 break;
                             }
@@ -214,12 +214,17 @@ class MucEventHandler: XmppServiceEventHandler {
             return;
         }
         
-        discoModule.getInfo(for: room.jid, onInfoReceived: { (node, identities, features) in
-            let newName = identities.first(where: { (identity) -> Bool in
-                return identity.category == "conference";
-            })?.name?.trimmingCharacters(in: .whitespacesAndNewlines);
-            
-            DBChatStore.instance.updateChatName(for: room.account, with: room.roomJid, name: (newName?.isEmpty ?? true) ? nil : newName);
-        }, onError: nil);
+        discoModule.getInfo(for: room.jid, completionHandler: { result in
+            switch result {
+            case .success(let info):
+                let newName = info.identities.first(where: { (identity) -> Bool in
+                    return identity.category == "conference";
+                })?.name?.trimmingCharacters(in: .whitespacesAndNewlines);
+                
+                DBChatStore.instance.updateChatName(for: room.account, with: room.roomJid, name: (newName?.isEmpty ?? true) ? nil : newName);
+            case .failure(_):
+                break;
+            }
+        });
     }
 }

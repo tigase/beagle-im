@@ -91,7 +91,7 @@ class PresenceAuthorizationRequestController: NSViewController {
                 case .failure(let err):
                     let alert = Alert();
                     alert.messageText = "It was not possible to block \(self.jid.stringValue)";
-                    alert.informativeText = "Server returned an error: \(err.rawValue)";
+                    alert.informativeText = "Server returned an error: \(err.message ?? err.description)";
                     alert.addButton(withTitle: "OK");
                     alert.run(completionHandler: { res in
                         // do we have anything to do here?

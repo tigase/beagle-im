@@ -256,8 +256,8 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                 DispatchQueue.main.async {
                     self.close();
                 }
-            case .failure(let errorCondition, let response):
-                switch errorCondition {
+            case .failure(let error):
+                switch error {
                 case .item_not_found:
                     // there is no such channel, we need to create a new one..
                     mixModule.create(channel: channel.localPart, at: BareJID(channel.domain), completionHandler: { result in
@@ -270,11 +270,11 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                                     DispatchQueue.main.async {
                                         self.close();
                                     }
-                                case .failure(let errorCondition, let response):
+                                case .failure(let error):
                                     DispatchQueue.main.async {
                                         let alert = NSAlert();
                                         alert.messageText = "Could not join";
-                                        alert.informativeText = "The channel \(channel) was created but it was not possible to join it. The server returned an error: \(response?.errorText ?? errorCondition.rawValue)";
+                                        alert.informativeText = "The channel \(channel) was created but it was not possible to join it. The server returned an error: \(error.message ?? error.description)";
                                         alert.addButton(withTitle: "OK")
                                         alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
                                             self.close();
@@ -286,7 +286,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                             DispatchQueue.main.async {
                                 let alert = NSAlert();
                                 alert.messageText = "Could not create";
-                                alert.informativeText = "It was not possible to create a channel. The server returned an error: \(response?.errorText ?? errorCondition.rawValue)";
+                                alert.informativeText = "It was not possible to create a channel. The server returned an error: \(error.message ?? error.description)";
                                 alert.addButton(withTitle: "OK")
                                 alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
                                     self.close();
@@ -298,7 +298,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                     DispatchQueue.main.async {
                         let alert = NSAlert();
                         alert.messageText = "Could not join";
-                        alert.informativeText = "It was not possible to join a channel. The server returned an error: \(response?.errorText ?? errorCondition.rawValue)";
+                        alert.informativeText = "It was not possible to join a channel. The server returned an error: \(error.message ?? error.description)";
                         alert.addButton(withTitle: "OK")
                         alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
                             self.close();
@@ -315,45 +315,52 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
         }
         
         let nickname = self.nicknameField.stringValue;
-        discoModule.getInfo(for: JID(room), node: nil, onInfoReceived: { node, identities, features in
-            let requiresPassword = features.firstIndex(of: "muc_passwordprotected") != nil;
-            if !requiresPassword || (requiresPassword && self.password != nil) {
-                guard let mucModule: MucModule = XmppService.instance.getClient(for: self.account)?.modulesManager.getModule(MucModule.ID) else {
+        discoModule.getInfo(for: JID(room), node: nil, completionHandler: { result in
+            switch result {
+            case .success(let info):
+                let requiresPassword = info.features.contains("muc_passwordprotected");
+                if !requiresPassword || (requiresPassword && self.password != nil) {
+                    guard let mucModule: MucModule = XmppService.instance.getClient(for: self.account)?.modulesManager.getModule(MucModule.ID) else {
+                        return;
+                    }
+                    _ = mucModule.join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname);
+                    PEPBookmarksModule.updateOrAdd(for: self.account, bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: true, nick: nickname, password: self.password));
+                    DispatchQueue.main.async {
+                        self.close();
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        let alert = NSAlert();
+                        alert.messageText = "Enter password for room";
+                        alert.informativeText = "This room is password protected. You need to provide correct password to join this room.";
+                        let passwordField = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 200, height: 21));
+                        passwordField.setContentHuggingPriority(.defaultLow, for: .horizontal);
+                        alert.accessoryView = passwordField;
+                        alert.addButton(withTitle: "OK").tag = NSApplication.ModalResponse.OK.rawValue;
+                        alert.addButton(withTitle: "Cancel");
+                        alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
+                            let password = passwordField.stringValue;
+                            if password.isEmpty || response != .OK {
+                                self.close();
+                            } else {
+                                guard let mucModule: MucModule = XmppService.instance.getClient(for: self.account)?.modulesManager.getModule(MucModule.ID) else {
+                                    return;
+                                }
+                                _ = mucModule.join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname, password: password);
+                                
+                                PEPBookmarksModule.updateOrAdd(for: self.account, bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: true, nick: nickname, password: password));
+                                self.close();
+                            }
+                        })
+                    }
+                }
+            case .failure(let error):
+                guard error != .item_not_found else {
+                    DispatchQueue.main.async {
+                        self.close();
+                    }
                     return;
                 }
-                _ = mucModule.join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname);
-                PEPBookmarksModule.updateOrAdd(for: self.account, bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: true, nick: nickname, password: self.password));
-                DispatchQueue.main.async {
-                    self.close();
-                }
-            } else {
-                DispatchQueue.main.async {
-                    let alert = NSAlert();
-                    alert.messageText = "Enter password for room";
-                    alert.informativeText = "This room is password protected. You need to provide correct password to join this room.";
-                    let passwordField = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 200, height: 21));
-                    passwordField.setContentHuggingPriority(.defaultLow, for: .horizontal);
-                    alert.accessoryView = passwordField;
-                    alert.addButton(withTitle: "OK").tag = NSApplication.ModalResponse.OK.rawValue;
-                    alert.addButton(withTitle: "Cancel");
-                    alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
-                        let password = passwordField.stringValue;
-                        if password.isEmpty || response != .OK {
-                            self.close();
-                        } else {
-                            guard let mucModule: MucModule = XmppService.instance.getClient(for: self.account)?.modulesManager.getModule(MucModule.ID) else {
-                                return;
-                            }
-                            _ = mucModule.join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname, password: password);
-                            
-                            PEPBookmarksModule.updateOrAdd(for: self.account, bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: true, nick: nickname, password: password));
-                            self.close();
-                        }
-                    })
-                }
-            }
-        }, onError: { (errorCondition) in
-            if errorCondition != nil && errorCondition! == ErrorCondition.item_not_found {
                 DispatchQueue.main.async {
                     guard let configRoomController = self.storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier("ConfigureRoomViewController")) as? ConfigureRoomViewController else {
                         return;
@@ -367,10 +374,6 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                     self.view.window?.beginSheet(window, completionHandler: { result in
                         self.close();
                     });
-                }
-            } else {
-                DispatchQueue.main.async {
-                    self.close();
                 }
             }
         });
@@ -402,42 +405,42 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
         self.allItems = [];
         progressIndicator.startAnimation(nil);
         
-        discoModule.getItems(for: JID(account.domain), onItemsReceived: { (node, items) in
-            var mucJids: [BareJID] = [];
-            var counter = items.count;
-            let finisher = {
-                counter = counter - 1;
-                if (counter <= 0) {
+        discoModule.getItems(for: JID(account.domain), completionHandler: { result in
+            switch result {
+            case .success(let items):
+                var mucJids: [BareJID] = [];
+                var counter = items.items.count;
+
+                let group = DispatchGroup();
+                group.notify(queue: DispatchQueue.main, execute: {
                     self.progressIndicator.stopAnimation(nil);
                     self.componentJids = mucJids.sorted(by: { (j1, j2) -> Bool in
                         return j2.stringValue.compare(j2.stringValue) == .orderedAscending;
                     });
-                }
-            };
-            
-            items.forEach({ item in
-                discoModule.getInfo(for: item.jid, node: item.node, onInfoReceived: { node, identities, features in
-                    DispatchQueue.main.async {
-                        let idx = features.firstIndex(of: "http://jabber.org/protocol/muc");
-                        if idx != nil {
-                            mucJids.append(item.jid.bareJid);
+                })
+                
+                group.enter();
+                for item in items.items {
+                    group.enter();
+                    discoModule.getInfo(for: item.jid, node: item.node, completionHandler: { result in
+                        switch result {
+                        case .success(let info):
+                            if info.features.contains("http://jabber.org/protocol/muc") {
+                                DispatchQueue.main.async {
+                                    mucJids.append(item.jid.bareJid);
+                                }
+                            }
+                        case .failure(_):
+                            break;
                         }
-                        finisher();
-                    }
-                }, onError: { (errorCondition) in
-                    DispatchQueue.main.async {
-                        finisher();
-                    }
-                });
-            });
-            if items.isEmpty {
-                DispatchQueue.main.async {
-                    finisher();
+                        group.leave();
+                    });
                 }
-            }
-        }, onError: { (errorCondition) in
-            DispatchQueue.main.async {
-                self.progressIndicator.stopAnimation(nil);
+                group.leave();
+            case .failure(_):
+                DispatchQueue.main.async {
+                    self.progressIndicator.stopAnimation(nil);
+                }
             }
         });
     }
@@ -457,29 +460,35 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
         
         let group = DispatchGroup();
         group.enter();
-        discoModule.getItems(for: JID(mucJid), onItemsReceived: { (node, items) in
-            let sortedItems = items.sorted(by: { (i1, i2) -> Bool in
-                let n1 = i1.name ?? i1.jid.localPart ?? "";
-                let n2 = i2.name ?? i2.jid.localPart ?? "";
-                return n1.compare(n2) == ComparisonResult.orderedAscending;
-            })
-            DispatchQueue.main.async {
-                foundItems = sortedItems;
-                group.leave();
+        discoModule.getItems(for: JID(mucJid), completionHandler: { result in
+            switch result {
+            case .success(let items):
+                let sortedItems = items.items.sorted(by: { (i1, i2) -> Bool in
+                    let n1 = i1.name ?? i1.jid.localPart ?? "";
+                    let n2 = i2.name ?? i2.jid.localPart ?? "";
+                    return n1.compare(n2) == ComparisonResult.orderedAscending;
+                })
+                DispatchQueue.main.async {
+                    foundItems = sortedItems;
+                }
+            case .failure(_):
+                break;
             }
-        }) { (errorCondition) in
             group.leave();
-        };
+        });
         
         group.enter();
-        discoModule.getInfo(for: JID(mucJid), node: nil, onInfoReceived: { (node, identities, features) in
-            DispatchQueue.main.async {
-                self.componentType = ComponentType.from(identities: identities, features: features);
-                group.leave();
+        discoModule.getInfo(for: JID(mucJid), node: nil, completionHandler: { result in
+            switch result {
+            case .success(let info):
+                DispatchQueue.main.async {
+                    self.componentType = ComponentType.from(identities: info.identities, features: info.features);
+                }
+            case .failure(_):
+                break;
             }
-        }, onError: { errorCondition in
             group.leave();
-        })
+        });
         
         group.notify(queue: DispatchQueue.main, execute: {
             if self.componentType == nil {

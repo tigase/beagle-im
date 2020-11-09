@@ -53,36 +53,41 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
         let affiliations: [MucAffiliation] = [.member, .admin, .outcast, .owner];
         var count = affiliations.count;
         self.progressIndicator.startAnimation(nil);
-        var errors = 0;
-        affiliations.forEach { aff in
-            mucModule.getRoomAffiliations(from: room, with: aff) { (affiliations, error) in
-                DispatchQueue.main.async {
-                    count = count - 1;
-                    if count <= 0 {
-                        self.progressIndicator.stopAnimation(nil);
-                        if errors > 0 {
-                            let alert = NSAlert();
-                            alert.icon = NSImage(named: NSImage.cautionName);
-                            alert.messageText = "Authorization error";
-                            alert.informativeText = "You are not authorized to view memeber list of this room.";
-                            alert.addButton(withTitle: "OK");
-                            alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
-                                self.close();
-                            });
-                        }
+        var errors: [XMPPError] = [];
+        let group = DispatchGroup();
+        group.notify(queue: DispatchQueue.main, execute: {
+            self.progressIndicator.stopAnimation(nil);
+            if !errors.isEmpty {
+                let alert = NSAlert();
+                alert.icon = NSImage(named: NSImage.cautionName);
+                alert.messageText = "Authorization error";
+                alert.informativeText = "You are not authorized to view memeber list of this room.";
+                alert.addButton(withTitle: "OK");
+                alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
+                    self.close();
+                });
+            }
+        });
+        
+        group.enter();
+        for aff in affiliations {
+            group.enter();
+            mucModule.getRoomAffiliations(from: room, with: aff, completionHandler: { result in
+                switch result {
+                case .success(let affiliations):
+                    DispatchQueue.main.async {
+                        self.affiliations.append(contentsOf: affiliations);
+                        self.updateVisibleAffiliations();
+                    }
+                case .failure(let error):
+                    DispatchQueue.main.async {
+                        errors.append(error);
                     }
                 }
-                guard affiliations != nil else {
-                    print("got error", error as Any);
-                    errors = errors + 1;
-                    return;
-                }
-                DispatchQueue.main.async {
-                    self.affiliations.append(contentsOf: affiliations!);
-                    self.updateVisibleAffiliations();
-                }
-            }
+                group.leave();
+            });
         }
+        group.leave()
     }
     
     func numberOfRows(in tableView: NSTableView) -> Int {
@@ -261,24 +266,22 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
         
         self.progressIndicator.startAnimation(nil);
         
-        mucModule.setRoomAffiliations(to: room, changedAffiliations: changes) { (error) in
-            guard error != nil else {
-                DispatchQueue.main.async {
-                    self.progressIndicator.stopAnimation(nil);
-                    self.close();
-                }
-                return;
-            }
+        mucModule.setRoomAffiliations(to: room, changedAffiliations: changes, completionHandler: { result in
             DispatchQueue.main.async {
                 self.progressIndicator.stopAnimation(nil);
-                let alert = NSAlert();
-                alert.icon = NSImage(named: NSImage.cautionName);
-                alert.messageText = "Error occurred";
-                alert.informativeText = ((error!) == ErrorCondition.forbidden) ? "You are not allowed to modify list of affiliations for this room." : "Server returned an error: \(error!)";
-                alert.addButton(withTitle: "OK");
-                alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
+                switch result {
+                case .success(_):
+                    self.close();
+                case .failure(let error):
+                    let alert = NSAlert();
+                    alert.icon = NSImage(named: NSImage.cautionName);
+                    alert.messageText = "Error occurred";
+                    alert.informativeText = (error == .forbidden()) ? "You are not allowed to modify list of affiliations for this room." : "Server returned an error: \(error.message ?? error.description)";
+                    alert.addButton(withTitle: "OK");
+                    alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
+                }
             }
-        }
+        });
     }
     
     fileprivate func close() {

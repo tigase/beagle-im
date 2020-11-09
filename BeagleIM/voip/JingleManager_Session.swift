@@ -60,10 +60,10 @@ extension JingleManager {
             self.initiationType = initiationType;
         }
         
-        func initiate(contents: [Jingle.Content], bundle: [String]?, completionHandler: ((Result<Void,ErrorCondition>)->Void)?) {
+        func initiate(contents: [Jingle.Content], bundle: [String]?, completionHandler: ((Result<Void,XMPPError>)->Void)?) {
             guard let jingleModule = self.jingleModule else {
                 self.terminate(reason: .failedApplication);
-                completionHandler?(.failure(.unexpected_request));
+                completionHandler?(.failure(.undefined_condition));
                 return;
             }
 
@@ -78,10 +78,10 @@ extension JingleManager {
             });
         }
         
-        func initiate(descriptions: [Jingle.MessageInitiationAction.Description], completionHandler: ((Result<Void,ErrorCondition>)->Void)?) {
+        func initiate(descriptions: [Jingle.MessageInitiationAction.Description], completionHandler: ((Result<Void,XMPPError>)->Void)?) {
             guard let jingleModule = self.jingleModule else {
                 self.terminate(reason: .failedApplication);
-                completionHandler?(.failure(.unexpected_request));
+                completionHandler?(.failure(.undefined_condition));
                 return;
             }
             jingleModule.sendMessageInitiation(action: .propose(id: self.sid, descriptions: descriptions), to: self.jid);
@@ -104,10 +104,10 @@ extension JingleManager {
             }
         }
                 
-        func accept(contents: [Jingle.Content], bundle: [String]?, completionHandler: ((Result<Void,ErrorCondition>)->Void)?) {
+        func accept(contents: [Jingle.Content], bundle: [String]?, completionHandler: ((Result<Void,XMPPError>)->Void)?) {
             guard let jingleModule = self.jingleModule else {
                 self.terminate(reason: .failedApplication);
-                completionHandler?(.failure(.unexpected_request));
+                completionHandler?(.failure(.undefined_condition));
                 return;
             }
 
@@ -217,7 +217,7 @@ extension JingleManager {
             remoteCandidates.removeAll();
         }
         
-        fileprivate func onError(_ errorCondition: ErrorCondition) {
+        fileprivate func onError(_ error: XMPPError) {
             
         }
                 

@@ -71,26 +71,25 @@ class ConfigureRoomViewController: NSViewController {
         let dispatchGroup = DispatchGroup();
         progressIndicator.startAnimation(nil);
         dispatchGroup.enter();
-        mucModule.getRoomConfiguration(roomJid: JID(roomJid == nil ? mucComponent : roomJid!), onSuccess: { [weak self] (form) in
+        mucModule.getRoomConfiguration(roomJid: JID(roomJid == nil ? mucComponent : roomJid!), completionHandler: { [weak self] result in
             DispatchQueue.main.async {
-                self?.form = form;
                 dispatchGroup.leave();
-            }
-        }, onError: { [weak self] errorCondition in
-            // need to show alert here!
-            dispatchGroup.leave();
-            DispatchQueue.main.async { [weak self] in
-                guard let that = self else {
-                    return;
+                switch result {
+                case .success(let form):
+                    self?.form = form;
+                case .failure(let error):
+                    guard let that = self else {
+                        return;
+                    }
+                    let alert = NSAlert();
+                    alert.messageText = "Error occurred";
+                    alert.icon = NSImage(named: NSImage.cautionName);
+                    alert.informativeText = "Could not retrieve room configuration from the server. Got following error: \(error.message ?? error.description)";
+                    alert.addButton(withTitle: "OK");
+                    alert.beginSheetModal(for: that.view.window!, completionHandler: { result in
+                        that.close(result: .cancel);
+                    });
                 }
-                let alert = NSAlert();
-                alert.messageText = "Error occurred";
-                alert.icon = NSImage(named: NSImage.cautionName);
-                alert.informativeText = "Could not retrieve room configuration from the server. Got following error: \(errorCondition?.rawValue ?? "timeout")";
-                alert.addButton(withTitle: "OK");
-                alert.beginSheetModal(for: that.view.window!, completionHandler: { result in
-                    that.close(result: .cancel);
-                });
             }
         });
         if let vCardTempModule: VCardTempModule = client.modulesManager.getModule(VCardTempModule.ID), let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID) {
@@ -140,18 +139,16 @@ class ConfigureRoomViewController: NSViewController {
         }
     }
     
-    private func checkVCardSupport(vCardTempModule: VCardTempModule, completionHandler: @escaping (Result<Bool,ErrorCondition>)->Void) {
+    private func checkVCardSupport(vCardTempModule: VCardTempModule, completionHandler: @escaping (Result<Bool,XMPPError>)->Void) {
         vCardTempModule.retrieveVCard(from: JID(roomJid!), completionHandler: { (result) in
             completionHandler(result.map({ _ in true }));
         });
     }
     
-    private func checkVCardSupport(discoModule: DiscoveryModule, completionHandler: @escaping (Result<Bool,ErrorCondition>)->Void) {
-        discoModule.getInfo(for: JID(self.mucComponent!), onInfoReceived: { (node, identities, features) in
-            completionHandler(.success(features.contains(VCardTempModule.ID)));
-        }) { (errorCondition) in
-            completionHandler(.failure(errorCondition ?? ErrorCondition.undefined_condition));
-        }
+    private func checkVCardSupport(discoModule: DiscoveryModule, completionHandler: @escaping (Result<Bool,XMPPError>)->Void) {
+        discoModule.getInfo(for: JID(self.mucComponent!), completionHandler: { result in
+            completionHandler(result.map { info in info.features.contains(VCardTempModule.ID) });
+        });
     }
     
     @IBAction func cancelClicked(_ sender: NSButton) {
@@ -189,7 +186,7 @@ class ConfigureRoomViewController: NSViewController {
                     vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
                 }
                 queue.addOperation {
-                    vCardTempModule.publishVCard(vcard, to: roomJid);
+                    vCardTempModule.publishVCard(vcard, to: roomJid, completionHandler: nil);
                 }
             }
         }
@@ -219,7 +216,7 @@ class ConfigureRoomViewController: NSViewController {
                 }
                 dispatchGroup.leave();
                 break;
-            case .failure(let errorCondition):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     guard let window = self?.view.window else {
                         return;
@@ -227,7 +224,7 @@ class ConfigureRoomViewController: NSViewController {
                     let alert = NSAlert();
                     alert.messageText = "Error occurred";
                     alert.icon = NSImage(named: NSImage.cautionName);
-                    alert.informativeText = "Could not apply room configuration on the server. Got following error: \(errorCondition.rawValue)";
+                    alert.informativeText = "Could not apply room configuration on the server. Got following error: \(error.message ?? error.description)";
                     alert.addButton(withTitle: "OK");
                     alert.beginSheetModal(for: window, completionHandler: { result in
                         dispatchGroup.leave();
@@ -242,12 +239,8 @@ class ConfigureRoomViewController: NSViewController {
         }
     }
     
-    private func setRoomConfiguration(mucModule: MucModule, configuration: JabberDataElement, completionHandler: @escaping (Result<Void,ErrorCondition>)->Void) {
-        mucModule.setRoomConfiguration(roomJid: JID(self.roomJid), configuration: configuration, onSuccess: {
-            completionHandler(.success(Void()));
-        }, onError: { errorCondition in
-            completionHandler(.failure(errorCondition ?? .undefined_condition));
-        })
+    private func setRoomConfiguration(mucModule: MucModule, configuration: JabberDataElement, completionHandler: @escaping (Result<Void,XMPPError>)->Void) {
+        mucModule.setRoomConfiguration(roomJid: JID(self.roomJid), configuration: configuration, completionHandler: completionHandler);
     }
     
     @IBAction func disclosureClicked(_ sender: NSButton) {

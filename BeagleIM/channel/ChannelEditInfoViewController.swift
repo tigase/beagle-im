@@ -153,10 +153,10 @@ class ChannelEditInfoViewController: NSViewController, ChannelAwareProtocol {
             if let avatarModule: PEPUserAvatarModule = client.modulesManager.getModule(PEPUserAvatarModule.ID), let binval = self.avatarButton.image?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8) {
                 avatarModule.publishAvatar(at: channel.channelJid, data: binval, mimeType: "image/jpeg", width: nil, height: nil, completionHandler: { result in
                     switch result {
-                    case .success(_, _, _):
+                    case .success(_):
                         // new avatar published
                         break;
-                    case .failure(_, _, _):
+                    case .failure(_):
                         // avatar publication failed
                         break;
                     }

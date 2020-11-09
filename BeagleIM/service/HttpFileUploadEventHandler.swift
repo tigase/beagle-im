@@ -35,13 +35,14 @@ class HttpFileUploadEventHandler: XmppServiceEventHandler {
             guard let uploadModule: HttpFileUploadModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(HttpFileUploadModule.ID) else {
                 return;
             }
-            uploadModule.findHttpUploadComponent(onSuccess: { (values) in
-                uploadModule.availableComponents = values.map({ (k,v) -> HttpFileUploadModule.UploadComponent in
-                    return HttpFileUploadModule.UploadComponent(jid: k, maxFileSize: v)
-                });
-                NotificationCenter.default.post(name: HttpFileUploadEventHandler.UPLOAD_SUPPORT_CHANGED, object: account);
-            }, onError: { errorCondition in
-                print("an error occurred during HTTPFileUpload component discovery!", errorCondition as Any);
+            uploadModule.findHttpUploadComponent(completionHandler: { result in
+                switch result {
+                case .success(let values):
+                    uploadModule.availableComponents = values;
+                    NotificationCenter.default.post(name: HttpFileUploadEventHandler.UPLOAD_SUPPORT_CHANGED, object: account);
+                case .failure(let error):
+                    print("an error occurred during HTTPFileUpload component discovery!", error);
+                }
             });
         case let e as StreamManagementModule.ResumedEvent:
             let account = e.sessionObject.userBareJid!;
@@ -76,15 +77,4 @@ extension HttpFileUploadModule {
         return !availableComponents.isEmpty;
     }
  
-    class UploadComponent {
-        
-        let jid: JID;
-        let maxFileSize: Int;
-        
-        init(jid: JID, maxFileSize: Int?) {
-            self.jid = jid;
-            self.maxFileSize = maxFileSize ?? Int.max;
-        }
-        
-    }
 }

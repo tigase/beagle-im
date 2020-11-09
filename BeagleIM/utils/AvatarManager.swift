@@ -132,13 +132,15 @@ class AvatarManager {
             return;
         }
 
-        pepModule.retrieveAvatar(from: jid, itemId: hash, onSuccess: { (jid, hash, photoData) in
-            guard let data = photoData else {
-                return;
+        pepModule.retrieveAvatar(from: jid, itemId: hash, completionHandler: { result in
+            switch result {
+            case .success((let hash, let data)):
+                self.store.storeAvatar(data: data, for: hash);
+                self.updateAvatar(hash: hash, forType: .pepUserAvatar, forJid: jid, on: account);
+            case .failure(let error):
+                print("could not retrieve avatar, got error: \(error)");
             }
-            self.store.storeAvatar(data: data, for: hash);
-            self.updateAvatar(hash: hash, forType: .pepUserAvatar, forJid: jid, on: account);
-        }, onError: nil);
+        });
     }
     
     private func avatars(on account: BareJID) -> AvatarManager.AccountAvatarHashes {

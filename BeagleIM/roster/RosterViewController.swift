@@ -187,12 +187,12 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
             
             let account = client.sessionObject.userBareJid!;
             
-            (rosterModule.rosterStore as! DBRosterStoreWrapper).getJids().forEach { jid in
-                guard let ri = rosterModule.rosterStore.get(for: jid) else {
+            (rosterModule.store as! DBRosterStoreWrapper).getJids().forEach { jid in
+                guard let ri = rosterModule.store.get(for: jid) else {
                     return;
                 }
                 
-                self.updateItem(for: jid.bareJid, on: account, name: ri.name, status: presenceModule.presenceStore.getBestPresence(for: jid.bareJid)?.show);
+                self.updateItem(for: jid.bareJid, on: account, name: ri.name, status: presenceModule.store.getBestPresence(for: jid.bareJid)?.show);
             }
         }
     }
@@ -560,7 +560,7 @@ class RosterContactView: NSTableCellView {
         
         avatar.name = name;
         
-        let status = presenceModule.presenceStore.getBestPresence(for: self.item.jid)?.status;
+        let status = presenceModule.store.getBestPresence(for: self.item.jid)?.status;
         if status != nil && !status!.isEmpty {
             label.append(NSAttributedString(string: "\n"));
 //            label.append(NSAttributedString(string: status!, attributes: [NSAttributedString.Key.font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize), NSAttributedString.Key.foregroundColor: (darkBackground ? NSColor.lightGray : NSColor.darkGray)]));

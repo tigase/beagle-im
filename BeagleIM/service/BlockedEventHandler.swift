@@ -52,7 +52,7 @@ class BlockedEventHandler: XmppServiceEventHandler {
                     p?.type = .unavailable;
                     p?.from = jid;
                 }
-                let cpc = PresenceModule.ContactPresenceChanged(sessionObject: e.sessionObject, presence: p!, availabilityChanged: true);
+                let cpc = PresenceModule.ContactPresenceChanged(context: e.context, presence: p!, availabilityChanged: true);
                 NotificationCenter.default.post(name: XmppService.CONTACT_PRESENCE_CHANGED, object: cpc);
             }
         default:

@@ -113,7 +113,7 @@ class InviteToChannelViewControllerController: NSViewController, NSTextFieldDele
                     DispatchQueue.main.async {
                         self?.close();
                     }
-                case .failure(let errorCondition):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         guard let window = self?.view.window else {
                             return;
@@ -121,7 +121,7 @@ class InviteToChannelViewControllerController: NSViewController, NSTextFieldDele
                         let alert = NSAlert();
                         alert.messageText = "Error occurred";
                         alert.icon = NSImage(named: NSImage.cautionName);
-                        alert.informativeText = "Could not invite to channel on the server. Got following error: \(errorCondition.rawValue)";
+                        alert.informativeText = "Could not invite to channel on the server. Got following error: \(error.message ?? error.description)";
                         alert.addButton(withTitle: "OK");
                         alert.beginSheetModal(for: window, completionHandler: nil);
                     }

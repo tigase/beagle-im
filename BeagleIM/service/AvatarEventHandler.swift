@@ -54,7 +54,7 @@ class AvatarEventHandler: XmppServiceEventHandler {
                                 })
                             })
                         case .failure(let error):
-                            os_log(OSLogType.debug, log: .avatar, "got error %{public}s from %s VCard for avaar hash: %{public}s", error.rawValue, e.presence.from!.stringValue, photoId);
+                            os_log(OSLogType.debug, log: .avatar, "got error %{public}s from %s VCard for avaar hash: %{public}s", error.description, e.presence.from!.stringValue, photoId);
                             break;
                         }
                     })

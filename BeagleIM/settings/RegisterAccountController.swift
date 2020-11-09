@@ -184,7 +184,7 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
             }
         };
         let client: XMPPClient? = nil;
-        self.task = InBandRegistrationModule.AccountRegistrationTask(client: client, domainName: domain, onForm: onForm, sslCertificateValidator: SslCertificateValidator.validateSslCertificate, onCertificateValidationError: self.onCertificateError, completionHandler: { result in
+        self.task = InBandRegistrationModule.AccountRegistrationTask(client: client, domainName: domain, onForm: onForm, sslCertificateValidator: nil, onCertificateValidationError: self.onCertificateError, completionHandler: { result in
             switch result {
             case .success:
                 print("account registered!");
@@ -193,8 +193,8 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
                     self.saveAccount(acceptedCertificate: certData);
                     self.dismissView();
                 }
-            case .failure(let errorCondition, let errorText):
-                self.onRegistrationError(errorCondition: errorCondition, message: errorText);
+            case .failure(let error):
+                self.onRegistrationError(errorCondition: error.errorCondition, message: error.message);
             }
         });
     }

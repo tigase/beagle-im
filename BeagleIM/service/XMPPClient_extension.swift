@@ -40,7 +40,7 @@ extension XMPPClient {
             guard let presenceModule: PresenceModule = modulesManager.getModule(PresenceModule.ID) else {
                 return nil;
             }
-            return presenceModule.presenceStore;
+            return presenceModule.store;
         }
     }
     
@@ -49,7 +49,7 @@ extension XMPPClient {
             guard let rosterModule: RosterModule = modulesManager.getModule(RosterModule.ID) else {
                 return nil;
             }
-            return rosterModule.rosterStore;
+            return rosterModule.store;
         }
     }
 }

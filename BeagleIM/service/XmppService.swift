@@ -239,17 +239,21 @@ class XmppService: EventHandler {
             return;
         }
         
-        client.connectionConfiguration.setUserPassword(account.password);
-        SslCertificateValidator.setAcceptedSslCertificate(client.sessionObject, fingerprint: (account.serverCertificate?.accepted ?? false) ? account.serverCertificate?.details.fingerprintSha1 : nil);
+        client.connectionConfiguration.credentials = .password(password: account.password!, authenticationName: nil, cache: nil);
+        if let serverCertificate = account.serverCertificate, serverCertificate.accepted {
+            client.connectionConfiguration.sslCertificateValidation = .fingerprint(serverCertificate.details.fingerprintSha1);
+        } else {
+            client.connectionConfiguration.sslCertificateValidation = .default;
+        }
 
         switch account.resourceType {
         case .automatic:
-            client.sessionObject.setUserProperty(SessionObject.RESOURCE, value: nil);
+            client.connectionConfiguration.resource = nil;
         case .hostname:
-            client.sessionObject.setUserProperty(SessionObject.RESOURCE, value: Host.current().localizedName);
+            client.connectionConfiguration.resource = Host.current().localizedName;
         case .custom:
             let val = account.resourceName;
-            client.sessionObject.setUserProperty(SessionObject.RESOURCE, value: (val == nil || val!.isEmpty) ? nil : val)
+            client.connectionConfiguration.resource = (val == nil || val!.isEmpty) ? nil : val;
         }
         
         client.login();
@@ -292,7 +296,7 @@ class XmppService: EventHandler {
         
         dispatcher.sync {
             if let client = self._clients[account.name] {
-                client.connectionConfiguration.setUserPassword(account.password);
+                client.connectionConfiguration.credentials = .password(password: account.password!, authenticationName: nil, cache: nil);
                 client.disconnect();
             } else {
                 let client = self.register(client: self.initializeClient(jid: account.name)!, for: account.name);
@@ -374,8 +378,8 @@ class XmppService: EventHandler {
         }
         
         let client = XMPPClient();
-        client.sessionObject.dnsSrvResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(), cache: self.dnsCache);
-        client.connectionConfiguration.setUserJID(jid);
+        client.connectionConfiguration.dnsResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(), cache: self.dnsCache);
+        client.connectionConfiguration.userJid = jid;
         
         _ = client.modulesManager.register(StreamManagementModule());
         _ = client.modulesManager.register(AuthModule());
@@ -385,22 +389,21 @@ class XmppService: EventHandler {
         _ = client.modulesManager.register(SaslModule());
         _ = client.modulesManager.register(ResourceBinderModule());
         _ = client.modulesManager.register(SessionEstablishmentModule());
-        _ = client.modulesManager.register(DiscoveryModule());
-        _ = client.modulesManager.register(SoftwareVersionModule());
+        _ = client.modulesManager.register(DiscoveryModule(identity: DiscoveryModule.Identity(category: "client", type: "pc", name: Bundle.main.infoDictionary!["CFBundleName"] as! String)));
+        _ = client.modulesManager.register(SoftwareVersionModule(version: SoftwareVersionModule.SoftwareVersion(name: Bundle.main.infoDictionary!["CFBundleName"] as! String, version: "\(Bundle.main.infoDictionary!["CFBundleShortVersionString"] as! String) b\(Bundle.main.infoDictionary!["CFBundleVersion"] as! String)", os: "macOS")));
         _ = client.modulesManager.register(VCardTempModule());
         _ = client.modulesManager.register(VCard4Module());
         _ = client.modulesManager.register(PingModule());
         _ = client.modulesManager.register(BlockingCommandModule());
         
-        client.modulesManager.register(CapabilitiesModule(additionalFeatures: [.lastMessageCorrection, .messageRetraction])).cache = DBCapabilitiesCache.instance;
+        client.modulesManager.register(CapabilitiesModule(cache: DBCapabilitiesCache.instance, additionalFeatures: [.lastMessageCorrection, .messageRetraction]));
         _ = client.modulesManager.register(PubSubModule());
         _ = client.modulesManager.register(PEPUserAvatarModule());
         _ = client.modulesManager.register(PEPBookmarksModule());
         
-        let messageModule = MessageModule();
         let chatStoreWrapper = DBChatStoreWrapper(sessionObject: client.context.sessionObject);
         chatStoreWrapper.initialize();
-        messageModule.chatManager = DefaultChatManager(context: client.context, chatStore: chatStoreWrapper);
+        let messageModule = MessageModule(chatManager: DefaultChatManager(context: client.context, chatStore: chatStoreWrapper));
         _ = client.modulesManager.register(messageModule);
         
         _ = client.modulesManager.register(MessageCarbonsModule());
@@ -411,8 +414,7 @@ class XmppService: EventHandler {
         
         let rosterStoreWrapper = DBRosterStoreWrapper(sessionObject: client.context.sessionObject);
         rosterStoreWrapper.initialize();
-        client.context.sessionObject.setUserProperty(RosterModule.ROSTER_STORE_KEY, value: rosterStoreWrapper);
-        _ = client.modulesManager.register(RosterModule());
+        _ = client.modulesManager.register(RosterModule(store: rosterStoreWrapper));
         
         _ = client.modulesManager.register(PresenceModule());
         
@@ -438,15 +440,6 @@ class XmppService: EventHandler {
         let signalContext = SignalContext(withStorage: signalStorage)!;
         signalStorage.setup(withContext: signalContext);
         _ = client.modulesManager.register(OMEMOModule(aesGCMEngine: OpenSSL_AES_GCM_Engine(), signalContext: signalContext, signalStorage: signalStorage));
-        
-        client.modulesManager.initIfRequired();
-        
-        SslCertificateValidator.registerSslCertificateValidator(client.sessionObject);
-        
-        client.sessionObject.setUserProperty(SoftwareVersionModule.NAME_KEY, value: Bundle.main.infoDictionary!["CFBundleName"]);
-        let version = "\(Bundle.main.infoDictionary!["CFBundleShortVersionString"] as! String) b\(Bundle.main.infoDictionary!["CFBundleVersion"] as! String)";
-        client.sessionObject.setUserProperty(SoftwareVersionModule.VERSION_KEY, value: version);
-        client.sessionObject.setUserProperty(SoftwareVersionModule.OS_KEY, value: "macOS");
         
         XMLConsoleViewController.configureLogging(for: client);
         

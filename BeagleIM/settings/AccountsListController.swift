@@ -207,7 +207,7 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
                 }
                 
                 let regModule = client.modulesManager.register(InBandRegistrationModule());
-                regModule.unregister({ (result) in
+                regModule.unregister(completionHander: { (result) in
                     DispatchQueue.main.async {
                         if let account = AccountManager.getAccount(for: jid) {
                             _ = AccountManager.delete(account: account);

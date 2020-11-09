@@ -855,19 +855,21 @@ extension GroupchatParticipantsContainer: NSMenuDelegate {
             case .alertFirstButtonReturn:
                 // we need to ban the user
                 print("We need to ban user with jid: \(jid)");
-                mucModule.setRoomAffiliations(to: room, changedAffiliations: [MucModule.RoomAffiliation(jid: jid.withoutResource, affiliation: .outcast)], completionHandler: { error in
-                    guard let err = error else {
-                        return;
-                    }
-                    DispatchQueue.main.async {
-                        let alert = NSAlert();
-                        alert.icon = NSImage(named: NSImage.cautionName);
-                        alert.messageText = "Banning user \(participant.nickname) failed";
-                        alert.informativeText = "Server returned an error: \(err.rawValue)";
-                        alert.addButton(withTitle: "OK");
-                        alert.beginSheetModal(for: window, completionHandler: { response in
-                            //we do not care about the response
-                        })
+                mucModule.setRoomAffiliations(to: room, changedAffiliations: [MucModule.RoomAffiliation(jid: jid.withoutResource, affiliation: .outcast)], completionHandler: { result in
+                    switch result {
+                    case .success(_):
+                        break;
+                    case .failure(let error):
+                        DispatchQueue.main.async {
+                            let alert = NSAlert();
+                            alert.icon = NSImage(named: NSImage.cautionName);
+                            alert.messageText = "Banning user \(participant.nickname) failed";
+                            alert.informativeText = "Server returned an error: \(error.message ?? error.description)";
+                            alert.addButton(withTitle: "OK");
+                            alert.beginSheetModal(for: window, completionHandler: { response in
+                                //we do not care about the response
+                            })
+                        }
                     }
                 })
                 break;

@@ -138,20 +138,23 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
             return;
         }
         
-        client.rosterStore!.add(jid: jid, name: name.isEmpty ? nil : name, onSuccess: { (stanza) in
-            guard let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID) else {
+        client.rosterStore!.add(jid: jid, name: name.isEmpty ? nil : name, completionHandler: { result in
+            switch result {
+            case .success(_):
+                guard let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID) else {
+                    self.close();
+                    return;
+                }
+                if requrestSubscription {
+                    presenceModule.subscribe(to: jid, preauth: self.preauthToken);
+                }
+                if allowSubscription {
+                    presenceModule.subscribed(by: jid);
+                }
                 self.close();
-                return;
+            case .failure(_):
+                self.close();
             }
-            if requrestSubscription {
-                presenceModule.subscribe(to: jid, preauth: self.preauthToken);
-            }
-            if allowSubscription {
-                presenceModule.subscribed(by: jid);
-            }
-            self.close();
-        }, onError: { (error) in
-            self.close();
         });
     }
     

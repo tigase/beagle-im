@@ -105,7 +105,7 @@ class AvatarViewWithStatus: NSView {
             let client = XmppService.instance.getClient(for: account);
             let presenceModule: PresenceModule? = client?.modulesManager.getModule(PresenceModule.ID);
             self.statusView.blocked = client != nil && BlockedEventHandler.isBlocked(JID(jid), on: client!);
-            self.status = presenceModule?.presenceStore.getBestPresence(for: jid)?.show;
+            self.status = presenceModule?.store.getBestPresence(for: jid)?.show;
         }
     }
     

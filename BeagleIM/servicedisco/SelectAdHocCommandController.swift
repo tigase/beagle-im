@@ -50,21 +50,23 @@ class SelectAdHocCommandController: NSViewController {
         }
         
         self.progressIndicator.startAnimation(self);
-        discoveryModule.getItems(for: jid!, node: "http://jabber.org/protocol/commands", onItemsReceived: { (node: String?, items: [DiscoveryModule.Item]) in
+        discoveryModule.getItems(for: jid!, node: "http://jabber.org/protocol/commands", completionHandler: { result in
             DispatchQueue.main.async {
-                self.items = items.sorted(by: { (i1, i2) -> Bool in
-                    let s1 = i1.name ?? i1.node ?? i1.jid.stringValue;
-                    let s2 = i2.name ?? i2.node ?? i2.jid.stringValue;
-                    return (s1).compare(s2) == .orderedAscending;
-                });
-                self.progressIndicator.stopAnimation(self);
+                switch result {
+                case .success(let items):
+                    self.items = items.items.sorted(by: { (i1, i2) -> Bool in
+                        let s1 = i1.name ?? i1.node ?? i1.jid.stringValue;
+                        let s2 = i2.name ?? i2.node ?? i2.jid.stringValue;
+                        return (s1).compare(s2) == .orderedAscending;
+                    });
+                case .failure(let error):
+                    print("error:", error as Any);
+                }
+                DispatchQueue.main.async {
+                    self.progressIndicator.stopAnimation(self);
+                }
             }
-        }) { (error) in
-            DispatchQueue.main.async {
-                self.progressIndicator.stopAnimation(self);
-            }
-            print("error:", error as Any);
-        }
+        })
     }
     
     @IBAction func cancelClicked(_ sender: NSButton) {

@@ -26,11 +26,11 @@ class VCardManager {
     
     public static let instance = VCardManager();
     
-    open func retrieveVCard(for jid: BareJID, on account: BareJID, completionHandler: @escaping (Result<VCard,ErrorCondition>)->Void) {
+    open func retrieveVCard(for jid: BareJID, on account: BareJID, completionHandler: @escaping (Result<VCard,XMPPError>)->Void) {
         self.retrieveVCard(for: JID(jid), on: account, completionHandler: completionHandler);
     }
     
-    open func retrieveVCard(for jid: JID, on account: BareJID, completionHandler: @escaping (Result<VCard,ErrorCondition>)->Void) {
+    open func retrieveVCard(for jid: JID, on account: BareJID, completionHandler: @escaping (Result<VCard,XMPPError>)->Void) {
         guard let modulesManager = XmppService.instance.getClient(for: account)?.modulesManager else {
             completionHandler(.failure(.undefined_condition));
             return;
@@ -58,7 +58,7 @@ class VCardManager {
         }
     }
     
-    open func refreshVCard(for jid: BareJID, on account: BareJID, completionHandler: ((Result<VCard,ErrorCondition>)->Void)?) {
+    open func refreshVCard(for jid: BareJID, on account: BareJID, completionHandler: ((Result<VCard,XMPPError>)->Void)?) {
         retrieveVCard(for: jid, on: account, completionHandler: { result in
             switch result {
             case .success(let vcard):
@@ -70,7 +70,7 @@ class VCardManager {
         })
     }
     
-    fileprivate func retrieveVCard(module: VCardModuleProtocol, for jid: JID?, on account: BareJID, completionHandler: @escaping (Result<VCard,ErrorCondition>)->Void) {
+    fileprivate func retrieveVCard(module: VCardModuleProtocol, for jid: JID?, on account: BareJID, completionHandler: @escaping (Result<VCard,XMPPError>)->Void) {
         module.retrieveVCard(from: jid, completionHandler: completionHandler);
     }
 }

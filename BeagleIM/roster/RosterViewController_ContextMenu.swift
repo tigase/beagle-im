@@ -119,11 +119,11 @@ extension RosterViewController: NSMenuDelegate {
                 }
 
                 let jid = JID(item.jid);
-                guard let ri = rosterModule.rosterStore.get(for: jid) else {
+                guard let ri = rosterModule.store.get(for: jid) else {
                     return;
                 }
                 
-                rosterModule.rosterStore.update(item: ri, name: textField.stringValue.isEmpty ? nil : textField.stringValue, onSuccess: nil, onError: nil);
+                rosterModule.store.update(item: ri, name: textField.stringValue.isEmpty ? nil : textField.stringValue, completionHandler: nil);
             }
         }
     }
@@ -166,7 +166,7 @@ extension RosterViewController: NSMenuDelegate {
             return;
         }
         
-        rosterModule.rosterStore.remove(jid: JID(item.jid), onSuccess: nil, onError: nil);
+        rosterModule.store.remove(jid: JID(item.jid), completionHandler: nil);
     }
  
     fileprivate class InviteToRoomMenuItem: NSMenuItem {

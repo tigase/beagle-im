@@ -257,10 +257,10 @@ class VCardEditorViewController: NSViewController, AccountAware {
                         self.progressIndicator.stopAnimation(self);
                         self.isEnabled = true;
                         switch result {
-                        case .success(_,_,_):
+                        case .success(_):
                             self.dismiss(self);
-                        case .failure(let error, _, _):
-                            self.handleError(title: "Publication of new version of private VCard failed", message: "Server returned an error: \(error)");
+                        case .failure(let error):
+                            self.handleError(title: "Publication of new version of private VCard failed", message: "Server returned an error: \(error.error.message ?? error.description)");
                         }
                     }
                 })
@@ -490,11 +490,14 @@ class VCardEditorViewController: NSViewController, AccountAware {
             handleError(title: "Publication of avatar failed", message: "Account is not connected");
             return;
         }
-        avatarModule.publishAvatar(data: avatar, mimeType: "image/png", onSuccess: {
-            print("avatar data published");
-        }) { (error, pubsubError) in
-            self.handleError(title: "Publication of avatar failed", message: "Server returned an error: \(error?.rawValue ?? pubsubError?.rawValue ?? ErrorCondition.remote_server_timeout.rawValue)");
-        }
+        avatarModule.publishAvatar(data: avatar, mimeType: "image/png", completionHandler: { result in
+            switch result {
+            case .success(_):
+                print("avatar data published");
+            case .failure(let error):
+                self.handleError(title: "Publication of avatar failed", message: "Server returned an error: \(error.error.message ?? error.description)");
+            }
+        });
     }
     
     class Row: NSStackView {

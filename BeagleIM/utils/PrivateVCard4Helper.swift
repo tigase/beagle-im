@@ -33,10 +33,10 @@ class PrivateVCard4Helper {
     
     static func retrieve(on account: BareJID, from jid: BareJID, completionHandler: @escaping (Result<VCard,ErrorCondition>)->Void) {
         if isEnabled, let pubsubModule: PubSubModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PubSubModule.ID) {
-            pubsubModule.retrieveItems(from: jid, for: NODE, itemIds: ["current"], completionHandler: { result in
+            pubsubModule.retrieveItems(from: jid, for: NODE, limit: .items(withIds: ["current"]), completionHandler: { result in
                 switch result {
-                case .success(let response, let node, let items, _):
-                    if let item = items.first.map({ $0.payload }), let vcard = VCard(vcard4: item) {
+                case .success(let items):
+                    if let item = items.items.first.map({ $0.payload }), let vcard = VCard(vcard4: item) {
                         completionHandler(.success(vcard));
                         return;
                     }
@@ -58,18 +58,18 @@ class PrivateVCard4Helper {
             publishOptions.addField(TextSingleField(name: "pubsub#access_model")).value = "presence";
             pubsubModule.publishItem(at: account, to: NODE, itemId: "current", payload: vcard.toVCard4(), publishOptions: publishOptions, completionHandler: { result in
                 switch result {
-                case .failure(let errorCondition, _, _):
-                    guard errorCondition != .conflict else {
+                case .failure(let error):
+                    guard error.error != .conflict() else {
                         pubsubModule.retrieveNodeConfiguration(from: account, node: NODE, completionHandler: { res in
                             switch res {
-                            case .failure(_, _, _):
+                            case .failure(_):
                                 completionHandler(result);
                             case .success(let configuration):
                                 let field = configuration.getField(named: "pubsub#access_model") ?? configuration.addField(TextSingleField(name: "pubsub#access_model"));
                                 field.value = "presence";
                                 pubsubModule.configureNode(at: account, node: NODE, with: configuration, completionHandler: { res in
                                     switch res {
-                                    case .failure(_, _, _):
+                                    case .failure(_):
                                         completionHandler(result);
                                     case .success:
                                         pubsubModule.publishItem(at: account, to: NODE, itemId: "current", payload: vcard.toVCard4(), publishOptions: publishOptions, completionHandler: { result in
@@ -87,7 +87,7 @@ class PrivateVCard4Helper {
                 completionHandler(result);
             });
         } else {
-            completionHandler(.failure(errorCondition: .item_not_found, pubSubErrorCondition: nil, response: nil));
+            completionHandler(.failure(.undefined_condition));
         }
     }
 }

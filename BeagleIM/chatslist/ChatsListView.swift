@@ -562,7 +562,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 switch result {
                 case .success(_):
                     _ = DBChatStore.instance.close(for: c.account, chat: c);
-                case .failure(_, _):
+                case .failure(_):
                     break;
                 }
             })

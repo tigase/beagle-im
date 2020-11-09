@@ -27,62 +27,57 @@ class HTTPFileUploadHelper {
     static func upload(forAccount account: BareJID, filename: String, inputStream: InputStream, filesize size: Int, mimeType: String?, delegate: URLSessionDelegate?, completionHandler: @escaping (Result<URL,ShareError>)->Void) {
         if let client = XmppService.instance.getClient(for: account) {
             let httpUploadModule: HttpFileUploadModule = client.modulesManager.getModule(HttpFileUploadModule.ID)!;
-            httpUploadModule.findHttpUploadComponent(onSuccess: { (results) in
-                var compJid: JID? = nil;
-                results.forEach({ (k,v) in
-                    if compJid != nil {
-                        return;
-                    }
-                    if v != nil && v! < size {
-                        return;
-                    }
-                    compJid = k;
-                });
-
-                guard compJid != nil else {
-                    guard results.count > 0 else {
+            httpUploadModule.findHttpUploadComponent(completionHandler: { result in
+                switch result {
+                case .success(let results):
+                    guard !results.isEmpty else {
                         completionHandler(.failure(.notSupported));
                         return;
                     }
-                    completionHandler(.failure(.fileTooBig));
-                    return;
-                }
-            
-                httpUploadModule.requestUploadSlot(componentJid: compJid!, filename: filename, size: size, contentType: mimeType, onSuccess: { (slot) in
-                    var request = URLRequest(url: slot.putUri);
-                    slot.putHeaders.forEach({ (k,v) in
-                        request.addValue(v, forHTTPHeaderField: k);
-                    });
-                    request.httpMethod = "PUT";
-                    request.httpBodyStream = inputStream;
-                    request.addValue(String(size), forHTTPHeaderField: "Content-Length");
-                    if let mimeType = mimeType {
-                        request.addValue(mimeType, forHTTPHeaderField: "Content-Type");
+                    guard let compJid: JID = results.first(where: { $0.maxSize > size })?.jid else {
+                        completionHandler(.failure(.fileTooBig))
+                        return;
                     }
-                    let session = URLSession(configuration: URLSessionConfiguration.default, delegate: delegate, delegateQueue: OperationQueue.main);
-                    session.dataTask(with: request) { (data, response, error) in
-                        let code = (response as? HTTPURLResponse)?.statusCode ?? 500;
-                        guard error == nil && (code == 200 || code == 201) else {
-                            print("error:", error as Any, "response:", response as Any)
-                            completionHandler(.failure(.httpError));
-                            return;
+                
+                    httpUploadModule.requestUploadSlot(componentJid: compJid, filename: filename, size: size, contentType: mimeType, completionHandler: { result in
+                        switch result {
+                        case .success(let slot):
+                            var request = URLRequest(url: slot.putUri);
+                            slot.putHeaders.forEach({ (k,v) in
+                                request.addValue(v, forHTTPHeaderField: k);
+                            });
+                            request.httpMethod = "PUT";
+                            request.httpBodyStream = inputStream;
+                            request.addValue(String(size), forHTTPHeaderField: "Content-Length");
+                            if let mimeType = mimeType {
+                                request.addValue(mimeType, forHTTPHeaderField: "Content-Type");
+                            }
+                            let session = URLSession(configuration: URLSessionConfiguration.default, delegate: delegate, delegateQueue: OperationQueue.main);
+                            session.dataTask(with: request) { (data, response, error) in
+                                let code = (response as? HTTPURLResponse)?.statusCode ?? 500;
+                                guard error == nil && (code == 200 || code == 201) else {
+                                    print("error:", error as Any, "response:", response as Any)
+                                    completionHandler(.failure(.httpError));
+                                    return;
+                                }
+                                if code == 200 {
+                                    completionHandler(.failure(.invalidResponseCode(url: slot.getUri)));
+                                } else {
+                                    completionHandler(.success(slot.getUri));
+                                }
+                            }.resume();
+                        case .failure(let error):
+                            completionHandler(.failure(.unknownError));
                         }
-                        if code == 200 {
-                            completionHandler(.failure(.invalidResponseCode(url: slot.getUri)));
-                        } else {
-                            completionHandler(.success(slot.getUri));
-                        }
-                    }.resume();
-                }, onError: { (error, message) in
-                    completionHandler(.failure(.unknownError));
-                })
-            }, onError: { (error) in
-                if error != nil && error! == ErrorCondition.item_not_found {
-                    completionHandler(.failure(.notSupported));
-                } else {
-                    completionHandler(.failure(.unknownError));
+                    });
+                case .failure(let error):
+                    if error == .item_not_found {
+                        completionHandler(.failure(.notSupported));
+                    } else {
+                        completionHandler(.failure(.unknownError));
+                    }
                 }
-            })
+            });
         }
     }
     

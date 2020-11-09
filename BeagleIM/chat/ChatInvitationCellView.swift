@@ -91,11 +91,11 @@ class ChatInvitationCellView: BaseChatCellView {
                 switch result {
                 case .success(_):
                     break;
-                case .failure(let errorCondition, let response):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         let alert = NSAlert();
                         alert.messageText = "Could not join";
-                        alert.informativeText = "It was not possible to join a channel. The server returned an error: \(response?.errorText ?? errorCondition.rawValue)";
+                        alert.informativeText = "It was not possible to join a channel. The server returned an error: \(error.message ?? error.description)";
                         alert.addButton(withTitle: "OK")
                         alert.beginSheetModal(for: window, completionHandler: nil);
                     }

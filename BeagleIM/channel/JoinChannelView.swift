@@ -104,8 +104,8 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
             }
             discoModule.getInfo(for: channel.jid, node: nil, completionHandler: { [weak self] result in
                 switch result {
-                case .success(_, _, let features):
-                    if features.firstIndex(of: "muc_passwordprotected") != nil && password == nil {
+                case .success(let info):
+                    if info.features.contains("muc_passwordprotected") && password == nil {
                         DispatchQueue.main.async {
                             guard let window = self?.window else {
                                 return;
@@ -135,14 +135,14 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
                             completionHandler(true);
                         }
                     }
-                case .failure(let errorCondition, let response):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         guard let window = self?.window else {
                             return;
                         }
                         let alert = NSAlert();
                         alert.messageText = "Could not join";
-                        alert.informativeText = "It was not possible to join a room. The server returned an error: \(response?.errorText ?? errorCondition.rawValue)";
+                        alert.informativeText = "It was not possible to join a room. The server returned an error: \(error.message ?? error.description)";
                         alert.addButton(withTitle: "OK")
                         alert.beginSheetModal(for: window, completionHandler: { (response) in
                             completionHandler(false);
@@ -162,11 +162,11 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
                     DispatchQueue.main.async {
                         completionHandler(true);
                     }
-                case .failure(let errorCondition, let response):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         let alert = NSAlert();
                         alert.messageText = "Could not join";
-                        alert.informativeText = "It was not possible to join a channel. The server returned an error: \(response?.errorText ?? errorCondition.rawValue)";
+                        alert.informativeText = "It was not possible to join a channel. The server returned an error: \(error.message ?? error.description)";
                         alert.addButton(withTitle: "OK")
                         alert.beginSheetModal(for: self.window!, completionHandler: { (response) in
                             completionHandler(false);
@@ -209,11 +209,11 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
                     let channelJid = JID(BareJID(localPart: text, domain: component.jid.domain));
                     discoModule.getInfo(for: channelJid, node: nil, completionHandler: { result in
                          switch result {
-                         case .success(_, let identities, let items):
+                         case .success(let info):
                              DispatchQueue.main.async {
-                                allItems.append(DiscoveryModule.Item(jid: channelJid, name: identities.first?.name));
+                                allItems.append(DiscoveryModule.Item(jid: channelJid, name: info.identities.first?.name));
                              }
-                         case .failure(_, _):
+                         case .failure(_):
                              break;
                          }
                          group.leave();
@@ -297,11 +297,11 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
             group.enter();
             discoModule.getItems(for: component.jid, completionHandler: { result in
                 switch result {
-                case .success(_, let items):
+                case .success(let items):
                     DispatchQueue.main.async {
-                        allItems.append(contentsOf: items);
+                        allItems.append(contentsOf: items.items);
                     }
-                case .failure(_, _):
+                case .failure(_):
                     break;
                 }
                 group.leave();

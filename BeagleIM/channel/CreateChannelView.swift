@@ -140,7 +140,7 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                             DispatchQueue.main.async {
                                 completionHandler(true);
                             }
-                        case .failure(let errorCondition, _):
+                        case .failure(let error):
                             DispatchQueue.main.async {
                                 completionHandler(false);
                                 guard let window = self?.window else {
@@ -149,7 +149,7 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                                 let alert = NSAlert();
                                 alert.messageText = "Error occurred";
                                 alert.icon = NSImage(named: NSImage.cautionName);
-                                alert.informativeText = "Could not join newly created channel '\(channelJid)' on the server. Got following error: \(errorCondition.rawValue)";
+                                alert.informativeText = "Could not join newly created channel '\(channelJid)' on the server. Got following error: \(error.message ?? error.description)";
                                 alert.addButton(withTitle: "OK");
                                 alert.beginSheetModal(for: window, completionHandler: { result in
                                     self?.delegate?.operationFinished();
@@ -179,7 +179,7 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                             print("changed channel access policy:", result);
                         })
                     }
-                case .failure(let errorCondition):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         completionHandler(false);
                         guard let window = self?.window else {
@@ -188,7 +188,7 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                         let alert = NSAlert();
                         alert.messageText = "Error occurred";
                         alert.icon = NSImage(named: NSImage.cautionName);
-                        alert.informativeText = "Could not create channel on the server. Got following error: \(errorCondition.rawValue)";
+                        alert.informativeText = "Could not create channel on the server. Got following error: \(error.message ?? error.description)";
                         alert.addButton(withTitle: "OK");
                         alert.beginSheetModal(for: window, completionHandler: { result in
                             self?.delegate?.operationFinished();
@@ -221,7 +221,7 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                             if let binval = avatar?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
                                 vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
                             }
-                            vCardTempModule.publishVCard(vcard, to: room.roomJid);
+                            vCardTempModule.publishVCard(vcard, to: room.roomJid, completionHandler: nil);
                         }
                         if channelDescription != nil {
                             mucModule.setRoomSubject(roomJid: room.roomJid, newSubject: channelDescription);
@@ -232,7 +232,7 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                         completionHandler(true);
                     }
                     break;
-                case .failure(let errorCondition):
+                case .failure(let error):
                     DispatchQueue.main.async {
                         completionHandler(false);
                         guard let window = self?.window else {
@@ -241,7 +241,7 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                         let alert = NSAlert();
                         alert.messageText = "Error occurred";
                         alert.icon = NSImage(named: NSImage.cautionName);
-                        alert.informativeText = "Could not apply room configuration on the server. Got following error: \(errorCondition.rawValue)";
+                        alert.informativeText = "Could not apply room configuration on the server. Got following error: \(error.message ?? error.description)";
                         alert.addButton(withTitle: "OK");
                         alert.beginSheetModal(for: window, completionHandler: { result in
                             self?.delegate?.operationFinished();

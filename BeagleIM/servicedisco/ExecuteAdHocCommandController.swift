@@ -104,28 +104,29 @@ class ExecuteAdHocCommandController: NSViewController {
         }
         self.formView.synchronize();
         progressIndicator.startAnimation(self);
-        adhocModule.execute(on: jid, command: commandId, action: .execute, data: formView.form, onSuccess: { [weak self] (stanza, data) in
+        adhocModule.execute(on: jid, command: commandId, action: .execute, data: formView.form, completionHandler: { [weak self] result in
             DispatchQueue.main.async {
-                self?.form = data;
-                self?.progressIndicator.stopAnimation(self)
-                self?.executeButton.isEnabled = (data?.type ?? .result) == .form;
-            }
-        }) { [weak self] (error) in
-            DispatchQueue.main.async {
-                if let that = self {
-                    that.progressIndicator.stopAnimation(nil);
-                    let alert = NSAlert();
-                    alert.messageText = "Error occurred";
-                    alert.icon = NSImage(named: NSImage.cautionName);
-                    let errorText = error?.rawValue ?? "timeout";
-                    alert.informativeText = "Could not execute command: \(errorText)";
-                    alert.addButton(withTitle: "OK");
-                    alert.beginSheetModal(for: that.view.window!, completionHandler: { result in
-                        // nothing to do..
-                    });
+                switch result {
+                case .success(let response):
+                    self?.form = response.form;
+                    self?.progressIndicator.stopAnimation(self)
+                    self?.executeButton.isEnabled = (response.form?.type ?? .result) == .form;
+                case .failure(let error):
+                    if let that = self {
+                        that.progressIndicator.stopAnimation(nil);
+                        let alert = NSAlert();
+                        alert.messageText = "Error occurred";
+                        alert.icon = NSImage(named: NSImage.cautionName);
+                        let errorText = error.message ?? error.description;
+                        alert.informativeText = "Could not execute command: \(errorText)";
+                        alert.addButton(withTitle: "OK");
+                        alert.beginSheetModal(for: that.view.window!, completionHandler: { result in
+                            // nothing to do..
+                        });
+                    }
                 }
             }
-        }
+        });
     }
     
 }

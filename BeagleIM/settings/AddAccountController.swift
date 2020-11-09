@@ -195,13 +195,12 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
             _ = client?.modulesManager.register(StreamFeaturesModule());
             _ = client?.modulesManager.register(SaslModule());
             _ = client?.modulesManager.register(AuthModule());
-            SslCertificateValidator.registerSslCertificateValidator(client!.sessionObject);
         }
         
         public func check(account: BareJID, password: String, callback: @escaping (Result<Void,ErrorCondition>)->Void) {
             self.callback = callback;
-            client?.connectionConfiguration.setUserJID(account);
-            client?.connectionConfiguration.setUserPassword(password);
+            client?.connectionConfiguration.userJid = account;
+            client?.connectionConfiguration.credentials = .password(password: password, authenticationName: nil, cache: nil);
             client?.login();
         }
         
@@ -225,7 +224,7 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
                     alert.completionHandler = { accepted in
                         self.acceptedCertificate = certData;
                         if (accepted) {
-                            SslCertificateValidator.setAcceptedSslCertificate(self.client!.sessionObject, fingerprint: certData.details.fingerprintSha1);
+                            self.client?.connectionConfiguration.sslCertificateValidation = .fingerprint(certData.details.fingerprintSha1);
                             self.callback = callback;
                             self.client?.login();
                         } else {

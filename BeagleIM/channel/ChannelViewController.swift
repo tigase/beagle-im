@@ -394,12 +394,12 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
                         switch result {
                         case .success(_):
                             break;
-                        case .failure(let errorCondition):
+                        case .failure(let error):
                             let alert = NSAlert();
                             alert.alertStyle = .warning;
                             alert.icon = NSImage(named: NSImage.cautionName);
                             alert.messageText = "Channel destruction failed!";
-                            alert.informativeText = "It was not possible to destroy channel \(channel.name ?? channel.channelJid.stringValue). Server returned an error: \(errorCondition.rawValue)";
+                            alert.informativeText = "It was not possible to destroy channel \(channel.name ?? channel.channelJid.stringValue). Server returned an error: \(error.message ?? error.description)";
                             alert.addButton(withTitle: "OK");
                             alert.beginSheetModal(for: window, completionHandler: nil);
                         }

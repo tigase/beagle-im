@@ -240,10 +240,10 @@ class OpenChannelViewController: NSViewController, OpenChannelViewControllerTabV
             case .failure(_):
                 discoModule.getItems(for: domainJid, completionHandler: { result in
                     switch result {
-                    case .success(_, let items):
+                    case .success(let items):
                         // we need to do disco on all components to find out local mix/muc component..
                         // maybe this should be done once for all "views"?
-                        for item in items {
+                        for item in items.items {
                             group.enter();
                             self.retrieveComponent(from: item.jid, name: item.name, discoModule: discoModule, completionHandler: { result in
                                 switch result {
@@ -257,7 +257,7 @@ class OpenChannelViewController: NSViewController, OpenChannelViewControllerTabV
                                 group.leave();
                             });
                         }
-                    case .failure(_, _):
+                    case .failure(_):
                         break;
                     }
                     group.leave();
@@ -278,17 +278,17 @@ class OpenChannelViewController: NSViewController, OpenChannelViewControllerTabV
         }
     }
     
-    private func retrieveComponent(from jid: JID, name: String?, discoModule: DiscoveryModule, completionHandler: @escaping (Result<Component,ErrorCondition>)->Void) {
+    private func retrieveComponent(from jid: JID, name: String?, discoModule: DiscoveryModule, completionHandler: @escaping (Result<Component,XMPPError>)->Void) {
         discoModule.getInfo(for: jid, completionHandler: { result in
             switch result {
-            case .success(_, let identities, let features):
-                guard let component = Component(jid: jid, name: name, identities: identities, features: features) else {
+            case .success(let info):
+                guard let component = Component(jid: jid, name: name, identities: info.identities, features: info.features) else {
                     completionHandler(.failure(.item_not_found));
                     return;
                 }
                 completionHandler(.success(component));
-            case .failure(let errorCondition, _):
-                completionHandler(.failure(errorCondition));
+            case .failure(let error):
+                completionHandler(.failure(error));
             }
         })
 

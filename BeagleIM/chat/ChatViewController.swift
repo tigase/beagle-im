@@ -92,7 +92,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         buddyAvatarView.name = buddyName;
         buddyAvatarView.update(for: jid, on: account);
         let presenceModule: PresenceModule? = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PresenceModule.ID);
-        let status = presenceModule?.presenceStore.getBestPresence(for: jid)?.status;
+        let status = presenceModule?.store.getBestPresence(for: jid)?.status;
         buddyStatusLabel.stringValue = status ?? "";
         buddyStatusLabel.toolTip = status;
 

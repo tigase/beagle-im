@@ -254,20 +254,24 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
         
         self.joinButton.isEnabled = false;
         self.progressIndicator.startAnimation(self);
-        discoModule.getInfo(for: item.jid, node: nil, onInfoReceived: { [weak self] node, identities, features in
-            let requiresPassword = features.firstIndex(of: "muc_passwordprotected") != nil;
-            
-            DispatchQueue.main.async {
-                self?.progressIndicator.stopAnimation(self);
-                self?.joinButton.isEnabled = true;
-                guard let window = self?.view.window else {
-                    return;
+        discoModule.getInfo(for: item.jid, node: nil, completionHandler: { [weak self] result in
+            switch result {
+            case .success(let info):
+                let requiresPassword = info.features.firstIndex(of: "muc_passwordprotected") != nil;
+                
+                DispatchQueue.main.async {
+                    self?.progressIndicator.stopAnimation(self);
+                    self?.joinButton.isEnabled = true;
+                    guard let window = self?.view.window else {
+                        return;
+                    }
+                    JoinGroupchatViewController.open(on: window, account: account, roomJid: item.jid.bareJid, isPasswordRequired: requiresPassword);
                 }
-                JoinGroupchatViewController.open(on: window, account: account, roomJid: item.jid.bareJid, isPasswordRequired: requiresPassword);
-            }
-        }, onError: { (errorCondition) in
-            DispatchQueue.main.async { [weak self] in
-                self?.view.window?.close();
+            case .failure(let error):
+                DispatchQueue.main.async { [weak self] in
+                    self?.view.window?.close();
+                    print("it would be nice to show this error to the user: \(error)")
+                }
             }
         });
     }
@@ -361,33 +365,36 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
         }
 
         self.progressIndicator.startAnimation(self);
-        discoModule.getInfo(for: jid, node: self.node, onInfoReceived: { [weak self] (node, identities, features) in
-            let categories = identities.map({ (identity) -> String in
-                return identity.category;
-            });
-            DispatchQueue.main.async {
-                self?.type = DisplayType.from(categories: categories);
-                self?.discoItems(for: Item(jid: jid, node: node ?? self?.node, name: nil), on: account);
-            }
-        }) { [weak self] (error) in
-            // FIXME: HANDLE IT SOMEHOW!
-            DispatchQueue.main.async {
-                self?.progressIndicator.stopAnimation(self);
-                var node = self?.node ?? "";
-                if !node.isEmpty {
-                    node = " and node \(node)";
+        let node = self.node;
+        discoModule.getInfo(for: jid, node: node, completionHandler: { [weak self] result in
+            switch result {
+            case .success(let info):
+                let categories = info.identities.map({ (identity) -> String in
+                    return identity.category;
+                });
+                DispatchQueue.main.async {
+                    self?.type = DisplayType.from(categories: categories);
+                    self?.discoItems(for: Item(jid: jid, node: node, name: nil), on: account);
                 }
-                let alert = Alert();
-                alert.icon = NSImage(named: NSImage.cautionName);
-                alert.messageText = "Service Discovery Failure!"
-                alert.informativeText = "It was not possible to retrieve disco#info details from \(jid)\(node): \(error?.rawValue ?? "unknown error")";
-                alert.addButton(withTitle: "OK");
-                alert.run(completionHandler: { (response) in
-                    // nothing to do..
-                })
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    self?.progressIndicator.stopAnimation(self);
+                    var node = self?.node ?? "";
+                    if !node.isEmpty {
+                        node = " and node \(node)";
+                    }
+                    let alert = Alert();
+                    alert.icon = NSImage(named: NSImage.cautionName);
+                    alert.messageText = "Service Discovery Failure!"
+                    alert.informativeText = "It was not possible to retrieve disco#info details from \(jid)\(node): \(error.message ?? error.description)";
+                    alert.addButton(withTitle: "OK");
+                    alert.run(completionHandler: { (response) in
+                        // nothing to do..
+                    })
+                }
+                print("error", error);
             }
-            print("error", error as Any);
-        }
+        });
     }
     
     fileprivate func discoItems(for parentItem: Item, on account: BareJID) {
@@ -403,110 +410,113 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
             }
             return;
         }
-        discoModule.getItems(for: parentItem.jid, node: parentItem.node, onItemsReceived: { [weak self] (node, items) in
-            DispatchQueue.main.async {
-                parentItem.subitems = items.map({ (item) -> Item in
-                    return Item(item);
-                }).sorted(by: { (i1, i2) -> Bool in
-                    return (i1.name ?? i1.jid.stringValue).compare(i2.name ?? i2.jid.stringValue) == .orderedAscending;
-                })
-                if self?.rootItem == nil {
-                    self?.rootItem = parentItem;
-                    self?.outlineView.reloadData();
-                } else {
-                    self?.outlineView.insertItems(at: IndexSet(0..<parentItem.subitems!.count), inParent: parentItem, withAnimation: .effectGap);
-                }
-            }
-            var count = items.count;
-            let finished = {
-                count = count - 1;
-                if count <= 0 {
-                    self?.progressIndicator.stopAnimation(self);
-                }
-            }
-            let group = DispatchGroup();
-            group.notify(queue: DispatchQueue.main, execute: {
-                self?.progressIndicator.stopAnimation(self);
-            });
-            if parentItem.identities.contains(where: { ($0.category == "hierarchy" || $0.category == "pubsub") && $0.type == "leaf" }) {
-                // parent was a leaf so there is no subquery for items info!
-                group.enter();
+        discoModule.getItems(for: parentItem.jid, node: parentItem.node, completionHandler: { [weak self] result in
+            switch result {
+            case .success(let items):
                 DispatchQueue.main.async {
-                    parentItem.subitems?.forEach({ item in
-                        item.subitems = [];
-                        self?.outlineView.reloadItem(item);
-                    });
-                    group.leave()
+                    parentItem.subitems = items.items.map({ (item) -> Item in
+                        return Item(item);
+                    }).sorted(by: { (i1, i2) -> Bool in
+                        return (i1.name ?? i1.jid.stringValue).compare(i2.name ?? i2.jid.stringValue) == .orderedAscending;
+                    })
+                    if self?.rootItem == nil {
+                        self?.rootItem = parentItem;
+                        self?.outlineView.reloadData();
+                    } else {
+                        self?.outlineView.insertItems(at: IndexSet(0..<parentItem.subitems!.count), inParent: parentItem, withAnimation: .effectGap);
+                    }
                 }
-            } else {
-                group.enter();
-                items.forEach({ (item) in
-                    group.enter();
-                    discoModule.getInfo(for: item.jid, node: item.node, completionHandler: { result in
-                        switch result {
-                        case .success(let node, let identities, let features):
-                            if features.contains("jabber:iq:version"), let softwareVersionModule: SoftwareVersionModule = client.modulesManager.getModule(SoftwareVersionModule.ID) {
-                                group.enter();
-                                softwareVersionModule.checkSoftwareVersion(for: item.jid, completionHandler: { result in
-                                    DispatchQueue.main.async {
-                                        switch result {
-                                        case .success(let version):
-                                            guard let idx = parentItem.subitems?.firstIndex(where: { (it) -> Bool in
-                                                return it.jid == item.jid && it.node == item.node;
-                                            }) else {
-                                                return;
-                                            }
-                                            if let it = parentItem.subitems?[idx] {
-                                                it.update(version: version);
-                                                self?.outlineView.reloadItem(it);
-                                            }
-                                        case .failure(_):
-                                            break;
-                                        }
-                                    }
-                                    group.leave();
-                                });
-                            } else {
-                                print("jabber:iq:version not supported by \(item.jid)");
-                            }
-                            DispatchQueue.main.async {
-                                guard let idx = parentItem.subitems?.firstIndex(where: { (it) -> Bool in
-                                    return it.jid == item.jid && it.node == item.node;
-                                }) else {
-                                    return;
-                                }
-                                if let it = parentItem.subitems?[idx] {
-                                    it.update(identities: identities, features: features);
-                                    self?.outlineView.reloadItem(it);
-                                }
-                            }
-                        default:
-                            break;
-                        }
-                        group.leave();
-                    });
-                })
-                group.leave();
-            }
-        }, onError: { [weak self] (error) in
-            parentItem.subitems = [];
-            // FIXME: HANDLE IT SOMEHOW!
-            DispatchQueue.main.async {
-                self?.progressIndicator.stopAnimation(self);
-                var node = parentItem.node ?? "";
-                if !node.isEmpty {
-                    node = " and node \(node)";
+                var count = items.items.count;
+                let finished = {
+                    count = count - 1;
+                    if count <= 0 {
+                        self?.progressIndicator.stopAnimation(self);
+                    }
                 }
-                let alert = Alert();
-                alert.icon = NSImage(named: NSImage.cautionName);
-                alert.messageText = "Service Discovery Failure!"
-                alert.informativeText = "It was not possible to retrieve disco#items details from \(parentItem.jid)\(node): \(error?.rawValue ?? "unknown error")";
-                alert.addButton(withTitle: "OK");
-                alert.run(completionHandler: { (response) in
-                    // nothing to do..
+                let group = DispatchGroup();
+                group.notify(queue: DispatchQueue.main, execute: {
+                    self?.progressIndicator.stopAnimation(self);
                 });
+                if parentItem.identities.contains(where: { ($0.category == "hierarchy" || $0.category == "pubsub") && $0.type == "leaf" }) {
+                    // parent was a leaf so there is no subquery for items info!
+                    group.enter();
+                    DispatchQueue.main.async {
+                        parentItem.subitems?.forEach({ item in
+                            item.subitems = [];
+                            self?.outlineView.reloadItem(item);
+                        });
+                        group.leave()
+                    }
+                } else {
+                    group.enter();
+                    items.items.forEach({ (item) in
+                        group.enter();
+                        discoModule.getInfo(for: item.jid, node: item.node, completionHandler: { result in
+                            switch result {
+                            case .success(let info):
+                                if info.features.contains("jabber:iq:version"), let softwareVersionModule: SoftwareVersionModule = client.modulesManager.getModule(SoftwareVersionModule.ID) {
+                                    group.enter();
+                                    softwareVersionModule.checkSoftwareVersion(for: item.jid, completionHandler: { result in
+                                        DispatchQueue.main.async {
+                                            switch result {
+                                            case .success(let version):
+                                                guard let idx = parentItem.subitems?.firstIndex(where: { (it) -> Bool in
+                                                    return it.jid == item.jid && it.node == item.node;
+                                                }) else {
+                                                    return;
+                                                }
+                                                if let it = parentItem.subitems?[idx] {
+                                                    it.update(version: version);
+                                                    self?.outlineView.reloadItem(it);
+                                                }
+                                            case .failure(_):
+                                                break;
+                                            }
+                                        }
+                                        group.leave();
+                                    });
+                                } else {
+                                    print("jabber:iq:version not supported by \(item.jid)");
+                                }
+                                DispatchQueue.main.async {
+                                    guard let idx = parentItem.subitems?.firstIndex(where: { (it) -> Bool in
+                                        return it.jid == item.jid && it.node == item.node;
+                                    }) else {
+                                        return;
+                                    }
+                                    if let it = parentItem.subitems?[idx] {
+                                        it.update(identities: info.identities, features: info.features);
+                                        self?.outlineView.reloadItem(it);
+                                    }
+                                }
+                            default:
+                                break;
+                            }
+                            group.leave();
+                        });
+                    })
+                    group.leave();
+                }
+            case .failure(let error):
+                parentItem.subitems = [];
+                // FIXME: HANDLE IT SOMEHOW!
+                DispatchQueue.main.async {
+                    self?.progressIndicator.stopAnimation(self);
+                    var node = parentItem.node ?? "";
+                    if !node.isEmpty {
+                        node = " and node \(node)";
+                    }
+                    let alert = Alert();
+                    alert.icon = NSImage(named: NSImage.cautionName);
+                    alert.messageText = "Service Discovery Failure!"
+                    alert.informativeText = "It was not possible to retrieve disco#items details from \(parentItem.jid)\(node): \(error.message ?? error.description)";
+                    alert.addButton(withTitle: "OK");
+                    alert.run(completionHandler: { (response) in
+                        // nothing to do..
+                    });
+                }
+                print("error", error as Any);
             }
-            print("error", error as Any);
         });
     }
     

@@ -93,7 +93,7 @@ class ChangePasswordController: NSViewController, NSTextFieldDelegate, AccountAw
                         let alert = NSAlert();
                         alert.icon = NSImage(named: NSImage.cautionName);
                         alert.messageText = "Password change failed";
-                        alert.informativeText = "Server returned following error: \(err.rawValue)";
+                        alert.informativeText = "Server returned following error: \(err.message ?? err.description)";
                         alert.addButton(withTitle: "OK")
                         alert.beginSheetModal(for: self.view.window!, completionHandler: { (modalResp) in
                             self.close();
