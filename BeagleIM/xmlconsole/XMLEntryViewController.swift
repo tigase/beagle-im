@@ -72,22 +72,18 @@ class XMLEntryViewController: NSViewController, NSTextViewDelegate {
         guard !holder.parsed.isEmpty && !holder.isError else {
             let alert = Alert();
             alert.icon = NSImage(named: NSImage.cautionName);
-            alert.messageText = "Warning";
-            alert.informativeText = "You have entered invalid XML. Are you sure, that you want to send it?";
-            alert.addButton(withTitle: "Yes")
-            alert.addButton(withTitle: "No")
+            alert.messageText = "Error";
+            alert.informativeText = "You have entered invalid XML. It is impossible to send invalid XML as it violates XMPP protocol specification!";
+            alert.addButton(withTitle: "OK")
             alert.run { (response) in
-                switch response {
-                case NSApplication.ModalResponse.alertFirstButtonReturn:
-                    XmppService.instance.getClient(for: self.account)?.socketConnector?.send(data: xml);
-                default:
-                    break;
-                }
             }
             return;
         }
         
-        XmppService.instance.getClient(for: account)?.socketConnector?.send(data: xml);
+        for elem in holder.parsed {
+            let stanza = Stanza.from(element: elem);
+            XmppService.instance.getClient(for: account)?.context.writer?.write(stanza);
+        }
         self.view.window?.close();
     }
     
