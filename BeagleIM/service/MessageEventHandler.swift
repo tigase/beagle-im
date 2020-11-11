@@ -283,7 +283,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                 return;
             }
 
-            client.context.writer?.write(message);
+            client.context.writer.write(message);
 
             completionHandler(.success(Void()));
         }
@@ -312,7 +312,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                         resultHandler(.failure(ErrorCondition.gone));
                         return;
                     }
-                    client.context.writer?.write(encryptedMessage);
+                    client.context.writer.write(encryptedMessage);
                     resultHandler(.success(Void()));
                 }
             };

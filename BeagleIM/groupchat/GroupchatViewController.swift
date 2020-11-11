@@ -436,7 +436,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                     guard let client = XmppService.instance.getClient(for: item.account), client.state == .connected else {
                         return;
                     }
-                    client.context.writer?.write(message);
+                    client.context.writer.write(message);
                     DBChatHistoryStore.instance.retractMessage(for: item.account, with: item.jid, stanzaId: originId, authorNickname: item.authorNickname, participantId: item.participantId, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
                 })
             default:
@@ -459,7 +459,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         if correctedMessageOriginId != nil {
             message.lastMessageCorrectionId = correctedMessageOriginId;
         }
-        room.context.writer?.write(message);
+        room.context.writer.write(message);
         return true;
     }
     
@@ -481,7 +481,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                 message.originId = id;
             }
             message.oob = uploadedUrl.absoluteString;
-            room.context.writer?.write(message);
+            room.context.writer.write(message);
             completionHandler?();
         }
     }

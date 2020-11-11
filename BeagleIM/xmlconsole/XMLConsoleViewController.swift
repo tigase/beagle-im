@@ -93,27 +93,25 @@ class XMLConsoleViewController: NSViewController, StreamLogger {
         self.view.window?.close();
     }
     
-    func incoming(_ value: String) {
+    func incoming(_ value: StreamData) {
         DispatchQueue.main.async { [weak self] in
-            self?.add(timestamp: Date(), incoming: true, text: value);
+            switch value {
+            case .stanza(let stanza):
+                self?.add(timestamp: Date(), incoming: true, text: stanza.element.toPrettyString(secure: false));
+            case .string(let text):
+                self?.add(timestamp: Date(), incoming: true, text: text);
+            }
         }
     }
 
-    func incoming(element: Element) {
+    func outgoing(_ value: StreamData) {
         DispatchQueue.main.async { [weak self] in
-            self?.add(timestamp: Date(), incoming: true, text: element.toPrettyString(secure: false));
-        }
-    }
-
-    func outgoing(_ value: String) {
-        DispatchQueue.main.async { [weak self] in
-            self?.add(timestamp: Date(), incoming: false, text: value);
-        }
-    }
-
-    func outgoing(element: Element) {
-        DispatchQueue.main.async { [weak self] in
-            self?.add(timestamp: Date(), incoming: false, text: element.toPrettyString(secure: false));
+            switch value {
+            case .stanza(let stanza):
+                self?.add(timestamp: Date(), incoming: false, text: stanza.element.toPrettyString(secure: false));
+            case .string(let text):
+                self?.add(timestamp: Date(), incoming: false, text: text);
+            }
         }
     }
     

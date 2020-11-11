@@ -255,7 +255,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
                     guard let client = XmppService.instance.getClient(for: item.account), client.state == .connected else {
                         return;
                     }
-                    client.context.writer?.write(message);
+                    client.context.writer.write(message);
                     DBChatHistoryStore.instance.retractMessage(for: item.account, with: item.jid, stanzaId: originId, authorNickname: item.authorNickname, participantId: item.participantId, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
                 })
             default:
@@ -275,7 +275,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         if correctedMessageOriginId != nil {
             msg.lastMessageCorrectionId = correctedMessageOriginId;
         }
-        client.context.writer?.write(msg);
+        client.context.writer.write(msg);
         return true;
     }
     
@@ -294,7 +294,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             }
             let msg = channel.createMessage(uploadedUrl.absoluteString);
             msg.oob = uploadedUrl.absoluteString;
-            client.context.writer?.write(msg);
+            client.context.writer.write(msg);
             completionHandler?();
         }
         

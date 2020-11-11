@@ -153,7 +153,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         guard let messageModule: MessageModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageModule.ID) else {
             return;
         }
-        messageModule.context.writer?.write(message);
+        messageModule.context.writer.write(message);
     }
 
     override func textDidChange(_ notification: Notification) {
@@ -412,7 +412,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
                     guard let client = XmppService.instance.getClient(for: item.account), client.state == .connected else {
                         return;
                     }
-                    client.context.writer?.write(message);
+                    client.context.writer.write(message);
                     DBChatHistoryStore.instance.retractMessage(for: item.account, with: item.jid, stanzaId: originId, authorNickname: item.authorNickname, participantId: item.participantId, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
                 })
             default:

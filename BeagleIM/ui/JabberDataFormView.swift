@@ -582,7 +582,7 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
                     iq.type = .get;
                     iq.to = jid;
                     iq.addChild(Element(name: "data", attributes: ["xmlns":"urn:xmpp:bob", "cid": String(uri.dropFirst(4))]));
-                    client.context.writer?.write(iq, completionHandler: { [weak self] result in
+                    client.context.writer.write(iq, completionHandler: { [weak self] result in
                         guard let that = self else {
                             return;
                         }
