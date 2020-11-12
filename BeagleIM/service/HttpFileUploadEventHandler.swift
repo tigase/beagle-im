@@ -66,10 +66,10 @@ extension HttpFileUploadModule {
     
     var availableComponents: [UploadComponent] {
         get {
-            return context.sessionObject.getProperty(HttpFileUploadModule.COMPONENT_JIDS_KEY) ?? [];
+            return context?.sessionObject.getProperty(HttpFileUploadModule.COMPONENT_JIDS_KEY) ?? [];
         }
         set {
-            context.sessionObject.setProperty(HttpFileUploadModule.COMPONENT_JIDS_KEY, value: newValue);
+            context?.sessionObject.setProperty(HttpFileUploadModule.COMPONENT_JIDS_KEY, value: newValue);
         }
     }
     

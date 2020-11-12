@@ -459,7 +459,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         if correctedMessageOriginId != nil {
             message.lastMessageCorrectionId = correctedMessageOriginId;
         }
-        room.context.writer.write(message);
+        room.context?.writer.write(message);
         return true;
     }
     
@@ -481,7 +481,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                 message.originId = id;
             }
             message.oob = uploadedUrl.absoluteString;
-            room.context.writer.write(message);
+            room.context?.writer.write(message);
             completionHandler?();
         }
     }

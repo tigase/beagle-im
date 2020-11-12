@@ -153,7 +153,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         guard let messageModule: MessageModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageModule.ID) else {
             return;
         }
-        messageModule.context.writer.write(message);
+        messageModule.write(message);
     }
 
     override func textDidChange(_ notification: Notification) {

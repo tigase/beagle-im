@@ -97,7 +97,7 @@ class InviteToChannelViewControllerController: NSViewController, NSTextFieldDele
                                 let message = mixModule.createInvitation(mixInvitation, message: body);
                                 message.messageDelivery = .request;
                                 DBChatHistoryStore.instance.appendItem(for: channel.account, with: jid.bareJid, state: .outgoing, authorNickname: nil, authorJid: nil, recipientNickname: nil, participantId: nil, type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, encryptionFingerprint: nil, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), linkPreviewAction: .none, completionHandler: nil);
-                                mixModule.context.writer.write(message);
+                                mixModule.write(message);
                             });
                         }
                     } else {
@@ -107,7 +107,7 @@ class InviteToChannelViewControllerController: NSViewController, NSTextFieldDele
                             let message = mixModule.createInvitation(mixInvitation, message: body);
                             message.messageDelivery = .request;
                             DBChatHistoryStore.instance.appendItem(for: channel.account, with: jid.bareJid, state: .outgoing, authorNickname: nil, authorJid: nil, recipientNickname: nil, participantId: nil, type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, encryptionFingerprint: nil, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), linkPreviewAction: .none, completionHandler: nil);
-                            mixModule.context.writer.write(message);
+                            mixModule.write(message);
                         }
                     }
                     DispatchQueue.main.async {
