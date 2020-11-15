@@ -107,7 +107,7 @@ class DBRosterItem: RosterItem, Identifiable {
         let name: String? = cursor.string(for: "name");
         let subscription = RosterItem.Subscription(rawValue: cursor.string(for: "subscription")!)!;
         let ask: Bool = cursor.bool(for: "ask");
-        let data: DBRosterData = cursor.object(for: "data")!;
+        let data: DBRosterData = cursor.object(for: "data") ?? DBRosterData(groups: [], annotations: []);
         
         return DBRosterItem(id: itemId, jid: jid, name: name, subscription: subscription, groups: data.groups, ask: ask, annotations: data.annotations);
     }

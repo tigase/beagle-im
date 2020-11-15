@@ -42,7 +42,7 @@ public class DatabaseMigrator: DatabaseSchemaMigrator {
             });
             try Set(groupMapping.map { $0.0 }).forEach({ itemId in
                 let groups = groupMapping.filter({ $0.0 == itemId }).map({ $0.1 });
-                let annnotations: [RosterItemAnnotation] = try database.select("SELECT annotations FROM roster_items WHERE ri.id = :id", cached: false, params: ["id": itemId]).mapFirst({ $0.object(at: 0) }) ?? [];
+                let annnotations: [RosterItemAnnotation] = try database.select("SELECT annotations FROM roster_items ri WHERE ri.id = :id", cached: false, params: ["id": itemId]).mapFirst({ $0.object(at: 0) }) ?? [];
                 let data = DBRosterData(groups: groups, annotations: annnotations);
                 try database.update("UPDATE roster_items SET data = :data WHERE id = :id", cached: false, params: ["data": data, "id": itemId]);
             })
