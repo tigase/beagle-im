@@ -171,12 +171,13 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
     @IBAction func contactDoubleClicked(_ sender: NSTableView) {
         let selected = self.items[sender.clickedRow];
         
-        guard let messageModule: MessageModule = XmppService.instance.getClient(for: selected.account)?.modulesManager.getModule(MessageModule.ID) else {
+        guard let client = XmppService.instance.getClient(for: selected.account), let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) else {
             return;
         }
         
-        let chat = messageModule.chatManager.getChatOrCreate(with: JID(selected.jid), thread: nil);
-        NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: chat)
+        if let chat = messageModule.chatManager.createChat(for: client, with: JID(selected.jid)) {
+            NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: chat)
+        }
     }
     
     func reloadData() {

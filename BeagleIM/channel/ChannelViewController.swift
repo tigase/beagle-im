@@ -35,8 +35,8 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
 
     private var keywords: [String]? = Settings.markKeywords.stringArrays();
 
-    var channel: DBChatStore.DBChannel! {
-        return self.chat as? DBChatStore.DBChannel;
+    var channel: Channel! {
+        return self.chat as? Channel;
     }
     
     override func viewDidLoad() {
@@ -256,7 +256,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
                         return;
                     }
                     client.context.writer.write(message);
-                    DBChatHistoryStore.instance.retractMessage(for: item.account, with: item.jid, stanzaId: originId, authorNickname: item.authorNickname, participantId: item.participantId, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
+                    DBChatHistoryStore.instance.retractMessage(for: item.account, with: JID(item.jid), stanzaId: originId, authorNickname: item.authorNickname, participantId: item.participantId, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
                 })
             default:
                 break;
@@ -268,14 +268,11 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         guard let client = XmppService.instance.getClient(for: account), client.state == .connected, channel.state == .joined else {
             return false;
         }
-        let msg = channel.createMessage(message);
-        if let id = msg.id, UUID(uuidString: id) != nil {
-            msg.originId = id;
-        }
+        let msg = channel.createMessage(text: message);
         if correctedMessageOriginId != nil {
             msg.lastMessageCorrectionId = correctedMessageOriginId;
         }
-        client.context.writer.write(msg);
+        channel.send(message: msg, completionHandler: nil);
         return true;
     }
     
@@ -283,18 +280,19 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         
         static let instance = ChannelAttachmentSender();
         
-        func prepareAttachment(chat: DBChatProtocol, originalURL: URL, completionHandler: @escaping (Result<(URL, Bool, ((URL) -> URL)?), ShareError>) -> Void) {
+        func prepareAttachment(chat: Conversation, originalURL: URL, completionHandler: @escaping (Result<(URL, Bool, ((URL) -> URL)?), ShareError>) -> Void) {
             completionHandler(.success((originalURL, false, nil)))
         }
         
-        func sendAttachment(chat: DBChatProtocol, originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?, completionHandler: (() -> Void)?) {
-            guard let channel = chat as? DBChatStore.DBChannel, let client = XmppService.instance.getClient(for: channel.account), client.state == .connected, channel.state == .joined else {
+        func sendAttachment(chat: Conversation, originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?, completionHandler: (() -> Void)?) {
+            guard let channel = chat as? Channel, let client = XmppService.instance.getClient(for: channel.account), client.state == .connected, channel.state == .joined else {
                 completionHandler?();
                 return;
             }
-            let msg = channel.createMessage(uploadedUrl.absoluteString);
+            
+            let msg = channel.createMessage(text: uploadedUrl.absoluteString);
             msg.oob = uploadedUrl.absoluteString;
-            client.context.writer.write(msg);
+            channel.send(message: msg, completionHandler: nil);
             completionHandler?();
         }
         
@@ -327,7 +325,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             return;
         }
         DispatchQueue.main.async {
-            guard self.channel.id == (e.channel as? DBChatStore.DBChannel)?.id else {
+            guard self.channel.id == (e.channel as? Channel)?.id else {
                 return;
             }
             self.participantsButton.title = "\(self.channel.participants.count)";

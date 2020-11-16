@@ -37,7 +37,7 @@ class MucEventHandler: XmppServiceEventHandler {
         switch event {
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
             if let client = XmppService.instance.getClient(for: e.sessionObject.userBareJid!), let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) {
-                mucModule.roomsManager.getRooms().forEach { (room) in
+                mucModule.roomManager.rooms(for: client).forEach { (room) in
                     // first we need to check if room supports MAM
                     if let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID), let mamModule: MessageArchiveManagementModule = client.modulesManager.getModule(MessageArchiveManagementModule.ID) {
                         discoModule.getInfo(for: room.jid, completionHandler: { result in
@@ -48,38 +48,40 @@ class MucEventHandler: XmppServiceEventHandler {
                             default:
                                 break;
                             }
-                            if let timestamp = room.lastMessageDate, !mamVersions.isEmpty {
-                                let account = e.sessionObject.userBareJid!;
-                                room.onRoomJoined = { room in
-                                    MessageEventHandler.syncMessages(for: account, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: room.jid, since: timestamp);
+                            if let timestamp = (room as? Room)?.timestamp {
+                                if !mamVersions.isEmpty {
+                                    let account = e.sessionObject.userBareJid!;
+                                    _ = room.rejoin(fetchHistory: .skip, onJoined: { room in
+                                        MessageEventHandler.syncMessages(for: account, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: room.jid, since: timestamp);
+                                    });
+                                } else {
+                                    _ = room.rejoin(fetchHistory: .from(timestamp), onJoined: nil);
                                 }
-                                _ = room.rejoin(skipHistoryFetch: true);
-                                NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
                             } else {
-                                _ = room.rejoin();
-                                NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
+                                _ = room.rejoin(fetchHistory: .initial, onJoined: nil);
                             }
-                        });
+                            NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
+                    });
                     } else {
-                        _ = room.rejoin();
+                        _ = room.rejoin(fetchHistory: .initial, onJoined: nil);
                         NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
                     }
                 }
             }
         case let e as MucModule.YouJoinedEvent:
-            guard let room = e.room as? DBChatStore.DBRoom else {
+            guard let room = e.room as? Room else {
                 return;
             }
             NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
             InvitationManager.instance.mucJoined(on: e.sessionObject.userBareJid!, roomJid: room.roomJid);
             updateRoomName(room: room);
         case let e as MucModule.RoomClosedEvent:
-            guard let room = e.room as? DBChatStore.DBRoom else {
+            guard let room = e.room as? Room else {
                 return;
             }
             NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
         case let e as MucModule.MessageReceivedEvent:
-            guard let room = e.room as? DBChatStore.DBRoom else {
+            guard let room = e.room as? Room else {
                 return;
             }
             
@@ -107,7 +109,7 @@ class MucEventHandler: XmppServiceEventHandler {
             
             DispatchQueue.main.async {
                 let alert = Alert();
-                alert.messageText = "Room \(e.room.roomJid.stringValue)";
+                alert.messageText = "Room \(e.room.jid.bareJid.stringValue)";
                 alert.informativeText = "Could not join room. Reason:\n\(error.reason)";
                 alert.icon = NSImage(named: NSImage.userGroupName);
                 alert.addButton(withTitle: "OK");
@@ -120,7 +122,7 @@ class MucEventHandler: XmppServiceEventHandler {
                         guard let openRoomController = windowController.contentViewController as? OpenGroupchatController else {
                             return;
                         }
-                        let roomJid = e.room.roomJid;
+                        let roomJid = e.room.jid.bareJid;
                         openRoomController.searchField.stringValue = roomJid.stringValue;
                         openRoomController.componentJids = [BareJID(roomJid.domain)];
                         openRoomController.account = e.sessionObject.userBareJid!;
@@ -144,7 +146,7 @@ class MucEventHandler: XmppServiceEventHandler {
             }
             
             
-            guard !mucModule.roomsManager.contains(roomJid: e.invitation.roomJid) else {
+            guard mucModule.roomManager.room(for: e.context, with: e.invitation.roomJid) == nil else {
                 mucModule.decline(invitation: e.invitation, reason: nil);
                 return;
             }
@@ -163,7 +165,7 @@ class MucEventHandler: XmppServiceEventHandler {
                     return [n];
                 }).first ?? e.invitee?.stringValue ?? "";
                 
-                content.body = "User \(name) rejected invitation to room \(e.room.roomJid)";
+                content.body = "User \(name) rejected invitation to room \(e.room.jid.bareJid)";
                 content.sound = UNNotificationSound.default;
                 let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
                 UNUserNotificationCenter.current().add(request) { (error) in
@@ -180,7 +182,7 @@ class MucEventHandler: XmppServiceEventHandler {
                     return [n];
                 }).first ?? e.invitee?.stringValue ?? "";
                 
-                notification.informativeText = "User \(name) rejected invitation to room \(e.room.roomJid)";
+                notification.informativeText = "User \(name) rejected invitation to room \(e.room.jid.bareJid)";
                 notification.soundName = NSUserNotificationDefaultSoundName;
                 notification.contentImage = NSImage(named: NSImage.userGroupName);
                 NSUserNotificationCenter.default.deliver(notification);
@@ -191,7 +193,7 @@ class MucEventHandler: XmppServiceEventHandler {
             }
             
             e.bookmarks?.items.filter { bookmark in bookmark is Bookmarks.Conference }.map { bookmark in bookmark as! Bookmarks.Conference }.filter { bookmark in
-                return !mucModule.roomsManager.contains(roomJid: bookmark.jid.bareJid);
+                return mucModule.roomManager.room(for: e.context, with: bookmark.jid.bareJid) == nil;
                 }.forEach({ (bookmark) in
                     guard let nick = bookmark.nick, bookmark.autojoin else {
                         return;
@@ -203,13 +205,13 @@ class MucEventHandler: XmppServiceEventHandler {
         }
     }
     
-    open func sendPrivateMessage(room: DBChatStore.DBRoom, recipientNickname: String, body: String) {
+    open func sendPrivateMessage(room: Room, recipientNickname: String, body: String) {
         let message = room.createPrivateMessage(body, recipientNickname: recipientNickname);
-        DBChatHistoryStore.instance.appendItem(for: room.account, with: room.roomJid, state: .outgoing, authorNickname: room.nickname, authorJid: nil, recipientNickname: recipientNickname, participantId: nil, type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, encryptionFingerprint: nil, appendix: nil, linkPreviewAction: .auto, completionHandler: nil);
+        DBChatHistoryStore.instance.appendItem(for: room.account, with: room.jid, state: .outgoing, authorNickname: room.nickname, authorJid: nil, recipientNickname: recipientNickname, participantId: nil, type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, encryptionFingerprint: nil, appendix: nil, linkPreviewAction: .auto, completionHandler: nil);
         room.context?.writer.write(message);
     }
         
-    fileprivate func updateRoomName(room: DBChatStore.DBRoom) {
+    fileprivate func updateRoomName(room: Room) {
         guard let client = XmppService.instance.getClient(for: room.account), let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID) else {
             return;
         }
@@ -221,7 +223,7 @@ class MucEventHandler: XmppServiceEventHandler {
                     return identity.category == "conference";
                 })?.name?.trimmingCharacters(in: .whitespacesAndNewlines);
                 
-                DBChatStore.instance.updateChatName(for: room.account, with: room.roomJid, name: (newName?.isEmpty ?? true) ? nil : newName);
+                DBChatStore.instance.updateRoomName(for: room.account, with: room.jid.bareJid, name: (newName?.isEmpty ?? true) ? nil : newName);
             case .failure(_):
                 break;
             }

@@ -164,7 +164,9 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                     mixModule.publishInfo(for: channelJid, info: info, completionHandler: { result in
                         switch result {
                         case .success(_):
-                            mixModule.channelManager.update(channel: channelJid, info: info);
+                            if let context = mixModule.context {
+                                mixModule.channelManager.update(for: context, channel: channelJid, info: info);
+                            }
                         default:
                             break;
                         }
@@ -221,10 +223,10 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                             if let binval = avatar?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
                                 vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
                             }
-                            vCardTempModule.publishVCard(vcard, to: room.roomJid, completionHandler: nil);
+                            vCardTempModule.publishVCard(vcard, to: room.jid.bareJid, completionHandler: nil);
                         }
                         if channelDescription != nil {
-                            mucModule.setRoomSubject(roomJid: room.roomJid, newSubject: channelDescription);
+                            mucModule.setRoomSubject(roomJid: room.jid.bareJid, newSubject: channelDescription);
                         }
                     });
                     DispatchQueue.main.async {

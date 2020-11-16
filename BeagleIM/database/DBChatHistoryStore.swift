@@ -108,12 +108,12 @@ class DBChatHistoryStore {
 
                     if isAttachmentOnly {
                         let appendix = ChatAttachmentAppendix();
-                        DBChatHistoryStore.instance.appendItem(for: item.account, with: item.jid, state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, recipientNickname: nil, participantId: nil, type: .attachment, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: item.message, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, appendix: appendix, linkPreviewAction: .none, masterId: nil, completionHandler: { newId in
+                        DBChatHistoryStore.instance.appendItem(for: item.account, with: JID(item.jid), state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, recipientNickname: nil, participantId: nil, type: .attachment, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: item.message, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, appendix: appendix, linkPreviewAction: .none, masterId: nil, completionHandler: { newId in
                                 DBChatHistoryStore.instance.remove(item: item);
                         });
                     } else {
                         if #available(macOS 10.15, *) {
-                            DBChatHistoryStore.instance.appendItem(for: item.account, with: item.jid, state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, recipientNickname: nil, participantId: nil, type: .linkPreview, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: previews.keys.first ?? item.message, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, linkPreviewAction: .none, masterId: nil, completionHandler: { newId in
+                            DBChatHistoryStore.instance.appendItem(for: item.account, with: JID(item.jid), state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, recipientNickname: nil, participantId: nil, type: .linkPreview, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: previews.keys.first ?? item.message, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, linkPreviewAction: .none, masterId: nil, completionHandler: { newId in
                                 removePreview(item.id);
                             });
                         } else {
@@ -131,7 +131,7 @@ class DBChatHistoryStore {
 
                         for (url, _) in previews {
                             group.enter();
-                            DBChatHistoryStore.instance.appendItem(for: item.account, with: item.jid, state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, recipientNickname: nil, participantId: nil, type: .linkPreview, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: url, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, linkPreviewAction: .none, masterId: nil, completionHandler: { newId in
+                            DBChatHistoryStore.instance.appendItem(for: item.account, with: JID(item.jid), state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, recipientNickname: nil, participantId: nil, type: .linkPreview, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: url, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, linkPreviewAction: .none, masterId: nil, completionHandler: { newId in
                                     group.leave();
                             });
                         }
@@ -151,9 +151,9 @@ class DBChatHistoryStore {
         dispatcher = QueueDispatcher(label: "chat_history_store");
     }
 
-    open func process(chatState: ChatState, for account: BareJID, with jid: BareJID) {
+    open func process(chatState: ChatState, for account: BareJID, with jid: JID) {
         dispatcher.async {
-            DBChatStore.instance.process(chatState: chatState, for: account, with: jid);
+            DBChatStore.instance.process(chatState: chatState, for: account, with: jid.bareJid);
         }
     }
 
@@ -172,7 +172,7 @@ class DBChatHistoryStore {
             return;
         }
 
-        let jid = jidFull.bareJid;
+        let jid = jidFull.withoutResource;
 
         let (decryptedBody, encryption, fingerprint) = MessageEventHandler.prepareBody(message: message, forAccount: account);
         let mixInvitation = message.mixInvitation;
@@ -205,11 +205,11 @@ class DBChatHistoryStore {
         }
 
         let serverMsgId: String? = stableIds?[account];
-        let remoteMsgId: String? = stableIds?[jid];
+        let remoteMsgId: String? = stableIds?[jid.bareJid];
 
         let (authorNickname, authorJid, recipientNickname, participantId) = MessageEventHandler.extractRealAuthor(from: message, for: account, with: jidFull);
 
-        let state = MessageEventHandler.calculateState(direction: MessageEventHandler.calculateDirection(direction: direction, for: account, with: jid, authorNickname: authorNickname, authorJid: authorJid), isError: (message.type ?? .chat) == .error, isFromArchive: fromArchive, isMuc: message.type == .groupchat && message.mix == nil);
+        let state = MessageEventHandler.calculateState(direction: MessageEventHandler.calculateDirection(direction: direction, for: account, with: jid.bareJid, authorNickname: authorNickname, authorJid: authorJid), isError: (message.type ?? .chat) == .error, isFromArchive: fromArchive, isMuc: message.type == .groupchat && message.mix == nil);
 
         var appendix: AppendixProtocol? = nil;
         if itemType == .message, let mixInivation = mixInvitation {
@@ -254,7 +254,7 @@ class DBChatHistoryStore {
             }
             if let originId = stanzaId, let correctedMessageId = message.lastMessageCorrectionId, self.correctMessageSync(for: account, with: jid, stanzaId: correctedMessageId, authorNickname: authorNickname, participantId: participantId, data: body, correctionStanzaId: originId, correctionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, newState: state) {
                 if let chatState = message.chatState {
-                    DBChatStore.instance.process(chatState: chatState, for: account, with: jid);
+                    DBChatStore.instance.process(chatState: chatState, for: account, with: jid.bareJid);
                 }
                 return;
             }
@@ -288,7 +288,7 @@ class DBChatHistoryStore {
         })
     }
 
-    private func findItemId(for account: BareJID, with jid: BareJID, originId: String, authorNickname: String?, participantId: String?) -> Int? {
+    private func findItemId(for account: BareJID, with jid: JID, originId: String, authorNickname: String?, participantId: String?) -> Int? {
         return try! Database.main.reader({ database -> Int? in
             return try database.select(query: .messageFindIdByOriginId, params: ["stanza_id": originId, "account": account, "jid": jid, "author_nickname": authorNickname, "participant_id": participantId]).mapFirst({ $0.int(for: "id") });
         })
@@ -306,7 +306,7 @@ class DBChatHistoryStore {
 //        })
 //    }
 
-    private func appendItemSync(for account: BareJID, with jid: BareJID, state: MessageState, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, type: ItemType, timestamp: Date, stanzaId: String?, serverMsgId: String?, remoteMsgId: String?, data: String, chatState: ChatState?, errorCondition: ErrorCondition?, errorMessage: String? , encryption: MessageEncryption, encryptionFingerprint: String?, appendix: AppendixProtocol?, linkPreviewAction: LinkPreviewAction, masterId: Int? = nil, completionHandler: ((Int) -> Void)?) {
+    private func appendItemSync(for account: BareJID, with jid: JID, state: MessageState, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, type: ItemType, timestamp: Date, stanzaId: String?, serverMsgId: String?, remoteMsgId: String?, data: String, chatState: ChatState?, errorCondition: ErrorCondition?, errorMessage: String? , encryption: MessageEncryption, encryptionFingerprint: String?, appendix: AppendixProtocol?, linkPreviewAction: LinkPreviewAction, masterId: Int? = nil, completionHandler: ((Int) -> Void)?) {
         var item: ChatViewItemProtocol?;
         if linkPreviewAction != .only {
             let params: [String:Any?] = ["account": account, "jid": jid, "timestamp": timestamp, "data": data, "item_type": type.rawValue, "state": state.rawValue, "stanza_id": stanzaId, "author_nickname": authorNickname, "author_jid": authorJid, "recipient_nickname": recipientNickname, "participant_id": participantId, "encryption": encryption.rawValue, "fingerprint": encryptionFingerprint, "error": state.isError ? (errorMessage ?? errorCondition?.rawValue ?? "Unknown error") : nil, "appendix": appendix, "server_msg_id": serverMsgId, "remote_msg_id": remoteMsgId, "master_id": masterId];
@@ -321,14 +321,14 @@ class DBChatHistoryStore {
 
             switch type {
             case .message:
-                item = ChatMessage(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, message: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage, correctionTimestamp: nil);
+                item = ChatMessage(id: msgId, timestamp: timestamp, account: account, jid: jid.bareJid, state: state, message: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage, correctionTimestamp: nil);
             case .invitation:
-                item = ChatInvitation(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, message: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: appendix as! ChatInvitationAppendix, error: errorMessage);
+                item = ChatInvitation(id: msgId, timestamp: timestamp, account: account, jid: jid.bareJid, state: state, message: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: appendix as! ChatInvitationAppendix, error: errorMessage);
             case .attachment:
-                item = ChatAttachment(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, url: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: (appendix as? ChatAttachmentAppendix) ?? ChatAttachmentAppendix(), error: errorMessage);
+                item = ChatAttachment(id: msgId, timestamp: timestamp, account: account, jid: jid.bareJid, state: state, url: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: (appendix as? ChatAttachmentAppendix) ?? ChatAttachmentAppendix(), error: errorMessage);
             case .linkPreview:
                 if #available(macOS 10.15, *), Settings.linkPreviews.bool() {
-                    item = ChatLinkPreview(id: msgId, timestamp: timestamp, account: account, jid: jid, state: state, url: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage);
+                    item = ChatLinkPreview(id: msgId, timestamp: timestamp, account: account, jid: jid.bareJid, state: state, url: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage);
                 }
             case .messageRetracted, .attachmentRetracted:
                 // nothing to do, as we do not want notifications for that (at least for now and no item of that type would be created in here!
@@ -345,7 +345,7 @@ class DBChatHistoryStore {
         }
     }
 
-    open func appendItem(for account: BareJID, with jid: BareJID, state: MessageState, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, type: ItemType, timestamp inTimestamp: Date, stanzaId: String?, serverMsgId: String?, remoteMsgId: String?, data: String, chatState: ChatState? = nil, errorCondition: ErrorCondition? = nil, errorMessage: String? = nil, encryption: MessageEncryption, encryptionFingerprint: String?, appendix: AppendixProtocol? = nil, linkPreviewAction: LinkPreviewAction, masterId: Int? = nil, completionHandler: ((Int) -> Void)?) {
+    open func appendItem(for account: BareJID, with jid: JID, state: MessageState, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, type: ItemType, timestamp inTimestamp: Date, stanzaId: String?, serverMsgId: String?, remoteMsgId: String?, data: String, chatState: ChatState? = nil, errorCondition: ErrorCondition? = nil, errorMessage: String? = nil, encryption: MessageEncryption, encryptionFingerprint: String?, appendix: AppendixProtocol? = nil, linkPreviewAction: LinkPreviewAction, masterId: Int? = nil, completionHandler: ((Int) -> Void)?) {
 
         let timestamp = Date(timeIntervalSince1970: Double(Int64(inTimestamp.timeIntervalSince1970 * 1000)) / 1000);
         dispatcher.async {
@@ -353,7 +353,7 @@ class DBChatHistoryStore {
         }
     }
 
-    open func removeHistory(for account: BareJID, with jid: BareJID?) {
+    open func removeHistory(for account: BareJID, with jid: JID?) {
         dispatcher.async {
             try! Database.main.writer({ database in
                 try database.delete(query: .messagesDeleteChatHistory, cached: false, params: ["account": account, "jid": jid]);
@@ -361,7 +361,7 @@ class DBChatHistoryStore {
         }
     }
 
-    open func correctMessage(for account: BareJID, with jid: BareJID, stanzaId: String, authorNickname: String?, participantId: String?, data: String, correctionStanzaId: String?, correctionTimestamp: Date, newState: MessageState) {
+    open func correctMessage(for account: BareJID, with jid: JID, stanzaId: String, authorNickname: String?, participantId: String?, data: String, correctionStanzaId: String?, correctionTimestamp: Date, newState: MessageState) {
         let timestamp = Date(timeIntervalSince1970: Double(Int64((correctionTimestamp).timeIntervalSince1970 * 1000)) / 1000);
         dispatcher.async {
             _ = self.correctMessageSync(for: account, with: jid, stanzaId: stanzaId,  authorNickname: authorNickname, participantId: participantId, data: data, correctionStanzaId: correctionStanzaId, correctionTimestamp: timestamp, serverMsgId: nil, remoteMsgId: nil, newState: newState);
@@ -369,7 +369,7 @@ class DBChatHistoryStore {
     }
 
     // TODO: Is it not "the same" as message retraction? Maybe we should unify?
-    private func correctMessageSync(for account: BareJID, with jid: BareJID, stanzaId: String, authorNickname: String?, participantId: String?, data: String, correctionStanzaId: String?, correctionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?, newState: MessageState) -> Bool {
+    private func correctMessageSync(for account: BareJID, with jid: JID, stanzaId: String, authorNickname: String?, participantId: String?, data: String, correctionStanzaId: String?, correctionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?, newState: MessageState) -> Bool {
         // we need to check participant-id/sender nickname to make it work correctly
         // moreover, stanza-id should be checked with origin-id for MUC/MIX (not message id)
         // MIX/MUC should send origin-id if they assume to use last message correction!
@@ -405,13 +405,13 @@ class DBChatHistoryStore {
         }
     }
 
-    public func retractMessage(for account: BareJID, with jid: BareJID, stanzaId: String, authorNickname: String?, participantId: String?, retractionStanzaId: String?, retractionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?) {
+    public func retractMessage(for account: BareJID, with jid: JID, stanzaId: String, authorNickname: String?, participantId: String?, retractionStanzaId: String?, retractionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?) {
         dispatcher.async {
             _ = self.retractMessageSync(for: account, with: jid, stanzaId: stanzaId, authorNickname: authorNickname, participantId: participantId, retractionStanzaId: retractionStanzaId, retractionTimestamp: retractionTimestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
         }
     }
 
-    private func retractMessageSync(for account: BareJID, with jid: BareJID, stanzaId: String, authorNickname: String?, participantId: String?, retractionStanzaId: String?, retractionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?) -> Bool {
+    private func retractMessageSync(for account: BareJID, with jid: JID, stanzaId: String, authorNickname: String?, participantId: String?, retractionStanzaId: String?, retractionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?) -> Bool {
         if let oldItem = self.findItem(for: account, with: jid, originId: stanzaId, authorNickname: authorNickname, participantId: participantId) {
             let itemId = oldItem.id;
             var itemType: ItemType = .messageRetracted;
@@ -448,7 +448,7 @@ class DBChatHistoryStore {
         }
     }
 
-    private func findItem(for account: BareJID, with jid: BareJID, originId: String, authorNickname: String?, participantId: String?) -> ChatViewItemProtocol? {
+    private func findItem(for account: BareJID, with jid: JID, originId: String, authorNickname: String?, participantId: String?) -> ChatViewItemProtocol? {
         guard let itemId = findItemId(for: account, with: jid, originId: originId, authorNickname: authorNickname, participantId: participantId) else {
             return nil;
         }
@@ -463,20 +463,20 @@ class DBChatHistoryStore {
         });
     }
 
-    private func generatePreviews(forItem masterId: Int, account: BareJID, jid: BareJID, state: MessageState) {
+    private func generatePreviews(forItem masterId: Int, account: BareJID, jid: JID, state: MessageState) {
         if #available(macOS 10.15, *) {
             guard let item = self.message(withId: masterId) as? ChatMessage else {
                 return;
             }
 
-            self.generatePreviews(forItem: item.id, account: item.account, jid: item.jid, state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, recipientNickname: item.recipientNickname, participantId: item.participantId, timestamp: item.timestamp, data: item.message);
+            self.generatePreviews(forItem: item.id, account: item.account, jid: JID(item.jid), state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, recipientNickname: item.recipientNickname, participantId: item.participantId, timestamp: item.timestamp, data: item.message);
         }
     }
 
     private var previewsInProgress: [Int: UUID] = [:];
     private let previewGenerationDispatcher = QueueDispatcher(label: "chat_history_store", attributes: [.concurrent]);
 
-    private func generatePreviews(forItem masterId: Int, account: BareJID, jid: BareJID, state messageState: MessageState, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, timestamp: Date, data: String) {
+    private func generatePreviews(forItem masterId: Int, account: BareJID, jid: JID, state messageState: MessageState, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, timestamp: Date, data: String) {
         if #available(macOS 10.15, *) {
             let state = messageState == .incoming_unread ? .incoming : messageState;
             let uuid = UUID();
@@ -514,7 +514,7 @@ class DBChatHistoryStore {
         }
     }
 
-    fileprivate func processOutgoingError(for account: BareJID, with jid: BareJID, stanzaId: String, errorCondition: ErrorCondition?, errorMessage: String?) -> Bool {
+    fileprivate func processOutgoingError(for account: BareJID, with jid: JID, stanzaId: String, errorCondition: ErrorCondition?, errorMessage: String?) -> Bool {
         guard let itemId = getItemId(for: account, with: jid, stanzaId: stanzaId) else {
             return false;
         }
@@ -531,13 +531,13 @@ class DBChatHistoryStore {
         return true;
     }
 
-    open func markOutgoingAsError(for account: BareJID, with jid: BareJID, stanzaId: String, errorCondition: ErrorCondition?, errorMessage: String?) {
+    open func markOutgoingAsError(for account: BareJID, with jid: JID, stanzaId: String, errorCondition: ErrorCondition?, errorMessage: String?) {
         dispatcher.async {
             _ = self.processOutgoingError(for: account, with: jid, stanzaId: stanzaId, errorCondition: errorCondition, errorMessage: errorMessage);
         }
     }
 
-    open func markAsRead(for account: BareJID, with jid: BareJID, before: Date) {
+    open func markAsRead(for account: BareJID, with jid: JID, before: Date) {
         dispatcher.async {
             let updatedRecords = try! Database.main.writer({ database -> Int in
                 try database.update(query: .messagesMarkAsReadBefore, params: ["account": account, "jid": jid, "before": before]);
@@ -552,7 +552,7 @@ class DBChatHistoryStore {
         }
     }
 
-    open func getItemId(for account: BareJID, with jid: BareJID, stanzaId: String) -> Int? {
+    open func getItemId(for account: BareJID, with jid: JID, stanzaId: String) -> Int? {
         return dispatcher.sync {
             return self.findItemId(for: account, with: jid, originId: stanzaId, authorNickname: nil, participantId: nil);
         }
@@ -566,7 +566,7 @@ class DBChatHistoryStore {
         }
     }
 
-    open func updateItemState(for account: BareJID, with jid: BareJID, stanzaId: String, from oldState: MessageState, to newState: MessageState, withTimestamp timestamp: Date? = nil) {
+    open func updateItemState(for account: BareJID, with jid: JID, stanzaId: String, from oldState: MessageState, to newState: MessageState, withTimestamp timestamp: Date? = nil) {
         dispatcher.async {
             guard let msgId = self.getItemId(for: account, with: jid, stanzaId: stanzaId) else {
                 return;
@@ -576,7 +576,7 @@ class DBChatHistoryStore {
         }
     }
 
-    open func updateItemState(for account: BareJID, with jid: BareJID, itemId msgId: Int, from oldState: MessageState, to newState: MessageState, withTimestamp timestamp: Date?) {
+    open func updateItemState(for account: BareJID, with jid: JID, itemId msgId: Int, from oldState: MessageState, to newState: MessageState, withTimestamp timestamp: Date?) {
         dispatcher.async {
             guard try! Database.main.writer({ database -> Int in
                 try database.update(query: .messageUpdateState, params:  ["id": msgId, "oldState": oldState.rawValue, "newState": newState.rawValue, "newTimestamp": timestamp]);
@@ -668,7 +668,7 @@ class DBChatHistoryStore {
         }
     }
 
-    fileprivate func itemUpdated(withId id: Int, for account: BareJID, with jid: BareJID) {
+    fileprivate func itemUpdated(withId id: Int, for account: BareJID, with jid: JID) {
         dispatcher.async {
             guard let item = self.message(withId: id) else {
                 return;

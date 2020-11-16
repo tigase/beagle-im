@@ -55,13 +55,9 @@ extension RosterViewController: NSMenuDelegate {
         case "RoomInvite":
             let rooms = XmppService.instance.clients.values.filter({ (client) -> Bool in
                 return client.state == .connected;
-            }).map { (client) -> MucModule? in
-                return client.modulesManager.getModule(MucModule.ID);
-                }.flatMap { (mucModule) -> [Room] in
-                    return mucModule?.roomsManager.getRooms().filter({ (room) -> Bool in
-                        return (room.presences[room.nickname]?.role ?? .none) != .none;
-                    }) ?? [];
-            };
+            }).flatMap({ client -> [Room] in
+                DBChatStore.instance.rooms(for: client).filter({ $0.occupant(nickname: $0.nickname)?.role ?? .none != .none })
+            });
             item.isEnabled = rooms.count > 0;
             item.isHidden = rooms.count == 0;
             item.submenu?.removeAllItems();

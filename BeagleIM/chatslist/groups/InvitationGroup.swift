@@ -49,7 +49,7 @@ class InvitationGroup: ChatsListGroupProtocol {
         return items[at];
     }
     
-    func forChat(_ chat: DBChatProtocol, execute: @escaping (ChatItemProtocol) -> Void) {
+    func forChat(_ chat: Conversation, execute: @escaping (ChatItemProtocol) -> Void) {
         // nothing to do...
     }
     

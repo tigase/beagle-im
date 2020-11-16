@@ -30,11 +30,11 @@ class ChatsListGroupChat: ChatsListGroupAbstractChat {
         NotificationCenter.default.addObserver(self, selector: #selector(contactPresenceChanged), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
     }
     
-    override func isAccepted(chat: DBChatProtocol) -> Bool {
-        return chat is DBChatStore.DBChat;
+    override func isAccepted(chat: Conversation) -> Bool {
+        return chat is Chat;
     }
 
-    override func newChatItem(chat: DBChatProtocol) -> ChatItemProtocol? {
+    override func newChatItem(chat: Conversation) -> ChatItemProtocol? {
         let item = ChatItem(chat: chat);
         guard item.isInRoster else {
             return nil;
@@ -69,15 +69,11 @@ class ChatsListGroupChat: ChatsListGroupAbstractChat {
             self.updateItem(for: account, jid: rosterItem.jid.bareJid, executeIfExists: { (item) in
                 (item as? ChatItem)?.name = ((e.action != .removed) ? rosterItem.name : nil) ?? rosterItem.jid.stringValue;
             }, executeIfNotExists: {
-                guard let messageModule: MessageModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageModule.ID) else {
+                guard let chat = DBChatStore.instance.conversation(for: account, with: rosterItem.jid.withoutResource) as? Chat else {
                     return;
                 }
                 
-                guard let dbChat = messageModule.chatManager.getChat(with: rosterItem.jid.withoutResource, thread: nil) as? DBChatStore.DBChat else {
-                    return;
-                }
-                
-                self.addItem(chat: dbChat);
+                self.addItem(chat: chat);
             });
         }
     }
@@ -91,11 +87,11 @@ class ChatsListGroupChatUnknown: ChatsListGroupAbstractChat {
         NotificationCenter.default.addObserver(self, selector: #selector(contactPresenceChanged), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
     }
     
-    override func isAccepted(chat: DBChatProtocol) -> Bool {
-        return chat is DBChatStore.DBChat;
+    override func isAccepted(chat: Conversation) -> Bool {
+        return chat is Chat;
     }
     
-    override func newChatItem(chat: DBChatProtocol) -> ChatItemProtocol? {
+    override func newChatItem(chat: Conversation) -> ChatItemProtocol? {
         let item = ChatItem(chat: chat);
         guard !item.isInRoster else {
             return nil;
@@ -130,15 +126,11 @@ class ChatsListGroupChatUnknown: ChatsListGroupAbstractChat {
             self.updateItem(for: account, jid: rosterItem.jid.bareJid, executeIfExists: { (item) in
                 (item as? ChatItem)?.name = ((e.action != .removed) ? rosterItem.name : nil) ?? rosterItem.jid.stringValue;
             }, executeIfNotExists: {
-                guard let messageModule: MessageModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageModule.ID) else {
+                guard let chat = DBChatStore.instance.conversation(for: account, with: rosterItem.jid.withoutResource) as? Chat else {
                     return;
                 }
                 
-                guard let dbChat = messageModule.chatManager.getChat(with: rosterItem.jid.withoutResource, thread: nil) as? DBChatStore.DBChat else {
-                    return;
-                }
-                
-                self.addItem(chat: dbChat);
+                self.addItem(chat: chat);
             });
         }
     }

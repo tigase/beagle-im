@@ -173,7 +173,7 @@ class ChatAttachmentCellView: BaseChatCellView {
             case .new:
                 let sizeLimit = Settings.fileDownloadSizeLimit.integer();
                 if sizeLimit > 0 {
-                    if let client = XmppService.instance.getClient(for: item.account), (client.rosterStore?.get(for: JID(item.jid))?.subscription ?? .none).isFrom || (DBChatStore.instance.getChat(for: item.account, with: item.jid) as? Room != nil) {
+                    if let client = XmppService.instance.getClient(for: item.account), (client.rosterStore?.get(for: JID(item.jid))?.subscription ?? .none).isFrom || (DBChatStore.instance.conversation(for: item.account, with: item.jid) as? Room != nil) {
                         _ = DownloadManager.instance.download(item: item, maxSize: Int64(sizeLimit));
                         progressIndicator = NSProgressIndicator();
                         return;

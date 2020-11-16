@@ -32,7 +32,7 @@ class ConfigureRoomViewController: NSViewController {
     var roomJid: BareJID!;
     var nickname: String?;
     
-    private var room: DBChatStore.DBRoom?;
+    private var room: Room?;
     
     @IBOutlet var avatarView: AvatarChangeButton!;
     @IBOutlet var roomNameField: NSTextField!;
@@ -55,7 +55,7 @@ class ConfigureRoomViewController: NSViewController {
     override func viewWillAppear() {
         super.viewWillAppear();
         
-        room = DBChatStore.instance.getChat(for: account, with: roomJid) as? DBChatStore.DBRoom;
+        room = DBChatStore.instance.conversation(for: account, with: roomJid) as? Room;
         
         self.avatarView.isEnabled = false;
         self.avatarView.changeLabel.isEnabled = false;
@@ -206,7 +206,7 @@ class ConfigureRoomViewController: NSViewController {
         setRoomConfiguration(mucModule: mucModule, configuration: form!) { [weak self] (result) in
             switch result {
             case .success(_):
-                if room?.state == Room.State.joined {
+                if room?.state == RoomState.joined {
                     queue.isSuspended = false;
                 } else if nickname != nil {
                     _ = mucModule.join(roomName: roomJid.localPart!, mucServer: roomJid.domain, nickname: nickname!, password: password, onJoined: { room in

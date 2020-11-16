@@ -25,7 +25,7 @@ import Quartz
 
 class ChannelEditInfoViewController: NSViewController, ChannelAwareProtocol {
     
-    var channel: DBChatStore.DBChannel!
+    var channel: Channel!
     
     @IBOutlet var avatarButton: AvatarChangeButton!;
     @IBOutlet var nameField: NSTextField!

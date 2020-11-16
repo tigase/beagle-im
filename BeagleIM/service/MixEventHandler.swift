@@ -43,7 +43,7 @@ class MixEventHandler: XmppServiceEventHandler {
         case let e as MixModule.ParticipantsChangedEvent:
             NotificationCenter.default.post(name: MixEventHandler.PARTICIPANTS_CHANGED, object: e);
             for participant in e.joined {
-                let jid = participant.jid ?? BareJID(localPart: participant.id + "#" + e.channel.channelJid.localPart!, domain: e.channel.channelJid.domain);
+                let jid = participant.jid ?? BareJID(localPart: participant.id + "#" + e.channel.jid.localPart!, domain: e.channel.jid.domain);
                 DBVCardStore.instance.vcard(for: jid, completionHandler: { vcard in
                     guard vcard == nil else {
                         return;

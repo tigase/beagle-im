@@ -28,7 +28,7 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
     @IBOutlet var searchField: NSTextField!;
     @IBOutlet var progressIndicator: NSProgressIndicator!;
     
-    var room: DBChatStore.DBRoom!;
+    var room: Room!;
     
     fileprivate var affiliations: [MucModule.RoomAffiliation] = [];
     

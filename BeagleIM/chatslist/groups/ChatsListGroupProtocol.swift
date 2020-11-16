@@ -32,7 +32,7 @@ protocol ChatsListGroupProtocol {
     
     func getItem(at: Int) -> ChatsListItemProtocol?;
     
-    func forChat(_ chat: DBChatProtocol, execute: @escaping (ChatItemProtocol)->Void);
+    func forChat(_ chat: Conversation, execute: @escaping (ChatItemProtocol)->Void);
     
     func forChat(account: BareJID, jid: BareJID, execute: @escaping (ChatItemProtocol)->Void);
 }

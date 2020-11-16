@@ -118,7 +118,7 @@ open class ConversationDetailsViewController: NSViewController, ContactDetailsAc
         jidField.stringValue = jid?.stringValue ?? "";
         if let jid = self.jid, let account = self.account {
             avatarView.image = AvatarManager.instance.avatar(for: jid, on: account);
-            if let channel = DBChatStore.instance.getChat(for: account, with: jid) as? DBChatStore.DBChannel {
+            if let channel = DBChatStore.instance.conversation(for: account, with: JID(jid)) as? Channel {
                 if let name = channel.name {
                     nameField.stringValue = name;
                 }
@@ -165,7 +165,7 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
     var account: BareJID?
     var jid: BareJID?
     
-    var chat: DBChatProtocol?;
+    var chat: Conversation?;
     
     weak var superView: NSView?;
     
@@ -175,7 +175,7 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
     open override func viewWillAppear() {
         super.viewWillAppear();
         if let account = self.account, let jid = self.jid {
-            chat = DBChatStore.instance.getChat(for: account, with: jid);
+            chat = DBChatStore.instance.conversation(for: account, with: JID(jid));
         }
         var rows: [NSView] = [];
         if let chat = self.chat {
@@ -183,9 +183,9 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
             rows.append(muteNotifications!);
 
             switch chat {
-            case let r as DBChatStore.DBRoom:
+            case let r as Room:
                 muteNotifications?.state = r.options.notifications == .none ? .on : .off;
-            case let c as DBChatStore.DBChat:
+            case let c as Chat:
                 muteNotifications?.state = c.options.notifications == .none ? .on : .off;
                 if let client = XmppService.instance.getClient(for: c.account), let blockingModule: BlockingCommandModule = client.modulesManager.getModule(BlockingCommandModule.ID) {
                     blockContact = NSButton(checkboxWithTitle: "Block contact", target: self, action: #selector(blockContactChanged));
@@ -242,12 +242,12 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
     
     @objc func muteNotificationsChanged(_ sender: NSButton) {
         let state = sender.state == .on;
-        if let chat = self.chat as? DBChatStore.DBChat {
+        if let chat = self.chat as? Chat {
             chat.modifyOptions({ (options) in
                 options.notifications = state ? .none : .always;
             }, completionHandler: nil);
         }
-        if let room = self.chat as? DBChatStore.DBRoom {
+        if let room = self.chat as? Room {
             room.modifyOptions({ (options) in
                 options.notifications = state ? .none : .mention;
             }, completionHandler: nil);
@@ -255,7 +255,7 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
     }
     
     @objc func blockContactChanged(_ sender: NSButton) {
-        if let chat = self.chat as? DBChatStore.DBChat, let blockingModule: BlockingCommandModule = XmppService.instance.getClient(for: chat.account)?.modulesManager.getModule(BlockingCommandModule.ID) {
+        if let chat = self.chat as? Chat, let blockingModule: BlockingCommandModule = XmppService.instance.getClient(for: chat.account)?.modulesManager.getModule(BlockingCommandModule.ID) {
             if sender.state == .on {
                 blockingModule.block(jids: [chat.jid], completionHandler: { [weak sender] result in
                     DispatchQueue.main.async {
@@ -283,7 +283,7 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
     }
     
     @objc func addToRoster(_ sender: Any) {
-        guard let parent = self.view.window?.parent, let chat = self.chat as? DBChatStore.DBChat else {
+        guard let parent = self.view.window?.parent, let chat = self.chat as? Chat else {
             return;
         }
         self.view.window?.close();

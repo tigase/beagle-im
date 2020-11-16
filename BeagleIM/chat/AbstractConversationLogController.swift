@@ -35,7 +35,7 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
     }
     
     let dataSource: ChatViewDataSource = ChatViewDataSource();
-    var chat: DBChatProtocol!;
+    var chat: Conversation!;
     var account: BareJID! {
         return chat.account;
     }
@@ -156,7 +156,7 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
             return;
         }
         print("marking as read:", account as Any, "jid:", jid as Any, "before:", since);
-        DBChatHistoryStore.instance.markAsRead(for: self.account, with: self.jid, before: since);
+        DBChatHistoryStore.instance.markAsRead(for: self.account, with: JID(self.jid), before: since);
     }
     
     @objc func didBecomeKeyWindow(_ notification: Notification) {

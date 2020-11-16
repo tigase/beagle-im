@@ -24,7 +24,7 @@ import TigaseSwift
 
 class AbstractChatItem: ChatItemProtocol {
     
-    let chat: DBChatProtocol;
+    let chat: Conversation;
     
     var name: String;
     var lastActivity: LastChatActivity? {
@@ -37,7 +37,7 @@ class AbstractChatItem: ChatItemProtocol {
         return chat.unread;
     }
     
-    init(chat: DBChatProtocol, name: String) {
+    init(chat: Conversation, name: String) {
         self.chat = chat;
         self.name = name;
     }
@@ -47,7 +47,7 @@ class ChatItem: AbstractChatItem {
     
     let isInRoster: Bool;
     
-    init(chat: DBChatProtocol) {
+    init(chat: Conversation) {
         if let sessionObject = XmppService.instance.getClient(for: chat.account)?.sessionObject {
             let rosterItem = RosterModule.getRosterStore(sessionObject).get(for: chat.jid);
             isInRoster = rosterItem != nil;
@@ -63,15 +63,15 @@ class GroupchatItem: AbstractChatItem {
 
    override var name: String {
         get {
-            return (self.chat as? DBChatStore.DBChannel)?.name ?? super.name;
+            return (self.chat as? Channel)?.name ?? super.name;
         }
         set {
             super.name = newValue;
         }
     }
     
-    init(chat: DBChatProtocol) {
-        super.init(chat: chat, name: (chat as? DBChatStore.DBRoom)?.name ?? chat.jid.stringValue);
+    init(chat: Conversation) {
+        super.init(chat: chat, name: (chat as? Room)?.name ?? chat.jid.stringValue);
     }
     
 }
@@ -82,17 +82,17 @@ class UnifiedChatItem: AbstractChatItem {
     
     override var name: String {
          get {
-             return (self.chat as? DBChatStore.DBChannel)?.name ?? super.name;
+             return (self.chat as? Channel)?.name ?? super.name;
          }
          set {
              super.name = newValue;
          }
      }
 
-    init(chat: DBChatProtocol) {
+    init(chat: Conversation) {
         var name = chat.jid.stringValue;
         switch chat {
-        case let c as DBChatStore.DBChat:
+        case let c as Chat:
             if let rosterItem = XmppService.instance.getClient(for: c.account)?.rosterStore?.get(for: c.jid) {
                 isInRoster = true;
                 if let value = rosterItem.name, !value.isEmpty {
@@ -101,12 +101,12 @@ class UnifiedChatItem: AbstractChatItem {
             } else {
                 isInRoster = false;
             }
-        case let c as DBChatStore.DBRoom:
+        case let c as Room:
             isInRoster = true;
             if let value = c.name, !value.isEmpty {
                 name = value;
             }
-        case let c as DBChatStore.DBChannel:
+        case let c as Channel:
             isInRoster = true;
             if let value = c.name, !value.isEmpty {
                 name = value;
@@ -276,7 +276,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     
     @objc func chatSelected(_ notification: Notification) {
         let messageId = notification.userInfo?["messageId"] as? Int;
-        guard let chat = notification.object as? DBChatProtocol else {
+        guard let chat = notification.object as? Conversation else {
             guard let account = notification.userInfo?["account"] as? BareJID, let jid = notification.userInfo?["jid"] as? BareJID else {
                 self.outlineView.selectRowIndexes(IndexSet(), byExtendingSelection: false);
                 return;
@@ -412,7 +412,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         if let splitController = self.outlineView.window?.contentViewController as? NSSplitViewController {
             if let chatItem = (item as? AbstractChatItem)?.chat {
                 switch chatItem {
-                case let chat as DBChatStore.DBChat:
+                case let chat as Chat:
                     let chatController = self.storyboard!.instantiateController(withIdentifier: "ChatViewController") as! ChatViewController;
                     chatController.chat = chat;
                     chatController.scrollChatToMessageWithId = self.scrollChatToMessageWithId;
@@ -424,7 +424,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                         splitController.removeSplitViewItem(splitController.splitViewItems[1]);
                         splitController.addSplitViewItem(item);
                     }
-                case let room as DBChatStore.DBRoom:
+                case let room as Room:
                     let roomController = self.storyboard?.instantiateController(withIdentifier: "GroupchatViewController") as! GroupchatViewController;
                     roomController.room = room;
                     roomController.scrollChatToMessageWithId = self.scrollChatToMessageWithId;
@@ -436,7 +436,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                         splitController.removeSplitViewItem(splitController.splitViewItems[1]);
                         splitController.addSplitViewItem(item);
                     }
-                case let channel as DBChatStore.DBChannel:
+                case let channel as Channel:
                     let channelController = NSStoryboard(name: "MIX", bundle: nil).instantiateController(withIdentifier: "ChannelViewController") as! ChannelViewController;
                     channelController.chat = channel;
                     channelController.scrollChatToMessageWithId = self.scrollChatToMessageWithId
@@ -519,17 +519,14 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         
     func close(chat: ChatItemProtocol) {
         switch chat.chat {
-        case let c as DBChatStore.DBChat:
-            guard let messageModule: MessageModule = XmppService.instance.getClient(for: c.account)?.modulesManager.getModule(MessageModule.ID) else {
-                return;
-            }
-            _ = messageModule.chatManager.close(chat: c);
-        case let r as DBChatStore.DBRoom:
+        case let c as Chat:
+            DBChatStore.instance.close(chat: c);
+        case let r as Room:
             guard let mucModule: MucModule = XmppService.instance.getClient(for: r.account)?.modulesManager.getModule(MucModule.ID) else {
                 return;
             }
             
-            if r.presences[r.nickname]?.affiliation == .owner {
+            if r.occupant(nickname: r.nickname)?.affiliation == .owner {
                 let alert = NSAlert();
                 alert.alertStyle = .warning;
                 alert.messageText = "Delete group chat?"
@@ -554,14 +551,14 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 mucModule.leave(room: r);
                 PEPBookmarksModule.remove(from: r.account, bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: r.jid, autojoin: false));
             }
-        case let c as DBChatStore.DBChannel:
+        case let c as Channel:
             guard let mixModule: MixModule = XmppService.instance.getClient(for: c.account)?.modulesManager.getModule(MixModule.ID) else {
                 return;
             }
             mixModule.leave(channel: c, completionHandler: { result in
                 switch result {
                 case .success(_):
-                    _ = DBChatStore.instance.close(for: c.account, chat: c);
+                    _ = DBChatStore.instance.close(channel: c);
                 case .failure(_):
                     break;
                 }

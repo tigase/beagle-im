@@ -686,7 +686,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     @objc func chatUpdated(_ notification: Notification) {
-        guard let chat = notification.object as? DBChatProtocol, chat.unread == 0 else {
+        guard let chat = notification.object as? Conversation, chat.unread == 0 else {
             return;
         }
         
@@ -734,14 +734,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             return;
         }
         
-        let conversation = DBChatStore.instance.getChat(for: item.account, with: item.jid);
+        let conversation = DBChatStore.instance.conversation(for: item.account, with: item.jid);
         let notifications = conversation?.notifications ?? .none;
 
         switch notifications {
         case .none:
             return;
         case .mention:
-            if let nickname = (conversation as? DBChatStore.DBRoom)?.nickname ?? (conversation as? DBChatStore.DBChannel)?.nickname {
+            if let nickname = (conversation as? Room)?.nickname ?? (conversation as? Channel)?.nickname {
                 if !item.message.contains(nickname) {
                     if let keywords = Settings.markKeywords.stringArrays(), !keywords.isEmpty {
                         if  keywords.first(where: { item.message.contains($0) }) == nil {

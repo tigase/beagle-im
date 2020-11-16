@@ -31,16 +31,16 @@ class ChatsListGroupGroupchat: ChatsListGroupAbstractChat {
         NotificationCenter.default.addObserver(self, selector: #selector(roomNameChanged), name: MucEventHandler.ROOM_NAME_CHANGED, object: nil);
     }
 
-    override func isAccepted(chat: DBChatProtocol) -> Bool {
-        return chat is DBChatStore.DBRoom || chat is DBChatStore.DBChannel;
+    override func isAccepted(chat: Conversation) -> Bool {
+        return chat is Room || chat is Channel;
     }
 
-    override func newChatItem(chat: DBChatProtocol) -> ChatItemProtocol? {
+    override func newChatItem(chat: Conversation) -> ChatItemProtocol? {
         return GroupchatItem(chat: chat);
     }
 
     @objc func roomNameChanged(_ notification: Notification) {
-        guard let room = notification.object as? DBChatStore.DBRoom else {
+        guard let room = notification.object as? Room else {
             return;
         }
         
@@ -50,7 +50,7 @@ class ChatsListGroupGroupchat: ChatsListGroupAbstractChat {
     }
     
     @objc func roomStatusChanged(_ notification: Notification) {
-        guard let room = notification.object as? DBChatStore.DBRoom else {
+        guard let room = notification.object as? Room else {
             return;
         }
         

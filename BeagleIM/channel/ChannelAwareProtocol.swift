@@ -23,6 +23,6 @@ import Foundation
 
 protocol ChannelAwareProtocol: class {
     
-    var channel: DBChatStore.DBChannel! { get set }
+    var channel: Channel! { get set }
     
 }

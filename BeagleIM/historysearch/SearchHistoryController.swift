@@ -107,9 +107,9 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
             return;
         }
 
-        if DBChatStore.instance.getChat(for: item.account, with: item.jid) == nil {
+        if DBChatStore.instance.conversation(for: item.account, with: item.jid) == nil {
             if let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) {
-                _ = messageModule.chatManager.createChat(with: JID(item.jid), thread: nil);
+                _ = messageModule.chatManager.createChat(for: client, with: JID(item.jid));
             }
         }
 

@@ -28,7 +28,7 @@ class ChannelEditConfigViewControlller: NSViewController, ChannelAwareProtocol {
     @IBOutlet var progressIndicator: NSProgressIndicator!;
     @IBOutlet var submitButton: NSButton!;
     
-    var channel: DBChatStore.DBChannel!;
+    var channel: Channel!;
     
     override func viewWillAppear() {
         super.viewWillAppear();

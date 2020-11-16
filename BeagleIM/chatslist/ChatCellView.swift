@@ -189,7 +189,7 @@ class ChatCellView: NSTableCellView {
     func update(from item: ChatItemProtocol) {
         self.set(name: item.name);
         self.set(unread: item.unread);
-        self.set(lastActivity: item.lastActivity, ts: item.lastMessageTs, chatState: (item.chat as? DBChatStore.DBChat)?.remoteChatState ?? .active, account: item.chat.account);
+        self.set(lastActivity: item.lastActivity, ts: item.lastMessageTs, chatState: (item.chat as? Chat)?.remoteChatState ?? .active, account: item.chat.account);
         if item.chat is Chat {
             self.avatar.update(for: item.chat.jid.bareJid, on: item.chat.account);
         } else if let room  = item.chat as? Room {

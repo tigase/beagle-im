@@ -31,7 +31,7 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
     @IBOutlet var inviteParticipantsButton: NSButton!;
     @IBOutlet var manageParticipantsButton: NSButton!;
     
-    var channel: DBChatStore.DBChannel!;
+    var channel: Channel!;
     weak var channelViewController: NSViewController?;
     
     private var participants: [MixParticipant] = [] {
@@ -77,7 +77,7 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
         }
         self.participantsDispatcher.async {
             guard var store = DispatchQueue.main.sync(execute: { () -> [MixParticipant]? in
-                guard self.channel.id == (e.channel as? DBChatStore.DBChannel)?.id else {
+                guard self.channel.id == (e.channel as? Channel)?.id else {
                     return nil;
                 }
                 return self.participants;
@@ -143,7 +143,7 @@ class ChannelParticipantTableCellView: NSTableCellView {
     @IBOutlet var avatarView: AvatarView!;
     @IBOutlet var label: NSTextField!;
     
-    func update(participant: MixParticipant, in channel: DBChatStore.DBChannel) {
+    func update(participant: MixParticipant, in channel: Channel) {
         let name = participant.nickname ?? participant.jid?.stringValue ?? participant.id;
         self.avatarView.name = name;
         if let jid = participant.jid {

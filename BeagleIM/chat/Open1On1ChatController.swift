@@ -71,12 +71,12 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
         
         let jid = JID(self.searchField.stringValue)
         
-        guard let messageModule: MessageModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageModule.ID) else {
+        guard let client = XmppService.instance.getClient(for: account), let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) else {
             self.close();
             return;
         }
         
-        _ = messageModule.createChat(with: jid);
+        _ = messageModule.chatManager.createChat(for: client, with: jid);
         self.close();
     }
     
@@ -152,12 +152,12 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
     
     func tableViewSelectionDidChange(_ notification: Notification) {
         let item = self.rows[self.contactsView.selectedRow];
-        guard let messageModule: MessageModule = XmppService.instance.getClient(for: item.account)?.modulesManager.getModule(MessageModule.ID) else {
+        guard let client = XmppService.instance.getClient(for: item.account), let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) else {
             self.close();
             return;
         }
         
-        let chat = messageModule.chatManager.getChatOrCreate(with: JID(item.jid), thread: nil);
+        let chat = messageModule.chatManager.createChat(for: client, with: JID(item.jid));
         NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: chat)
         // need to handle autoselection of chat on opening it!
         self.close();

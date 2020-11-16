@@ -39,7 +39,7 @@ class SharingTaskManager {
         return UTTypeCopyPreferredTagWithClass(uti as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as String?;
     }
     
-    func progress(for chat: DBChatProtocol) -> Double? {
+    func progress(for chat: Conversation) -> Double? {
         let tasks = dispatcher.sync {
             return self.tasks.filter({ $0.chat.id == chat.id });
         }
@@ -76,7 +76,7 @@ class SharingTaskManager {
         }
 
         let id = UUID();
-        let chat: DBChatProtocol;
+        let chat: Conversation;
         private(set) var items: [AbstractSharingTaskItem] = [];
         let operationQueue = OperationQueue();
         private weak var window: NSWindow?;
@@ -279,9 +279,9 @@ class SharingTaskManager {
 
 protocol AttachmentSender {
     
-    func prepareAttachment(chat: DBChatProtocol, originalURL: URL, completionHandler: @escaping (Result<(URL,Bool,((URL)->URL)?),ShareError>)->Void);
+    func prepareAttachment(chat: Conversation, originalURL: URL, completionHandler: @escaping (Result<(URL,Bool,((URL)->URL)?),ShareError>)->Void);
     
-    func sendAttachment(chat: DBChatProtocol, originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?, completionHandler: (()->Void)?);
+    func sendAttachment(chat: Conversation, originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?, completionHandler: (()->Void)?);
  
 }
 
@@ -296,10 +296,10 @@ class AbstractSharingTaskItem: NSObject, URLSessionDelegate {
     }
     weak var task: SharingTaskManager.SharingTask?;
     private let attachmentSender: AttachmentSender;
-    private let chat: DBChatProtocol;
+    private let chat: Conversation;
     private(set) var result: Result<URL,ShareError>?;
     
-    init(chat: DBChatProtocol, sender: AttachmentSender) {
+    init(chat: Conversation, sender: AttachmentSender) {
         self.attachmentSender = sender;
         self.chat = chat;
     }
@@ -492,7 +492,7 @@ class FileURLSharingTaskItem: AbstractSharingTaskItem {
              
     let url: URL;
     
-    init(chat: DBChatProtocol, sender: AttachmentSender, url: URL) {
+    init(chat: Conversation, sender: AttachmentSender, url: URL) {
         self.url = url;
         super.init(chat: chat, sender: sender);
     }
@@ -513,7 +513,7 @@ class FilePromiseReceiverTaskItem: AbstractSharingTaskItem {
     
     let filePromiseReceiver: NSFilePromiseReceiver;
     
-    init(chat: DBChatProtocol, sender: AttachmentSender, filePromiseReceiver: NSFilePromiseReceiver) {
+    init(chat: Conversation, sender: AttachmentSender, filePromiseReceiver: NSFilePromiseReceiver) {
         self.filePromiseReceiver = filePromiseReceiver;
         super.init(chat: chat, sender: sender);
     }

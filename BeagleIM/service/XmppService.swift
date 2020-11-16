@@ -341,25 +341,16 @@ class XmppService: EventHandler {
                 return;
             }
 
-            if let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) {
-                ((messageModule.chatManager as! DefaultChatManager).chatStore as! DBChatStoreWrapper).deinitialize();
-            }
-            if let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) {
-                (mucModule.roomsManager.store as! DBRoomStore).deinitialize();
-            }
-            if let mixModule: MixModule = client.modulesManager.getModule(MixModule.ID) {
-                ((mixModule.channelManager as! DefaultChannelManager).store as! DBChannelStore).deinitialize();
-            }
-            
-            if removed {
-                DBRosterStore.instance.removeAll(for: accountName);
-                DBChatStore.instance.closeAll(for: accountName);
-                DBChatHistoryStore.instance.removeHistory(for: accountName, with: nil);
-            }
-
             client.eventBus.unregister(handler: self, for: self.observedEvents);
             self.eventHandlers.forEach { handler in
                 client.eventBus.unregister(handler: handler, for: handler.events);
+            }
+            dispatcher.async {
+                if removed {
+                    DBRosterStore.instance.removeAll(for: accountName);
+                    DBChatStore.instance.closeAll(for: accountName);
+                    DBChatHistoryStore.instance.removeHistory(for: accountName, with: nil);
+                }
             }
         }
     }
@@ -401,9 +392,7 @@ class XmppService: EventHandler {
         _ = client.modulesManager.register(PEPUserAvatarModule());
         _ = client.modulesManager.register(PEPBookmarksModule());
         
-        let chatStoreWrapper = DBChatStoreWrapper(sessionObject: client.context.sessionObject);
-        chatStoreWrapper.initialize();
-        let messageModule = MessageModule(chatManager: DefaultChatManager(context: client.context, chatStore: chatStoreWrapper));
+        let messageModule = MessageModule(chatManager: ChatManagerBase(store: DBChatStore.instance));
         _ = client.modulesManager.register(messageModule);
         
         _ = client.modulesManager.register(MessageCarbonsModule());
@@ -418,13 +407,9 @@ class XmppService: EventHandler {
         
         _ = client.modulesManager.register(PresenceModule());
         
-        let roomStore = DBRoomStore(sessionObject: client.context.sessionObject);
-        client.modulesManager.register(MucModule(roomsManager: DefaultRoomsManager(store: roomStore)));
-        roomStore.initialize();
-    
-        let channelStore = DBChannelStore(sessionObject: client.context.sessionObject);
-        client.modulesManager.register(MixModule(channelManager: DefaultChannelManager(context: client.context, store: channelStore)));
-        channelStore.initialize();
+        client.modulesManager.register(MucModule(roomManager: RoomManagerBase(store: DBChatStore.instance)));
+                                           
+        client.modulesManager.register(MixModule(channelManager: ChannelManagerBase(store: DBChatStore.instance)));
         
         _ = client.modulesManager.register(AdHocCommandsModule());
         

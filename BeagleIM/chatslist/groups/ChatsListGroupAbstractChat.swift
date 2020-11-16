@@ -43,7 +43,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
 
         dispatcher.async {
             DispatchQueue.main.sync {
-                self.items = DBChatStore.instance.getChats().filter(self.isAccepted(chat:)).map(self.newChatItem(chat:)).filter({ (item) -> Bool in
+                self.items = DBChatStore.instance.conversations().filter(self.isAccepted(chat:)).map(self.newChatItem(chat:)).filter({ (item) -> Bool in
                     item != nil
                 }).map({ item -> ChatItemProtocol in item! }).sorted(by: self.chatsSorter);
                 print("loaded", self.items.count, "during initialization of the view");
@@ -56,7 +56,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         return items.count;
     }
     
-    func newChatItem(chat: DBChatProtocol) -> ChatItemProtocol? {
+    func newChatItem(chat: Conversation) -> ChatItemProtocol? {
         return nil;
     }
     
@@ -64,7 +64,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         return items[index];
     }
     
-    func forChat(_ chat: DBChatProtocol, execute: @escaping (ChatItemProtocol) -> Void) {
+    func forChat(_ chat: Conversation, execute: @escaping (ChatItemProtocol) -> Void) {
         self.dispatcher.async {
             let items = DispatchQueue.main.sync { return self.items; };
             guard let item = items.first(where: { (it) -> Bool in
@@ -101,12 +101,12 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         self.updateItem(for: account, jid: jid, executeIfExists: nil, executeIfNotExists: nil);
     }
     
-    func isAccepted(chat: DBChatProtocol) -> Bool {
+    func isAccepted(chat: Conversation) -> Bool {
         return false;
     }
     
     @objc func chatOpened(_ notification: Notification) {
-        guard let opened = notification.object as? DBChatProtocol, isAccepted(chat: opened) else {
+        guard let opened = notification.object as? Conversation, isAccepted(chat: opened) else {
             return;
         }
         
@@ -114,7 +114,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
     }
     
     @objc func chatClosed(_ notification: Notification) {
-        guard let opened = notification.object as? DBChatProtocol, isAccepted(chat: opened) else {
+        guard let opened = notification.object as? Conversation, isAccepted(chat: opened) else {
             return;
         }
         
@@ -136,7 +136,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
     }
     
     @objc func chatUpdated(_ notification: Notification) {
-        guard let e = notification.object as? DBChatProtocol, isAccepted(chat: e) else {
+        guard let e = notification.object as? Conversation, isAccepted(chat: e) else {
             return;
         }
         
@@ -169,7 +169,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         }
     }
 
-    func addItem(chat opened: DBChatProtocol) {
+    func addItem(chat opened: Conversation) {
         dispatcher.async {
             print("opened chat account =", opened.account, ", jid =", opened.jid)
             
@@ -230,7 +230,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
                     return
                 }
             }
-            if let chat = item.chat as? DBChatStore.DBChat, chat.remoteChatState == .composing {
+            if let chat = item.chat as? Chat, chat.remoteChatState == .composing {
                 chat.update(remoteChatState: .active);
             }
             

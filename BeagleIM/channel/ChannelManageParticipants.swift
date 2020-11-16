@@ -32,7 +32,7 @@ class ChannelManagerParticipants: NSViewController, ChannelAwareProtocol, NSTabV
     @IBOutlet var allowedRemoveButton: NSButton?;
     @IBOutlet var blockedRemoveButton: NSButton!;
     
-    var channel: DBChatStore.DBChannel!;
+    var channel: Channel!;
     
     private var allowed: [BareJID]? = nil;
     private var banned: [BareJID] = [];

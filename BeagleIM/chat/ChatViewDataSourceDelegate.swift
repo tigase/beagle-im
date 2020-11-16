@@ -26,7 +26,7 @@ protocol ChatViewDataSourceDelegate: class {
     
     var account: BareJID! { get }
     var jid: BareJID! { get }
-    var chat: DBChatProtocol! { get }
+    var chat: Conversation! { get }
     
     func itemAdded(at: IndexSet);
 

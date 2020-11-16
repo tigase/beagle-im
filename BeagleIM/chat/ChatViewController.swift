@@ -41,7 +41,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
 
     @IBOutlet var encryptButton: NSPopUpButton!;
 
-    override var chat: DBChatProtocol! {
+    override var chat: Conversation! {
         didSet {
             if let sessionObject = XmppService.instance.getClient(for: account)?.sessionObject {
                 if let rosterItem = RosterModule.getRosterStore(sessionObject).get(for: JID(jid)) {
@@ -147,7 +147,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     }
 
     fileprivate func change(chatState: ChatState) {
-        guard let message = (self.chat as? DBChatStore.DBChat)?.changeChatState(state: chatState) else {
+        guard let message = (self.chat as? Chat)?.changeChatState(state: chatState) else {
             return;
         }
         guard let messageModule: MessageModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageModule.ID) else {
@@ -334,7 +334,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             return;
         }
 
-        guard let item = dataSource.getItem(withId: tag), let chat = self.chat as? DBChatStore.DBChat else {
+        guard let item = dataSource.getItem(withId: tag), let chat = self.chat as? Chat else {
             return;
         }
 
@@ -413,7 +413,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
                         return;
                     }
                     client.context.writer.write(message);
-                    DBChatHistoryStore.instance.retractMessage(for: item.account, with: item.jid, stanzaId: originId, authorNickname: item.authorNickname, participantId: item.participantId, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
+                    DBChatHistoryStore.instance.retractMessage(for: item.account, with: JID(item.jid), stanzaId: originId, authorNickname: item.authorNickname, participantId: item.participantId, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
                 })
             default:
                 break;
@@ -422,7 +422,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     }
         
     override func send(message: String, correctedMessageOriginId: String?) -> Bool {
-        guard let chat = self.chat as? DBChatStore.DBChat else {
+        guard let chat = self.chat as? Chat else {
             return false;
             
         }
@@ -487,7 +487,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             encryption = nil;
         }
 
-        guard let chat = self.chat as? DBChatStore.DBChat else {
+        guard let chat = self.chat as? Chat else {
             return;
         }
         chat.modifyOptions({ (options) in
@@ -519,7 +519,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             if !self.encryptButton.isEnabled {
                 self.encryptButton.item(at: 0)?.image = NSImage(named: NSImage.lockUnlockedTemplateName);
             } else {
-                let encryption = (self.chat as? DBChatStore.DBChat)?.options.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!;
+                let encryption = (self.chat as? Chat)?.options.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!;
                 let locked = encryption == ChatEncryption.omemo;
                 self.encryptButton.item(at: 0)?.image = locked ? NSImage(named: NSImage.lockLockedTemplateName) : NSImage(named: NSImage.lockUnlockedTemplateName);
             }
@@ -547,8 +547,8 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         
         static let instance = ChatAttachmentSender();
         
-        func prepareAttachment(chat: DBChatProtocol, originalURL: URL, completionHandler: @escaping (Result<(URL, Bool,((URL)->URL)?), ShareError>) -> Void) {
-            let encryption: ChatEncryption = (chat as? DBChatStore.DBChat)?.options.encryption ?? .none;
+        func prepareAttachment(chat: Conversation, originalURL: URL, completionHandler: @escaping (Result<(URL, Bool,((URL)->URL)?), ShareError>) -> Void) {
+            let encryption: ChatEncryption = (chat as? Chat)?.options.encryption ?? .none;
             switch encryption {
             case .none:
                 completionHandler(.success((originalURL, false, nil)));
@@ -581,13 +581,13 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             }
         }
         
-        func sendAttachment(chat: DBChatProtocol, originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?, completionHandler: (() -> Void)?) {
+        func sendAttachment(chat: Conversation, originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?, completionHandler: (() -> Void)?) {
             var appendix = ChatAttachmentAppendix();
             appendix.state = .downloaded;
             appendix.filename = originalUrl.lastPathComponent;
             appendix.filesize = Int(filesize);
             appendix.mimetype = mimeType;
-            MessageEventHandler.sendAttachment(chat: chat as! DBChatStore.DBChat, originalUrl: originalUrl, uploadedUrl: uploadedUrl.absoluteString, appendix: appendix, completionHandler: completionHandler);
+            MessageEventHandler.sendAttachment(chat: chat as! Chat, originalUrl: originalUrl, uploadedUrl: uploadedUrl.absoluteString, appendix: appendix, completionHandler: completionHandler);
         }
         
     }

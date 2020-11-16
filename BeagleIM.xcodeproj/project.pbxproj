@@ -10,10 +10,9 @@
 		FE02DD11225B8D1100FA08EB /* db-schema-3.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE02DD10225B8D1100FA08EB /* db-schema-3.sql */; };
 		FE02DD13225BC33F00FA08EB /* DBOMEMOStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE02DD12225BC33F00FA08EB /* DBOMEMOStore.swift */; };
 		FE0C817F2257B48400948C41 /* Settings.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEDC03172257B2B400F24BF4 /* Settings.storyboard */; };
-		FE0E3122253CA0F70030F8C5 /* PrivateVCard4Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E3121253CA0F70030F8C5 /* PrivateVCard4Helper.swift */; };
 		FE0E30A5252E2E320030F8C5 /* TigaseSQLite3 in Frameworks */ = {isa = PBXBuildFile; productRef = FE0E30A4252E2E320030F8C5 /* TigaseSQLite3 */; };
 		FE0E30AF252F125D0030F8C5 /* DBRosterStoreWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30AE252F125D0030F8C5 /* DBRosterStoreWrapper.swift */; };
-		FE0E30C925307A800030F8C5 /* DBChatStoreWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30C825307A800030F8C5 /* DBChatStoreWrapper.swift */; };
+		FE0E3122253CA0F70030F8C5 /* PrivateVCard4Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E3121253CA0F70030F8C5 /* PrivateVCard4Helper.swift */; };
 		FE10BCE923FAA47800E214F3 /* InvitationGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCE823FAA47800E214F3 /* InvitationGroup.swift */; };
 		FE10BCEB23FAA60A00E214F3 /* InvitationItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCEA23FAA60A00E214F3 /* InvitationItem.swift */; };
 		FE10BCED23FAA86900E214F3 /* InvitationCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCEC23FAA86900E214F3 /* InvitationCellView.swift */; };
@@ -21,6 +20,10 @@
 		FE10BCF123FC495700E214F3 /* db-schema-8.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE10BCF023FC495700E214F3 /* db-schema-8.sql */; };
 		FE12FB4B2529E69F002077E7 /* ChatMessageRetracted.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12FB4A2529E69F002077E7 /* ChatMessageRetracted.swift */; };
 		FE137A4621F5FE05006B7F7C /* ShowMainWindowSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4521F5FE05006B7F7C /* ShowMainWindowSegue.swift */; };
+		FE14044325601BB000BE77E8 /* Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE14044225601BB000BE77E8 /* Chat.swift */; };
+		FE14044925601F9300BE77E8 /* Conversation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE14044825601F9300BE77E8 /* Conversation.swift */; };
+		FE14044D25601FE600BE77E8 /* Room.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE14044C25601FE600BE77E8 /* Room.swift */; };
+		FE1404552560226500BE77E8 /* Channel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1404542560226500BE77E8 /* Channel.swift */; };
 		FE149D8222A5120300EE4E03 /* SearchHistory.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE149D8122A5120300EE4E03 /* SearchHistory.storyboard */; };
 		FE149D8522A515C900EE4E03 /* SearchHistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE149D8422A515C900EE4E03 /* SearchHistoryController.swift */; };
 		FE149D8722A51AD900EE4E03 /* db-schema-4.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE149D8622A51AD900EE4E03 /* db-schema-4.sql */; };
@@ -28,6 +31,10 @@
 		FE17870724DECE3400C4012C /* incomingCall.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE17870524DECE3400C4012C /* incomingCall.mp3 */; };
 		FE1A8BA321C96C1B00604141 /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA221C96C1B00604141 /* RoundButton.swift */; };
 		FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */; };
+		FE222CFB2561763700C186A9 /* DBChatStore+ChatStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE222CFA2561763700C186A9 /* DBChatStore+ChatStore.swift */; };
+		FE222D032561879700C186A9 /* DBChatStore+RoomStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE222D022561879700C186A9 /* DBChatStore+RoomStore.swift */; };
+		FE222D0725618A2C00C186A9 /* DBChatStore+ChannelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE222D0625618A2C00C186A9 /* DBChatStore+ChannelStore.swift */; };
+		FE222D0B256192D300C186A9 /* AccountConversations.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE222D0A256192D300C186A9 /* AccountConversations.swift */; };
 		FE25B1712350D2FC00CD69CA /* db-schema-6.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE25B1702350D2FC00CD69CA /* db-schema-6.sql */; };
 		FE28097D21652A7C002F5BD0 /* VCardEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */; };
 		FE28097F2166892D002F5BD0 /* AccountDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */; };
@@ -63,7 +70,6 @@
 		FE3AA0CD2154069D001667A9 /* ChatsListGroupGroupchat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0CC2154069D001667A9 /* ChatsListGroupGroupchat.swift */; };
 		FE3AA0CF215406D1001667A9 /* ChatsListGroupChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0CE215406D1001667A9 /* ChatsListGroupChat.swift */; };
 		FE3AA0D12154077D001667A9 /* ChatsListGroupAbstractChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0D02154077D001667A9 /* ChatsListGroupAbstractChat.swift */; };
-		FE3AA0D3215409B8001667A9 /* DBRoomStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0D2215409B8001667A9 /* DBRoomStore.swift */; };
 		FE3F2AF2228813E200737D51 /* EmptyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3F2AF1228813E200737D51 /* EmptyViewController.swift */; };
 		FE4073A721BACA2D009CE335 /* VoIP.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE4073A621BACA2D009CE335 /* VoIP.storyboard */; };
 		FE4073A921BACC50009CE335 /* VideoCallController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4073A821BACC50009CE335 /* VideoCallController.swift */; };
@@ -133,7 +139,6 @@
 		FE890D1D23FEED1700107437 /* ConversationLogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE890D1C23FEED1700107437 /* ConversationLogController.swift */; };
 		FE890D1F23FEF0B900107437 /* AbstractConversationLogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE890D1E23FEF0B900107437 /* AbstractConversationLogController.swift */; };
 		FE890D30240020DE00107437 /* db-schema-9.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE890D2F240020DD00107437 /* db-schema-9.sql */; };
-		FE890D3824014EAF00107437 /* DBChannelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE890D3724014EAF00107437 /* DBChannelStore.swift */; };
 		FE890D3A240153E200107437 /* MixEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE890D39240153E200107437 /* MixEventHandler.swift */; };
 		FE890D402404069E00107437 /* MIX.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE890D3F2404069D00107437 /* MIX.storyboard */; };
 		FE890D4524040F1200107437 /* ChannelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE890D4424040F1200107437 /* ChannelViewController.swift */; };
@@ -243,9 +248,8 @@
 /* Begin PBXFileReference section */
 		FE02DD10225B8D1100FA08EB /* db-schema-3.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-3.sql"; sourceTree = "<group>"; };
 		FE02DD12225BC33F00FA08EB /* DBOMEMOStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBOMEMOStore.swift; sourceTree = "<group>"; };
-		FE0E3121253CA0F70030F8C5 /* PrivateVCard4Helper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateVCard4Helper.swift; sourceTree = "<group>"; };
 		FE0E30AE252F125D0030F8C5 /* DBRosterStoreWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBRosterStoreWrapper.swift; sourceTree = "<group>"; };
-		FE0E30C825307A800030F8C5 /* DBChatStoreWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBChatStoreWrapper.swift; sourceTree = "<group>"; };
+		FE0E3121253CA0F70030F8C5 /* PrivateVCard4Helper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateVCard4Helper.swift; sourceTree = "<group>"; };
 		FE10BCE823FAA47800E214F3 /* InvitationGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationGroup.swift; sourceTree = "<group>"; };
 		FE10BCEA23FAA60A00E214F3 /* InvitationItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationItem.swift; sourceTree = "<group>"; };
 		FE10BCEC23FAA86900E214F3 /* InvitationCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationCellView.swift; sourceTree = "<group>"; };
@@ -253,6 +257,10 @@
 		FE10BCF023FC495700E214F3 /* db-schema-8.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-8.sql"; sourceTree = "<group>"; };
 		FE12FB4A2529E69F002077E7 /* ChatMessageRetracted.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageRetracted.swift; sourceTree = "<group>"; };
 		FE137A4521F5FE05006B7F7C /* ShowMainWindowSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowMainWindowSegue.swift; sourceTree = "<group>"; };
+		FE14044225601BB000BE77E8 /* Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chat.swift; sourceTree = "<group>"; };
+		FE14044825601F9300BE77E8 /* Conversation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Conversation.swift; sourceTree = "<group>"; };
+		FE14044C25601FE600BE77E8 /* Room.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Room.swift; sourceTree = "<group>"; };
+		FE1404542560226500BE77E8 /* Channel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channel.swift; sourceTree = "<group>"; };
 		FE149D8122A5120300EE4E03 /* SearchHistory.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SearchHistory.storyboard; sourceTree = "<group>"; };
 		FE149D8422A515C900EE4E03 /* SearchHistoryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchHistoryController.swift; sourceTree = "<group>"; };
 		FE149D8622A51AD900EE4E03 /* db-schema-4.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-4.sql"; sourceTree = "<group>"; };
@@ -260,6 +268,10 @@
 		FE17870524DECE3400C4012C /* incomingCall.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = incomingCall.mp3; sourceTree = "<group>"; };
 		FE1A8BA221C96C1B00604141 /* RoundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
 		FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager_Session.swift; sourceTree = "<group>"; };
+		FE222CFA2561763700C186A9 /* DBChatStore+ChatStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DBChatStore+ChatStore.swift"; sourceTree = "<group>"; };
+		FE222D022561879700C186A9 /* DBChatStore+RoomStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DBChatStore+RoomStore.swift"; sourceTree = "<group>"; };
+		FE222D0625618A2C00C186A9 /* DBChatStore+ChannelStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DBChatStore+ChannelStore.swift"; sourceTree = "<group>"; };
+		FE222D0A256192D300C186A9 /* AccountConversations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountConversations.swift; sourceTree = "<group>"; };
 		FE25B1702350D2FC00CD69CA /* db-schema-6.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-6.sql"; sourceTree = "<group>"; };
 		FE28097C21652A7C002F5BD0 /* VCardEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VCardEditorViewController.swift; sourceTree = "<group>"; };
 		FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDetailsViewController.swift; sourceTree = "<group>"; };
@@ -294,7 +306,6 @@
 		FE3AA0CC2154069D001667A9 /* ChatsListGroupGroupchat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListGroupGroupchat.swift; sourceTree = "<group>"; };
 		FE3AA0CE215406D1001667A9 /* ChatsListGroupChat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListGroupChat.swift; sourceTree = "<group>"; };
 		FE3AA0D02154077D001667A9 /* ChatsListGroupAbstractChat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListGroupAbstractChat.swift; sourceTree = "<group>"; };
-		FE3AA0D2215409B8001667A9 /* DBRoomStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBRoomStore.swift; sourceTree = "<group>"; };
 		FE3F2AF1228813E200737D51 /* EmptyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyViewController.swift; sourceTree = "<group>"; };
 		FE4073A621BACA2D009CE335 /* VoIP.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = VoIP.storyboard; sourceTree = "<group>"; };
 		FE4073A821BACC50009CE335 /* VideoCallController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCallController.swift; sourceTree = "<group>"; };
@@ -364,7 +375,6 @@
 		FE890D1C23FEED1700107437 /* ConversationLogController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationLogController.swift; sourceTree = "<group>"; };
 		FE890D1E23FEF0B900107437 /* AbstractConversationLogController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractConversationLogController.swift; sourceTree = "<group>"; };
 		FE890D2F240020DD00107437 /* db-schema-9.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "db-schema-9.sql"; sourceTree = "<group>"; };
-		FE890D3724014EAF00107437 /* DBChannelStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBChannelStore.swift; sourceTree = "<group>"; };
 		FE890D39240153E200107437 /* MixEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MixEventHandler.swift; sourceTree = "<group>"; };
 		FE890D3F2404069D00107437 /* MIX.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = MIX.storyboard; sourceTree = "<group>"; };
 		FE890D4424040F1200107437 /* ChannelViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChannelViewController.swift; sourceTree = "<group>"; };
@@ -481,6 +491,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		FE14044125601B9800BE77E8 /* model */ = {
+			isa = PBXGroup;
+			children = (
+				FE14044225601BB000BE77E8 /* Chat.swift */,
+				FE14044825601F9300BE77E8 /* Conversation.swift */,
+				FE14044C25601FE600BE77E8 /* Room.swift */,
+				FE1404542560226500BE77E8 /* Channel.swift */,
+				FE222D0A256192D300C186A9 /* AccountConversations.swift */,
+			);
+			path = model;
+			sourceTree = "<group>";
+		};
 		FE149D8322A515B900EE4E03 /* historysearch */ = {
 			isa = PBXGroup;
 			children = (
@@ -670,19 +692,20 @@
 		FE6E6BF121384D5E003B1696 /* database */ = {
 			isa = PBXGroup;
 			children = (
+				FE14044125601B9800BE77E8 /* model */,
 				FE6E6BF221384D5E003B1696 /* DBChatHistoryStore.swift */,
 				FE6E6BF321384D5E003B1696 /* DBRosterStore.swift */,
 				FE6E6BF421384D5E003B1696 /* DatabaseMigrator.swift */,
 				FE6E6BF521384D5E003B1696 /* DBChatStore.swift */,
 				FE6E6BF621384D5E003B1696 /* Database.swift */,
 				FED7AEC821418FA9001E164B /* DBVCardStore.swift */,
-				FE3AA0D2215409B8001667A9 /* DBRoomStore.swift */,
 				FE41FB36215BBFC800AD86D3 /* DBCapabilitiesCache.swift */,
 				FE02DD12225BC33F00FA08EB /* DBOMEMOStore.swift */,
-				FE890D3724014EAF00107437 /* DBChannelStore.swift */,
 				FE32A94824702FF100E40BB1 /* DBChatHistorySyncStore.swift */,
 				FE0E30AE252F125D0030F8C5 /* DBRosterStoreWrapper.swift */,
-				FE0E30C825307A800030F8C5 /* DBChatStoreWrapper.swift */,
+				FE222CFA2561763700C186A9 /* DBChatStore+ChatStore.swift */,
+				FE222D022561879700C186A9 /* DBChatStore+RoomStore.swift */,
+				FE222D0625618A2C00C186A9 /* DBChatStore+ChannelStore.swift */,
 			);
 			path = database;
 			sourceTree = "<group>";
@@ -1085,6 +1108,7 @@
 				FE5CAF982215BCD600FABD46 /* ScriptsManager.swift in Sources */,
 				FE34BBD52157DDF200775B07 /* MucModule_RoomError_extension.swift in Sources */,
 				FEDE6AFC21455A2B0019170A /* RosterViewController.swift in Sources */,
+				FE14044925601F9300BE77E8 /* Conversation.swift in Sources */,
 				FE87C7752285736200B0B64C /* XMLEntryViewController.swift in Sources */,
 				FEC336F9240EBDEF00EC1A0D /* OpenChannelViewController.swift in Sources */,
 				FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */,
@@ -1096,7 +1120,9 @@
 				FED7AEC12140569E001E164B /* AddAccountController.swift in Sources */,
 				FE41FB39215CD51700AD86D3 /* MucEventHandler.swift in Sources */,
 				FEC336ED2408141700EC1A0D /* ChannelParticipantsViewController.swift in Sources */,
+				FE222D0725618A2C00C186A9 /* DBChatStore+ChannelStore.swift in Sources */,
 				FE6E6BFF21384D5F003B1696 /* ChatViewController.swift in Sources */,
+				FE222D0B256192D300C186A9 /* AccountConversations.swift in Sources */,
 				FE28097D21652A7C002F5BD0 /* VCardEditorViewController.swift in Sources */,
 				FE29D35823C208840028D306 /* MetadataCache.swift in Sources */,
 				FE10BCE923FAA47800E214F3 /* InvitationGroup.swift in Sources */,
@@ -1117,6 +1143,7 @@
 				FE890D4524040F1200107437 /* ChannelViewController.swift in Sources */,
 				FEA2F53722E5F6A2009F2E88 /* AdvancedSettingsController.swift in Sources */,
 				FED7AEC921418FA9001E164B /* DBVCardStore.swift in Sources */,
+				FE222D032561879700C186A9 /* DBChatStore+RoomStore.swift in Sources */,
 				FEA8941F2156625E004C3B51 /* ConfigureRoomViewController.swift in Sources */,
 				FE890D3A240153E200107437 /* MixEventHandler.swift in Sources */,
 				FEA2F53522E46A2E009F2E88 /* ShowRosterWindowSegue.swift in Sources */,
@@ -1135,8 +1162,6 @@
 				FE75CD6C2546FC820064A733 /* HTTPFileUploadHelper.swift in Sources */,
 				FE6E6BFA21384D5F003B1696 /* AccountManager.swift in Sources */,
 				FEEF25322264A80500202B28 /* OMEMOController.swift in Sources */,
-				FE890D3824014EAF00107437 /* DBChannelStore.swift in Sources */,
-				FE0E30C925307A800030F8C5 /* DBChatStoreWrapper.swift in Sources */,
 				FEC5DC8621553F4700AA3E4F /* GroupchatViewController.swift in Sources */,
 				FE380ADA21B15720008717FA /* DownloadStore.swift in Sources */,
 				FE32A94924702FF100E40BB1 /* DBChatHistorySyncStore.swift in Sources */,
@@ -1158,12 +1183,12 @@
 				FE30D8AD214C2D7100670BEC /* RosterViewController_ContextMenu.swift in Sources */,
 				FE02DD13225BC33F00FA08EB /* DBOMEMOStore.swift in Sources */,
 				FE6E6C0121384D5F003B1696 /* ChatsWindowController.swift in Sources */,
-				FE3AA0D3215409B8001667A9 /* DBRoomStore.swift in Sources */,
 				FE2ACA8023546C4B004623BC /* NSString_extensions.swift in Sources */,
 				FE30309E2447517A003B9D76 /* RosterWindowController.swift in Sources */,
 				FE5BE64C213AC3EA00463183 /* ChatsCellViewCloseButton.swift in Sources */,
 				FE75CD702549E9BE0064A733 /* SharingTaskManager.swift in Sources */,
 				FE3AA0D12154077D001667A9 /* ChatsListGroupAbstractChat.swift in Sources */,
+				FE14044D25601FE600BE77E8 /* Room.swift in Sources */,
 				FE61D6E9246C0D9500FB59F8 /* ChatsListGroupCommon.swift in Sources */,
 				FE5C6B2B228C119A003DAB30 /* ExecuteAdHocCommandController.swift in Sources */,
 				FE41FB3B215CD7F300AD86D3 /* XmppServiceEventHandler.swift in Sources */,
@@ -1195,11 +1220,13 @@
 				FEF8BED2216A6761001DA755 /* InviteToGroupchatController.swift in Sources */,
 				FE6E6BFD21384D5F003B1696 /* Open1On1ChatController.swift in Sources */,
 				FE2ACA8223546C8E004623BC /* NSMutableAttributedString_extensions.swift in Sources */,
+				FE14044325601BB000BE77E8 /* Chat.swift in Sources */,
 				FED2ECF42066B01C00F506A5 /* AppDelegate.swift in Sources */,
 				FE30D8BA214ED28A00670BEC /* OpenGroupchatController.swift in Sources */,
 				FE41FB33215B8D5A00AD86D3 /* ServerCertificateErrorController.swift in Sources */,
 				FEE49DC824229D2A00900BBB /* OSLog.swift in Sources */,
 				FE5C6B2D22916C47003DAB30 /* JoinGroupchatViewController.swift in Sources */,
+				FE222CFB2561763700C186A9 /* DBChatStore+ChatStore.swift in Sources */,
 				FE3F2AF2228813E200737D51 /* EmptyViewController.swift in Sources */,
 				FEDE6AF921440AEF0019170A /* StatusHelper.swift in Sources */,
 				FE41FB45215E426400AD86D3 /* MessageArchivingSetttingsViewController.swift in Sources */,
@@ -1215,6 +1242,7 @@
 				FEB994B1241418FE00B8E7A7 /* InviteToChannelViewController.swift in Sources */,
 				FEC5DC8021552A9B00AA3E4F /* ChatViewDataSource.swift in Sources */,
 				FE41FB37215BBFC800AD86D3 /* DBCapabilitiesCache.swift in Sources */,
+				FE1404552560226500BE77E8 /* Channel.swift in Sources */,
 				FE5C6B29228B34B9003DAB30 /* SelectAdHocCommandController.swift in Sources */,
 				FE6E6BFB21384D5F003B1696 /* XmppService.swift in Sources */,
 				FE9E069A23A3976500952E9C /* DownloadManager.swift in Sources */,

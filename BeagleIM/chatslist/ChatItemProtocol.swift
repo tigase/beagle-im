@@ -23,7 +23,7 @@ import AppKit
 
 protocol ChatItemProtocol: ChatsListItemProtocol {
     
-    var chat: DBChatProtocol { get };
+    var chat: Conversation { get };
     
     var lastActivity: LastChatActivity? { get }
     var lastMessageTs: Date { get }

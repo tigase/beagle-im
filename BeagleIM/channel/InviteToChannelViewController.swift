@@ -26,7 +26,7 @@ class InviteToChannelViewControllerController: NSViewController, NSTextFieldDele
     
     @IBOutlet var contactsField: NSTextField!;
     
-    var channel: DBChatStore.DBChannel!;
+    var channel: Channel!;
     var allRosterItems: [RosterItem] = [];
     
     override func viewDidLoad() {
@@ -96,7 +96,7 @@ class InviteToChannelViewControllerController: NSViewController, NSTextFieldDele
                                 let mixInvitation = MixInvitation(inviter: channel.account, invitee: jid.bareJid, channel: channel.channelJid, token: nil);
                                 let message = mixModule.createInvitation(mixInvitation, message: body);
                                 message.messageDelivery = .request;
-                                DBChatHistoryStore.instance.appendItem(for: channel.account, with: jid.bareJid, state: .outgoing, authorNickname: nil, authorJid: nil, recipientNickname: nil, participantId: nil, type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, encryptionFingerprint: nil, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), linkPreviewAction: .none, completionHandler: nil);
+                                DBChatHistoryStore.instance.appendItem(for: channel.account, with: jid, state: .outgoing, authorNickname: nil, authorJid: nil, recipientNickname: nil, participantId: nil, type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, encryptionFingerprint: nil, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), linkPreviewAction: .none, completionHandler: nil);
                                 mixModule.write(message);
                             });
                         }
@@ -106,7 +106,7 @@ class InviteToChannelViewControllerController: NSViewController, NSTextFieldDele
                             let mixInvitation = MixInvitation(inviter: channel.account, invitee: jid.bareJid, channel: channel.channelJid, token: nil);
                             let message = mixModule.createInvitation(mixInvitation, message: body);
                             message.messageDelivery = .request;
-                            DBChatHistoryStore.instance.appendItem(for: channel.account, with: jid.bareJid, state: .outgoing, authorNickname: nil, authorJid: nil, recipientNickname: nil, participantId: nil, type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, encryptionFingerprint: nil, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), linkPreviewAction: .none, completionHandler: nil);
+                            DBChatHistoryStore.instance.appendItem(for: channel.account, with: jid, state: .outgoing, authorNickname: nil, authorJid: nil, recipientNickname: nil, participantId: nil, type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, encryptionFingerprint: nil, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), linkPreviewAction: .none, completionHandler: nil);
                             mixModule.write(message);
                         }
                     }

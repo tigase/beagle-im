@@ -32,11 +32,11 @@ class ChatsListGroupCommon: ChatsListGroupAbstractChat {
         NotificationCenter.default.addObserver(self, selector: #selector(roomNameChanged), name: MucEventHandler.ROOM_NAME_CHANGED, object: nil);
     }
     
-    override func isAccepted(chat: DBChatProtocol) -> Bool {
-        return chat is DBChatStore.DBChat || chat is DBChatStore.DBRoom || chat is DBChatStore.DBChannel
+    override func isAccepted(chat: Conversation) -> Bool {
+        return chat is Chat || chat is Room || chat is Channel
     }
 
-    override func newChatItem(chat: DBChatProtocol) -> ChatItemProtocol? {
+    override func newChatItem(chat: Conversation) -> ChatItemProtocol? {
         let item = UnifiedChatItem(chat: chat);
         guard item.isInRoster else {
             return nil;
@@ -53,7 +53,7 @@ class ChatsListGroupCommon: ChatsListGroupAbstractChat {
             return;
         }
         
-        self.updateItem(for: account, jid: jid, onlyIf: { item -> Bool in (item.chat is DBChatStore.DBChat) }, executeIfExists: nil, executeIfNotExists: nil);
+        self.updateItem(for: account, jid: jid, onlyIf: { item -> Bool in (item.chat is Chat) }, executeIfExists: nil, executeIfNotExists: nil);
     }
     
     @objc func rosterItemUpdated(_ notification: Notification) {
@@ -71,21 +71,17 @@ class ChatsListGroupCommon: ChatsListGroupAbstractChat {
             self.updateItem(for: account, jid: rosterItem.jid.bareJid, executeIfExists: { (item) in
                 (item as? ChatItem)?.name = ((e.action != .removed) ? rosterItem.name : nil) ?? rosterItem.jid.stringValue;
             }, executeIfNotExists: {
-                guard let messageModule: MessageModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageModule.ID) else {
+                guard let chat = DBChatStore.instance.conversation(for: account, with: rosterItem.jid.withoutResource) as? Chat else {
                     return;
                 }
                 
-                guard let dbChat = messageModule.chatManager.getChat(with: rosterItem.jid.withoutResource, thread: nil) as? DBChatStore.DBChat else {
-                    return;
-                }
-                
-                self.addItem(chat: dbChat);
+                self.addItem(chat: chat);
             });
         }
     }
 
     @objc func roomNameChanged(_ notification: Notification) {
-        guard let room = notification.object as? DBChatStore.DBRoom else {
+        guard let room = notification.object as? Room else {
             return;
         }
         
@@ -95,7 +91,7 @@ class ChatsListGroupCommon: ChatsListGroupAbstractChat {
     }
     
     @objc func roomStatusChanged(_ notification: Notification) {
-        guard let room = notification.object as? DBChatStore.DBRoom else {
+        guard let room = notification.object as? Room else {
             return;
         }
         

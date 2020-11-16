@@ -45,9 +45,9 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         return super.isSharingAvailable && room.state == .joined;
     }
     
-    var room: DBChatStore.DBRoom! {
+    var room: Room! {
         get {
-            return (self.chat as! DBChatStore.DBRoom);
+            return (self.chat as! Room);
         }
         set {
             self.chat = newValue;
@@ -109,7 +109,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     }
         
     @objc func roomStatusChanged(_ notification: Notification) {
-        guard let room = notification.object as? DBChatStore.DBRoom else {
+        guard let room = notification.object as? Room else {
             return;
         }
         guard self.room.id == room.id else {
@@ -134,7 +134,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     }
     
     fileprivate func refreshPermissions() {
-        let presence = self.room.presences[self.room.nickname];
+        let presence = self.room.occupant(nickname: self.room.nickname);
         let currentRole = presence?.role ?? MucRole.none;
         let currentAffiliation = presence?.affiliation ?? MucAffiliation.none;
         
@@ -249,7 +249,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                     if cell.hasHeader {
                         if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account, let avatar = AvatarManager.instance.avatar(for: senderJid, on: item.account) {
                             cell.set(avatar: avatar);
-                        } else if let nickname = item.authorNickname, let photoHash = self.room.presences[nickname]?.presence.vcardTempPhoto {
+                        } else if let nickname = item.authorNickname, let photoHash = self.room.occupant(nickname: nickname)?.presence.vcardTempPhoto {
                             cell.set(avatar: AvatarManager.instance.avatar(withHash: photoHash));
                         } else {
                             cell.set(avatar: nil);
@@ -280,7 +280,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                 if cell.hasHeader {
                     if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account, let avatar = AvatarManager.instance.avatar(for: senderJid, on: item.account) {
                         cell.set(avatar: avatar);
-                    } else if let nickname = item.authorNickname, let photoHash = self.room.presences[nickname]?.presence.vcardTempPhoto {
+                    } else if let nickname = item.authorNickname, let photoHash = self.room.occupant(nickname: nickname)?.presence.vcardTempPhoto {
                         cell.set(avatar: AvatarManager.instance.avatar(withHash: photoHash));
                     } else {
                         cell.set(avatar: nil);
@@ -314,7 +314,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                 if cell.hasHeader {
                     if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account, let avatar = AvatarManager.instance.avatar(for: senderJid, on: item.account) {
                         cell.set(avatar: avatar);
-                    } else if let nickname = item.authorNickname, let photoHash = self.room.presences[nickname]?.presence.vcardTempPhoto {
+                    } else if let nickname = item.authorNickname, let photoHash = self.room.occupant(nickname: nickname)?.presence.vcardTempPhoto {
                         cell.set(avatar: AvatarManager.instance.avatar(withHash: photoHash));
                     } else {
                         cell.set(avatar: nil);
@@ -437,7 +437,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                         return;
                     }
                     client.context.writer.write(message);
-                    DBChatHistoryStore.instance.retractMessage(for: item.account, with: item.jid, stanzaId: originId, authorNickname: item.authorNickname, participantId: item.participantId, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
+                    DBChatHistoryStore.instance.retractMessage(for: item.account, with: JID(item.jid), stanzaId: originId, authorNickname: item.authorNickname, participantId: item.participantId, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
                 })
             default:
                 break;
@@ -452,10 +452,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         guard room.state == .joined else {
             return false;
         }
-        let message = room.createMessage(message);
-        if let id = message.id, UUID(uuidString: id) != nil {
-            message.originId = id;
-        }
+        let message = room.createMessage(text: message);
         if correctedMessageOriginId != nil {
             message.lastMessageCorrectionId = correctedMessageOriginId;
         }
@@ -467,19 +464,16 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         
         static let instance = GroupchatAttachmentSender();
         
-        func prepareAttachment(chat: DBChatProtocol, originalURL: URL, completionHandler: @escaping (Result<(URL, Bool, ((URL) -> URL)?), ShareError>) -> Void) {
+        func prepareAttachment(chat: Conversation, originalURL: URL, completionHandler: @escaping (Result<(URL, Bool, ((URL) -> URL)?), ShareError>) -> Void) {
             completionHandler(.success((originalURL, false, nil)));
         }
         
-        func sendAttachment(chat: DBChatProtocol, originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?, completionHandler: (() -> Void)?) {
-            guard let room = chat as? DBChatStore.DBRoom, (XmppService.instance.getClient(for: room.account)?.state ?? .disconnected) == .connected, room.state == .joined else {
+        func sendAttachment(chat: Conversation, originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?, completionHandler: (() -> Void)?) {
+            guard let room = chat as? Room, (XmppService.instance.getClient(for: room.account)?.state ?? .disconnected) == .connected, room.state == .joined else {
                 completionHandler?();
                 return;
             }
-            let message = room.createMessage(uploadedUrl.absoluteString);
-            if let id = message.id, UUID(uuidString: id) != nil {
-                message.originId = id;
-            }
+            let message = room.createMessage(text: uploadedUrl.absoluteString);
             message.oob = uploadedUrl.absoluteString;
             room.context?.writer.write(message);
             completionHandler?();
@@ -525,7 +519,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             return [];
         }
                 
-        let occupantNicknames:[String] = self.room?.presences.keys.map({ $0 }) ?? [];
+        let occupantNicknames:[String] = self.room?.occupants.map({ $0.nickname }) ?? [];
         let suggestions = occupantNicknames.filter({ (key) -> Bool in
             return key.uppercased().starts(with: query);
         }).sorted();
@@ -540,7 +534,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             return;
         }
         
-        guard let occupant = room.presences.values.first(where: { (occupant) -> Bool in
+        guard let occupant = room.occupants.first(where: { (occupant) -> Bool in
             guard let hash = occupant.presence.vcardTempPhoto else {
                 return false;
             }
@@ -566,7 +560,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             return;
         }
         
-        guard let room = e.room as? DBChatStore.DBRoom, self.room.id == room.id else {
+        guard let room = e.room as? Room, self.room.id == room.id else {
             return;
         }
         
@@ -600,12 +594,10 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
             tableView?.menu?.delegate = self;
         }
     }
-    var room: DBChatStore.DBRoom? {
+    var room: Room? {
         didSet {
             self.participants.removeAll();
-            room?.presences.values.forEach { occupant in
-                self.participants.append(occupant);
-            }
+            self.participants.append(contentsOf: room?.occupants ?? []);
             self.participants.sort(by: { (i1, i2) -> Bool in
                 return i1.nickname.caseInsensitiveCompare(i2.nickname) == .orderedAscending;
             });
@@ -664,7 +656,7 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
         guard let event = notification.object as? MucModule.AbstractOccupantEvent else {
             return;
         }
-        guard let room = self.room, (event.room as? DBChatProtocol)?.id == room.id else {
+        guard let room = self.room, (event.room as? Conversation)?.id == room.id else {
             return;
         }
         
@@ -745,7 +737,7 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
     }
     
     @objc func roomStatusChanged(_ notification: Notification) {
-        guard let room = notification.object as? DBChatStore.DBRoom, (self.room?.id ?? 0) == room.id else {
+        guard let room = notification.object as? Room, (self.room?.id ?? 0) == room.id else {
             return;
         }
         
@@ -816,7 +808,7 @@ extension GroupchatParticipantsContainer: NSMenuDelegate {
         case #selector(privateMessage(_:)):
             break;
         case #selector(banUser(_:)):
-            guard let affiliation = self.room?.presences[nickname]?.affiliation, (affiliation == .admin || affiliation == .owner) else {
+            guard let affiliation = self.room?.occupant(nickname: nickname)?.affiliation, (affiliation == .admin || affiliation == .owner) else {
                 item.isHidden = true;
                 return true;
             }

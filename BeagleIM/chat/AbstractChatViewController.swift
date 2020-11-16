@@ -24,7 +24,7 @@ import TigaseSwift
 
 class AbstractChatViewController: NSViewController, NSTextViewDelegate {
 
-    var chat: DBChatProtocol! {
+    var chat: Conversation! {
         didSet {
             conversationLogController?.chat = chat;
         }
