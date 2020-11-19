@@ -1,5 +1,5 @@
 //
-// ChatInvitation.swift
+// ConversationInvitation.swift
 //
 // BeagleIM
 // Copyright (C) 2020 "Tigase, Inc." <office@tigase.com>
@@ -22,17 +22,17 @@
 import Foundation
 import TigaseSwift
 
-class ChatInvitation: ChatEntry {
+class ConversationInvitation: ConversationEntryWithSender {
 
     var message: String?;
     var appendix: ChatInvitationAppendix;
     
-    init(id: Int, timestamp: Date, account: BareJID, jid: BareJID, state: MessageState, message: String?, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, encryption: MessageEncryption, encryptionFingerprint: String?, appendix: ChatInvitationAppendix, error: String?) {
+    init(id: Int, conversation: ConversationKey, timestamp: Date, state: ConversationEntryState, sender: ConversationSenderProtocol, encryption: ConversationEntryEncryption, message: String?, appendix: ChatInvitationAppendix) {
         self.message = message;
         self.appendix = appendix;
-        super.init(id: id, timestamp: timestamp, account: account, jid: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error)
+        super.init(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, encryption: encryption);
     }
-    
+        
 }
 
 public struct ChatInvitationAppendix: AppendixProtocol {

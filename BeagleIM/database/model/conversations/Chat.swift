@@ -33,8 +33,16 @@ public class Chat: ChatBase, Conversation, Identifiable {
     var localChatState: ChatState = .active;
     private(set) var remoteChatState: ChatState? = nil;
     
+    public var displayName: String {
+        return context?.module(.roster).store.get(for: jid)?.name ?? jid.stringValue;
+    }
+    
     public var notifications: ConversationNotification {
         return options.notifications;
+    }
+
+    public var automaticallyFetchPreviews: Bool {
+        return context?.module(.roster).store.get(for: jid) != nil;
     }
 
     

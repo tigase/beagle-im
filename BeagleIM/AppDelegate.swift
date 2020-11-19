@@ -726,7 +726,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
 
     @objc func newMessage(_ notification: Notification) {
-        guard let item = notification.object as? ChatMessage else {
+        guard let item = notification.object as? ConversationMessage else {
             return;
         }
         
@@ -734,14 +734,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             return;
         }
         
-        let conversation = DBChatStore.instance.conversation(for: item.account, with: item.jid);
-        let notifications = conversation?.notifications ?? .none;
+        let notifications = (item.conversation as? Conversation)?.notifications ?? .none;
 
         switch notifications {
         case .none:
             return;
         case .mention:
-            if let nickname = (conversation as? Room)?.nickname ?? (conversation as? Channel)?.nickname {
+            if let nickname = (item.conversation as? Room)?.nickname ?? (item.conversation as? Channel)?.nickname {
                 if !item.message.contains(nickname) {
                     if let keywords = Settings.markKeywords.stringArrays(), !keywords.isEmpty {
                         if  keywords.first(where: { item.message.contains($0) }) == nil {
@@ -758,57 +757,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             break;
         }
         
-        if item.authorNickname != nil {
-            if #available(OSX 10.14, *) {
-                let content = UNMutableNotificationContent();
-                content.title = item.jid.stringValue;
-                content.subtitle = item.authorNickname ?? "";
-                content.body = (item.message.contains("`") || !Settings.enableMarkdownFormatting.bool() || !Settings.showEmoticons.bool()) ? item.message : item.message.emojify();
-                content.sound = UNNotificationSound.default
-                content.userInfo = ["account": item.account.stringValue, "jid": item.jid.stringValue, "id": "message-new"];
-                let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
-                UNUserNotificationCenter.current().add(request) { (error) in
-                    print("could not show notification:", error as Any);
+        if let conversation = item.conversation as? Conversation {
+            if conversation is Chat {
+                guard Settings.notificationsFromUnknownSenders.bool() || conversation.displayName != conversation.jid.stringValue else {
+                    return;
                 }
-            } else {
-                let notification = NSUserNotification();
-                notification.identifier = UUID().uuidString;
-                notification.title = item.jid.stringValue;
-                notification.subtitle = item.authorNickname;
-                //            notification.deliveryDate = item.timestamp;
-                notification.informativeText = (item.message.contains("`") || !Settings.enableMarkdownFormatting.bool() || !Settings.showEmoticons.bool()) ? item.message : item.message.emojify();
-                notification.soundName = NSUserNotificationDefaultSoundName;
-                notification.userInfo = ["account": item.account.stringValue, "jid": item.jid.stringValue, "id": "message-new"];
-                NSUserNotificationCenter.default.deliver(notification);
             }
-        } else {
-            let rosterItem = XmppService.instance.getClient(for: item.account)?.rosterStore?.get(for: JID(item.jid));
-            guard rosterItem != nil || Settings.notificationsFromUnknownSenders.bool() else {
-                return;
+            let content = UNMutableNotificationContent();
+            content.title = conversation.displayName;
+            if conversation is Room || conversation is Channel {
+                content.subtitle = item.nickname;
             }
-                        
-            if #available(OSX 10.14, *) {
-                let content = UNMutableNotificationContent();
-                content.title = rosterItem?.name ?? item.jid.stringValue;
-                content.body = (item.message.contains("`") || !Settings.enableMarkdownFormatting.bool() || !Settings.showEmoticons.bool()) ? item.message : item.message.emojify();
-                content.sound = UNNotificationSound.default
-                content.userInfo = ["account": item.account.stringValue, "jid": item.jid.stringValue, "id": "message-new"];
-                let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
-                UNUserNotificationCenter.current().add(request) { (error) in
-                    print("could not show notification:", error as Any);
-                }
-            } else {
-                let notification = NSUserNotification();
-                notification.identifier = UUID().uuidString;
-                notification.title = rosterItem?.name ?? item.jid.stringValue;
-                //            notification.deliveryDate = item.timestamp;
-                notification.informativeText = (item.message.contains("`") || !Settings.enableMarkdownFormatting.bool() || !Settings.showEmoticons.bool()) ? item.message : item.message.emojify();
-                notification.soundName = NSUserNotificationDefaultSoundName;
-                notification.userInfo = ["account": item.account.stringValue, "jid": item.jid.stringValue, "id": "message-new"];
-                NSUserNotificationCenter.default.deliver(notification);
-                
-                print("presented:", notification.isPresented);
-            };
+            content.body = (item.message.contains("`") || !Settings.enableMarkdownFormatting.bool() || !Settings.showEmoticons.bool()) ? item.message : item.message.emojify();
+            content.sound = UNNotificationSound.default
+            content.userInfo = ["account": conversation.account.stringValue, "jid": conversation.jid.stringValue, "id": "message-new"];
+            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
+            UNUserNotificationCenter.current().add(request) { (error) in
+                print("could not show notification:", error as Any);
+            }
         }
     }
     

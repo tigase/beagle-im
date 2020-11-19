@@ -1,5 +1,5 @@
 //
-// ChatMessageRetracted.swift
+// ConversationMessageRetracted.swift
 //
 // BeagleIM
 // Copyright (C) 2020 "Tigase, Inc." <office@tigase.com>
@@ -22,10 +22,10 @@
 import Foundation
 import TigaseSwift
 
-class ConversationMessageRetracted: ChatEntry {
+class ConversationMessageRetracted: ConversationEntryWithSender {
         
-    override init(id: Int, timestamp: Date, account: BareJID, jid: BareJID, state: MessageState, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, encryption: MessageEncryption, encryptionFingerprint: String?, error: String?) {
-        super.init(id: id, timestamp: timestamp, account: account, jid: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error);
+    override init(id: Int, conversation: ConversationKey, timestamp: Date, state: ConversationEntryState, sender: ConversationSenderProtocol, encryption: ConversationEntryEncryption) {
+        super.init(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, encryption: encryption);
     }
-
+    
 }

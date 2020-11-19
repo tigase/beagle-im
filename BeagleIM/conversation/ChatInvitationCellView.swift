@@ -34,7 +34,7 @@ class ChatInvitationCellView: BaseChatCellView {
     
     private var buttonBottomContraint: NSLayoutConstraint?;
     
-    func set(invitation: ChatInvitation) {
+    func set(invitation: ConversationInvitation) {
         super.set(item:  invitation);
         
         self.account = invitation.account;

@@ -82,7 +82,7 @@ class AccountDetailsViewController: NSViewController, AccountAware {
     }
     
     @IBAction func save(_ sender: NSButton) {
-        guard let jid = self.account, let account = AccountManager.getAccount(for: jid) else {
+        guard let jid = self.account, var account = AccountManager.getAccount(for: jid) else {
             // do not save if we cannot find the account
             return;
         }

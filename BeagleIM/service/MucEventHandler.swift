@@ -97,7 +97,7 @@ class MucEventHandler: XmppServiceEventHandler {
                 }
             }
 
-            DBChatHistoryStore.instance.append(for: room.account, message: e.message, source: .stream);
+            DBChatHistoryStore.instance.append(for: room, message: e.message, source: .stream);
         case let e as MucModule.AbstractOccupantEvent:
             NotificationCenter.default.post(name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: e);
             // Photo hash support is in AvatarEventHandler!!
@@ -206,9 +206,10 @@ class MucEventHandler: XmppServiceEventHandler {
     }
     
     open func sendPrivateMessage(room: Room, recipientNickname: String, body: String) {
-        let message = room.createPrivateMessage(body, recipientNickname: recipientNickname);
-        DBChatHistoryStore.instance.appendItem(for: room.account, with: room.jid, state: .outgoing, authorNickname: room.nickname, authorJid: nil, recipientNickname: recipientNickname, participantId: nil, type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, encryptionFingerprint: nil, appendix: nil, linkPreviewAction: .auto, completionHandler: nil);
-        room.context?.writer.write(message);
+        // FIXME: !!
+//        let message = room.createPrivateMessage(body, recipientNickname: recipientNickname);
+//        DBChatHistoryStore.instance.appendItem(for: room.account, with: room.jid, state: .outgoing, authorNickname: room.nickname, authorJid: nil, recipientNickname: recipientNickname, participantId: nil, type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, encryptionFingerprint: nil, appendix: nil, linkPreviewAction: .auto, completionHandler: nil);
+//        room.context?.writer.write(message);
     }
         
     fileprivate func updateRoomName(room: Room) {

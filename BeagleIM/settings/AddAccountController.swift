@@ -83,7 +83,7 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
     
     @IBAction func logInClicked(_ button: NSButton) {
         let jid = BareJID(usernameField.stringValue);
-        let account = AccountManager.Account(name: jid);
+        var account = AccountManager.Account(name: jid);
         account.password = passwordField.stringValue;
         self.showProgressIndicator();
         self.accountValidatorTask = AccountValidatorTask(controller: self);

@@ -24,6 +24,9 @@ import Security
 import TigaseSwift
 
 open class AccountManager {
+
+    private static let dispatcher = QueueDispatcher(label: "AccountManager");
+    private static var accounts: [BareJID: Account] = [:];
     
     public static let ACCOUNT_CHANGED = Notification.Name(rawValue: "accountChanged");
 
@@ -37,6 +40,13 @@ open class AccountManager {
     }
     
     static func getAccounts() -> [BareJID] {
+        return self.dispatcher.sync {
+        guard accounts.isEmpty else {
+            return Array(accounts.keys).sorted(by: { (j1, j2) -> Bool in
+                j1.stringValue.compare(j2.stringValue) == .orderedAscending
+            });
+        }
+        
         let query: [String: Any] = [ kSecClass as String: kSecClassGenericPassword, kSecMatchLimit as String: kSecMatchLimitAll, kSecReturnAttributes as String: kCFBooleanTrue as Any, kSecAttrService as String: "xmpp"];
         var result: CFTypeRef?;
         
@@ -48,11 +58,19 @@ open class AccountManager {
             return [];
         }
         
-        return results.filter({ $0[kSecAttrAccount as String] != nil}).map { item -> BareJID in
+        let accounts = results.filter({ $0[kSecAttrAccount as String] != nil}).map { item -> BareJID in
             return BareJID(item[kSecAttrAccount as String] as! String);
             }.sorted(by: { (j1, j2) -> Bool in
                 j1.stringValue.compare(j2.stringValue) == .orderedAscending
             });
+        
+        for account in accounts {
+            if let item = getAccountInt(for: account) {
+                self.accounts[account] = item;
+            }
+        }
+        return accounts;
+        }
     }
     
     static func getActiveAccounts() -> [BareJID] {
@@ -62,6 +80,12 @@ open class AccountManager {
     }
     
     static func getAccount(for jid: BareJID) -> Account? {
+        return self.dispatcher.sync {
+            return self.accounts[jid];
+        }
+    }
+    
+    private static func getAccountInt(for jid: BareJID) -> Account? {
         let query: [String: Any] = [ kSecClass as String: kSecClassGenericPassword, kSecMatchLimit as String: kSecMatchLimitOne, kSecReturnAttributes as String: kCFBooleanTrue as Any, kSecAttrService as String: "xmpp" as NSObject, kSecAttrAccount as String : jid.stringValue as NSObject ];
         
         var result: CFTypeRef?;
@@ -79,7 +103,9 @@ open class AccountManager {
         return Account(name: jid, data: dict);
     }
     
-    static func save(account: Account) -> Bool {
+    static func save(account toSave: Account) -> Bool {
+        self.dispatcher.sync {
+            var account = toSave;
         var query: [String: Any] = [ kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "xmpp" as NSObject, kSecAttrAccount as String : account.name.stringValue as NSObject ];
         var update: [String: Any] = [ kSecAttrGeneric as String: try! NSKeyedArchiver.archivedData(withRootObject: account.data, requiringSecureCoding: false), kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock];
         if let newPassword = account.newPassword {
@@ -101,13 +127,17 @@ open class AccountManager {
         if defaultAccount == nil {
             defaultAccount = account.name;
         }
+            
+        self.accounts[account.name] = account;
         
         AccountManager.accountChanged(account: account);
         
         return result;
+        }
     }
     
     static func delete(account: Account) -> Bool {
+        dispatcher.sync {
         let query: [String: Any] = [ kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "xmpp" as NSObject, kSecAttrAccount as String : account.name.stringValue as NSObject ];
         
         guard SecItemDelete(query as CFDictionary) == noErr else {
@@ -120,7 +150,10 @@ open class AccountManager {
         
         AccountManager.accountChanged(account: account);
 
+        self.accounts.removeValue(forKey: account.name);
+            
         return true;
+        }
     }
     
     static fileprivate func parseDict(from data: Data?) -> [String: Any]? {
@@ -132,17 +165,19 @@ open class AccountManager {
     }
     
     static fileprivate func accountChanged(account: Account) {
-        NotificationCenter.default.post(name: AccountManager.ACCOUNT_CHANGED, object: account);
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: AccountManager.ACCOUNT_CHANGED, object: account);
+        }
     }
     
-    class Account {
+    struct Account {
         
         fileprivate var data: [String: Any];
         fileprivate var newPassword: String?;
         
         public let name: BareJID;
         
-        open var password: String? {
+        public var password: String? {
             get {
                 guard newPassword == nil else {
                     return newPassword;
@@ -154,7 +189,7 @@ open class AccountManager {
             }
         }
         
-        open var active: Bool {
+        public var active: Bool {
             get {
                 return data["active"] as? Bool ?? false;
             }
@@ -163,7 +198,7 @@ open class AccountManager {
             }
         }
         
-        open var nickname: String? {
+        public var nickname: String? {
             get {
                 guard let nick = data["nickname"] as? String, !nick.isEmpty else {
                     return name.localPart;
@@ -179,7 +214,7 @@ open class AccountManager {
             }
         }
         
-        open var resourceType: ResourceType {
+        public var resourceType: ResourceType {
             get {
                 guard let val = data["resourceType"] as? String, let r = ResourceType(rawValue: val) else {
                     return .automatic;
@@ -191,7 +226,7 @@ open class AccountManager {
             }
         }
         
-        open var resourceName: String? {
+        public var resourceName: String? {
             get {
                 return data["resourceName"] as? String;
             }
@@ -204,7 +239,7 @@ open class AccountManager {
             }
         }
         
-        open var serverCertificate: ServerCertificateInfo? {
+        public var serverCertificate: ServerCertificateInfo? {
             get {
                 return data["serverCertificateInfo"] as? ServerCertificateInfo;
             }

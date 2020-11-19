@@ -22,17 +22,26 @@
 import Foundation
 import TigaseSwift
 
-public protocol Conversation: ConversationProtocol {
+public protocol Conversation: ConversationProtocol, ConversationKey {
     
+    var displayName: String { get }
     var id: Int { get }
     var timestamp: Date { get }
     var unread: Int { get }
     var lastActivity: LastConversationActivity? { get }
     
     var notifications: ConversationNotification { get }
-
+    
+    var automaticallyFetchPreviews: Bool { get }
+    
     func markAsRead(count: Int) -> Bool;
     func updateLastActivity(_ lastActivity: LastConversationActivity?, timestamp: Date, isUnread: Bool) -> Bool;
+}
+
+extension Conversation {
+    func loadItems(_ type: ConversationLoadType) -> [ConversationEntry] {
+        return DBChatHistoryStore.instance.history(for: self, queryType: type);
+    }
 }
 
 enum ConversationType: Int {

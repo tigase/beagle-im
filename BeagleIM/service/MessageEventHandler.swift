@@ -118,12 +118,23 @@ class MessageEventHandler: XmppServiceEventHandler {
                 return;
             }
 
-            DBChatHistoryStore.instance.append(for: account, message: e.message, source: .stream);
+            DBChatHistoryStore.instance.append(for: e.chat as! Conversation, message: e.message, source: .stream);
         case let e as MessageDeliveryReceiptsModule.ReceiptEvent:
-            guard let from = e.message.from?.bareJid, let account = e.sessionObject.userBareJid else {
+            guard let from = e.message.from, let account = e.sessionObject.userBareJid else {
                 return;
             }
-            DBChatHistoryStore.instance.updateItemState(for: account, with: JID(from), stanzaId: e.messageId, from: .outgoing, to: .outgoing_delivered);
+            
+            var conversation: ConversationKey?;
+            if e.message.findChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") != nil {
+                // this is for MUC-PM only!!
+                conversation = DBChatStore.instance.conversation(for: account, with: from);
+            } else {
+                conversation = DBChatStore.instance.conversation(for: account, with: from.withoutResource);
+            }
+
+            if let conv = conversation {
+                DBChatHistoryStore.instance.updateItemState(for: conv, stanzaId: e.messageId, from: .outgoing, to: .outgoing_delivered);
+            }
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
             let account = e.sessionObject.userBareJid!;
             MessageEventHandler.scheduleMessageSync(for: account);
@@ -168,17 +179,24 @@ class MessageEventHandler: XmppServiceEventHandler {
             }
             mcModule.enable();
         case let e as MessageCarbonsModule.CarbonReceivedEvent:
-            guard let account = e.sessionObject.userBareJid, e.message.from != nil, e.message.to != nil else {
+            guard let account = e.sessionObject.userBareJid, let from = e.message.from, let to = e.message.to else {
                 return;
             }
             
-            DBChatHistoryStore.instance.append(for: account, message: e.message, source: .carbons(action: e.action));
+            let jid = e.action != MessageCarbonsModule.Action.received ? from : to;
+            let conversation: ConversationKey = DBChatStore.instance.conversation(for: account, with: jid) ?? ConversationKeyItem(account: account, jid: jid);
+                        
+            DBChatHistoryStore.instance.append(for: conversation, message: e.message, source: .carbons(action: e.action));
         case let e as MessageArchiveManagementModule.ArchivedMessageReceivedEvent:
-            guard let account = e.sessionObject.userBareJid, e.message.from != nil, e.message.to != nil else {
+            guard let account = e.sessionObject.userBareJid, let from = e.message.from, let to = e.message.to else {
                 return;
             }
             
-            DBChatHistoryStore.instance.append(for: account, message: e.message, source: .archive(source: e.source, version: e.version, messageId: e.messageId, timestamp: e.timestamp));
+            let jid = from.bareJid != account ? from : to;
+            
+            let conversation: ConversationKey = DBChatStore.instance.conversation(for: account, with: jid) ?? ConversationKeyItem(account: account, jid: jid);
+            
+            DBChatHistoryStore.instance.append(for: conversation, message: e.message, source: .archive(source: e.source, version: e.version, messageId: e.messageId, timestamp: e.timestamp));
         case let e as OMEMOModule.AvailabilityChangedEvent:
             NotificationCenter.default.post(name: MessageEventHandler.OMEMO_AVAILABILITY_CHANGED, object: e);
         default:
@@ -216,17 +234,17 @@ class MessageEventHandler: XmppServiceEventHandler {
             case .omemo:
                 if stanzaId == nil {
                     if let correctedMessageId = correctedMessageOriginId {
-                        DBChatHistoryStore.instance.correctMessage(for: account, with: JID(jid), stanzaId: correctedMessageId, authorNickname: nil, participantId: nil, data: msg, correctionStanzaId: message.id!, correctionTimestamp: Date(), newState: .outgoing_unsent);
+                        DBChatHistoryStore.instance.correctMessage(for: chat, stanzaId: correctedMessageId, sender: nil, data: msg, correctionStanzaId: message.id!, correctionTimestamp: Date(), newState: .outgoing_unsent);
                     } else {
                         let fingerprint = DBOMEMOStore.instance.identityFingerprint(forAccount: account, andAddress: SignalAddress(name: account.stringValue, deviceId: Int32(bitPattern: DBOMEMOStore.instance.localRegistrationId(forAccount: account)!)));
-                        DBChatHistoryStore.instance.appendItem(for: account, with: JID(jid), state: .outgoing_unsent, authorNickname: nil, authorJid: nil, recipientNickname: nil, participantId: nil, type: url == nil ? .message : .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: msg, encryption: .decrypted, encryptionFingerprint: fingerprint, appendix: chatAttachmentAppendix, linkPreviewAction: .none, completionHandler: messageStored);
+                        DBChatHistoryStore.instance.appendItem(for: chat, state: .outgoing_unsent, sender: .me(conversation: chat), type: url == nil ? .message : .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: msg, encryption: .decrypted(fingerprint: fingerprint), appendix: chatAttachmentAppendix, linkPreviewAction: .none, completionHandler: messageStored);
                     }
                 }
                 XmppService.instance.tasksQueue.schedule(for: jid, task: { (completionHandler) in
-                    sendEncryptedMessage(message, from: account, completionHandler: { result in
+                    sendEncryptedMessage(message, from: chat, completionHandler: { result in
                         switch result {
                         case .success(_):
-                            DBChatHistoryStore.instance.updateItemState(for: account, with: JID(jid), stanzaId: correctedMessageOriginId ?? message.id!, from: .outgoing_unsent, to: .outgoing, withTimestamp: correctedMessageOriginId != nil ? nil : Date());
+                            DBChatHistoryStore.instance.updateItemState(for: chat, stanzaId: correctedMessageOriginId ?? message.id!, from: .outgoing_unsent, to: .outgoing, withTimestamp: correctedMessageOriginId != nil ? nil : Date());
                             
                         case .failure(let err):
                             let condition = (err is ErrorCondition) ? (err as? ErrorCondition) : nil;
@@ -245,7 +263,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                                 }
                             }
 
-                            DBChatHistoryStore.instance.markOutgoingAsError(for: account, with: JID(jid), stanzaId: message.id!, errorCondition: .undefined_condition, errorMessage: errorMessage);
+                            DBChatHistoryStore.instance.markOutgoingAsError(for: chat, stanzaId: message.id!, errorCondition: .undefined_condition, errorMessage: errorMessage);
                         }
                         completionHandler();
                     });
@@ -255,22 +273,22 @@ class MessageEventHandler: XmppServiceEventHandler {
                 let type: ItemType = url == nil ? .message : .attachment;
                 if stanzaId == nil {
                     if let correctedMessageId = correctedMessageOriginId {
-                        DBChatHistoryStore.instance.correctMessage(for: account, with: JID(jid), stanzaId: correctedMessageId, authorNickname: nil, participantId: nil, data: msg, correctionStanzaId: message.id!, correctionTimestamp: Date(), newState: .outgoing_unsent);
+                        DBChatHistoryStore.instance.correctMessage(for: chat, stanzaId: correctedMessageId, sender: nil, data: msg, correctionStanzaId: message.id!, correctionTimestamp: Date(), newState: .outgoing_unsent);
                     } else {
-                        DBChatHistoryStore.instance.appendItem(for: account, with: JID(jid), state: .outgoing_unsent, authorNickname: nil, authorJid: nil, recipientNickname: nil, participantId: nil, type: type, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: msg, encryption: .none, encryptionFingerprint: nil, appendix: chatAttachmentAppendix, linkPreviewAction: .none, completionHandler: messageStored);
+                        DBChatHistoryStore.instance.appendItem(for: chat, state: .outgoing_unsent, sender: .me(conversation: chat), type: type, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: msg, encryption: .none, appendix: chatAttachmentAppendix, linkPreviewAction: .none, completionHandler: messageStored);
                     }
                 }
                 XmppService.instance.tasksQueue.schedule(for: jid, task: { (completionHandler) in
                     sendUnencryptedMessage(message, from: account, completionHandler: { result in
                         switch result {
                         case .success(_):
-                            DBChatHistoryStore.instance.updateItemState(for: account, with: JID(jid), stanzaId: correctedMessageOriginId ?? message.id!, from: .outgoing_unsent, to: .outgoing, withTimestamp: correctedMessageOriginId != nil ? nil : Date());
+                            DBChatHistoryStore.instance.updateItemState(for: chat, stanzaId: correctedMessageOriginId ?? message.id!, from: .outgoing_unsent, to: .outgoing, withTimestamp: correctedMessageOriginId != nil ? nil : Date());
                         case .failure(let err):
                             guard let condition = err as? ErrorCondition, condition != .gone else {
                                 completionHandler();
                                 return;
                             }
-                            DBChatHistoryStore.instance.markOutgoingAsError(for: account, with: JID(jid), stanzaId: message.id!, errorCondition: err as? ErrorCondition ?? .undefined_condition, errorMessage: "Could not send message");
+                            DBChatHistoryStore.instance.markOutgoingAsError(for: chat, stanzaId: message.id!, errorCondition: err as? ErrorCondition ?? .undefined_condition, errorMessage: "Could not send message");
                         }
                         completionHandler();
                     });
@@ -290,15 +308,15 @@ class MessageEventHandler: XmppServiceEventHandler {
         }
 
 
-        fileprivate static func sendEncryptedMessage(_ message: Message, from account: BareJID, completionHandler resultHandler: @escaping (Result<Void,Error>)->Void) {
+        fileprivate static func sendEncryptedMessage(_ message: Message, from chat: Chat, completionHandler resultHandler: @escaping (Result<Void,Error>)->Void) {
 
-            guard let omemoModule: OMEMOModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(OMEMOModule.ID) else {
-                DBChatHistoryStore.instance.updateItemState(for: account, with: JID(message.to!.bareJid), stanzaId: message.id!, from: .outgoing_unsent, to: .outgoing_error);
+            guard let client = chat.context as? XMPPClient, let omemoModule: OMEMOModule = client.modulesManager.getModule(OMEMOModule.ID) else {
+                DBChatHistoryStore.instance.updateItemState(for: chat, stanzaId: message.id!, from: .outgoing_unsent, to: .outgoing_error(errorMessage: nil));
                 resultHandler(.failure(ErrorCondition.unexpected_request));
                 return;
             }
 
-            guard let client = XmppService.instance.getClient(for: account), client.state == .connected else {
+            guard client.state == .connected else {
                 resultHandler(.failure(ErrorCondition.gone));
                 return;
             }
@@ -309,7 +327,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                     // FIXME: add support for error handling!!
                     resultHandler(.failure(error));
                 case .successMessage(let encryptedMessage, _):
-                    guard let client = XmppService.instance.getClient(for: account) else {
+                    guard client.state == .connected else {
                         resultHandler(.failure(ErrorCondition.gone));
                         return;
                     }
@@ -321,38 +339,44 @@ class MessageEventHandler: XmppServiceEventHandler {
             omemoModule.encode(message: message, completionHandler: completionHandler!);
         }
 
-    static func calculateDirection(direction: MessageDirection, for account: BareJID, with jid: BareJID, authorNickname: String?, authorJid: BareJID?) -> MessageDirection {
-        if let authorJid = authorJid {
-            return account == authorJid ? .outgoing : .incoming;
-        }
-        
-        guard let senderNickname = authorNickname else {
+    static func calculateDirection(for conversation: ConversationKey, direction: MessageDirection, sender: ConversationSenderProtocol) -> MessageDirection {
+        switch sender {
+        case .buddy(_):
+            return direction;
+        case .participant(let id, _, let jid):
+            if let senderJid = jid {
+                return senderJid == conversation.account ? .outgoing : .incoming;
+            }
+            if let channel = conversation as? Channel {
+                return channel.participantId == id ? .outgoing : .incoming;
+            }
+            // we were not able to determine if we were senders or not.
+            return direction;
+        case .occupant(let nickname, let jid):
+            if let senderJid = jid {
+                return senderJid == conversation.account ? .outgoing : .incoming;
+            }
+            if let room = conversation as? Room {
+                return room.nickname == nickname ? .outgoing : .incoming;
+            }
+            // we were not able to determine if we were senders or not.
+            return direction;
+        default:
             return direction;
         }
-        
-        if let conversation = DBChatStore.instance.conversation(for: account, with: jid) {
-            switch conversation {
-            case let channel as Channel:
-                return channel.participantId == senderNickname ? .outgoing : .incoming;
-            case let room as Room:
-                return room.nickname == senderNickname ? .outgoing : .incoming;
-            default:
-                break;
-            }
-        }
-        return direction;
     }
 
-    static func calculateState(direction: MessageDirection, isError error: Bool, isFromArchive archived: Bool, isMuc: Bool) -> MessageState {
+    static func calculateState(direction: MessageDirection, message: Message, isFromArchive archived: Bool, isMuc: Bool) -> ConversationEntryState {
+        let error = message.type == StanzaType.error;
         let unread = (!archived) || isMuc;
         if direction == .incoming {
             if error {
-                return unread ? .incoming_error_unread : .incoming_error;
+                return unread ? .incoming_error_unread(errorMessage: message.errorText ?? message.errorCondition?.rawValue) : .incoming_error(errorMessage: message.errorText ?? message.errorCondition?.rawValue);
             }
             return unread ? .incoming_unread : .incoming;
         } else {
             if error {
-                return unread ? .outgoing_error_unread : .outgoing_error;
+                return unread ? .outgoing_error_unread(errorMessage: message.errorText ?? message.errorCondition?.rawValue) : .outgoing_error(errorMessage: message.errorText ?? message.errorCondition?.rawValue);
             }
             return .outgoing;
         }
@@ -439,27 +463,34 @@ class MessageEventHandler: XmppServiceEventHandler {
         });
     }
 
-    static func extractRealAuthor(from message: Message, for account: BareJID, with jid: JID) -> (String?, BareJID?, String?, String?) {
+    static func extractRealAuthor(from message: Message, for conversation: ConversationKey) -> ConversationSenderProtocol? {
         if message.type == .groupchat {
             if let mix = message.mix {
-                let authorNickname = mix.nickname;
-                let authorJid = mix.jid;
-                return (authorNickname, authorJid, nil, jid.resource);
+                if let id = message.from?.resource, let nickname = mix.nickname {
+                    return .participant(id: id, nickname: nickname, jid: mix.jid);
+                }
+                // invalid sender? what should we do?
+                return nil;
             } else {
                 // in this case it is most likely MUC groupchat message..
-                return (message.from?.resource, nil, nil, nil);
+                if let nickname = message.from?.resource {
+                    return .occupant(nickname: nickname, jid: nil);
+                }
+                // invalid sender? what should we do?
+                return nil;
             }
         } else {
             // this can be 1-1 message from MUC..
-            if let room = DBChatStore.instance.conversation(for: account, with: jid.withoutResource) as? Room {
-                if room.nickname == message.from?.resource {
-                    return (message.from?.resource, nil, message.to?.resource, nil);
-                } else {
-                    return (message.from?.resource, nil, message.to?.resource, nil);
+            if conversation is Room {
+                // FIXME: add new support for private MUC messages!
+                if let nickname = message.from?.resource {
+                    return .occupant(nickname: nickname, jid: nil);
                 }
+                // invalid sender? what should we do?
+                return nil;
             }
         }
-        return (nil, nil, nil, nil);
+        return conversation.account == message.from?.bareJid ? .me(conversation: conversation) : .buddy(conversation: conversation);
     }
     
     static func itemType(fromMessage message: Message) -> ItemType {

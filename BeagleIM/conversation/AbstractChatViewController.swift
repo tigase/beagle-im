@@ -26,7 +26,7 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
 
     var chat: Conversation! {
         didSet {
-            conversationLogController?.chat = chat;
+            conversationLogController?.conversation = chat;
         }
     }
     var account: BareJID! {
@@ -37,21 +37,18 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
         return chat.jid.bareJid;
     }
 
-    private(set) var dataSource: ChatViewDataSource!;
+    private(set) var dataSource: ConversationDataSource!;
     
     @IBOutlet var messageFieldScroller: NSScrollView!;
     @IBOutlet var messageField: AutoresizingTextView!;
     @IBOutlet var messageFieldScrollerHeight: NSLayoutConstraint!;
     var conversationLogController: ConversationLogController? {
         didSet {
-            self.conversationLogController?.logTableViewDelegate = conversationTableViewDelegate();
-            self.conversationLogController?.chat = self.chat;
+            self.conversationLogController?.conversation = self.chat;
             self.dataSource = self.conversationLogController?.dataSource;
         }
     }
-    
-    var scrollChatToMessageWithId: Int?;
-    
+        
     private(set) var correctedMessageOriginId: String?;
                 
     override func viewDidLoad() {
@@ -62,8 +59,6 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     }
     
     override func viewWillAppear() {
-        self.conversationLogController?.scrollChatToMessageWithId = self.scrollChatToMessageWithId;
-        self.scrollChatToMessageWithId = nil
         super.viewWillAppear();
         self.messageField?.placeholderAttributedString = account != nil ? NSAttributedString(string: "from \(account.stringValue)...", attributes: [.foregroundColor: NSColor.placeholderTextColor, .font: NSFont.systemFont(ofSize: NSFont.systemFontSize)]) : nil;
         
@@ -96,11 +91,6 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
             }
         //}
     }
-    
-    func conversationTableViewDelegate() -> NSTableViewDelegate? {
-        return nil;
-    }
-    
     
     func startMessageCorrection(message: String, originId: String) {
         correctedMessageOriginId = originId;
@@ -157,7 +147,7 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
         }
     }
     
-    func prepareConversationLogContextMenu(dataSource: ChatViewDataSource, menu: NSMenu, forRow row: Int) {
+    func prepareConversationLogContextMenu(dataSource: ConversationDataSource, menu: NSMenu, forRow row: Int) {
         if row != NSNotFound || (self.conversationLogController?.selectionManager.hasSelection ?? false) {
             var reply = menu.addItem(withTitle: "Reply", action: #selector(replySelectedMessages), keyEquivalent: "");
             reply.target = self
@@ -273,55 +263,4 @@ func < (lhs: NSTextField.CharacterRange, rhs: NSTextField.CharacterRange) -> Boo
 
 func == (lhs: NSTextField.CharacterRange, rhs: NSTextField.CharacterRange) -> Bool {
     return lhs.location == rhs.location;
-}
-
-class DeletedMessage: ChatViewItemProtocol {
-    
-    let id: Int;
-    let account: BareJID;
-    let jid: BareJID;
-    
-    let timestamp: Date = Date();
-    let state: MessageState = .outgoing;
-    let encryption: MessageEncryption = .none;
-    let encryptionFingerprint: String? = nil;
-
-    init(id: Int, account: BareJID, jid: BareJID) {
-        self.id = id;
-        self.account = account;
-        self.jid = jid;
-    }
-    
-    func isMergeable(with item: ChatViewItemProtocol) -> Bool {
-        return false;
-    }
-    
-}
-
-class SystemMessage: ChatViewItemProtocol {
-    let id: Int;
-    let account: BareJID;
-    let jid: BareJID;
-    let timestamp: Date;
-    let state: MessageState;
-    let encryption: MessageEncryption = .none;
-    let encryptionFingerprint: String? = nil;
-    let kind: Kind;
-    
-    init(nextItem item: ChatViewItemProtocol, kind: Kind) {
-        id = item.id;
-        timestamp = item.timestamp.addingTimeInterval(-0.001);
-        account = item.account;
-        jid = item.jid;
-        state = .incoming;
-        self.kind = kind;
-    }
-    
-    func isMergeable(with item: ChatViewItemProtocol) -> Bool {
-        return false;
-    }
-
-    enum Kind {
-        case unreadMessages
-    }
 }

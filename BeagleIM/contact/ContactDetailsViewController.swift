@@ -1038,7 +1038,7 @@ open class ConversationAttachmentsViewController: NSViewController, ContactDetai
     
     @IBOutlet var heightConstraint: NSLayoutConstraint!;
     
-    var items: [ChatAttachment] = [];
+    var items: [ConversationAttachment] = [];
         
     open override func viewDidLoad() {
         super.viewDidLoad();
@@ -1046,7 +1046,7 @@ open class ConversationAttachmentsViewController: NSViewController, ContactDetai
     }
     
     @objc func openFile(_ sender: NSMenuItem) {
-        guard let item = sender.representedObject as? ChatAttachment else {
+        guard let item = sender.representedObject as? ConversationAttachment else {
             return;
         }
         guard let localUrl = DownloadStore.instance.url(for: "\(item.id)") else {
@@ -1056,7 +1056,7 @@ open class ConversationAttachmentsViewController: NSViewController, ContactDetai
     }
     
     @objc func saveFile(_ sender: NSMenuItem) {
-        guard let item = sender.representedObject as? ChatAttachment else {
+        guard let item = sender.representedObject as? ConversationAttachment else {
             return;
         }
         guard let localUrl = DownloadStore.instance.url(for: "\(item.id)") else {
@@ -1078,7 +1078,7 @@ open class ConversationAttachmentsViewController: NSViewController, ContactDetai
     }
 
     @objc func deleteFile(_ sender: NSMenuItem) {
-        guard let item = sender.representedObject as? ChatAttachment else {
+        guard let item = sender.representedObject as? ConversationAttachment else {
             return;
         }
         DownloadStore.instance.deleteFile(for: "\(item.id)");
@@ -1088,13 +1088,13 @@ open class ConversationAttachmentsViewController: NSViewController, ContactDetai
             items.remove(at: idx);
             collectionView.deleteItems(at: [IndexPath(item: idx, section: 0)]);
         }
-        DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+        DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
             appendix.state = .removed;
         })
     }
     
     @objc func shareFile(_ sender: NSMenuItem) {
-        guard let item = sender.representedObject as? ChatAttachment else {
+        guard let item = sender.representedObject as? ConversationAttachment else {
             return;
         }
         guard let localUrl = DownloadStore.instance.url(for: "\(item.id)") else {
@@ -1142,7 +1142,7 @@ open class ConversationAttachmentsViewController: NSViewController, ContactDetai
     
     open override func viewWillAppear() {
         // should show progress indicator...
-        DBChatHistoryStore.instance.loadAttachments(for: account!, with: jid!, completionHandler: { attachments in
+        DBChatHistoryStore.instance.loadAttachments(for: ConversationKeyItem(account: account!, jid: JID(jid!)), completionHandler: { attachments in
             DispatchQueue.main.async {
                 self.items = attachments.filter({ (attachment) -> Bool in
                     return DownloadStore.instance.url(for: "\(attachment.id)") != nil;
@@ -1376,7 +1376,7 @@ class ConversationAttachmentView: NSCollectionViewItem {
 //        }
     }
 
-    func set(item: ChatAttachment) {
+    func set(item: ConversationAttachment) {
         self.id = item.id;
         if let fileUrl = DownloadStore.instance.url(for: "\(item.id)") {
             filenameField.stringValue = fileUrl.lastPathComponent;

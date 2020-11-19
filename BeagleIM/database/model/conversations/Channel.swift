@@ -31,6 +31,11 @@ public class Channel: ChannelBase, Conversation, Identifiable, LastMessageTimest
     public var name: String? {
         return options.name;
     }
+    
+    public var displayName: String {
+        return name ?? jid.stringValue;
+    }
+    
     public var description: String? {
         return options.description;
     }
@@ -38,6 +43,10 @@ public class Channel: ChannelBase, Conversation, Identifiable, LastMessageTimest
     
     public var notifications: ConversationNotification {
         return options.notifications;
+    }
+    
+    public var automaticallyFetchPreviews: Bool {
+        return true;
     }
     
     public var channelJid: BareJID {

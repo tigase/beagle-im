@@ -44,6 +44,8 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         
         self.attachmentSender = ChannelAttachmentSender.instance;
         
+        self.conversationLogController?.contextMenuDelegate = self;
+        
         let cgRef = infoButton.image!.cgImage(forProposedRect: nil, context: nil, hints: nil);
         let representation = NSBitmapImageRep(cgImage: cgRef!);
         let newRep = representation.converting(to: .genericGray, renderingIntent: .default);
@@ -78,106 +80,17 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         NotificationCenter.default.removeObserver(self, name: MixEventHandler.PARTICIPANTS_CHANGED, object: nil);
     }
     
-    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        guard let item = dataSource.getItem(at: row) else {
-            return nil;
-        }
-        
-        let prevItem = row >= 0 && (row + 1) < dataSource.count ? dataSource.getItem(at: row + 1) : nil;
-        let continuation = prevItem != nil && item.isMergeable(with: prevItem!);
-
-        switch item {
-        case is SystemMessage:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMessageSystemCellView"), owner: nil) as? ChatMessageSystemCellView {
-                cell.message.attributedString = NSAttributedString(string: "Unread messages", attributes: [.font: NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium), .foregroundColor: NSColor.secondaryLabelColor]);
-                return cell;
-            }
-            return nil;
-        case let item as ChatMessage:
-            if item.message.starts(with: "/me ") {
-                if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMeSystemCellView"), owner: nil) as? ChatMeMessageCellView {
-                    cell.set(item: item, nickname: item.authorNickname);
-                    return cell;
-                }
-                return nil;
-            } else {
-                if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
-
-                    cell.id = item.id;
-                    if cell.hasHeader {
-                        if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
-                            cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-                        } else if let participantId = item.participantId {
-                            cell.set(avatar: AvatarManager.instance.avatar(for: BareJID(localPart: "\(participantId)#\(item.jid.localPart!)", domain: item.jid.domain), on: item.account));
-                        } else {
-                            cell.set(avatar: nil);
-                        }
-                    }
-                    cell.set(senderName: item.authorNickname ?? "Unknown");
-                    cell.set(message: item, nickname: channel.nickname, keywords: keywords);
-
-                    return cell;
-                }
-                return nil;
-            }
-        case let item as ChatLinkPreview:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatLinkPreviewCellView"), owner: nil) as? ChatLinkPreviewCellView {
-                cell.set(item: item, fetchPreviewIfNeeded: true);
-                return cell;
-            }
-            return nil;
-        case let item as ChatAttachment:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatAttachmentContinuationCellView" : "ChatAttachmentCellView"), owner: nil) as? ChatAttachmentCellView {
-                if cell.hasHeader {
-                    if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
-                        cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-                    } else if let participantId = item.participantId {
-                        cell.set(avatar: AvatarManager.instance.avatar(for: BareJID(localPart: "\(participantId)#\(item.jid.localPart!)", domain: item.jid.domain), on: item.account));
-                    } else {
-                        cell.set(avatar: nil);
-                    }
-                }
-                cell.set(senderName: item.authorNickname ?? "Unknown");
-                cell.set(item: item);
-                return cell;
-            }
-            return nil;
-        case let item as ChatInvitation:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatInvitationCellView"), owner: nil) as? ChatInvitationCellView {
-                if cell.hasHeader {
-                    if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account {
-                        cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-                    } else if let participantId = item.participantId {
-                        cell.set(avatar: AvatarManager.instance.avatar(for: BareJID(localPart: "\(participantId)#\(item.jid.localPart!)", domain: item.jid.domain), on: item.account));
-                    } else {
-                        cell.set(avatar: nil);
-                    }
-                }
-                cell.set(senderName: item.authorNickname ?? "Unknown");
-                cell.set(invitation: item);
-                return cell;
-            }
-            return nil;
-        default:
-            return nil;
-        }
-    }
-    
-    override func conversationTableViewDelegate() -> NSTableViewDelegate? {
-        return self;
-    }
-
-    override func prepareConversationLogContextMenu(dataSource: ChatViewDataSource, menu: NSMenu, forRow row: Int) {
+    override func prepareConversationLogContextMenu(dataSource: ConversationDataSource, menu: NSMenu, forRow row: Int) {
         super.prepareConversationLogContextMenu(dataSource: dataSource, menu: menu, forRow: row);
-        if let item = dataSource.getItem(at: row), item.state.direction == .outgoing {
+        if let item = dataSource.getItem(at: row) as? ConversationEntryWithSender, item.state.direction == .outgoing {
             if item.state.isError {
             } else {
-                if item is ChatMessage, !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0 is ChatMessage }, in: 0..<row) {
+                if item is ConversationMessage, !dataSource.isAnyMatching({ ($0 as? ConversationEntryWithSender)?.state.direction == .outgoing && $0 is ConversationMessage }, in: 0..<row) {
                     let correct = menu.addItem(withTitle: "Correct message", action: #selector(correctMessage), keyEquivalent: "");
                     correct.target = self;
                     correct.tag = item.id;
                 }
-                if (self.chat as? Channel)?.state ?? .left == .joined && XmppService.instance.getClient(for: item.account)?.state ?? .disconnected == .connected {
+                if (self.chat as? Channel)?.state ?? .left == .joined && XmppService.instance.getClient(for: item.conversation.account)?.state ?? .disconnected == .connected {
                     let retract = menu.addItem(withTitle: "Retract message", action: #selector(retractMessage), keyEquivalent: "");
                     retract.target = self;
                     retract.tag = item.id;
@@ -206,7 +119,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     
     @IBAction func correctLastMessage(_ sender: AnyObject) {
         for i in 0..<dataSource.count {
-            if let item = dataSource.getItem(at: i) as? ChatMessage, item.state.direction == .outgoing {
+            if let item = dataSource.getItem(at: i) as? ConversationMessage, item.state.direction == .outgoing {
                 DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
                     self?.startMessageCorrection(message: item.message, originId: originId);
                 })
@@ -221,7 +134,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             return
         }
      
-        guard let item = dataSource.getItem(withId: tag) as? ChatMessage else {
+        guard let item = dataSource.getItem(withId: tag) as? ConversationMessage else {
             return;
         }
         
@@ -236,7 +149,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             return
         }
         
-        guard let item = dataSource.getItem(withId: tag) as? ChatEntry, let chat = self.chat as? Channel else {
+        guard let item = dataSource.getItem(withId: tag) as? ConversationEntryWithSender, let chat = self.chat as? Channel else {
             return;
         }
         
@@ -256,7 +169,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
                         return;
                     }
                     client.context.writer.write(message);
-                    DBChatHistoryStore.instance.retractMessage(for: item.account, with: JID(item.jid), stanzaId: originId, authorNickname: item.authorNickname, participantId: item.participantId, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
+                    DBChatHistoryStore.instance.retractMessage(for: chat, stanzaId: originId, sender: item.sender, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
                 })
             default:
                 break;

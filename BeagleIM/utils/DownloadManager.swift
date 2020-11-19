@@ -44,16 +44,16 @@ class DownloadManager {
         }
     }
 
-    func downloadInProgress(for item: ChatAttachment) -> Bool {
+    func downloadInProgress(for item: ConversationAttachment) -> Bool {
         return dispatcher.sync {
             return self.itemDownloadInProgress.contains(item.id);
         }
     }
 
-    func download(item: ChatAttachment, maxSize: Int64) -> Bool {
+    func download(item: ConversationAttachment, maxSize: Int64) -> Bool {
         return dispatcher.sync {
             guard var url = URL(string: item.url) else {
-                DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+                DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                     appendix.state = .error;
                 });
                 return false;
@@ -82,7 +82,7 @@ class DownloadManager {
                 case .success(let suggestedFilename, let expectedSize, let mimeType):
                     let isTooBig = expectedSize > maxSize;
 
-                    DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+                    DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                         appendix.filesize = Int(expectedSize);
                         appendix.mimetype = mimeType;
                         appendix.filename = suggestedFilename;
@@ -113,7 +113,7 @@ class DownloadManager {
                             }
                             //let id = UUID().uuidString;
                             _ = DownloadStore.instance.store(localUrl, filename: filename, with: "\(item.id)");
-                            DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+                            DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                                 appendix.state = .downloaded;
                             });
                             self.dispatcher.sync {
@@ -129,7 +129,7 @@ class DownloadManager {
                             default:
                                 break;
                             }
-                            DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+                            DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                                 appendix.state = statusCode == 404 ? .gone : .error;
                             });
                             self.dispatcher.sync {
@@ -141,7 +141,7 @@ class DownloadManager {
                     });
                     break;
                 case .failure(let statusCode):
-                    DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+                    DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                         appendix.state = statusCode == 404 ? .gone : .error;
                     });
                     self.dispatcher.async {

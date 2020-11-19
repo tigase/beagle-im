@@ -48,6 +48,7 @@ extension Query {
     static let messagesMarkAsReadBefore = Query("UPDATE chat_history SET state = case state when \(MessageState.incoming_error_unread.rawValue) then \(MessageState.incoming_error.rawValue) when \(MessageState.outgoing_error_unread.rawValue) then \(MessageState.outgoing_error.rawValue) else \(MessageState.incoming.rawValue) end WHERE account = :account AND jid = :jid AND timestamp <= :before AND state in (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))");
     static let messageUpdateState = Query("UPDATE chat_history SET state = :newState, timestamp = COALESCE(:newTimestamp, timestamp), error = COALESCE(:error, error) WHERE id = :id AND (:oldState IS NULL OR state = :oldState)");
     static let messageUpdate = Query("UPDATE chat_history SET appendix = :appendix WHERE id = :id");
+    static let messagesCountUnread = Query("select count(id) from chat_history where account = :account and jid = :jid and timestamp >= (select min(timestamp) from chat_history where account = :account and jid = :jid and state in (\(MessageState.incoming_unread.rawValue),\(MessageState.incoming_error_unread.rawValue),\(MessageState.outgoing_error_unread.rawValue)))");
 }
 
 class DBChatHistoryStore {
@@ -76,72 +77,73 @@ class DBChatHistoryStore {
                 try database.update("UPDATE chat_history SET preview = NULL WHERE id = ?", params: [id]);
             })
         };
-
-        for id in previewsToConvert {
-            guard let (item, previews, stanzaId) = try! Database.main.reader({ database in
-                return try database.select("SELECT id, account, jid, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, preview, stanza_id, correction_timestamp FROM chat_history WHERE id = ?", cached: true, params: [id]).mapFirst({ cursor -> (ChatMessage, [String:String], String?)? in
-                    let account: BareJID = cursor["account"]!;
-                    let jid: BareJID = cursor["jid"]!;
-                    let stanzaId: String? = cursor["stanza_id"];
-                    guard let item = DBChatHistoryStore.instance.itemFrom(cursor: cursor, for: account, with: jid) as? ChatMessage, let previewStr: String = cursor["preview"] else {
-                        return nil;
-                    }
-                    var previews: [String:String] = [:];
-                    previewStr.split(separator: "\n").forEach { (line) in
-                        let tmp = line.split(separator: "\t").map({String($0)});
-                        if (!tmp[1].starts(with: "ERROR")) && (tmp[1] != "NONE") {
-                            previews[tmp[0]] = tmp[1];
-                        }
-                    }
-                    return (item, previews, stanzaId);
-                });
-            }) else {
-                return;
-            }
-
-            if previews.isEmpty {
-                removePreview(item.id);
-            } else {
-                print("converting for:", item.account, "with:", item.jid, "previews:", previews);
-                if previews.count == 1 {
-                    let isAttachmentOnly = URL(string: item.message) != nil;
-
-                    if isAttachmentOnly {
-                        let appendix = ChatAttachmentAppendix();
-                        DBChatHistoryStore.instance.appendItem(for: item.account, with: JID(item.jid), state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, recipientNickname: nil, participantId: nil, type: .attachment, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: item.message, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, appendix: appendix, linkPreviewAction: .none, masterId: nil, completionHandler: { newId in
-                                DBChatHistoryStore.instance.remove(item: item);
-                        });
-                    } else {
-                        if #available(macOS 10.15, *) {
-                            DBChatHistoryStore.instance.appendItem(for: item.account, with: JID(item.jid), state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, recipientNickname: nil, participantId: nil, type: .linkPreview, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: previews.keys.first ?? item.message, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, linkPreviewAction: .none, masterId: nil, completionHandler: { newId in
-                                removePreview(item.id);
-                            });
-                        } else {
-                            removePreview(item.id);
-                        }
-                    }
-                } else {
-                    if #available(macOS 10.15, *) {
-                        let group = DispatchGroup();
-                        group.enter();
-
-                        group.notify(queue: DispatchQueue.main, execute: {
-                            removePreview(item.id);
-                        })
-
-                        for (url, _) in previews {
-                            group.enter();
-                            DBChatHistoryStore.instance.appendItem(for: item.account, with: JID(item.jid), state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, recipientNickname: nil, participantId: nil, type: .linkPreview, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: url, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, linkPreviewAction: .none, masterId: nil, completionHandler: { newId in
-                                    group.leave();
-                            });
-                        }
-                        group.leave();
-                    } else {
-                        removePreview(item.id);
-                    }
-                }
-            }
-        }
+        // FIXME: !!!
+//
+//        for id in previewsToConvert {
+//            guard let (item, previews, stanzaId) = try! Database.main.reader({ database in
+//                return try database.select("SELECT id, account, jid, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, preview, stanza_id, correction_timestamp FROM chat_history WHERE id = ?", cached: true, params: [id]).mapFirst({ cursor -> (ConversationMessage, [String:String], String?)? in
+//                    let account: BareJID = cursor["account"]!;
+//                    let jid: BareJID = cursor["jid"]!;
+//                    let stanzaId: String? = cursor["stanza_id"];
+//                    guard let item = DBChatHistoryStore.instance.itemFrom(cursor: cursor, for: account, with: jid) as? ConversationMessage, let previewStr: String = cursor["preview"] else {
+//                        return nil;
+//                    }
+//                    var previews: [String:String] = [:];
+//                    previewStr.split(separator: "\n").forEach { (line) in
+//                        let tmp = line.split(separator: "\t").map({String($0)});
+//                        if (!tmp[1].starts(with: "ERROR")) && (tmp[1] != "NONE") {
+//                            previews[tmp[0]] = tmp[1];
+//                        }
+//                    }
+//                    return (item, previews, stanzaId);
+//                });
+//            }) else {
+//                return;
+//            }
+//
+//            if previews.isEmpty {
+//                removePreview(item.id);
+//            } else {
+//                print("converting for:", item.account, "with:", item.jid, "previews:", previews);
+//                if previews.count == 1 {
+//                    let isAttachmentOnly = URL(string: item.message) != nil;
+//
+//                    if isAttachmentOnly {
+//                        let appendix = ChatAttachmentAppendix();
+//                        DBChatHistoryStore.instance.appendItem(for: item.account, with: JID(item.jid), state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, recipientNickname: nil, participantId: nil, type: .attachment, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: item.message, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, appendix: appendix, linkPreviewAction: .none, masterId: nil, completionHandler: { newId in
+//                                DBChatHistoryStore.instance.remove(item: item);
+//                        });
+//                    } else {
+//                        if #available(macOS 10.15, *) {
+//                            DBChatHistoryStore.instance.appendItem(for: item.account, with: JID(item.jid), state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, recipientNickname: nil, participantId: nil, type: .linkPreview, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: previews.keys.first ?? item.message, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, linkPreviewAction: .none, masterId: nil, completionHandler: { newId in
+//                                removePreview(item.id);
+//                            });
+//                        } else {
+//                            removePreview(item.id);
+//                        }
+//                    }
+//                } else {
+//                    if #available(macOS 10.15, *) {
+//                        let group = DispatchGroup();
+//                        group.enter();
+//
+//                        group.notify(queue: DispatchQueue.main, execute: {
+//                            removePreview(item.id);
+//                        })
+//
+//                        for (url, _) in previews {
+//                            group.enter();
+//                            DBChatHistoryStore.instance.appendItem(for: item.account, with: JID(item.jid), state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, recipientNickname: nil, participantId: nil, type: .linkPreview, timestamp: item.timestamp, stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: url, encryption: item.encryption, encryptionFingerprint: item.encryptionFingerprint, linkPreviewAction: .none, masterId: nil, completionHandler: { newId in
+//                                    group.leave();
+//                            });
+//                        }
+//                        group.leave();
+//                    } else {
+//                        removePreview(item.id);
+//                    }
+//                }
+//            }
+//        }
 
         try? FileManager.default.removeItem(at: diskCacheUrl);
     }
@@ -151,6 +153,10 @@ class DBChatHistoryStore {
         dispatcher = QueueDispatcher(label: "chat_history_store");
     }
 
+    open func process(chatState: ChatState, for conversation: ConversationKey) {
+        self.process(chatState: chatState, for: conversation.account, with: conversation.jid);
+    }
+    
     open func process(chatState: ChatState, for account: BareJID, with jid: JID) {
         dispatcher.async {
             DBChatStore.instance.process(chatState: chatState, for: account, with: jid.bareJid);
@@ -165,8 +171,8 @@ class DBChatHistoryStore {
     private var enqueuedItems = 0;
 
 
-    open func append(for account: BareJID, message: Message, source: MessageSource) {
-        let direction: MessageDirection = account == message.from?.bareJid ? .outgoing : .incoming;
+    open func append(for conversation: ConversationKey, message: Message, source: MessageSource) {
+        let direction: MessageDirection = conversation.account == message.from?.bareJid ? .outgoing : .incoming;
         guard let jidFull = direction == .outgoing ? message.to : message.from else {
             // sender jid should always be there..
             return;
@@ -174,7 +180,7 @@ class DBChatHistoryStore {
 
         let jid = jidFull.withoutResource;
 
-        let (decryptedBody, encryption, fingerprint) = MessageEventHandler.prepareBody(message: message, forAccount: account);
+        let (decryptedBody, encryption, fingerprint) = MessageEventHandler.prepareBody(message: message, forAccount: conversation.account);
         let mixInvitation = message.mixInvitation;
 
         var itemType = MessageEventHandler.itemType(fromMessage: message);
@@ -204,12 +210,14 @@ class DBChatHistoryStore {
             break;
         }
 
-        let serverMsgId: String? = stableIds?[account];
+        let serverMsgId: String? = stableIds?[conversation.account];
         let remoteMsgId: String? = stableIds?[jid.bareJid];
 
-        let (authorNickname, authorJid, recipientNickname, participantId) = MessageEventHandler.extractRealAuthor(from: message, for: account, with: jidFull);
+        guard let sender = MessageEventHandler.extractRealAuthor(from: message, for: conversation) else {
+            return;
+        }
 
-        let state = MessageEventHandler.calculateState(direction: MessageEventHandler.calculateDirection(direction: direction, for: account, with: jid.bareJid, authorNickname: authorNickname, authorJid: authorJid), isError: (message.type ?? .chat) == .error, isFromArchive: fromArchive, isMuc: message.type == .groupchat && message.mix == nil);
+        let state = MessageEventHandler.calculateState(direction: MessageEventHandler.calculateDirection(for: conversation, direction: direction, sender: sender), message: message, isFromArchive: fromArchive, isMuc: message.type == .groupchat && message.mix == nil);
 
         var appendix: AppendixProtocol? = nil;
         if itemType == .message, let mixInivation = mixInvitation {
@@ -222,7 +230,7 @@ class DBChatHistoryStore {
         guard let body = decryptedBody ?? (mixInvitation != nil ? "Invitation" : nil) else {
             if let retractedId = message.messageRetractionId, let originId = stanzaId {
                 dispatcher.async {
-                    self.retractMessageSync(for: account, with: jid, stanzaId: retractedId, authorNickname: authorNickname, participantId: participantId, retractionStanzaId: originId, retractionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
+                    self.retractMessageSync(for: conversation, stanzaId: retractedId, sender: sender, retractionStanzaId: originId, retractionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
                 }
                 return;
             }
@@ -231,12 +239,12 @@ class DBChatHistoryStore {
             case .carbons(let action):
                 if action == .received {
                     if (message.type ?? .normal) != .error, let chatState = message.chatState, message.delay == nil {
-                        DBChatHistoryStore.instance.process(chatState: chatState, for: account, with: jid);
+                        DBChatHistoryStore.instance.process(chatState: chatState, for: conversation);
                     }
                 }
             default:
                 if (message.type ?? .normal) != .error, let chatState = message.chatState, message.delay == nil {
-                    DBChatHistoryStore.instance.process(chatState: chatState, for: account, with: jid);
+                    DBChatHistoryStore.instance.process(chatState: chatState, for: conversation);
                 }
                 break;
             }
@@ -244,26 +252,26 @@ class DBChatHistoryStore {
         }
 
         dispatcher.async {
-            guard !state.isError || stanzaId == nil || !self.processOutgoingError(for: account, with: jid, stanzaId: stanzaId!, errorCondition: message.errorCondition, errorMessage: message.errorText) else {
+            guard !state.isError || stanzaId == nil || !self.processOutgoingError(for: conversation, stanzaId: stanzaId!, errorCondition: message.errorCondition, errorMessage: message.errorText) else {
                 return;
             }
 
             if let retractedId = message.messageRetractionId, let originId = stanzaId {
-                self.retractMessageSync(for: account, with: jid, stanzaId: retractedId, authorNickname: authorNickname, participantId: participantId, retractionStanzaId: originId, retractionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
+                self.retractMessageSync(for: conversation, stanzaId: retractedId, sender: sender, retractionStanzaId: originId, retractionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
                 return;
             }
-            if let originId = stanzaId, let correctedMessageId = message.lastMessageCorrectionId, self.correctMessageSync(for: account, with: jid, stanzaId: correctedMessageId, authorNickname: authorNickname, participantId: participantId, data: body, correctionStanzaId: originId, correctionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, newState: state) {
+            if let originId = stanzaId, let correctedMessageId = message.lastMessageCorrectionId, self.correctMessageSync(for: conversation, stanzaId: correctedMessageId, sender: sender, data: body, correctionStanzaId: originId, correctionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, newState: state) {
                 if let chatState = message.chatState {
-                    DBChatStore.instance.process(chatState: chatState, for: account, with: jid.bareJid);
+                    DBChatStore.instance.process(chatState: chatState, for: conversation.account, with: conversation.jid.bareJid);
                 }
                 return;
             }
 
-            if let stableId = serverMsgId, let existingMessageId = self.findItemId(for: account, serverMsgId: stableId) {
+            if let stableId = serverMsgId, let existingMessageId = self.findItemId(for: conversation.account, serverMsgId: stableId) {
                 return;
             }
 
-            if let originId = stanzaId, let existingMessageId = self.findItemId(for: account, with: jid, originId: originId, authorNickname: authorNickname, participantId: participantId) {
+            if let originId = stanzaId, let existingMessageId = self.findItemId(for: conversation, originId: originId, sender: sender) {
                 if let stableId = serverMsgId {
                     try! Database.main.writer({ database in
                         try database.update(query: .messageUpdateServerMsgId, params: ["id": existingMessageId, "server_msg_id": stableId]);
@@ -272,7 +280,7 @@ class DBChatHistoryStore {
                 return;
             }
 
-            self.appendItemSync(for: account, with: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, type: itemType, timestamp: timestamp, stanzaId: stanzaId, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, data: body, chatState: message.chatState, errorCondition: message.errorCondition, errorMessage: message.errorText, encryption: encryption, encryptionFingerprint: fingerprint, appendix: appendix, linkPreviewAction: .auto, masterId: nil, completionHandler: nil);
+            self.appendItemSync(for: conversation, state: state, sender: sender, type: itemType, timestamp: timestamp, stanzaId: stanzaId, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, data: body, chatState: message.chatState, encryption: .from(messageEncryption: encryption, fingerprint: fingerprint), appendix: appendix, linkPreviewAction: .auto, masterId: nil, completionHandler: nil);
         }
     }
 
@@ -288,9 +296,20 @@ class DBChatHistoryStore {
         })
     }
 
-    private func findItemId(for account: BareJID, with jid: JID, originId: String, authorNickname: String?, participantId: String?) -> Int? {
+    private func findItemId(for conversation: ConversationKey, originId: String, sender: ConversationSenderProtocol?) -> Int? {
+        var params: [String: Any?] = ["stanza_id": originId, "account": conversation.account, "jid": conversation.jid, "author_nickname": nil, "participant_id": nil];
+        if let sender = sender {
+            switch sender {
+            case .buddy(_):
+                break;
+            case .occupant(let nickname, _):
+                params["author_nickname"] = nickname;
+            case .participant(let id, _, _):
+                params["participant_id"] = id;
+            }
+        }
         return try! Database.main.reader({ database -> Int? in
-            return try database.select(query: .messageFindIdByOriginId, params: ["stanza_id": originId, "account": account, "jid": jid, "author_nickname": authorNickname, "participant_id": participantId]).mapFirst({ $0.int(for: "id") });
+            return try database.select(query: .messageFindIdByOriginId, params: params).mapFirst({ $0.int(for: "id") });
         })
     }
 
@@ -306,50 +325,62 @@ class DBChatHistoryStore {
 //        })
 //    }
 
-    private func appendItemSync(for account: BareJID, with jid: JID, state: MessageState, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, type: ItemType, timestamp: Date, stanzaId: String?, serverMsgId: String?, remoteMsgId: String?, data: String, chatState: ChatState?, errorCondition: ErrorCondition?, errorMessage: String? , encryption: MessageEncryption, encryptionFingerprint: String?, appendix: AppendixProtocol?, linkPreviewAction: LinkPreviewAction, masterId: Int? = nil, completionHandler: ((Int) -> Void)?) {
-        var item: ChatViewItemProtocol?;
+    private func appendItemSync(for conversation: ConversationKey, state: ConversationEntryState, sender: ConversationSenderProtocol, type: ItemType, timestamp: Date, stanzaId: String?, serverMsgId: String?, remoteMsgId: String?, data: String, chatState: ChatState?, encryption: ConversationEntryEncryption, appendix: AppendixProtocol?, linkPreviewAction: LinkPreviewAction, masterId: Int? = nil, completionHandler: ((Int) -> Void)?) {
+        var item: ConversationEntry?;
         if linkPreviewAction != .only {
-            let params: [String:Any?] = ["account": account, "jid": jid, "timestamp": timestamp, "data": data, "item_type": type.rawValue, "state": state.rawValue, "stanza_id": stanzaId, "author_nickname": authorNickname, "author_jid": authorJid, "recipient_nickname": recipientNickname, "participant_id": participantId, "encryption": encryption.rawValue, "fingerprint": encryptionFingerprint, "error": state.isError ? (errorMessage ?? errorCondition?.rawValue ?? "Unknown error") : nil, "appendix": appendix, "server_msg_id": serverMsgId, "remote_msg_id": remoteMsgId, "master_id": masterId];
+            var params: [String:Any?] = ["account": conversation.account, "jid": conversation.jid, "timestamp": timestamp, "data": data, "item_type": type.rawValue, "state": state.code, "stanza_id": stanzaId, "author_nickname": nil, "author_jid": nil, "recipient_nickname": nil, "participant_id": nil, "encryption": encryption.value.rawValue, "fingerprint": encryption.fingerprint, "error": state.errorMessage, "appendix": appendix, "server_msg_id": serverMsgId, "remote_msg_id": remoteMsgId, "master_id": masterId];
 
-            guard let msgId = try! Database.main.writer({ database -> Int? in
+            switch sender {
+            case .buddy(_):
+                break;
+            case .occupant(let nickname, let jid):
+                params["author_nickname"] = nickname;
+                params["author_jid"] = jid;
+            case .participant(let id, let nickname, let jid):
+                params["participant_id"] = id;
+                params["author_nickname"] = nickname;
+                params["author_jid"] = jid;
+            }
+            
+            guard let id = try! Database.main.writer({ database -> Int? in
                 try database.insert(query: .messageInsert, params: params);
                 return database.lastInsertedRowId;
             }) else {
                 return;
             }
-            completionHandler?(msgId);
+            completionHandler?(id);
 
             switch type {
             case .message:
-                item = ChatMessage(id: msgId, timestamp: timestamp, account: account, jid: jid.bareJid, state: state, message: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage, correctionTimestamp: nil);
+                item = ConversationMessage(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, encryption: encryption, message: data, correctionTimestamp: nil);
             case .invitation:
-                item = ChatInvitation(id: msgId, timestamp: timestamp, account: account, jid: jid.bareJid, state: state, message: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: appendix as! ChatInvitationAppendix, error: errorMessage);
+                item = ConversationInvitation(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, encryption: encryption, message: data, appendix: appendix as! ChatInvitationAppendix);
             case .attachment:
-                item = ChatAttachment(id: msgId, timestamp: timestamp, account: account, jid: jid.bareJid, state: state, url: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: (appendix as? ChatAttachmentAppendix) ?? ChatAttachmentAppendix(), error: errorMessage);
+                item = ConversationAttachment(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, encryption: encryption, url: data, appendix: (appendix as? ChatAttachmentAppendix) ?? ChatAttachmentAppendix());
             case .linkPreview:
                 if #available(macOS 10.15, *), Settings.linkPreviews.bool() {
-                    item = ChatLinkPreview(id: msgId, timestamp: timestamp, account: account, jid: jid.bareJid, state: state, url: data, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: errorMessage);
+                    item = ConversationLinkPreview(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, encryption: encryption, url: data);
                 }
             case .messageRetracted, .attachmentRetracted:
                 // nothing to do, as we do not want notifications for that (at least for now and no item of that type would be created in here!
                 break;
             }
             if item != nil {
-                DBChatStore.instance.newMessage(for: account, with: jid, timestamp: timestamp, itemType: type, message: encryption.message() ?? data, state: state, remoteChatState: state.direction == .incoming ? chatState : nil, senderNickname: authorNickname) {
+                DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: timestamp, itemType: type, message: encryption.message() ?? data, state: state, remoteChatState: state.direction == .incoming ? chatState : nil, senderNickname: sender.isGroupchat ? sender.nickname : nil) {
                     NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: item);
                 }
             }
         }
         if linkPreviewAction != .none && type == .message, let id = item?.id {
-            self.generatePreviews(forItem: id, account: account, jid: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, timestamp: timestamp, data: data);
+            self.generatePreviews(forItem: id, conversation: conversation, state: state, sender: sender, timestamp: timestamp, data: data);
         }
     }
 
-    open func appendItem(for account: BareJID, with jid: JID, state: MessageState, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, type: ItemType, timestamp inTimestamp: Date, stanzaId: String?, serverMsgId: String?, remoteMsgId: String?, data: String, chatState: ChatState? = nil, errorCondition: ErrorCondition? = nil, errorMessage: String? = nil, encryption: MessageEncryption, encryptionFingerprint: String?, appendix: AppendixProtocol? = nil, linkPreviewAction: LinkPreviewAction, masterId: Int? = nil, completionHandler: ((Int) -> Void)?) {
+    open func appendItem(for conversation: ConversationKey, state: ConversationEntryState, sender: ConversationSenderProtocol, type: ItemType, timestamp inTimestamp: Date, stanzaId: String?, serverMsgId: String?, remoteMsgId: String?, data: String, chatState: ChatState? = nil, encryption: ConversationEntryEncryption, appendix: AppendixProtocol? = nil, linkPreviewAction: LinkPreviewAction, masterId: Int? = nil, completionHandler: ((Int) -> Void)?) {
 
         let timestamp = Date(timeIntervalSince1970: Double(Int64(inTimestamp.timeIntervalSince1970 * 1000)) / 1000);
         dispatcher.async {
-            self.appendItemSync(for: account, with: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, type: type, timestamp: timestamp, stanzaId: stanzaId, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, data: data, chatState: chatState, errorCondition: errorCondition, errorMessage: errorMessage, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: appendix, linkPreviewAction: linkPreviewAction, masterId: masterId, completionHandler: completionHandler);
+            self.appendItemSync(for: conversation, state: state, sender: sender, type: type, timestamp: timestamp, stanzaId: stanzaId, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, data: data, chatState: chatState, encryption: encryption, appendix: appendix, linkPreviewAction: linkPreviewAction, masterId: masterId, completionHandler: completionHandler);
         }
     }
 
@@ -361,40 +392,39 @@ class DBChatHistoryStore {
         }
     }
 
-    open func correctMessage(for account: BareJID, with jid: JID, stanzaId: String, authorNickname: String?, participantId: String?, data: String, correctionStanzaId: String?, correctionTimestamp: Date, newState: MessageState) {
+    open func correctMessage(for conversation: ConversationKey, stanzaId: String, sender: ConversationSenderProtocol?, data: String, correctionStanzaId: String?, correctionTimestamp: Date, newState: ConversationEntryState) {
         let timestamp = Date(timeIntervalSince1970: Double(Int64((correctionTimestamp).timeIntervalSince1970 * 1000)) / 1000);
         dispatcher.async {
-            _ = self.correctMessageSync(for: account, with: jid, stanzaId: stanzaId,  authorNickname: authorNickname, participantId: participantId, data: data, correctionStanzaId: correctionStanzaId, correctionTimestamp: timestamp, serverMsgId: nil, remoteMsgId: nil, newState: newState);
+            _ = self.correctMessageSync(for: conversation, stanzaId: stanzaId, sender: sender, data: data, correctionStanzaId: correctionStanzaId, correctionTimestamp: timestamp, serverMsgId: nil, remoteMsgId: nil, newState: newState);
         }
     }
 
     // TODO: Is it not "the same" as message retraction? Maybe we should unify?
-    private func correctMessageSync(for account: BareJID, with jid: JID, stanzaId: String, authorNickname: String?, participantId: String?, data: String, correctionStanzaId: String?, correctionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?, newState: MessageState) -> Bool {
+    private func correctMessageSync(for conversation: ConversationKey, stanzaId: String, sender: ConversationSenderProtocol?, data: String, correctionStanzaId: String?, correctionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?, newState: ConversationEntryState) -> Bool {
         // we need to check participant-id/sender nickname to make it work correctly
         // moreover, stanza-id should be checked with origin-id for MUC/MIX (not message id)
         // MIX/MUC should send origin-id if they assume to use last message correction!
-        if let oldItem = self.findItem(for: account, with: jid, originId: stanzaId, authorNickname: authorNickname, participantId: participantId) {
+        if let oldItem = self.findItem(for: conversation, originId: stanzaId, sender: sender) {
             let itemId = oldItem.id;
-            let params: [String: Any?] = ["id": itemId, "data": data, "state": newState.rawValue, "correction_stanza_id": correctionStanzaId, "remote_msg_id": remoteMsgId, "server_msg_id": serverMsgId, "correction_timestamp": correctionTimestamp];
+            let params: [String: Any?] = ["id": itemId, "data": data, "state": newState.code, "correction_stanza_id": correctionStanzaId, "remote_msg_id": remoteMsgId, "server_msg_id": serverMsgId, "correction_timestamp": correctionTimestamp];
             let updated = try! Database.main.writer({ database -> Int in
                 try! database.update(query: .messageCorrectLast, params: params);
                 return database.changes;
             })
             if updated > 0 {
-                let newMessageState: MessageState = (oldItem.state.direction == .incoming) ? (oldItem.state.isUnread ? .incoming : (newState.isUnread ? .incoming_unread : .incoming)) : (.outgoing);
-                DBChatStore.instance.newMessage(for: account, with: jid, timestamp: oldItem.timestamp, itemType: .message, message: data, state: newMessageState, completionHandler: {
-                    print("chat store state updated with message state:", newMessageState.rawValue, "old state:", oldItem.state.rawValue, "new state:", newState.rawValue);
+                let newMessageState: ConversationEntryState = (oldItem.state.direction == .incoming) ? (oldItem.state.isUnread ? .incoming : (newState.isUnread ? .incoming_unread : .incoming)) : (.outgoing);
+                DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: oldItem.timestamp, itemType: .message, message: data, state: newMessageState, completionHandler: {
                 })
 
                 print("correcing previews for master id:", itemId);
-                self.itemUpdated(withId: itemId, for: account, with: jid);
+                self.itemUpdated(withId: itemId, for: conversation);
                 self.previewGenerationDispatcher.async(flags: .barrier, execute: {
                     self.dispatcher.sync {
                         print("removing previews for master id:", itemId);
                         self.removePreviews(idOfRelatedToItem: itemId);
 
                         if newState != .outgoing_unsent {
-                            self.generatePreviews(forItem: itemId, account: account, jid: jid, state: newState);
+                            self.generatePreviews(forItem: itemId, conversation: conversation, state: newState);
                         }
                     }
                 })
@@ -405,17 +435,17 @@ class DBChatHistoryStore {
         }
     }
 
-    public func retractMessage(for account: BareJID, with jid: JID, stanzaId: String, authorNickname: String?, participantId: String?, retractionStanzaId: String?, retractionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?) {
+    public func retractMessage(for conversation: Conversation, stanzaId: String, sender: ConversationSenderProtocol, retractionStanzaId: String?, retractionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?) {
         dispatcher.async {
-            _ = self.retractMessageSync(for: account, with: jid, stanzaId: stanzaId, authorNickname: authorNickname, participantId: participantId, retractionStanzaId: retractionStanzaId, retractionTimestamp: retractionTimestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
+            _ = self.retractMessageSync(for: conversation, stanzaId: stanzaId, sender: sender, retractionStanzaId: retractionStanzaId, retractionTimestamp: retractionTimestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
         }
     }
 
-    private func retractMessageSync(for account: BareJID, with jid: JID, stanzaId: String, authorNickname: String?, participantId: String?, retractionStanzaId: String?, retractionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?) -> Bool {
-        if let oldItem = self.findItem(for: account, with: jid, originId: stanzaId, authorNickname: authorNickname, participantId: participantId) {
+    private func retractMessageSync(for conversation: ConversationKey, stanzaId: String, sender: ConversationSenderProtocol, retractionStanzaId: String?, retractionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?) -> Bool {
+        if let oldItem = self.findItem(for: conversation, originId: stanzaId, sender: sender) {
             let itemId = oldItem.id;
             var itemType: ItemType = .messageRetracted;
-            if oldItem is ChatAttachment {
+            if oldItem is ConversationAttachment {
                 itemType = .attachmentRetracted;
             }
             let params: [String: Any?] = ["id": itemId, "item_type": itemType.rawValue, "correction_stanza_id": retractionStanzaId, "remote_msg_id": remoteMsgId, "server_msg_id": serverMsgId, "correction_timestamp": retractionTimestamp];
@@ -425,15 +455,15 @@ class DBChatHistoryStore {
             })
             if updated > 0 {
                 // what should be sent to "newMessage" how to reatract message from there??
-                let activity: LastChatActivity = DBChatStore.instance.getLastActivity(for: account, jid: jid) ?? .message("", direction: .incoming, sender: nil);
-                DBChatStore.instance.newMessage(for: account, with: jid, timestamp: oldItem.timestamp, lastActivity: activity, state: oldItem.state.direction == .incoming ? .incoming : .outgoing, completionHandler: {
+                let activity: LastChatActivity = DBChatStore.instance.getLastActivity(for: conversation.account, jid: conversation.jid) ?? .message("", direction: .incoming, sender: nil);
+                DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: oldItem.timestamp, lastActivity: activity, state: oldItem.state.direction == .incoming ? .incoming : .outgoing, completionHandler: {
                     print("chat store state updated with message retraction");
                 })
                 if oldItem.state.isUnread {
-                    DBChatStore.instance.markAsRead(for: account, with: jid, count: 1);
+                    DBChatStore.instance.markAsRead(for: conversation.account, with: conversation.jid, count: 1);
                 }
 
-                self.itemUpdated(withId: itemId, for: account, with: jid);
+                self.itemUpdated(withId: itemId, for: conversation);
 //                   self.itemRemoved(withId: itemId, for: account, with: jid);
                 self.previewGenerationDispatcher.async(flags: .barrier, execute: {
                     self.dispatcher.sync {
@@ -448,35 +478,35 @@ class DBChatHistoryStore {
         }
     }
 
-    private func findItem(for account: BareJID, with jid: JID, originId: String, authorNickname: String?, participantId: String?) -> ChatViewItemProtocol? {
-        guard let itemId = findItemId(for: account, with: jid, originId: originId, authorNickname: authorNickname, participantId: participantId) else {
+    private func findItem(for conversation: ConversationKey, originId: String, sender: ConversationSenderProtocol?) -> ConversationEntryWithSender? {
+        guard let itemId = findItemId(for: conversation, originId: originId, sender: sender) else {
             return nil;
         }
-        return message(withId: itemId);
+        return message(for: conversation, withId: itemId);
     }
 
-    private func message(withId msgId: Int) -> ChatViewItemProtocol? {
-        return try! Database.main.writer({ database -> ChatViewItemProtocol? in
-            return try database.select(query: .messageFind, params: ["id": msgId]).mapFirst({ cursor -> ChatViewItemProtocol? in
-                return self.itemFrom(cursor: cursor);
+    private func message(for conversation: ConversationKey, withId msgId: Int) -> ConversationEntryWithSender? {
+        return try! Database.main.writer({ database -> ConversationEntryWithSender? in
+            return try database.select(query: .messageFind, params: ["id": msgId]).mapFirst({ cursor -> ConversationEntryWithSender? in
+                return self.itemFrom(cursor: cursor, for: conversation) as? ConversationEntryWithSender;
             });
         });
     }
 
-    private func generatePreviews(forItem masterId: Int, account: BareJID, jid: JID, state: MessageState) {
+    private func generatePreviews(forItem masterId: Int, conversation: ConversationKey, state: ConversationEntryState) {
         if #available(macOS 10.15, *) {
-            guard let item = self.message(withId: masterId) as? ChatMessage else {
+            guard let item = self.message(for: conversation, withId: masterId) as? ConversationMessage else {
                 return;
             }
 
-            self.generatePreviews(forItem: item.id, account: item.account, jid: JID(item.jid), state: item.state, authorNickname: item.authorNickname, authorJid: item.authorJid, recipientNickname: item.recipientNickname, participantId: item.participantId, timestamp: item.timestamp, data: item.message);
+            self.generatePreviews(forItem: item.id, conversation: conversation, state: item.state, sender: item.sender, timestamp: item.timestamp, data: item.message);
         }
     }
 
     private var previewsInProgress: [Int: UUID] = [:];
     private let previewGenerationDispatcher = QueueDispatcher(label: "chat_history_store", attributes: [.concurrent]);
 
-    private func generatePreviews(forItem masterId: Int, account: BareJID, jid: JID, state messageState: MessageState, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, timestamp: Date, data: String) {
+    private func generatePreviews(forItem masterId: Int, conversation: ConversationKey, state messageState: ConversationEntryState, sender: ConversationSenderProtocol, timestamp: Date, data: String) {
         if #available(macOS 10.15, *) {
             let state = messageState == .incoming_unread ? .incoming : messageState;
             let uuid = UUID();
@@ -500,13 +530,13 @@ class DBChatHistoryStore {
             matches.forEach { match in
                 if let url = match.url, let scheme = url.scheme, ["https", "http"].contains(scheme) {
                     if (data as NSString).range(of: "http", options: .caseInsensitive, range: match.range).location == match.range.location {
-                        DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, type: .linkPreview, timestamp: timestamp, stanzaId: nil, serverMsgId: nil, remoteMsgId: nil, data: url.absoluteString, encryption: .none, encryptionFingerprint: nil, linkPreviewAction: .none, masterId: masterId, completionHandler: nil);
+                        DBChatHistoryStore.instance.appendItem(for: conversation, state: state, sender: sender, type: .linkPreview, timestamp: timestamp, stanzaId: nil, serverMsgId: nil, remoteMsgId: nil, data: url.absoluteString, encryption: .none, linkPreviewAction: .none, masterId: masterId, completionHandler: nil);
                     }
                 }
                 if let address = match.components {
                     let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
                     let mapUrl = URL(string: "http://maps.apple.com/?q=\(query!)")!;
-                    DBChatHistoryStore.instance.appendItem(for: account, with: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, type: .linkPreview, timestamp: timestamp, stanzaId: nil, serverMsgId: nil, remoteMsgId: nil, data: mapUrl.absoluteString, encryption: .none, encryptionFingerprint: nil, linkPreviewAction: .none, masterId: masterId, completionHandler: nil);
+                    DBChatHistoryStore.instance.appendItem(for: conversation, state: state, sender: sender, type: .linkPreview, timestamp: timestamp, stanzaId: nil, serverMsgId: nil, remoteMsgId: nil, data: mapUrl.absoluteString, encryption: .none, linkPreviewAction: .none, masterId: masterId, completionHandler: nil);
                 }
             }
         }
@@ -514,8 +544,8 @@ class DBChatHistoryStore {
         }
     }
 
-    fileprivate func processOutgoingError(for account: BareJID, with jid: JID, stanzaId: String, errorCondition: ErrorCondition?, errorMessage: String?) -> Bool {
-        guard let itemId = getItemId(for: account, with: jid, stanzaId: stanzaId) else {
+    fileprivate func processOutgoingError(for conversation: ConversationKey, stanzaId: String, errorCondition: ErrorCondition?, errorMessage: String?) -> Bool {
+        guard let itemId = findItemId(for: conversation, originId: stanzaId, sender: nil) else {
             return false;
         }
 
@@ -525,16 +555,20 @@ class DBChatHistoryStore {
         }) > 0 else {
             return false;
         }
-        DBChatStore.instance.newMessage(for: account, with: jid, timestamp: Date(timeIntervalSince1970: 0), itemType: nil, message: nil, state: .outgoing_error_unread) {
-            self.itemUpdated(withId: itemId, for: account, with: jid);
+        DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: Date(timeIntervalSince1970: 0), itemType: nil, message: nil, state: .outgoing_error_unread(errorMessage: errorMessage ?? errorCondition?.rawValue ?? "Unknown error")) {
+            self.itemUpdated(withId: itemId, for: conversation);
         }
         return true;
     }
 
-    open func markOutgoingAsError(for account: BareJID, with jid: JID, stanzaId: String, errorCondition: ErrorCondition?, errorMessage: String?) {
+    open func markOutgoingAsError(for conversation: ConversationKey, stanzaId: String, errorCondition: ErrorCondition?, errorMessage: String?) {
         dispatcher.async {
-            _ = self.processOutgoingError(for: account, with: jid, stanzaId: stanzaId, errorCondition: errorCondition, errorMessage: errorMessage);
+            _ = self.processOutgoingError(for: conversation, stanzaId: stanzaId, errorCondition: errorCondition, errorMessage: errorMessage);
         }
+    }
+    
+    open func markAsRead(for conversation: Conversation, before: Date) {
+        markAsRead(for: conversation.account, with: conversation.jid, before: before);
     }
 
     open func markAsRead(for account: BareJID, with jid: JID, before: Date) {
@@ -552,46 +586,46 @@ class DBChatHistoryStore {
         }
     }
 
-    open func getItemId(for account: BareJID, with jid: JID, stanzaId: String) -> Int? {
-        return dispatcher.sync {
-            return self.findItemId(for: account, with: jid, originId: stanzaId, authorNickname: nil, participantId: nil);
-        }
-    }
+//    open func getItemId(for conversation: ConversationKey, stanzaId: String) -> Int? {
+//        return dispatcher.sync {
+//            return self.findItemId(for: conversation, originId: stanzaId, authorNickname: nil, participantId: nil);
+//        }
+//    }
 
-    open func itemPosition(for account: BareJID, with jid: BareJID, msgId: Int) -> Int? {
-        return dispatcher.sync {
-            return try! Database.main.reader({ database in
-                return try database.select(query: .messageFindPositionInChat, params: ["account": account, "jid": jid, "msgId": msgId, "showLinkPreviews": linkPreviews]).mapFirst({ $0.int(at: 0) });
-            })
-        }
-    }
+//    open func itemPosition(for account: BareJID, with jid: BareJID, msgId: Int) -> Int? {
+//        return dispatcher.sync {
+//            return try! Database.main.reader({ database in
+//                return try database.select(query: .messageFindPositionInChat, params: ["account": account, "jid": jid, "msgId": msgId, "showLinkPreviews": linkPreviews]).mapFirst({ $0.int(at: 0) });
+//            })
+//        }
+//    }
 
-    open func updateItemState(for account: BareJID, with jid: JID, stanzaId: String, from oldState: MessageState, to newState: MessageState, withTimestamp timestamp: Date? = nil) {
+    open func updateItemState(for conversation: ConversationKey, stanzaId: String, from oldState: ConversationEntryState, to newState: ConversationEntryState, withTimestamp timestamp: Date? = nil) {
         dispatcher.async {
-            guard let msgId = self.getItemId(for: account, with: jid, stanzaId: stanzaId) else {
+            guard let msgId = self.findItemId(for: conversation, originId: stanzaId, sender: nil) else {
                 return;
             }
 
-            self.updateItemState(for: account, with: jid, itemId: msgId, from: oldState, to: newState, withTimestamp: timestamp);
+            self.updateItemState(for: conversation, itemId: msgId, from: oldState, to: newState, withTimestamp: timestamp);
         }
     }
 
-    open func updateItemState(for account: BareJID, with jid: JID, itemId msgId: Int, from oldState: MessageState, to newState: MessageState, withTimestamp timestamp: Date?) {
+    open func updateItemState(for conversation: ConversationKey, itemId msgId: Int, from oldState: ConversationEntryState, to newState: ConversationEntryState, withTimestamp timestamp: Date?) {
         dispatcher.async {
             guard try! Database.main.writer({ database -> Int in
-                try database.update(query: .messageUpdateState, params:  ["id": msgId, "oldState": oldState.rawValue, "newState": newState.rawValue, "newTimestamp": timestamp]);
+                try database.update(query: .messageUpdateState, params:  ["id": msgId, "oldState": oldState.code, "newState": newState.code, "newTimestamp": timestamp]);
                 return database.changes;
             }) > 0 else {
                 return;
             }
-            self.itemUpdated(withId: msgId, for: account, with: jid);
+            self.itemUpdated(withId: msgId, for: conversation);
             if oldState == .outgoing_unsent && newState != .outgoing_unsent {
-                self.generatePreviews(forItem: msgId, account: account, jid: jid, state: newState);
+                self.generatePreviews(forItem: msgId, conversation: conversation, state: newState);
             }
         }
     }
 
-    open func remove(item: ChatViewItemProtocol) {
+    open func remove(item: ConversationEntry) {
         dispatcher.async {
             guard try! Database.main.writer({ database in
                 try database.delete(query: .messageDelete, cached: false, params: ["id": item.id]);
@@ -599,7 +633,7 @@ class DBChatHistoryStore {
             }) > 0 else {
                 return;
             }
-            self.itemRemoved(withId: item.id, for: item.account, with: item.jid);
+            self.itemRemoved(withId: item.id, for: item.conversation);
             self.removePreviews(idOfRelatedToItem: item.id);
         }
     }
@@ -607,8 +641,8 @@ class DBChatHistoryStore {
     private func removePreviews(idOfRelatedToItem masterId: Int) {
         if #available(macOS 10.15, *) {
             let linkPreviews = try! Database.main.reader({ database in
-                return try database.select(query: .messageFindLinkPreviewsForMessage, cached: false, params: ["master_id": masterId]).mapAll({ cursor -> (Int, BareJID, BareJID)? in
-                    guard let id: Int = cursor["id"], let account: BareJID = cursor["account"], let jid: BareJID = cursor["jid"] else {
+                return try database.select(query: .messageFindLinkPreviewsForMessage, cached: false, params: ["master_id": masterId]).mapAll({ cursor -> (Int, BareJID, JID)? in
+                    guard let id: Int = cursor["id"], let account: BareJID = cursor["account"], let jid: JID = cursor["jid"] else {
                         return nil;
                     }
                     return (id, account, jid);
@@ -626,7 +660,7 @@ class DBChatHistoryStore {
                     try database.delete(query: .messageDelete, cached: false, params: removeLinkParams);
                     return database.changes;
                 }) > 0 {
-                    self.itemRemoved(withId: id, for: account, with: jid);
+                    self.itemRemoved(withId: id, for: ConversationKeyItem(account: account, jid: jid));
                 }
             }
         }
@@ -644,9 +678,9 @@ class DBChatHistoryStore {
         }
     }
 
-    open func updateItem(for account: BareJID, with jid: BareJID, id: Int, updateAppendix updateFn: @escaping (inout ChatAttachmentAppendix)->Void) {
+    open func updateItem(for conversation: ConversationKey, id: Int, updateAppendix updateFn: @escaping (inout ChatAttachmentAppendix)->Void) {
         dispatcher.async {
-            guard let item = self.message(withId: id) as? ChatAttachment else {
+            guard let item = self.message(for: conversation, withId: id) as? ConversationAttachment else {
                 return;
             }
             updateFn(&item.appendix);
@@ -668,18 +702,20 @@ class DBChatHistoryStore {
         }
     }
 
-    fileprivate func itemUpdated(withId id: Int, for account: BareJID, with jid: JID) {
+    fileprivate func itemUpdated(withId id: Int, for conversation: ConversationKey) {
         dispatcher.async {
-            guard let item = self.message(withId: id) else {
+            guard let item = self.message(for: conversation, withId: id) else {
                 return;
             }
             NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_UPDATED, object: item);
         }
     }
 
-    fileprivate func itemRemoved(withId id: Int, for account: BareJID, with jid: BareJID) {
+    fileprivate func itemRemoved(withId id: Int, for conversation: ConversationKey) {
+        let entry = ConversationEntryDeleted(id: id, conversation: conversation);
+        
         dispatcher.async {
-            NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_REMOVED, object: DeletedMessage(id: id, account: account, jid: jid));
+            NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_REMOVED, object: entry);
         }
     }
 
@@ -691,67 +727,63 @@ class DBChatHistoryStore {
         }
     }
 
-    open func history(for account: BareJID, jid: BareJID, before: Int? = nil, limit: Int, completionHandler: @escaping (([ChatViewItemProtocol]) -> Void)) {
-        dispatcher.async {
-            if before != nil {
-                let offset = try! Database.main.reader({ database in
-                    return try database.select(query: .messageFindPositionInChat, params: ["account": account, "jid": jid, "msgId": before!, "showLinkPreviews": self.linkPreviews]).mapFirst({ $0.int(at: 0) });
-                }) ?? 0;
-                completionHandler(self.history(for: account, jid: jid, offset: offset, limit: limit));
-            } else {
-                completionHandler(self.history(for: account, jid: jid, offset: 0, limit: limit));
-            }
-        }
-    }
-
-    open func history(for account: BareJID, jid: BareJID, before: Int? = nil, limit: Int) -> [ChatViewItemProtocol] {
+    open func history(for conversation: Conversation, queryType: ConversationLoadType) -> [ConversationEntry] {
         return dispatcher.sync {
-            if before != nil {
-                let offset = try! Database.main.reader({ database in
-                    return try database.select(query: .messageFindPositionInChat, params: ["account": account, "jid": jid, "msgId": before!, "showLinkPreviews": self.linkPreviews]).mapFirst({ $0.int(at: 0) });
-                }) ?? 0;
-                return history(for: account, jid: jid, offset: offset, limit: limit);
-            } else {
-                return history(for: account, jid: jid, offset: 0, limit: limit);
-            }
+            return try! Database.main.reader({ database in
+                switch queryType {
+                case .unread(let overhead):
+                    let unread = try database.count(query: .messagesCountUnread, cached: true, params: ["account": conversation.account, "jid": conversation.jid]);
+                    
+                    let cursor = try database.select(query: .messagesFindForChat, params: ["account": conversation.account, "jid": conversation.jid, "offset": 0, "limit": unread + overhead, "showLinkPreviews": self.linkPreviews])
+                    return try cursor.mapAll({ cursor -> ConversationEntry? in self.itemFrom(cursor: cursor, for: conversation) });
+                case .before(let item, let limit):
+                    let position = try database.count(query: .messageFindPositionInChat, cached: true, params: ["account": conversation.account, "jid": conversation.jid, "msgId": item.id, "showLinkPreviews": linkPreviews]);
+                    let cursor = try database.select(query: .messagesFindForChat, params: ["account": conversation.account, "jid": conversation.jid, "offset": position, "limit": limit, "showLinkPreviews": self.linkPreviews])
+                    return try cursor.mapAll({ cursor -> ConversationEntry? in self.itemFrom(cursor: cursor, for: conversation) });
+                }
+            })
         }
     }
 
-    open func searchHistory(for account: BareJID? = nil, with jid: BareJID? = nil, search: String, completionHandler: @escaping ([ChatViewItemProtocol])->Void) {
+    open func searchHistory(for account: BareJID? = nil, with jid: BareJID? = nil, search: String, completionHandler: @escaping ([ConversationEntry])->Void) {
+        // FIXME: !!!!
         // TODO: Remove this dispatch. async is OK but it is not needed to be done in a blocking maner
         dispatcher.async {
-            let tokens = search.unicodeScalars.split(whereSeparator: { (c) -> Bool in
-                return CharacterSet.punctuationCharacters.contains(c) || CharacterSet.whitespacesAndNewlines.contains(c);
-            }).map({ (s) -> String in
-                return String(s) + "*";
-            });
-            let query = tokens.joined(separator: " + ");
-            print("searching for:", tokens, "query:", query);
-            let items = try! Database.main.reader({ database in
-                try database.select(query: .messageSearchHistory, params: ["account": account, "jid": jid, "query": query]).mapAll({ cursor -> ChatViewItemProtocol? in
-                    guard let account: BareJID = cursor["account"], let jid: BareJID = cursor["jid"] else {
-                        return nil;
-                    }
-                    return self.itemFrom(cursor: cursor, for: account, with: jid);
-                })
-            });
-            completionHandler(items);
+//            let tokens = search.unicodeScalars.split(whereSeparator: { (c) -> Bool in
+//                return CharacterSet.punctuationCharacters.contains(c) || CharacterSet.whitespacesAndNewlines.contains(c);
+//            }).map({ (s) -> String in
+//                return String(s) + "*";
+//            });
+//            let query = tokens.joined(separator: " + ");
+//            print("searching for:", tokens, "query:", query);
+//            let items = try! Database.main.reader({ database in
+//                try database.select(query: .messageSearchHistory, params: ["account": account, "jid": jid, "query": query]).mapAll({ cursor -> ChatViewItemProtocol? in
+//                    guard let account: BareJID = cursor["account"], let jid: BareJID = cursor["jid"] else {
+//                        return nil;
+//                    }
+//                    // FIXME: !!!
+//                    return nil;
+//                    //return self.itemFrom(cursor: cursor, for: account, with: jid);
+//                })
+//            });
+//            completionHandler(items);
+            completionHandler([]);
         }
     }
 
-    private func history(for account: BareJID, jid: BareJID, offset: Int, limit: Int) -> [ChatViewItemProtocol] {
-        return try! Database.main.reader({ database in
-            return try database.select(query: .messagesFindForChat, params: ["account": account, "jid": jid, "offset": offset, "limit": limit, "showLinkPreviews": linkPreviews]).mapAll({ cursor -> ChatViewItemProtocol? in self.itemFrom(cursor: cursor, for: account, with: jid) });
-        })
-    }
+//    private func history(for account: BareJID, jid: BareJID, offset: Int, limit: Int) -> [ChatViewItemProtocol] {
+//        return try! Database.main.reader({ database in
+//            return try database.select(query: .messagesFindForChat, params: ["account": account, "jid": jid, "offset": offset, "limit": limit, "showLinkPreviews": linkPreviews]).mapAll({ cursor -> ChatViewItemProtocol? in self.itemFrom(cursor: cursor, for: account, with: jid) });
+//        })
+//    }
 
-    public func loadAttachments(for account: BareJID, with jid: BareJID, completionHandler: @escaping ([ChatAttachment])->Void) {
+    public func loadAttachments(for conversation: ConversationKey, completionHandler: @escaping ([ConversationAttachment])->Void) {
         // TODO: Why it is done in async manner but on a single thread? what is the point here?
-        let params: [String: Any?] = ["account": account, "jid": jid];
+        let params: [String: Any?] = ["account": conversation.account, "jid": conversation.jid];
         dispatcher.async {
             let attachments = try! Database.main.reader({ database in
-                return try database.select(query: .messagesFindChatAttachments, cached: false, params: params).mapAll({ cursor -> ChatAttachment? in
-                    return self.itemFrom(cursor: cursor, for: account, with: jid) as? ChatAttachment;
+                return try database.select(query: .messagesFindChatAttachments, cached: false, params: params).mapAll({ cursor -> ConversationAttachment? in
+                    return self.itemFrom(cursor: cursor, for: conversation) as? ConversationAttachment;
                 })
             })
             completionHandler(attachments);
@@ -766,16 +798,16 @@ class DBChatHistoryStore {
         }
     }
 
-    private func itemFrom(cursor: Cursor) -> ChatViewItemProtocol? {
-        guard let account = cursor.bareJid(for: "account"), let jid = cursor.bareJid(for: "jid") else {
-            return nil;
-        }
-        return itemFrom(cursor: cursor, for: account, with: jid);
-    }
+//    private func itemFrom(cursor: Cursor) -> ChatViewItemProtocol? {
+//        guard let account = cursor.bareJid(for: "account"), let jid = cursor.bareJid(for: "jid") else {
+//            return nil;
+//        }
+//        return itemFrom(cursor: cursor, for: account, with: jid);
+//    }
 
-    fileprivate func itemFrom(cursor: Cursor, for account: BareJID, with jid: BareJID) -> ChatViewItemProtocol? {
+    private func itemFrom(cursor: Cursor, for conversation: ConversationKey) -> ConversationEntry? {
         let id: Int = cursor["id"]!;
-        let stateInt: Int = cursor["state"]!;
+        let state: ConversationEntryState = ConversationEntryState.from(cursor: cursor);
         let timestamp: Date = cursor["timestamp"]!;
 
         guard let entryType = ItemType(rawValue: cursor["item_type"]!) else {
@@ -787,55 +819,83 @@ class DBChatHistoryStore {
             correctionTimestamp = nil;
         }
 
-        let authorNickname: String? = cursor["author_nickname"];
-        let authorJid: BareJID? = cursor["author_jid"];
-        let recipientNickname: String? = cursor["recipient_nickname"];
-        let participantId: String? = cursor["participant_id"];
-
-        let encryption: MessageEncryption = MessageEncryption(rawValue: cursor["encryption"] ?? 0) ?? .none;
-        let encryptionFingerprint: String? = cursor["fingerprint"];
-        let error: String? = cursor["error"];
-
-        //let appendix: String? = cursor["appendix"];
-        // maybe we should have a "supplement" object which would provide additional info? such as additional data, etc..
+        guard let sender = senderFrom(cursor: cursor, for: conversation, direction: state.direction) else {
+            return nil;
+        }
+        
+        let encryption = encryptionFrom(cursor: cursor);
+        
         switch entryType {
         case .message:
-            let message: String = cursor["data"]!;
-
-            var preview: [String: String]? = nil;
-            if let previewStr: String = cursor["preview"] {
-                preview = [:];
-                previewStr.split(separator: "\n").forEach { (line) in
-                    let tmp = line.split(separator: "\t");
-                    preview?[String(tmp[0])] = String(tmp[1]);
-                }
+            guard let message: String = cursor["data"] else {
+                return nil;
             }
-
-            return ChatMessage(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, message: message, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error, correctionTimestamp: correctionTimestamp);
+            return ConversationMessage(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, encryption: encryption, message: message, correctionTimestamp: correctionTimestamp);
         case .messageRetracted:
-            return ChatMessageRetracted(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error);
+            return ConversationMessageRetracted(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, encryption: encryption);
         case .invitation:
-            let message: String? = cursor["data"];
             guard let appendix: ChatInvitationAppendix = cursor.object(for: "appendix")else {
                 return nil;
             }
-            return ChatInvitation(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, message: message, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: appendix, error: error)
+            return ConversationInvitation(id: id,  conversation: conversation, timestamp: timestamp, state: state, sender: sender, encryption: encryption, message: cursor["data"], appendix: appendix);
         case .attachment:
             let url: String = cursor["data"]!;
-
             let appendix = cursor.object(for: "appendix") ?? ChatAttachmentAppendix();
-
-            return ChatAttachment(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, url: url, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, appendix: appendix, error: error);
+            return ConversationAttachment(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, encryption: encryption, url: url, appendix: appendix);
+        case .attachmentRetracted:
+            return nil;
         case .linkPreview:
             let url: String = cursor["data"]!;
-            return ChatLinkPreview(id: id, timestamp: timestamp, account: account, jid: jid, state: MessageState(rawValue: stateInt)!, url: url, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error)
-        case .attachmentRetracted:
-            // nothing in here, as were are removing retracted messages from the UI
+            return ConversationLinkPreview(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, encryption: encryption, url: url);
+        }
+    }
+    
+    private func senderFrom(cursor: Cursor, for conversation: ConversationKey, direction: MessageDirection) -> ConversationSenderProtocol? {
+        switch conversation {
+        case is Chat:
+            switch direction {
+            case .outgoing:
+                return .me(conversation: conversation);
+            case .incoming:
+                return .buddy(conversation: conversation);
+            }
+        case is Room:
+            guard let nickname: String = cursor["author_nickname"] else {
+                return nil;
+            }
+            return .occupant(nickname: nickname, jid: cursor["author_jid"]);
+        case is Channel:
+            guard let participantId: String = cursor["participant_id"], let nickname: String = cursor["author_nickname"] else {
+                return nil;
+            }
+            return .participant(id: participantId, nickname: nickname, jid: cursor["author_jid"]);
+        default:
             return nil;
         }
-
+    }
+    
+    private func encryptionFrom(cursor: Cursor) -> ConversationEntryEncryption {
+        switch MessageEncryption(rawValue: cursor["encryption"] ?? 0) ?? .none {
+        case .none:
+            return .none;
+        case .decryptionFailed:
+            return .decryptionFailed;
+        case .notForThisDevice:
+            return .notForThisDevice;
+        case .decrypted:
+            return .decrypted(fingerprint: cursor["fingerprint"]);
+        }
     }
 
+}
+
+extension ConversationEntryState {
+    
+    static func from(cursor: Cursor) -> ConversationEntryState {
+        let stateInt: Int = cursor["state"]!;
+        return ConversationEntryState.from(code: stateInt, errorMessage: cursor["error"]);
+    }
+    
 }
 
 public enum ItemType: Int {

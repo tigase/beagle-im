@@ -147,12 +147,12 @@ open class DBChatStore: ContextLifecycleAware {
         }
     }
 
-    func newMessage(for account: BareJID, with jid: JID, timestamp: Date, itemType: ItemType?, message: String?, state: MessageState, remoteChatState: ChatState? = nil, senderNickname: String? = nil, completionHandler: @escaping ()->Void) {
+    func newMessage(for account: BareJID, with jid: JID, timestamp: Date, itemType: ItemType?, message: String?, state: ConversationEntryState, remoteChatState: ChatState? = nil, senderNickname: String? = nil, completionHandler: @escaping ()->Void) {
         let lastActivity = LastChatActivity.from(itemType: itemType, data: message, direction: state.direction, sender: senderNickname);
         newMessage(for: account, with: jid, timestamp: timestamp, lastActivity: lastActivity, state: state, remoteChatState: remoteChatState, completionHandler: completionHandler);
     }
 
-    func newMessage(for account: BareJID, with jid: JID, timestamp: Date, lastActivity: LastChatActivity?, state: MessageState, remoteChatState: ChatState? = nil, completionHandler: @escaping ()->Void) {
+    func newMessage(for account: BareJID, with jid: JID, timestamp: Date, lastActivity: LastChatActivity?, state: ConversationEntryState, remoteChatState: ChatState? = nil, completionHandler: @escaping ()->Void) {
         dispatcher.async {
             if let conversation = self.conversation(for: account, with: jid) {
                 let unread = lastActivity != nil && state.isUnread;

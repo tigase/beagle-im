@@ -1,5 +1,5 @@
 //
-// ChatMessageRetracted.swift
+// ConversationEntry.swift
 //
 // BeagleIM
 // Copyright (C) 2020 "Tigase, Inc." <office@tigase.com>
@@ -19,13 +19,33 @@
 // If not, see https://www.gnu.org/licenses/.
 //
 
-import Foundation
+import AppKit
 import TigaseSwift
 
-class ConversationMessageRetracted: ChatEntry {
-        
-    override init(id: Int, timestamp: Date, account: BareJID, jid: BareJID, state: MessageState, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, encryption: MessageEncryption, encryptionFingerprint: String?, error: String?) {
-        super.init(id: id, timestamp: timestamp, account: account, jid: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error);
+public class ConversationEntry {
+    
+    let id: Int;
+    let conversation: ConversationKey;
+    let timestamp: Date;
+    
+    init(id: Int, conversation: ConversationKey, timestamp: Date) {
+        self.id = id;
+        self.conversation = conversation;
+        self.timestamp = timestamp;
+    }
+    
+    func isMergeable() -> Bool {
+        return false;
     }
 
+    func isMergeable(with item: ConversationEntry) -> Bool {
+        // check if entries can be mergable (some are not mergable)
+        guard isMergeable() && item.isMergeable() else {
+            return false;
+        }
+        return true;
+    }
+    
 }
+
+

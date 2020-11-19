@@ -1,5 +1,5 @@
 //
-// ConversationLogController.swift
+// ConversationKey.swift
 //
 // BeagleIM
 // Copyright (C) 2020 "Tigase, Inc." <office@tigase.com>
@@ -19,20 +19,24 @@
 // If not, see https://www.gnu.org/licenses/.
 //
 
-import AppKit
+import Foundation
 import TigaseSwift
 
-class ConversationLogController: AbstractConversationLogController {
-    
-    override func prepareContextMenu(_ menu: NSMenu, forRow row: Int) {
-        super.prepareContextMenu(menu, forRow: row);
-        (self.logTableViewDelegate as? ConversationLogContextMenuDelegate)?.prepareConversationLogContextMenu(dataSource: self.dataSource, menu: menu, forRow: row);
-    }
+public protocol ConversationKey {
+
+    var account: BareJID { get }
+    var jid: JID { get }
     
 }
 
-protocol ConversationLogContextMenuDelegate {
+public class ConversationKeyItem: ConversationKey {
     
-    func prepareConversationLogContextMenu(dataSource: ChatViewDataSource, menu: NSMenu, forRow row: Int);
+    public let account: BareJID;
+    public let jid: JID;
+    
+    init(account: BareJID, jid: JID) {
+        self.account = account;
+        self.jid = jid;
+    }
     
 }

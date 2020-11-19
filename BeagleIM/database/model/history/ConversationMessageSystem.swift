@@ -1,8 +1,8 @@
 //
-// ChatViewDataSourceDelegate.swift
+// ConversationMessageSystem.swift
 //
 // BeagleIM
-// Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2020 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,25 +20,16 @@
 //
 
 import Foundation
-import TigaseSwift
 
-protocol ChatViewDataSourceDelegate: class {
+class ConversationMessageSystem: ConversationEntry {
+    let kind: Kind;
     
-    var account: BareJID! { get }
-    var jid: BareJID! { get }
-    var chat: Conversation! { get }
+    init(nextItem item: ConversationEntry, kind: Kind) {
+        self.kind = kind;
+        super.init(id: item.id, conversation: item.conversation, timestamp: item.timestamp);
+    }
     
-    func itemAdded(at: IndexSet);
-
-    func itemsUpdated(forRowIndexes: IndexSet);
-    
-    func itemUpdated(indexPath: IndexPath);
-    
-    func itemsRemoved(at: IndexSet);
-    
-    func itemsReloaded();
-    
-    func isVisible(row: Int) -> Bool;
-    
-    func scrollRowToVisible(_ row: Int);
+    enum Kind {
+        case unreadMessages
+    }
 }

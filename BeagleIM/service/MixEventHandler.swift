@@ -39,7 +39,7 @@ class MixEventHandler: XmppServiceEventHandler {
                 return;
             }
             
-            DBChatHistoryStore.instance.append(for: account, message: e.message, source: .stream);
+            DBChatHistoryStore.instance.append(for: e.channel as! Channel, message: e.message, source: .stream);
         case let e as MixModule.ParticipantsChangedEvent:
             NotificationCenter.default.post(name: MixEventHandler.PARTICIPANTS_CHANGED, object: e);
             for participant in e.joined {

@@ -33,8 +33,16 @@ public class Room: RoomBase, Conversation, Identifiable {
     public var name: String? = nil;
     public var options: RoomOptions = RoomOptions();
 
+    public var displayName: String {
+        return name ?? jid.stringValue;
+    }
+    
     public var notifications: ConversationNotification {
         return options.notifications;
+    }
+    
+    public var automaticallyFetchPreviews: Bool {
+        return true;
     }
     
     public var roomJid: BareJID {

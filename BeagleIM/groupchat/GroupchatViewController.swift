@@ -54,10 +54,6 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             self.participantsContainer?.room = newValue;
         }
     }
-
-    override func conversationTableViewDelegate() -> NSTableViewDelegate? {
-        return self;
-    }
     
     override func viewDidLoad() {
         self.participantsContainer = GroupchatParticipantsContainer();
@@ -70,6 +66,8 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         super.viewDidLoad();
         
         self.attachmentSender = GroupchatAttachmentSender.instance;
+        
+        self.conversationLogController?.contextMenuDelegate = self;
         
         NotificationCenter.default.addObserver(self, selector: #selector(roomStatusChanged), name: MucEventHandler.ROOM_STATUS_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(roomOccupantsChanged), name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: nil);
@@ -220,129 +218,6 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         }
     }
     
-    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        guard let item = dataSource.getItem(at: row) else {
-            return nil;
-        }
-        
-        let prevItem = row >= 0 && (row + 1) < dataSource.count ? dataSource.getItem(at: row + 1) : nil;
-        let continuation = prevItem != nil && item.isMergeable(with: prevItem!);
-        
-        switch item {
-        case is SystemMessage:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMessageSystemCellView"), owner: nil) as? ChatMessageSystemCellView {
-                cell.message.attributedString = NSAttributedString(string: "Unread messages", attributes: [.font: NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium), .foregroundColor: NSColor.secondaryLabelColor]);
-                return cell;
-            }
-            return nil;
-        case let item as ChatMessage:
-            if item.message.starts(with: "/me ") {
-                if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMeSystemCellView"), owner: nil) as? ChatMeMessageCellView {
-                    cell.set(item: item, nickname: item.authorNickname);
-                    return cell;
-                }
-                return nil;
-            } else {
-                if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
-
-                    cell.id = item.id;
-                    if cell.hasHeader {
-                        if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account, let avatar = AvatarManager.instance.avatar(for: senderJid, on: item.account) {
-                            cell.set(avatar: avatar);
-                        } else if let nickname = item.authorNickname, let photoHash = self.room.occupant(nickname: nickname)?.presence.vcardTempPhoto {
-                            cell.set(avatar: AvatarManager.instance.avatar(withHash: photoHash));
-                        } else {
-                            cell.set(avatar: nil);
-                        }
-                        
-                        let sender = item.authorNickname ?? "From \(item.jid.stringValue)";
-                        if let author = item.authorNickname, let recipient = item.recipientNickname {
-                            let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(author) " : "To \(recipient)  ");
-                            let font = NSFontManager.shared.convert(NSFont.systemFont(ofSize: cell.senderName!.font!.pointSize - 2), toHaveTrait: [.italicFontMask, .smallCapsFontMask, .unboldFontMask]);
-                            val.append(NSAttributedString(string: " (private message)", attributes: [.font: font, .foregroundColor: NSColor.secondaryLabelColor]));
-
-                            cell.set(senderName: sender, attributedSenderName: val);
-                        } else {
-                            cell.set(senderName: sender);
-                        }
-                    } else {
-                        let sender = item.authorNickname ?? "From \(item.jid.stringValue)";
-                        cell.set(senderName: sender);
-                    }
-                    cell.set(message: item, nickname: room.nickname, keywords: keywords);
-
-                    return cell;
-                }
-                return nil;
-            }
-        case let item as ChatAttachment:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatAttachmentContinuationCellView" : "ChatAttachmentCellView"), owner: nil) as? ChatAttachmentCellView {
-                if cell.hasHeader {
-                    if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account, let avatar = AvatarManager.instance.avatar(for: senderJid, on: item.account) {
-                        cell.set(avatar: avatar);
-                    } else if let nickname = item.authorNickname, let photoHash = self.room.occupant(nickname: nickname)?.presence.vcardTempPhoto {
-                        cell.set(avatar: AvatarManager.instance.avatar(withHash: photoHash));
-                    } else {
-                        cell.set(avatar: nil);
-                    }
-                    let sender = item.authorNickname ?? "From \(item.jid.stringValue)";
-                    if let author = item.authorNickname, let recipient = item.recipientNickname {
-                        let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(author) " : "To \(recipient)  ");
-                        let font = NSFontManager.shared.convert(NSFont.systemFont(ofSize: cell.senderName!.font!.pointSize - 2), toHaveTrait: [.italicFontMask, .smallCapsFontMask, .unboldFontMask]);
-                        val.append(NSAttributedString(string: " (private message)", attributes: [.font: font]));
-
-                        cell.set(senderName: sender, attributedSenderName: val);
-                    } else {
-                        cell.set(senderName: sender);
-                    }
-                } else {
-                    let sender = item.authorNickname ?? "From \(item.jid.stringValue)";
-                    cell.set(senderName: sender);
-                }
-                cell.set(item: item);
-                return cell;
-            }
-            return nil;
-        case let item as ChatLinkPreview:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatLinkPreviewCellView"), owner: nil) as? ChatLinkPreviewCellView {
-                cell.set(item: item, fetchPreviewIfNeeded: true);
-                return cell;
-            }
-            return nil;
-        case let item as ChatInvitation:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatInvitationCellView"), owner: nil) as? ChatInvitationCellView {
-                if cell.hasHeader {
-                    if let senderJid = item.state.direction == .incoming ? item.authorJid : item.account, let avatar = AvatarManager.instance.avatar(for: senderJid, on: item.account) {
-                        cell.set(avatar: avatar);
-                    } else if let nickname = item.authorNickname, let photoHash = self.room.occupant(nickname: nickname)?.presence.vcardTempPhoto {
-                        cell.set(avatar: AvatarManager.instance.avatar(withHash: photoHash));
-                    } else {
-                        cell.set(avatar: nil);
-                    }
-                    
-                    let sender = item.authorNickname ?? "From \(item.jid.stringValue)";
-                    if let author = item.authorNickname, let recipient = item.recipientNickname {
-                        let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(author) " : "To \(recipient)  ");
-                        let font = NSFontManager.shared.convert(NSFont.systemFont(ofSize: cell.senderName!.font!.pointSize - 2), toHaveTrait: [.italicFontMask, .smallCapsFontMask, .unboldFontMask]);
-                        val.append(NSAttributedString(string: " (private message)", attributes: [.font: font, .foregroundColor: NSColor.secondaryLabelColor]));
-
-                        cell.set(senderName: sender, attributedSenderName: val);
-                    } else {
-                        cell.set(senderName: sender);
-                    }
-                } else {
-                    let sender = item.authorNickname ?? "From \(item.jid.stringValue)";
-                    cell.set(senderName: sender);
-                }
-                cell.set(invitation: item);
-                return cell;
-            }
-            return nil;
-        default:
-            return nil;
-        }
-    }
-    
 //    @IBAction func enterInInputTextField(_ sender: NSTextField) {
 //        let msg = sender.stringValue
 //        guard !msg.isEmpty else {
@@ -355,12 +230,12 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
 //        
 //        (sender as? AutoresizingTextField)?.reset();
 //    }
-    override func prepareConversationLogContextMenu(dataSource: ChatViewDataSource, menu: NSMenu, forRow row: Int) {
+    override func prepareConversationLogContextMenu(dataSource: ConversationDataSource, menu: NSMenu, forRow row: Int) {
         super.prepareConversationLogContextMenu(dataSource: dataSource, menu: menu, forRow: row);
-        if let item = dataSource.getItem(at: row), item.state.direction == .outgoing && (item is ChatMessage || item is ChatAttachment) {
+        if let item = dataSource.getItem(at: row) as? ConversationEntryWithSender, item.state.direction == .outgoing && (item is ConversationMessage || item is ConversationAttachment) {
             if item.state.isError {
             } else {
-                if item is ChatMessage, !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0 is ChatMessage }, in: 0..<row) {
+                if item is ConversationMessage, !dataSource.isAnyMatching({ ($0 as? ConversationEntryWithSender)?.state.direction == .outgoing && $0 is ConversationMessage }, in: 0..<row) {
                     let correct = menu.addItem(withTitle: "Correct message", action: #selector(correctMessage), keyEquivalent: "");
                     correct.target = self;
                     correct.tag = item.id;
@@ -387,7 +262,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     
     @IBAction func correctLastMessage(_ sender: AnyObject) {
         for i in 0..<dataSource.count {
-            if let item = dataSource.getItem(at: i) as? ChatMessage, item.state.direction == .outgoing {
+            if let item = dataSource.getItem(at: i) as? ConversationMessage, item.state.direction == .outgoing {
                 DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
                     self?.startMessageCorrection(message: item.message, originId: originId);
                 })
@@ -402,7 +277,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             return
         }
      
-        guard let item = dataSource.getItem(withId: tag) as? ChatMessage else {
+        guard let item = dataSource.getItem(withId: tag) as? ConversationMessage else {
             return;
         }
         
@@ -417,7 +292,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             return
         }
         
-        guard let item = dataSource.getItem(withId: tag) as? ChatEntry, let chat = self.chat as? Room else {
+        guard let item = dataSource.getItem(withId: tag) as? ConversationEntryWithSender, let chat = self.chat as? Room else {
             return;
         }
         
@@ -437,7 +312,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                         return;
                     }
                     client.context.writer.write(message);
-                    DBChatHistoryStore.instance.retractMessage(for: item.account, with: JID(item.jid), stanzaId: originId, authorNickname: item.authorNickname, participantId: item.participantId, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
+                    DBChatHistoryStore.instance.retractMessage(for: chat, stanzaId: originId, sender: item.sender, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
                 })
             default:
                 break;
@@ -546,7 +421,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         let nickname = occupant.nickname;
         DispatchQueue.main.async {
             for i in 0..<self.dataSource.count {
-                if let item = self.dataSource.getItem(at: i) as? ChatMessage, item.authorNickname != nil && item.authorNickname! == nickname {
+                if let item = self.dataSource.getItem(at: i) as? ConversationMessage, item.nickname == nickname {
                     if let view = self.conversationLogController?.tableView.view(atColumn: 0, row: i, makeIfNecessary: false) as? ChatMessageCellView {
                         view.set(avatar: AvatarManager.instance.avatar(withHash: avatarHash));
                     }
@@ -575,7 +450,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         }
         DispatchQueue.main.async {
             for i in 0..<self.dataSource.count {
-                if let item = self.dataSource.getItem(at: i) as? ChatMessage, item.authorNickname != nil && item.authorNickname! == e.occupant.nickname {
+                if let item = self.dataSource.getItem(at: i) as? ConversationMessage, item.nickname == e.occupant.nickname {
                     if let view = self.conversationLogController?.tableView.view(atColumn: 0, row: i, makeIfNecessary: false) as? ChatMessageCellView {
                         view.set(avatar: AvatarManager.instance.avatar(withHash: avatarHash));
                     }

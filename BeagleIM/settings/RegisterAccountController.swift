@@ -106,7 +106,7 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
     }
     
     fileprivate func saveAccount(acceptedCertificate: SslCertificateInfo?) {
-        let account = AccountManager.Account(name: self.account!);
+        var account = AccountManager.Account(name: self.account!);
         account.password = password;
         if acceptedCertificate != nil {
             account.serverCertificate = ServerCertificateInfo(sslCertificateInfo: acceptedCertificate!, accepted: true);

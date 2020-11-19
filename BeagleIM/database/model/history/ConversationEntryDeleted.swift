@@ -1,8 +1,8 @@
 //
-// ChatViewItemProtocol.swift
+// ConversationEntryDeleted.swift
 //
 // BeagleIM
-// Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2020 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,16 +20,11 @@
 //
 
 import Foundation
-import TigaseSwift
 
-protocol ChatViewItemProtocol: class {
-    var id: Int { get };
-    var account: BareJID { get }
-    var jid: BareJID { get }
-    var timestamp: Date { get };
-    var state: MessageState { get };
-    var encryption: MessageEncryption { get }
-    var encryptionFingerprint: String? { get };
+class ConversationEntryDeleted: ConversationEntry {
     
-    func isMergeable(with item: ChatViewItemProtocol) -> Bool;
+    init(id: Int, conversation: ConversationKey) {
+        super.init(id: id, conversation: conversation, timestamp: Date());
+    }
+    
 }

@@ -297,7 +297,7 @@ class AccountCellView: NSTableCellView {
     }
     
     @IBAction func enabledSwitched(_ sender: NSButton) {
-        if let accountJid = self.accountJid, let account = AccountManager.getAccount(for: accountJid) {
+        if let accountJid = self.accountJid, var account = AccountManager.getAccount(for: accountJid) {
             account.active = sender.state == .on;
             if !AccountManager.save(account: account) {
                 sender.state = sender.state == .on ? .off : .on;

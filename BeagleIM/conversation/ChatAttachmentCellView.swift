@@ -61,7 +61,7 @@ class ChatAttachmentCellView: BaseChatCellView {
     }
     
     fileprivate var direction: MessageDirection? = nil;
-    fileprivate var item: ChatAttachment?;
+    fileprivate var item: ConversationAttachment?;
 
     var customTrackingArea: NSTrackingArea?;
     
@@ -77,7 +77,7 @@ class ChatAttachmentCellView: BaseChatCellView {
     
     
     
-    func set(item: ChatAttachment) {
+    func set(item: ConversationAttachment) {
         self.item = item;
         super.set(item: item);
         self.direction = item.state.direction;
@@ -294,7 +294,7 @@ class ChatAttachmentCellView: BaseChatCellView {
             return;
         }
         DownloadStore.instance.deleteFile(for: "\(item.id)");
-        DBChatHistoryStore.instance.updateItem(for: item.account, with: item.jid, id: item.id, updateAppendix: { appendix in
+        DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
             appendix.state = .removed;
         })
     }
@@ -463,7 +463,7 @@ class ChatAttachmentCellView: BaseChatCellView {
             NSGraphicsContext.restoreGraphicsState();
         }
                 
-        func set(item: ChatAttachment) {
+        func set(item: ConversationAttachment) {
             if let fileUrl = DownloadStore.instance.url(for: "\(item.id)") {
                 filename.stringValue = fileUrl.lastPathComponent;
                 let fileSize = fileSizeToString(try? FileManager.default.attributesOfItem(atPath: fileUrl.path)[.size] as? UInt64);

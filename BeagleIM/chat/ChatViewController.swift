@@ -23,7 +23,7 @@ import AppKit
 import TigaseSwift
 import TigaseSwiftOMEMO
 
-class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDelegate, ConversationLogContextMenuDelegate, NSMenuItemValidation {
+class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLogContextMenuDelegate, NSMenuItemValidation {
 
     @IBOutlet var buddyAvatarView: AvatarViewWithStatus!
     @IBOutlet var buddyNameLabel: NSTextFieldCell!
@@ -40,34 +40,13 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     @IBOutlet var scriptsButton: NSPopUpButton!;
 
     @IBOutlet var encryptButton: NSPopUpButton!;
-
-    override var chat: Conversation! {
-        didSet {
-            if let sessionObject = XmppService.instance.getClient(for: account)?.sessionObject {
-                if let rosterItem = RosterModule.getRosterStore(sessionObject).get(for: JID(jid)) {
-                    buddyName = rosterItem.name ?? jid.stringValue;
-                    fetchPreviewIfNeeded = true;
-                } else {
-                    buddyName = jid.stringValue;
-                }
-            } else {
-                buddyName = jid.stringValue;
-            }
-            localNickname = AccountManager.getAccount(for: account)?.nickname ?? "Me";
-        }
-    };
-    private var buddyName: String = "";
-    private var localNickname: String = "";
-    private var fetchPreviewIfNeeded: Bool = false;
-
-    override func conversationTableViewDelegate() -> NSTableViewDelegate? {
-        return self;
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad();
 
         self.attachmentSender = ChatAttachmentSender.instance;
+        
+        self.conversationLogController?.contextMenuDelegate = self;
         
         audioCall.isHidden = true;
         videoCall.isHidden = true;
@@ -86,10 +65,10 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     }
 
     override func viewWillAppear() {
-        buddyNameLabel.title = buddyName;
+        buddyNameLabel.title = chat.displayName;
         buddyJidLabel.title = jid.stringValue;
         buddyAvatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
-        buddyAvatarView.name = buddyName;
+        buddyAvatarView.name = chat.displayName;
         buddyAvatarView.update(for: jid, on: account);
         let presenceModule: PresenceModule? = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PresenceModule.ID);
         let status = presenceModule?.store.getBestPresence(for: jid)?.status;
@@ -122,7 +101,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
 
         refreshEncryptionStatus();
     }
-
+    
     @objc func omemoAvailabilityChanged(_ notification: Notification) {
         guard let event = notification.object as? OMEMOModule.AvailabilityChangedEvent else {
             return;
@@ -161,91 +140,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         lastTextChange = Date();
         self.change(chatState: .composing);
     }
-        
-    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        guard let item = dataSource.getItem(at: row) else {
-            return nil;
-        }
-        
-        let prevItem = row >= 0 && (row + 1) < dataSource.count ? dataSource.getItem(at: row + 1) : nil;
-        let continuation = prevItem != nil && item.isMergeable(with: prevItem!);
-
-        switch item {
-        case is SystemMessage:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMessageSystemCellView"), owner: nil) as? ChatMessageSystemCellView {
-                cell.message.attributedString = NSAttributedString(string: "Unread messages", attributes: [.font: NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium), .foregroundColor: NSColor.secondaryLabelColor]);
-                return cell;
-            }
-            return nil;
-        case let item as ChatMessageRetracted:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
-
-                cell.id = item.id;
-                let senderJid = item.state.direction == .incoming ? item.jid : item.account;
-                if cell.hasHeader {
-                    cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-                }
-                cell.set(senderName: item.state.direction == .incoming ? buddyName : localNickname);
-                cell.set(retraction: item);
-
-                return cell;
-            }
-            return nil;
-        case let item as ChatMessage:
-            if item.message.starts(with: "/me ") {
-                if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMeSystemCellView"), owner: nil) as? ChatMeMessageCellView {
-                    let nickname = item.state.direction == .incoming ? buddyName : localNickname;
-                    cell.set(item: item, nickname: nickname);
-                    return cell;
-                }
-                return nil;
-            } else {
-                if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
-
-                    cell.id = item.id;
-                    let senderJid = item.state.direction == .incoming ? item.jid : item.account;
-                    if cell.hasHeader {
-                        cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-                    }
-                    cell.set(senderName: item.state.direction == .incoming ? buddyName : localNickname);
-                    cell.set(message: item);
-
-                    return cell;
-                }
-                return nil;
-            }
-        case let item as ChatLinkPreview:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatLinkPreviewCellView"), owner: nil) as? ChatLinkPreviewCellView {
-                cell.set(item: item, fetchPreviewIfNeeded: fetchPreviewIfNeeded);
-                return cell;
-            }
-            return nil;
-        case let item as ChatAttachment:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatAttachmentContinuationCellView" : "ChatAttachmentCellView"), owner: nil) as? ChatAttachmentCellView {
-                let senderJid = item.state.direction == .incoming ? item.jid : item.account;
-                if cell.hasHeader {
-                    cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-                }
-                cell.set(senderName: item.state.direction == .incoming ? buddyName : localNickname);
-                cell.set(item: item);
-                return cell;
-            }
-            return nil;
-        case let item as ChatInvitation:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatInvitationCellView"), owner: nil) as? ChatInvitationCellView {
-                let senderJid = item.state.direction == .incoming ? item.jid : item.account;
-                if cell.hasHeader {
-                    cell.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-                }
-                cell.set(senderName: item.state.direction == .incoming ? buddyName : localNickname);
-                cell.set(invitation: item);
-                return cell;
-            }
-            return nil;
-        default:
-            return nil;
-        }
-    }
+    
 
     @objc func rosterItemUpdated(_ notification: Notification) {
         guard let e = notification.object as? RosterModule.ItemUpdatedEvent else {
@@ -256,16 +151,15 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             return;
         }
 
-        DispatchQueue.main.async {
-            guard self.account == account && self.jid == item.jid.bareJid else {
+        DispatchQueue.main.async { [weak self] in
+            guard let that = self, that.account == account && that.jid == item.jid.bareJid else {
                 return;
             }
 
-            self.buddyName = ((e.action != .removed) ? item.name : nil) ?? self.jid.stringValue;
-            self.fetchPreviewIfNeeded = e.action != .removed;
-            self.buddyNameLabel.title = self.buddyName;
-            self.buddyAvatarView.name = self.buddyName;
-            self.dataSource.refreshDataNoReload();
+            let buddyName = that.chat.displayName;
+            that.buddyNameLabel.title = buddyName;
+            that.buddyAvatarView.name = buddyName;
+            that.dataSource.refreshDataNoReload();
         }
     }
 
@@ -305,21 +199,21 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         self.updateCapabilities();
     }
 
-    override func prepareConversationLogContextMenu(dataSource: ChatViewDataSource, menu: NSMenu, forRow row: Int) {
+    override func prepareConversationLogContextMenu(dataSource: ConversationDataSource, menu: NSMenu, forRow row: Int) {
         super.prepareConversationLogContextMenu(dataSource: dataSource, menu: menu, forRow: row);
-        if let item = dataSource.getItem(at: row), item.state.direction == .outgoing && (item is ChatMessage || item is ChatAttachment) {
+        if let item = dataSource.getItem(at: row) as? ConversationEntryWithSender, item.state.direction == .outgoing && (item is ConversationMessage || item is ConversationAttachment) {
             if item.state.isError {
                 let resend = menu.addItem(withTitle: "Resend message", action: #selector(resendMessage), keyEquivalent: "");
                 resend.target = self;
                 resend.tag = item.id;
             } else {
-                if item is ChatMessage && !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0 is ChatMessage }, in: 0..<row) {
+                if item is ConversationMessage && !dataSource.isAnyMatching({ ($0 as? ConversationEntryWithSender)?.state.direction == .outgoing && $0 is ConversationMessage }, in: 0..<row) {
                     let correct = menu.addItem(withTitle: "Correct message", action: #selector(correctMessage), keyEquivalent: "");
                     correct.target = self;
                     correct.tag = item.id;
                 }
                 
-                if XmppService.instance.getClient(for: item.account)?.state ?? .disconnected == .connected {
+                if XmppService.instance.getClient(for: item.conversation.account)?.state ?? .disconnected == .connected {
                     let retract = menu.addItem(withTitle: "Retract message", action: #selector(retractMessage), keyEquivalent: "");
                     retract.target = self;
                     retract.tag = item.id;
@@ -339,10 +233,10 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
         }
 
         switch item {
-        case let item as ChatMessage:
+        case let item as ConversationMessage:
             MessageEventHandler.sendMessage(chat: chat, body: item.message, url: nil);
             DBChatHistoryStore.instance.remove(item: item);
-        case let item as ChatAttachment:
+        case let item as ConversationAttachment:
             let oldLocalFile = DownloadStore.instance.url(for: "\(item.id)");
             MessageEventHandler.sendAttachment(chat: chat, originalUrl: oldLocalFile, uploadedUrl: item.url, appendix: item.appendix, completionHandler: {
                 DBChatHistoryStore.instance.remove(item: item);
@@ -363,7 +257,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
     
     @IBAction func correctLastMessage(_ sender: AnyObject) {
         for i in 0..<dataSource.count {
-            if let item = dataSource.getItem(at: i) as? ChatMessage, item.state.direction == .outgoing {
+            if let item = dataSource.getItem(at: i) as? ConversationMessage, item.state.direction == .outgoing {
                 DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
                     self?.startMessageCorrection(message: item.message, originId: originId);
                 })
@@ -378,7 +272,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             return
         }
      
-        guard let item = dataSource.getItem(withId: tag) as? ChatMessage else {
+        guard let item = dataSource.getItem(withId: tag) as? ConversationMessage else {
             return;
         }
         
@@ -393,7 +287,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
             return
         }
         
-        guard let item = dataSource.getItem(withId: tag) as? ChatEntry, let chat = self.chat as? Chat else {
+        guard let item = dataSource.getItem(withId: tag) as? ConversationEntryWithSender, let chat = self.chat as? Chat else {
             return;
         }
         
@@ -413,7 +307,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, NSTableViewDele
                         return;
                     }
                     client.context.writer.write(message);
-                    DBChatHistoryStore.instance.retractMessage(for: item.account, with: JID(item.jid), stanzaId: originId, authorNickname: item.authorNickname, participantId: item.participantId, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
+                    DBChatHistoryStore.instance.retractMessage(for: chat, stanzaId: originId, sender: item.sender, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
                 })
             default:
                 break;

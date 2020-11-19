@@ -410,50 +410,20 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         print("selected row:", selected);
         let item = self.outlineView.selectedRowIndexes.count == 1 ? self.outlineView.item(atRow: selected) : nil;
         if let splitController = self.outlineView.window?.contentViewController as? NSSplitViewController {
-            if let chatItem = (item as? AbstractChatItem)?.chat {
-                switch chatItem {
-                case let chat as Chat:
-                    let chatController = self.storyboard!.instantiateController(withIdentifier: "ChatViewController") as! ChatViewController;
-                    chatController.chat = chat;
-                    chatController.scrollChatToMessageWithId = self.scrollChatToMessageWithId;
-                    self.scrollChatToMessageWithId = nil;
-                    let item = NSSplitViewItem(viewController: chatController);
-                    if splitController.splitViewItems.count == 1 {
-                        splitController.addSplitViewItem(item);
-                    } else {
-                        splitController.removeSplitViewItem(splitController.splitViewItems[1]);
-                        splitController.addSplitViewItem(item);
-                    }
-                case let room as Room:
-                    let roomController = self.storyboard?.instantiateController(withIdentifier: "GroupchatViewController") as! GroupchatViewController;
-                    roomController.room = room;
-                    roomController.scrollChatToMessageWithId = self.scrollChatToMessageWithId;
-                    self.scrollChatToMessageWithId = nil;
-                    let item = NSSplitViewItem(viewController: roomController);
-                    if splitController.splitViewItems.count == 1 {
-                        splitController.addSplitViewItem(item);
-                    } else {
-                        splitController.removeSplitViewItem(splitController.splitViewItems[1]);
-                        splitController.addSplitViewItem(item);
-                    }
-                case let channel as Channel:
-                    let channelController = NSStoryboard(name: "MIX", bundle: nil).instantiateController(withIdentifier: "ChannelViewController") as! ChannelViewController;
-                    channelController.chat = channel;
-                    channelController.scrollChatToMessageWithId = self.scrollChatToMessageWithId
-                    self.scrollChatToMessageWithId = nil;
-                    let item = NSSplitViewItem(viewController: channelController);
-                    if splitController.splitViewItems.count == 1 {
-                        splitController.addSplitViewItem(item);
-                    } else {
-                        splitController.removeSplitViewItem(splitController.splitViewItems[1]);
-                        splitController.addSplitViewItem(item);
-                    }
-                default:
-                    let controller = self.storyboard!.instantiateController(withIdentifier: "EmptyViewController") as! NSViewController;
-                    if splitController.splitViewItems.count > 1 {
-                        splitController.removeSplitViewItem(splitController.splitViewItems[1]);
-                    }
-                    splitController.addSplitViewItem(NSSplitViewItem(viewController: controller));
+            if let conversation = (item as? AbstractChatItem)?.chat {
+                let controller = self.conversationController(for: conversation);
+                if let conversationController = controller as? AbstractChatViewController {
+                    conversationController.chat = conversation;
+                    _ = conversationController.view;
+                    conversationController.dataSource.loadItems(.unread(overhead: 100));
+                }
+
+                let item = NSSplitViewItem(viewController: controller);
+                if splitController.splitViewItems.count == 1 {
+                    splitController.addSplitViewItem(item);
+                } else {
+                    splitController.removeSplitViewItem(splitController.splitViewItems[1]);
+                    splitController.addSplitViewItem(item);
                 }
             } else {
                 if let invitation = item as? InvitationItem, invitation.type == .presenceSubscription {
@@ -474,6 +444,19 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                     }
                 }
             }
+        }
+    }
+    
+    private func conversationController(for conversation: Conversation) -> NSViewController {
+        switch conversation {
+        case is Chat:
+            return self.storyboard!.instantiateController(withIdentifier: "ChatViewController") as! ChatViewController;
+        case is Room:
+            return self.storyboard?.instantiateController(withIdentifier: "GroupchatViewController") as! GroupchatViewController;
+        case is Channel:
+            return NSStoryboard(name: "MIX", bundle: nil).instantiateController(withIdentifier: "ChannelViewController") as! ChannelViewController;
+        default:
+            return self.storyboard!.instantiateController(withIdentifier: "EmptyViewController") as! NSViewController;
         }
     }
 

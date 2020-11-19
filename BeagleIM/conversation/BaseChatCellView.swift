@@ -49,47 +49,53 @@ class BaseChatCellView: NSTableCellView {
         self.avatar?.name = senderName;
     }
        
-    func set(item: ChatEntry) {
+    func set(item: ConversationEntry) {
         var timestampStr: NSMutableAttributedString? = nil;
 
-        switch item.encryption {
-        case .decrypted, .notForThisDevice, .decryptionFailed:
-            let secured = NSMutableAttributedString(string: "\u{1F512}");
-            if timestampStr != nil {
-                timestampStr?.append(secured);
-            } else {
-                timestampStr = secured;
+        if let item = item as? ConversationEntryWithSender {
+            switch item.encryption {
+            case .decrypted, .notForThisDevice, .decryptionFailed:
+                let secured = NSMutableAttributedString(string: "\u{1F512}");
+                if timestampStr != nil {
+                    timestampStr?.append(secured);
+                } else {
+                    timestampStr = secured;
+                }
+            default:
+                break;
             }
-        default:
-            break;
-        }
-           
-        if timestampStr != nil {
-            timestampStr!.append(item.state == .outgoing_unsent ? NSAttributedString(string: " Unsent") : NSMutableAttributedString(string: " " + formatTimestamp(item.timestamp)));
-            self.timestamp?.attributedStringValue = timestampStr!;
+               
+            if timestampStr != nil {
+                timestampStr!.append(item.state == .outgoing_unsent ? NSAttributedString(string: " Unsent") : NSMutableAttributedString(string: " " + formatTimestamp(item.timestamp)));
+                self.timestamp?.attributedStringValue = timestampStr!;
+            } else {
+                self.timestamp?.attributedStringValue = item.state == .outgoing_unsent ? NSAttributedString(string: "Unsent") : NSMutableAttributedString(string: formatTimestamp(item.timestamp));
+            }
+
+            switch item.state {
+            case .incoming_error, .incoming_error_unread:
+                self.state?.stringValue = "\u{203c}";
+            case .outgoing_unsent:
+                self.state?.stringValue = "\u{1f4e4}";
+            case .outgoing_delivered:
+                self.state?.stringValue = "\u{2713}";
+            case .outgoing_error, .outgoing_error_unread:
+                self.state?.stringValue = "\u{203c}";
+            default:
+                self.state?.stringValue = "";
+            }
+            self.state?.textColor = item.state.isError ? NSColor.systemRed : NSColor.secondaryLabelColor;
         } else {
-            self.timestamp?.attributedStringValue = item.state == .outgoing_unsent ? NSAttributedString(string: "Unsent") : NSMutableAttributedString(string: formatTimestamp(item.timestamp));
-        }
-        
-        switch item.state {
-        case .incoming_error, .incoming_error_unread:
-            self.state?.stringValue = "\u{203c}";
-        case .outgoing_unsent:
-            self.state?.stringValue = "\u{1f4e4}";
-        case .outgoing_delivered:
-            self.state?.stringValue = "\u{2713}";
-        case .outgoing_error, .outgoing_error_unread:
-            self.state?.stringValue = "\u{203c}";
-        default:
+            self.timestamp?.attributedStringValue = NSMutableAttributedString(string: formatTimestamp(item.timestamp));
             self.state?.stringValue = "";
         }
-        self.state?.textColor = item.state.isError ? NSColor.systemRed : NSColor.secondaryLabelColor;
+        
         
         self.toolTip = prepareTooltip(item: item);
-        self.direction = item.state.direction;
+        self.direction = (item as? ConversationEntryWithSender)?.state.direction ?? .incoming;
     }
     
-    func prepareTooltip(item: ChatEntry) -> String {
+    func prepareTooltip(item: ConversationEntry) -> String {
         return BaseChatCellView.tooltipFormatter.string(from: item.timestamp);
     }
     

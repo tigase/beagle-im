@@ -206,7 +206,7 @@ class XmppService: EventHandler {
                 break;
             }
             
-            guard let account = AccountManager.getAccount(for: accountName) else {
+            guard var account = AccountManager.getAccount(for: accountName) else {
                 return;
             }
             account.active = false;
@@ -215,7 +215,7 @@ class XmppService: EventHandler {
         case let e as SocketConnector.CertificateErrorEvent:
             let certData = ServerCertificateInfo(trust: e.trust);
             
-            if let accountName = e.sessionObject.userBareJid, let account = AccountManager.getAccount(for: accountName) {
+            if let accountName = e.sessionObject.userBareJid, var account = AccountManager.getAccount(for: accountName) {
                 account.active = false;
                 account.serverCertificate = certData;
                 _ = AccountManager.save(account: account);

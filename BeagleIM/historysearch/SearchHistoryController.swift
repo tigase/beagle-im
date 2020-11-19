@@ -28,7 +28,7 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
     @IBOutlet var tableView: NSTableView!;
     @IBOutlet var goToButton: NSButton!;
     
-    var items: [ChatViewItemProtocol] = [] {
+    var items: [ConversationEntry] = [] {
         didSet {
             self.tableView.reloadData();
         }
@@ -40,16 +40,14 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         // FIXME: THIS IS NO LONGER TRUE
-        let item = self.items[row] as! ChatMessage;
+        let item = self.items[row] as! ConversationMessage;
         guard let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMessageCellView"), owner: self) as? ChatMessageCellView else {
             return nil;
         }
         view.id = item.id;
         
-        let senderJid = item.state.direction == .incoming ? (item.authorJid ?? item.jid) : item.account;
-        
-        view.set(avatar: AvatarManager.instance.avatar(for: senderJid, on: item.account));
-        view.set(senderName: item.authorNickname ?? (item.state.direction == .incoming ? self.buddyName(for: item) : "Me"));
+        view.set(avatar: item.avatar);
+        view.set(senderName: item.nickname);
         
         view.set(message: item);
 
@@ -74,7 +72,7 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
         }
         DBChatHistoryStore.instance.searchHistory(search: searchField.stringValue) { (items) in
             DispatchQueue.main.async {
-                self.items = items.filter({ it -> Bool in it is ChatMessage });
+                self.items = [];// items.filter({ it -> Bool in it is ConversationMessage });
             }
         }
     }
@@ -98,7 +96,7 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
         }
         let item = items[row];
 
-        guard let client = XmppService.instance.getClient(for: item.account) else {
+        guard let client = XmppService.instance.getClient(for: item.conversation.account) else {
             let alert = NSAlert();
             alert.messageText = "Account is disabled";
             alert.informativeText = "It is not possible to open a chat when the account related to the chat is disabled!";
@@ -107,24 +105,20 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
             return;
         }
 
-        if DBChatStore.instance.conversation(for: item.account, with: item.jid) == nil {
+        if DBChatStore.instance.conversation(for: item.conversation.account, with: item.conversation.jid) == nil {
             if let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) {
-                _ = messageModule.chatManager.createChat(for: client, with: JID(item.jid));
+                _ = messageModule.chatManager.createChat(for: client, with: item.conversation.jid);
             }
         }
 
         self.view.window?.sheetParent?.endSheet(self.view.window!)
         DispatchQueue.main.async {
-            NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: nil, userInfo: ["account": item.account, "jid": item.jid, "messageId": item.id]);
+            NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: nil, userInfo: ["account": item.conversation.account, "jid": item.conversation.jid, "messageId": item.id]);
         }
     }
     
-    fileprivate func buddyName(for item: ChatMessage) -> String {
-        if let sessionObject = XmppService.instance.getClient(for: item.account)?.sessionObject {
-            return RosterModule.getRosterStore(sessionObject).get(for: JID(item.jid))?.name ?? item.jid.stringValue;
-        } else {
-            return item.jid.stringValue;
-        }
+    fileprivate func buddyName(for item: ConversationMessage) -> String {
+        return XmppService.instance.getClient(for: item.conversation.account)?.module(.roster).store.get(for: item.conversation.jid)?.name ?? item.conversation.jid.stringValue;
     }
     
     class TableRowView: NSTableRowView {

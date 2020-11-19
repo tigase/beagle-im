@@ -67,6 +67,12 @@ extension BareJID: DatabaseConvertibleStringValue {
     
 }
 
+extension Element: DatabaseConvertibleStringValue {
+    public func encode() -> String {
+        return self.stringValue;
+    }
+}
+
 extension Cursor {
     
     func jid(for column: String) -> JID? {

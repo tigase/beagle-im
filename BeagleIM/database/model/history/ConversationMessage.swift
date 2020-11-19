@@ -1,5 +1,5 @@
 //
-// ChatMessage.swift
+// ConversationMessage.swift
 //
 // BeagleIM
 // Copyright (C) 2019 "Tigase, Inc." <office@tigase.com>
@@ -22,7 +22,7 @@
 import Foundation
 import TigaseSwift
 
-class ChatMessage: ChatEntry {
+class ConversationMessage: ConversationEntryWithSender {
 
     let message: String;
     let correctionTimestamp: Date?;
@@ -31,10 +31,10 @@ class ChatMessage: ChatEntry {
         return correctionTimestamp != nil;
     }
     
-    init(id: Int, timestamp: Date, account: BareJID, jid: BareJID, state: MessageState, message: String, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, encryption: MessageEncryption, encryptionFingerprint: String?, error: String?, correctionTimestamp: Date?) {
+    init(id: Int, conversation: ConversationKey, timestamp: Date, state: ConversationEntryState, sender: ConversationSenderProtocol, encryption: ConversationEntryEncryption, message: String, correctionTimestamp: Date?) {
         self.message = message;
         self.correctionTimestamp = correctionTimestamp;
-        super.init(id: id, timestamp: timestamp, account: account, jid: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error);
+        super.init(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, encryption: encryption);
     }
 
     override func isMergeable() -> Bool {
@@ -102,15 +102,4 @@ class ChatMessage: ChatEntry {
 //    }
 //
 //}
-
-class ChatLinkPreview: ChatEntry {
-    
-    let url: String;
-    
-    init(id: Int, timestamp: Date, account: BareJID, jid: BareJID, state: MessageState, url: String, authorNickname: String?, authorJid: BareJID?, recipientNickname: String?, participantId: String?, encryption: MessageEncryption, encryptionFingerprint: String?, error: String?) {
-        self.url = url;
-        super.init(id: id, timestamp: timestamp, account: account, jid: jid, state: state, authorNickname: authorNickname, authorJid: authorJid, recipientNickname: recipientNickname, participantId: participantId, encryption: encryption, encryptionFingerprint: encryptionFingerprint, error: error);
-    }
-    
-}
 

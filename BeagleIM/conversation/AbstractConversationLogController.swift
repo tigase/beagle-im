@@ -22,29 +22,12 @@
 import AppKit
 import TigaseSwift
 
-class AbstractConversationLogController: NSViewController, NSTableViewDataSource, ChatViewDataSourceDelegate {
+class AbstractConversationLogController: NSViewController, NSTableViewDataSource, ConversationDataSourceDelegate {
 
     @IBOutlet var tableView: NSTableView!;
-
-    weak var logTableViewDelegate: NSTableViewDelegate? {
-        didSet {
-            if let tableView = self.tableView {
-                tableView.delegate = logTableViewDelegate;
-            }
-        }
-    }
     
-    let dataSource: ChatViewDataSource = ChatViewDataSource();
-    var chat: Conversation!;
-    var account: BareJID! {
-        return chat.account;
-    }
-    
-    var jid: BareJID! {
-        return chat.jid.bareJid;
-    }
-
-    var scrollChatToMessageWithId: Int?;
+    let dataSource = ConversationDataSource();
+    var conversation: Conversation!;
     
     private var hasFocus: Bool {
         return view.window?.isKeyWindow ?? false;
@@ -57,7 +40,6 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
     override func viewDidLoad() {
         super.viewDidLoad();
         self.dataSource.delegate = self;
-        self.tableView.delegate = logTableViewDelegate;
         self.tableView.dataSource = self;
         self.tableView.usesAutomaticRowHeights = true;
         self.tableView.enclosingScrollView?.contentView.postsBoundsChangedNotifications = true;
@@ -66,30 +48,6 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
     override func viewWillAppear() {
         super.viewWillAppear();
         
-        if let scrollToMessageWithId = self.scrollChatToMessageWithId {
-            let position = DBChatHistoryStore.instance.itemPosition(for: account, with: jid, msgId: scrollToMessageWithId) ?? 0;
-            self.dataSource.loadItems(before: nil, limit: max(position + 20, 100), awaitIfInProgress: true, unread: chat.unread) { (unread) in
-                DispatchQueue.main.async {
-                    if position > self.dataSource.count {
-                        self.tableView.scrollRowToVisible(0);
-                    } else {
-                        self.tableView.scrollRowToVisible(position);
-                    }
-                }
-            }
-        } else {
-            self.dataSource.refreshData(unread: chat.unread) { (firstUnread) in
-                DispatchQueue.main.async {
-                    let unread = firstUnread ?? 0;//self.chat.unread;
-                    if self.isVisible(row: unread) {
-                        self.tableView.scrollRowToVisible(0);
-                    } else {
-                        self.tableView.scrollRowToVisible(unread);
-                    }
-                }
-            };
-        }
-        scrollChatToMessageWithId = nil;
         selectionManager.initilizeHandlers(controller: self);
 
         NotificationCenter.default.addObserver(self, selector: #selector(didEndLiveScroll(_:)), name: NSScrollView.didEndLiveScrollNotification, object: self.tableView.enclosingScrollView);
@@ -138,9 +96,9 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
     func markAsReadUpToNewestVisibleRow() {
         let visibleRows = self.tableView.rows(in: self.tableView.visibleRect);
         if visibleRows.contains(0) {
-            self.dataSource.trimStore();
+//            self.dataSource.trimStore();
         }
-        guard self.hasFocus && self.chat.unread > 0 else {
+        guard self.hasFocus && self.conversation.unread > 0 else {
             return;
         }
         
@@ -155,12 +113,11 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
         guard let since = ts else {
             return;
         }
-        print("marking as read:", account as Any, "jid:", jid as Any, "before:", since);
-        DBChatHistoryStore.instance.markAsRead(for: self.account, with: JID(self.jid), before: since);
+        DBChatHistoryStore.instance.markAsRead(for: self.conversation, before: since);
     }
     
     @objc func didBecomeKeyWindow(_ notification: Notification) {
-        if chat.unread > 0 {
+        if conversation.unread > 0 {
             markAsReadUpToNewestVisibleRow();
         }
     }
@@ -172,7 +129,7 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
     }
     
     @objc func boundsChange(_ notification: Notification) {
-        if chat.unread > 0 {
+        if conversation.unread > 0 {
             markAsReadUpToNewestVisibleRow();
         }
         if prevBounds.width != self.tableView.bounds.width {

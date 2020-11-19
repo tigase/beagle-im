@@ -39,7 +39,7 @@ class ChatMessageCellView: BaseChatCellView {
         sender = senderName;
     }
 
-    func set(retraction item: ChatMessageRetracted, nickname: String? = nil, keywords: [String]? = nil) {
+    func set(retraction item: ConversationMessageRetracted, nickname: String? = nil, keywords: [String]? = nil) {
         super.set(item: item);
         ts = item.timestamp;
         id = item.id;
@@ -50,7 +50,7 @@ class ChatMessageCellView: BaseChatCellView {
         self.message.attributedString = msg;
     }
 
-    func set(message item: ChatMessage, nickname: String? = nil, keywords: [String]? = nil) {
+    func set(message item: ConversationMessage, nickname: String? = nil, keywords: [String]? = nil) {
         super.set(item: item);
         ts = item.timestamp;
         id = item.id;
@@ -73,7 +73,7 @@ class ChatMessageCellView: BaseChatCellView {
         if let keys = keywords {
             msg.mark(keywords: keys, withColor: NSColor.systemRed, bold: Settings.boldKeywords.bool());
         }
-        if let errorMessage = item.error {
+        if let errorMessage = item.state.errorMessage {
             msg.append(NSAttributedString(string: "\n------\n\(errorMessage)", attributes: [.foregroundColor : NSColor.systemRed]));
         }
 
@@ -132,15 +132,18 @@ class ChatMessageCellView: BaseChatCellView {
         }
     }
     
-    override func prepareTooltip(item: ChatEntry) -> String {
-        if let message = item as? ChatMessage, let correctionTimestamp = message.correctionTimestamp {
+    override func prepareTooltip(item: ConversationEntry) -> String {
+        if let m = item as? ConversationMessage {
+            return "\(m.sender.nickname): \(m.message)"
+        }
+        if let message = item as? ConversationMessage, let correctionTimestamp = message.correctionTimestamp {
             return "edited at " + BaseChatCellView.tooltipFormatter.string(from: correctionTimestamp);
         } else {
             return super.prepareTooltip(item: item);
         }
     }
     
-    fileprivate func messageBody(item: ChatMessage) -> String {
+    fileprivate func messageBody(item: ConversationMessage) -> String {
         guard let msg = item.encryption.message() else {
 //            guard let error = item.error else {
 //                return item.message;
