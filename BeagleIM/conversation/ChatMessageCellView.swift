@@ -133,9 +133,6 @@ class ChatMessageCellView: BaseChatCellView {
     }
     
     override func prepareTooltip(item: ConversationEntry) -> String {
-        if let m = item as? ConversationMessage {
-            return "\(m.sender.nickname): \(m.message)"
-        }
         if let message = item as? ConversationMessage, let correctionTimestamp = message.correctionTimestamp {
             return "edited at " + BaseChatCellView.tooltipFormatter.string(from: correctionTimestamp);
         } else {
@@ -145,10 +142,14 @@ class ChatMessageCellView: BaseChatCellView {
     
     fileprivate func messageBody(item: ConversationMessage) -> String {
         guard let msg = item.encryption.message() else {
-//            guard let error = item.error else {
-//                return item.message;
-//            }
-//            return "\(item.message)\n-----\n\(error)";
+            switch item.state {
+            case .incoming_error(let errorMessage), .incoming_error_unread(let errorMessage), .outgoing_error(let errorMessage), .outgoing_error_unread(let errorMessage):
+                if let error = errorMessage {
+                    return "\(item.message)\n-----\n\(error)"
+                }
+            default:
+                break;
+            }
             return item.message;
         }
         return msg;
