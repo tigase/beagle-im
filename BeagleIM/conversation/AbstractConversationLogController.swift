@@ -96,7 +96,7 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
     func markAsReadUpToNewestVisibleRow() {
         let visibleRows = self.tableView.rows(in: self.tableView.visibleRect);
         if visibleRows.contains(0) {
-//            self.dataSource.trimStore();
+            self.dataSource.trimStore();
         }
         guard self.hasFocus && self.conversation.unread > 0 else {
             return;

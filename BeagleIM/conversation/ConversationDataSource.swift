@@ -28,6 +28,7 @@ protocol ConversationDataSourceDelegate: class {
 }
 
 public enum ConversationLoadType {
+    case with(id: Int, overhead: Int)
     case unread(overhead: Int)
     case before(entry: ConversationEntry, limit: Int)
     
@@ -104,12 +105,7 @@ class ConversationDataSource {
         
         DispatchQueue.main.async {
             let isNewestMessageVisible = self.delegate?.isVisible(row: 0) ?? false;
-            self.update(item: item, completionHandler: nil);
-//            , completionHandler: { [weak self] (newRows) in
-//                if isNewestMessageVisible && newRows.contains(0) {
-//                    self?.delegate?.scrollRowToVisible(0);
-//                }
-//            });
+            self.update(item: item);
         }
     }
     
@@ -154,7 +150,7 @@ class ConversationDataSource {
         state = .loading;
         queue.async {
             let items: [ConversationEntry] = conversation.loadItems(type);
-            self.add(items: items, markUnread: type.markUnread);
+            self.add(items: items, scrollTo: .from(loadType: type));
             DispatchQueue.main.async {
                 self.state = .loaded;
             }
@@ -163,7 +159,7 @@ class ConversationDataSource {
     
     private func add(item: ConversationEntry) {
         queue.async {
-            self.add(items: [item], markUnread: false);
+            self.add(items: [item], scrollTo: .none);
         }
     }
     
@@ -233,7 +229,7 @@ class ConversationDataSource {
         }
     }
 
-    func update(item: ConversationEntry, completionHandler: ((IndexSet)->Void)?) {
+    func update(item: ConversationEntry) {
         queue.async {
             var store = DispatchQueue.main.sync { return self.store; };
             
@@ -244,7 +240,6 @@ class ConversationDataSource {
                     DispatchQueue.main.async {
                         self.store = store;
                         self.delegate?.itemAdded(at: IndexSet([newIdx]));
-                        completionHandler?(IndexSet([newIdx]));
                     }
                 }
                 return;
@@ -264,7 +259,6 @@ class ConversationDataSource {
                         }
                         self.store = store;
                         self.delegate?.itemAdded(at: IndexSet([newIdx]));
-                        completionHandler?(IndexSet([newIdx]));
                     }
                 }
             } else {
@@ -281,6 +275,20 @@ class ConversationDataSource {
         }
     }
 
+    func trimStore() {
+        guard store.count > 100 else {
+            return;
+        }
+        
+        queue.async {
+            var store = DispatchQueue.main.sync { return self.store; };
+            let arr = store.trim();
+            DispatchQueue.main.async {
+                self.store = store;
+                self.delegate?.itemsRemoved(at: IndexSet(arr));
+            }
+        }
+    }
     
     func isAnyMatching(_ fn: (ConversationEntry)->Bool, in range: Range<Int>) -> Bool {
         for i in range {
@@ -292,43 +300,74 @@ class ConversationDataSource {
     }
     
     // should be called from internal queue!
-    private func add(items newItems: [ConversationEntry], markUnread: Bool) {
+    private func add(items newItems: [ConversationEntry], scrollTo: ScrollTo) {
         var store = DispatchQueue.main.sync { return self.store };
         var newRows = [Int]();
-        var oldestUnreadIdx: Int?;
+        var scrollToIdx: Int?;
         for item in newItems {
             if var idx = store.add(item: item, force: false) {
                 while newRows.contains(idx) {
                     idx = idx + 1;
                 }
                 newRows.append(idx);
-                if markUnread && (item as? ConversationEntryWithSender)?.state.isUnread ?? false {
-                    if let current = oldestUnreadIdx {
-                        if current < idx {
-                            oldestUnreadIdx = idx;
+                
+                switch scrollTo {
+                case .none, .message(_):
+                    // nothing to do..
+                    break;
+                case .oldestUnread:
+                    if (item as? ConversationEntryWithSender)?.state.isUnread ?? false {
+                        if let current = scrollToIdx {
+                            if current < idx {
+                                scrollToIdx = idx;
+                            }
+                        } else {
+                            scrollToIdx = idx;
                         }
-                    } else {
-                        oldestUnreadIdx = idx;
                     }
                 }
             }
         }
-            
-        if let oldestUnreadIdx = oldestUnreadIdx {
-            let item = store.item(at: oldestUnreadIdx)!;
-            if var unreadIdx = store.add(item: ConversationMessageSystem(nextItem: item, kind: .unreadMessages), force: true) {
-                while newRows.contains(unreadIdx) {
-                    unreadIdx = unreadIdx + 1;
+         
+        switch scrollTo {
+        case .message(let id):
+            scrollToIdx = store.indexOf(itemId: id);
+        case.oldestUnread:
+            if let scrollToIdx = scrollToIdx {
+                let item = store.item(at: scrollToIdx)!;
+                if var unreadIdx = store.add(item: ConversationMessageSystem(nextItem: item, kind: .unreadMessages), force: true) {
+                    while newRows.contains(unreadIdx) {
+                        unreadIdx = unreadIdx + 1;
+                    }
+                    newRows.append(unreadIdx);
                 }
-                newRows.append(unreadIdx);
             }
+        case .none:
+            break;
         }
         
         DispatchQueue.main.async {
             self.store = store;
             self.delegate?.itemAdded(at: IndexSet(newRows));
-            if let oldestUnreadIdx = oldestUnreadIdx {
-                self.delegate?.scrollRowToVisible(oldestUnreadIdx);
+            if let scrollToIdx = scrollToIdx {
+                self.delegate?.scrollRowToVisible(scrollToIdx);
+            }
+        }
+    }
+    
+    enum ScrollTo {
+        case none
+        case oldestUnread
+        case message(withId: Int)
+        
+        static func from(loadType: ConversationLoadType) -> ScrollTo {
+            switch loadType {
+            case .unread(_):
+                return .oldestUnread;
+            case .with(let id, _):
+                return .message(withId: id);
+            case .before(_, _):
+                return .none;
             }
         }
     }

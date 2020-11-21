@@ -277,7 +277,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     @objc func chatSelected(_ notification: Notification) {
         let messageId = notification.userInfo?["messageId"] as? Int;
         guard let chat = notification.object as? Conversation else {
-            guard let account = notification.userInfo?["account"] as? BareJID, let jid = notification.userInfo?["jid"] as? BareJID else {
+            guard let account = notification.userInfo?["account"] as? BareJID, let jid = notification.userInfo?["jid"] as? JID else {
                 self.outlineView.selectRowIndexes(IndexSet(), byExtendingSelection: false);
                 return;
             }
@@ -415,7 +415,11 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 if let conversationController = controller as? AbstractChatViewController {
                     conversationController.chat = conversation;
                     _ = conversationController.view;
-                    conversationController.dataSource.loadItems(.unread(overhead: 100));
+                    if let msgId = self.scrollChatToMessageWithId {
+                        conversationController.dataSource.loadItems(.with(id: msgId, overhead: 100));
+                    } else {
+                        conversationController.dataSource.loadItems(.unread(overhead: 100));
+                    }
                 }
 
                 let item = NSSplitViewItem(viewController: controller);

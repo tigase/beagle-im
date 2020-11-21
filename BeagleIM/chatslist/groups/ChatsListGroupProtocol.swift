@@ -34,7 +34,7 @@ protocol ChatsListGroupProtocol {
     
     func forChat(_ chat: Conversation, execute: @escaping (ChatItemProtocol)->Void);
     
-    func forChat(account: BareJID, jid: BareJID, execute: @escaping (ChatItemProtocol)->Void);
+    func forChat(account: BareJID, jid: JID, execute: @escaping (ChatItemProtocol)->Void);
 }
 
 protocol ChatsListItemProtocol {

@@ -44,7 +44,7 @@ extension Conversation {
     }
 }
 
-enum ConversationType: Int {
+public enum ConversationType: Int {
     case chat = 0
     case room = 1
     case channel = 2

@@ -77,11 +77,11 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         }
     }
     
-    func forChat(account: BareJID, jid: BareJID, execute: @escaping (ChatItemProtocol) -> Void) {
+    func forChat(account: BareJID, jid: JID, execute: @escaping (ChatItemProtocol) -> Void) {
         self.dispatcher.async {
             let items = DispatchQueue.main.sync { return self.items; };
             guard let item = items.first(where: { (it) -> Bool in
-                it.chat.account == account && it.chat.jid.bareJid == jid
+                it.chat.account == account && it.chat.jid == jid
             }) else {
                 return;
             }

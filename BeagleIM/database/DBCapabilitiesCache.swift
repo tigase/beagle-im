@@ -107,7 +107,7 @@ class DBCapabilitiesCache: CapabilitiesCache {
             
             try! Database.main.writer({ database in
                 for feature in features {
-                    try database.insert(query: .capsFindFeaturesForNode, params: ["node": node]);
+                    try database.insert(query: .capsInsertFeatureForNode, params: ["node": node, "feature": feature]);
                 }
                 if let identity = identity {
                     try database.insert(query: .capsInsertIdentityForNode, params: ["node": node, "name": identity.name, "category": identity.category, "type": identity.type]);

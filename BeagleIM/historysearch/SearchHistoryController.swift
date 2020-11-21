@@ -72,7 +72,7 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
         }
         DBChatHistoryStore.instance.searchHistory(search: searchField.stringValue) { (items) in
             DispatchQueue.main.async {
-                self.items = [];// items.filter({ it -> Bool in it is ConversationMessage });
+                self.items = items.filter({ it -> Bool in it is ConversationMessage });
             }
         }
     }
@@ -118,7 +118,7 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
     }
     
     fileprivate func buddyName(for item: ConversationMessage) -> String {
-        return XmppService.instance.getClient(for: item.conversation.account)?.module(.roster).store.get(for: item.conversation.jid)?.name ?? item.conversation.jid.stringValue;
+        return item.nickname;
     }
     
     class TableRowView: NSTableRowView {
