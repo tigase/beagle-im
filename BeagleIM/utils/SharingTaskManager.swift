@@ -295,12 +295,10 @@ class AbstractSharingTaskItem: NSObject, URLSessionDelegate {
         }
     }
     weak var task: SharingTaskManager.SharingTask?;
-    private let attachmentSender: AttachmentSender;
     private let chat: Conversation;
     private(set) var result: Result<URL,ShareError>?;
     
-    init(chat: Conversation, sender: AttachmentSender) {
-        self.attachmentSender = sender;
+    init(chat: Conversation) {
         self.chat = chat;
     }
     
@@ -318,6 +316,15 @@ class AbstractSharingTaskItem: NSObject, URLSessionDelegate {
     
     func start() {
         completed(with: .failure(.notSupported));
+    }
+    
+    private func sendAttachmentToConversation(originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?, completionHandler: (() -> Void)?) {
+        var appendix = ChatAttachmentAppendix();
+        appendix.state = .downloaded;
+        appendix.filename = originalUrl.lastPathComponent;
+        appendix.filesize = Int(filesize);
+        appendix.mimetype = mimeType;
+        chat.sendAttachment(url: uploadedUrl.absoluteString, appendix: appendix, originalUrl: originalUrl, completionHandler: completionHandler);
     }
     
     func downscaleIfRequired(at source: URL, completionHandler: @escaping (Result<(URL,Bool),ShareError>)->Void) {
@@ -392,7 +399,7 @@ class AbstractSharingTaskItem: NSObject, URLSessionDelegate {
     }
     
     func prepareAndSendFile(url: URL, filename: String, completionHandler: (()->Void)?) {
-        attachmentSender.prepareAttachment(chat: chat, originalURL: url, completionHandler: { result in
+        chat.prepareAttachment(url: url, completionHandler: { result in
             switch result {
             case .success(let (newUrl, isCopy, urlConverter)):
                 self.sendFile(originalUrl: url, url: newUrl, filename: filename, urlConverter: urlConverter, completionHandler: {
@@ -419,14 +426,14 @@ class AbstractSharingTaskItem: NSObject, URLSessionDelegate {
             switch result {
             case .success(let uploadedUrl):
                 let urlToSend = urlConverter?(uploadedUrl) ?? uploadedUrl;
-                self.attachmentSender.sendAttachment(chat: self.chat, originalUrl: originalUrl, uploadedUrl: urlToSend, filesize: Int64(filesize), mimeType: mimeType, completionHandler: completionHandler);
+                self.sendAttachmentToConversation(originalUrl: originalUrl, uploadedUrl: urlToSend, filesize: Int64(filesize), mimeType: mimeType, completionHandler: completionHandler);
             case .failure(let error):
                 if let task = self.task {
                     switch error {
                     case .invalidResponseCode(let uploadedUrl):
                         task.askForInvalidHttpResponse(url: uploadedUrl, completionHandler: { result1 in
                             if result1 {
-                                self.attachmentSender.sendAttachment(chat: self.chat, originalUrl: originalUrl, uploadedUrl: uploadedUrl, filesize: Int64(filesize), mimeType: mimeType, completionHandler: completionHandler);
+                                self.sendAttachmentToConversation(originalUrl: originalUrl, uploadedUrl: uploadedUrl, filesize: Int64(filesize), mimeType: mimeType, completionHandler: completionHandler);
                                 self.completed(with: .success(uploadedUrl));
                             } else {
                                 completionHandler?();
@@ -492,9 +499,9 @@ class FileURLSharingTaskItem: AbstractSharingTaskItem {
              
     let url: URL;
     
-    init(chat: Conversation, sender: AttachmentSender, url: URL) {
+    init(chat: Conversation, url: URL) {
         self.url = url;
-        super.init(chat: chat, sender: sender);
+        super.init(chat: chat);
     }
     
     override func start() {
@@ -513,9 +520,9 @@ class FilePromiseReceiverTaskItem: AbstractSharingTaskItem {
     
     let filePromiseReceiver: NSFilePromiseReceiver;
     
-    init(chat: Conversation, sender: AttachmentSender, filePromiseReceiver: NSFilePromiseReceiver) {
+    init(chat: Conversation, filePromiseReceiver: NSFilePromiseReceiver) {
         self.filePromiseReceiver = filePromiseReceiver;
-        super.init(chat: chat, sender: sender);
+        super.init(chat: chat);
     }
     
     override func start() {

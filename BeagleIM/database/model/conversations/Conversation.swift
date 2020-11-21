@@ -36,11 +36,30 @@ public protocol Conversation: ConversationProtocol, ConversationKey {
     
     func markAsRead(count: Int) -> Bool;
     func updateLastActivity(_ lastActivity: LastConversationActivity?, timestamp: Date, isUnread: Bool) -> Bool;
+    
+    func sendMessage(text: String, correctedMessageOriginId: String?);
+    func prepareAttachment(url: URL, completionHandler: @escaping (Result<(URL,Bool,((URL)->URL)?),ShareError>)->Void);
+    func sendAttachment(url: String, appendix: ChatAttachmentAppendix, originalUrl: URL?, completionHandler: (()->Void)?);
 }
 
+import TigaseSwiftOMEMO
+
 extension Conversation {
+     
+    
     func loadItems(_ type: ConversationLoadType) -> [ConversationEntry] {
         return DBChatHistoryStore.instance.history(for: self, queryType: type);
+    }
+    
+    func retract(entry: ConversationEntryWithSender) {
+        guard let context = context else {
+            return;
+        }
+        DBChatHistoryStore.instance.originId(for: account, with: jid, id: entry.id, completionHandler: { originId in
+            let message = self.createMessageRetraction(forMessageWithId: originId);
+            self.send(message: message, completionHandler: nil);
+            DBChatHistoryStore.instance.retractMessage(for: self, stanzaId: originId, sender: entry.sender, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
+        })
     }
 }
 

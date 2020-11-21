@@ -666,7 +666,7 @@ class DBChatHistoryStore {
         }
     }
 
-    func originId(for account: BareJID, with jid: BareJID, id: Int, completionHandler: @escaping (String)->Void ){
+    func originId(for account: BareJID, with jid: JID, id: Int, completionHandler: @escaping (String)->Void ){
         dispatcher.async {
             if let stanzaId = try! Database.main.reader({ dataase in
                 try dataase.select(query: .messageFindMessageOriginId, cached: false, params: ["id": id]).mapFirst({ $0.string(for: "stanza_id")});

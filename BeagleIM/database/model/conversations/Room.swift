@@ -95,6 +95,28 @@ public class Room: RoomBase, Conversation, Identifiable {
         }
     }
     
+    public func sendMessage(text: String, correctedMessageOriginId: String?) {
+        let message = self.createMessage(text: text);
+        message.lastMessageCorrectionId = correctedMessageOriginId;
+        self.send(message: message, completionHandler: nil);
+    }
+    
+    public func prepareAttachment(url originalURL: URL, completionHandler: (Result<(URL, Bool, ((URL) -> URL)?), ShareError>) -> Void) {
+        completionHandler(.success((originalURL, false, nil)));
+    }
+    
+    public func sendAttachment(url uploadedUrl: String, appendix: ChatAttachmentAppendix, originalUrl: URL?, completionHandler: (() -> Void)?) {
+        guard ((self.context as? XMPPClient)?.state ?? .disconnected) == .connected, self.state == .joined else {
+            completionHandler?();
+            return;
+        }
+        
+        let message = self.createMessage(text: uploadedUrl);
+        message.oob = uploadedUrl;
+        send(message: message, completionHandler: nil)
+        completionHandler?();
+    }
+    
 }
 
 public struct RoomOptions: Codable, ChatOptionsProtocol {

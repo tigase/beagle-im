@@ -23,7 +23,7 @@ import Foundation
 
 import AVKit
 
-enum ShareError: Error {
+public enum ShareError: Error {
     case unknownError
     case noAccessError
     case noFileSizeError

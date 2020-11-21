@@ -42,8 +42,6 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     override func viewDidLoad() {
         super.viewDidLoad();
         
-        self.attachmentSender = ChannelAttachmentSender.instance;
-        
         self.conversationLogController?.contextMenuDelegate = self;
         
         let cgRef = infoButton.image!.cgImage(forProposedRect: nil, context: nil, hints: nil);
@@ -120,7 +118,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     @IBAction func correctLastMessage(_ sender: AnyObject) {
         for i in 0..<dataSource.count {
             if let item = dataSource.getItem(at: i) as? ConversationMessage, item.state.direction == .outgoing {
-                DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
+                DBChatHistoryStore.instance.originId(for: item.account, with: item.conversation.jid, id: item.id, completionHandler: { [weak self] originId in
                     self?.startMessageCorrection(message: item.message, originId: originId);
                 })
                 return;
@@ -138,7 +136,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             return;
         }
         
-        DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
+        DBChatHistoryStore.instance.originId(for: item.account, with: item.conversation.jid, id: item.id, completionHandler: { [weak self] originId in
             self?.startMessageCorrection(message: item.message, originId: originId);
         })
     }
@@ -161,16 +159,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
             switch result {
             case .alertFirstButtonReturn:
-                DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
-                    let message = chat.createMessageRetraction(forMessageWithId: originId);
-                    message.id = UUID().uuidString;
-                    message.originId = message.id;
-                    guard let client = XmppService.instance.getClient(for: item.account), client.state == .connected else {
-                        return;
-                    }
-                    client.context.writer.write(message);
-                    DBChatHistoryStore.instance.retractMessage(for: chat, stanzaId: originId, sender: item.sender, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
-                })
+                chat.retract(entry: item);
             default:
                 break;
             }
@@ -181,34 +170,8 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         guard let client = XmppService.instance.getClient(for: account), client.state == .connected, channel.state == .joined else {
             return false;
         }
-        let msg = channel.createMessage(text: message);
-        if correctedMessageOriginId != nil {
-            msg.lastMessageCorrectionId = correctedMessageOriginId;
-        }
-        channel.send(message: msg, completionHandler: nil);
+        channel.sendMessage(text: message, correctedMessageOriginId: correctedMessageOriginId);
         return true;
-    }
-    
-    class ChannelAttachmentSender: AttachmentSender {
-        
-        static let instance = ChannelAttachmentSender();
-        
-        func prepareAttachment(chat: Conversation, originalURL: URL, completionHandler: @escaping (Result<(URL, Bool, ((URL) -> URL)?), ShareError>) -> Void) {
-            completionHandler(.success((originalURL, false, nil)))
-        }
-        
-        func sendAttachment(chat: Conversation, originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?, completionHandler: (() -> Void)?) {
-            guard let channel = chat as? Channel, let client = XmppService.instance.getClient(for: channel.account), client.state == .connected, channel.state == .joined else {
-                completionHandler?();
-                return;
-            }
-            
-            let msg = channel.createMessage(text: uploadedUrl.absoluteString);
-            msg.oob = uploadedUrl.absoluteString;
-            channel.send(message: msg, completionHandler: nil);
-            completionHandler?();
-        }
-        
     }
         
     @objc func avatarChanged(_ notification: Notification) {

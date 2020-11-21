@@ -44,8 +44,6 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
     override func viewDidLoad() {
         super.viewDidLoad();
 
-        self.attachmentSender = ChatAttachmentSender.instance;
-        
         self.conversationLogController?.contextMenuDelegate = self;
         
         audioCall.isHidden = true;
@@ -234,13 +232,13 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
 
         switch item {
         case let item as ConversationMessage:
-            MessageEventHandler.sendMessage(chat: chat, body: item.message, url: nil);
+            chat.sendMessage(text: item.message, correctedMessageOriginId: nil);
             DBChatHistoryStore.instance.remove(item: item);
         case let item as ConversationAttachment:
             let oldLocalFile = DownloadStore.instance.url(for: "\(item.id)");
-            MessageEventHandler.sendAttachment(chat: chat, originalUrl: oldLocalFile, uploadedUrl: item.url, appendix: item.appendix, completionHandler: {
+            chat.sendAttachment(url: item.url, appendix: item.appendix, originalUrl: oldLocalFile, completionHandler: {
                 DBChatHistoryStore.instance.remove(item: item);
-            });
+            })
         default:
             break;
         }
@@ -258,7 +256,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
     @IBAction func correctLastMessage(_ sender: AnyObject) {
         for i in 0..<dataSource.count {
             if let item = dataSource.getItem(at: i) as? ConversationMessage, item.state.direction == .outgoing {
-                DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
+                DBChatHistoryStore.instance.originId(for: item.account, with: item.conversation.jid, id: item.id, completionHandler: { [weak self] originId in
                     self?.startMessageCorrection(message: item.message, originId: originId);
                 })
                 return;
@@ -276,7 +274,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
             return;
         }
         
-        DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
+        DBChatHistoryStore.instance.originId(for: item.account, with: item.conversation.jid, id: item.id, completionHandler: { [weak self] originId in
             self?.startMessageCorrection(message: item.message, originId: originId);
         })
     }
@@ -299,16 +297,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
             switch result {
             case .alertFirstButtonReturn:
-                DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
-                    let message = chat.createMessageRetraction(forMessageWithId: originId);
-                    message.id = UUID().uuidString;
-                    message.originId = message.id;
-                    guard let client = XmppService.instance.getClient(for: item.account), client.state == .connected else {
-                        return;
-                    }
-                    client.context.writer.write(message);
-                    DBChatHistoryStore.instance.retractMessage(for: chat, stanzaId: originId, sender: item.sender, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
-                })
+                chat.retract(entry: item);
             default:
                 break;
             }
@@ -320,7 +309,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
             return false;
             
         }
-        MessageEventHandler.sendMessage(chat: chat, body: message, url: nil, correctedMessageOriginId: correctedMessageOriginId);
+        chat.sendMessage(text: message, correctedMessageOriginId: correctedMessageOriginId);
         return true;
     }
             
@@ -435,55 +424,6 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         popover.animates = true;
         let rect = sender.convert(sender.bounds, to: self.view.window!.contentView!);
         popover.show(relativeTo: rect, of: self.view.window!.contentView!, preferredEdge: .minY);
-    }
-
-    class ChatAttachmentSender: AttachmentSender {
-        
-        static let instance = ChatAttachmentSender();
-        
-        func prepareAttachment(chat: Conversation, originalURL: URL, completionHandler: @escaping (Result<(URL, Bool,((URL)->URL)?), ShareError>) -> Void) {
-            let encryption: ChatEncryption = (chat as? Chat)?.options.encryption ?? .none;
-            switch encryption {
-            case .none:
-                completionHandler(.success((originalURL, false, nil)));
-            case .omemo:
-                guard let omemoModule: OMEMOModule = XmppService.instance.getClient(for: chat.account)?.modulesManager.getModule(OMEMOModule.ID), let data = try? Data(contentsOf: originalURL) else {
-                    completionHandler(.failure(.unknownError));
-                    return;
-                }
-                let result = omemoModule.encryptFile(data: data);
-                switch result {
-                case .success(let (encryptedData, hash)):
-                    let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString);
-                    do {
-                        try encryptedData.write(to: tmpFile);
-                        completionHandler(.success((tmpFile, true, { url in
-                            var parts = URLComponents(url: url, resolvingAgainstBaseURL: true)!;
-                            parts.scheme = "aesgcm";
-                            parts.fragment = hash;
-                            let shareUrl = parts.url!;
-
-                            print("sending url:", shareUrl.absoluteString);
-                            return shareUrl;
-                        })));
-                    } catch {
-                        completionHandler(.failure(.noAccessError));
-                    }
-                case .failure(let err):
-                    completionHandler(.failure(.unknownError));
-                }
-            }
-        }
-        
-        func sendAttachment(chat: Conversation, originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?, completionHandler: (() -> Void)?) {
-            var appendix = ChatAttachmentAppendix();
-            appendix.state = .downloaded;
-            appendix.filename = originalUrl.lastPathComponent;
-            appendix.filesize = Int(filesize);
-            appendix.mimetype = mimeType;
-            MessageEventHandler.sendAttachment(chat: chat as! Chat, originalUrl: originalUrl, uploadedUrl: uploadedUrl.absoluteString, appendix: appendix, completionHandler: completionHandler);
-        }
-        
     }
 }
 

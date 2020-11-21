@@ -65,8 +65,6 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
 
         super.viewDidLoad();
         
-        self.attachmentSender = GroupchatAttachmentSender.instance;
-        
         self.conversationLogController?.contextMenuDelegate = self;
         
         NotificationCenter.default.addObserver(self, selector: #selector(roomStatusChanged), name: MucEventHandler.ROOM_STATUS_CHANGED, object: nil);
@@ -263,7 +261,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     @IBAction func correctLastMessage(_ sender: AnyObject) {
         for i in 0..<dataSource.count {
             if let item = dataSource.getItem(at: i) as? ConversationMessage, item.state.direction == .outgoing {
-                DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
+                DBChatHistoryStore.instance.originId(for: item.account, with: item.conversation.jid, id: item.id, completionHandler: { [weak self] originId in
                     self?.startMessageCorrection(message: item.message, originId: originId);
                 })
                 return;
@@ -281,7 +279,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             return;
         }
         
-        DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
+        DBChatHistoryStore.instance.originId(for: item.account, with: item.conversation.jid, id: item.id, completionHandler: { [weak self] originId in
             self?.startMessageCorrection(message: item.message, originId: originId);
         })
     }
@@ -304,16 +302,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
             switch result {
             case .alertFirstButtonReturn:
-                DBChatHistoryStore.instance.originId(for: item.account, with: item.jid, id: item.id, completionHandler: { [weak self] originId in
-                    let message = chat.createMessageRetraction(forMessageWithId: originId);
-                    message.id = UUID().uuidString;
-                    message.originId = message.id;
-                    guard let client = XmppService.instance.getClient(for: item.account), client.state == .connected else {
-                        return;
-                    }
-                    client.context.writer.write(message);
-                    DBChatHistoryStore.instance.retractMessage(for: chat, stanzaId: originId, sender: item.sender, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
-                })
+                chat.retract(entry: item);
             default:
                 break;
             }
@@ -327,32 +316,9 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         guard room.state == .joined else {
             return false;
         }
-        let message = room.createMessage(text: message);
-        if correctedMessageOriginId != nil {
-            message.lastMessageCorrectionId = correctedMessageOriginId;
-        }
-        room.context?.writer.write(message);
+        
+        room.sendMessage(text: message, correctedMessageOriginId: correctedMessageOriginId);
         return true;
-    }
-    
-    class GroupchatAttachmentSender: AttachmentSender {
-        
-        static let instance = GroupchatAttachmentSender();
-        
-        func prepareAttachment(chat: Conversation, originalURL: URL, completionHandler: @escaping (Result<(URL, Bool, ((URL) -> URL)?), ShareError>) -> Void) {
-            completionHandler(.success((originalURL, false, nil)));
-        }
-        
-        func sendAttachment(chat: Conversation, originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?, completionHandler: (() -> Void)?) {
-            guard let room = chat as? Room, (XmppService.instance.getClient(for: room.account)?.state ?? .disconnected) == .connected, room.state == .joined else {
-                completionHandler?();
-                return;
-            }
-            let message = room.createMessage(text: uploadedUrl.absoluteString);
-            message.oob = uploadedUrl.absoluteString;
-            room.context?.writer.write(message);
-            completionHandler?();
-        }
     }
             
     private var skipNextSuggestion = false;
