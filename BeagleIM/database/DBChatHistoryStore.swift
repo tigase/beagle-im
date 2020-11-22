@@ -82,7 +82,7 @@ class DBChatHistoryStore {
             guard let (item, previews, stanzaId) = try! Database.main.reader({ database in
                 return try database.select("SELECT id, account, jid, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, preview, stanza_id, correction_timestamp FROM chat_history WHERE id = ?", cached: true, params: [id]).mapFirst({ cursor -> (ConversationMessage, [String:String], String?)? in
                     let account: BareJID = cursor["account"]!;
-                    let jid: JID = cursor["jid"]!;
+                    let jid: BareJID = cursor["jid"]!;
                     let key = ConversationKeyItem(account: account, jid: jid);
                     let stanzaId: String? = cursor["stanza_id"];
                     guard let item = DBChatHistoryStore.instance.itemFrom(cursor: cursor, for: key) as? ConversationMessage, let previewStr: String = cursor["preview"] else {
@@ -157,9 +157,9 @@ class DBChatHistoryStore {
         self.process(chatState: chatState, for: conversation.account, with: conversation.jid);
     }
     
-    open func process(chatState: ChatState, for account: BareJID, with jid: JID) {
+    open func process(chatState: ChatState, for account: BareJID, with jid: BareJID) {
         dispatcher.async {
-            DBChatStore.instance.process(chatState: chatState, for: account, with: jid.bareJid);
+            DBChatStore.instance.process(chatState: chatState, for: account, with: jid);
         }
     }
 
@@ -262,7 +262,7 @@ class DBChatHistoryStore {
             }
             if let originId = stanzaId, let correctedMessageId = message.lastMessageCorrectionId, self.correctMessageSync(for: conversation, stanzaId: correctedMessageId, sender: sender, data: body, correctionStanzaId: originId, correctionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, newState: state) {
                 if let chatState = message.chatState {
-                    DBChatStore.instance.process(chatState: chatState, for: conversation.account, with: conversation.jid.bareJid);
+                    DBChatStore.instance.process(chatState: chatState, for: conversation.account, with: conversation.jid);
                 }
                 return;
             }
@@ -571,7 +571,7 @@ class DBChatHistoryStore {
         markAsRead(for: conversation.account, with: conversation.jid, before: before);
     }
 
-    open func markAsRead(for account: BareJID, with jid: JID, before: Date) {
+    open func markAsRead(for account: BareJID, with jid: BareJID, before: Date) {
         dispatcher.async {
             let updatedRecords = try! Database.main.writer({ database -> Int in
                 try database.update(query: .messagesMarkAsReadBefore, params: ["account": account, "jid": jid, "before": before]);
@@ -641,8 +641,8 @@ class DBChatHistoryStore {
     private func removePreviews(idOfRelatedToItem masterId: Int) {
         if #available(macOS 10.15, *) {
             let linkPreviews = try! Database.main.reader({ database in
-                return try database.select(query: .messageFindLinkPreviewsForMessage, cached: false, params: ["master_id": masterId]).mapAll({ cursor -> (Int, BareJID, JID)? in
-                    guard let id: Int = cursor["id"], let account: BareJID = cursor["account"], let jid: JID = cursor["jid"] else {
+                return try database.select(query: .messageFindLinkPreviewsForMessage, cached: false, params: ["master_id": masterId]).mapAll({ cursor -> (Int, BareJID, BareJID)? in
+                    guard let id: Int = cursor["id"], let account: BareJID = cursor["account"], let jid: BareJID = cursor["jid"] else {
                         return nil;
                     }
                     return (id, account, jid);
@@ -666,7 +666,7 @@ class DBChatHistoryStore {
         }
     }
 
-    func originId(for account: BareJID, with jid: JID, id: Int, completionHandler: @escaping (String)->Void ){
+    func originId(for account: BareJID, with jid: BareJID, id: Int, completionHandler: @escaping (String)->Void ){
         dispatcher.async {
             if let stanzaId = try! Database.main.reader({ dataase in
                 try dataase.select(query: .messageFindMessageOriginId, cached: false, params: ["id": id]).mapFirst({ $0.string(for: "stanza_id")});
@@ -761,7 +761,7 @@ class DBChatHistoryStore {
             print("searching for:", tokens, "query:", query);
             let items = try! Database.main.reader({ database in
                 try database.select(query: .messageSearchHistory, params: ["account": account, "jid": jid, "query": query]).mapAll({ cursor -> ConversationMessage? in
-                    guard let account: BareJID = cursor["account"], let jid: JID = cursor["jid"] else {
+                    guard let account: BareJID = cursor["account"], let jid: BareJID = cursor["jid"] else {
                         return nil;
                     }
                     return self.itemFrom(cursor: cursor, for: ConversationKeyItem(account: account, jid: jid)) as? ConversationMessage;

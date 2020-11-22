@@ -41,7 +41,7 @@ class ChatInvitationCellView: BaseChatCellView {
         self.appendix = invitation.appendix;
 
         if invitation.state.direction == .incoming, let account = self.account, let channel = self.appendix?.channel {
-            acceptButton.isHidden = DBChatStore.instance.conversation(for: account, with: JID(channel)) != nil;
+            acceptButton.isHidden = DBChatStore.instance.conversation(for: account, with: channel) != nil;
         } else {
             acceptButton.isHidden = true;
         }

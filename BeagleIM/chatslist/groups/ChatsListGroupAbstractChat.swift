@@ -77,7 +77,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         }
     }
     
-    func forChat(account: BareJID, jid: JID, execute: @escaping (ChatItemProtocol) -> Void) {
+    func forChat(account: BareJID, jid: BareJID, execute: @escaping (ChatItemProtocol) -> Void) {
         self.dispatcher.async {
             let items = DispatchQueue.main.sync { return self.items; };
             guard let item = items.first(where: { (it) -> Bool in
@@ -200,7 +200,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         dispatcher.async {
             var items = DispatchQueue.main.sync { return self.items };
             guard let idx = items.firstIndex(where: { (item) -> Bool in
-                item.chat.account == account && item.chat.jid.bareJid == jid;
+                item.chat.account == account && item.chat.jid == jid;
             }) else {
                 return;
             }
@@ -218,7 +218,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         dispatcher.async {
             let items = DispatchQueue.main.sync { return self.items };
             guard let idx = items.firstIndex(where: { (item) -> Bool in
-                item.chat.account == account && item.chat.jid.bareJid == jid
+                item.chat.account == account && item.chat.jid == jid
             }) else {
                 executeIfNotExists?();
                 return;

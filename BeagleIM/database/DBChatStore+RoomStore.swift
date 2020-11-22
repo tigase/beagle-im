@@ -31,7 +31,7 @@ extension DBChatStore: RoomStore {
     }
     
     public func room(for context: Context, with jid: BareJID) -> Room? {
-        return conversation(for: context.userBareJid, with: JID(jid)) as? Room;
+        return conversation(for: context.userBareJid, with: jid) as? Room;
     }
     
     public func createRoom(for context: Context, with jid: BareJID, nickname: String, password: String?) -> ConversationCreateResult<Room> {
@@ -40,11 +40,11 @@ extension DBChatStore: RoomStore {
         }
     
         let account = context.userBareJid;
-        guard let room: Room = createConversation(for: account, with: JID(jid), execute: {
+        guard let room: Room = createConversation(for: account, with: jid, execute: {
             let timestamp = Date();
-            let id = try! self.openConversation(account: account, jid: JID(jid), type: .room, timestamp: timestamp, nickname: nickname, password: password, options: nil);
+            let id = try! self.openConversation(account: account, jid: jid, type: .room, timestamp: timestamp, nickname: nickname, password: password, options: nil);
 
-            let room = Room(context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity(for: account, jid: JID(jid)), unread: 0, options: RoomOptions(), name: nil, nickname: nickname, password: password);
+            let room = Room(context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity(for: account, jid: jid), unread: 0, options: RoomOptions(), name: nil, nickname: nickname, password: password);
 
             return room;
         }) else {

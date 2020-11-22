@@ -25,16 +25,16 @@ import TigaseSwift
 public protocol ConversationKey {
 
     var account: BareJID { get }
-    var jid: JID { get }
+    var jid: BareJID { get }
     
 }
 
 public class ConversationKeyItem: ConversationKey {
     
     public let account: BareJID;
-    public let jid: JID;
+    public let jid: BareJID;
     
-    init(account: BareJID, jid: JID) {
+    init(account: BareJID, jid: BareJID) {
         self.account = account;
         self.jid = jid;
     }

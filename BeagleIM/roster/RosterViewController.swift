@@ -175,7 +175,7 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
             return;
         }
         
-        if let chat = messageModule.chatManager.createChat(for: client, with: JID(selected.jid)) {
+        if let chat = messageModule.chatManager.createChat(for: client, with: selected.jid) {
             NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: chat)
         }
     }

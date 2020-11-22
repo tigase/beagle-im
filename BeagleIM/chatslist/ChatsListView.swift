@@ -49,7 +49,7 @@ class ChatItem: AbstractChatItem {
     
     init(chat: Conversation) {
         if let sessionObject = XmppService.instance.getClient(for: chat.account)?.sessionObject {
-            let rosterItem = RosterModule.getRosterStore(sessionObject).get(for: chat.jid);
+            let rosterItem = RosterModule.getRosterStore(sessionObject).get(for: JID(chat.jid));
             isInRoster = rosterItem != nil;
             super.init(chat: chat, name: rosterItem?.name ?? chat.jid.stringValue);
         } else {
@@ -93,7 +93,7 @@ class UnifiedChatItem: AbstractChatItem {
         var name = chat.jid.stringValue;
         switch chat {
         case let c as Chat:
-            if let rosterItem = XmppService.instance.getClient(for: c.account)?.rosterStore?.get(for: c.jid) {
+            if let rosterItem = XmppService.instance.getClient(for: c.account)?.rosterStore?.get(for: JID(c.jid)) {
                 isInRoster = true;
                 if let value = rosterItem.name, !value.isEmpty {
                     name = value;
@@ -277,7 +277,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     @objc func chatSelected(_ notification: Notification) {
         let messageId = notification.userInfo?["messageId"] as? Int;
         guard let chat = notification.object as? Conversation else {
-            guard let account = notification.userInfo?["account"] as? BareJID, let jid = notification.userInfo?["jid"] as? JID else {
+            guard let account = notification.userInfo?["account"] as? BareJID, let jid = notification.userInfo?["jid"] as? BareJID else {
                 self.outlineView.selectRowIndexes(IndexSet(), byExtendingSelection: false);
                 return;
             }
@@ -517,7 +517,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 let alert = NSAlert();
                 alert.alertStyle = .warning;
                 alert.messageText = "Delete group chat?"
-                alert.informativeText = "You are leaving the group chat \(r.name ?? r.jid.bareJid.stringValue)";
+                alert.informativeText = "You are leaving the group chat \(r.name ?? r.jid.stringValue)";
                 alert.addButton(withTitle: "Delete chat")
                 alert.addButton(withTitle: "Leave chat")
                 alert.addButton(withTitle: "Cancel")
@@ -525,10 +525,10 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                     switch response {
                     case .alertFirstButtonReturn:
                         mucModule.destroy(room: r);
-                        PEPBookmarksModule.remove(from: r.account, bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: r.jid, autojoin: false));
+                        PEPBookmarksModule.remove(from: r.account, bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: JID(r.jid), autojoin: false));
                     case .alertSecondButtonReturn:
                         mucModule.leave(room: r);
-                        PEPBookmarksModule.remove(from: r.account, bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: r.jid, autojoin: false));
+                        PEPBookmarksModule.remove(from: r.account, bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: JID(r.jid), autojoin: false));
                     default:
                         // cancel, nothing to do..
                         break;
@@ -536,7 +536,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 };
             } else {
                 mucModule.leave(room: r);
-                PEPBookmarksModule.remove(from: r.account, bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: r.jid, autojoin: false));
+                PEPBookmarksModule.remove(from: r.account, bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: JID(r.jid), autojoin: false));
             }
         case let c as Channel:
             guard let mixModule: MixModule = XmppService.instance.getClient(for: c.account)?.modulesManager.getModule(MixModule.ID) else {

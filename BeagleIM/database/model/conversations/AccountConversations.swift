@@ -24,7 +24,7 @@ import TigaseSwift
 
 public class AccountConversations {
 
-    private var conversations = [JID: Conversation]();
+    private var conversations = [BareJID: Conversation]();
 
     private let queue = DispatchQueue(label: "accountChats");
 
@@ -48,7 +48,7 @@ public class AccountConversations {
         }
     }
 
-    func open(with jid: JID, execute: () -> Conversation) -> Conversation? {
+    func open(with jid: BareJID, execute: () -> Conversation) -> Conversation? {
         return self.queue.sync(execute: {
             var chats = self.conversations;
             guard let existingChat = chats[jid] else {
@@ -71,7 +71,7 @@ public class AccountConversations {
         });
     }
 
-    func get(with jid: JID) -> Conversation? {
+    func get(with jid: BareJID) -> Conversation? {
         return self.queue.sync(execute: {
             let chats = self.conversations;
             return chats[jid];

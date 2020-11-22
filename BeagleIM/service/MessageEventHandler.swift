@@ -120,21 +120,15 @@ class MessageEventHandler: XmppServiceEventHandler {
 
             DBChatHistoryStore.instance.append(for: e.chat as! Conversation, message: e.message, source: .stream);
         case let e as MessageDeliveryReceiptsModule.ReceiptEvent:
-            guard let from = e.message.from, let account = e.sessionObject.userBareJid else {
+            guard let from = e.message.from?.bareJid, let account = e.sessionObject.userBareJid else {
                 return;
             }
             
-            var conversation: ConversationKey?;
-            if e.message.findChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") != nil {
-                // this is for MUC-PM only!!
-                conversation = DBChatStore.instance.conversation(for: account, with: from);
-            } else {
-                conversation = DBChatStore.instance.conversation(for: account, with: from.withoutResource);
+            guard let conversation = DBChatStore.instance.conversation(for: account, with: from) else {
+                return;
             }
 
-            if let conv = conversation {
-                DBChatHistoryStore.instance.updateItemState(for: conv, stanzaId: e.messageId, from: .outgoing, to: .outgoing_delivered);
-            }
+            DBChatHistoryStore.instance.updateItemState(for: conversation, stanzaId: e.messageId, from: .outgoing, to: .outgoing_delivered);
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
             let account = e.sessionObject.userBareJid!;
             MessageEventHandler.scheduleMessageSync(for: account);
@@ -143,7 +137,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                     for message in messages {
                         var chat = DBChatStore.instance.conversation(for: account, with: message.jid);
                         if chat == nil {
-                            switch DBChatStore.instance.createChat(for: e.context, with: JID(message.jid)) {
+                            switch DBChatStore.instance.createChat(for: e.context, with: message.jid) {
                             case .created(let newChat):
                                 chat = newChat;
                             case .found(let existingChat):
@@ -175,7 +169,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             }
             mcModule.enable();
         case let e as MessageCarbonsModule.CarbonReceivedEvent:
-            guard let account = e.sessionObject.userBareJid, let from = e.message.from, let to = e.message.to else {
+            guard let account = e.sessionObject.userBareJid, let from = e.message.from?.bareJid, let to = e.message.to?.bareJid else {
                 return;
             }
             
@@ -184,11 +178,11 @@ class MessageEventHandler: XmppServiceEventHandler {
                         
             DBChatHistoryStore.instance.append(for: conversation, message: e.message, source: .carbons(action: e.action));
         case let e as MessageArchiveManagementModule.ArchivedMessageReceivedEvent:
-            guard let account = e.sessionObject.userBareJid, let from = e.message.from, let to = e.message.to else {
+            guard let account = e.sessionObject.userBareJid, let from = e.message.from?.bareJid, let to = e.message.to?.bareJid else {
                 return;
             }
             
-            let jid = from.bareJid != account ? from : to;
+            let jid = from != account ? from : to;
             
             let conversation: ConversationKey = DBChatStore.instance.conversation(for: account, with: jid) ?? ConversationKeyItem(account: account, jid: jid);
             

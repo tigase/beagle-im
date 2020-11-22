@@ -44,7 +44,7 @@ enum ConversationSender: Equatable {
         case .incoming:
             switch self {
             case  .buddy(_):
-                return AvatarManager.instance.avatar(for: entry.conversation.jid.bareJid, on: entry.conversation.account)
+                return AvatarManager.instance.avatar(for: entry.conversation.jid, on: entry.conversation.account)
             case .occupant(let nickname, let jid):
                 if let jid = jid {
                     return AvatarManager.instance.avatar(for: jid, on: entry.conversation.account);
@@ -80,7 +80,7 @@ enum ConversationSender: Equatable {
         if let conv = conversation as? Conversation {
             return .buddy(nickname: conv.displayName);
         } else {
-            return .buddy(nickname: XmppService.instance.getClient(for: conversation.account)?.module(.roster).store.get(for: conversation.jid)?.name ?? conversation.jid.stringValue);
+            return .buddy(nickname: XmppService.instance.getClient(for: conversation.account)?.module(.roster).store.get(for: JID(conversation.jid))?.name ?? conversation.jid.stringValue);
         }
     }
 }

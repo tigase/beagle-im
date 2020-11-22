@@ -34,7 +34,7 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     }
     
     var jid: BareJID! {
-        return chat.jid.bareJid;
+        return chat.jid;
     }
 
     private(set) var dataSource: ConversationDataSource!;

@@ -69,7 +69,7 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
             return;
         }
         
-        let jid = JID(self.searchField.stringValue)
+        let jid = BareJID(self.searchField.stringValue)
         
         guard let client = XmppService.instance.getClient(for: account), let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) else {
             self.close();
@@ -157,7 +157,7 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
             return;
         }
         
-        let chat = messageModule.chatManager.createChat(for: client, with: JID(item.jid));
+        let chat = messageModule.chatManager.createChat(for: client, with: item.jid);
         NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: chat)
         // need to handle autoselection of chat on opening it!
         self.close();

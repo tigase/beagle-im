@@ -118,7 +118,7 @@ open class ConversationDetailsViewController: NSViewController, ContactDetailsAc
         jidField.stringValue = jid?.stringValue ?? "";
         if let jid = self.jid, let account = self.account {
             avatarView.image = AvatarManager.instance.avatar(for: jid, on: account);
-            if let channel = DBChatStore.instance.conversation(for: account, with: JID(jid)) as? Channel {
+            if let channel = DBChatStore.instance.conversation(for: account, with: jid) as? Channel {
                 if let name = channel.name {
                     nameField.stringValue = name;
                 }
@@ -175,7 +175,7 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
     open override func viewWillAppear() {
         super.viewWillAppear();
         if let account = self.account, let jid = self.jid {
-            chat = DBChatStore.instance.conversation(for: account, with: JID(jid));
+            chat = DBChatStore.instance.conversation(for: account, with: jid);
         }
         var rows: [NSView] = [];
         if let chat = self.chat {
@@ -190,10 +190,10 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
                 if let client = XmppService.instance.getClient(for: c.account), let blockingModule: BlockingCommandModule = client.modulesManager.getModule(BlockingCommandModule.ID) {
                     blockContact = NSButton(checkboxWithTitle: "Block contact", target: self, action: #selector(blockContactChanged));
                     rows.append(blockContact!);
-                    blockContact?.state = BlockedEventHandler.isBlocked(c.jid, on: client) ? .on : .off;
+                    blockContact?.state = BlockedEventHandler.isBlocked(JID(c.jid), on: client) ? .on : .off;
                     blockContact?.isEnabled = blockingModule.isAvailable;
                 }
-                if XmppService.instance.getClient(for: chat.account)?.rosterStore?.get(for: chat.jid.withoutResource) == nil {
+                if XmppService.instance.getClient(for: chat.account)?.rosterStore?.get(for: JID(chat.jid)) == nil {
                     let button = NSButton(title: "Add to contacts", image: NSImage(named: NSImage.addTemplateName)!, target: self, action: #selector(self.addToRoster(_:)));
                     button.isBordered = false;
                     rows.append(button);
@@ -257,7 +257,7 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
     @objc func blockContactChanged(_ sender: NSButton) {
         if let chat = self.chat as? Chat, let blockingModule: BlockingCommandModule = XmppService.instance.getClient(for: chat.account)?.modulesManager.getModule(BlockingCommandModule.ID) {
             if sender.state == .on {
-                blockingModule.block(jids: [chat.jid], completionHandler: { [weak sender] result in
+                blockingModule.block(jids: [JID(chat.jid)], completionHandler: { [weak sender] result in
                     DispatchQueue.main.async {
                         switch result {
                         case .failure(_):
@@ -268,7 +268,7 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
                     }
                 })
             } else {
-                blockingModule.unblock(jids: [chat.jid], completionHandler: { [weak sender] result in
+                blockingModule.unblock(jids: [JID(chat.jid)], completionHandler: { [weak sender] result in
                     DispatchQueue.main.async {
                         switch result {
                         case .failure(_):
@@ -289,8 +289,8 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
         self.view.window?.close();
         if let addContactController = NSStoryboard(name: "Roster", bundle: nil).instantiateController(withIdentifier: "AddContactController") as? AddContactController {
             _ = addContactController.view;
-            addContactController.jidField.stringValue = chat.jid.bareJid.stringValue;
-            DBVCardStore.instance.vcard(for: chat.jid.bareJid) { (vcard) in
+            addContactController.jidField.stringValue = chat.jid.stringValue;
+            DBVCardStore.instance.vcard(for: chat.jid) { (vcard) in
                 DispatchQueue.main.async {
                     var fn: String = "";
                     if let fn1 = vcard?.fn, !fn1.isEmpty {
@@ -306,7 +306,7 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
                     if let idx = addContactController.accountSelector.itemTitles.firstIndex(of: chat.account.stringValue) {
                         addContactController.accountSelector.selectItem(at: idx);
                     }
-                    addContactController.labelField.stringValue = fn ?? chat.jid.localPart ?? chat.jid.bareJid.stringValue;
+                    addContactController.labelField.stringValue = fn ?? chat.jid.localPart ?? chat.jid.stringValue;
                     let window = NSWindow(contentViewController: addContactController);
                     parent.beginSheet(window, completionHandler: nil);
                 }
@@ -1142,7 +1142,7 @@ open class ConversationAttachmentsViewController: NSViewController, ContactDetai
     
     open override func viewWillAppear() {
         // should show progress indicator...
-        DBChatHistoryStore.instance.loadAttachments(for: ConversationKeyItem(account: account!, jid: JID(jid!)), completionHandler: { attachments in
+        DBChatHistoryStore.instance.loadAttachments(for: ConversationKeyItem(account: account!, jid: jid!), completionHandler: { attachments in
             DispatchQueue.main.async {
                 self.items = attachments.filter({ (attachment) -> Bool in
                     return DownloadStore.instance.url(for: "\(attachment.id)") != nil;

@@ -35,7 +35,7 @@ public class Chat: ChatBase, Conversation, Identifiable {
     private(set) var remoteChatState: ChatState? = nil;
     
     public var displayName: String {
-        return context?.module(.roster).store.get(for: jid)?.name ?? jid.stringValue;
+        return context?.module(.roster).store.get(for: JID(jid))?.name ?? jid.stringValue;
     }
     
     public var notifications: ConversationNotification {
@@ -43,11 +43,11 @@ public class Chat: ChatBase, Conversation, Identifiable {
     }
 
     public var automaticallyFetchPreviews: Bool {
-        return context?.module(.roster).store.get(for: jid) != nil;
+        return context?.module(.roster).store.get(for: JID(jid)) != nil;
     }
 
     
-    init(context: Context, jid: JID, id: Int, timestamp: Date, lastActivity: LastConversationActivity?, unread: Int, options: ChatOptions) {
+    init(context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastConversationActivity?, unread: Int, options: ChatOptions) {
         self.id = id;
         self.timestamp = timestamp;
         self.lastActivity = lastActivity;
@@ -93,7 +93,7 @@ public class Chat: ChatBase, Conversation, Identifiable {
         self.localChatState = state;
         if (remoteChatState != nil) {
             let msg = Message();
-            msg.to = jid;
+            msg.to = JID(jid);
             msg.type = StanzaType.chat;
             msg.chatState = state;
             return msg;
@@ -234,7 +234,7 @@ public class Chat: ChatBase, Conversation, Identifiable {
     }
     
     private func send(message: Message, encryption: ChatEncryption, completionHandler: @escaping (Result<Void,XMPPError>)->Void) {
-        XmppService.instance.tasksQueue.schedule(for: jid.bareJid, task: { callback in
+        XmppService.instance.tasksQueue.schedule(for: jid, task: { callback in
             switch encryption {
             case .none:
                 super.send(message: message, completionHandler: { result in

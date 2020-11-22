@@ -41,7 +41,7 @@ class ConversationEntryWithSender: ConversationEntry {
     }
     @available(*, deprecated, message: "Will be removed!")
     var jid: BareJID {
-        return conversation.jid.bareJid;
+        return conversation.jid;
     }
     
     init(id: Int, conversation: ConversationKey, timestamp: Date, state: ConversationEntryState, sender: ConversationSenderProtocol, encryption: ConversationEntryEncryption) {

@@ -30,11 +30,11 @@ extension DBChatStore: ChatStore {
         return convert(items: self.conversations(for: context.userBareJid));
     }
     
-    public func chat(for context: Context, with jid: JID) -> Chat? {
+    public func chat(for context: Context, with jid: BareJID) -> Chat? {
         return conversation(for: context.userBareJid, with: jid) as? Chat;
     }
     
-    public func createChat(for context: Context, with jid: JID) -> ConversationCreateResult<Chat> {
+    public func createChat(for context: Context, with jid: BareJID) -> ConversationCreateResult<Chat> {
         if let chat = chat(for: context, with: jid) {
             return .found(chat);
         }

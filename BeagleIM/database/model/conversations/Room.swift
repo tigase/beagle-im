@@ -46,7 +46,7 @@ public class Room: RoomBase, Conversation, Identifiable {
     }
     
     public var roomJid: BareJID {
-        return jid.bareJid;
+        return jid;
     }
 
     init(context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: RoomOptions, name: String?, nickname: String, password: String?) {

@@ -543,7 +543,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             window.windowController?.showWindow(self);
             window.beginSheet(windowController.window!, completionHandler: nil);
         case "message-new":
-            guard let account = BareJID(notification.userInfo?["account"] as? String), let jid = JID(notification.userInfo?["jid"] as? String) else {
+            guard let account = BareJID(notification.userInfo?["account"] as? String), let jid = BareJID(notification.userInfo?["jid"] as? String) else {
                 return;
             }
             NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: nil, userInfo: ["account": account, "jid": jid]);
@@ -595,7 +595,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             window.windowController?.showWindow(self);
             window.beginSheet(windowController.window!, completionHandler: nil);
         case "message-new":
-            guard let account = BareJID(userInfo["account"] as? String), let jid = JID(userInfo["jid"] as? String) else {
+            guard let account = BareJID(userInfo["account"] as? String), let jid = BareJID(userInfo["jid"] as? String) else {
                 break;
             }
             NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: nil, userInfo: ["account": account, "jid": jid]);
@@ -700,7 +700,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     guard let account = BareJID(userInfo["account"] as? String), let jid = BareJID(userInfo["jid"] as?    String) else {
                         return false;
                     }
-                    guard chat.account == account && chat.jid.bareJid == jid else {
+                    guard chat.account == account && chat.jid == jid else {
                         return false;
                     }
                     return true;
@@ -717,7 +717,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 guard let account = BareJID(n.userInfo?["account"] as? String), let jid = BareJID(n.userInfo?["jid"] as?    String) else {
                     return;
                 }
-                guard chat.account == account && chat.jid.bareJid == jid else {
+                guard chat.account == account && chat.jid == jid else {
                     return;
                 }
                 NSUserNotificationCenter.default.removeDeliveredNotification(n);

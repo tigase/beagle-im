@@ -40,7 +40,7 @@ class MucEventHandler: XmppServiceEventHandler {
                 mucModule.roomManager.rooms(for: client).forEach { (room) in
                     // first we need to check if room supports MAM
                     if let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID), let mamModule: MessageArchiveManagementModule = client.modulesManager.getModule(MessageArchiveManagementModule.ID) {
-                        discoModule.getInfo(for: room.jid, completionHandler: { result in
+                        discoModule.getInfo(for: JID(room.jid), completionHandler: { result in
                             var mamVersions: [MessageArchiveManagementModule.Version] = [];
                             switch result {
                             case .success(let info):
@@ -52,7 +52,7 @@ class MucEventHandler: XmppServiceEventHandler {
                                 if !mamVersions.isEmpty {
                                     let account = e.sessionObject.userBareJid!;
                                     _ = room.rejoin(fetchHistory: .skip, onJoined: { room in
-                                        MessageEventHandler.syncMessages(for: account, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: room.jid, since: timestamp);
+                                        MessageEventHandler.syncMessages(for: account, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: JID(room.jid), since: timestamp);
                                     });
                                 } else {
                                     _ = room.rejoin(fetchHistory: .from(timestamp), onJoined: nil);
@@ -109,7 +109,7 @@ class MucEventHandler: XmppServiceEventHandler {
             
             DispatchQueue.main.async {
                 let alert = Alert();
-                alert.messageText = "Room \(e.room.jid.bareJid.stringValue)";
+                alert.messageText = "Room \(e.room.jid.stringValue)";
                 alert.informativeText = "Could not join room. Reason:\n\(error.reason)";
                 alert.icon = NSImage(named: NSImage.userGroupName);
                 alert.addButton(withTitle: "OK");
@@ -122,7 +122,7 @@ class MucEventHandler: XmppServiceEventHandler {
                         guard let openRoomController = windowController.contentViewController as? OpenGroupchatController else {
                             return;
                         }
-                        let roomJid = e.room.jid.bareJid;
+                        let roomJid = e.room.jid;
                         openRoomController.searchField.stringValue = roomJid.stringValue;
                         openRoomController.componentJids = [BareJID(roomJid.domain)];
                         openRoomController.account = e.sessionObject.userBareJid!;
@@ -165,7 +165,7 @@ class MucEventHandler: XmppServiceEventHandler {
                     return [n];
                 }).first ?? e.invitee?.stringValue ?? "";
                 
-                content.body = "User \(name) rejected invitation to room \(e.room.jid.bareJid)";
+                content.body = "User \(name) rejected invitation to room \(e.room.jid)";
                 content.sound = UNNotificationSound.default;
                 let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
                 UNUserNotificationCenter.current().add(request) { (error) in
@@ -182,7 +182,7 @@ class MucEventHandler: XmppServiceEventHandler {
                     return [n];
                 }).first ?? e.invitee?.stringValue ?? "";
                 
-                notification.informativeText = "User \(name) rejected invitation to room \(e.room.jid.bareJid)";
+                notification.informativeText = "User \(name) rejected invitation to room \(e.room.jid)";
                 notification.soundName = NSUserNotificationDefaultSoundName;
                 notification.contentImage = NSImage(named: NSImage.userGroupName);
                 NSUserNotificationCenter.default.deliver(notification);
@@ -217,14 +217,14 @@ class MucEventHandler: XmppServiceEventHandler {
             return;
         }
         
-        discoModule.getInfo(for: room.jid, completionHandler: { result in
+        discoModule.getInfo(for: JID(room.jid), completionHandler: { result in
             switch result {
             case .success(let info):
                 let newName = info.identities.first(where: { (identity) -> Bool in
                     return identity.category == "conference";
                 })?.name?.trimmingCharacters(in: .whitespacesAndNewlines);
                 
-                DBChatStore.instance.updateRoomName(for: room.account, with: room.jid.bareJid, name: (newName?.isEmpty ?? true) ? nil : newName);
+                DBChatStore.instance.updateRoomName(for: room.account, with: room.jid, name: (newName?.isEmpty ?? true) ? nil : newName);
             case .failure(_):
                 break;
             }

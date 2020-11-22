@@ -31,26 +31,25 @@ extension DBChatStore: ChannelStore {
     }
     
     public func channel(for context: Context, with jid: BareJID) -> Channel? {
-        return conversation(for: context.userBareJid, with: JID(jid)) as? Channel;
+        return conversation(for: context.userBareJid, with: jid) as? Channel;
     }
     
-    public func createChannel(for context: Context, with jid: BareJID, participantId: String, nick: String?, state: ChannelState) -> ConversationCreateResult<Channel> {
-        if let channel = channel(for: context, with: jid) {
+    public func createChannel(for context: Context, with channelJid: BareJID, participantId: String, nick: String?, state: ChannelState) -> ConversationCreateResult<Channel> {
+        if let channel = channel(for: context, with: channelJid) {
             return .found(channel);
         }
     
-        let channelJid = JID(jid);
         let account = context.userBareJid;
         guard let channel: Channel = createConversation(for: account, with: channelJid, execute: {
             let timestamp = Date();
             let options = ChannelOptions(participantId: participantId, nick: nick, state: state);
             
             let id = try! self.openConversation(account: account, jid: channelJid, type: .channel, timestamp: timestamp, options: options);
-            let channel = Channel(context: context, channelJid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity(for: account, jid: channelJid), unread: 0, options: options);
+            let channel = Channel(context: context, channelJid: channelJid, id: id, timestamp: timestamp, lastActivity: lastActivity(for: account, jid: channelJid), unread: 0, options: options);
 
             return channel;
         }) else {
-            if let channel = self.channel(for: context, with: jid) {
+            if let channel = self.channel(for: context, with: channelJid) {
                 return .found(channel);
             }
             return .none;

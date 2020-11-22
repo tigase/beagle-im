@@ -50,7 +50,7 @@ public class Channel: ChannelBase, Conversation, Identifiable, LastMessageTimest
     }
     
     public var channelJid: BareJID {
-        return jid.bareJid;
+        return jid;
     }
     
     public override var nickname: String? {

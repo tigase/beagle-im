@@ -79,12 +79,7 @@ open class DBChatStore: ContextLifecycleAware {
         })?.items ?? [];
     }
     
-    @available(* , deprecated, message: "Replaced by method accepting full JID instead of BareJID")
     public func conversation(for account: BareJID, with jid: BareJID) -> Conversation? {
-        return conversation(for: account, with: JID(jid));
-    }
-    
-    public func conversation(for account: BareJID, with jid: JID) -> Conversation? {
         return dispatcher.sync(execute: {
             return accountChats[account];
         })?.get(with: jid);
@@ -100,7 +95,7 @@ open class DBChatStore: ContextLifecycleAware {
         return items.filter({ $0 is T }).map({ $0 as! T});
     }
     
-    public func createConversation<T: Conversation>(for account: BareJID, with jid: JID, execute: ()->Conversation) -> T? {
+    public func createConversation<T: Conversation>(for account: BareJID, with jid: BareJID, execute: ()->Conversation) -> T? {
         if let conversation = dispatcher.sync(execute: {
             return accountChats[account];
         })?.open(with: jid, execute: execute) as? T {
@@ -118,7 +113,7 @@ open class DBChatStore: ContextLifecycleAware {
         unloadChats(for: context.userBareJid);
     }
 
-    func openConversation(account: BareJID, jid: JID, type: ConversationType, timestamp: Date = Date(), nickname: String? = nil, password: String? = nil, options: ChatOptionsProtocol?) throws -> Int {
+    func openConversation(account: BareJID, jid: BareJID, type: ConversationType, timestamp: Date = Date(), nickname: String? = nil, password: String? = nil, options: ChatOptionsProtocol?) throws -> Int {
         let params: [String: Any?] = [ "account": account, "jid": jid, "timestamp": Date(), "type": type.rawValue, "options": options, "nickname": nickname, "password": password];
         return try Database.main.writer({ database in
             try database.insert(query: .chatInsert, params: params);
@@ -141,18 +136,18 @@ open class DBChatStore: ContextLifecycleAware {
 
     func process(chatState remoteChatState: ChatState, for account: BareJID, with jid: BareJID) {
         dispatcher.async {
-            if let chat = self.conversation(for: account, with: JID(jid)) as? Chat, chat.update(remoteChatState: remoteChatState) {
+            if let chat = self.conversation(for: account, with: jid) as? Chat, chat.update(remoteChatState: remoteChatState) {
                 NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: chat);
             }
         }
     }
 
-    func newMessage(for account: BareJID, with jid: JID, timestamp: Date, itemType: ItemType?, message: String?, state: ConversationEntryState, remoteChatState: ChatState? = nil, senderNickname: String? = nil, completionHandler: @escaping ()->Void) {
+    func newMessage(for account: BareJID, with jid: BareJID, timestamp: Date, itemType: ItemType?, message: String?, state: ConversationEntryState, remoteChatState: ChatState? = nil, senderNickname: String? = nil, completionHandler: @escaping ()->Void) {
         let lastActivity = LastChatActivity.from(itemType: itemType, data: message, direction: state.direction, sender: senderNickname);
         newMessage(for: account, with: jid, timestamp: timestamp, lastActivity: lastActivity, state: state, remoteChatState: remoteChatState, completionHandler: completionHandler);
     }
 
-    func newMessage(for account: BareJID, with jid: JID, timestamp: Date, lastActivity: LastChatActivity?, state: ConversationEntryState, remoteChatState: ChatState? = nil, completionHandler: @escaping ()->Void) {
+    func newMessage(for account: BareJID, with jid: BareJID, timestamp: Date, lastActivity: LastChatActivity?, state: ConversationEntryState, remoteChatState: ChatState? = nil, completionHandler: @escaping ()->Void) {
         dispatcher.async {
             if let conversation = self.conversation(for: account, with: jid) {
                 let unread = lastActivity != nil && state.isUnread;
@@ -176,7 +171,7 @@ open class DBChatStore: ContextLifecycleAware {
         }
     }
 
-    func markAsRead(for account: BareJID, with jid: JID, count: Int? = nil) {
+    func markAsRead(for account: BareJID, with jid: BareJID, count: Int? = nil) {
         dispatcher.async {
             if let conversation = self.conversation(for: account, with: jid) {
                 let unread = conversation.unread;
@@ -192,7 +187,7 @@ open class DBChatStore: ContextLifecycleAware {
 
     func updateRoomName(for account: BareJID, with jid: BareJID, name: String?) {
         dispatcher.async {
-            if let conversation = self.conversation(for: account, with: JID(jid)) {
+            if let conversation = self.conversation(for: account, with: jid) {
                 if let room = conversation as? Room, room.name != name {
                     room.name = name;
                     if try! Database.main.writer({ database -> Int in
@@ -240,17 +235,17 @@ open class DBChatStore: ContextLifecycleAware {
         });
         if conversation is Room {
             DispatchQueue.global().async {
-                DBChatHistorySyncStore.instance.removeSyncPeriods(forAccount: account, component: conversation.jid.bareJid);
+                DBChatHistorySyncStore.instance.removeSyncPeriods(forAccount: account, component: conversation.jid);
             }
         }
     }
 
-    public func lastActivity(for account: BareJID, jid: JID) -> LastChatActivity? {
+    public func lastActivity(for account: BareJID, jid: BareJID) -> LastChatActivity? {
         return getLastActivity(for: account, jid: jid)
     }
     
     @available(*, deprecated, renamed: "lastActivity")
-    public func getLastActivity(for account: BareJID, jid: JID) -> LastChatActivity? {
+    public func getLastActivity(for account: BareJID, jid: BareJID) -> LastChatActivity? {
         return dispatcher.sync {
             return try! Database.main.reader({ database in
                 try database.select(query: .chatFindLastActivity, params: ["account": account, "jid": jid]).mapFirst({ cursor -> LastChatActivity? in
@@ -288,7 +283,7 @@ open class DBChatStore: ContextLifecycleAware {
                     }
                     let id = cursor.int(for: "id")!;
                     let unread = cursor.int(for: "unread") ?? 0;
-                    guard let jid = cursor.jid(for: "jid"), let creationTimestamp = cursor.date(for: "creation_timestamp"), let lastMessageTimestamp = cursor.date(for: "timestamp") else {
+                    guard let jid = cursor.bareJid(for: "jid"), let creationTimestamp = cursor.date(for: "creation_timestamp"), let lastMessageTimestamp = cursor.date(for: "timestamp") else {
                         return nil;
                     }
                     let lastMessageEncryption = MessageEncryption(rawValue: cursor.int(for: "lastEncryption") ?? 0) ?? .none;
@@ -304,13 +299,13 @@ open class DBChatStore: ContextLifecycleAware {
                             return nil;
                         }
                         let options: RoomOptions? = cursor.object(for: "options");
-                        let room = Room(context: context, jid: jid.bareJid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options ?? RoomOptions(), name: cursor.string(for: "name"), nickname: nickname, password: cursor.string(for: "password"));
+                        let room = Room(context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options ?? RoomOptions(), name: cursor.string(for: "name"), nickname: nickname, password: cursor.string(for: "password"));
                         return room;
                     case .channel:
                         guard let options: ChannelOptions = cursor.object(for: "options") else {
                             return nil;
                         }
-                        return Channel(context: context, channelJid: jid.bareJid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options);
+                        return Channel(context: context, channelJid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options);
                     }
                 });
             })
@@ -351,7 +346,7 @@ open class DBChatStore: ContextLifecycleAware {
     }
 
     // FIXME: move to the conversation object!
-    open func updateOptions<T>(for account: BareJID, jid: JID, options: T, completionHandler: (()->Void)?) where T: ChatOptionsProtocol {
+    open func updateOptions<T>(for account: BareJID, jid: BareJID, options: T, completionHandler: (()->Void)?) where T: ChatOptionsProtocol {
         dispatcher.async {
             try! Database.main.writer({ database in
                 try database.update(query: .chatUpdateOptions, params: ["options": options, "account": account, "jid": jid]);

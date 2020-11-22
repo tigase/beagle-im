@@ -69,7 +69,7 @@ class ChatsListGroupChat: ChatsListGroupAbstractChat {
             self.updateItem(for: account, jid: rosterItem.jid.bareJid, executeIfExists: { (item) in
                 (item as? ChatItem)?.name = ((e.action != .removed) ? rosterItem.name : nil) ?? rosterItem.jid.stringValue;
             }, executeIfNotExists: {
-                guard let chat = DBChatStore.instance.conversation(for: account, with: rosterItem.jid.withoutResource) as? Chat else {
+                guard let chat = DBChatStore.instance.conversation(for: account, with: rosterItem.jid.bareJid) as? Chat else {
                     return;
                 }
                 
@@ -126,7 +126,7 @@ class ChatsListGroupChatUnknown: ChatsListGroupAbstractChat {
             self.updateItem(for: account, jid: rosterItem.jid.bareJid, executeIfExists: { (item) in
                 (item as? ChatItem)?.name = ((e.action != .removed) ? rosterItem.name : nil) ?? rosterItem.jid.stringValue;
             }, executeIfNotExists: {
-                guard let chat = DBChatStore.instance.conversation(for: account, with: rosterItem.jid.withoutResource) as? Chat else {
+                guard let chat = DBChatStore.instance.conversation(for: account, with: rosterItem.jid.bareJid) as? Chat else {
                     return;
                 }
                 
