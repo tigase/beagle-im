@@ -31,10 +31,10 @@ class ConversationMessage: ConversationEntryWithSender {
         return correctionTimestamp != nil;
     }
     
-    init(id: Int, conversation: ConversationKey, timestamp: Date, state: ConversationEntryState, sender: ConversationSenderProtocol, encryption: ConversationEntryEncryption, message: String, correctionTimestamp: Date?) {
+    init(id: Int, conversation: ConversationKey, timestamp: Date, state: ConversationEntryState, sender: ConversationEntrySender, recipient: ConversationEntryRecipient, encryption: ConversationEntryEncryption, message: String, correctionTimestamp: Date?) {
         self.message = message;
         self.correctionTimestamp = correctionTimestamp;
-        super.init(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, encryption: encryption);
+        super.init(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, recipient: recipient, encryption: encryption);
     }
 
     override func isMergeable() -> Bool {

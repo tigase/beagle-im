@@ -27,17 +27,15 @@ class ChatMessageCellView: BaseChatCellView {
 
     var id: Int = 0;
     var ts: Date?;
-    var sender: String?;
+    var sender: String? {
+        return senderName?.stringValue;
+    }
 
     @IBOutlet var message: MessageTextView!
         
     func updateTextColor() {
     }
         
-    override func set(senderName: String, attributedSenderName: NSAttributedString? = nil) {
-        super.set(senderName: senderName, attributedSenderName: attributedSenderName);
-        sender = senderName;
-    }
 
     func set(retraction item: ConversationMessageRetracted, nickname: String? = nil, keywords: [String]? = nil) {
         super.set(item: item);

@@ -55,10 +55,6 @@ class ConversationLogController: AbstractConversationLogController, NSTableViewD
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
 
                 cell.id = item.id;
-                if cell.hasHeader {
-                    cell.set(avatar: item.avatar);
-                }
-                cell.set(senderName: item.nickname);
                 cell.set(retraction: item);
 
                 return cell;
@@ -75,10 +71,6 @@ class ConversationLogController: AbstractConversationLogController, NSTableViewD
                 if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
 
                     cell.id = item.id;
-                    if cell.hasHeader {
-                        cell.set(avatar: item.avatar);
-                    }
-                    cell.set(senderName: item.nickname);
                     cell.set(message: item);
 
                     return cell;
@@ -93,20 +85,12 @@ class ConversationLogController: AbstractConversationLogController, NSTableViewD
             return nil;
         case let item as ConversationAttachment:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatAttachmentContinuationCellView" : "ChatAttachmentCellView"), owner: nil) as? ChatAttachmentCellView {
-                if cell.hasHeader {
-                    cell.set(avatar: item.avatar);
-                }
-                cell.set(senderName: item.nickname);
                 cell.set(item: item);
                 return cell;
             }
             return nil;
         case let item as ConversationInvitation:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatInvitationCellView"), owner: nil) as? ChatInvitationCellView {
-                if cell.hasHeader {
-                    cell.set(avatar: item.avatar);
-                }
-                cell.set(senderName: item.nickname);
                 cell.set(invitation: item);
                 return cell;
             }

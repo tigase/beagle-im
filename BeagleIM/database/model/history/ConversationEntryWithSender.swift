@@ -24,8 +24,9 @@ import TigaseSwift
 
 class ConversationEntryWithSender: ConversationEntry {
     let state: ConversationEntryState;
-    let sender: ConversationSenderProtocol;
+    let sender: ConversationEntrySender;
     let encryption: ConversationEntryEncryption;
+    let recipient: ConversationEntryRecipient;
     
     var avatar: NSImage? {
         return sender.avatar(for: self, direction: state.direction);
@@ -44,9 +45,10 @@ class ConversationEntryWithSender: ConversationEntry {
         return conversation.jid;
     }
     
-    init(id: Int, conversation: ConversationKey, timestamp: Date, state: ConversationEntryState, sender: ConversationSenderProtocol, encryption: ConversationEntryEncryption) {
+    init(id: Int, conversation: ConversationKey, timestamp: Date, state: ConversationEntryState, sender: ConversationEntrySender, recipient: ConversationEntryRecipient, encryption: ConversationEntryEncryption) {
         self.state = state;
         self.sender = sender;
+        self.recipient = recipient;
         self.encryption = encryption;
         super.init(id: id, conversation: conversation, timestamp: timestamp);
     }
@@ -70,7 +72,7 @@ class ConversationEntryWithSender: ConversationEntry {
         guard state.direction == item.state.direction else {
             return false;
         }
-        guard item.sender == sender else {
+        guard item.sender == sender, item.recipient == recipient else {
             return false;
         }
         

@@ -61,13 +61,15 @@ public class AccountConversations {
         });
     }
 
-    func close(conversation: Conversation) -> Bool {
+    func close(conversation: Conversation, execute: ()->Void) -> Bool {
         return self.queue.sync(execute: {
             var chats = self.conversations;
-            defer {
-                self.conversations = chats;
+            let removed = chats.removeValue(forKey: conversation.jid) != nil;
+            self.conversations = chats;
+            if removed {
+                execute();
             }
-            return chats.removeValue(forKey: conversation.jid) != nil;
+            return removed;
         });
     }
 

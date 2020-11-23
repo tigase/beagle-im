@@ -96,7 +96,7 @@ class InviteToChannelViewControllerController: NSViewController, NSTextFieldDele
                                 let mixInvitation = MixInvitation(inviter: channel.account, invitee: jid.bareJid, channel: channel.channelJid, token: nil);
                                 let message = mixModule.createInvitation(mixInvitation, message: body);
                                 message.messageDelivery = .request;
-                                DBChatHistoryStore.instance.appendItem(for: channel, state: .outgoing, sender: .me(conversation: channel), type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), linkPreviewAction: .none, completionHandler: nil);
+                                DBChatHistoryStore.instance.appendItem(for: channel, state: .outgoing, sender: .me(conversation: channel), recipient: .none, type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), linkPreviewAction: .none, completionHandler: nil);
                                 mixModule.write(message);
                             });
                         }
@@ -106,7 +106,7 @@ class InviteToChannelViewControllerController: NSViewController, NSTextFieldDele
                             let mixInvitation = MixInvitation(inviter: channel.account, invitee: jid.bareJid, channel: channel.channelJid, token: nil);
                             let message = mixModule.createInvitation(mixInvitation, message: body);
                             message.messageDelivery = .request;
-                            DBChatHistoryStore.instance.appendItem(for: channel, state: .outgoing, sender: .me(conversation: channel), type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), linkPreviewAction: .none, completionHandler: nil);
+                            DBChatHistoryStore.instance.appendItem(for: channel, state: .outgoing, sender: .me(conversation: channel), recipient: .none, type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), linkPreviewAction: .none, completionHandler: nil);
                             mixModule.write(message);
                         }
                     }

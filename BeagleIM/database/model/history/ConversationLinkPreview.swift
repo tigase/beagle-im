@@ -27,9 +27,9 @@ class ConversationLinkPreview: ConversationEntryWithSender {
     
     let url: String;
     
-    init(id: Int, conversation: ConversationKey, timestamp: Date, state: ConversationEntryState, sender: ConversationSenderProtocol, encryption: ConversationEntryEncryption, url: String) {
+    init(id: Int, conversation: ConversationKey, timestamp: Date, state: ConversationEntryState, sender: ConversationEntrySender, recipient: ConversationEntryRecipient, encryption: ConversationEntryEncryption, url: String) {
         self.url = url;
-        super.init(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, encryption: encryption);
+        super.init(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, recipient: recipient, encryption: encryption);
     }
 
 }

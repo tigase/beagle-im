@@ -389,7 +389,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             for i in 0..<self.dataSource.count {
                 if let item = self.dataSource.getItem(at: i) as? ConversationMessage, item.nickname == nickname {
                     if let view = self.conversationLogController?.tableView.view(atColumn: 0, row: i, makeIfNecessary: false) as? ChatMessageCellView {
-                        view.set(avatar: AvatarManager.instance.avatar(withHash: avatarHash));
+                        view.set(item: item);
                     }
                 }
             }
@@ -418,7 +418,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             for i in 0..<self.dataSource.count {
                 if let item = self.dataSource.getItem(at: i) as? ConversationMessage, item.nickname == e.occupant.nickname {
                     if let view = self.conversationLogController?.tableView.view(atColumn: 0, row: i, makeIfNecessary: false) as? ChatMessageCellView {
-                        view.set(avatar: AvatarManager.instance.avatar(withHash: avatarHash));
+                        view.set(item: item);
                     }
                 }
             }
@@ -733,7 +733,7 @@ extension GroupchatParticipantsContainer: NSMenuDelegate {
         alert.beginSheetModal(for: window, completionHandler: { result in
             switch result {
             case .alertFirstButtonReturn:
-                MucEventHandler.instance.sendPrivateMessage(room: room, recipientNickname: participant.nickname, body: text.string);
+                room.sendPrivateMessage(to: participant, text: text.string);
             default:
                 break;
             }

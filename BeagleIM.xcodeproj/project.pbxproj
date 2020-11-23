@@ -61,6 +61,7 @@
 		FE31409624952DD0007C5CBC /* db-schema-11.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE31409524952DD0007C5CBC /* db-schema-11.sql */; };
 		FE32A94724702D5B00E40BB1 /* db-schema-10.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE32A94624702D5B00E40BB1 /* db-schema-10.sql */; };
 		FE32A94924702FF100E40BB1 /* DBChatHistorySyncStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE32A94824702FF100E40BB1 /* DBChatHistorySyncStore.swift */; };
+		FE336EA6256AA4690088DA83 /* ConversationEntryRecipient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE336EA5256AA4690088DA83 /* ConversationEntryRecipient.swift */; };
 		FE33C4472521FE7400509AAF /* openssl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF5C3FE22632CDE00889863 /* openssl.framework */; };
 		FE34BBD12157901100775B07 /* JabberDataFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE34BBD02157901100775B07 /* JabberDataFormView.swift */; };
 		FE34BBD52157DDF200775B07 /* MucModule_RoomError_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE34BBD42157DDF200775B07 /* MucModule_RoomError_extension.swift */; };
@@ -149,7 +150,7 @@
 		FE8C9F5621B40F9000BE8332 /* RegisterAccountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8C9F5521B40F9000BE8332 /* RegisterAccountController.swift */; };
 		FE8F7CE82562F8A60076C13E /* ConversationEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8F7CE72562F8A60076C13E /* ConversationEntry.swift */; };
 		FE8F7CEC2562F8BD0076C13E /* ConversationKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8F7CEB2562F8BD0076C13E /* ConversationKey.swift */; };
-		FE8F7CF0256452E90076C13E /* ConversationSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8F7CEF256452E90076C13E /* ConversationSender.swift */; };
+		FE8F7CF0256452E90076C13E /* ConversationEntrySender.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8F7CEF256452E90076C13E /* ConversationEntrySender.swift */; };
 		FE8F7CF425645C450076C13E /* ConversationEntryEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8F7CF325645C450076C13E /* ConversationEntryEncryption.swift */; };
 		FE8F7CF825645C610076C13E /* ConversationEntryState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8F7CF725645C610076C13E /* ConversationEntryState.swift */; };
 		FE8F7CFC25651A130076C13E /* ConversationDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8F7CFB25651A130076C13E /* ConversationDataSource.swift */; };
@@ -304,6 +305,7 @@
 		FE31409524952DD0007C5CBC /* db-schema-11.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-11.sql"; sourceTree = "<group>"; };
 		FE32A94624702D5B00E40BB1 /* db-schema-10.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-10.sql"; sourceTree = "<group>"; };
 		FE32A94824702FF100E40BB1 /* DBChatHistorySyncStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBChatHistorySyncStore.swift; sourceTree = "<group>"; };
+		FE336EA5256AA4690088DA83 /* ConversationEntryRecipient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationEntryRecipient.swift; sourceTree = "<group>"; };
 		FE34BBD02157901100775B07 /* JabberDataFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JabberDataFormView.swift; sourceTree = "<group>"; };
 		FE34BBD42157DDF200775B07 /* MucModule_RoomError_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MucModule_RoomError_extension.swift; sourceTree = "<group>"; };
 		FE380AD921B15720008717FA /* DownloadStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadStore.swift; sourceTree = "<group>"; };
@@ -391,7 +393,7 @@
 		FE8C9F5521B40F9000BE8332 /* RegisterAccountController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterAccountController.swift; sourceTree = "<group>"; };
 		FE8F7CE72562F8A60076C13E /* ConversationEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationEntry.swift; sourceTree = "<group>"; };
 		FE8F7CEB2562F8BD0076C13E /* ConversationKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationKey.swift; sourceTree = "<group>"; };
-		FE8F7CEF256452E90076C13E /* ConversationSender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationSender.swift; sourceTree = "<group>"; };
+		FE8F7CEF256452E90076C13E /* ConversationEntrySender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationEntrySender.swift; sourceTree = "<group>"; };
 		FE8F7CF325645C450076C13E /* ConversationEntryEncryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationEntryEncryption.swift; sourceTree = "<group>"; };
 		FE8F7CF725645C610076C13E /* ConversationEntryState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationEntryState.swift; sourceTree = "<group>"; };
 		FE8F7CFB25651A130076C13E /* ConversationDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationDataSource.swift; sourceTree = "<group>"; };
@@ -766,13 +768,14 @@
 				FE6201DD23A502FB00C965A5 /* ConversationMessage.swift */,
 				FE8F7CE72562F8A60076C13E /* ConversationEntry.swift */,
 				FE8F7CEB2562F8BD0076C13E /* ConversationKey.swift */,
-				FE8F7CEF256452E90076C13E /* ConversationSender.swift */,
+				FE8F7CEF256452E90076C13E /* ConversationEntrySender.swift */,
 				FE8F7CF325645C450076C13E /* ConversationEntryEncryption.swift */,
 				FE8F7CF725645C610076C13E /* ConversationEntryState.swift */,
 				FE7561E12566E09900E5C8F9 /* ConversationLinkPreview.swift */,
 				FE7561E52566E0E500E5C8F9 /* ConversationEntryWithSender.swift */,
 				FE7561E92566E38E00E5C8F9 /* ConversationEntryDeleted.swift */,
 				FE7561ED2566E3A900E5C8F9 /* ConversationMessageSystem.swift */,
+				FE336EA5256AA4690088DA83 /* ConversationEntryRecipient.swift */,
 			);
 			path = history;
 			sourceTree = "<group>";
@@ -1176,11 +1179,12 @@
 				FEFFF7D12334E71B004CB9CE /* ChatMessageSystemCellView.swift in Sources */,
 				FE8C9F5621B40F9000BE8332 /* RegisterAccountController.swift in Sources */,
 				FE890D1F23FEF0B900107437 /* AbstractConversationLogController.swift in Sources */,
+				FE336EA6256AA4690088DA83 /* ConversationEntryRecipient.swift in Sources */,
 				FEF9EC4B242F97840090C913 /* AppendixProtocol.swift in Sources */,
 				FE7561E62566E0E500E5C8F9 /* ConversationEntryWithSender.swift in Sources */,
 				FEF9EC512430B1F10090C913 /* PresenceAuthorizationRequestController.swift in Sources */,
 				FE75CD642545E6CE0064A733 /* VideoQuality.swift in Sources */,
-				FE8F7CF0256452E90076C13E /* ConversationSender.swift in Sources */,
+				FE8F7CF0256452E90076C13E /* ConversationEntrySender.swift in Sources */,
 				FE5BE64E213AD19A00463183 /* ChatCellViewMessage.swift in Sources */,
 				FE5202D7227F339D00644C12 /* ChatMessageCellView.swift in Sources */,
 				FEEDFCBF2524A8EC00CEB43D /* ExternalServiceDiscoveryModule_Service_extension.swift in Sources */,

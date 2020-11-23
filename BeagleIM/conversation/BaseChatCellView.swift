@@ -35,24 +35,25 @@ class BaseChatCellView: NSTableCellView {
     var hasHeader: Bool {
         return avatar != nil;
     }
-    
-    func set(avatar: NSImage?) {
-        self.avatar?.image = avatar;
-    }
-    
-    func set(senderName: String, attributedSenderName: NSAttributedString? = nil) {
-        if attributedSenderName == nil {
-            self.senderName?.stringValue = senderName;
-        } else {
-            self.senderName?.attributedStringValue = attributedSenderName!;
-        }
-        self.avatar?.name = senderName;
-    }
        
     func set(item: ConversationEntry) {
         var timestampStr: NSMutableAttributedString? = nil;
 
         if let item = item as? ConversationEntryWithSender {
+            self.avatar?.image = item.sender.avatar(for: item, direction: item.state.direction);
+            
+            if senderName != nil {
+                switch item.recipient {
+                case .none:
+                    self.senderName?.stringValue = item.sender.nickname;
+                case .occupant(let nickname):
+                    let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(item.sender.nickname) " : "To \(nickname)  ");
+                    let font = NSFontManager.shared.convert(NSFont.systemFont(ofSize: senderName!.font!.pointSize - 2), toHaveTrait: [.italicFontMask, .smallCapsFontMask, .unboldFontMask]);
+                    val.append(NSAttributedString(string: " (private message)", attributes: [.font: font, .foregroundColor: NSColor.secondaryLabelColor]));
+                    self.senderName?.attributedStringValue = val;
+                }
+            }
+            
             switch item.encryption {
             case .decrypted, .notForThisDevice, .decryptionFailed:
                 let secured = NSMutableAttributedString(string: "\u{1F512}");
@@ -86,6 +87,8 @@ class BaseChatCellView: NSTableCellView {
             }
             self.state?.textColor = item.state.isError ? NSColor.systemRed : NSColor.secondaryLabelColor;
         } else {
+            self.senderName?.stringValue = "";
+            self.avatar?.image = nil;
             self.timestamp?.attributedStringValue = NSMutableAttributedString(string: formatTimestamp(item.timestamp));
             self.state?.stringValue = "";
         }

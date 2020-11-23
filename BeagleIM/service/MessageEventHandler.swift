@@ -195,7 +195,7 @@ class MessageEventHandler: XmppServiceEventHandler {
     }
     
 
-    static func calculateDirection(for conversation: ConversationKey, direction: MessageDirection, sender: ConversationSenderProtocol) -> MessageDirection {
+    static func calculateDirection(for conversation: ConversationKey, direction: MessageDirection, sender: ConversationEntrySender) -> MessageDirection {
         switch sender {
         case .buddy(_):
             return direction;
@@ -319,34 +319,41 @@ class MessageEventHandler: XmppServiceEventHandler {
         });
     }
 
-    static func extractRealAuthor(from message: Message, for conversation: ConversationKey) -> ConversationSenderProtocol? {
+    static func extractRealAuthor(from message: Message, for conversation: ConversationKey) -> (ConversationEntrySender,ConversationEntryRecipient)? {
         if message.type == .groupchat {
             if let mix = message.mix {
                 if let id = message.from?.resource, let nickname = mix.nickname {
-                    return .participant(id: id, nickname: nickname, jid: mix.jid);
+                    return (.participant(id: id, nickname: nickname, jid: mix.jid), .none);
                 }
                 // invalid sender? what should we do?
                 return nil;
             } else {
                 // in this case it is most likely MUC groupchat message..
                 if let nickname = message.from?.resource {
-                    return .occupant(nickname: nickname, jid: nil);
+                    return (.occupant(nickname: nickname, jid: nil), .none);
                 }
                 // invalid sender? what should we do?
                 return nil;
             }
         } else {
             // this can be 1-1 message from MUC..
-            if conversation is Room {
-                // FIXME: add new support for private MUC messages!
-                if let nickname = message.from?.resource {
-                    return .occupant(nickname: nickname, jid: nil);
+            if let room = conversation as? Room, message.findChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") != nil {
+                if conversation.account == message.from?.bareJid {
+                    // outgoing message!
+                    if let recipientNickname = message.to?.resource {
+                        return (.occupant(nickname: room.nickname, jid: nil), .occupant(nickname: recipientNickname));
+                    }
+                } else {
+                    // incoming message!
+                    if let senderNickname = message.from?.resource {
+                        return (.occupant(nickname: senderNickname, jid: nil), .occupant(nickname: room.nickname));
+                    }
                 }
                 // invalid sender? what should we do?
                 return nil;
             }
         }
-        return conversation.account == message.from?.bareJid ? .me(conversation: conversation) : .buddy(conversation: conversation);
+        return (conversation.account == message.from?.bareJid ? .me(conversation: conversation) : .buddy(conversation: conversation), .none);
     }
     
     static func itemType(fromMessage message: Message) -> ItemType {

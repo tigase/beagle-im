@@ -184,7 +184,7 @@ public class Chat: ChatBase, Conversation, Identifiable {
             case .none:
                 break;
             }
-            DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing_unsent, sender: .me(conversation: self), type: .message, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: text, encryption: messageEncryption, appendix: nil, linkPreviewAction: .none, completionHandler: nil);
+            DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing_unsent, sender: .me(conversation: self), recipient: .none, type: .message, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: text, encryption: messageEncryption, appendix: nil, linkPreviewAction: .none, completionHandler: nil);
         }
         
         resendMessage(content: text, isAttachment: false, encryption: encryption, stanzaId: stanzaId, correctedMessageOriginId: correctedMessageOriginId);
@@ -202,7 +202,7 @@ public class Chat: ChatBase, Conversation, Identifiable {
         case .none:
             break;
         }
-        DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing_unsent, sender: .me(conversation: self), type: .attachment, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: url, encryption: messageEncryption, appendix: nil, linkPreviewAction: .none, completionHandler: { msgId in
+        DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing_unsent, sender: .me(conversation: self), recipient: .none, type: .attachment, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: url, encryption: messageEncryption, appendix: nil, linkPreviewAction: .none, completionHandler: { msgId in
             if let url = originalUrl {
                 _ = DownloadStore.instance.store(url, filename: url.lastPathComponent, with: "\(msgId)");
             }

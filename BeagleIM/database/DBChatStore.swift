@@ -47,7 +47,7 @@ open class DBChatStore: ContextLifecycleAware {
     public let dispatcher: QueueDispatcher;
 
     private var accountChats = [BareJID: AccountConversations]();
-
+    
     fileprivate(set) var unreadMessagesCount: Int = 0 {
         didSet {
             let value = self.unreadMessagesCount;
@@ -86,9 +86,17 @@ open class DBChatStore: ContextLifecycleAware {
     }
     
     public func close(conversation: Conversation) -> Bool {
-        return dispatcher.sync(execute: {
+        let result = dispatcher.sync(execute: {
             return accountChats[conversation.account];
-        })?.close(conversation: conversation) ?? false;
+        })?.close(conversation: conversation, execute: {
+            self.destroy(conversation: conversation);
+        }) ?? false;
+        
+        if result {
+            NotificationCenter.default.post(name: DBChatStore.CHAT_CLOSED, object: conversation);
+        }
+        
+        return result;
     }
 
     func convert<T: Conversation>(items: [Conversation]) -> [T] {
@@ -229,13 +237,13 @@ open class DBChatStore: ContextLifecycleAware {
         }
     }
 
-    private func destroyChat(account: BareJID, conversation: Conversation) {
+    private func destroy(conversation: Conversation) {
         try! Database.main.writer({ database in
             try database.delete(query: .chatDelete, params: ["id": conversation.id]);
         });
         if conversation is Room {
             DispatchQueue.global().async {
-                DBChatHistorySyncStore.instance.removeSyncPeriods(forAccount: account, component: conversation.jid);
+                DBChatHistorySyncStore.instance.removeSyncPeriods(forAccount: conversation.account, component: conversation.jid);
             }
         }
     }
@@ -295,6 +303,7 @@ open class DBChatStore: ContextLifecycleAware {
                         let options: ChatOptions? = cursor.object(for: "options");
                         return Chat(context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options ?? ChatOptions());
                     case .room:
+                        print("loading room:", jid, "with:", timestamp, creationTimestamp, lastMessageTimestamp);
                         guard let nickname = cursor.string(for: "nickname") else {
                             return nil;
                         }

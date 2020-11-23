@@ -1,5 +1,5 @@
 //
-// ConversationMessageRetracted.swift
+// ConversationEntryRecipient.swift
 //
 // BeagleIM
 // Copyright (C) 2020 "Tigase, Inc." <office@tigase.com>
@@ -20,12 +20,17 @@
 //
 
 import Foundation
-import TigaseSwift
 
-class ConversationMessageRetracted: ConversationEntryWithSender {
-        
-    override init(id: Int, conversation: ConversationKey, timestamp: Date, state: ConversationEntryState, sender: ConversationEntrySender, recipient: ConversationEntryRecipient, encryption: ConversationEntryEncryption) {
-        super.init(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, recipient: recipient, encryption: encryption);
-    }
+enum ConversationEntryRecipient: Equatable {
+    case none
+    case occupant(nickname: String)
     
+    var nickname: String? {
+        switch self {
+        case .none:
+            return nil;
+        case .occupant(let nickname):
+            return nickname;
+        }
+    }
 }

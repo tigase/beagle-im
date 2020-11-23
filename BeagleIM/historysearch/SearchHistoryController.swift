@@ -46,8 +46,8 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
         }
         view.id = item.id;
         
-        view.set(avatar: item.avatar);
-        view.set(senderName: item.nickname);
+//        view.set(avatar: item.avatar);
+//        view.set(senderName: item.nickname);
         
         view.set(message: item);
 

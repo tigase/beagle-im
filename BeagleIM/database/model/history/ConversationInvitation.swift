@@ -27,10 +27,10 @@ class ConversationInvitation: ConversationEntryWithSender {
     var message: String?;
     var appendix: ChatInvitationAppendix;
     
-    init(id: Int, conversation: ConversationKey, timestamp: Date, state: ConversationEntryState, sender: ConversationSenderProtocol, encryption: ConversationEntryEncryption, message: String?, appendix: ChatInvitationAppendix) {
+    init(id: Int, conversation: ConversationKey, timestamp: Date, state: ConversationEntryState, sender: ConversationEntrySender, recipient: ConversationEntryRecipient, encryption: ConversationEntryEncryption, message: String?, appendix: ChatInvitationAppendix) {
         self.message = message;
         self.appendix = appendix;
-        super.init(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, encryption: encryption);
+        super.init(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, recipient: recipient, encryption: encryption);
     }
         
 }

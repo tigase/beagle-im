@@ -204,13 +204,6 @@ class MucEventHandler: XmppServiceEventHandler {
             break;
         }
     }
-    
-    open func sendPrivateMessage(room: Room, recipientNickname: String, body: String) {
-        // FIXME: !!
-//        let message = room.createPrivateMessage(body, recipientNickname: recipientNickname);
-//        DBChatHistoryStore.instance.appendItem(for: room.account, with: room.jid, state: .outgoing, authorNickname: room.nickname, authorJid: nil, recipientNickname: recipientNickname, participantId: nil, type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, encryption: .none, encryptionFingerprint: nil, appendix: nil, linkPreviewAction: .auto, completionHandler: nil);
-//        room.context?.writer.write(message);
-    }
         
     fileprivate func updateRoomName(room: Room) {
         guard let client = XmppService.instance.getClient(for: room.account), let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID) else {

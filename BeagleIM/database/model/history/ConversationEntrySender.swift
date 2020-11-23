@@ -1,5 +1,5 @@
 //
-// ConversationSender.swift
+// ConversationEntrySender.swift
 //
 // BeagleIM
 // Copyright (C) 2020 "Tigase, Inc." <office@tigase.com>
@@ -21,8 +21,6 @@
 
 import AppKit
 import TigaseSwift
-
-typealias ConversationSenderProtocol = ConversationEntrySender
 
 enum ConversationEntrySender: Equatable {
     
