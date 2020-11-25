@@ -42,8 +42,6 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     override func viewDidLoad() {
         super.viewDidLoad();
         
-        self.conversationLogController?.contextMenuDelegate = self;
-        
         let cgRef = infoButton.image!.cgImage(forProposedRect: nil, context: nil, hints: nil);
         let representation = NSBitmapImageRep(cgImage: cgRef!);
         let newRep = representation.converting(to: .genericGray, renderingIntent: .default);
@@ -53,6 +51,8 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     }
     
     override func viewWillAppear() {
+        self.conversationLogController?.contextMenuDelegate = self;
+        
         channelNameLabel.title = channel.name ?? channel.channelJid.stringValue;
         channelJidLabel.title = jid.stringValue;
         

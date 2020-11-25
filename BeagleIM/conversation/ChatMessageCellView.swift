@@ -26,10 +26,6 @@ import TigaseSwift
 class ChatMessageCellView: BaseChatCellView {
 
     var id: Int = 0;
-    var ts: Date?;
-    var sender: String? {
-        return senderName?.stringValue;
-    }
 
     @IBOutlet var message: MessageTextView!
         
@@ -39,7 +35,6 @@ class ChatMessageCellView: BaseChatCellView {
 
     func set(retraction item: ConversationMessageRetracted, nickname: String? = nil, keywords: [String]? = nil) {
         super.set(item: item);
-        ts = item.timestamp;
         id = item.id;
         
         let msg = NSAttributedString(string: "(this message has been removed)", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium), toHaveTrait: .italicFontMask), .foregroundColor: NSColor.secondaryLabelColor]);
@@ -50,7 +45,6 @@ class ChatMessageCellView: BaseChatCellView {
 
     func set(message item: ConversationMessage, nickname: String? = nil, keywords: [String]? = nil) {
         super.set(item: item);
-        ts = item.timestamp;
         id = item.id;
         
         if item.isCorrected && item.state.direction == .incoming {

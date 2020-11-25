@@ -156,21 +156,25 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     }
     
     @objc func replySelectedMessages(_ sender: Any) {
-        guard let items = self.conversationLogController?.selectionManager.sortedSelectedTexts(row: (sender as? NSMenuItem)?.tag ?? NSNotFound) else {
+        guard let texts = self.conversationLogController?.selectionManager.selection?.selectedTexts else {
             return;
         }
         
         // need to insert "> " on any "\n"
-        let text: String = items.flatMap { $0.string.split(separator: "\n")}.map {
+        let text: String = prepareReply(from: texts);
+        let current = messageField.string;
+        self.messageField.string = current.isEmpty ? "\(text)\n" : "\(current)\n\(text)\n";
+        self.updateMessageFieldSize();
+    }
+    
+    func prepareReply(from items: [NSAttributedString]) -> String {
+        return items.flatMap { $0.string.split(separator: "\n")}.map {
             if $0.starts(with: ">") {
                 return ">\($0)";
             } else {
                 return "> \($0)"
             }
         }.joined(separator: "\n");
-        let current = messageField.string;
-        self.messageField.string = current.isEmpty ? "\(text)\n" : "\(current)\n\(text)\n";
-        self.updateMessageFieldSize();
     }
 }
 

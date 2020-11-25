@@ -169,6 +169,9 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
     }
     
     @IBAction func contactDoubleClicked(_ sender: NSTableView) {
+        guard sender.clickedRow >= 0 else {
+            return;
+        }
         let selected = self.items[sender.clickedRow];
         
         guard let client = XmppService.instance.getClient(for: selected.account), let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) else {

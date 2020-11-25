@@ -412,14 +412,15 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                 var counter = items.items.count;
 
                 let group = DispatchGroup();
+                
+                group.enter();
                 group.notify(queue: DispatchQueue.main, execute: {
                     self.progressIndicator.stopAnimation(nil);
                     self.componentJids = mucJids.sorted(by: { (j1, j2) -> Bool in
                         return j2.stringValue.compare(j2.stringValue) == .orderedAscending;
                     });
                 })
-                
-                group.enter();
+
                 for item in items.items {
                     group.enter();
                     discoModule.getInfo(for: item.jid, node: item.node, completionHandler: { result in

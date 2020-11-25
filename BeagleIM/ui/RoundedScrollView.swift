@@ -25,6 +25,10 @@ class RoundedScrollView: NSScrollView {
     
     var cornerRadius: CGFloat = 11;
     
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect);
+    }
+    
     required init?(coder: NSCoder) {
         super.init(coder: coder);
     }

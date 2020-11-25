@@ -35,6 +35,10 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         return selectionStart != nil && selectionEnd != nil;
     }
     
+    var hasSingleSender: Bool {
+        return Set(selectedItems.map({ $0.entry.sender.nickname })).count == 1;
+    }
+    
     func initilizeHandlers(controller: AbstractConversationLogController) {
         self.controller = controller;
         (self.controller?.tableView as? ChatViewTableView)?.mouseDelegate = self;
@@ -101,7 +105,9 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
             return;
         }
         
-        let texts = sortedSelectedTexts(row: (sender as? NSMenuItem)?.tag ?? NSNotFound);
+        guard let texts = self.selection?.selectedTexts else {
+            return;
+        }
 
         NSPasteboard.general.clearContents();
         NSPasteboard.general.writeObjects(texts);
@@ -113,9 +119,11 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss";
 
         NSPasteboard.general.clearContents();
-        let items = sortedSelectionItems(row: (sender as? NSMenuItem)?.tag ?? NSNotFound);
+        guard let items = self.selection?.items else {
+            return;
+        }
         let texts: [NSAttributedString] = items.map {
-            let item = NSMutableAttributedString(string: "[\(dateFormatter.string(from: $0.timestamp))] <\($0.sender)>: ");
+            let item = NSMutableAttributedString(string: "[\(dateFormatter.string(from: $0.timestamp))] <\($0.entry.sender.nickname)>: ");
             item.applyFontTraits(.boldFontMask, range: NSRange(0..<item.length));
             item.append($0.attributedString);
             item.removeAttribute(.backgroundColor, range: NSRange(location:0, length: item.length));
@@ -124,44 +132,46 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         NSPasteboard.general.writeObjects(texts);
     }
     
-    func sortedSelectedTexts(row: Int) -> [NSMutableAttributedString] {
-        let texts = sortedSelectionItems(row: row).map { NSMutableAttributedString(attributedString: $0.attributedString) };
-
-        for text in texts {
-            text.removeAttribute(.backgroundColor, range: NSRange(location:0, length: text.length));
-        }
-        
-        if let (begin,end) = selectionEnds() {
-            if let text = texts.last {
-                if end.location < text.length {
-                    text.deleteCharacters(in: NSRange(end.location..<text.length));
-                }
-            }
-            if let text = texts.first {
-                if begin.location > 0 {
-                    text.deleteCharacters(in: NSRange(0..<begin.location));
-                }
-            }
-        }
-        return texts;
-    }
+//    func sortedSelectedTexts(row: Int) -> [NSMutableAttributedString] {
+//        let texts = sortedSelectionItems(row: row).map { NSMutableAttributedString(attributedString: $0.attributedString) };
+//
+//        for text in texts {
+//            text.removeAttribute(.backgroundColor, range: NSRange(location:0, length: text.length));
+//        }
+//
+//        if let (begin,end) = selectionEnds() {
+//            if let text = texts.last {
+//                if end.location < text.length {
+//                    text.deleteCharacters(in: NSRange(end.location..<text.length));
+//                }
+//            }
+//            if let text = texts.first {
+//                if begin.location > 0 {
+//                    text.deleteCharacters(in: NSRange(0..<begin.location));
+//                }
+//            }
+//        }
+//        return texts;
+//    }
+//
+//    func sortedSelectionItems(row: Int) -> [SelectionItem] {
+//        guard let (begin,end) = selectionEnds() else {
+//            guard row != NSNotFound, let view = self.controller?.tableView.view(atColumn: 0, row: row, makeIfNecessary: true) as? ChatMessageCellView, let item = self.controller?.dataSource.getItem(at: row) as? ConversationEntryWithSender else {
+//                return [];
+//            }
+//            return [SelectionItem(entry: item, attributedString: view.message.attributedString())];
+//        }
+//
+//        let range = begin.timestamp...end.timestamp;
+//        return selectedItems.filter({ range.contains($0.timestamp) }).sorted(by: { (e1, e2) -> Bool in
+//            if e1.timestamp == e2.timestamp {
+//                return e1.entryId < e2.entryId;
+//            }
+//            return e1.timestamp < e2.timestamp;
+//        });
+//    }
     
-    func sortedSelectionItems(row: Int) -> [SelectionItem] {
-        guard let (begin,end) = selectionEnds() else {
-            guard row != NSNotFound, let view = self.controller?.tableView.view(atColumn: 0, row: row, makeIfNecessary: true) as? ChatMessageCellView else {
-                return [];
-            }
-            return [SelectionItem(entryId: view.id, timestamp: view.ts!, sender: view.sender ?? "", attributedString: view.message.attributedString())];
-        }
-        
-        let range = begin.timestamp...end.timestamp;
-        return selectedItems.filter({ range.contains($0.timestamp) }).sorted(by: { (e1, e2) -> Bool in
-            if e1.timestamp == e2.timestamp {
-                return e1.entryId < e2.entryId;
-            }
-            return e1.timestamp < e2.timestamp;
-        });
-    }
+    var selection: Selection?;
         
     private func handleLeftMouseDown(event: NSEvent, table: NSTableView, superview: NSView) -> Bool {
         table.enumerateAvailableRowViews({ (rowView, id) in
@@ -175,6 +185,8 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         guard (table.enclosingScrollView?.verticalScroller?.testPart(event.locationInWindow) ?? .noPart) == .noPart else {
             return false;
         }
+        
+        selection = nil;
         
         guard event.clickCount == 1 else {
             switch event.clickCount {
@@ -191,7 +203,10 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
                         selectionStart = SelectionPoint(entryId: itemId, timestamp: ts, location: range.location);
                         selectionEnd = SelectionPoint(entryId: itemId, timestamp: ts, location: range.location + range.length);
                         selectedItems.removeAll();
-                        selectedItems.append(SelectionItem(entryId: itemId, timestamp: ts, sender: view.sender ?? "", attributedString: messageView.attributedString()));
+                        if let item = self.controller?.dataSource.getItem(withId: itemId) as? ConversationEntryWithSender {
+                            selectedItems.append(SelectionItem(entry: item, attributedString: messageView.attributedString()));
+                            self.selection = Selection(items: selectedItems, ends: selectionEnds());
+                        }
                     }
                  }
                 break;
@@ -223,7 +238,10 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
                         textStorage.endEditing();
                         
                         selectedItems.removeAll();
-                        selectedItems.append(SelectionItem(entryId: itemId, timestamp: ts, sender: view.sender ?? "", attributedString: messageView.attributedString()));
+                        if let item = self.controller?.dataSource.getItem(withId: itemId) as? ConversationEntryWithSender {
+                            selectedItems.append(SelectionItem(entry: item, attributedString: messageView.attributedString()));
+                            self.selection = Selection(items: selectedItems, ends: selectionEnds());
+                        }
                     }
                 }
                 break;
@@ -237,13 +255,16 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
             selectionEnd = nil;
             selectionStart = nil;
             selectedItems.removeAll();
+            selection = nil;
             return false;
         }
         print("selection hitTest():", view, view.hitTest(view.superview!.convert(event.locationInWindow, from: nil)) as Any, (table.enclosingScrollView?.verticalScroller?.testPart(event.locationInWindow) ?? .noPart) == .noPart );
         selectionStart = SelectionPoint(entryId: itemId, timestamp: ts, location: idx);
         inProgress = true;
         if !selectedItems.contains(where: { $0.entryId == itemId }) {
-            selectedItems.append(SelectionItem(entryId: itemId, timestamp: ts, sender: view.sender ??  "", attributedString: messageView.attributedString()));
+            if let item = self.controller?.dataSource.getItem(withId: itemId) as? ConversationEntryWithSender {
+                selectedItems.append(SelectionItem(entry: item, attributedString: messageView.attributedString()));
+            }
         }
         return true;
     }
@@ -260,7 +281,9 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         
         selectionEnd = SelectionPoint(entryId: itemId, timestamp: ts, location: idx);
         if !selectedItems.contains(where: { $0.entryId == itemId }) {
-            selectedItems.append(SelectionItem(entryId: itemId, timestamp: ts, sender: view.sender ??  "", attributedString: messageView.attributedString()));
+            if let item = self.controller?.dataSource.getItem(withId: itemId) as? ConversationEntryWithSender {
+                selectedItems.append(SelectionItem(entry: item, attributedString: messageView.attributedString()));
+            }
         }
         print("selection end:", selectionEnd as Any, itemId, ts, idx);
         
@@ -273,8 +296,11 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
             self.selectionEnd = nil;
             self.selectedItems.removeAll();
             print("not selected anything!")
+            self.selection = nil;
             return true;
         }
+        
+        self.selection = Selection(items: selectedItems, ends: selectionEnds());
         
         return false;
     }
@@ -298,11 +324,11 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         let tsRange = begin.timestamp...end.timestamp;
         
         table.enumerateAvailableRowViews({ (rowView, id) in
-            if let view = rowView.subviews.first as? ChatMessageCellView {
+            if let view = rowView.subviews.first as? ChatMessageCellView, let item = self.controller?.dataSource.getItem(withId: view.id) as? ConversationEntryWithSender {
                 if let textStorage = view.message.textStorage {
                     textStorage.beginEditing();
                     textStorage.removeAttribute(.backgroundColor, range: NSRange(0..<textStorage.length))
-                    if let ts = view.ts, tsRange.contains(ts) {
+                    if tsRange.contains(item.timestamp) {
                         if begin.entryId == end.entryId {
                             if begin.location < end.location {
                                 textStorage.addAttributes([.backgroundColor: NSColor.selectedTextBackgroundColor], range: NSRange(begin.location..<end.location));
@@ -321,7 +347,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
                     textStorage.endEditing();
                     view.message.setNeedsDisplay(view.message.bounds);
                     if !selectedItems.contains(where: { $0.entryId == view.id }) {
-                        selectedItems.append(SelectionItem(entryId: view.id, timestamp: view.ts!, sender: view.sender ??  "", attributedString: view.message.attributedString()));
+                        selectedItems.append(SelectionItem(entry: item, attributedString: view.message.attributedString()));
                     }
                 }
             }
@@ -341,9 +367,17 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         guard table.enclosingScrollView?.frame.contains(point) ?? false else {
             return false;
         }
-
-        let menu = NSMenu(title: "Actions");
+        
         let row = table.row(at: superview.convert(event.locationInWindow, from: nil));
+       
+        if selection == nil {
+            if row != NSNotFound, let view = table.view(atColumn: 0, row: row, makeIfNecessary: false) as? ChatMessageCellView, let item = controller?.dataSource.getItem(at: row) as? ConversationEntryWithSender {
+                selection = Selection(items: [SelectionItem(entry: item, attributedString: view.message.attributedString())], ends: nil);
+            }
+        }
+
+        let menu = Menu(title: "Actions", selectionManager: self);
+        
 
         if row != NSNotFound || (selectionStart != nil && selectionEnd != nil) {
             var copy = menu.addItem(withTitle: "Copy text", action: #selector(copySelectedText), keyEquivalent: "");
@@ -367,6 +401,28 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
             NSMenu.popUpContextMenu(menu, with: event, for: table);
         }
         return true;
+    }
+    
+    class Menu: NSMenu {
+        
+        private weak var selectionManager: ConversationLogSelectionManager?;
+        
+        init(title: String, selectionManager: ConversationLogSelectionManager) {
+            self.selectionManager = selectionManager;
+            super.init(title: title);
+        }
+        
+        required init(coder: NSCoder) {
+            super.init(coder: coder);
+        }
+        
+        deinit {
+            if let selectionManager = self.selectionManager {
+                DispatchQueue.main.async {
+                    selectionManager.selection = nil;
+                }
+            }
+        }
     }
     
     private func estimateSelectionPoint(event: NSEvent, table: NSTableView, superview: NSView) -> (Int, Int, Date, MessageTextView, ChatMessageCellView)? {
@@ -433,6 +489,46 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         }
     }
     
+    struct Selection {
+        let items: [SelectionItem];
+        let begin: SelectionPoint?;
+        let end: SelectionPoint?;
+        
+        init(items: [SelectionItem], ends: (SelectionPoint,SelectionPoint)?) {
+            if let ends = ends {
+                self.begin = ends.0;
+                self.end = ends.1;
+            } else {
+                begin = nil;
+                end = nil;
+            }
+            self.items = items;
+        }
+        
+        var selectedTexts: [NSAttributedString] {
+            let texts = items.map { NSMutableAttributedString(attributedString: $0.attributedString) };
+
+            for text in texts {
+                text.removeAttribute(.backgroundColor, range: NSRange(location:0, length: text.length));
+            }
+            
+            if let begin = begin, let end = end {
+                if let text = texts.last {
+                    if end.location < text.length {
+                        text.deleteCharacters(in: NSRange(end.location..<text.length));
+                    }
+                }
+                if let text = texts.first {
+                    if begin.location > 0 {
+                        text.deleteCharacters(in: NSRange(0..<begin.location));
+                    }
+                }
+            }
+            return texts;
+        }
+        
+    }
+    
     struct SelectionPoint {
         var entryId: Int;
         var timestamp: Date;
@@ -440,9 +536,13 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
     }
  
     struct SelectionItem {
-        var entryId: Int;
-        var timestamp: Date;
-        var sender: String;
+        var entryId: Int {
+            return entry.id;
+        }
+        var timestamp: Date {
+            return entry.timestamp;
+        }
+        var entry: ConversationEntryWithSender;
         var attributedString: NSAttributedString;
     }
 

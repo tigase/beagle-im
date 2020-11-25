@@ -44,8 +44,6 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
     override func viewDidLoad() {
         super.viewDidLoad();
 
-        self.conversationLogController?.contextMenuDelegate = self;
-        
         audioCall.isHidden = true;
         videoCall.isHidden = true;
         scriptsButton.isHidden = true;
@@ -63,6 +61,8 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
     }
 
     override func viewWillAppear() {
+        self.conversationLogController?.contextMenuDelegate = self;
+
         buddyNameLabel.title = chat.displayName;
         buddyJidLabel.title = jid.stringValue;
         buddyAvatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;

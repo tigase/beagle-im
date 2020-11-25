@@ -20,6 +20,7 @@
 //
 
 import Foundation
+import TigaseSQLite3
 import TigaseSwift
 
 public protocol Conversation: ConversationProtocol, ConversationKey {
@@ -103,7 +104,7 @@ public enum ChatEncryption: String {
     case omemo = "omemo";
 }
 
-public protocol ChatOptionsProtocol {
+public protocol ChatOptionsProtocol: DatabaseConvertibleStringValue {
     
     var notifications: ConversationNotification { get }
     

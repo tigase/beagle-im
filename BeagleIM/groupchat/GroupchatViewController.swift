@@ -45,6 +45,8 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         return super.isSharingAvailable && room.state == .joined;
     }
     
+    private var pmPopupPositioningView: NSView!;
+    
     var room: Room! {
         get {
             return (self.chat as! Room);
@@ -56,7 +58,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     }
     
     override func viewDidLoad() {
-        self.participantsContainer = GroupchatParticipantsContainer();
+        self.participantsContainer = GroupchatParticipantsContainer(delegate: self);
         self.participantsContainer?.tableView = self.participantsTableView;
         self.participantsContainer?.room = self.room;
         self.participantsContainer?.registerNotifications();
@@ -64,8 +66,6 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         self.participantsTableView.dataSource = participantsContainer;
 
         super.viewDidLoad();
-        
-        self.conversationLogController?.contextMenuDelegate = self;
         
         NotificationCenter.default.addObserver(self, selector: #selector(roomStatusChanged), name: MucEventHandler.ROOM_STATUS_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(roomOccupantsChanged), name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: nil);
@@ -75,7 +75,12 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     }
     
     override func viewWillAppear() {
+        pmPopupPositioningView = NSView();
+        view.addSubview(pmPopupPositioningView!, positioned: .below, relativeTo: messageFieldScroller);
         super.viewWillAppear();
+        
+        self.conversationLogController?.contextMenuDelegate = self;
+
         sidebarWidthConstraint.constant = Settings.showRoomDetailsSidebar.bool() ? 200 : 0;
         avatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
         buttonToGrayscale(button: participantsButton, template: true);
@@ -230,6 +235,11 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
 //    }
     override func prepareConversationLogContextMenu(dataSource: ConversationDataSource, menu: NSMenu, forRow row: Int) {
         super.prepareConversationLogContextMenu(dataSource: dataSource, menu: menu, forRow: row);
+        if row != NSNotFound || !(self.conversationLogController?.selectionManager.hasSingleSender ?? false) {
+            var reply = menu.addItem(withTitle: "Reply with PM", action: #selector(replySelectedMessagesViaPM), keyEquivalent: "");
+            reply.target = self
+            reply.tag = row;
+        }
         if let item = dataSource.getItem(at: row) as? ConversationEntryWithSender, item.state.direction == .outgoing && (item is ConversationMessage || item is ConversationAttachment) {
             if item.state.isError {
             } else {
@@ -247,6 +257,31 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
 
             }
         }
+    }
+    
+    @objc func replySelectedMessagesViaPM(_ sender: NSMenuItem) {
+        guard let selection = self.conversationLogController?.selectionManager.selection else {
+            return;
+        }
+        
+        guard let nickname = selection.items.first?.entry.sender.nickname, let occupant = room.occupant(nickname: nickname) else {
+            return;
+        }
+        let texts = selection.selectedTexts;
+        
+        // need to insert "> " on any "\n"
+        let text: String = prepareReply(from: texts);
+        
+        showSendPMPopover(for: occupant, withText: text);
+    }
+    
+    func showSendPMPopover(for occupant: MucOccupant, withText: String?) {
+        pmPopupPositioningView?.frame = NSRect(origin: NSPoint(x: self.messageFieldScroller.frame.origin.x + self.messageFieldScroller.contentInsets.left, y: 0), size: NSSize(width: self.messageField.frame.size.width, height: 1));
+        
+        let text = withText != nil ? "\(withText!)\n" : "";
+        
+        let popover = GroupchatPMPopover(room: room, occupant: occupant, text: text, size: self.messageField.visibleRect.size);
+        popover.show(relativeTo: .zero, of: self.pmPopupPositioningView!, preferredEdge: .maxY);
     }
     
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
@@ -447,6 +482,13 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
     }
     var participants: [MucOccupant] = [];
     
+    weak var delegate: GroupchatViewController?;
+    
+    init(delegate: GroupchatViewController) {
+        self.delegate = delegate;
+        super.init();
+    }
+    
     func registerNotifications() {
         NotificationCenter.default.addObserver(self, selector: #selector(roomStatusChanged), name: MucEventHandler.ROOM_STATUS_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(occupantsChanged), name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: nil);
@@ -605,6 +647,97 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
     }
 }
 
+class GroupchatPMPopover: NSPopover {
+
+    let scrollView: NSScrollView!;
+    let textView: AutoresizingTextView!;
+    
+    let room: Room!;
+    let occupant: MucOccupant!;
+    
+    init(room: Room, occupant: MucOccupant, text: String, size: NSSize) {
+        self.room = room;
+        self.occupant = occupant;
+        textView = AutoresizingTextView(frame: NSRect(origin: .zero, size: NSSize(width: size.width-20, height: size.height)));
+        scrollView = RoundedScrollView(frame: NSRect(origin: .zero, size: size));
+        scrollView.translatesAutoresizingMaskIntoConstraints = false;
+        scrollView.hasVerticalScroller = true;
+        scrollView.hasHorizontalScroller = false;
+        scrollView.documentView = textView;
+        scrollView.drawsBackground = true;
+        
+        scrollView.contentInsets = NSEdgeInsets(top: 4, left: 11, bottom: 4, right: 11);
+        let maxHeightConstraint = scrollView.heightAnchor.constraint(lessThanOrEqualToConstant: 108);
+        maxHeightConstraint.priority = .required;
+        let heightConstraint = scrollView.heightAnchor.constraint(equalTo: textView.heightAnchor, constant: 8);
+        heightConstraint.priority = .defaultHigh;
+        NSLayoutConstraint.activate([maxHeightConstraint, heightConstraint, scrollView.widthAnchor.constraint(equalTo: textView.widthAnchor, constant: 20)]);
+        
+        super.init();
+        let viewController = NSViewController();
+        
+        let label = NSTextField(wrappingLabelWithString: "Send private message to \(occupant.nickname):")
+        label.font = NSFont.boldSystemFont(ofSize: NSFont.systemFontSize);
+        label.translatesAutoresizingMaskIntoConstraints = false;
+        label.setContentHuggingPriority(.defaultLow, for: .horizontal);
+        
+        scrollView.setContentHuggingPriority(.defaultHigh, for: .horizontal);
+        scrollView.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal);
+        scrollView.translatesAutoresizingMaskIntoConstraints = false;
+        textView.drawsBackground = false;
+        textView.isRichText = false;
+        
+        let view = NSView(frame: .zero);
+        view.addSubview(label);
+        view.addSubview(scrollView);
+        let sendButton = NSButton(title: "Send", target: self, action: #selector(sendPM));
+        sendButton.translatesAutoresizingMaskIntoConstraints = false;
+        sendButton.setContentHuggingPriority(.defaultHigh, for: .horizontal);
+        view.addSubview(sendButton);
+        let cancelButton = NSButton(title: "Cancel", target: self, action: #selector(self.close));
+        cancelButton.translatesAutoresizingMaskIntoConstraints = false;
+        cancelButton.setContentHuggingPriority(.defaultHigh, for: .horizontal);
+        view.addSubview(cancelButton);
+        NSLayoutConstraint.activate([
+            view.topAnchor.constraint(equalTo: label.topAnchor, constant: -10),
+            view.leadingAnchor.constraint(equalTo: label.leadingAnchor, constant: -20),
+            view.trailingAnchor.constraint(greaterThanOrEqualTo: label.trailingAnchor, constant: 20),
+            scrollView.topAnchor.constraint(equalTo: label.bottomAnchor, constant: 10),
+            view.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: -20),
+            view.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: 20),
+            sendButton.topAnchor.constraint(equalTo: scrollView.bottomAnchor, constant: 10),
+            cancelButton.centerYAnchor.constraint(equalTo: sendButton.centerYAnchor, constant: 0),
+            cancelButton.trailingAnchor.constraint(equalTo: sendButton.leadingAnchor, constant: -10),
+            cancelButton.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 20),
+//            view.leadingAnchor.constraint(greaterThanOrEqualTo: sendButton.leadingAnchor, constant: -20),
+            view.trailingAnchor.constraint(equalTo: sendButton.trailingAnchor, constant: 20),
+            view.bottomAnchor.constraint(equalTo: sendButton.bottomAnchor, constant: 10)
+        ]);
+        view.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal);
+        textView.string = text;
+        
+        viewController.view = view;
+        self.contentViewController = viewController;
+        self.behavior = .semitransient;
+        self.animates = true;
+    }
+    
+    required init?(coder: NSCoder) {
+        self.room = nil;
+        self.occupant = nil;
+        textView = nil;
+        scrollView = nil;
+        super.init(coder: coder)
+    }
+    
+    @objc func sendPM(_ sender: NSButton) {
+        print("sending PM:" + textView.string);
+        room.sendPrivateMessage(to: occupant, text: textView.string)
+        self.close();
+    }
+        
+}
+
 class GroupchatParticipantCellView: NSTableCellView {
     
     @IBOutlet var avatar: AvatarViewWithStatus!;
@@ -714,30 +847,11 @@ extension GroupchatParticipantsContainer: NSMenuDelegate {
     }
     
     @objc func privateMessage(_ menuItem: NSMenuItem) {
-        guard let participant = (menuItem as? MenuItemWithOccupant)?.occupant, let room = self.room else {
+        guard let participant = (menuItem as? MenuItemWithOccupant)?.occupant else {
             return;
         }
         
-        guard let window = self.tableView?.window else {
-            return;
-        }
-        
-        let alert = NSAlert();
-        alert.icon = NSImage(named: NSImage.infoName);
-        alert.messageText = "Enter message to send to \(participant.nickname):";
-        let text = NSTextView(frame: NSRect(origin: .zero, size: CGSize(width: 300, height: 100)));
-        text.isEditable = true;
-        alert.accessoryView = text;
-        alert.addButton(withTitle: "Send");
-        alert.addButton(withTitle: "Cancel");
-        alert.beginSheetModal(for: window, completionHandler: { result in
-            switch result {
-            case .alertFirstButtonReturn:
-                room.sendPrivateMessage(to: participant, text: text.string);
-            default:
-                break;
-            }
-        })
+        self.delegate?.showSendPMPopover(for: participant, withText: nil);
     }
     
     

@@ -55,19 +55,6 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
         self.progressIndicator.startAnimation(nil);
         var errors: [XMPPError] = [];
         let group = DispatchGroup();
-        group.notify(queue: DispatchQueue.main, execute: {
-            self.progressIndicator.stopAnimation(nil);
-            if !errors.isEmpty {
-                let alert = NSAlert();
-                alert.icon = NSImage(named: NSImage.cautionName);
-                alert.messageText = "Authorization error";
-                alert.informativeText = "You are not authorized to view memeber list of this room.";
-                alert.addButton(withTitle: "OK");
-                alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
-                    self.close();
-                });
-            }
-        });
         
         group.enter();
         for aff in affiliations {
@@ -88,6 +75,20 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
             });
         }
         group.leave()
+        
+        group.notify(queue: DispatchQueue.main, execute: {
+            self.progressIndicator.stopAnimation(nil);
+            if !errors.isEmpty {
+                let alert = NSAlert();
+                alert.icon = NSImage(named: NSImage.cautionName);
+                alert.messageText = "Authorization error";
+                alert.informativeText = "You are not authorized to view memeber list of this room.";
+                alert.addButton(withTitle: "OK");
+                alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
+                    self.close();
+                });
+            }
+        });
     }
     
     func numberOfRows(in tableView: NSTableView) -> Int {

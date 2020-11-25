@@ -434,9 +434,6 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                     }
                 }
                 let group = DispatchGroup();
-                group.notify(queue: DispatchQueue.main, execute: {
-                    self?.progressIndicator.stopAnimation(self);
-                });
                 if parentItem.identities.contains(where: { ($0.category == "hierarchy" || $0.category == "pubsub") && $0.type == "leaf" }) {
                     // parent was a leaf so there is no subquery for items info!
                     group.enter();
@@ -497,6 +494,9 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                     })
                     group.leave();
                 }
+                group.notify(queue: DispatchQueue.main, execute: {
+                    self?.progressIndicator.stopAnimation(self);
+                });
             case .failure(let error):
                 parentItem.subitems = [];
                 // FIXME: HANDLE IT SOMEHOW!
