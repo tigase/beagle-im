@@ -292,4 +292,52 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         button.image = img;
     }
 
+    private var skipNextSuggestion = false;
+    private var forceSuggestion = false;
+
+    override func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+        switch commandSelector {
+        case #selector(NSResponder.moveUp(_:)), #selector(NSResponder.moveDown(_:)):
+            self.skipNextSuggestion = true;
+            return false;
+            //return super.textView(textView, doCommandBy: commandSelector);
+        case #selector(NSResponder.deleteForward(_:)), #selector(NSResponder.deleteBackward(_:)):
+            self.skipNextSuggestion = true;
+            return super.textView(textView, doCommandBy: commandSelector);
+        default:
+            return super.textView(textView, doCommandBy: commandSelector);
+        }
+    }
+        
+    override func textDidChange(_ obj: Notification) {
+        super.textDidChange(obj);
+        if !skipNextSuggestion {
+            self.messageField.complete(nil);
+        } else {
+            skipNextSuggestion = false;
+        }
+    }
+        
+    func textView(_ textView: NSTextView, completions words: [String], forPartialWordRange charRange: NSRange, indexOfSelectedItem index: UnsafeMutablePointer<Int>?) -> [String] {
+        guard charRange.length != 0 && charRange.location != NSNotFound else {
+            return [];
+        }
+        
+        let tmp = textView.string;
+        let utf16 = tmp.utf16;
+        let start = utf16.index(utf16.startIndex, offsetBy: charRange.lowerBound);
+        let end = utf16.index(utf16.startIndex, offsetBy: charRange.upperBound);
+        guard let query = String(utf16[start..<end])?.uppercased() else {
+            return [];
+        }
+                
+        let participantNicknames: [String] = self.channel.participants.values.compactMap({ $0.nickname });
+        let suggestions = participantNicknames.filter({ (key) -> Bool in
+            return key.uppercased().starts(with: query);
+        }).sorted();
+
+        index?.initialize(to: -1);//suggestions.isEmpty ? -1 : 0);
+
+        return suggestions.map({ name in "\(name) "});
+    }
 }
