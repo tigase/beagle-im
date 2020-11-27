@@ -45,7 +45,7 @@ extension DBChatStore: ChannelStore {
             let options = ChannelOptions(participantId: participantId, nick: nick, state: state);
             
             let id = try! self.openConversation(account: account, jid: channelJid, type: .channel, timestamp: timestamp, options: options);
-            let channel = Channel(context: context, channelJid: channelJid, id: id, timestamp: timestamp, lastActivity: lastActivity(for: account, jid: channelJid), unread: 0, options: options);
+            let channel = Channel(dispatcher: self.conversationDispatcher, context: context, channelJid: channelJid, id: id, timestamp: timestamp, lastActivity: lastActivity(for: account, jid: channelJid), unread: 0, options: options);
 
             return channel;
         }) else {
@@ -61,46 +61,4 @@ extension DBChatStore: ChannelStore {
         return close(conversation: channel);
     }
     
-    
-    // FIXME: below methods should be part of a Channel class!!
-    
-    public func update(channel: Channel, nick: String?) -> Bool {
-        guard channel.nickname != nick else {
-            return false;
-        }
-        return dispatcher.sync {
-            var options = channel.options;
-            options.nick = nick;
-            self.updateOptions(for: channel.account, jid: channel.jid, options: options, completionHandler: nil);
-
-            channel.nickname = nick;
-            return true;
-        }
-    }
-    
-    public func update(channel: Channel, info: ChannelInfo) -> Bool {
-        guard channel.name != info.name || channel.description != info.description else {
-            return false;
-        }
-        dispatcher.sync {
-            var options = channel.options;
-            options.name = info.name;
-            options.description = info.description;
-            self.updateOptions(for: channel.account, jid: channel.jid, options: options, completionHandler: nil);
-        }
-        return true;
-    }
-    
-    public func update(channel: Channel, state: ChannelState) -> Bool {
-        guard channel.state != state else {
-            return false;
-        }
-        return dispatcher.sync {
-            var options = channel.options;
-            options.state = state;
-            _ = channel.update(state: state);
-            self.updateOptions(for: channel.account, jid: channel.jid, options: options, completionHandler: nil);
-            return true;
-        }
-    }
 }

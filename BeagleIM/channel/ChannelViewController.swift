@@ -331,7 +331,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             return [];
         }
                 
-        let participantNicknames: [String] = self.channel.participants.values.compactMap({ $0.nickname });
+        let participantNicknames: [String] = self.channel.participants.compactMap({ $0.nickname });
         let suggestions = participantNicknames.filter({ (key) -> Bool in
             return key.uppercased().starts(with: query);
         }).sorted();

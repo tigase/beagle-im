@@ -217,7 +217,7 @@ class MucEventHandler: XmppServiceEventHandler {
                     return identity.category == "conference";
                 })?.name?.trimmingCharacters(in: .whitespacesAndNewlines);
                 
-                DBChatStore.instance.updateRoomName(for: room.account, with: room.jid, name: (newName?.isEmpty ?? true) ? nil : newName);
+                room.updateRoom(name: newName);
             case .failure(_):
                 break;
             }

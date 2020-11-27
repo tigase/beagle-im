@@ -42,9 +42,10 @@ extension DBChatStore: RoomStore {
         let account = context.userBareJid;
         guard let room: Room = createConversation(for: account, with: jid, execute: {
             let timestamp = Date();
-            let id = try! self.openConversation(account: account, jid: jid, type: .room, timestamp: timestamp, nickname: nickname, password: password, options: nil);
-
-            let room = Room(context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity(for: account, jid: jid), unread: 0, options: RoomOptions(), name: nil, nickname: nickname, password: password);
+            let options = RoomOptions(nickname: nickname, password: password);
+            let id = try! self.openConversation(account: account, jid: jid, type: .room, timestamp: timestamp, options: options);
+            
+            let room = Room(dispatcher: self.conversationDispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity(for: account, jid: jid), unread: 0, options: options);
 
             return room;
         }) else {

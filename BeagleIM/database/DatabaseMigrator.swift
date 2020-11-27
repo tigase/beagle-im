@@ -46,6 +46,28 @@ public class DatabaseMigrator: DatabaseSchemaMigrator {
                 let data = DBRosterData(groups: groups, annotations: annnotations);
                 try database.update("UPDATE roster_items SET data = :data WHERE id = :id", cached: false, params: ["data": data, "id": itemId]);
             })
+            
+            let roomsToUpdate: [(Int,RoomOptions)] = try database.select("SELECT c.id, c.name, c.nickname, c.password FROM chats c WHERE c.type = 1 AND c.nickname IS NOT NULL", cached: false).mapAll({ c -> (Int,RoomOptions)? in
+                guard let id = c.int(at: 0), let nickname = c.string(at: 2) else {
+                    return nil;
+                }
+                
+                let password = c.string(at: 3);
+                let name = c.string(at: 1);
+
+                var options: RoomOptions = c.object(for: "options") ?? RoomOptions();
+                if options.nickname.isEmpty {
+                    let notifications = options.notifications;
+                    options = RoomOptions(nickname: nickname, password: password);
+                    options.notifications = notifications;
+                    options.name = name;
+                }
+                
+                return (id, options);
+            })
+            for (id, options) in roomsToUpdate {
+                try database.update("update chats set name = null, nickname = null, password = null, options = :options where id = :id", cached: false, params: ["id": id, "options": options])
+            }
         default:
             break;
         }

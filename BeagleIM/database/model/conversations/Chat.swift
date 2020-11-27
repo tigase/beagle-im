@@ -23,14 +23,8 @@ import Foundation
 import TigaseSwift
 import TigaseSwiftOMEMO
 
-public class Chat: ChatBase, Conversation, Identifiable {
-    
-    public let id: Int;
-    public private(set) var lastActivity: LastConversationActivity?;
-    public private(set) var unread: Int;
-    public private(set) var timestamp: Date;
-    public var options: ChatOptions;
-    
+public class Chat: ConversationBase<ChatOptions>, ChatProtocol, Conversation {
+        
     var localChatState: ChatState = .active;
     private(set) var remoteChatState: ChatState? = nil;
     
@@ -38,53 +32,15 @@ public class Chat: ChatBase, Conversation, Identifiable {
         return context?.module(.roster).store.get(for: JID(jid))?.name ?? jid.stringValue;
     }
     
-    public var notifications: ConversationNotification {
-        return options.notifications;
-    }
-
     public var automaticallyFetchPreviews: Bool {
         return context?.module(.roster).store.get(for: JID(jid)) != nil;
     }
 
     
-    init(context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastConversationActivity?, unread: Int, options: ChatOptions) {
-        self.id = id;
-        self.timestamp = timestamp;
-        self.lastActivity = lastActivity;
-        self.unread = unread;
-        self.options = options;
-        super.init(context: context, jid: jid);
+    override init(dispatcher: QueueDispatcher, context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastConversationActivity?, unread: Int, options: ChatOptions) {
+        super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options);
     }
-    
-    public func updateLastActivity(_ lastActivity: LastConversationActivity?, timestamp: Date, isUnread: Bool) -> Bool {
-        if isUnread {
-            unread = unread + 1;
-        }
-        guard self.lastActivity == nil || self.timestamp.compare(timestamp) != .orderedDescending else {
-            return isUnread;
-        }
-        if lastActivity != nil {
-            self.lastActivity = lastActivity;
-            self.timestamp = timestamp;
-        }
-        return true;
-    }
-    
-    public func markAsRead(count: Int) -> Bool {
-        guard unread > 0 else {
-            return false;
-        }
-        unread = max(unread - count, 0);
-        return true
-    }
-    
-    func modifyOptions(_ fn: @escaping (inout ChatOptions) -> Void, completionHandler: (() -> Void)?) {
-        DispatchQueue.main.async {
-            var options = self.options;
-            fn(&options);
-            DBChatStore.instance.updateOptions(for: self.account, jid: self.jid, options: options, completionHandler: completionHandler);
-        }
-    }
+        
     
     func changeChatState(state: ChatState) -> Message? {
         guard localChatState != state else {
@@ -280,7 +236,7 @@ public class Chat: ChatBase, Conversation, Identifiable {
 
 typealias ConversationOptionsProtocol = ChatOptionsProtocol
 
-public struct ChatOptions: Codable, ConversationOptionsProtocol {
+public struct ChatOptions: Codable, ConversationOptionsProtocol, Equatable {
     
     var encryption: ChatEncryption?;
     public var notifications: ConversationNotification = .always;
@@ -303,6 +259,13 @@ public struct ChatOptions: Codable, ConversationOptionsProtocol {
         if notifications != .always {
             try container.encode(notifications.rawValue, forKey: .notifications);
         }
+    }
+    
+    public func equals(_ options: ChatOptionsProtocol) -> Bool {
+        guard let options = options as? ChatOptions else {
+            return false;
+        }
+        return options == self;
     }
     
     enum CodingKeys: String, CodingKey {

@@ -62,6 +62,7 @@
 		FE32A94724702D5B00E40BB1 /* db-schema-10.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE32A94624702D5B00E40BB1 /* db-schema-10.sql */; };
 		FE32A94924702FF100E40BB1 /* DBChatHistorySyncStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE32A94824702FF100E40BB1 /* DBChatHistorySyncStore.swift */; };
 		FE336EA6256AA4690088DA83 /* ConversationEntryRecipient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE336EA5256AA4690088DA83 /* ConversationEntryRecipient.swift */; };
+		FE336EAE2570150F0088DA83 /* ConversationBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE336EAD2570150F0088DA83 /* ConversationBase.swift */; };
 		FE33C4472521FE7400509AAF /* openssl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF5C3FE22632CDE00889863 /* openssl.framework */; };
 		FE34BBD12157901100775B07 /* JabberDataFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE34BBD02157901100775B07 /* JabberDataFormView.swift */; };
 		FE34BBD52157DDF200775B07 /* MucModule_RoomError_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE34BBD42157DDF200775B07 /* MucModule_RoomError_extension.swift */; };
@@ -306,6 +307,7 @@
 		FE32A94624702D5B00E40BB1 /* db-schema-10.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-10.sql"; sourceTree = "<group>"; };
 		FE32A94824702FF100E40BB1 /* DBChatHistorySyncStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBChatHistorySyncStore.swift; sourceTree = "<group>"; };
 		FE336EA5256AA4690088DA83 /* ConversationEntryRecipient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationEntryRecipient.swift; sourceTree = "<group>"; };
+		FE336EAD2570150F0088DA83 /* ConversationBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationBase.swift; sourceTree = "<group>"; };
 		FE34BBD02157901100775B07 /* JabberDataFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JabberDataFormView.swift; sourceTree = "<group>"; };
 		FE34BBD42157DDF200775B07 /* MucModule_RoomError_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MucModule_RoomError_extension.swift; sourceTree = "<group>"; };
 		FE380AD921B15720008717FA /* DownloadStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadStore.swift; sourceTree = "<group>"; };
@@ -754,6 +756,7 @@
 				FE14044C25601FE600BE77E8 /* Room.swift */,
 				FE1404542560226500BE77E8 /* Channel.swift */,
 				FE222D0A256192D300C186A9 /* AccountConversations.swift */,
+				FE336EAD2570150F0088DA83 /* ConversationBase.swift */,
 			);
 			path = conversations;
 			sourceTree = "<group>";
@@ -1207,6 +1210,7 @@
 				FE5C6B2722897F1B003DAB30 /* ServiceDiscoveryViewController.swift in Sources */,
 				FE9CB7022388382A008F1049 /* BlockedEventHandler.swift in Sources */,
 				FE30309A24438ED6003B9D76 /* MessageTextView.swift in Sources */,
+				FE336EAE2570150F0088DA83 /* ConversationBase.swift in Sources */,
 				FE3AA0CD2154069D001667A9 /* ChatsListGroupGroupchat.swift in Sources */,
 				FED7AEC521417328001E164B /* AvatarStore.swift in Sources */,
 				FE75CD6C2546FC820064A733 /* HTTPFileUploadHelper.swift in Sources */,

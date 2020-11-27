@@ -550,7 +550,7 @@ class DBChatHistoryStore {
         }
 
         guard try! Database.main.writer({ database -> Int in
-            try! database.update(query: .messageUpdateState, params: ["id": itemId, "state": MessageState.outgoing_error_unread.rawValue, "error": errorMessage ?? errorCondition?.rawValue ?? "Unknown error"]);
+            try! database.update(query: .messageUpdateState, params: ["id": itemId, "newState": MessageState.outgoing_error_unread.rawValue, "error": errorMessage ?? errorCondition?.rawValue ?? "Unknown error"]);
             return database.changes;
         }) > 0 else {
             return false;
@@ -792,13 +792,6 @@ class DBChatHistoryStore {
         }
     }
 
-//    private func itemFrom(cursor: Cursor) -> ChatViewItemProtocol? {
-//        guard let account = cursor.bareJid(for: "account"), let jid = cursor.bareJid(for: "jid") else {
-//            return nil;
-//        }
-//        return itemFrom(cursor: cursor, for: account, with: jid);
-//    }
-
     private func itemFrom(cursor: Cursor, for conversation: ConversationKey) -> ConversationEntry? {
         let id: Int = cursor["id"]!;
         let state: ConversationEntryState = ConversationEntryState.from(cursor: cursor);
@@ -869,7 +862,10 @@ class DBChatHistoryStore {
             return .occupant(nickname: nickname, jid: cursor["author_jid"]);
         case is Channel:
             guard let participantId: String = cursor["participant_id"], let nickname: String = cursor["author_nickname"] else {
-                return nil;
+                guard let nickname: String = cursor["author_nickname"] else {
+                    return .buddy(nickname: "");
+                }
+                return .occupant(nickname: nickname, jid: cursor["author_jid"]);
             }
             return .participant(id: participantId, nickname: nickname, jid: cursor["author_jid"]);
         default:

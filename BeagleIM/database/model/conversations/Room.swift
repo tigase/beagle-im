@@ -22,25 +22,38 @@
 import Foundation
 import TigaseSwift
 
-public class Room: RoomBase, Conversation, Identifiable {
+public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
         
-    public let id: Int;
- 
-    public private(set) var timestamp: Date;
-    public private(set) var lastActivity: LastChatActivity?;
+    open override var defaultMessageType: StanzaType {
+        return .groupchat;
+    }
+
+    private let occupantsStore = RoomOccupantsStoreBase();
+
+    private var _state: RoomState = .not_joined;
+    public var state: RoomState {
+        return dispatcher.sync {
+            return _state;
+        }
+    }
+    
     public var subject: String? = nil;
-    public private(set) var unread: Int;
-    public var name: String? = nil;
-    public var options: RoomOptions = RoomOptions();
+    public var name: String? {
+        return options.name;
+    }
+    
+    public var nickname: String {
+        return options.nickname;
+    }
+    
+    public var password: String? {
+        return options.password;
+    }
 
     public var displayName: String {
         return name ?? jid.stringValue;
     }
-    
-    public var notifications: ConversationNotification {
-        return options.notifications;
-    }
-    
+        
     public var automaticallyFetchPreviews: Bool {
         return true;
     }
@@ -49,52 +62,59 @@ public class Room: RoomBase, Conversation, Identifiable {
         return jid;
     }
 
-    init(context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: RoomOptions, name: String?, nickname: String, password: String?) {
-        self.id = id;
-        self.timestamp = timestamp;
-        self.lastActivity = lastActivity;
-        self.unread = unread;
-        self.name = name;
-        self.options = options;
-        super.init(context: context, jid: jid, nickname: nickname, password: password, dispatcher: QueueDispatcher(label: "RoomQueue", attributes: [.concurrent]));
+    override init(dispatcher: QueueDispatcher,context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: RoomOptions) {
+        super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options);
     }
 
+    public var occupants: [MucOccupant] {
+        return dispatcher.sync {
+            return self.occupantsStore.occupants;
+        }
+    }
+    
+    public func occupant(nickname: String) -> MucOccupant? {
+        return dispatcher.sync {
+            return occupantsStore.occupant(nickname: nickname);
+        }
+    }
+    
+    public func add(occupant: MucOccupant) {
+        dispatcher.async(flags: .barrier) {
+            self.occupantsStore.add(occupant: occupant);
+        }
+    }
+    
+    public func remove(occupant: MucOccupant) {
+        dispatcher.async(flags: .barrier) {
+            self.occupantsStore.remove(occupant: occupant);
+        }
+    }
+    
+    public func addTemp(nickname: String, occupant: MucOccupant) {
+        dispatcher.async(flags: .barrier) {
+            self.occupantsStore.addTemp(nickname: nickname, occupant: occupant);
+        }
+    }
+    
+    public func removeTemp(nickname: String) -> MucOccupant? {
+        return dispatcher.sync(flags: .barrier) {
+            return occupantsStore.removeTemp(nickname: nickname);
+        }
+    }
+    
     public func updateRoom(name: String?) {
-        self.name = name;
-    }
-
-    public func updateLastActivity(_ lastActivity: LastChatActivity?, timestamp: Date, isUnread: Bool) -> Bool {
-        if isUnread {
-            unread = unread + 1;
-        }
-        guard self.lastActivity == nil || self.timestamp.compare(timestamp) != .orderedDescending else {
-            return isUnread;
-        }
-        
-        if lastActivity != nil {
-            self.lastActivity = lastActivity;
-            self.timestamp = timestamp;
-        }
-        
-        return true;
+        updateOptions({ options in
+            options.name = name;
+        });
+        NotificationCenter.default.post(name: MucEventHandler.ROOM_NAME_CHANGED, object: self);
     }
     
-    public func markAsRead(count: Int) -> Bool {
-        guard unread > 0 else {
-            return false;
-        }
-        unread = max(unread - count, 0);
-        return true
-    }
-
-    public func modifyOptions(_ fn: @escaping (inout RoomOptions) -> Void, completionHandler: (() -> Void)?) {
-        DispatchQueue.main.async {
-            var options = self.options;
-            fn(&options);
-            DBChatStore.instance.updateOptions(for: self.account, jid: self.jid, options: options, completionHandler: completionHandler);
+    public func update(state: RoomState) {
+        dispatcher.async(flags: .barrier) {
+            self._state = state;
         }
     }
-    
+        
     public func sendMessage(text: String, correctedMessageOriginId: String?) {
         let message = self.createMessage(text: text);
         message.lastMessageCorrectionId = correctedMessageOriginId;
@@ -119,31 +139,58 @@ public class Room: RoomBase, Conversation, Identifiable {
     
     public func sendPrivateMessage(to occupant: MucOccupant, text: String) {
         let message = self.createPrivateMessage(text, recipientNickname: occupant.nickname);
-        DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing, sender: .occupant(nickname: self.nickname, jid: nil), recipient: .occupant(nickname: occupant.nickname), type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: text, encryption: .none, appendix: nil, linkPreviewAction: .auto, completionHandler: nil);
+        DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing, sender: .occupant(nickname: self.options.nickname, jid: nil), recipient: .occupant(nickname: occupant.nickname), type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: text, encryption: .none, appendix: nil, linkPreviewAction: .auto, completionHandler: nil);
         self.send(message: message, completionHandler: nil);
     }
     
 }
 
-public struct RoomOptions: Codable, ChatOptionsProtocol {
+public struct RoomOptions: Codable, ChatOptionsProtocol, Equatable {
     
+    public var name: String?;
+    public let nickname: String;
+    public var password: String?;
+
     public var notifications: ConversationNotification = .mention;
     
-    init() {}
+    init(nickname: String, password: String?) {
+        self.nickname = nickname;
+        self.password = password;
+    }
+    
+    init() {
+        nickname = "";
+    }
     
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self);
+        name = try container.decodeIfPresent(String.self, forKey: .name)
+        nickname = try container.decodeIfPresent(String.self, forKey: .nick) ?? "";
+        password = try container.decodeIfPresent(String.self, forKey: .password)
         notifications = ConversationNotification(rawValue: try container.decodeIfPresent(String.self, forKey: .notifications) ?? "") ?? .mention;
     }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self);
+        try container.encodeIfPresent(name, forKey: .name);
+        try container.encodeIfPresent(nickname, forKey: .nick);
+        try container.encodeIfPresent(password, forKey: .password);
         if notifications != .mention {
             try container.encode(notifications.rawValue, forKey: .notifications);
         }
     }
+     
+    public func equals(_ options: ChatOptionsProtocol) -> Bool {
+        guard let options = options as? RoomOptions else {
+            return false;
+        }
+        return options == self;
+    }
     
     enum CodingKeys: String, CodingKey {
+        case name = "name";
+        case nick = "nick";
+        case password = "password";
         case notifications = "notifications";
     }
 }

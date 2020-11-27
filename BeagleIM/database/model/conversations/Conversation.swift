@@ -36,7 +36,7 @@ public protocol Conversation: ConversationProtocol, ConversationKey {
     var automaticallyFetchPreviews: Bool { get }
     
     func markAsRead(count: Int) -> Bool;
-    func updateLastActivity(_ lastActivity: LastConversationActivity?, timestamp: Date, isUnread: Bool) -> Bool;
+    func update(lastActivity: LastConversationActivity?, timestamp: Date, isUnread: Bool) -> Bool;
     
     func sendMessage(text: String, correctedMessageOriginId: String?);
     func prepareAttachment(url: URL, completionHandler: @escaping (Result<(URL,Bool,((URL)->URL)?),ShareError>)->Void);
@@ -108,6 +108,7 @@ public protocol ChatOptionsProtocol: DatabaseConvertibleStringValue {
     
     var notifications: ConversationNotification { get }
     
+    func equals(_ options: ChatOptionsProtocol) -> Bool
 }
 
 public enum ConversationNotification: String {

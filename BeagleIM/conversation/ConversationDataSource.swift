@@ -25,6 +25,8 @@ protocol ConversationDataSourceDelegate: class {
     func isVisible(row: Int) -> Bool;
     
     func scrollRowToVisible(_ row: Int);
+    
+    func markAsReadUpToNewestVisibleRow();
 }
 
 public enum ConversationLoadType {
@@ -351,6 +353,8 @@ class ConversationDataSource {
             self.delegate?.itemAdded(at: IndexSet(newRows));
             if let scrollToIdx = scrollToIdx {
                 self.delegate?.scrollRowToVisible(scrollToIdx);
+            } else {
+                self.delegate?.markAsReadUpToNewestVisibleRow();
             }
         }
     }

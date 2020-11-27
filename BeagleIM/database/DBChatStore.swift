@@ -24,7 +24,7 @@ import TigaseSwift
 import TigaseSQLite3
 
 extension Query {
-    static let chatInsert = Query("INSERT INTO chats (account, jid, timestamp, type, nickname, password, options) VALUES (:account, :jid, :timestamp, :type, :nickname, :password, :options)");
+    static let chatInsert = Query("INSERT INTO chats (account, jid, timestamp, type, options) VALUES (:account, :jid, :timestamp, :type, :options)");
     static let chatDelete = Query("DELETE FROM chats WHERE id = :id");
     static let chatFindAllForAccount = Query("SELECT c.id, c.type, c.jid, c.name, c.nickname, c.password, c.timestamp as creation_timestamp, last.timestamp as timestamp, last1.item_type, last1.data, last1.encryption as lastEncryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue)) AND ch2.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))) as unread, c.options, last1.author_nickname FROM chats c LEFT JOIN (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) GROUP BY ch.account, ch.jid) last ON c.jid = last.jid AND c.account = last.account LEFT JOIN chat_history last1 ON last1.account = c.account AND last1.jid = c.jid AND last1.timestamp = last.timestamp AND last1.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) WHERE c.account = :account");
     static let chatUpdateOptions = Query("UPDATE chats SET options = :options WHERE account = :account AND jid = :jid");
@@ -44,6 +44,7 @@ open class DBChatStore: ContextLifecycleAware {
 
     static let UNREAD_MESSAGES_COUNT_CHANGED = Notification.Name("UNREAD_NOTIFICATIONS_COUNT_CHANGED");
 
+    public let conversationDispatcher = QueueDispatcher(label: "ConversationDispatcher", attributes: .concurrent)
     public let dispatcher: QueueDispatcher;
 
     private var accountChats = [BareJID: AccountConversations]();
@@ -121,8 +122,8 @@ open class DBChatStore: ContextLifecycleAware {
         unloadChats(for: context.userBareJid);
     }
 
-    func openConversation(account: BareJID, jid: BareJID, type: ConversationType, timestamp: Date = Date(), nickname: String? = nil, password: String? = nil, options: ChatOptionsProtocol?) throws -> Int {
-        let params: [String: Any?] = [ "account": account, "jid": jid, "timestamp": Date(), "type": type.rawValue, "options": options, "nickname": nickname, "password": password];
+    func openConversation(account: BareJID, jid: BareJID, type: ConversationType, timestamp: Date = Date(), options: ChatOptionsProtocol?) throws -> Int {
+        let params: [String: Any?] = [ "account": account, "jid": jid, "timestamp": Date(), "type": type.rawValue, "options": options];
         return try Database.main.writer({ database in
             try database.insert(query: .chatInsert, params: params);
             return database.lastInsertedRowId!;
@@ -159,7 +160,7 @@ open class DBChatStore: ContextLifecycleAware {
         dispatcher.async {
             if let conversation = self.conversation(for: account, with: jid) {
                 let unread = lastActivity != nil && state.isUnread;
-                if conversation.updateLastActivity(lastActivity, timestamp: timestamp, isUnread: unread) {
+                if conversation.update(lastActivity: lastActivity, timestamp: timestamp, isUnread: unread) {
                     if unread && !self.isMuted(conversation: conversation) {
                         self.unreadMessagesCount = self.unreadMessagesCount + 1;
                     }
@@ -188,22 +189,6 @@ open class DBChatStore: ContextLifecycleAware {
                         self.unreadMessagesCount = self.unreadMessagesCount - (count ?? unread);
                     }
                     NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: conversation);
-                }
-            }
-        }
-    }
-
-    func updateRoomName(for account: BareJID, with jid: BareJID, name: String?) {
-        dispatcher.async {
-            if let conversation = self.conversation(for: account, with: jid) {
-                if let room = conversation as? Room, room.name != name {
-                    room.name = name;
-                    if try! Database.main.writer({ database -> Int in
-                        try database.update(query: .chatUpdateName, params: ["account": account, "jid": jid, "name": name]);
-                        return database.changes;
-                    }) > 0 {
-                        NotificationCenter.default.post(name: MucEventHandler.ROOM_NAME_CHANGED, object: conversation);
-                    }
                 }
             }
         }
@@ -301,20 +286,20 @@ open class DBChatStore: ContextLifecycleAware {
                     switch type {
                     case .chat:
                         let options: ChatOptions? = cursor.object(for: "options");
-                        return Chat(context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options ?? ChatOptions());
+                        return Chat(dispatcher: self.conversationDispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options ?? ChatOptions());
                     case .room:
                         print("loading room:", jid, "with:", timestamp, creationTimestamp, lastMessageTimestamp);
-                        guard let nickname = cursor.string(for: "nickname") else {
+                        
+                        guard let options: RoomOptions = cursor.object(for: "options") else {
                             return nil;
                         }
-                        let options: RoomOptions? = cursor.object(for: "options");
-                        let room = Room(context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options ?? RoomOptions(), name: cursor.string(for: "name"), nickname: nickname, password: cursor.string(for: "password"));
+                        let room = Room(dispatcher: self.conversationDispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options);
                         return room;
                     case .channel:
                         guard let options: ChannelOptions = cursor.object(for: "options") else {
                             return nil;
                         }
-                        return Channel(context: context, channelJid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options);
+                        return Channel(dispatcher: self.conversationDispatcher, context: context, channelJid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options);
                     }
                 });
             })
@@ -353,58 +338,31 @@ open class DBChatStore: ContextLifecycleAware {
             }
         }
     }
+    
+    private func calculateChange(_ old: ConversationNotification, _ new: ConversationNotification) -> Bool? {
+        if old == .none && new != .none {
+            return true;
+        } else if old != .none && new == .none {
+            return false;
+        }
+        return nil;
+    }
 
-    // FIXME: move to the conversation object!
-    open func updateOptions<T>(for account: BareJID, jid: BareJID, options: T, completionHandler: (()->Void)?) where T: ChatOptionsProtocol {
+    open func update(options: ChatOptionsProtocol, for conversation: Conversation) {
+        let notificationChange = calculateChange(conversation.notifications, options.notifications);
         dispatcher.async {
             try! Database.main.writer({ database in
-                try database.update(query: .chatUpdateOptions, params: ["options": options, "account": account, "jid": jid]);
+                try database.update(query: .chatUpdateOptions, params: ["options": options, "account": conversation.account, "jid": conversation.jid]);
             })
-
-            if let c = self.conversation(for: account, with: jid) {
-                switch c {
-                case let chat as Chat:
-                    if chat.unread > 0 {
-                        if chat.options.notifications == .none && options.notifications != .none {
-                            self.unreadMessagesCount = self.unreadMessagesCount + chat.unread;
-                        } else if chat.options.notifications != .none && options.notifications == .none {
-                            self.unreadMessagesCount = self.unreadMessagesCount - chat.unread;
-                        }
-                    }
-                    chat.options = options as! ChatOptions;
-                    DispatchQueue.main.async {
-                        NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: c, userInfo: nil);
-                    }
-                case let room as Room:
-                    if room.unread > 0 {
-                        if room.options.notifications == .none && options.notifications != .none {
-                            self.unreadMessagesCount = self.unreadMessagesCount + room.unread;
-                        } else if room.options.notifications != .none && options.notifications == .none {
-                            self.unreadMessagesCount = self.unreadMessagesCount - room.unread;
-                        }
-                    }
-                    room.options = options as! RoomOptions;
-                    DispatchQueue.main.async {
-                        NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: c, userInfo: nil);
-                    }
-                case let channel as Channel:
-                    if channel.unread > 0 {
-                        if channel.options.notifications == .none && options.notifications != .none {
-                            self.unreadMessagesCount = self.unreadMessagesCount + channel.unread;
-                        } else if channel.options.notifications != .none && options.notifications == .none {
-                            self.unreadMessagesCount = self.unreadMessagesCount - channel.unread;
-                        }
-                    }
-                    channel.options = options as! ChannelOptions;
-                    channel.nickname = channel.options.nick;
-                    DispatchQueue.main.async {
-                        NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: c, userInfo: nil);
-                    }
-                default:
-                    break;
+            
+            if conversation.unread > 0, let change = notificationChange {
+                if change {
+                    self.unreadMessagesCount = self.unreadMessagesCount + conversation.unread;
+                } else {
+                    self.unreadMessagesCount = self.unreadMessagesCount - conversation.unread;
                 }
             }
-            completionHandler?();
         }
     }
+    
 }

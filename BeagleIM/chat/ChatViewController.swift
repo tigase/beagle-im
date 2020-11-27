@@ -373,13 +373,12 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         guard let chat = self.chat as? Chat else {
             return;
         }
-        chat.modifyOptions({ (options) in
+        chat.updateOptions({ (options) in
             options.encryption = encryption;
-        }, completionHandler: {
-            DispatchQueue.main.async {
-                self.refreshEncryptionStatus();
-            }
-        })
+        });
+        DispatchQueue.main.async {
+            self.refreshEncryptionStatus();
+        }
     }
 
     @objc func settingsChanged(_ notification: Notification) {

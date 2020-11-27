@@ -22,12 +22,46 @@
 import Foundation
 import TigaseSwift
 
-public class Channel: ChannelBase, Conversation, Identifiable, LastMessageTimestampAware {
+public class Channel: ConversationBase<ChannelOptions>, ChannelProtocol, Conversation, LastMessageTimestampAware {
     
-    public let id: Int
-    public private(set) var timestamp: Date
-    public private(set) var lastActivity: LastChatActivity?
-    public private(set) var unread: Int
+    open override var defaultMessageType: StanzaType {
+        return .groupchat;
+    }
+
+    private var _permissions: Set<ChannelPermission>?;
+    public var permissions: Set<ChannelPermission>? {
+        return dispatcher.sync {
+            return _permissions;
+        }
+    }
+
+    private let participantsStore: MixParticipantsProtocol = MixParticipantsBase();
+    
+    public func update(state: ChannelState) {
+        updateOptions({ options in
+            options.state = state;
+        });
+    }
+    
+    public func update(permissions: Set<ChannelPermission>) {
+        dispatcher.async(flags: .barrier) {
+            self._permissions = permissions;
+        }
+    }
+    
+    public func update(info: ChannelInfo) {
+        updateOptions({ options in
+            options.name = info.name;
+            options.description = info.description;
+        })
+    }
+    
+    public func update(ownNickname nickname: String?) {
+        updateOptions({ options in
+            options.nick = nickname;
+        })
+    }
+        
     public var name: String? {
         return options.name;
     }
@@ -39,12 +73,11 @@ public class Channel: ChannelBase, Conversation, Identifiable, LastMessageTimest
     public var description: String? {
         return options.description;
     }
-    public var options: ChannelOptions;
-    
-    public var notifications: ConversationNotification {
-        return options.notifications;
+
+    public var participantId: String {
+        return options.participantId;
     }
-    
+
     public var automaticallyFetchPreviews: Bool {
         return true;
     }
@@ -53,61 +86,22 @@ public class Channel: ChannelBase, Conversation, Identifiable, LastMessageTimest
         return jid;
     }
     
-    public override var nickname: String? {
-        get {
-            return options.nick;
-        }
-        set {
-            // nothing to do..
-        }
+    public var nickname: String? {
+        return options.nick;
     }
     
-    public override var state: ChannelState {
-        get {
-            return options.state;
-        }
-        set {
-            // nothing to do..
-        }
+    public var state: ChannelState {
+        return options.state;
     }
     
     public var lastMessageTimestamp: Date? {
         return timestamp;
     }
 
-    init(context: Context, channelJid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: ChannelOptions) {
-        self.id = id;
-        self.unread = unread;
-        self.lastActivity = lastActivity;
-        self.timestamp = timestamp;
-        self.options = options;
-        super.init(context: context, channelJid: channelJid, participantId: options.participantId, nickname: options.nick, state: options.state);
+    init(dispatcher: QueueDispatcher, context: Context, channelJid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: ChannelOptions) {
+        super.init(dispatcher: dispatcher, context: context, jid: channelJid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options);
     }
-    
-    public func markAsRead(count: Int) -> Bool {
-        guard unread > 0 else {
-            return false;
-        }
-        unread = max(unread - count, 0);
-        return true
-    }
-    
-    public func updateLastActivity(_ lastActivity: LastChatActivity?, timestamp: Date, isUnread: Bool) -> Bool {
-        if isUnread {
-            unread = unread + 1;
-        }
-        guard self.lastActivity == nil || self.timestamp.compare(timestamp) != .orderedDescending else {
-            return isUnread;
-        }
         
-        if lastActivity != nil {
-            self.lastActivity = lastActivity;
-            self.timestamp = timestamp;
-        }
-        
-        return true;
-    }
-
     public func sendMessage(text: String, correctedMessageOriginId: String?) {
         let message = self.createMessage(text: text);
         message.lastMessageCorrectionId = correctedMessageOriginId;
@@ -131,7 +125,40 @@ public class Channel: ChannelBase, Conversation, Identifiable, LastMessageTimest
     }
 }
 
-public struct ChannelOptions: Codable, ChatOptionsProtocol {
+extension Channel: MixParticipantsProtocol {
+    
+    public var participants: [MixParticipant] {
+        return dispatcher.sync {
+            return self.participantsStore.participants;
+        }
+    }
+    
+    public func participant(withId: String) -> MixParticipant? {
+        return dispatcher.sync {
+            return self.participantsStore.participant(withId: withId);
+        }
+    }
+    
+    public func set(participants: [MixParticipant]) {
+        dispatcher.async(flags: .barrier) {
+            self.participantsStore.set(participants: participants);
+        }
+    }
+    
+    public func update(participant: MixParticipant) {
+        dispatcher.async(flags: .barrier) {
+            self.participantsStore.update(participant: participant);
+        }
+    }
+    
+    public func removeParticipant(withId id: String) -> MixParticipant? {
+        return dispatcher.sync(flags: .barrier) {
+            return self.participantsStore.removeParticipant(withId: id);
+        }
+    }
+}
+
+public struct ChannelOptions: Codable, ChatOptionsProtocol, Equatable {
     
     var participantId: String;
     var nick: String?;
@@ -166,6 +193,13 @@ public struct ChannelOptions: Codable, ChatOptionsProtocol {
         if notifications != .always {
             try container.encode(notifications.rawValue, forKey: .notifications);
         }
+    }
+    
+    public func equals(_ options: ChatOptionsProtocol) -> Bool {
+        guard let options = options as? ChannelOptions else {
+            return false;
+        }
+        return options == self;
     }
     
     enum CodingKeys: String, CodingKey {

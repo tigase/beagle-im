@@ -43,7 +43,7 @@ extension DBChatStore: ChatStore {
         guard let chat: Chat = createConversation(for: account, with: jid, execute: {
             let timestamp = Date();
             let id = try! self.openConversation(account: account, jid: jid, type: .chat, timestamp: timestamp, options: nil);
-            let chat = Chat(context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity(for: account, jid: jid), unread: 0, options: ChatOptions());
+            let chat = Chat(dispatcher: self.conversationDispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity(for: account, jid: jid), unread: 0, options: ChatOptions());
 
             return chat;
         }) else {

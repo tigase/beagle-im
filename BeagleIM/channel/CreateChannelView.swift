@@ -164,8 +164,8 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                     mixModule.publishInfo(for: channelJid, info: info, completionHandler: { result in
                         switch result {
                         case .success(_):
-                            if let context = mixModule.context {
-                                mixModule.channelManager.update(for: context, channel: channelJid, info: info);
+                            if let context = mixModule.context, let channel =                             DBChatStore.instance.channel(for: context, with: channelJid) {
+                                channel.update(info: info);
                             }
                         default:
                             break;

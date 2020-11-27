@@ -44,7 +44,7 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
     
     override func viewWillAppear() {
         NotificationCenter.default.addObserver(self, selector: #selector(participantsChanged(_:)), name: MixEventHandler.PARTICIPANTS_CHANGED, object: nil);
-        self.participants = self.channel!.participants.values.sorted(by: self.sortParticipants);
+        self.participants = self.channel!.participants.sorted(by: self.sortParticipants);
         self.participantsTableView.reloadData();
         inviteParticipantsButton.isHidden = !channel.has(permission: .changeConfig);
         if !channel.has(permission: .changeConfig) {

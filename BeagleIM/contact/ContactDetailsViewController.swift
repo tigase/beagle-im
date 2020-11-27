@@ -243,14 +243,14 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
     @objc func muteNotificationsChanged(_ sender: NSButton) {
         let state = sender.state == .on;
         if let chat = self.chat as? Chat {
-            chat.modifyOptions({ (options) in
+            chat.updateOptions({ (options) in
                 options.notifications = state ? .none : .always;
-            }, completionHandler: nil);
+            });
         }
         if let room = self.chat as? Room {
-            room.modifyOptions({ (options) in
+            room.updateOptions({ (options) in
                 options.notifications = state ? .none : .mention;
-            }, completionHandler: nil);
+            });
         }
     }
     
