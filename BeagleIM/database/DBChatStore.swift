@@ -94,9 +94,15 @@ open class DBChatStore: ContextLifecycleAware {
         }) ?? false;
         
         if result {
+            if conversation.unread > 0 && !self.isMuted(conversation: conversation) {
+                self.unreadMessagesCount = self.unreadMessagesCount - conversation.unread;
+
+                DBChatHistoryStore.instance.markAsRead(for: conversation, before: Date());
+            }
+
             NotificationCenter.default.post(name: DBChatStore.CHAT_CLOSED, object: conversation);
         }
-        
+                
         return result;
     }
 
