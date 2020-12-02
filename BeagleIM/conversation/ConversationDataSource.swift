@@ -335,13 +335,16 @@ class ConversationDataSource {
         case .message(let id):
             scrollToIdx = store.indexOf(itemId: id);
         case.oldestUnread:
-            if let scrollToIdx = scrollToIdx {
-                let item = store.item(at: scrollToIdx)!;
+            if let scrollToIdxTmp = scrollToIdx {
+                let item = store.item(at: scrollToIdxTmp)!;
                 if var unreadIdx = store.add(item: ConversationMessageSystem(nextItem: item, kind: .unreadMessages), force: true) {
                     while newRows.contains(unreadIdx) {
                         unreadIdx = unreadIdx + 1;
                     }
                     newRows.append(unreadIdx);
+                    if unreadIdx > scrollToIdxTmp {
+                        scrollToIdx = unreadIdx;
+                    }
                 }
             }
         case .none:
