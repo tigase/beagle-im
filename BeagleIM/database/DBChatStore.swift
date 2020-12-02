@@ -29,7 +29,7 @@ extension Query {
     static let chatFindAllForAccount = Query("SELECT c.id, c.type, c.jid, c.name, c.nickname, c.password, c.timestamp as creation_timestamp, last.timestamp as timestamp, last1.item_type, last1.data, last1.encryption as lastEncryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue)) AND ch2.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))) as unread, c.options, last1.author_nickname FROM chats c LEFT JOIN (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) GROUP BY ch.account, ch.jid) last ON c.jid = last.jid AND c.account = last.account LEFT JOIN chat_history last1 ON last1.account = c.account AND last1.jid = c.jid AND last1.timestamp = last.timestamp AND last1.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) WHERE c.account = :account");
     static let chatUpdateOptions = Query("UPDATE chats SET options = :options WHERE account = :account AND jid = :jid");
     static let chatUpdateName = Query("UPDATE chats SET name = :name WHERE account = :account AND jid = :jid");
-    static let chatUpdateMessageDraft = Query("UPDATE chats SET message_draft = :draft WHERE account = :account AND jid = :jid AND IFNULL(message_draft, '') <> IFNULL(:draft, '')");
+    static let chatUpdateMessageDraft = Query("UPDATE chats SET message_draft = ? WHERE account = ? AND jid = ? AND IFNULL(message_draft, '') <> IFNULL(?, '')");
     static let chatFindMessageDraft = Query("SELECT message_draft FROM chats WHERE account = :account AND jid = :jid");
     static let chatFindLastActivity = Query("SELECT last.timestamp as timestamp, last1.item_type, last1.data, last1.encryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))) as unread, last1.author_nickname FROM (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.jid = :jid AND ch.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) GROUP BY ch.account, ch.jid) last LEFT JOIN chat_history last1 ON last1.account = last.account AND last1.jid = last.jid AND last1.timestamp = last.timestamp AND last1.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))");
 }
@@ -214,7 +214,7 @@ open class DBChatStore: ContextLifecycleAware {
     func messageDraft(for account: BareJID, with jid: BareJID, completionHandler: @escaping (String?)->Void) {
         dispatcher.async {
             let text = try! Database.main.reader({ database -> String? in
-                return try database.select(query: .chatFindMessageDraft, params: ["account": account, "jid": jid]).string(for: "message_draft");
+                return try database.select(query: .chatFindMessageDraft, params: ["account": account, "jid": jid]).mapFirst({ $0.string(for: "message_draft") });
             })
             completionHandler(text);
         }
@@ -223,7 +223,7 @@ open class DBChatStore: ContextLifecycleAware {
     func storeMessage(draft: String?, for account: BareJID, with jid: BareJID) {
         dispatcher.async {
             try! Database.main.writer({ database in
-                try database.update(query: .chatUpdateMessageDraft, params: ["account": account, "jid": jid, "draft": draft]);
+                try database.update(query: .chatUpdateMessageDraft, params: [draft, account, jid, draft]);
             })
         }
     }
