@@ -339,7 +339,6 @@ class ConversationDataSource {
                 let item = store.item(at: scrollToIdxTmp)!;
                 if var unreadIdx = store.add(item: ConversationMessageSystem(nextItem: item, kind: .unreadMessages), force: true) {
                     if unreadIdx > scrollToIdxTmp {
-                        print("replacing scrollToIdx from:", scrollToIdxTmp, "to:", unreadIdx);
                         scrollToIdx = unreadIdx;
                     }
 
