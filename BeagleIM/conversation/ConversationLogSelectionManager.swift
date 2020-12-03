@@ -271,7 +271,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
     
     private func handleLeftMouseUp(event: NSEvent, table: NSTableView, superview: NSView) -> Bool {
         inProgress = false;
-        guard let selectionStart = self.selectionStart, event.clickCount == 1 else {
+        guard let selectionStart = self.selectionStart, event.clickCount <= 1 else {
             return false;
         }
 
