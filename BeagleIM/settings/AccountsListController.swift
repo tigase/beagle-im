@@ -122,7 +122,10 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
             let items = self.editButton.menu?.items ?? [];
             for i in 0..<items.count {
                 items[i].isEnabled = i < 3 || connected;
-                if items[i].action == #selector(changeAccountPrivateVCardClicked(_:)) {
+                if items[i].action == #selector(changeAccountVCardClicked(_:)) {
+                    items[i].isHidden = Settings.showAdvancedXmppFeatures.bool();
+                }
+                if items[i].hasSubmenu {
                     items[i].isHidden = !Settings.showAdvancedXmppFeatures.bool();
                 }
             }

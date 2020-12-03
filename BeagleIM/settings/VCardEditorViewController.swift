@@ -359,7 +359,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
         data.orientation = .vertical;
         data.spacing = 4;
         
-        let stack = Row(views: [createTypeButton(for: item), data, createRemoveButton(for: item)]);
+        let stack = Row(views: [createTypeButton(for: item, tag: tag, action: #selector(addressTypeChanged(_:))), data, createRemoveButton(for: item)]);
         stack.id = tag;
         stack.orientation = .horizontal;
         stack.alignment = .top;
@@ -372,7 +372,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
         let numberField = NSTextField(string: item.address ?? "");
         numberField.placeholderString = "Enter email address";
         connect(field: numberField, tag: tag, action: #selector(emailChanged(_:)));
-        let stack = Row(views: [createTypeButton(for: item), numberField, createRemoveButton(for: item)]);
+        let stack = Row(views: [createTypeButton(for: item, tag: tag, action: #selector(emailTypeChanged(_:))), numberField, createRemoveButton(for: item)]);
         stack.id = tag;
         stack.orientation = .horizontal;
         stack.spacing = 4;
@@ -384,13 +384,13 @@ class VCardEditorViewController: NSViewController, AccountAware {
         let numberField = NSTextField(string: item.number ?? "");
         numberField.placeholderString = "Enter phone number";
         connect(field: numberField, tag: tag, action: #selector(phoneNumberChanged(_:)));
-        let stack = Row(views: [createTypeButton(for: item), numberField, createRemoveButton(for: item)]);
+        let stack = Row(views: [createTypeButton(for: item, tag: tag, action: #selector(phoneNumberTypeChanged(_:))), numberField, createRemoveButton(for: item)]);
         stack.id = tag;
         stack.orientation = .horizontal;
         stack.spacing = 4;
         phonesStackView.addView(stack, in: .bottom);
     }
-    
+
     fileprivate func connect(field: NSTextField, tag: Int, action: Selector) {
         field.tag = tag;
         field.target = self;
@@ -417,6 +417,13 @@ class VCardEditorViewController: NSViewController, AccountAware {
         }
     }
     
+    @objc fileprivate func emailTypeChanged(_ sender: NSPopUpButton) {
+        guard let idx = findPosition(in: emailsStackView, byId: sender.tag) else {
+            return;
+        }
+        vcard.emails[idx].types = [ sender.indexOfSelectedItem == 0 ? .home : .work ];
+    }
+    
     @objc fileprivate func emailChanged(_ sender: NSTextField) {
         let value = sender.stringValue.isEmpty ? nil : sender.stringValue;
         guard let idx = findPosition(in: emailsStackView, byId: sender.tag) else {
@@ -425,12 +432,26 @@ class VCardEditorViewController: NSViewController, AccountAware {
         vcard.emails[idx].address = value;
     }
     
+    @objc fileprivate func phoneNumberTypeChanged(_ sender: NSPopUpButton) {
+        guard let idx = findPosition(in: phonesStackView, byId: sender.tag) else {
+            return;
+        }
+        vcard.telephones[idx].types = [ sender.indexOfSelectedItem == 0 ? .home : .work ];
+    }
+    
     @objc fileprivate func phoneNumberChanged(_ sender: NSTextField) {
         let value = sender.stringValue.isEmpty ? nil : sender.stringValue;
         guard let idx = findPosition(in: phonesStackView, byId: sender.tag) else {
             return;
         }
         vcard.telephones[idx].number = value;
+    }
+    
+    @objc fileprivate func addressTypeChanged(_ sender: NSPopUpButton) {
+        guard let idx = findPosition(in: addressesStackView, byId: sender.tag) else {
+            return;
+        }
+        vcard.addresses[idx].types = [ sender.indexOfSelectedItem == 0 ? .home : .work ];
     }
     
     @objc fileprivate func streetChanged(_ sender: NSTextField) {
@@ -477,11 +498,13 @@ class VCardEditorViewController: NSViewController, AccountAware {
         return removeButton;
     }
  
-    fileprivate func createTypeButton(for item: VCard.VCardEntryItemTypeAware) -> NSButton {
+    fileprivate func createTypeButton(for item: VCard.VCardEntryItemTypeAware, tag: Int, action: Selector) -> NSButton {
         let typeButton = NSPopUpButton(frame: .zero, pullsDown: false);
         typeButton.addItem(withTitle: "Home");
         typeButton.addItem(withTitle: "Work");
         typeButton.selectItem(at: item.types.contains(VCard.EntryType.home) ? 0 : 1);
+        typeButton.tag = tag;
+        typeButton.action = action;
         return typeButton;
     }
     
