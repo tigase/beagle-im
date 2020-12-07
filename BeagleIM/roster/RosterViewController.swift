@@ -185,18 +185,14 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
     
     func reloadData() {
         XmppService.instance.clients.values.forEach { client in
-            guard let rosterModule: RosterModule = client.modulesManager.getModule(RosterModule.ID), let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID) else {
+            guard let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID) else {
                 return;
             }
             
             let account = client.sessionObject.userBareJid!;
             
-            (rosterModule.store as! DBRosterStoreWrapper).getJids().forEach { jid in
-                guard let ri = rosterModule.store.get(for: jid) else {
-                    return;
-                }
-                
-                self.updateItem(for: jid.bareJid, on: account, name: ri.name, status: presenceModule.store.getBestPresence(for: jid.bareJid)?.show);
+            for ri in DBRosterStore.instance.items(for: account) {
+                self.updateItem(for: ri.jid.bareJid, on: account, name: ri.name, status: presenceModule.store.getBestPresence(for: ri.jid.bareJid)?.show);
             }
         }
     }
@@ -296,14 +292,14 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
         self.updateItem(for: ri.jid.bareJid, on: account, rosterItem: ri, presence: nil);
     }
     
-    fileprivate func updateItem(for jid: BareJID, on account: BareJID, rosterItem: RosterItem?, presence: Presence?) {
+    fileprivate func updateItem(for jid: BareJID, on account: BareJID, rosterItem: RosterItemProtocol?, presence: Presence?) {
         dispatcher.async {
             if rosterItem == nil || presence == nil {
                 guard let client = XmppService.instance.getClient(for: account) else {
                     self.removeItem(for: jid, on: account);
                     return;
                 }
-                guard let ri = rosterItem ?? client.rosterStore?.get(for: JID(jid)) else {
+                guard let ri = rosterItem ?? DBRosterStore.instance.item(for: client, jid: JID(jid)) else {
                     self.removeItem(for: jid, on: account);
                     return;
                 }

@@ -44,12 +44,4 @@ extension XMPPClient {
         }
     }
     
-    var rosterStore: RosterStore? {
-        get {
-            guard let rosterModule: RosterModule = modulesManager.getModule(RosterModule.ID) else {
-                return nil;
-            }
-            return rosterModule.store;
-        }
-    }
 }

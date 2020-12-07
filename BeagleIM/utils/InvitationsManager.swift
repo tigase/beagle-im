@@ -90,11 +90,12 @@ class InvitationManager {
                 let alert = NSAlert();
                 alert.messageText = "Invitation to groupchat";
                 if let inviter = mucInvitation.inviter {
-                    let name = XmppService.instance.clients.values.flatMap({ (client) -> [String] in
-                        guard let n = client.rosterStore?.get(for: inviter)?.name else {
-                            return [];
+                    let name = XmppService.instance.clients.values.compactMap({ (client) -> String? in
+                        if let n = DBRosterStore.instance.item(for: client, jid: inviter)?.name {
+                            return "\(n) (\(inviter))";
+                        } else {
+                            return nil;
                         }
-                        return ["\(n) (\(inviter))"];
                     }).first ?? inviter.stringValue;
                     alert.informativeText = "User \(name) invited you (\(invitation.account)) to the groupchat \(mucInvitation.roomJid)";
                 } else {
@@ -134,7 +135,7 @@ class InvitationManager {
             return;
         }
 
-        let connected = XmppService.instance.getClient(for: account)?.state ?? .disconnected == .connected;
+        let connected = XmppService.instance.getClient(for: account)?.state ?? .disconnected() == .connected;
         dispatcher.async {
             if connected {
                 let toAdd = self.peristentItems.filter({ $0.account == account });
@@ -186,7 +187,7 @@ class InvitationManager {
     }
     
     private func deliverPresenceSubscriptionNotification(invitation: InvitationItem) {
-        let rosterItem = XmppService.instance.getClient(for: invitation.account)?.rosterStore?.get(for: invitation.jid);
+        let rosterItem = DBRosterStore.instance.item(for: invitation.account, jid: invitation.jid);
         let content = UNMutableNotificationContent();
         content.title = "Authorization request";
         content.body = "\(rosterItem?.name ?? invitation.jid.stringValue) requests authorization to access information about you presence";
@@ -198,7 +199,6 @@ class InvitationManager {
     
     private func deliverMucInvitationNotification(invitation: InvitationItem) {
         let mucInvitation = invitation.object as! MucModule.Invitation;
-        _ = XmppService.instance.getClient(for: invitation.account)?.rosterStore?.get(for: invitation.jid);
         let content = UNMutableNotificationContent();
         content.title = "Invitation to groupchat";
         content.body = "You (\(invitation.account)) were invited to the groupchat \(mucInvitation.roomJid)";

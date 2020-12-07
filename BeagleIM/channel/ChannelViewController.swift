@@ -59,7 +59,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         channelAvatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
         channelAvatarView.name = channel.name ?? jid.stringValue;
         channelAvatarView.update(for: jid, on: account);
-        channelAvatarView.status = (XmppService.instance.getClient(for: channel.account)?.state ?? .disconnected == .connected) && channel.state == .joined ? .online : nil;
+        channelAvatarView.status = (XmppService.instance.getClient(for: channel.account)?.state ?? .disconnected() == .connected) && channel.state == .joined ? .online : nil;
         channelDescriptionLabel.stringValue = channel.description ?? "";
         channelDescriptionLabel.toolTip = channel.description;
 
@@ -88,7 +88,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
                     correct.target = self;
                     correct.tag = item.id;
                 }
-                if (self.chat as? Channel)?.state ?? .left == .joined && XmppService.instance.getClient(for: item.conversation.account)?.state ?? .disconnected == .connected {
+                if (self.chat as? Channel)?.state ?? .left == .joined && XmppService.instance.getClient(for: item.conversation.account)?.state ?? .disconnected() == .connected {
                     let retract = menu.addItem(withTitle: "Retract message", action: #selector(retractMessage), keyEquivalent: "");
                     retract.target = self;
                     retract.tag = item.id;
@@ -189,7 +189,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     @objc func channelUpdated(_ notification: Notification) {
         DispatchQueue.main.async {
             self.channelAvatarView.name = self.channel.name ?? self.channel.channelJid.stringValue;
-            self.channelAvatarView.status = (XmppService.instance.getClient(for: self.channel.account)?.state ?? .disconnected == .connected) && self.channel.state == .joined ? .online : nil;
+            self.channelAvatarView.status = (XmppService.instance.getClient(for: self.channel.account)?.state ?? .disconnected() == .connected) && self.channel.state == .joined ? .online : nil;
             self.channelNameLabel.title = self.channel.name ?? self.channel.channelJid.stringValue;
             self.channelDescriptionLabel.stringValue = self.channel.description ?? "";
             self.channelDescriptionLabel.toolTip = self.channel.description;

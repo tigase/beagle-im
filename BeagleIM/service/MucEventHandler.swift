@@ -158,11 +158,12 @@ class MucEventHandler: XmppServiceEventHandler {
             if #available(OSX 10.14, *) {
                 let content = UNMutableNotificationContent();
                 content.title = "Invitation rejected";
-                let name = XmppService.instance.clients.values.flatMap({ (client) -> [String] in
-                    guard let n = e.invitee != nil ? client.rosterStore?.get(for: e.invitee!)?.name : nil else {
-                        return [];
+                let name = XmppService.instance.clients.values.compactMap({ (client) -> String? in
+                    if let invitee = e.invitee {
+                        return DBRosterStore.instance.item(for: client, jid: invitee)?.name;
+                    } else {
+                        return nil;
                     }
-                    return [n];
                 }).first ?? e.invitee?.stringValue ?? "";
                 
                 content.body = "User \(name) rejected invitation to room \(e.room.jid)";
@@ -175,11 +176,12 @@ class MucEventHandler: XmppServiceEventHandler {
                 let notification = NSUserNotification();
                 notification.identifier = UUID().uuidString;
                 notification.title = "Invitation rejected";
-                let name = XmppService.instance.clients.values.flatMap({ (client) -> [String] in
-                    guard let n = e.invitee != nil ? client.rosterStore?.get(for: e.invitee!)?.name : nil else {
-                        return [];
+                let name = XmppService.instance.clients.values.compactMap({ (client) -> String? in
+                    if let invitee = e.invitee {
+                        return DBRosterStore.instance.item(for: client, jid: invitee)?.name;
+                    } else {
+                        return nil;
                     }
-                    return [n];
                 }).first ?? e.invitee?.stringValue ?? "";
                 
                 notification.informativeText = "User \(name) rejected invitation to room \(e.room.jid)";

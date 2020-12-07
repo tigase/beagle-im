@@ -136,7 +136,7 @@ open class ConversationDetailsViewController: NSViewController, ContactDetailsAc
                             fn = fn.isEmpty ? surname : "\(fn) \(surname)"
                         }
                         if fn.isEmpty {
-                            fn = XmppService.instance.getClient(for: account)?.rosterStore?.get(for: JID(jid))?.name ?? jid.stringValue;
+                            fn = DBRosterStore.instance.item(for: account, jid: JID(jid))?.name ?? jid.stringValue;
                         }
                     }
                     self.nameField.stringValue = fn;
@@ -193,7 +193,7 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
                     blockContact?.state = BlockedEventHandler.isBlocked(JID(c.jid), on: client) ? .on : .off;
                     blockContact?.isEnabled = blockingModule.isAvailable;
                 }
-                if XmppService.instance.getClient(for: chat.account)?.rosterStore?.get(for: JID(chat.jid)) == nil {
+                if DBRosterStore.instance.item(for: chat.account, jid: JID(chat.jid)) == nil {
                     let button = NSButton(title: "Add to contacts", image: NSImage(named: NSImage.addTemplateName)!, target: self, action: #selector(self.addToRoster(_:)));
                     button.isBordered = false;
                     rows.append(button);
@@ -543,7 +543,7 @@ class ConversationVCardViewController: NSViewController, ContactDetailsAccountJi
                 fn = fn.isEmpty ? surname : "\(fn) \(surname)"
             }
             if fn.isEmpty {
-                fn = XmppService.instance.getClient(for: account)?.rosterStore?.get(for: JID(jid))?.name ?? jid.stringValue;
+                fn = DBRosterStore.instance.item(for: account, jid: JID(jid))?.name ?? jid.stringValue;
             }
         }
         let name = NSTextField(wrappingLabelWithString: fn);
@@ -899,7 +899,7 @@ open class ContactDetailsViewController1: NSViewController, NSTableViewDelegate 
                         fn = fn.isEmpty ? surname : "\(fn) \(surname)"
                     }
                     if fn.isEmpty {
-                        fn = XmppService.instance.getClient(for: self.account)?.rosterStore?.get(for: JID(self.jid))?.name ?? self.jid.stringValue;
+                        fn = DBRosterStore.instance.item(for: self.account, jid: JID(self.jid))?.name ?? self.jid.stringValue;
                     }
                 }
                 self.name.stringValue = fn;

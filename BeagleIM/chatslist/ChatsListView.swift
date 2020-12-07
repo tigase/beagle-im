@@ -48,12 +48,11 @@ class ChatItem: AbstractChatItem {
     let isInRoster: Bool;
     
     init(chat: Conversation) {
-        if let sessionObject = XmppService.instance.getClient(for: chat.account)?.sessionObject {
-            let rosterItem = RosterModule.getRosterStore(sessionObject).get(for: JID(chat.jid));
-            isInRoster = rosterItem != nil;
-            super.init(chat: chat, name: rosterItem?.name ?? chat.jid.stringValue);
-        } else {
+        if let rosterItem = DBRosterStore.instance.item(for: chat.account, jid: JID(chat.jid)) {
             isInRoster = true;
+            super.init(chat: chat, name: rosterItem.name ?? chat.jid.stringValue);
+        } else {
+            isInRoster = false;
             super.init(chat: chat, name: chat.jid.stringValue);
         }
     }
@@ -93,7 +92,7 @@ class UnifiedChatItem: AbstractChatItem {
         var name = chat.jid.stringValue;
         switch chat {
         case let c as Chat:
-            if let rosterItem = XmppService.instance.getClient(for: c.account)?.rosterStore?.get(for: JID(c.jid)) {
+            if let rosterItem = DBRosterStore.instance.item(for: c.account, jid: JID(c.jid)) {
                 isInRoster = true;
                 if let value = rosterItem.name, !value.isEmpty {
                     name = value;
@@ -495,7 +494,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         } else if let invitation = item as? InvitationItem {
             let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("InvitationCellView"), owner: self) as? InvitationCellView;
             view?.avatar.image = AvatarManager.instance.avatar(for: invitation.jid.bareJid, on: invitation.account) ?? AvatarManager.instance.defaultAvatar;
-            view?.label.stringValue = XmppService.instance.getClient(for: invitation.account)?.rosterStore?.get(for: invitation.jid)?.name ?? invitation.jid.stringValue;
+            view?.label.stringValue = DBRosterStore.instance.item(for: invitation.account, jid: invitation.jid)?.name ?? invitation.jid.stringValue;
             view?.message.maximumNumberOfLines = 2;
             view?.message.stringValue = invitation.name;
             view?.layout();

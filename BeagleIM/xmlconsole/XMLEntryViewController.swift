@@ -55,7 +55,7 @@ class XMLEntryViewController: NSViewController, NSTextViewDelegate {
             }
             fileprivate func onStreamStart(attributes: [String : String]) {
             }
-            fileprivate func onStreamTerminate() {
+            fileprivate func onStreamTerminate(reason: SocketConnector.State.DisconnectionReason) {
             }
             fileprivate func process(element packet: Element) {
                 parsed.append(packet);

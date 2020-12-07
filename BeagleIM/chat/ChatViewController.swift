@@ -211,7 +211,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
                     correct.tag = item.id;
                 }
                 
-                if XmppService.instance.getClient(for: item.conversation.account)?.state ?? .disconnected == .connected {
+                if XmppService.instance.getClient(for: item.conversation.account)?.state ?? .disconnected() == .connected {
                     let retract = menu.addItem(withTitle: "Retract message", action: #selector(retractMessage), keyEquivalent: "");
                     retract.target = self;
                     retract.tag = item.id;

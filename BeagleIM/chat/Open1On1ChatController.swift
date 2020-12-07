@@ -170,15 +170,8 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
             guard accountFilter == nil || account == accountFilter else {
                 return;
             }
-            guard let roster = (RosterModule.getRosterStore(client.sessionObject) as? DBRosterStoreWrapper) else {
-                return;
-            }
             
-            roster.getJids().forEach({ (jid) in
-                let name = roster.get(for: jid)?.name;
-                
-                rows.append(Item(jid: jid.bareJid, account: account, name: name));
-            })
+            rows.append(contentsOf: DBRosterStore.instance.items(for: client).map({ Item(jid: $0.jid.bareJid, account: account, name: $0.name)}));
         }
         
         let query = searchField.stringValue.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).lowercased();

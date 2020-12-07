@@ -29,11 +29,11 @@ public class Chat: ConversationBase<ChatOptions>, ChatProtocol, Conversation {
     private(set) var remoteChatState: ChatState? = nil;
     
     public var displayName: String {
-        return context?.module(.roster).store.get(for: JID(jid))?.name ?? jid.stringValue;
+        return DBRosterStore.instance.item(for: account, jid: JID(jid))?.name ?? jid.stringValue;
     }
     
     public var automaticallyFetchPreviews: Bool {
-        return context?.module(.roster).store.get(for: JID(jid)) != nil;
+        return DBRosterStore.instance.item(for: account, jid: JID(jid)) != nil;
     }
 
     

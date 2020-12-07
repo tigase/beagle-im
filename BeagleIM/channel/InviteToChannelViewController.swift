@@ -27,7 +27,7 @@ class InviteToChannelViewControllerController: NSViewController, NSTextFieldDele
     @IBOutlet var contactsField: NSTextField!;
     
     var channel: Channel!;
-    var allRosterItems: [RosterItem] = [];
+    var allRosterItems: [RosterItemProtocol] = [];
     
     override func viewDidLoad() {
         super.viewDidLoad();
@@ -36,8 +36,8 @@ class InviteToChannelViewControllerController: NSViewController, NSTextFieldDele
     
     override func viewWillAppear() {
         super.viewWillAppear();
-        self.allRosterItems = XmppService.instance.clients.values.flatMap { (client) -> [RosterItem] in
-            (client.rosterStore as? DBRosterStoreWrapper)?.getAll() ?? [];
+        self.allRosterItems = XmppService.instance.clients.values.flatMap { (client) -> [RosterItemProtocol] in
+            return DBRosterStore.instance.items(for: client)
         }
     }
     

@@ -67,7 +67,7 @@ class ScriptsManager {
                 let jidParam = NSAppleEventDescriptor(string: jid.stringValue);
                 let params = NSAppleEventDescriptor(listDescriptor: ());
                 params.insert(jidParam, at: 1);
-                if let name = XmppService.instance.getClient(for: account)?.rosterStore?.get(for: jid.withoutResource)?.name {
+                if let name = DBRosterStore.instance.item(for: account, jid: jid.withoutResource)?.name {
                     params.insert(NSAppleEventDescriptor(string: name), at: 2);
                 } else {
                     params.insert(NSAppleEventDescriptor.null(), at: 2);

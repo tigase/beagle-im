@@ -30,66 +30,170 @@ extension Query {
     static let rosterFindItemsForAccount = Query("SELECT id, jid, name, subscription, ask, data FROM roster_items WHERE account = :account");
 }
 
-open class DBRosterStore {
+class AccountRoster {
+    
+    private var roster = [JID: RosterItem]();
+    
+    private let queue = DispatchQueue(label: "accountRoster", attributes: .concurrent);
+    
+    init(items: [RosterItem]) {
+        for item in items {
+            roster[item.jid] = item;
+        }
+    }
+    
+    public var items: [RosterItem] {
+        return queue.sync {
+            return Array(self.roster.values);
+        }
+    }
+    
+    public func item(for jid: JID) -> RosterItem? {
+        return queue.sync {
+            return roster[jid];
+        }
+    }
+    
+    public func update(item: RosterItem) {
+        queue.async(flags: .barrier) {
+            self.roster[item.jid] = item;
+        }
+    }
+    
+    public func remove(for jid: JID) {
+        queue.async(flags: .barrier) {
+            self.roster.removeValue(forKey: jid);
+        }
+    }
+    
+}
+
+open class DBRosterStore: RosterStore {
+    
+    public typealias RosterItem = BeagleIM.RosterItem
     
     static let ITEM_UPDATED = Notification.Name("rosterItemUpdated");
     static let instance: DBRosterStore = DBRosterStore.init();
     
     public let dispatcher: QueueDispatcher;
-        
+    
+    private var accountRosters = [BareJID: AccountRoster]();
+    
     public init() {
         self.dispatcher = QueueDispatcher(label: "db_roster_store");
     }
     
-    func getAll(for account: BareJID) -> [DBRosterItem] {
-        return dispatcher.sync {
-            try! Database.main.reader({ database in
-                try database.select(query: .rosterFindItemsForAccount, params: ["account": account]).mapAll(DBRosterItem.from(cursor:))
-            })
-        }
-    }
-    
-    func remove(for account: BareJID, item: DBRosterItem) {
+    public func clear(for account: BareJID) {
         dispatcher.sync {
-            try! Database.main.writer({ database in
-                try database.delete(query: .rosterDeleteItem, params: ["id": item.id]);
-            })
-        }
-    }
-    
-    func removeAll(for account: BareJID) {
-        dispatcher.sync {
-            getAll(for: account).forEach { item in
-                self.remove(for: account, item: item);
+            let items = self.items(for: account);
+            for item in items {
+                remove(for: account, jid: item.jid);
             }
         }
     }
     
-    func set(for account: BareJID, item: RosterItem) -> DBRosterItem {
+    public func clear(for context: Context) {
+        self.clear(for: context.userBareJid);
+    }
+    
+    func items(for account: BareJID) -> [RosterItem] {
         return dispatcher.sync {
-            let data = DBRosterData(groups: item.groups, annotations: item.annotations);
-            guard let i = item as? DBRosterItem else {
-                let params: [String: Any?] = ["account": account, "jid": item.jid, "name": item.name, "subscription": item.subscription.rawValue, "timestamp": Date(), "ask": item.ask, "data": data];
+            return self.accountRosters[account];
+        }?.items ?? [];
+    }
+    
+    public func items(for context: Context) -> [RosterItem] {
+        return items(for: context.userBareJid);
+    }
+    
+    func item(for account: BareJID, jid: JID) -> RosterItem? {
+        return dispatcher.sync {
+            return self.accountRosters[account];
+        }?.item(for: jid);
+    }
+    
+    public func item(for context: Context, jid: JID) -> RosterItem? {
+        return item(for: context.userBareJid, jid: jid);
+    }
+    
+    func updateItem(for account: BareJID, jid: JID, name: String?, subscription: RosterItemSubscription, groups: [String], ask: Bool, annotations: [RosterItemAnnotation]) {
+        
+        let data = DBRosterData(groups: groups, annotations: annotations);
+        dispatcher.sync {
+            guard let item = item(for: account, jid: jid) else {
+                let params: [String: Any?] = ["account": account, "jid": jid, "name": name, "subscription": subscription.rawValue, "timestamp": Date(), "ask": ask, "data": data];
                 
                 let id = try! Database.main.writer({ database -> Int? in
                     try database.insert(query: .rosterInsertItem, params: params);
                     return database.lastInsertedRowId
                 })!;
-                return DBRosterItem(id: id, item: item);
+                let item = RosterItem(id: id, jid: jid, name: name, subscription: subscription, groups: groups, ask: ask, annotations: annotations);
+                self.accountRosters[account]?.update(item: item);
+                return;
             }
 
-            let params: [String: Any?] = ["id": i.id, "name": i.name, "subscription": item.subscription.rawValue, "timestamp": Date(), "ask": item.ask, "data": data];
+            let params: [String: Any?] = ["id": item.id, "name": name, "subscription": subscription.rawValue, "timestamp": Date(), "ask": ask, "data": data];
             try! Database.main.writer({ database in
                 try database.update(query: .rosterUpdateItem, params: params);
             })
-            
-            return i;
+
+            let newItem = RosterItem(id: item.id, jid: jid, name: name, subscription: subscription, groups: groups, ask: ask, annotations: annotations);
+            self.accountRosters[account]?.update(item: newItem);
         }
     }
     
-    class RosterItemUpdated {
-        
+    public func updateItem(for context: Context, jid: JID, name: String?, subscription: RosterItemSubscription, groups: [String], ask: Bool, annotations: [RosterItemAnnotation]) {
+        self.updateItem(for: context.userBareJid, jid: jid, name: name, subscription: subscription, groups: groups, ask: ask, annotations: annotations);
     }
+    
+    func remove(for account: BareJID, jid: JID) {
+        guard let accountRoster = dispatcher.sync(execute: {
+            return self.accountRosters[account];
+        }) else {
+            return;
+        }
+        if let item = accountRoster.item(for: jid) {
+            accountRoster.remove(for: jid);
+            dispatcher.sync {
+                try! Database.main.writer({ database in
+                    try database.delete(query: .rosterDeleteItem, params: ["id": item.id]);
+                })
+            }
+        }
+    }
+    
+    public func deleteItem(for context: Context, jid: JID) {
+        self.remove(for: context.userBareJid, jid: jid);
+    }
+    
+    public func version(for context: Context) -> String? {
+        return nil;
+    }
+    
+    public func set(version: String?, for context: Context) {
+        // not implemented
+    }
+    
+    public func initialize(context: Context) {
+        return dispatcher.async {
+            guard self.accountRosters[context.userBareJid] == nil else {
+                return;
+            }
+            
+            let items = try! Database.main.reader({ database in
+                try database.select(query: .rosterFindItemsForAccount, params: ["account": context.userBareJid]).mapAll(RosterItem.from(cursor:))
+            });
+            
+            self.accountRosters[context.userBareJid] = AccountRoster(items: items);
+        }
+    }
+    
+    public func deinitialize(context: Context) {
+        dispatcher.async {
+            self.accountRosters.removeValue(forKey: context.userBareJid);
+        }
+    }
+
 }
 
 struct DBRosterData: Codable, DatabaseConvertibleStringValue {
@@ -99,31 +203,24 @@ struct DBRosterData: Codable, DatabaseConvertibleStringValue {
         
 }
 
-class DBRosterItem: RosterItem, Identifiable {
+public class RosterItem: TigaseSwift.RosterItemBase, Identifiable {
     
-    static func from(cursor: Cursor) -> DBRosterItem? {
+    static func from(cursor: Cursor) -> RosterItem? {
         let itemId: Int = cursor.int(for: "id")!;
         let jid: JID = cursor.jid(for: "jid")!;
         let name: String? = cursor.string(for: "name");
-        let subscription = RosterItem.Subscription(rawValue: cursor.string(for: "subscription")!)!;
+        let subscription = RosterItemSubscription(rawValue: cursor.string(for: "subscription")!)!;
         let ask: Bool = cursor.bool(for: "ask");
         let data: DBRosterData = cursor.object(for: "data") ?? DBRosterData(groups: [], annotations: []);
         
-        return DBRosterItem(id: itemId, jid: jid, name: name, subscription: subscription, groups: data.groups, ask: ask, annotations: data.annotations);
+        return RosterItem(id: itemId, jid: jid, name: name, subscription: subscription, groups: data.groups, ask: ask, annotations: data.annotations);
     }
     
-    let id: Int;
+    public let id: Int;
     
-    init(id: Int, jid: JID, name: String?, subscription: RosterItem.Subscription, groups: [String], ask: Bool, annotations: [RosterItemAnnotation]) {
+    public init(id: Int, jid: JID, name: String?, subscription: RosterItemSubscription, groups: [String], ask: Bool, annotations: [RosterItemAnnotation]) {
         self.id = id;
         super.init(jid: jid, name: name, subscription: subscription, groups: groups, ask: ask, annotations: annotations);
     }
-    
-    convenience init(id: Int, item: RosterItem) {
-        self.init(id: id, jid: item.jid, name: item.name, subscription: item.subscription, groups: item.groups, ask: item.ask, annotations: item.annotations);
-    }
-    
-    override func update(name: String?, subscription: RosterItem.Subscription, groups: [String], ask: Bool, annotations: [RosterItemAnnotation]) -> RosterItem {
-        return DBRosterItem(id: id, jid: jid, name: name, subscription: subscription, groups: groups, ask: ask, annotations: annotations);
-    }
+        
 }

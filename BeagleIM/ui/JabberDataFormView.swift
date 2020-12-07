@@ -576,7 +576,7 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
         
         func loadImage(from uri: String, xmppClient: XMPPClient?, jid: JID?) {
             if uri.starts(with: "cid:") {
-                if let client = xmppClient, client.state != .disconnected {
+                if let client = xmppClient, client.state != .disconnected() {
                     self.progressIndicator.startAnimation(nil);
                     let iq = Iq();
                     iq.type = .get;

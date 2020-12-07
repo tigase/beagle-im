@@ -37,7 +37,7 @@ extension RosterViewController: NSMenuDelegate {
         item.isHidden = false;
         
         let row = self.getItem(at: self.contactsTableView.clickedRow);
-        guard (XmppService.instance.getClient(for: row.account)?.state ?? .disconnected) == .connected else {
+        guard (XmppService.instance.getClient(for: row.account)?.state ?? .disconnected()) == .connected else {
             item.isEnabled = false;
             return true;
         }
@@ -114,12 +114,9 @@ extension RosterViewController: NSMenuDelegate {
                     return;
                 }
 
-                let jid = JID(item.jid);
-                guard let ri = rosterModule.store.get(for: jid) else {
-                    return;
-                }
-                
-                rosterModule.store.update(item: ri, name: textField.stringValue.isEmpty ? nil : textField.stringValue, completionHandler: nil);
+                let oldItem = DBRosterStore.instance.item(for: item.account, jid: JID(item.jid));
+                let groups = oldItem?.groups ?? [];
+                rosterModule.updateItem(jid: JID(item.jid), name: textField.stringValue.isEmpty ? nil : textField.stringValue, groups: groups, completionHandler: nil);
             }
         }
     }
@@ -162,7 +159,7 @@ extension RosterViewController: NSMenuDelegate {
             return;
         }
         
-        rosterModule.store.remove(jid: JID(item.jid), completionHandler: nil);
+        rosterModule.removeItem(jid: JID(item.jid), completionHandler: nil);
     }
  
     fileprivate class InviteToRoomMenuItem: NSMenuItem {

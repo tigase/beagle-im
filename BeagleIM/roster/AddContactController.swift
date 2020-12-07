@@ -54,7 +54,7 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
         accountSelector.setContentHuggingPriority(.defaultHigh, for: .vertical);
         print("hugging:", accountSelector.contentHuggingPriority(for: .horizontal).rawValue);
         AccountManager.getAccounts().filter { account -> Bool in
-            return XmppService.instance.getClient(for: account)?.state ?? .disconnected == .connected
+            return XmppService.instance.getClient(for: account)?.state ?? .disconnected() == .connected
             }.forEach { account in
             accountSelector.menu?.addItem(NSMenuItem(title: account.stringValue, action: nil, keyEquivalent: ""));
         }
@@ -138,7 +138,7 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
             return;
         }
         
-        client.rosterStore!.add(jid: jid, name: name.isEmpty ? nil : name, completionHandler: { result in
+        client.module(.roster).addItem(jid: jid, name: name.isEmpty ? nil : name, groups: [], completionHandler: { result in
             switch result {
             case .success(_):
                 guard let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID) else {

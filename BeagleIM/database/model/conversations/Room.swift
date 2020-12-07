@@ -126,7 +126,7 @@ public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
     }
     
     public func sendAttachment(url uploadedUrl: String, appendix: ChatAttachmentAppendix, originalUrl: URL?, completionHandler: (() -> Void)?) {
-        guard ((self.context as? XMPPClient)?.state ?? .disconnected) == .connected, self.state == .joined else {
+        guard ((self.context as? XMPPClient)?.state ?? .disconnected()) == .connected, self.state == .joined else {
             completionHandler?();
             return;
         }

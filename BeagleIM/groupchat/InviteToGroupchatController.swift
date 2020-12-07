@@ -37,7 +37,7 @@ class InviteToGroupchatController: NSViewController, NSTextFieldDelegate {
     override func viewWillAppear() {
         super.viewWillAppear();
         self.allRosterItems = XmppService.instance.clients.values.flatMap { (client) -> [RosterItem] in
-            (client.rosterStore as? DBRosterStoreWrapper)?.getAll() ?? [];
+            return DBRosterStore.instance.items(for: client) ?? [];
         }
     }
     

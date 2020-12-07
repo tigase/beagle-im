@@ -198,12 +198,14 @@ class XmppService: EventHandler {
             guard let accountName = e.sessionObject.userBareJid else {
                 return;
             }
-            switch e.error! {
-            case .aborted, .temporary_auth_failure:
-                // those are temporary errors, we shoud retry
-                return;
-            default:
-                break;
+            if let error = e.error as? SaslError {
+                switch error {
+                case .aborted, .temporary_auth_failure:
+                    // those are temporary errors, we shoud retry
+                    return;
+                default:
+                    break;
+                }
             }
             
             guard var account = AccountManager.getAccount(for: accountName) else {
@@ -287,7 +289,7 @@ class XmppService: EventHandler {
                 }
                 let prevState = client.state;
                 client.disconnect();
-                if prevState == .disconnected && client.state == .disconnected {
+                if prevState == .disconnected() && client.state == .disconnected() {
                     self.unregisterClient(client);
                 }
             }
@@ -347,9 +349,10 @@ class XmppService: EventHandler {
             }
             dispatcher.async {
                 if removed {
-                    DBRosterStore.instance.removeAll(for: accountName);
+                    DBRosterStore.instance.clear(for: client)
                     DBChatStore.instance.closeAll(for: accountName);
                     DBChatHistoryStore.instance.removeHistory(for: accountName, with: nil);
+                    _ = client;
                 }
             }
         }
@@ -401,9 +404,7 @@ class XmppService: EventHandler {
         
         _ = client.modulesManager.register(HttpFileUploadModule());
         
-        let rosterStoreWrapper = DBRosterStoreWrapper(sessionObject: client.context.sessionObject);
-        rosterStoreWrapper.initialize();
-        _ = client.modulesManager.register(RosterModule(store: rosterStoreWrapper));
+        _ = client.modulesManager.register(RosterModule(rosterManager: RosterManagerBase(store: DBRosterStore.instance)));
         
         _ = client.modulesManager.register(PresenceModule());
         

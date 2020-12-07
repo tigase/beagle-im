@@ -11,7 +11,6 @@
 		FE02DD13225BC33F00FA08EB /* DBOMEMOStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE02DD12225BC33F00FA08EB /* DBOMEMOStore.swift */; };
 		FE0C817F2257B48400948C41 /* Settings.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEDC03172257B2B400F24BF4 /* Settings.storyboard */; };
 		FE0E30A5252E2E320030F8C5 /* TigaseSQLite3 in Frameworks */ = {isa = PBXBuildFile; productRef = FE0E30A4252E2E320030F8C5 /* TigaseSQLite3 */; };
-		FE0E30AF252F125D0030F8C5 /* DBRosterStoreWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E30AE252F125D0030F8C5 /* DBRosterStoreWrapper.swift */; };
 		FE0E3122253CA0F70030F8C5 /* PrivateVCard4Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E3121253CA0F70030F8C5 /* PrivateVCard4Helper.swift */; };
 		FE10BCE923FAA47800E214F3 /* InvitationGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCE823FAA47800E214F3 /* InvitationGroup.swift */; };
 		FE10BCEB23FAA60A00E214F3 /* InvitationItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCEA23FAA60A00E214F3 /* InvitationItem.swift */; };
@@ -256,7 +255,6 @@
 /* Begin PBXFileReference section */
 		FE02DD10225B8D1100FA08EB /* db-schema-3.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-3.sql"; sourceTree = "<group>"; };
 		FE02DD12225BC33F00FA08EB /* DBOMEMOStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBOMEMOStore.swift; sourceTree = "<group>"; };
-		FE0E30AE252F125D0030F8C5 /* DBRosterStoreWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBRosterStoreWrapper.swift; sourceTree = "<group>"; };
 		FE0E3121253CA0F70030F8C5 /* PrivateVCard4Helper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateVCard4Helper.swift; sourceTree = "<group>"; };
 		FE10BCE823FAA47800E214F3 /* InvitationGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationGroup.swift; sourceTree = "<group>"; };
 		FE10BCEA23FAA60A00E214F3 /* InvitationItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationItem.swift; sourceTree = "<group>"; };
@@ -695,7 +693,6 @@
 				FE41FB36215BBFC800AD86D3 /* DBCapabilitiesCache.swift */,
 				FE02DD12225BC33F00FA08EB /* DBOMEMOStore.swift */,
 				FE32A94824702FF100E40BB1 /* DBChatHistorySyncStore.swift */,
-				FE0E30AE252F125D0030F8C5 /* DBRosterStoreWrapper.swift */,
 				FE222CFA2561763700C186A9 /* DBChatStore+ChatStore.swift */,
 				FE222D022561879700C186A9 /* DBChatStore+RoomStore.swift */,
 				FE222D0625618A2C00C186A9 /* DBChatStore+ChannelStore.swift */,
@@ -1251,7 +1248,6 @@
 				FE7561EE2566E3A900E5C8F9 /* ConversationMessageSystem.swift in Sources */,
 				FE30D8B1214CE93600670BEC /* FormView.swift in Sources */,
 				FE149D8522A515C900EE4E03 /* SearchHistoryController.swift in Sources */,
-				FE0E30AF252F125D0030F8C5 /* DBRosterStoreWrapper.swift in Sources */,
 				FE8F7CFC25651A130076C13E /* ConversationDataSource.swift in Sources */,
 				FE30D8B3214CF15700670BEC /* AddContactController.swift in Sources */,
 				FEC661F821AABFB0004FDE1E /* NSViewWithTextBackground.swift in Sources */,

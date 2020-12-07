@@ -197,7 +197,7 @@ class ChatCellView: NSTableCellView {
             self.avatar.status = room.state == .joined ? .online : (room.state == .requested ? .away : nil);
         } else if let channel = item.chat as? Channel {
             self.avatar.update(for: item.chat.jid, on: item.chat.account, orDefault: NSImage(named: NSImage.userGroupName));
-            self.avatar.status = (XmppService.instance.getClient(for: item.chat.account)?.state ?? .disconnected == .connected) && channel.state == .joined ? .online : nil;
+            self.avatar.status = (XmppService.instance.getClient(for: item.chat.account)?.state ?? .disconnected() == .connected) && channel.state == .joined ? .online : nil;
         }
     }
 

@@ -78,7 +78,7 @@ enum ConversationEntrySender: Equatable {
         if let conv = conversation as? Conversation {
             return .buddy(nickname: conv.displayName);
         } else {
-            return .buddy(nickname: XmppService.instance.getClient(for: conversation.account)?.module(.roster).store.get(for: JID(conversation.jid))?.name ?? conversation.jid.stringValue);
+            return .buddy(nickname: DBRosterStore.instance.item(for: conversation.account, jid: JID(conversation.jid))?.name ?? conversation.jid.stringValue);
         }
     }
 }

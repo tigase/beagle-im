@@ -191,7 +191,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
     private func updateAvatarView() {
         if let call = self.call {
             self.remoteAvatarView?.image = AvatarManager.instance.avatar(for: call.jid, on: call.account);
-            self.remoteAvatarView?.name = XmppService.instance.getClient(for: call.account)?.rosterStore?.get(for: JID(call.jid))?.name ?? call.jid.stringValue;
+            self.remoteAvatarView?.name = DBRosterStore.instance.item(for: call.account, jid: JID(call.jid))?.name ?? call.jid.stringValue;
         } else {
             self.remoteAvatarView?.image = nil;
             self.remoteAvatarView?.name = nil;
@@ -251,7 +251,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
             self.avplayer = AVPlayer(url: Bundle.main.url(forResource: "incomingCall", withExtension: "mp3")!);
             let buttons = [ "Accept", "Reject" ];
             
-            let name = XmppService.instance.getClient(for: call.account)?.rosterStore?.get(for: JID(call.jid))?.name ?? call.jid.stringValue;
+            let name = DBRosterStore.instance.item(for: call.account, jid: JID(call.jid))?.name ?? call.jid.stringValue;
             
             self.showAlert(title: "Incoming \(call.media.contains(.video) ? "video" : "audio") call from \(name)", message: "Do you want to accept this call?", buttons: buttons, completionHandler: { (response) in
                 self.avplayer = nil;
