@@ -20,7 +20,7 @@
 //
 
 import Foundation
-import openssl
+import OpenSSL
 import TigaseSwiftOMEMO
 
 class OpenSSL_AES_GCM_Engine: AES_GCM_Engine {

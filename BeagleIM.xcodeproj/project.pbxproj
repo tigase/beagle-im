@@ -202,9 +202,8 @@
 		FEEF25322264A80500202B28 /* OMEMOController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25312264A80500202B28 /* OMEMOController.swift */; };
 		FEEF25362266303A00202B28 /* OMEMOIdentititesTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25352266303A00202B28 /* OMEMOIdentititesTableView.swift */; };
 		FEEF25392266528E00202B28 /* ContactDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25382266528E00202B28 /* ContactDetailsViewController.swift */; };
+		FEF48B072581233000A0753B /* OpenSSL in Frameworks */ = {isa = PBXBuildFile; productRef = FEF48B062581233000A0753B /* OpenSSL */; };
 		FEF5C3FA22632C0000889863 /* OpenSSL_AES_GCM_Engine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF5C3F922632C0000889863 /* OpenSSL_AES_GCM_Engine.swift */; };
-		FEF5C3FF22632CDE00889863 /* openssl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF5C3FE22632CDE00889863 /* openssl.framework */; };
-		FEF5C40022632CDE00889863 /* openssl.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FEF5C3FE22632CDE00889863 /* openssl.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FEF844742173B9DC0067B005 /* Markdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF844732173B9DC0067B005 /* Markdown.swift */; };
 		FEF8BED2216A6761001DA755 /* InviteToGroupchatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF8BED1216A6761001DA755 /* InviteToGroupchatController.swift */; };
 		FEF9CE1D2082765000B09B6C /* db-schema-1.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEF9CE1C2082765000B09B6C /* db-schema-1.sql */; };
@@ -244,7 +243,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				FEF5C40022632CDE00889863 /* openssl.framework in Embed Frameworks */,
 				FE2DEDA123C5FC0F00AEF14F /* WebRTC.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -478,7 +476,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FEF5C3FF22632CDE00889863 /* openssl.framework in Frameworks */,
+				FEF48B072581233000A0753B /* OpenSSL in Frameworks */,
 				FE0E30A5252E2E320030F8C5 /* TigaseSQLite3 in Frameworks */,
 				FE83E365217B0F89001DEF09 /* AVFoundation.framework in Frameworks */,
 				FEF9CE2220827F0000B09B6C /* libsqlite3.0.tbd in Frameworks */,
@@ -950,6 +948,7 @@
 			packageProductDependencies = (
 				FEB9EA2A2440912B00435937 /* TigaseSwiftOMEMO */,
 				FE0E30A4252E2E320030F8C5 /* TigaseSQLite3 */,
+				FEF48B062581233000A0753B /* OpenSSL */,
 			);
 			productName = BeagleIM;
 			productReference = FED2ECF02066B01C00F506A5 /* BeagleIM.app */;
@@ -1040,6 +1039,7 @@
 			packageReferences = (
 				FEB9EA292440912B00435937 /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */,
 				FE0E30A3252E2E320030F8C5 /* XCRemoteSwiftPackageReference "tigase-sqlite3.swift" */,
+				FEF48B052581233000A0753B /* XCRemoteSwiftPackageReference "OpenSSL" */,
 			);
 			productRefGroup = FED2ECF12066B01C00F506A5 /* Products */;
 			projectDirPath = "";
@@ -1660,6 +1660,14 @@
 				kind = branch;
 			};
 		};
+		FEF48B052581233000A0753B /* XCRemoteSwiftPackageReference "OpenSSL" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/krzyzanowskim/OpenSSL";
+			requirement = {
+				kind = exactVersion;
+				version = 1.1.171;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1672,6 +1680,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FEB9EA292440912B00435937 /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */;
 			productName = TigaseSwiftOMEMO;
+		};
+		FEF48B062581233000A0753B /* OpenSSL */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FEF48B052581233000A0753B /* XCRemoteSwiftPackageReference "OpenSSL" */;
+			productName = OpenSSL;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
