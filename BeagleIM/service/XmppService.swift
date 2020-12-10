@@ -375,12 +375,12 @@ class XmppService: EventHandler {
         client.connectionConfiguration.dnsResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(), cache: self.dnsCache);
         client.connectionConfiguration.userJid = jid;
         
+        _ = client.modulesManager.register(StreamFeaturesModule());
         _ = client.modulesManager.register(StreamManagementModule());
+        _ = client.modulesManager.register(SaslModule());
         _ = client.modulesManager.register(AuthModule());
         //_ = client.modulesManager.register(StreamFeaturesModuleWithPipelining(cache: streamFeaturesCache, enabled: false));
         // if you do not want Pipelining you may use StreamFeaturesModule instead StreamFeaturesModuleWithPipelining
-        _ = client.modulesManager.register(StreamFeaturesModule());
-        _ = client.modulesManager.register(SaslModule());
         _ = client.modulesManager.register(ResourceBinderModule());
         _ = client.modulesManager.register(SessionEstablishmentModule());
         _ = client.modulesManager.register(DiscoveryModule(identity: DiscoveryModule.Identity(category: "client", type: "pc", name: Bundle.main.infoDictionary!["CFBundleName"] as! String)));
