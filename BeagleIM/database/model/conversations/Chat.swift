@@ -24,7 +24,11 @@ import TigaseSwift
 import TigaseSwiftOMEMO
 
 public class Chat: ConversationBase<ChatOptions>, ChatProtocol, Conversation {
-        
+    
+    public override var defaultMessageType: StanzaType {
+        return .chat;
+    }
+    
     var localChatState: ChatState = .active;
     private(set) var remoteChatState: ChatState? = nil;
     
