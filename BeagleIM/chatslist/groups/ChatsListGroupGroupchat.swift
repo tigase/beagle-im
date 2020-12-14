@@ -26,9 +26,6 @@ class ChatsListGroupGroupchat: ChatsListGroupAbstractChat {
     
     init(delegate: ChatsListViewDataSourceDelegate) {
         super.init(name: "Channels", dispatcher: QueueDispatcher(label: "chats_list_group_groupchats_queue"), delegate: delegate, canOpenChat: true);
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(roomStatusChanged), name: MucEventHandler.ROOM_STATUS_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(roomNameChanged), name: MucEventHandler.ROOM_NAME_CHANGED, object: nil);
     }
 
     override func isAccepted(chat: Conversation) -> Bool {
@@ -39,21 +36,4 @@ class ChatsListGroupGroupchat: ChatsListGroupAbstractChat {
         return GroupchatItem(chat: chat);
     }
 
-    @objc func roomNameChanged(_ notification: Notification) {
-        guard let room = notification.object as? Room else {
-            return;
-        }
-        
-        self.updateItem(for: room.account, jid: room.roomJid, executeIfExists: { (item: ChatItemProtocol)->Void in
-            (item as? GroupchatItem)?.name = room.name ?? room.roomJid.stringValue;
-        }, executeIfNotExists: nil);
-    }
-    
-    @objc func roomStatusChanged(_ notification: Notification) {
-        guard let room = notification.object as? Room else {
-            return;
-        }
-        
-        self.updateItem(for: room.account, jid: room.roomJid, executeIfExists: nil, executeIfNotExists: nil);
-    }
 }

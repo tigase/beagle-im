@@ -27,9 +27,6 @@ class ChatsListGroupCommon: ChatsListGroupAbstractChat {
     init(delegate: ChatsListViewDataSourceDelegate) {
         super.init(name: "Conversations", dispatcher: QueueDispatcher(label: "chats_list_group_chats_queue"), delegate: delegate, canOpenChat: true);
         NotificationCenter.default.addObserver(self, selector: #selector(rosterItemUpdated), name: DBRosterStore.ITEM_UPDATED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(contactPresenceChanged), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(roomStatusChanged), name: MucEventHandler.ROOM_STATUS_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(roomNameChanged), name: MucEventHandler.ROOM_NAME_CHANGED, object: nil);
     }
     
     override func isAccepted(chat: Conversation) -> Bool {
@@ -43,19 +40,7 @@ class ChatsListGroupCommon: ChatsListGroupAbstractChat {
         }
         return item;
     }
-    
-    @objc func contactPresenceChanged(_ notification: Notification) {
-        guard let e = notification.object as? PresenceModule.ContactPresenceChanged else {
-            return;
-        }
         
-        guard let account = e.sessionObject.userBareJid, let jid = e.presence.from?.bareJid else {
-            return;
-        }
-        
-        self.updateItem(for: account, jid: jid, onlyIf: { item -> Bool in (item.chat is Chat) }, executeIfExists: nil, executeIfNotExists: nil);
-    }
-    
     @objc func rosterItemUpdated(_ notification: Notification) {
         guard let e = notification.object as? RosterModule.ItemUpdatedEvent else {
             return;
@@ -68,33 +53,12 @@ class ChatsListGroupCommon: ChatsListGroupAbstractChat {
         if e.action == .removed {
             removeItem(for: account, jid: rosterItem.jid.bareJid);
         } else {
-            self.updateItem(for: account, jid: rosterItem.jid.bareJid, executeIfExists: { (item) in
-                (item as? ChatItem)?.name = ((e.action != .removed) ? rosterItem.name : nil) ?? rosterItem.jid.stringValue;
-            }, executeIfNotExists: {
-                guard let chat = DBChatStore.instance.conversation(for: account, with: rosterItem.jid.bareJid) as? Chat else {
-                    return;
-                }
+            guard let chat = DBChatStore.instance.conversation(for: account, with: rosterItem.jid.bareJid) as? Chat else {
+                return;
+            }
                 
-                self.addItem(chat: chat);
-            });
+            self.addItem(chat: chat);
         }
     }
 
-    @objc func roomNameChanged(_ notification: Notification) {
-        guard let room = notification.object as? Room else {
-            return;
-        }
-        
-        self.updateItem(for: room.account, jid: room.roomJid, executeIfExists: { (item: ChatItemProtocol)->Void in
-            (item as? GroupchatItem)?.name = room.name ?? room.roomJid.stringValue;
-        }, executeIfNotExists: nil);
-    }
-    
-    @objc func roomStatusChanged(_ notification: Notification) {
-        guard let room = notification.object as? Room else {
-            return;
-        }
-        
-        self.updateItem(for: room.account, jid: room.roomJid, executeIfExists: nil, executeIfNotExists: nil);
-    }
 }

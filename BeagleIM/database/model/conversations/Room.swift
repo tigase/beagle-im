@@ -30,14 +30,33 @@ public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
 
     private let occupantsStore = RoomOccupantsStoreBase();
 
-    private var _state: RoomState = .not_joined;
-    public var state: RoomState {
-        return dispatcher.sync {
-            return _state;
+    @TigaseSwift.Published
+    public var status: Presence.Show? = nil;
+    public var statusPublisher: AnyPublisher<Presence.Show?, Never> {
+        return $status.eraseToAnyPublisher();
+    }
+    
+    public private(set) var state: RoomState = .not_joined {
+        didSet {
+            switch state {
+            case .joined:
+                DispatchQueue.main.async {
+                    self.status = .online;
+                }
+            case .requested:
+                DispatchQueue.main.async {
+                    self.status = .away;
+                }
+            default:
+                DispatchQueue.main.async {
+                    self.status = nil;
+                }
+            }
         }
     }
     
     public var subject: String? = nil;
+    
     public var name: String? {
         return options.name;
     }
@@ -50,8 +69,11 @@ public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
         return options.password;
     }
 
-    public var displayName: String {
-        return name ?? jid.stringValue;
+    @TigaseSwift.Published
+    public var displayName: String;
+    
+    public var displayNamePublisher: AnyPublisher<String, Never> {
+        return $displayName.eraseToAnyPublisher();
     }
         
     public var automaticallyFetchPreviews: Bool {
@@ -63,6 +85,7 @@ public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
     }
 
     override init(dispatcher: QueueDispatcher,context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: RoomOptions) {
+        displayName = options.name ?? jid.stringValue;
         super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options);
     }
 
@@ -109,9 +132,16 @@ public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
         NotificationCenter.default.post(name: MucEventHandler.ROOM_NAME_CHANGED, object: self);
     }
     
+    public override func updateOptions(_ fn: @escaping (inout RoomOptions) -> Void) {
+        super.updateOptions(fn);
+        DispatchQueue.main.async {
+            self.displayName = self.options.name ?? self.jid.stringValue;
+        }
+    }
+    
     public func update(state: RoomState) {
         dispatcher.async(flags: .barrier) {
-            self._state = state;
+            self.state = state;
         }
     }
         

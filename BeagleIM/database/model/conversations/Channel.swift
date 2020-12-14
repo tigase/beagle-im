@@ -66,12 +66,23 @@ public class Channel: ConversationBase<ChannelOptions>, ChannelProtocol, Convers
         return options.name;
     }
     
-    public var displayName: String {
-        return name ?? jid.stringValue;
+    
+    @TigaseSwift.Published
+    public var status: Presence.Show? = nil;
+    public var statusPublisher: AnyPublisher<Presence.Show?, Never> {
+        return $status.eraseToAnyPublisher();
     }
     
-    public var description: String? {
-        return options.description;
+    @TigaseSwift.Published
+    public var displayName: String;
+    public var displayNamePublisher: AnyPublisher<String, Never> {
+        return $displayName.eraseToAnyPublisher();
+    }
+    
+    @TigaseSwift.Published
+    public var description: String?;
+    public var descriptionPublisher: AnyPublisher<String?, Never> {
+        return $description.eraseToAnyPublisher();
     }
 
     public var participantId: String {
@@ -97,11 +108,32 @@ public class Channel: ConversationBase<ChannelOptions>, ChannelProtocol, Convers
     public var lastMessageTimestamp: Date? {
         return timestamp;
     }
+    
+    private var connectionState: SocketConnector.State = .disconnected() {
+        didSet {
+            self.updateState();
+        }
+    }
+    private var cancellable: Cancellable?;
 
     init(dispatcher: QueueDispatcher, context: Context, channelJid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: ChannelOptions) {
+        self.displayName = options.name ?? channelJid.stringValue;
+        self.description = options.description;
         super.init(dispatcher: dispatcher, context: context, jid: channelJid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options);
+        cancellable = context.$state.sink(receiveValue: { [weak self] state in
+            self?.connectionState = state;
+        })
     }
         
+    public override func updateOptions(_ fn: @escaping (inout ChannelOptions) -> Void) {
+        super.updateOptions(fn);
+        DispatchQueue.main.async {
+            self.displayName = self.options.name ?? self.jid.stringValue;
+            self.description = self.options.description;
+            self.updateState();
+        }
+    }
+    
     public func sendMessage(text: String, correctedMessageOriginId: String?) {
         let message = self.createMessage(text: text);
         message.lastMessageCorrectionId = correctedMessageOriginId;
@@ -122,6 +154,20 @@ public class Channel: ConversationBase<ChannelOptions>, ChannelProtocol, Convers
         message.oob = uploadedUrl;
         send(message: message, completionHandler: nil)
         completionHandler?();
+    }
+    
+    private func updateState() {
+        switch self.options.state {
+        case .left:
+            return self.status = nil;
+        case .joined:
+            switch self.connectionState {
+            case .connected:
+                self.status = .online;
+            default:
+                self.status = nil;
+            }
+        }
     }
 }
 

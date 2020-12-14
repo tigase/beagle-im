@@ -24,7 +24,7 @@ import TigaseSwift
 
 class PresenceRosterEventHandler: XmppServiceEventHandler {
     
-    let events: [Event] = [RosterModule.ItemUpdatedEvent.TYPE,PresenceModule.BeforePresenceSendEvent.TYPE, PresenceModule.SubscribeRequestEvent.TYPE];
+    let events: [Event] = [RosterModule.ItemUpdatedEvent.TYPE,PresenceModule.BeforePresenceSendEvent.TYPE, PresenceModule.SubscribeRequestEvent.TYPE,PresenceModule.ContactPresenceChanged.TYPE];
     
     var status: XmppService.Status {
         return XmppService.instance.status;
@@ -32,7 +32,16 @@ class PresenceRosterEventHandler: XmppServiceEventHandler {
     
     func handle(event: Event) {
         switch event {
+        case let e as PresenceModule.ContactPresenceChanged:
+            if let jid = e.presence.from?.bareJid {
+                if let chat = DBChatStore.instance.chat(for: e.context, with: jid) {
+                    DispatchQueue.main.async {
+                        chat.status = e.presence.show;
+                    }
+                }
+            }
         case let e as RosterModule.ItemUpdatedEvent:
+            DBChatStore.instance.chat(for: e.context, with: e.rosterItem.jid.bareJid)?.updateDisplayName(rosterItem: e.rosterItem as? RosterItem);
             NotificationCenter.default.post(name: DBRosterStore.ITEM_UPDATED, object: e);
         case let e as PresenceModule.BeforePresenceSendEvent:
             e.presence.show = status.show;

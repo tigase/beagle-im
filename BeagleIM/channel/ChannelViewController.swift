@@ -35,6 +35,8 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
 
     private var keywords: [String]? = Settings.markKeywords.stringArrays();
 
+    private var cancellables: [Cancellable] = [];
+    
     var channel: Channel! {
         return self.chat as? Channel;
     }
@@ -53,18 +55,17 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     override func viewWillAppear() {
         self.conversationLogController?.contextMenuDelegate = self;
         
-        channelNameLabel.title = channel.name ?? channel.channelJid.stringValue;
+        cancellables.append(channel.$displayName.assign(to: \.title, on: channelNameLabel));
         channelJidLabel.title = jid.stringValue;
         
         channelAvatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
-        channelAvatarView.name = channel.name ?? jid.stringValue;
+        cancellables.append(channel.$displayName.map({ $0 as String?}).assign(to: \.name, on: channelAvatarView));
         channelAvatarView.update(for: jid, on: account);
-        channelAvatarView.status = (XmppService.instance.getClient(for: channel.account)?.state ?? .disconnected() == .connected) && channel.state == .joined ? .online : nil;
-        channelDescriptionLabel.stringValue = channel.description ?? "";
-        channelDescriptionLabel.toolTip = channel.description;
+        cancellables.append(channel.$status.assign(to: \.status, on: channelAvatarView));
+        cancellables.append(channel.$description.map({ $0 ?? "" }).assign(to: \.stringValue, on: channelDescriptionLabel))
+        cancellables.append(channel.$description.assign(to: \.toolTip, on: channelDescriptionLabel))
 
         NotificationCenter.default.addObserver(self, selector: #selector(participantsChanged(_:)), name: MixEventHandler.PARTICIPANTS_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(channelUpdated(_:)), name: DBChatStore.CHAT_UPDATED, object: channel);
         NotificationCenter.default.addObserver(self, selector: #selector(avatarChanged(_:)), name: AvatarManager.AVATAR_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(permissionsChanged(_:)), name: MixEventHandler.PERMISSIONS_CHANGED, object: channel);
         
@@ -75,6 +76,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     
     override func viewWillDisappear() {
         super.viewWillDisappear();
+        cancellables.removeAll();
         NotificationCenter.default.removeObserver(self, name: MixEventHandler.PARTICIPANTS_CHANGED, object: nil);
     }
     
@@ -183,16 +185,6 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
                 return;
             }
             self.channelAvatarView.avatar = AvatarManager.instance.avatar(for: self.channel.channelJid, on: self.channel.account);
-        }
-    }
-
-    @objc func channelUpdated(_ notification: Notification) {
-        DispatchQueue.main.async {
-            self.channelAvatarView.name = self.channel.name ?? self.channel.channelJid.stringValue;
-            self.channelAvatarView.status = (XmppService.instance.getClient(for: self.channel.account)?.state ?? .disconnected() == .connected) && self.channel.state == .joined ? .online : nil;
-            self.channelNameLabel.title = self.channel.name ?? self.channel.channelJid.stringValue;
-            self.channelDescriptionLabel.stringValue = self.channel.description ?? "";
-            self.channelDescriptionLabel.toolTip = self.channel.description;
         }
     }
     

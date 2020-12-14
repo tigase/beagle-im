@@ -41,6 +41,8 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
 
     @IBOutlet var encryptButton: NSPopUpButton!;
     
+    private var cancellables: [Cancellable] = [];
+    
     override func viewDidLoad() {
         super.viewDidLoad();
 
@@ -53,8 +55,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         let newRep = representation.converting(to: .genericGray, renderingIntent: .default);
         infoButton.image = NSImage(cgImage: newRep!.cgImage!, size: infoButton.frame.size);
 
-        NotificationCenter.default.addObserver(self, selector: #selector(rosterItemUpdated), name: DBRosterStore.ITEM_UPDATED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
+//        NotificationCenter.default.addObserver(self, selector: #selector(avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(contactPresenceChanged), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(settingsChanged), name: Settings.CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(omemoAvailabilityChanged), name: MessageEventHandler.OMEMO_AVAILABILITY_CHANGED, object: nil);
@@ -63,11 +64,14 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
     override func viewWillAppear() {
         self.conversationLogController?.contextMenuDelegate = self;
 
-        buddyNameLabel.title = chat.displayName;
+        cancellables.append(chat.displayNamePublisher.assign(to: \.title, on: buddyNameLabel));
         buddyJidLabel.title = jid.stringValue;
         buddyAvatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
-        buddyAvatarView.name = chat.displayName;
-        buddyAvatarView.update(for: jid, on: account);
+        cancellables.append(chat.displayNamePublisher.map({ $0 as String?}).assign(to: \.name, on: buddyAvatarView));
+        cancellables.append(chat.statusPublisher.assign(to: \.status, on: buddyAvatarView));
+//        buddyAvatarView.avatar = AvatarManager.instance.avatar(for: jid, on: account);
+        cancellables.append(AvatarManager.instance.avatarPublisher(for: JID(jid), on: account).assign(to: \.avatar, on: buddyAvatarView));
+
         let presenceModule: PresenceModule? = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PresenceModule.ID);
         let status = presenceModule?.store.getBestPresence(for: jid)?.status;
         buddyStatusLabel.stringValue = status ?? "";
@@ -118,6 +122,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
 
     override func viewWillDisappear() {
         super.viewWillDisappear();
+        self.cancellables.removeAll();
         lastTextChangeTimer?.invalidate();
         lastTextChangeTimer = nil;
         change(chatState: .active);
@@ -137,28 +142,6 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         super.textDidChange(notification);
         lastTextChange = Date();
         self.change(chatState: .composing);
-    }
-    
-
-    @objc func rosterItemUpdated(_ notification: Notification) {
-        guard let e = notification.object as? RosterModule.ItemUpdatedEvent else {
-            return;
-        }
-
-        guard let account = e.sessionObject.userBareJid, let item = e.rosterItem else {
-            return;
-        }
-
-        DispatchQueue.main.async { [weak self] in
-            guard let that = self, that.account == account && that.jid == item.jid.bareJid else {
-                return;
-            }
-
-            let buddyName = that.chat.displayName;
-            that.buddyNameLabel.title = buddyName;
-            that.buddyAvatarView.name = buddyName;
-            that.dataSource.refreshDataNoReload();
-        }
     }
 
     @objc func avatarChanged(_ notification: Notification) {
@@ -188,7 +171,6 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         }
 
         DispatchQueue.main.async {
-            self.buddyAvatarView.update(for: jid, on: account);
             let status = e.presence.status;
             self.buddyStatusLabel.stringValue = status ?? "";
             self.buddyStatusLabel.toolTip = status;

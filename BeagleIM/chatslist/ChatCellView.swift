@@ -186,19 +186,27 @@ class ChatCellView: NSTableCellView {
         
     }
     
+    private var cancellables: [Cancellable] = [];
+    
     func update(from item: ChatItemProtocol) {
-        self.set(name: item.name);
+        cancellables.removeAll();
+        
+        let namePublisher = item.chat.displayNamePublisher.receive(on: DispatchQueue.main);
+        cancellables.append(namePublisher.assign(to: \.stringValue, on: label));
+        cancellables.append(namePublisher.map({ $0 as String? }).assign(to: \.name, on: avatar!))
+        cancellables.append(item.chat.statusPublisher.receive(on: DispatchQueue.main).assign(to: \.status, on: avatar));
+        
+//        self.set(name: item.name);
         self.set(unread: item.unread);
         self.set(lastActivity: item.lastActivity, ts: item.lastMessageTs, chatState: (item.chat as? Chat)?.remoteChatState ?? .active, account: item.chat.account);
         if item.chat is Chat {
             self.avatar.update(for: item.chat.jid, on: item.chat.account);
         } else if let room  = item.chat as? Room {
             self.avatar.update(for: item.chat.jid, on: item.chat.account, orDefault: NSImage(named: NSImage.userGroupName));
-            self.avatar.status = room.state == .joined ? .online : (room.state == .requested ? .away : nil);
         } else if let channel = item.chat as? Channel {
             self.avatar.update(for: item.chat.jid, on: item.chat.account, orDefault: NSImage(named: NSImage.userGroupName));
-            self.avatar.status = (XmppService.instance.getClient(for: item.chat.account)?.state ?? .disconnected() == .connected) && channel.state == .joined ? .online : nil;
         }
+
     }
 
 //    override func layout() {

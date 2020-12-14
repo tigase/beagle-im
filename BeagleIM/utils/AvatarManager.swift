@@ -22,6 +22,66 @@
 import AppKit
 import TigaseSwift
 
+struct AvatarWeakRef {
+    weak var avatar: Avatar?;
+}
+
+struct AvatarKey: Hashable, Equatable {
+    let account: BareJID;
+    let jid: JID;
+}
+
+class Avatar: Publisher {
+    
+    public typealias Output = NSImage?
+    public typealias Failure = Never
+    
+    fileprivate let subject: CurrentValueSubject<NSImage?,Never>;
+    
+    private let key: AvatarKey;
+    
+    init(key: AvatarKey) {
+        self.key = key;
+        self.subject = CurrentValueSubject(AvatarManager.instance.avatar(for: key.jid.bareJid, on: key.account));
+    }
+    
+    deinit {
+        AvatarManager.instance.releasePublisher(for: key);
+    }
+    
+    public func receive<S>(subscriber: S) where S : Subscriber, Failure == S.Failure, Output == S.Input {
+        subject.receive(subscriber: Inner(avatar: self, downstream: subscriber));
+    }
+
+    private class Inner<Downstream: Subscriber>: Subscriber where Downstream.Failure == Never, Downstream.Input == NSImage? {
+        
+        public typealias Input = NSImage?
+        public typealias Failure = Never;
+        
+        private let avatar: Avatar;
+        private let downstream: Downstream;
+        
+        init(avatar: Avatar, downstream: Downstream) {
+            self.avatar = avatar
+            self.downstream = downstream;
+        }
+        
+        func receive(subscription: Subscription) {
+            downstream.receive(subscription: subscription);
+        }
+        
+        func receive(_ input: NSImage?) -> Subscribers.Demand {
+            downstream.receive(input);
+        }
+        
+        func receive(completion: Subscribers.Completion<Never>) {
+            downstream.receive(completion: completion);
+        }
+
+    }
+    
+}
+
 class AvatarManager {
 
     public static let AVATAR_CHANGED = Notification.Name("avatarChanged");
@@ -41,6 +101,32 @@ class AvatarManager {
         NotificationCenter.default.addObserver(self, selector: #selector(accountChanged), name: AccountManager.ACCOUNT_CHANGED, object: nil);
     }
 
+    private var avatars: [AvatarKey: AvatarWeakRef] = [:];
+    open func avatarPublisher(for jid: JID, on account: BareJID) -> Avatar {
+        return dispatcher.sync(flags: .barrier) {
+            let key = AvatarKey(account: account, jid: jid);
+            guard let avatar = avatars[key]?.avatar else {
+                let avatar = Avatar(key: key);
+                avatars[key] = AvatarWeakRef(avatar: avatar);
+                return avatar;
+            }
+            return avatar;
+        }
+    }
+    
+    open func existingAvatarPublisher(for jid: JID, on account: BareJID) -> Avatar? {
+        return dispatcher.sync {
+            return avatars[.init(account: account, jid: jid)]?.avatar;
+        }
+    }
+    
+    open func releasePublisher(for key: AvatarKey) {
+        print("releasing avatar publisher for: \(key.account) - \(key.jid)")
+        dispatcher.async {
+            self.avatars.removeValue(forKey: key);
+        }
+    }
+    
     open func avatar(for jid: BareJID, on account: BareJID) -> NSImage? {
         return dispatcher.sync(flags: .barrier) {
             if let hash = self.avatars(on: account).avatarHash(for: jid) {
@@ -72,6 +158,13 @@ class AvatarManager {
                 self.store.updateAvatarHash(for: jid, on: account, type: type, hash: hash, completionHandler: {
                     self.dispatcher.async(flags: .barrier) {
                         self.avatars(on: account).invalidateAvatarHash(for: jid);
+                    }
+                    if let avatar = self.existingAvatarPublisher(for: JID(jid), on: account) {
+                        if let image = self.store.avatar(for: hash) {
+                            DispatchQueue.main.async {
+                                avatar.subject.send(image);
+                            }
+                        }
                     }
                 });
             }
