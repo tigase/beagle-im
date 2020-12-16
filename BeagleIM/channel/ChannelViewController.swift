@@ -38,7 +38,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     private var cancellables: [Cancellable] = [];
     
     var channel: Channel! {
-        return self.chat as? Channel;
+        return self.conversation as? Channel;
     }
     
     override func viewDidLoad() {
@@ -60,13 +60,12 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         
         channelAvatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
         cancellables.append(channel.$displayName.map({ $0 as String?}).assign(to: \.name, on: channelAvatarView));
-        channelAvatarView.update(for: jid, on: account);
+        cancellables.append(channel.avatar.assign(to: \.avatar, on: channelAvatarView))
         cancellables.append(channel.$status.assign(to: \.status, on: channelAvatarView));
         cancellables.append(channel.$description.map({ $0 ?? "" }).assign(to: \.stringValue, on: channelDescriptionLabel))
         cancellables.append(channel.$description.assign(to: \.toolTip, on: channelDescriptionLabel))
 
         NotificationCenter.default.addObserver(self, selector: #selector(participantsChanged(_:)), name: MixEventHandler.PARTICIPANTS_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(avatarChanged(_:)), name: AvatarManager.AVATAR_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(permissionsChanged(_:)), name: MixEventHandler.PERMISSIONS_CHANGED, object: channel);
         
         self.participantsButton.title = "\(channel.participants.count)";
@@ -90,7 +89,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
                     correct.target = self;
                     correct.tag = item.id;
                 }
-                if (self.chat as? Channel)?.state ?? .left == .joined && XmppService.instance.getClient(for: item.conversation.account)?.state ?? .disconnected() == .connected {
+                if (self.conversation as? Channel)?.state ?? .left == .joined && XmppService.instance.getClient(for: item.conversation.account)?.state ?? .disconnected() == .connected {
                     let retract = menu.addItem(withTitle: "Retract message", action: #selector(retractMessage), keyEquivalent: "");
                     retract.target = self;
                     retract.tag = item.id;
@@ -149,7 +148,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             return
         }
         
-        guard let item = dataSource.getItem(withId: tag) as? ConversationEntryWithSender, let chat = self.chat as? Channel else {
+        guard let item = dataSource.getItem(withId: tag) as? ConversationEntryWithSender, let chat = self.conversation as? Channel else {
             return;
         }
         
@@ -174,18 +173,6 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         }
         channel.sendMessage(text: message, correctedMessageOriginId: correctedMessageOriginId);
         return true;
-    }
-        
-    @objc func avatarChanged(_ notification: Notification) {
-        guard let account = notification.userInfo?["account"] as? BareJID, let jid = notification.userInfo?["jid"] as? BareJID else {
-            return;
-        }
-        DispatchQueue.main.async {
-            guard self.channel.account == account && self.channel.channelJid == jid else {
-                return;
-            }
-            self.channelAvatarView.avatar = AvatarManager.instance.avatar(for: self.channel.channelJid, on: self.channel.account);
-        }
     }
     
     @objc func participantsChanged(_ notification: Notification) {

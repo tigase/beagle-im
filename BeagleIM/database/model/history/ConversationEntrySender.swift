@@ -35,6 +35,30 @@ enum ConversationEntrySender: Equatable {
         }
     }
     
+    func avatarPublisher(for entry: ConversationEntry, direction: MessageDirection) -> AnyPublisher<NSImage?,Never> {
+        switch direction {
+        case .outgoing:
+            return AvatarManager.instance.avatarPublisher(for: .init(account: entry.conversation.account, jid: entry.conversation.account, type: .buddy)).eraseToAnyPublisher();
+        case .incoming:
+            switch self {
+            case  .buddy(_):
+                return AvatarManager.instance.avatarPublisher(for: .init(account: entry.conversation.account, jid: entry.conversation.account, type: .buddy)).eraseToAnyPublisher();
+            case .occupant(let nickname, let jid):
+                if let jid = jid {
+                    return AvatarManager.instance.avatarPublisher(for: .init(account: entry.conversation.account, jid: jid, type: .buddy)).eraseToAnyPublisher();
+                } else {
+                    return AvatarManager.instance.avatarPublisher(for: .init(account: entry.conversation.account, jid: entry.conversation.jid, type: .occupant(nickname: nickname))).eraseToAnyPublisher();
+                }
+            case .participant(let participantId, _, let jid):
+                if let jid = jid {
+                    return AvatarManager.instance.avatarPublisher(for: .init(account: entry.conversation.account, jid: jid, type: .buddy)).eraseToAnyPublisher();
+                } else {
+                    return AvatarManager.instance.avatarPublisher(for: .init(account: entry.conversation.account, jid: entry.conversation.jid, type: .participant(id: participantId))).eraseToAnyPublisher();
+                }
+            }
+        }
+    }
+    
     func avatar(for entry: ConversationEntry, direction: MessageDirection) -> NSImage? {
         switch direction {
         case .outgoing:

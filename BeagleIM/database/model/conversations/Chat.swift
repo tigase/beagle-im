@@ -22,6 +22,7 @@
 import Foundation
 import TigaseSwift
 import TigaseSwiftOMEMO
+import AppKit
 
 public class Chat: ConversationBase<ChatOptions>, ChatProtocol, Conversation {
     
@@ -29,30 +30,36 @@ public class Chat: ConversationBase<ChatOptions>, ChatProtocol, Conversation {
         return .chat;
     }
     
+    public let contact: Contact;
+    
     var localChatState: ChatState = .active;
     private(set) var remoteChatState: ChatState? = nil;
     
-    @TigaseSwift.Published
-    public var displayName: String;
+    public var displayName: String {
+        return contact.displayName;
+    }
     public var displayNamePublisher: AnyPublisher<String, Never> {
-        return $displayName.eraseToAnyPublisher();
+        return contact.displayNamePublisher;
     }
     
-    @TigaseSwift.Published
-    public var status: Presence.Show? = nil;
+    public var status: Presence.Show? {
+        return contact.status;
+    }
     public var statusPublisher: AnyPublisher<Presence.Show?, Never> {
-        return $status.eraseToAnyPublisher();
+        return contact.statusPublisher;
     }
         
+    public var avatar: AnyPublisher<NSImage?,Never> {
+        return AvatarManager.instance.avatarPublisher(for: contact.key).eraseToAnyPublisher();
+    }
+
     public var automaticallyFetchPreviews: Bool {
         return DBRosterStore.instance.item(for: account, jid: JID(jid)) != nil;
     }
 
     override init(dispatcher: QueueDispatcher, context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastConversationActivity?, unread: Int, options: ChatOptions) {
-        displayName = jid.stringValue;
-        status = context.module(.presence).store.getBestPresence(for: jid)?.show;
+        self.contact = ContactManager.instance.contact(for: .init(account: context.userBareJid, jid: jid, type: .buddy));
         super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options);
-        self.updateDisplayName(rosterItem: DBRosterStore.instance.item(for: context, jid: JID(jid)));
     }
         
     
@@ -73,11 +80,11 @@ public class Chat: ConversationBase<ChatOptions>, ChatProtocol, Conversation {
     
     private var remoteChatStateTimer: Foundation.Timer?;
     
-    func updateDisplayName(rosterItem: RosterItem?) {
-        DispatchQueue.main.async {
-            self.displayName = rosterItem?.name ?? self.jid.stringValue;
-        }
-    }
+//    func updateDisplayName(rosterItem: RosterItem?) {
+//        DispatchQueue.main.async {
+//            self.displayName = rosterItem?.name ?? self.jid.stringValue;
+//        }
+//    }
     
     func update(remoteChatState state: ChatState?) -> Bool {
         // proper handle when we have the same state!!

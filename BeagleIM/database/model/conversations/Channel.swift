@@ -21,6 +21,7 @@
 
 import Foundation
 import TigaseSwift
+import AppKit
 
 public class Channel: ConversationBase<ChannelOptions>, ChannelProtocol, Conversation, LastMessageTimestampAware {
     
@@ -85,6 +86,10 @@ public class Channel: ConversationBase<ChannelOptions>, ChannelProtocol, Convers
         return $description.eraseToAnyPublisher();
     }
 
+    public var avatar: AnyPublisher<NSImage?,Never> {
+        return AvatarManager.instance.avatarPublisher(for: .init(account: account, jid: jid, type: .buddy)).replaceNil(with: AvatarManager.instance.defaultGroupchatAvatar).eraseToAnyPublisher();
+    }
+
     public var participantId: String {
         return options.participantId;
     }
@@ -111,7 +116,9 @@ public class Channel: ConversationBase<ChannelOptions>, ChannelProtocol, Convers
     
     private var connectionState: SocketConnector.State = .disconnected() {
         didSet {
-            self.updateState();
+            DispatchQueue.main.async {
+                self.updateState();
+            }
         }
     }
     private var cancellable: Cancellable?;

@@ -412,7 +412,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
             if let conversation = (item as? AbstractChatItem)?.chat {
                 let controller = self.conversationController(for: conversation);
                 if let conversationController = controller as? AbstractChatViewController {
-                    conversationController.chat = conversation;
+                    conversationController.conversation = conversation;
                     _ = conversationController.view;
                     if let msgId = self.scrollChatToMessageWithId {
                         conversationController.dataSource.loadItems(.with(id: msgId, overhead: 100));
@@ -470,7 +470,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
 //        }
         
         if let group = item as? ChatsListGroupProtocol {
-            let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("ChatGroupCell"), owner: self) as? NSTableCellView;
+            let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("ChatGroupCell"), owner: nil) as? NSTableCellView;
             if let textField = view?.textField {
                 textField.stringValue = group.name;
                 //textField.sizeToFit();
@@ -481,7 +481,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
             }
             return view;
         } else if let chat = item as? ChatItemProtocol {
-            let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("ChatCell"), owner: self) as? ChatCellView;
+            let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("ChatCell"), owner: nil) as? ChatCellView;
             view?.avatar.backgroundColor = NSColor(named: "sidebarBackgroundColor");
             view?.update(from: chat);
 //            view?.lastMessage.preferredMaxLayoutWidth = self.outlineView.outlineTableColumn!.width - 66;
@@ -492,7 +492,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
             view?.layout();
             return view;
         } else if let invitation = item as? InvitationItem {
-            let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("InvitationCellView"), owner: self) as? InvitationCellView;
+            let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("InvitationCellView"), owner: nil) as? InvitationCellView;
             view?.avatar.image = AvatarManager.instance.avatar(for: invitation.jid.bareJid, on: invitation.account) ?? AvatarManager.instance.defaultAvatar;
             view?.label.stringValue = DBRosterStore.instance.item(for: invitation.account, jid: invitation.jid)?.name ?? invitation.jid.stringValue;
             view?.message.maximumNumberOfLines = 2;

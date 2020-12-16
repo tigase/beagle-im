@@ -625,7 +625,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 return;
             }
             
-            if (chatViewController.account?.stringValue ?? "") != account || (chatViewController.chat?.jid.stringValue ?? "") != jid {
+            if (chatViewController.account?.stringValue ?? "") != account || (chatViewController.conversation?.jid.stringValue ?? "") != jid {
                 completionHandler([.sound, .alert]);
                 return;
             }
@@ -646,7 +646,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 return true;
             }
         
-            return (chatViewController.account?.stringValue ?? "") != account || (chatViewController.chat?.jid.stringValue ?? "") != jid;
+            return (chatViewController.account?.stringValue ?? "") != account || (chatViewController.conversation?.jid.stringValue ?? "") != jid;
         }
         return true;
     }

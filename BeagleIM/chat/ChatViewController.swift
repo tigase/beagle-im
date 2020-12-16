@@ -43,6 +43,10 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
     
     private var cancellables: [Cancellable] = [];
     
+    var chat: Chat {
+        return conversation as! Chat;
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad();
 
@@ -55,7 +59,6 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         let newRep = representation.converting(to: .genericGray, renderingIntent: .default);
         infoButton.image = NSImage(cgImage: newRep!.cgImage!, size: infoButton.frame.size);
 
-//        NotificationCenter.default.addObserver(self, selector: #selector(avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(contactPresenceChanged), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(settingsChanged), name: Settings.CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(omemoAvailabilityChanged), name: MessageEventHandler.OMEMO_AVAILABILITY_CHANGED, object: nil);
@@ -70,13 +73,10 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         cancellables.append(chat.displayNamePublisher.map({ $0 as String?}).assign(to: \.name, on: buddyAvatarView));
         cancellables.append(chat.statusPublisher.assign(to: \.status, on: buddyAvatarView));
 //        buddyAvatarView.avatar = AvatarManager.instance.avatar(for: jid, on: account);
-        cancellables.append(AvatarManager.instance.avatarPublisher(for: JID(jid), on: account).assign(to: \.avatar, on: buddyAvatarView));
-
-        let presenceModule: PresenceModule? = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PresenceModule.ID);
-        let status = presenceModule?.store.getBestPresence(for: jid)?.status;
-        buddyStatusLabel.stringValue = status ?? "";
-        buddyStatusLabel.toolTip = status;
-
+        cancellables.append(chat.avatar.assign(to: \.avatar, on: buddyAvatarView));
+        cancellables.append(chat.contact.descriptionPublisher.map({ $0 ?? "" }).assign(to: \.stringValue, on: buddyStatusLabel));
+        cancellables.append(chat.contact.descriptionPublisher.assign(to: \.toolTip, on: buddyStatusLabel));
+        
         let itemsCount = self.scriptsButton.menu?.items.count ?? 0;
         if itemsCount > 1 {
             for _ in 1..<itemsCount {
@@ -168,12 +168,6 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
 
         guard account == self.account && jid == self.jid else {
             return;
-        }
-
-        DispatchQueue.main.async {
-            let status = e.presence.status;
-            self.buddyStatusLabel.stringValue = status ?? "";
-            self.buddyStatusLabel.toolTip = status;
         }
 
         self.updateCapabilities();

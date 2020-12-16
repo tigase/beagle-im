@@ -96,7 +96,7 @@ class SharingTaskManager {
         private var isInvalidHttpResponseAccepted: Bool?;
 
         init(controller: AbstractChatViewControllerWithSharing, items: [AbstractSharingTaskItem], askForQuality: Bool) {
-            self.chat = controller.chat;
+            self.chat = controller.conversation;
             self.window = controller.view.window;
             self.items = items;
             for item in items {

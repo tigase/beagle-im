@@ -23,7 +23,7 @@ import Foundation
 import TigaseSQLite3
 import TigaseSwift
 
-public protocol Conversation: ConversationProtocol, ConversationKey {
+public protocol Conversation: ConversationProtocol, ConversationKey, DisplayableIdProtocol {
     
     var status: Presence.Show? { get }
     var statusPublisher: TigaseSwift.AnyPublisher<Presence.Show?,Never> { get }

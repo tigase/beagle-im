@@ -24,17 +24,17 @@ import TigaseSwift
 
 class AbstractChatViewController: NSViewController, NSTextViewDelegate {
 
-    var chat: Conversation! {
+    var conversation: Conversation! {
         didSet {
-            conversationLogController?.conversation = chat;
+            conversationLogController?.conversation = conversation;
         }
     }
     var account: BareJID! {
-        return chat.account;
+        return conversation.account;
     }
     
     var jid: BareJID! {
-        return chat.jid;
+        return conversation.jid;
     }
 
     private(set) var dataSource: ConversationDataSource!;
@@ -44,7 +44,7 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     @IBOutlet var messageFieldScrollerHeight: NSLayoutConstraint!;
     var conversationLogController: ConversationLogController? {
         didSet {
-            self.conversationLogController?.conversation = self.chat;
+            self.conversationLogController?.conversation = self.conversation;
             self.dataSource = self.conversationLogController?.dataSource;
         }
     }

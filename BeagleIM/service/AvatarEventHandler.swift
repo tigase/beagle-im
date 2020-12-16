@@ -40,7 +40,8 @@ class AvatarEventHandler: XmppServiceEventHandler {
                 os_log(OSLogType.debug, log: .avatar, "received presence from %s with avaar hash: %{public}s", e.presence.from!.stringValue, photoId);
                 if !AvatarManager.instance.hasAvatar(withHash: photoId), let vcardTempModule: VCardTempModule = XmppService.instance.getClient(for: to)?.modulesManager.getModule(VCardTempModule.ID) {
                     os_log(OSLogType.debug, log: .avatar, "querying %s for VCard for avaar hash: %{public}s", e.presence.from!.stringValue, photoId);
-                    vcardTempModule.retrieveVCard(from: e.presence.from!, completionHandler: { result in
+                    let occupantJid = e.presence.from!;
+                    vcardTempModule.retrieveVCard(from: occupantJid, completionHandler: { result in
                         switch result {
                         case .success(let vcard):
                             os_log(OSLogType.debug, log: .avatar, "got result %s with %d photos from %s VCard for avaar hash: %{public}s",
@@ -50,6 +51,9 @@ class AvatarEventHandler: XmppServiceEventHandler {
                                 AvatarManager.fetchData(photo: photo, completionHandler: { result in
                                     if let data = result {
                                         _ = AvatarManager.instance.storeAvatar(data: data);
+                                        if let nickname = occupantJid.resource {
+                                            DBChatStore.instance.room(for: e.context, with: from)?.occupant(nickname: nickname)?.set(presence: e.presence);
+                                        }
                                     }
                                 })
                             })

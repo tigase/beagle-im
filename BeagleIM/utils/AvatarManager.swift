@@ -26,23 +26,23 @@ struct AvatarWeakRef {
     weak var avatar: Avatar?;
 }
 
-struct AvatarKey: Hashable, Equatable {
-    let account: BareJID;
-    let jid: JID;
-}
-
-class Avatar: Publisher {
+public class Avatar: Publisher {
     
     public typealias Output = NSImage?
     public typealias Failure = Never
     
     fileprivate let subject: CurrentValueSubject<NSImage?,Never>;
     
-    private let key: AvatarKey;
+    private let key: Contact.Key;
     
-    init(key: AvatarKey) {
+    public var value: NSImage? {
+        return subject.value;
+    }
+    
+    init(key: Contact.Key) {
         self.key = key;
-        self.subject = CurrentValueSubject(AvatarManager.instance.avatar(for: key.jid.bareJid, on: key.account));
+        // FIXME: !! FOR MUC OCCUPANTS !!
+        self.subject = CurrentValueSubject(AvatarManager.instance.avatar(for: key.jid, on: key.account));
     }
     
     deinit {
@@ -92,6 +92,9 @@ class AvatarManager {
     public var defaultAvatar: NSImage {
         return NSImage(named: NSImage.userName)!;
     }
+    public var defaultGroupchatAvatar: NSImage {
+        return NSImage(named: NSImage.userGroupName)!;
+    }
 
     fileprivate var dispatcher = QueueDispatcher(label: "avatar_manager", attributes: .concurrent);
     private var cache: [BareJID: AccountAvatarHashes] = [:];
@@ -101,10 +104,9 @@ class AvatarManager {
         NotificationCenter.default.addObserver(self, selector: #selector(accountChanged), name: AccountManager.ACCOUNT_CHANGED, object: nil);
     }
 
-    private var avatars: [AvatarKey: AvatarWeakRef] = [:];
-    open func avatarPublisher(for jid: JID, on account: BareJID) -> Avatar {
+    private var avatars: [Contact.Key: AvatarWeakRef] = [:];
+    open func avatarPublisher(for key: Contact.Key) -> Avatar {
         return dispatcher.sync(flags: .barrier) {
-            let key = AvatarKey(account: account, jid: jid);
             guard let avatar = avatars[key]?.avatar else {
                 let avatar = Avatar(key: key);
                 avatars[key] = AvatarWeakRef(avatar: avatar);
@@ -114,13 +116,13 @@ class AvatarManager {
         }
     }
     
-    open func existingAvatarPublisher(for jid: JID, on account: BareJID) -> Avatar? {
+    open func existingAvatarPublisher(for key: Contact.Key) -> Avatar? {
         return dispatcher.sync {
-            return avatars[.init(account: account, jid: jid)]?.avatar;
+            return avatars[key]?.avatar;
         }
     }
     
-    open func releasePublisher(for key: AvatarKey) {
+    open func releasePublisher(for key: Contact.Key) {
         print("releasing avatar publisher for: \(key.account) - \(key.jid)")
         dispatcher.async {
             self.avatars.removeValue(forKey: key);
@@ -159,7 +161,8 @@ class AvatarManager {
                     self.dispatcher.async(flags: .barrier) {
                         self.avatars(on: account).invalidateAvatarHash(for: jid);
                     }
-                    if let avatar = self.existingAvatarPublisher(for: JID(jid), on: account) {
+                    let key = Contact.Key(account: account, jid: jid, type: .buddy);
+                    if let avatar = self.existingAvatarPublisher(for: key) {
                         if let image = self.store.avatar(for: hash) {
                             DispatchQueue.main.async {
                                 avatar.subject.send(image);

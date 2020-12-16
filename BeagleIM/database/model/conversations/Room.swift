@@ -21,6 +21,7 @@
 
 import Foundation
 import TigaseSwift
+import AppKit
 
 public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
         
@@ -35,6 +36,15 @@ public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
     public var statusPublisher: AnyPublisher<Presence.Show?, Never> {
         return $status.eraseToAnyPublisher();
     }
+    
+    public var occupantsPublisher: AnyPublisher<[MucOccupant], Never> {
+        return occupantsStore.occupantsPublisher;
+    }
+    
+    @TigaseSwift.Published
+    public var role: MucRole = .none;
+    @TigaseSwift.Published
+    public var affiliation: MucAffiliation = .none;
     
     public private(set) var state: RoomState = .not_joined {
         didSet {
@@ -55,6 +65,7 @@ public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
         }
     }
     
+    @TigaseSwift.Published
     public var subject: String? = nil;
     
     public var name: String? {
@@ -74,6 +85,10 @@ public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
     
     public var displayNamePublisher: AnyPublisher<String, Never> {
         return $displayName.eraseToAnyPublisher();
+    }
+    
+    public var avatar: AnyPublisher<NSImage?, Never> {
+        return AvatarManager.instance.avatarPublisher(for: .init(account: account, jid: jid, type: .buddy)).replaceNil(with: AvatarManager.instance.defaultGroupchatAvatar).eraseToAnyPublisher();
     }
         
     public var automaticallyFetchPreviews: Bool {
@@ -101,10 +116,12 @@ public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
         }
     }
     
-    public func add(occupant: MucOccupant) {
+    public func addOccupant(nickname: String, presence: Presence) -> MucOccupant {
+        let occupant = MucOccupant(nickname: nickname, presence: presence);
         dispatcher.async(flags: .barrier) {
             self.occupantsStore.add(occupant: occupant);
         }
+        return occupant;
     }
     
     public func remove(occupant: MucOccupant) {
@@ -142,6 +159,7 @@ public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
     public func update(state: RoomState) {
         dispatcher.async(flags: .barrier) {
             self.state = state;
+            self.occupantsStore.removeAll();
         }
     }
         

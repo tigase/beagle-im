@@ -28,6 +28,7 @@
 		FE149D8722A51AD900EE4E03 /* db-schema-4.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE149D8622A51AD900EE4E03 /* db-schema-4.sql */; };
 		FE17870624DECE3400C4012C /* outgoingCall.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE17870424DECE3400C4012C /* outgoingCall.mp3 */; };
 		FE17870724DECE3400C4012C /* incomingCall.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE17870524DECE3400C4012C /* incomingCall.mp3 */; };
+		FE1A3482258923EE0058B86A /* Array+IndexChanges.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A3481258923EE0058B86A /* Array+IndexChanges.swift */; };
 		FE1A8BA321C96C1B00604141 /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA221C96C1B00604141 /* RoundButton.swift */; };
 		FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */; };
 		FE222CFB2561763700C186A9 /* DBChatStore+ChatStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE222CFA2561763700C186A9 /* DBChatStore+ChatStore.swift */; };
@@ -128,6 +129,8 @@
 		FE7561E62566E0E500E5C8F9 /* ConversationEntryWithSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7561E52566E0E500E5C8F9 /* ConversationEntryWithSender.swift */; };
 		FE7561EA2566E38E00E5C8F9 /* ConversationEntryDeleted.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7561E92566E38E00E5C8F9 /* ConversationEntryDeleted.swift */; };
 		FE7561EE2566E3A900E5C8F9 /* ConversationMessageSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7561ED2566E3A900E5C8F9 /* ConversationMessageSystem.swift */; };
+		FE75AA8A2587CD8E002B59AE /* DisplayableIdProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE75AA892587CD8E002B59AE /* DisplayableIdProtocol.swift */; };
+		FE75AA8E2587D76C002B59AE /* ContactManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE75AA8D2587D76C002B59AE /* ContactManager.swift */; };
 		FE75CD602545E6A90064A733 /* MediaHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE75CD5F2545E6A90064A733 /* MediaHelper.swift */; };
 		FE75CD642545E6CE0064A733 /* VideoQuality.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE75CD632545E6CE0064A733 /* VideoQuality.swift */; };
 		FE75CD682545E6F60064A733 /* ImageQuality.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE75CD672545E6F60064A733 /* ImageQuality.swift */; };
@@ -270,6 +273,7 @@
 		FE149D8622A51AD900EE4E03 /* db-schema-4.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-4.sql"; sourceTree = "<group>"; };
 		FE17870424DECE3400C4012C /* outgoingCall.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = outgoingCall.mp3; sourceTree = "<group>"; };
 		FE17870524DECE3400C4012C /* incomingCall.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = incomingCall.mp3; sourceTree = "<group>"; };
+		FE1A3481258923EE0058B86A /* Array+IndexChanges.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+IndexChanges.swift"; sourceTree = "<group>"; };
 		FE1A8BA221C96C1B00604141 /* RoundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
 		FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager_Session.swift; sourceTree = "<group>"; };
 		FE222CFA2561763700C186A9 /* DBChatStore+ChatStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DBChatStore+ChatStore.swift"; sourceTree = "<group>"; };
@@ -369,6 +373,8 @@
 		FE7561E52566E0E500E5C8F9 /* ConversationEntryWithSender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationEntryWithSender.swift; sourceTree = "<group>"; };
 		FE7561E92566E38E00E5C8F9 /* ConversationEntryDeleted.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationEntryDeleted.swift; sourceTree = "<group>"; };
 		FE7561ED2566E3A900E5C8F9 /* ConversationMessageSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationMessageSystem.swift; sourceTree = "<group>"; };
+		FE75AA892587CD8E002B59AE /* DisplayableIdProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayableIdProtocol.swift; sourceTree = "<group>"; };
+		FE75AA8D2587D76C002B59AE /* ContactManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactManager.swift; sourceTree = "<group>"; };
 		FE75CD5F2545E6A90064A733 /* MediaHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaHelper.swift; sourceTree = "<group>"; };
 		FE75CD632545E6CE0064A733 /* VideoQuality.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoQuality.swift; sourceTree = "<group>"; };
 		FE75CD672545E6F60064A733 /* ImageQuality.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageQuality.swift; sourceTree = "<group>"; };
@@ -508,6 +514,7 @@
 			children = (
 				FE8F7CE62562F8850076C13E /* history */,
 				FE8F7CE52562F86C0076C13E /* conversations */,
+				FE75AA892587CD8E002B59AE /* DisplayableIdProtocol.swift */,
 			);
 			path = model;
 			sourceTree = "<group>";
@@ -631,6 +638,8 @@
 				FE75CD672545E6F60064A733 /* ImageQuality.swift */,
 				FE75CD6B2546FC820064A733 /* HTTPFileUploadHelper.swift */,
 				FE75CD6F2549E9BE0064A733 /* SharingTaskManager.swift */,
+				FE75AA8D2587D76C002B59AE /* ContactManager.swift */,
+				FE1A3481258923EE0058B86A /* Array+IndexChanges.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -1158,6 +1167,7 @@
 				FE87C7752285736200B0B64C /* XMLEntryViewController.swift in Sources */,
 				FEC336F9240EBDEF00EC1A0D /* OpenChannelViewController.swift in Sources */,
 				FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */,
+				FE1A3482258923EE0058B86A /* Array+IndexChanges.swift in Sources */,
 				FE41FB3F215CD95D00AD86D3 /* AvatarEventHandler.swift in Sources */,
 				FE30D8B7214D4BCD00670BEC /* Settings.swift in Sources */,
 				FE2D4820245452DC00C13CE5 /* RTCCameraVideoCapturer_Format.swift in Sources */,
@@ -1230,9 +1240,11 @@
 				FE34BBD12157901100775B07 /* JabberDataFormView.swift in Sources */,
 				FE30D8B5214D39A700670BEC /* GeneralSettingsController.swift in Sources */,
 				FE137A4621F5FE05006B7F7C /* ShowMainWindowSegue.swift in Sources */,
+				FE75AA8E2587D76C002B59AE /* ContactManager.swift in Sources */,
 				FE28097F2166892D002F5BD0 /* AccountDetailsViewController.swift in Sources */,
 				FE30D8AD214C2D7100670BEC /* RosterViewController_ContextMenu.swift in Sources */,
 				FE02DD13225BC33F00FA08EB /* DBOMEMOStore.swift in Sources */,
+				FE75AA8A2587CD8E002B59AE /* DisplayableIdProtocol.swift in Sources */,
 				FE6E6C0121384D5F003B1696 /* ChatsWindowController.swift in Sources */,
 				FE2ACA8023546C4B004623BC /* NSString_extensions.swift in Sources */,
 				FE30309E2447517A003B9D76 /* RosterWindowController.swift in Sources */,
