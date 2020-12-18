@@ -29,6 +29,10 @@
 		FE17870624DECE3400C4012C /* outgoingCall.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE17870424DECE3400C4012C /* outgoingCall.mp3 */; };
 		FE17870724DECE3400C4012C /* incomingCall.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE17870524DECE3400C4012C /* incomingCall.mp3 */; };
 		FE1A3482258923EE0058B86A /* Array+IndexChanges.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A3481258923EE0058B86A /* Array+IndexChanges.swift */; };
+		FE1A34BF258D2CB60058B86A /* OpenSSL.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE1A34B9258D2CB20058B86A /* OpenSSL.xcframework */; };
+		FE1A34C0258D2CB60058B86A /* OpenSSL.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE1A34B9258D2CB20058B86A /* OpenSSL.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FE1A34C4258D2CB80058B86A /* WebRTC.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE1A34B8258D2CB20058B86A /* WebRTC.xcframework */; };
+		FE1A34C5258D2CB80058B86A /* WebRTC.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE1A34B8258D2CB20058B86A /* WebRTC.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE1A8BA321C96C1B00604141 /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA221C96C1B00604141 /* RoundButton.swift */; };
 		FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */; };
 		FE222CFB2561763700C186A9 /* DBChatStore+ChatStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE222CFA2561763700C186A9 /* DBChatStore+ChatStore.swift */; };
@@ -46,8 +50,6 @@
 		FE2ACA862355C5DA004623BC /* NSTableViewCustomGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA852355C5DA004623BC /* NSTableViewCustomGrid.swift */; };
 		FE2D481E24544A7900C13CE5 /* CallManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2D481D24544A7800C13CE5 /* CallManager.swift */; };
 		FE2D4820245452DC00C13CE5 /* RTCCameraVideoCapturer_Format.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2D481F245452DC00C13CE5 /* RTCCameraVideoCapturer_Format.swift */; };
-		FE2DEDA023C5FC0F00AEF14F /* WebRTC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE2DED9E23C5FC0900AEF14F /* WebRTC.framework */; };
-		FE2DEDA123C5FC0F00AEF14F /* WebRTC.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE2DED9E23C5FC0900AEF14F /* WebRTC.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE30309A24438ED6003B9D76 /* MessageTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30309924438ED6003B9D76 /* MessageTextView.swift */; };
 		FE30309C244612A8003B9D76 /* ConversationLogSelectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30309B244612A8003B9D76 /* ConversationLogSelectionManager.swift */; };
 		FE30309E2447517A003B9D76 /* RosterWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE30309D2447517A003B9D76 /* RosterWindowController.swift */; };
@@ -63,7 +65,6 @@
 		FE32A94924702FF100E40BB1 /* DBChatHistorySyncStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE32A94824702FF100E40BB1 /* DBChatHistorySyncStore.swift */; };
 		FE336EA6256AA4690088DA83 /* ConversationEntryRecipient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE336EA5256AA4690088DA83 /* ConversationEntryRecipient.swift */; };
 		FE336EAE2570150F0088DA83 /* ConversationBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE336EAD2570150F0088DA83 /* ConversationBase.swift */; };
-		FE33C4472521FE7400509AAF /* openssl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF5C3FE22632CDE00889863 /* openssl.framework */; };
 		FE34BBD12157901100775B07 /* JabberDataFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE34BBD02157901100775B07 /* JabberDataFormView.swift */; };
 		FE34BBD52157DDF200775B07 /* MucModule_RoomError_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE34BBD42157DDF200775B07 /* MucModule_RoomError_extension.swift */; };
 		FE380ADA21B15720008717FA /* DownloadStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE380AD921B15720008717FA /* DownloadStore.swift */; };
@@ -205,7 +206,6 @@
 		FEEF25322264A80500202B28 /* OMEMOController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25312264A80500202B28 /* OMEMOController.swift */; };
 		FEEF25362266303A00202B28 /* OMEMOIdentititesTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25352266303A00202B28 /* OMEMOIdentititesTableView.swift */; };
 		FEEF25392266528E00202B28 /* ContactDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25382266528E00202B28 /* ContactDetailsViewController.swift */; };
-		FEF48B072581233000A0753B /* OpenSSL in Frameworks */ = {isa = PBXBuildFile; productRef = FEF48B062581233000A0753B /* OpenSSL */; };
 		FEF5C3FA22632C0000889863 /* OpenSSL_AES_GCM_Engine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF5C3F922632C0000889863 /* OpenSSL_AES_GCM_Engine.swift */; };
 		FEF844742173B9DC0067B005 /* Markdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF844732173B9DC0067B005 /* Markdown.swift */; };
 		FEF8BED2216A6761001DA755 /* InviteToGroupchatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF8BED1216A6761001DA755 /* InviteToGroupchatController.swift */; };
@@ -240,13 +240,14 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		FE4E8DE22160E7AA0010D88E /* Embed Frameworks */ = {
+		FE1A34C1258D2CB60058B86A /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 12;
+			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				FE2DEDA123C5FC0F00AEF14F /* WebRTC.framework in Embed Frameworks */,
+				FE1A34C5258D2CB80058B86A /* WebRTC.xcframework in Embed Frameworks */,
+				FE1A34C0258D2CB60058B86A /* OpenSSL.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -274,6 +275,8 @@
 		FE17870424DECE3400C4012C /* outgoingCall.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = outgoingCall.mp3; sourceTree = "<group>"; };
 		FE17870524DECE3400C4012C /* incomingCall.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = incomingCall.mp3; sourceTree = "<group>"; };
 		FE1A3481258923EE0058B86A /* Array+IndexChanges.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+IndexChanges.swift"; sourceTree = "<group>"; };
+		FE1A34B8258D2CB20058B86A /* WebRTC.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = WebRTC.xcframework; sourceTree = "<group>"; };
+		FE1A34B9258D2CB20058B86A /* OpenSSL.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = OpenSSL.xcframework; sourceTree = "<group>"; };
 		FE1A8BA221C96C1B00604141 /* RoundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
 		FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager_Session.swift; sourceTree = "<group>"; };
 		FE222CFA2561763700C186A9 /* DBChatStore+ChatStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DBChatStore+ChatStore.swift"; sourceTree = "<group>"; };
@@ -291,8 +294,6 @@
 		FE2ACA852355C5DA004623BC /* NSTableViewCustomGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSTableViewCustomGrid.swift; sourceTree = "<group>"; };
 		FE2D481D24544A7800C13CE5 /* CallManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallManager.swift; sourceTree = "<group>"; };
 		FE2D481F245452DC00C13CE5 /* RTCCameraVideoCapturer_Format.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTCCameraVideoCapturer_Format.swift; sourceTree = "<group>"; };
-		FE2DED8F23C5C6B300AEF14F /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebRTC.framework; path = "../../../../../Volumes/Dane/Users/andrzej/test/webrtc-checkout/src/outios/WebRTC.framework"; sourceTree = "<group>"; };
-		FE2DED9E23C5FC0900AEF14F /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
 		FE30309924438ED6003B9D76 /* MessageTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageTextView.swift; sourceTree = "<group>"; };
 		FE30309B244612A8003B9D76 /* ConversationLogSelectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationLogSelectionManager.swift; sourceTree = "<group>"; };
 		FE30309D2447517A003B9D76 /* RosterWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RosterWindowController.swift; sourceTree = "<group>"; };
@@ -457,14 +458,11 @@
 		FEEF25312264A80500202B28 /* OMEMOController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OMEMOController.swift; sourceTree = "<group>"; };
 		FEEF25352266303A00202B28 /* OMEMOIdentititesTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OMEMOIdentititesTableView.swift; sourceTree = "<group>"; };
 		FEEF25382266528E00202B28 /* ContactDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactDetailsViewController.swift; sourceTree = "<group>"; };
-		FEF5C3D82260893800889863 /* TigaseSwiftOMEMO.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TigaseSwiftOMEMO.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FEF5C3F922632C0000889863 /* OpenSSL_AES_GCM_Engine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OpenSSL_AES_GCM_Engine.swift; sourceTree = "<group>"; };
-		FEF5C3FE22632CDE00889863 /* openssl.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = openssl.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FEF844732173B9DC0067B005 /* Markdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Markdown.swift; sourceTree = "<group>"; };
 		FEF8BED1216A6761001DA755 /* InviteToGroupchatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteToGroupchatController.swift; sourceTree = "<group>"; };
 		FEF9CE1C2082765000B09B6C /* db-schema-1.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-1.sql"; sourceTree = "<group>"; };
 		FEF9CE2120827F0000B09B6C /* libsqlite3.0.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.0.tbd; path = usr/lib/libsqlite3.0.tbd; sourceTree = SDKROOT; };
-		FEF9D12A2082804E00B09B6C /* TigaseSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TigaseSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FEF9D12C2082808C00B09B6C /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
 		FEF9EC44242F8BAD0090C913 /* ChatInvitationCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatInvitationCellView.swift; sourceTree = "<group>"; };
 		FEF9EC46242F8BBC0090C913 /* ConversationInvitation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationInvitation.swift; sourceTree = "<group>"; };
@@ -482,11 +480,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FEF48B072581233000A0753B /* OpenSSL in Frameworks */,
+				FE1A34BF258D2CB60058B86A /* OpenSSL.xcframework in Frameworks */,
 				FE0E30A5252E2E320030F8C5 /* TigaseSQLite3 in Frameworks */,
+				FE1A34C4258D2CB80058B86A /* WebRTC.xcframework in Frameworks */,
 				FE83E365217B0F89001DEF09 /* AVFoundation.framework in Frameworks */,
 				FEF9CE2220827F0000B09B6C /* libsqlite3.0.tbd in Frameworks */,
-				FE2DEDA023C5FC0F00AEF14F /* WebRTC.framework in Frameworks */,
 				FEB9EA2B2440912B00435937 /* TigaseSwiftOMEMO in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -495,7 +493,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE33C4472521FE7400509AAF /* openssl.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -526,6 +523,15 @@
 				FE9E1C40244B34C4003751AA /* SearchHistoryTableView.swift */,
 			);
 			path = historysearch;
+			sourceTree = "<group>";
+		};
+		FE1A34B2258D2BC40058B86A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				FE1A34B9258D2CB20058B86A /* OpenSSL.xcframework */,
+				FE1A34B8258D2CB20058B86A /* WebRTC.xcframework */,
+			);
+			path = Frameworks;
 			sourceTree = "<group>";
 		};
 		FE1A8BA421CA880100604141 /* voip */ = {
@@ -790,9 +796,7 @@
 		FED2ECE72066B01C00F506A5 = {
 			isa = PBXGroup;
 			children = (
-				FE2DED9E23C5FC0900AEF14F /* WebRTC.framework */,
-				FEF5C3FE22632CDE00889863 /* openssl.framework */,
-				FEF5C3D82260893800889863 /* TigaseSwiftOMEMO.framework */,
+				FE1A34B2258D2BC40058B86A /* Frameworks */,
 				FE421B4821C92FBF0022DF77 /* LICENSE */,
 				FED2ECF22066B01C00F506A5 /* BeagleIM */,
 				FED2ED052066B01C00F506A5 /* BeagleIMTests */,
@@ -927,10 +931,8 @@
 		FEF9CE2020827F0000B09B6C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				FE2DED8F23C5C6B300AEF14F /* WebRTC.framework */,
 				FE83E364217B0F89001DEF09 /* AVFoundation.framework */,
 				FEF9D12C2082808C00B09B6C /* libxml2.tbd */,
-				FEF9D12A2082804E00B09B6C /* TigaseSwift.framework */,
 				FEF9CE2120827F0000B09B6C /* libsqlite3.0.tbd */,
 			);
 			name = Frameworks;
@@ -947,7 +949,7 @@
 				FEB15617225FA973009B0709 /* ShellScript */,
 				FED2ECED2066B01C00F506A5 /* Frameworks */,
 				FED2ECEE2066B01C00F506A5 /* Resources */,
-				FE4E8DE22160E7AA0010D88E /* Embed Frameworks */,
+				FE1A34C1258D2CB60058B86A /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -957,7 +959,6 @@
 			packageProductDependencies = (
 				FEB9EA2A2440912B00435937 /* TigaseSwiftOMEMO */,
 				FE0E30A4252E2E320030F8C5 /* TigaseSQLite3 */,
-				FEF48B062581233000A0753B /* OpenSSL */,
 			);
 			productName = BeagleIM;
 			productReference = FED2ECF02066B01C00F506A5 /* BeagleIM.app */;
@@ -1048,7 +1049,6 @@
 			packageReferences = (
 				FEB9EA292440912B00435937 /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */,
 				FE0E30A3252E2E320030F8C5 /* XCRemoteSwiftPackageReference "tigase-sqlite3.swift" */,
-				FEF48B052581233000A0753B /* XCRemoteSwiftPackageReference "OpenSSL" */,
 			);
 			productRefGroup = FED2ECF12066B01C00F506A5 /* Products */;
 			projectDirPath = "";
@@ -1672,14 +1672,6 @@
 				kind = branch;
 			};
 		};
-		FEF48B052581233000A0753B /* XCRemoteSwiftPackageReference "OpenSSL" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/krzyzanowskim/OpenSSL";
-			requirement = {
-				kind = exactVersion;
-				version = 1.1.171;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1692,11 +1684,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FEB9EA292440912B00435937 /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */;
 			productName = TigaseSwiftOMEMO;
-		};
-		FEF48B062581233000A0753B /* OpenSSL */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FEF48B052581233000A0753B /* XCRemoteSwiftPackageReference "OpenSSL" */;
-			productName = OpenSSL;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
