@@ -35,51 +35,25 @@ enum ConversationEntrySender: Equatable {
         }
     }
     
-    func avatarPublisher(for entry: ConversationEntry, direction: MessageDirection) -> AnyPublisher<NSImage?,Never> {
+    func avatar(for key: ConversationKey, direction: MessageDirection) -> Avatar {
         switch direction {
         case .outgoing:
-            return AvatarManager.instance.avatarPublisher(for: .init(account: entry.conversation.account, jid: entry.conversation.account, type: .buddy)).eraseToAnyPublisher();
+            return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: key.account, mucNickname: nil));
         case .incoming:
             switch self {
             case  .buddy(_):
-                return AvatarManager.instance.avatarPublisher(for: .init(account: entry.conversation.account, jid: entry.conversation.account, type: .buddy)).eraseToAnyPublisher();
+                return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: key.jid, mucNickname: nil));
             case .occupant(let nickname, let jid):
                 if let jid = jid {
-                    return AvatarManager.instance.avatarPublisher(for: .init(account: entry.conversation.account, jid: jid, type: .buddy)).eraseToAnyPublisher();
+                    return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: jid, mucNickname: nil));
                 } else {
-                    return AvatarManager.instance.avatarPublisher(for: .init(account: entry.conversation.account, jid: entry.conversation.jid, type: .occupant(nickname: nickname))).eraseToAnyPublisher();
+                    return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: key.jid, mucNickname: nickname));
                 }
             case .participant(let participantId, _, let jid):
                 if let jid = jid {
-                    return AvatarManager.instance.avatarPublisher(for: .init(account: entry.conversation.account, jid: jid, type: .buddy)).eraseToAnyPublisher();
+                    return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: jid, mucNickname: nil));
                 } else {
-                    return AvatarManager.instance.avatarPublisher(for: .init(account: entry.conversation.account, jid: entry.conversation.jid, type: .participant(id: participantId))).eraseToAnyPublisher();
-                }
-            }
-        }
-    }
-    
-    func avatar(for entry: ConversationEntry, direction: MessageDirection) -> NSImage? {
-        switch direction {
-        case .outgoing:
-            return AvatarManager.instance.avatar(for: entry.conversation.account, on: entry.conversation.account);
-        case .incoming:
-            switch self {
-            case  .buddy(_):
-                return AvatarManager.instance.avatar(for: entry.conversation.jid, on: entry.conversation.account)
-            case .occupant(let nickname, let jid):
-                if let jid = jid {
-                    return AvatarManager.instance.avatar(for: jid, on: entry.conversation.account);
-                } else if let room = entry.conversation as? Room, let photoHash = room.occupant(nickname: nickname)?.presence.vcardTempPhoto {
-                    return AvatarManager.instance.avatar(withHash: photoHash);
-                } else {
-                    return nil;
-                }
-            case .participant(let participantId, _, let jid):
-                if let jid = jid {
-                    return AvatarManager.instance.avatar(for: jid, on: entry.conversation.account);
-                } else {
-                    return AvatarManager.instance.avatar(for: BareJID(localPart: "\(participantId)#\(entry.conversation.jid.localPart!)", domain: entry.conversation.jid.domain), on: entry.conversation.account);
+                    return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: BareJID(localPart: "\(participantId)#\(key.jid.localPart ?? "")", domain: key.jid.domain), mucNickname: nil));
                 }
             }
         }

@@ -22,15 +22,16 @@
 import Foundation
 import TigaseSwift
 import AppKit
+import Combine
 
 public protocol DisplayableIdProtocol {
     
     var displayName: String { get }
-    var displayNamePublisher: AnyPublisher<String,Never> { get }
+    var displayNamePublisher: Published<String>.Publisher { get }
 
     var status: Presence.Show? { get }
-    var statusPublisher: AnyPublisher<Presence.Show?,Never> { get }
+    var statusPublisher: Published<Presence.Show?>.Publisher { get }
     
-    var avatar: AnyPublisher<NSImage?,Never> { get }
+    var avatarPublisher: AnyPublisher<NSImage?,Never> { get }
     
 }

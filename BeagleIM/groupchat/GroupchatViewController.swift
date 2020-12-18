@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import Combine
 
 class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableViewDelegate, ConversationLogContextMenuDelegate, NSMenuItemValidation {
 
@@ -47,14 +48,10 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     
     private var pmPopupPositioningView: NSView!;
     
-    private var cancellables: [Cancellable] = [];
+    private var cancellables: Set<AnyCancellable> = [];
     var room: Room! {
         get {
             return (self.conversation as! Room);
-        }
-        set {
-            self.conversation = newValue;
-            self.participantsContainer?.room = newValue;
         }
     }
     
@@ -78,17 +75,6 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
 
         super.viewDidLoad();
 
-        cancellables.append(room.$displayName.assign(to: \.stringValue, on: titleView));
-        cancellables.append(room.$displayName.map({ $0 as String? }).assign(to: \.name, on: avatarView));
-        cancellables.append(room.avatar.assign(to: \.avatar, on: avatarView))
-        cancellables.append(room.$status.assign(to: \.status, on: avatarView));
-        cancellables.append(room.$status.map({ $0 != nil }).assign(to: \.isEnabled, on: sharingButton));
-        cancellables.append(room.$subject.map({ $0 ?? "" }).receive(on: .main).assign(to: \.stringValue, on: subjectView));
-        cancellables.append(room.$subject.receive(on: .main).assign(to: \.toolTip, on: subjectView));
-        cancellables.append(room.$affiliation.receive(on: .main).assign(to: \.affiliation, on: self));
-        cancellables.append(room.$role.receive(on: .main).assign(to: \.role, on: self));
-        jidView.stringValue = room.roomJid.stringValue;
-
         NotificationCenter.default.addObserver(self, selector: #selector(roomOccupantsChanged), name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(avatarForHashChanged), name: AvatarManager.AVATAR_FOR_HASH_CHANGED, object: nil);
     }
@@ -99,6 +85,17 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         super.viewWillAppear();
         
         self.conversationLogController?.contextMenuDelegate = self;
+
+        room.displayNamePublisher.assign(to: \.stringValue, on: titleView).store(in: &cancellables);
+        room.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: avatarView).store(in: &cancellables);
+        room.avatarPublisher.assign(to: \.avatar, on: avatarView).store(in: &cancellables);
+        room.statusPublisher.assign(to: \.status, on: avatarView).store(in: &cancellables);
+        room.statusPublisher.map({ $0 != nil }).assign(to: \.isEnabled, on: sharingButton).store(in: &cancellables);
+        room.$subject.map({ $0 ?? "" }).receive(on: DispatchQueue.main).assign(to: \.stringValue, on: subjectView).store(in: &cancellables);
+        room.$subject.receive(on: DispatchQueue.main).assign(to: \.toolTip, on: subjectView).store(in: &cancellables);
+        room.$affiliation.receive(on: DispatchQueue.main).assign(to: \.affiliation, on: self).store(in: &cancellables);
+        room.$role.receive(on: DispatchQueue.main).assign(to: \.role, on: self).store(in: &cancellables);
+        jidView.stringValue = room.roomJid.stringValue;
 
         sidebarWidthConstraint.constant = Settings.showRoomDetailsSidebar.bool() ? 200 : 0;
         avatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
@@ -450,7 +447,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
 
 class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableViewDataSource {
 
-    private var cancellables: [Cancellable] = [];
+    private var cancellables: Set<AnyCancellable> = [];
     
     weak var tableView: NSTableView? {
         didSet {
@@ -461,11 +458,9 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
     var room: Room? {
         didSet {
             cancellables.removeAll();
-            if let room = self.room {
-                cancellables.append(room.occupantsPublisher.receive(on: self.dispatcher).sink(receiveValue:{ [weak self] value in
+            room?.occupantsPublisher.receive(on: self.dispatcher.queue).sink(receiveValue:{ [weak self] value in
                     self?.update(participants: value);
-                }))
-            }
+            }).store(in: &cancellables);
         }
     }
     private var participants: [MucOccupant] = [];
@@ -479,19 +474,17 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
         super.init();
     }
     
-    func update(participants: [MucOccupant]) {
-        dispatcher.async {
-            let oldParticipants = DispatchQueue.main.sync { return self.participants; };
-            let newParticipants = participants.sorted(by: { (i1,i2) -> Bool in i1.nickname.lowercased() < i2.nickname.lowercased() });
-            let changes = newParticipants.calculateChanges(from: oldParticipants);
+    private func update(participants: [MucOccupant]) {
+        let oldParticipants = DispatchQueue.main.sync { return self.participants; };
+        let newParticipants = participants.sorted(by: { (i1,i2) -> Bool in i1.nickname.lowercased() < i2.nickname.lowercased() });
+        let changes = newParticipants.calculateChanges(from: oldParticipants);
             
-            DispatchQueue.main.async {
-                self.participants = newParticipants;
-                self.tableView?.beginUpdates();
-                self.tableView?.removeRows(at: changes.removed, withAnimation: .effectFade);
-                self.tableView?.insertRows(at: changes.inserted, withAnimation: .effectFade);
-                self.tableView?.endUpdates();
-            }
+        DispatchQueue.main.async {
+            self.participants = newParticipants;
+            self.tableView?.beginUpdates();
+            self.tableView?.removeRows(at: changes.removed, withAnimation: .effectFade);
+            self.tableView?.insertRows(at: changes.inserted, withAnimation: .effectFade);
+            self.tableView?.endUpdates();
         }
     }
     
@@ -608,7 +601,7 @@ class GroupchatParticipantCellView: NSTableCellView {
     @IBOutlet var avatar: AvatarViewWithStatus!;
     @IBOutlet var label: NSTextField!;
    
-    private var cancellables: [Cancellable] = [];
+    private var cancellables: Set<AnyCancellable> = [];
     
     public static func roleToEmoji(_ role: MucRole) -> String {
         switch role {
@@ -621,28 +614,24 @@ class GroupchatParticipantCellView: NSTableCellView {
         }
     }
     
+    private var occupant: MucOccupant? {
+        didSet {
+            cancellables.removeAll();
+
+            if let occupant = occupant {
+                let nickname = occupant.nickname;
+                avatar.name = occupant.nickname;
+                label.stringValue = occupant.nickname;
+                
+                occupant.$presence.map({ $0.show }).receive(on: DispatchQueue.main).assign(to: \.status, on: avatar).store(in: &cancellables);
+                occupant.avatar.receive(on: DispatchQueue.main).assign(to: \.avatar, on: avatar).store(in: &cancellables);
+                occupant.$presence.map(XMucUserElement.extract(from: )).map({ $0?.role ?? .none }).map({ "\(nickname) \(GroupchatParticipantCellView.roleToEmoji($0))" }).receive(on: DispatchQueue.main).assign(to: \.stringValue, on: label).store(in: &cancellables);
+            }
+        }
+    }
+    
     func set(occupant: MucOccupant, in room: Room) {
-        cancellables.removeAll();
-        let nickname = occupant.nickname;
-        avatar.name = occupant.nickname;
-        label.stringValue = occupant.nickname;
-        cancellables.append(occupant.$presence.map({ $0.show }).receive(on: .main).assign(to: \.status, on: avatar));
-        cancellables.append(occupant.avatar.receive(on: .main).assign(to: \.avatar, on: avatar));
-        cancellables.append(occupant.$presence.map(XMucUserElement.extract(from: )).map({ $0?.role ?? .none }).map({ "\(nickname) \(GroupchatParticipantCellView.roleToEmoji($0))" }).receive(on: .main).assign(to: \.stringValue, on: label));
-//        let contact = ContactManager.instance.contact(for: .init(account: room.account, jid: room.jid, type: .occupant(nickname: occupant.nickname)));
-//        cancellables.append(contact.$displayName.map({ $0 as String?}).assign(to: \.name, on: avatar));
-//        cancellables.append(contact.$displayName.map({ "\($0) \(GroupchatParticipantCellView.roleToEmoji(occupant.role))" }).assign(to: \.stringValue, on: label));
-//        cancellables.append(contact.$status.assign(to: \.status, on: avatar));
-        
-//        if let jid = participant.jid, let avatar = AvatarManager.instance.avatar(for: jid.bareJid, on: room!.account) {
-//            view.avatar.avatar = avatar;
-//        } else {
-//            if let photoHash = participant.presence.vcardTempPhoto {
-//                view.avatar.avatar = AvatarManager.instance.avatar(withHash: photoHash);
-//            } else {
-//                view.avatar.avatar = nil;
-//            }
-//        }
+        self.occupant = occupant;
         avatar.backgroundColor = NSColor(named: "chatBackgroundColor")!;
     }
     

@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import Combine
 
 class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewDelegate, ConversationLogContextMenuDelegate, NSMenuDelegate, NSMenuItemValidation {
 
@@ -35,7 +36,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
 
     private var keywords: [String]? = Settings.markKeywords.stringArrays();
 
-    private var cancellables: [Cancellable] = [];
+    private var cancellables: Set<AnyCancellable> = [];
     
     var channel: Channel! {
         return self.conversation as? Channel;
@@ -50,20 +51,21 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         infoButton.image = NSImage(cgImage: newRep!.cgImage!, size: infoButton.frame.size);
         buttonToGrayscale(button: infoButton, template: false);
         buttonToGrayscale(button: participantsButton, template: true);
+        
     }
     
     override func viewWillAppear() {
         self.conversationLogController?.contextMenuDelegate = self;
         
-        cancellables.append(channel.$displayName.assign(to: \.title, on: channelNameLabel));
+        channel.displayNamePublisher.assign(to: \.title, on: channelNameLabel).store(in: &cancellables);
+        channel.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: channelAvatarView).store(in: &cancellables);
+        channel.avatarPublisher.assign(to: \.avatar, on: channelAvatarView).store(in: &cancellables);
+        channel.statusPublisher.assign(to: \.status, on: channelAvatarView).store(in: &cancellables);
+        channel.descriptionPublisher.map({ $0 ?? "" }).assign(to: \.stringValue, on: channelDescriptionLabel).store(in: &cancellables);
+        channel.descriptionPublisher.assign(to: \.toolTip, on: channelDescriptionLabel).store(in: &cancellables);
         channelJidLabel.title = jid.stringValue;
         
         channelAvatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
-        cancellables.append(channel.$displayName.map({ $0 as String?}).assign(to: \.name, on: channelAvatarView));
-        cancellables.append(channel.avatar.assign(to: \.avatar, on: channelAvatarView))
-        cancellables.append(channel.$status.assign(to: \.status, on: channelAvatarView));
-        cancellables.append(channel.$description.map({ $0 ?? "" }).assign(to: \.stringValue, on: channelDescriptionLabel))
-        cancellables.append(channel.$description.assign(to: \.toolTip, on: channelDescriptionLabel))
 
         NotificationCenter.default.addObserver(self, selector: #selector(participantsChanged(_:)), name: MixEventHandler.PARTICIPANTS_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(permissionsChanged(_:)), name: MixEventHandler.PERMISSIONS_CHANGED, object: channel);
@@ -75,8 +77,12 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     
     override func viewWillDisappear() {
         super.viewWillDisappear();
-        cancellables.removeAll();
         NotificationCenter.default.removeObserver(self, name: MixEventHandler.PARTICIPANTS_CHANGED, object: nil);
+    }
+    
+    override func viewDidDisappear() {
+        super.viewDidDisappear();
+        cancellables.removeAll();
     }
     
     override func prepareConversationLogContextMenu(dataSource: ConversationDataSource, menu: NSMenu, forRow row: Int) {

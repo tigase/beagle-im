@@ -28,9 +28,7 @@ class ConversationEntryWithSender: ConversationEntry {
     let encryption: ConversationEntryEncryption;
     let recipient: ConversationEntryRecipient;
     
-    var avatar: NSImage? {
-        return sender.avatar(for: self, direction: state.direction);
-    }
+    let avatar: Avatar;
     
     var nickname: String {
         return sender.nickname;
@@ -50,6 +48,7 @@ class ConversationEntryWithSender: ConversationEntry {
         self.sender = sender;
         self.recipient = recipient;
         self.encryption = encryption;
+        self.avatar = sender.avatar(for: conversation, direction: state.direction);
         super.init(id: id, conversation: conversation, timestamp: timestamp);
     }
     

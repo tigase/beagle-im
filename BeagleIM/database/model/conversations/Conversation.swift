@@ -22,14 +22,15 @@
 import Foundation
 import TigaseSQLite3
 import TigaseSwift
+import Combine
 
 public protocol Conversation: ConversationProtocol, ConversationKey, DisplayableIdProtocol {
     
     var status: Presence.Show? { get }
-    var statusPublisher: TigaseSwift.AnyPublisher<Presence.Show?,Never> { get }
+    var statusPublisher: Published<Presence.Show?>.Publisher { get }
     
     var displayName: String { get }
-    var displayNamePublisher: TigaseSwift.AnyPublisher<String,Never> { get }
+    var displayNamePublisher: Published<String>.Publisher { get }
     
     var id: Int { get }
     var timestamp: Date { get }

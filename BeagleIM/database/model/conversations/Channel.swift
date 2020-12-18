@@ -22,6 +22,7 @@
 import Foundation
 import TigaseSwift
 import AppKit
+import Combine
 
 public class Channel: ConversationBase<ChannelOptions>, ChannelProtocol, Conversation, LastMessageTimestampAware {
     
@@ -68,26 +69,27 @@ public class Channel: ConversationBase<ChannelOptions>, ChannelProtocol, Convers
     }
     
     
-    @TigaseSwift.Published
+    @Published
     public var status: Presence.Show? = nil;
-    public var statusPublisher: AnyPublisher<Presence.Show?, Never> {
-        return $status.eraseToAnyPublisher();
+    public var statusPublisher: Published<Presence.Show?>.Publisher {
+        return $status;
     }
     
-    @TigaseSwift.Published
+    @Published
     public var displayName: String;
-    public var displayNamePublisher: AnyPublisher<String, Never> {
-        return $displayName.eraseToAnyPublisher();
+    public var displayNamePublisher: Published<String>.Publisher {
+        return $displayName;
     }
     
-    @TigaseSwift.Published
+    @Published
     public var description: String?;
-    public var descriptionPublisher: AnyPublisher<String?, Never> {
-        return $description.eraseToAnyPublisher();
+    public var descriptionPublisher: Published<String?>.Publisher {
+        return $description;
     }
 
-    public var avatar: AnyPublisher<NSImage?,Never> {
-        return AvatarManager.instance.avatarPublisher(for: .init(account: account, jid: jid, type: .buddy)).replaceNil(with: AvatarManager.instance.defaultGroupchatAvatar).eraseToAnyPublisher();
+    public let avatar: Avatar;
+    public var avatarPublisher: AnyPublisher<NSImage?,Never> {
+        return avatar.$avatar.replaceNil(with: AvatarManager.instance.defaultGroupchatAvatar).eraseToAnyPublisher();
     }
 
     public var participantId: String {
@@ -121,15 +123,16 @@ public class Channel: ConversationBase<ChannelOptions>, ChannelProtocol, Convers
             }
         }
     }
-    private var cancellable: Cancellable?;
+    private var cancellables: Set<AnyCancellable> = [];
 
     init(dispatcher: QueueDispatcher, context: Context, channelJid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: ChannelOptions) {
         self.displayName = options.name ?? channelJid.stringValue;
         self.description = options.description;
+        self.avatar = AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: channelJid, mucNickname: nil));
         super.init(dispatcher: dispatcher, context: context, jid: channelJid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options);
-        cancellable = context.$state.sink(receiveValue: { [weak self] state in
+        context.$state.sink(receiveValue: { [weak self] state in
             self?.connectionState = state;
-        })
+        }).store(in: &cancellables);
     }
         
     public override func updateOptions(_ fn: @escaping (inout ChannelOptions) -> Void) {

@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import Combine
 
 class ChatCellView: NSTableCellView {
     
@@ -186,15 +187,19 @@ class ChatCellView: NSTableCellView {
         
     }
     
-    private var cancellables: [Cancellable] = [];
+    private var cancellables: Set<AnyCancellable> = [];
+    private var conversation: Conversation? {
+        didSet {
+            cancellables.removeAll();
+            conversation?.displayNamePublisher.assign(to: \.stringValue, on: label).store(in: &cancellables);
+            conversation?.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: avatar).store(in: &cancellables);
+            conversation?.statusPublisher.assign(to: \.status, on: avatar).store(in: &cancellables);
+            conversation?.avatarPublisher.assign(to: \.avatar, on: avatar).store(in: &cancellables);
+        }
+    }
     
     func update(from item: ChatItemProtocol) {
-        cancellables.removeAll();
-        
-        cancellables.append(item.chat.displayNamePublisher.assign(to: \.stringValue, on: label));
-        cancellables.append(item.chat.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: avatar!))
-        cancellables.append(item.chat.statusPublisher.assign(to: \.status, on: avatar));
-        cancellables.append(item.chat.avatar.assign(to: \.avatar, on: avatar))
+        conversation = item.chat;
         
 //        self.set(name: item.name);
         self.set(unread: item.unread);

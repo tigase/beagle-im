@@ -22,6 +22,7 @@
 import Foundation
 import TigaseSwift
 import AppKit
+import Combine
 
 public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
         
@@ -31,19 +32,19 @@ public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
 
     private let occupantsStore = RoomOccupantsStoreBase();
 
-    @TigaseSwift.Published
+    @Published
     public var status: Presence.Show? = nil;
-    public var statusPublisher: AnyPublisher<Presence.Show?, Never> {
-        return $status.eraseToAnyPublisher();
+    public var statusPublisher: Published<Presence.Show?>.Publisher {
+        return $status;
     }
     
     public var occupantsPublisher: AnyPublisher<[MucOccupant], Never> {
         return occupantsStore.occupantsPublisher;
     }
     
-    @TigaseSwift.Published
+    @Published
     public var role: MucRole = .none;
-    @TigaseSwift.Published
+    @Published
     public var affiliation: MucAffiliation = .none;
     
     public private(set) var state: RoomState = .not_joined {
@@ -65,7 +66,7 @@ public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
         }
     }
     
-    @TigaseSwift.Published
+    @Published
     public var subject: String? = nil;
     
     public var name: String? {
@@ -80,15 +81,17 @@ public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
         return options.password;
     }
 
-    @TigaseSwift.Published
+    @Published
     public var displayName: String;
     
-    public var displayNamePublisher: AnyPublisher<String, Never> {
-        return $displayName.eraseToAnyPublisher();
+    public var displayNamePublisher: Published<String>.Publisher {
+        return $displayName;
     }
     
-    public var avatar: AnyPublisher<NSImage?, Never> {
-        return AvatarManager.instance.avatarPublisher(for: .init(account: account, jid: jid, type: .buddy)).replaceNil(with: AvatarManager.instance.defaultGroupchatAvatar).eraseToAnyPublisher();
+    public let avatar: Avatar;
+    
+    public var avatarPublisher: AnyPublisher<NSImage?, Never> {
+        return avatar.$avatar.replaceNil(with: AvatarManager.instance.defaultGroupchatAvatar).eraseToAnyPublisher();
     }
         
     public var automaticallyFetchPreviews: Bool {
@@ -101,6 +104,7 @@ public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
 
     override init(dispatcher: QueueDispatcher,context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: RoomOptions) {
         displayName = options.name ?? jid.stringValue;
+        avatar = AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: jid, mucNickname: nil));
         super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options);
     }
 

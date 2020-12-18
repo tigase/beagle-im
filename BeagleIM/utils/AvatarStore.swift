@@ -51,16 +51,16 @@ class AvatarStore {
         }
     }
     
-    func avatarHash(for jid: BareJID, on account: BareJID) -> [AvatarType: String] {
+    func avatarHash(for jid: BareJID, on account: BareJID) -> [AvatarHash] {
         return dispatcher.sync {
-            return Dictionary(uniqueKeysWithValues: try! Database.main.reader({ database in
-                try database.select(query: .avatarFindHash, params: ["account": account, "jid": jid]).mapAll { cursor -> (AvatarType, String)? in
+            return try! Database.main.reader({ database in
+                try database.select(query: .avatarFindHash, params: ["account": account, "jid": jid]).mapAll({ cursor -> AvatarHash? in
                     guard let type = AvatarType(rawValue: cursor["type"]!), let hash: String = cursor["hash"] else {
                         return nil;
                     }
-                    return (type, hash);
-                }
-            }));
+                    return AvatarHash(type: type, hash: hash);
+                });
+            });
         }
     }
     
@@ -95,41 +95,74 @@ class AvatarStore {
         }
     }
     
-    func updateAvatarHash(for jid: BareJID, on account: BareJID, type: AvatarType, hash: String?, completionHandler: @escaping ()->Void ) {
+    enum AvatarUpdateResult {
+        case newAvatar(String)
+        case notChanged
+        case noAvatar
+    }
+    
+    func removeAvatarHash(for jid: BareJID, on account: BareJID, type: AvatarType, completionHandler: @escaping ()->Void) {
+        dispatcher.async {
+            try! Database.main.writer({ database in
+                try database.delete(query: .avatarDeleteHash, params: ["account": account, "jid": jid, "type": type.rawValue]);
+            });
+            completionHandler();
+        }
+    }
+    
+    func updateAvatarHash(for jid: BareJID, on account: BareJID, hash: AvatarHash, completionHandler: @escaping (AvatarUpdateResult)->Void ) {
         dispatcher.async(flags: .barrier) {
-            if let oldHash = self.avatarHash(for: jid, on: account)[type] {
-                guard hash == nil || (hash! != oldHash) else {
-                    return;
-                }
-                // removal of cached avatar was removed as it caused issues, when a few users (or members of rooms) had the same avatar
-                // it is better to keep it in the cache and clean it up later at some point
-//                DispatchQueue.global().async {
-//                    self.removeAvatar(for: oldHash)
-//                }
-                try! Database.main.writer({ database in
-                    try database.delete(query: .avatarDeleteHash, params: ["account": account, "jid": jid, "type": type.rawValue]);
-                })
-            }
-            
-            guard hash != nil else {
+            let oldHashes = self.avatarHash(for: jid, on: account);
+            guard !oldHashes.contains(hash) else {
+                completionHandler(.notChanged);
                 return;
             }
             
             try! Database.main.writer({ database in
-                try database.insert(query: .avatarInsertHash, params: ["account": account, "jid": jid, "type": type.rawValue, "hash": hash!]);
-            });
-            
-            DispatchQueue.global(qos: .background).async {
-                completionHandler();
+                try database.delete(query: .avatarDeleteHash, params: ["account": account, "jid": jid, "type": hash.type.rawValue]);
+                try database.insert(query: .avatarInsertHash, params: ["account": account, "jid": jid, "type": hash.type.rawValue, "hash": hash.hash]);
+            })
+
+            if oldHashes.isEmpty {
+                completionHandler(.newAvatar(hash.hash));
+            } else if let first = oldHashes.first, first >= hash {
+                completionHandler(.newAvatar(hash.hash));
+            } else {
+                completionHandler(.notChanged);
             }
         }
     }
     
 }
 
-public enum AvatarType: String {
+public struct AvatarHash: Comparable, Equatable {
+    
+    public static func < (lhs: AvatarHash, rhs: AvatarHash) -> Bool {
+        return lhs.type < rhs.type;
+    }
+    
+    
+    let type: AvatarType;
+    let hash: String;
+    
+}
+
+public enum AvatarType: String, Comparable {
+    public static func < (lhs: AvatarType, rhs: AvatarType) -> Bool {
+        return lhs.value < rhs.value;
+    }
+    
     case vcardTemp
     case pepUserAvatar
+    
+    private var value: Int {
+        switch self {
+        case .vcardTemp:
+            return 2;
+        case .pepUserAvatar:
+            return 1;
+        }
+    }
     
     public static let ALL: [AvatarType] = [.pepUserAvatar, .vcardTemp];
 }

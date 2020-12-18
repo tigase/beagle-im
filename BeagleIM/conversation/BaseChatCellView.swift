@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import Combine
 
 class BaseChatCellView: NSTableCellView {
     
@@ -33,19 +34,19 @@ class BaseChatCellView: NSTableCellView {
     
     private var direction: MessageDirection? = nil;
 
-    private var cancellables: [Cancellable] = [];
+    private var cancellables: Set<AnyCancellable> = [];
     
     var hasHeader: Bool {
         return avatar != nil;
     }
-       
+     
     func set(item: ConversationEntry) {
         cancellables.removeAll();
         var timestampStr: NSMutableAttributedString? = nil;
 
         if let item = item as? ConversationEntryWithSender {
             if let avatar = self.avatar {
-                cancellables.append(item.sender.avatarPublisher(for: item, direction: item.state.direction).assign(to: \.image, on: avatar));
+                item.avatar.$avatar.assign(to: \AvatarView.image, on: avatar).store(in: &cancellables);
             }
             
             if senderName != nil {

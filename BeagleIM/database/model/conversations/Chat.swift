@@ -23,6 +23,7 @@ import Foundation
 import TigaseSwift
 import TigaseSwiftOMEMO
 import AppKit
+import Combine
 
 public class Chat: ConversationBase<ChatOptions>, ChatProtocol, Conversation {
     
@@ -38,19 +39,19 @@ public class Chat: ConversationBase<ChatOptions>, ChatProtocol, Conversation {
     public var displayName: String {
         return contact.displayName;
     }
-    public var displayNamePublisher: AnyPublisher<String, Never> {
+    public var displayNamePublisher: Published<String>.Publisher {
         return contact.displayNamePublisher;
     }
     
     public var status: Presence.Show? {
         return contact.status;
     }
-    public var statusPublisher: AnyPublisher<Presence.Show?, Never> {
+    public var statusPublisher: Published<Presence.Show?>.Publisher {
         return contact.statusPublisher;
     }
         
-    public var avatar: AnyPublisher<NSImage?,Never> {
-        return AvatarManager.instance.avatarPublisher(for: contact.key).eraseToAnyPublisher();
+    public var avatarPublisher: AnyPublisher<NSImage?,Never> {
+        return contact.avatar.$avatar.eraseToAnyPublisher();
     }
 
     public var automaticallyFetchPreviews: Bool {

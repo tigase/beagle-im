@@ -22,93 +22,40 @@
 import Foundation
 import TigaseSwift
 import AppKit
-
-extension Publishers {
-    
-    
-}
-
-public struct KeepRefPublisher<Output>: Publisher {
-        
-    public typealias Failure = Never
-    
-    public weak var ref: AnyObject?;
-    private let parent: AnyPublisher<Output,Never>;
-    
-    public init(ref: AnyObject?, parent: AnyPublisher<Output, Never>) {
-        self.ref = ref;
-        self.parent = parent;
-    }
-    
-    public func receive<S>(subscriber: S) where S : Subscriber, Self.Failure == S.Failure, Self.Output == S.Input {
-        guard let ref = self.ref else {
-            return;
-        }
-        parent.receive(subscriber: Inner(ref: ref, downstream: subscriber));
-    }
-
-    private class Inner<Input, Downstream: Subscriber>: Subscriber where Downstream.Failure == Never, Downstream.Input == Input {
-        
-        public typealias Failure = Never;
-        
-        private let ref: AnyObject;
-        private let downstream: Downstream;
-        
-        init(ref: AnyObject, downstream: Downstream) {
-            self.ref = ref
-            self.downstream = downstream;
-        }
-        
-        func receive(subscription: Subscription) {
-            downstream.receive(subscription: subscription);
-        }
-        
-        func receive(_ input: Input) -> Subscribers.Demand {
-            downstream.receive(input);
-        }
-        
-        func receive(completion: Subscribers.Completion<Never>) {
-            downstream.receive(completion: completion);
-        }
-    }
-}
+import Combine
 
 public class Contact: DisplayableIdProtocol {
 
     public let key: Key;
     
-    @TigaseSwift.Published
+    @Published
     public var displayName: String;
-    private var _displayNamePublisher: AnyPublisher<String, Never>!;
-    public var displayNamePublisher: AnyPublisher<String, Never> {
-        return _displayNamePublisher;
+    public var displayNamePublisher: Published<String>.Publisher {
+        return $displayName;
     }
     
-    @TigaseSwift.Published
+    @Published
     public var status: Presence.Show?;
-    private var _statusPublisher: AnyPublisher<Presence.Show?, Never>!;
-    public var statusPublisher: AnyPublisher<Presence.Show?, Never> {
-        return _statusPublisher;
+    public var statusPublisher: Published<Presence.Show?>.Publisher {
+        return $status;
     }
     
-    @TigaseSwift.Published
+    @Published
     public var description: String?;
-    private var _descriptionPublisher: AnyPublisher<String?,Never>!;
-    public var descriptionPublisher: AnyPublisher<String?,Never> {
-        return _descriptionPublisher;
+    public var descriptionPublisher: Published<String?>.Publisher {
+        return $description;
     }
     
-    public var avatar: AnyPublisher<NSImage?,Never> {
-        return AvatarManager.instance.avatarPublisher(for: key).eraseToAnyPublisher();
+    public let avatar: Avatar;
+    public var avatarPublisher: AnyPublisher<NSImage?, Never> {
+        return avatar.$avatar.eraseToAnyPublisher();
     }
 
     public init(key: Key, displayName: String, status: Presence.Show?) {
         self.key = key;
         self.displayName = displayName;
         self.status = status;
-        self._displayNamePublisher = KeepRefPublisher(ref: self, parent: $displayName.eraseToAnyPublisher()).eraseToAnyPublisher();
-        self._statusPublisher = KeepRefPublisher(ref: self, parent: $status.eraseToAnyPublisher()).eraseToAnyPublisher();
-        self._descriptionPublisher = KeepRefPublisher(ref: self, parent: $description.eraseToAnyPublisher()).eraseToAnyPublisher();
+        self.avatar = AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: key.jid, mucNickname: nil));
     }
     
     deinit {

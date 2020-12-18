@@ -22,6 +22,7 @@
 import AppKit
 import TigaseSwift
 import TigaseSwiftOMEMO
+import Combine
 
 class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLogContextMenuDelegate, NSMenuItemValidation {
 
@@ -41,7 +42,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
 
     @IBOutlet var encryptButton: NSPopUpButton!;
     
-    private var cancellables: [Cancellable] = [];
+    private var cancellables: Set<AnyCancellable> = [];
     
     var chat: Chat {
         return conversation as! Chat;
@@ -67,15 +68,15 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
     override func viewWillAppear() {
         self.conversationLogController?.contextMenuDelegate = self;
 
-        cancellables.append(chat.displayNamePublisher.assign(to: \.title, on: buddyNameLabel));
+        conversation.displayNamePublisher.assign(to: \.title, on: buddyNameLabel).store(in: &cancellables);
+        conversation.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: buddyAvatarView).store(in: &cancellables);
+        conversation.statusPublisher.assign(to: \.status, on: buddyAvatarView).store(in: &cancellables);
+        conversation.avatarPublisher.assign(to: \.avatar, on: buddyAvatarView).store(in: &cancellables);
+        chat.contact.descriptionPublisher.map({ $0 ?? "" }).assign(to: \.stringValue, on: buddyStatusLabel).store(in: &cancellables);
+        chat.contact.descriptionPublisher.assign(to: \.toolTip, on: buddyStatusLabel).store(in: &cancellables);
         buddyJidLabel.title = jid.stringValue;
+
         buddyAvatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
-        cancellables.append(chat.displayNamePublisher.map({ $0 as String?}).assign(to: \.name, on: buddyAvatarView));
-        cancellables.append(chat.statusPublisher.assign(to: \.status, on: buddyAvatarView));
-//        buddyAvatarView.avatar = AvatarManager.instance.avatar(for: jid, on: account);
-        cancellables.append(chat.avatar.assign(to: \.avatar, on: buddyAvatarView));
-        cancellables.append(chat.contact.descriptionPublisher.map({ $0 ?? "" }).assign(to: \.stringValue, on: buddyStatusLabel));
-        cancellables.append(chat.contact.descriptionPublisher.assign(to: \.toolTip, on: buddyStatusLabel));
         
         let itemsCount = self.scriptsButton.menu?.items.count ?? 0;
         if itemsCount > 1 {
@@ -102,6 +103,11 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         });
 
         refreshEncryptionStatus();
+    }
+    
+    override func viewDidDisappear() {
+        super.viewDidDisappear();
+        cancellables.removeAll();
     }
     
     @objc func omemoAvailabilityChanged(_ notification: Notification) {
