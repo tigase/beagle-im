@@ -195,6 +195,9 @@ class ChatCellView: NSTableCellView {
             conversation?.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: avatar).store(in: &cancellables);
             conversation?.statusPublisher.assign(to: \.status, on: avatar).store(in: &cancellables);
             conversation?.avatarPublisher.assign(to: \.avatar, on: avatar).store(in: &cancellables);
+            conversation?.unreadPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
+                self?.set(unread: value);
+            }).store(in: &cancellables);
         }
     }
     
@@ -202,7 +205,6 @@ class ChatCellView: NSTableCellView {
         conversation = item.chat;
         
 //        self.set(name: item.name);
-        self.set(unread: item.unread);
         self.set(lastActivity: item.lastActivity, ts: item.lastMessageTs, chatState: (item.chat as? Chat)?.remoteChatState ?? .active, account: item.chat.account);
 
     }

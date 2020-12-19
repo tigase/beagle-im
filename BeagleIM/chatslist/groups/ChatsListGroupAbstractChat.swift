@@ -39,7 +39,6 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         NotificationCenter.default.addObserver(self, selector: #selector(chatOpened), name: DBChatStore.CHAT_OPENED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(chatClosed), name: DBChatStore.CHAT_CLOSED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(chatUpdated), name: DBChatStore.CHAT_UPDATED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
 
         dispatcher.async {
             DispatchQueue.main.sync {
@@ -94,13 +93,6 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         return i1.lastMessageTs.compare(i2.lastMessageTs) == .orderedDescending;
     }
 
-    @objc func avatarChanged(_ notification: Notification) {
-        guard let account = notification.userInfo?["account"] as? BareJID, let jid = notification.userInfo?["jid"] as? BareJID else {
-            return;
-        }
-        self.updateItem(for: account, jid: jid, executeIfExists: nil, executeIfNotExists: nil);
-    }
-    
     func isAccepted(chat: Conversation) -> Bool {
         return false;
     }

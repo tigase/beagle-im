@@ -27,7 +27,12 @@ public class ConversationBase<Options: ChatOptionsProtocol>: TigaseSwift.Convers
     public let id: Int;
     public let dispatcher: QueueDispatcher;
     
+    @Published
     public private(set) var unread: Int;
+    public var unreadPublisher: Published<Int>.Publisher {
+        return $unread;
+    }
+    
     private var _options: Options;
     public var options: Options {
         return dispatcher.sync {
