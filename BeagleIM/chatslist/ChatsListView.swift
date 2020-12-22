@@ -397,7 +397,6 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 self.close(chat: chat);
             }
             view?.setMouseHovers(false);
-            view?.layout();
             return view;
         } else if let invitation = item as? InvitationItem {
             let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("InvitationCellView"), owner: nil) as? InvitationCellView;
@@ -405,7 +404,6 @@ extension ChatsListViewController: NSOutlineViewDelegate {
             view?.label.stringValue = DBRosterStore.instance.item(for: invitation.account, jid: invitation.jid)?.name ?? invitation.jid.stringValue;
             view?.message.maximumNumberOfLines = 2;
             view?.message.stringValue = invitation.name;
-            view?.layout();
             return view;
         }
         return nil;
