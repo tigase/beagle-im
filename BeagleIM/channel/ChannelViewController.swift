@@ -59,8 +59,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         
         channel.displayNamePublisher.assign(to: \.title, on: channelNameLabel).store(in: &cancellables);
         channel.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: channelAvatarView).store(in: &cancellables);
-        channel.avatarPublisher.assign(to: \.avatar, on: channelAvatarView).store(in: &cancellables);
-        channel.statusPublisher.assign(to: \.status, on: channelAvatarView).store(in: &cancellables);
+        channelAvatarView.displayableId = channel;
         channel.descriptionPublisher.map({ $0 ?? "" }).assign(to: \.stringValue, on: channelDescriptionLabel).store(in: &cancellables);
         channel.descriptionPublisher.assign(to: \.toolTip, on: channelDescriptionLabel).store(in: &cancellables);
         channelJidLabel.title = jid.stringValue;

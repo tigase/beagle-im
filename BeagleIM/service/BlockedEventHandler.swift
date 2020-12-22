@@ -46,13 +46,14 @@ class BlockedEventHandler: XmppServiceEventHandler {
         switch event {
         case let e as BlockingCommandModule.BlockedChangedEvent:
             (e.added + e.removed).forEach { jid in
-                var p = PresenceModule.getPresenceStore(e.sessionObject).getBestPresence(for: jid.bareJid);
+                var p = PresenceStore.instance.bestPresence(for: jid.bareJid, context: e.context);
                 if p == nil {
                     p = Presence();
                     p?.type = .unavailable;
                     p?.from = jid;
                 }
                 let cpc = PresenceModule.ContactPresenceChanged(context: e.context, presence: p!, availabilityChanged: true);
+                ContactManager.instance.update(presence: p!, for: .init(account: e.context.userBareJid, jid: jid.bareJid, type: .buddy))
                 NotificationCenter.default.post(name: XmppService.CONTACT_PRESENCE_CHANGED, object: cpc);
             }
         default:

@@ -74,9 +74,6 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         self.participantsTableView.dataSource = participantsContainer;
 
         super.viewDidLoad();
-
-        NotificationCenter.default.addObserver(self, selector: #selector(roomOccupantsChanged), name: MucEventHandler.ROOM_OCCUPANTS_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(avatarForHashChanged), name: AvatarManager.AVATAR_FOR_HASH_CHANGED, object: nil);
     }
     
     override func viewWillAppear() {
@@ -88,11 +85,10 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
 
         room.displayNamePublisher.assign(to: \.stringValue, on: titleView).store(in: &cancellables);
         room.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: avatarView).store(in: &cancellables);
-        room.avatarPublisher.assign(to: \.avatar, on: avatarView).store(in: &cancellables);
-        room.statusPublisher.assign(to: \.status, on: avatarView).store(in: &cancellables);
+        avatarView.displayableId = conversation;
         room.statusPublisher.map({ $0 != nil }).assign(to: \.isEnabled, on: sharingButton).store(in: &cancellables);
-        room.$subject.map({ $0 ?? "" }).receive(on: DispatchQueue.main).assign(to: \.stringValue, on: subjectView).store(in: &cancellables);
-        room.$subject.receive(on: DispatchQueue.main).assign(to: \.toolTip, on: subjectView).store(in: &cancellables);
+        room.descriptionPublisher.map({ $0 ?? "" }).receive(on: DispatchQueue.main).assign(to: \.stringValue, on: subjectView).store(in: &cancellables);
+        room.descriptionPublisher.receive(on: DispatchQueue.main).assign(to: \.toolTip, on: subjectView).store(in: &cancellables);
         room.$affiliation.receive(on: DispatchQueue.main).assign(to: \.affiliation, on: self).store(in: &cancellables);
         room.$role.receive(on: DispatchQueue.main).assign(to: \.role, on: self).store(in: &cancellables);
         jidView.stringValue = room.roomJid.stringValue;
@@ -387,61 +383,6 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
 
         return suggestions.map({ name in "\(name) "});
     }
-    
-    @objc func avatarForHashChanged(_ notification: Notification) {
-        guard let avatarHash = notification.object as? String else {
-            return;
-        }
-        
-        guard let occupant = room.occupants.first(where: { (occupant) -> Bool in
-            guard let hash = occupant.presence.vcardTempPhoto else {
-                return false;
-            }
-            return hash == avatarHash;
-        }) else {
-            return;
-        }
-        
-        let nickname = occupant.nickname;
-        DispatchQueue.main.async {
-            for i in 0..<self.dataSource.count {
-                if let item = self.dataSource.getItem(at: i) as? ConversationMessage, item.nickname == nickname {
-                    if let view = self.conversationLogController?.tableView.view(atColumn: 0, row: i, makeIfNecessary: false) as? ChatMessageCellView {
-                        view.set(item: item);
-                    }
-                }
-            }
-        }
-    }
-    
-    @objc func roomOccupantsChanged(_ notification: Notification) {
-        guard let e = notification.object as? MucModule.AbstractOccupantEvent else {
-            return;
-        }
-        
-        guard let room = e.room as? Room, self.room.id == room.id else {
-            return;
-        }
-        
-        if (e.nickname ?? "") == self.room.nickname && e is MucModule.OccupantChangedPresenceEvent {
-            DispatchQueue.main.async {
-                self.refreshPermissions();
-            }
-        }
-
-        guard let avatarHash = e.occupant.presence.vcardTempPhoto else {
-            return;
-        }
-        DispatchQueue.main.async {
-            for i in 0..<self.dataSource.count {
-                if let item = self.dataSource.getItem(at: i) as? ConversationMessage, item.nickname == e.occupant.nickname {
-                    if let view = self.conversationLogController?.tableView.view(atColumn: 0, row: i, makeIfNecessary: false) as? ChatMessageCellView {
-                        view.set(item: item);
-                    }
-                }
-            }
-        }
-    }
 
 }
 
@@ -624,33 +565,34 @@ class GroupchatParticipantCellView: NSTableCellView {
                 label.stringValue = occupant.nickname;
                 
                 occupant.$presence.map({ $0.show }).receive(on: DispatchQueue.main).assign(to: \.status, on: avatar).store(in: &cancellables);
-                occupant.avatar.receive(on: DispatchQueue.main).assign(to: \.avatar, on: avatar).store(in: &cancellables);
                 occupant.$presence.map(XMucUserElement.extract(from: )).map({ $0?.role ?? .none }).map({ "\(nickname) \(GroupchatParticipantCellView.roleToEmoji($0))" }).receive(on: DispatchQueue.main).assign(to: \.stringValue, on: label).store(in: &cancellables);
             }
+        }
+    }
+    private var avatarObj: Avatar? {
+        didSet {
+            avatarObj?.$avatar.assign(to: \.avatar, on: avatar).store(in: &cancellables);
         }
     }
     
     func set(occupant: MucOccupant, in room: Room) {
         self.occupant = occupant;
+        self.avatarObj = occupant.avatar(in: room);
         avatar.backgroundColor = NSColor(named: "chatBackgroundColor")!;
     }
     
 }
 
 extension MucOccupant {
-    
-    static func presenceToNSImage(_ presence: Presence) -> NSImage? {
-        guard let photoId = presence.vcardTempPhoto else {
-            return nil;
-        }
-        return AvatarManager.instance.avatar(withHash: photoId);
-    }
-    
-    var avatar: AnyPublisher<NSImage?,Never> {
-        // FIXME: !! FOR AVATAR MANAGER !!
-        return $presence.map(MucOccupant.presenceToNSImage(_:)).eraseToAnyPublisher();
-    }
         
+    func avatar(in room: RoomProtocol) -> Avatar {
+        if let jid = self.jid?.bareJid {
+            return AvatarManager.instance.avatarPublisher(for: .init(account: room.account, jid: jid, mucNickname: nil));
+        } else {
+            return AvatarManager.instance.avatarPublisher(for: .init(account: room.account, jid: room.jid, mucNickname: nickname));
+        }
+    }
+    
 }
 
 class SettingsPopUpButton: NSPopUpButton {

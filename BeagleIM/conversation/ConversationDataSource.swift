@@ -57,6 +57,8 @@ class ConversationDataSource {
     
     weak var delegate: ConversationDataSourceDelegate?;
     
+    public var defaultPageSize = 100;
+    
     private var state: State = .uninitialized;
     
     var count: Int {
@@ -152,16 +154,15 @@ class ConversationDataSource {
         state = .loading;
         queue.async {
             let items: [ConversationEntry] = conversation.loadItems(type);
-            self.add(items: items, scrollTo: .from(loadType: type));
-            DispatchQueue.main.async {
+            self.add(items: items, scrollTo: .from(loadType: type), completionHandler: {
                 self.state = .loaded;
-            }
+            });
         }
     }
     
     private func add(item: ConversationEntry) {
         queue.async {
-            self.add(items: [item], scrollTo: .none);
+            self.add(items: [item], scrollTo: .none, completionHandler: nil);
         }
     }
     
@@ -169,9 +170,9 @@ class ConversationDataSource {
         let store = self.store;
         let item = store.item(at: row);
         if item != nil {
-            if row >= (store.count - 10) && row < store.count {
+            if row >= (store.count - 1) && row < store.count {
                 if let it = store.item(at: store.count - 1) {
-                    self.loadItems(.before(entry: it, limit: 100))
+                    self.loadItems(.before(entry: it, limit: self.defaultPageSize))
                 }
             }
         } else {
@@ -302,7 +303,7 @@ class ConversationDataSource {
     }
     
     // should be called from internal queue!
-    private func add(items newItems: [ConversationEntry], scrollTo: ScrollTo) {
+    private func add(items newItems: [ConversationEntry], scrollTo: ScrollTo, completionHandler: (()->Void)?) {
         var store = DispatchQueue.main.sync { return self.store };
         var newRows = [Int]();
         var scrollToIdx: Int?;
@@ -354,6 +355,7 @@ class ConversationDataSource {
         
         DispatchQueue.main.async {
             self.store = store;
+            completionHandler?();
             self.delegate?.itemAdded(at: IndexSet(newRows));
             if let scrollToIdx = scrollToIdx {
                 self.delegate?.scrollRowToVisible(scrollToIdx);

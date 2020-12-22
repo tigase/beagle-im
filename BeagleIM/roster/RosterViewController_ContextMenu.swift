@@ -105,7 +105,7 @@ extension RosterViewController: NSMenuDelegate {
         
 //        let textField = NSTextField(string: item.name ?? item.jid.stringValue);
         let textField = NSTextField(frame: NSRect(x: 0, y:0, width: 300, height: 24));
-        textField.stringValue = item.name ?? item.jid.stringValue;
+        textField.stringValue = item.displayName;
         alert.accessoryView = textField;
         
         alert.beginSheetModal(for: self.view.window!) { (response) in

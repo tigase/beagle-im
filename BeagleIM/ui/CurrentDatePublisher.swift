@@ -1,8 +1,8 @@
 //
-// ChatItemProtocol.swift
+//  CurrentDatepPublisher.swift
 //
 // BeagleIM
-// Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2020 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,14 +19,16 @@
 // If not, see https://www.gnu.org/licenses/.
 //
 
-import AppKit
+import Foundation
+import Combine
 
-protocol ChatItemProtocol: ChatsListItemProtocol {
+struct CurrentTimePublisher {
     
-    var chat: Conversation { get };
-    
-    var lastActivity: LastChatActivity? { get }
-    var lastMessageTs: Date { get }
-    var unread: Int { get }
-    
+    private static var cancellable: Cancellable?;
+    public private(set) static var publisher: AnyPublisher<Date,Never> = {
+        let publisher = CurrentValueSubject<Date,Never>(Date());
+        cancellable = Timer.publish(every: 30, on: .main, in: .default).autoconnect().assign(to: \.value, on: publisher);
+        return publisher.eraseToAnyPublisher();
+    }();
+
 }

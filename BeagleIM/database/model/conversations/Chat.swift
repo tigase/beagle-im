@@ -25,42 +25,23 @@ import TigaseSwiftOMEMO
 import AppKit
 import Combine
 
-public class Chat: ConversationBase<ChatOptions>, ChatProtocol, Conversation {
+public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conversation {
     
     public override var defaultMessageType: StanzaType {
         return .chat;
     }
     
-    public let contact: Contact;
-    
     var localChatState: ChatState = .active;
+    @Published
     private(set) var remoteChatState: ChatState? = nil;
     
-    public var displayName: String {
-        return contact.displayName;
-    }
-    public var displayNamePublisher: Published<String>.Publisher {
-        return contact.displayNamePublisher;
-    }
-    
-    public var status: Presence.Show? {
-        return contact.status;
-    }
-    public var statusPublisher: Published<Presence.Show?>.Publisher {
-        return contact.statusPublisher;
-    }
-        
-    public var avatarPublisher: AnyPublisher<NSImage?,Never> {
-        return contact.avatar.$avatar.eraseToAnyPublisher();
-    }
-
     public var automaticallyFetchPreviews: Bool {
         return DBRosterStore.instance.item(for: account, jid: JID(jid)) != nil;
     }
 
-    override init(dispatcher: QueueDispatcher, context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastConversationActivity?, unread: Int, options: ChatOptions) {
-        self.contact = ContactManager.instance.contact(for: .init(account: context.userBareJid, jid: jid, type: .buddy));
-        super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options);
+    init(dispatcher: QueueDispatcher, context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastConversationActivity?, unread: Int, options: ChatOptions) {
+        let contact = ContactManager.instance.contact(for: .init(account: context.userBareJid, jid: jid, type: .buddy));
+        super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options, displayableId: contact);
     }
         
     

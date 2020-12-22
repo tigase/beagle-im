@@ -33,6 +33,8 @@
 		FE1A34C0258D2CB60058B86A /* OpenSSL.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE1A34B9258D2CB20058B86A /* OpenSSL.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FE1A34C4258D2CB80058B86A /* WebRTC.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE1A34B8258D2CB20058B86A /* WebRTC.xcframework */; };
 		FE1A34C5258D2CB80058B86A /* WebRTC.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FE1A34B8258D2CB20058B86A /* WebRTC.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FE1A34D6258E7DBC0058B86A /* CurrentDatePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A34D5258E7DBC0058B86A /* CurrentDatePublisher.swift */; };
+		FE1A34DC2592144A0058B86A /* PresenceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A34DB2592144A0058B86A /* PresenceStore.swift */; };
 		FE1A8BA321C96C1B00604141 /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA221C96C1B00604141 /* RoundButton.swift */; };
 		FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */; };
 		FE222CFB2561763700C186A9 /* DBChatStore+ChatStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE222CFA2561763700C186A9 /* DBChatStore+ChatStore.swift */; };
@@ -69,7 +71,6 @@
 		FE34BBD52157DDF200775B07 /* MucModule_RoomError_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE34BBD42157DDF200775B07 /* MucModule_RoomError_extension.swift */; };
 		FE380ADA21B15720008717FA /* DownloadStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE380AD921B15720008717FA /* DownloadStore.swift */; };
 		FE3AA0C92154062F001667A9 /* ChatsListGroupProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0C82154062F001667A9 /* ChatsListGroupProtocol.swift */; };
-		FE3AA0CB21540669001667A9 /* ChatItemProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0CA21540669001667A9 /* ChatItemProtocol.swift */; };
 		FE3AA0CD2154069D001667A9 /* ChatsListGroupGroupchat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0CC2154069D001667A9 /* ChatsListGroupGroupchat.swift */; };
 		FE3AA0CF215406D1001667A9 /* ChatsListGroupChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0CE215406D1001667A9 /* ChatsListGroupChat.swift */; };
 		FE3AA0D12154077D001667A9 /* ChatsListGroupAbstractChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0D02154077D001667A9 /* ChatsListGroupAbstractChat.swift */; };
@@ -277,6 +278,8 @@
 		FE1A3481258923EE0058B86A /* Array+IndexChanges.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+IndexChanges.swift"; sourceTree = "<group>"; };
 		FE1A34B8258D2CB20058B86A /* WebRTC.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = WebRTC.xcframework; sourceTree = "<group>"; };
 		FE1A34B9258D2CB20058B86A /* OpenSSL.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = OpenSSL.xcframework; sourceTree = "<group>"; };
+		FE1A34D5258E7DBC0058B86A /* CurrentDatePublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentDatePublisher.swift; sourceTree = "<group>"; };
+		FE1A34DB2592144A0058B86A /* PresenceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceStore.swift; sourceTree = "<group>"; };
 		FE1A8BA221C96C1B00604141 /* RoundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
 		FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager_Session.swift; sourceTree = "<group>"; };
 		FE222CFA2561763700C186A9 /* DBChatStore+ChatStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DBChatStore+ChatStore.swift"; sourceTree = "<group>"; };
@@ -313,7 +316,6 @@
 		FE34BBD42157DDF200775B07 /* MucModule_RoomError_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MucModule_RoomError_extension.swift; sourceTree = "<group>"; };
 		FE380AD921B15720008717FA /* DownloadStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadStore.swift; sourceTree = "<group>"; };
 		FE3AA0C82154062F001667A9 /* ChatsListGroupProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListGroupProtocol.swift; sourceTree = "<group>"; };
-		FE3AA0CA21540669001667A9 /* ChatItemProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatItemProtocol.swift; sourceTree = "<group>"; };
 		FE3AA0CC2154069D001667A9 /* ChatsListGroupGroupchat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListGroupGroupchat.swift; sourceTree = "<group>"; };
 		FE3AA0CE215406D1001667A9 /* ChatsListGroupChat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListGroupChat.swift; sourceTree = "<group>"; };
 		FE3AA0D02154077D001667A9 /* ChatsListGroupAbstractChat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListGroupAbstractChat.swift; sourceTree = "<group>"; };
@@ -612,6 +614,7 @@
 				FEB5B4E0235DB57F00DE6AAD /* NSWindowCloseOnEsc.swift */,
 				FEC336EE2408FCD800EC1A0D /* ParticipantsButton.swift */,
 				FE30309924438ED6003B9D76 /* MessageTextView.swift */,
+				FE1A34D5258E7DBC0058B86A /* CurrentDatePublisher.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -646,6 +649,7 @@
 				FE75CD6F2549E9BE0064A733 /* SharingTaskManager.swift */,
 				FE75AA8D2587D76C002B59AE /* ContactManager.swift */,
 				FE1A3481258923EE0058B86A /* Array+IndexChanges.swift */,
+				FE1A34DB2592144A0058B86A /* PresenceStore.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -686,7 +690,6 @@
 				FE6E6BF021384D5E003B1696 /* ChatsWindowController.swift */,
 				FE6E6C0721384DF1003B1696 /* ChatCellView.swift */,
 				FEDE6AF42143D8130019170A /* ChatsListTableRowView.swift */,
-				FE3AA0CA21540669001667A9 /* ChatItemProtocol.swift */,
 				FE3F2AF1228813E200737D51 /* EmptyViewController.swift */,
 				FE10BCEC23FAA86900E214F3 /* InvitationCellView.swift */,
 			);
@@ -1143,7 +1146,6 @@
 				FE9CB700238700E2008F1049 /* BlockedViewController.swift in Sources */,
 				FEF5C3FA22632C0000889863 /* OpenSSL_AES_GCM_Engine.swift in Sources */,
 				FE2809852169FB75002F5BD0 /* Alert.swift in Sources */,
-				FE3AA0CB21540669001667A9 /* ChatItemProtocol.swift in Sources */,
 				FE8F7CE82562F8A60076C13E /* ConversationEntry.swift in Sources */,
 				FE12FB4B2529E69F002077E7 /* ConversationMessageRetracted.swift in Sources */,
 				FE4E8DDA215EA4860010D88E /* HttpFileUploadEventHandler.swift in Sources */,
@@ -1219,6 +1221,7 @@
 				FE30309A24438ED6003B9D76 /* MessageTextView.swift in Sources */,
 				FE336EAE2570150F0088DA83 /* ConversationBase.swift in Sources */,
 				FE3AA0CD2154069D001667A9 /* ChatsListGroupGroupchat.swift in Sources */,
+				FE1A34DC2592144A0058B86A /* PresenceStore.swift in Sources */,
 				FED7AEC521417328001E164B /* AvatarStore.swift in Sources */,
 				FE75CD6C2546FC820064A733 /* HTTPFileUploadHelper.swift in Sources */,
 				FE6E6BFA21384D5F003B1696 /* AccountManager.swift in Sources */,
@@ -1265,6 +1268,7 @@
 				FEC661F821AABFB0004FDE1E /* NSViewWithTextBackground.swift in Sources */,
 				FE10BCEF23FAB13800E214F3 /* InvitationsManager.swift in Sources */,
 				FE3AA0CF215406D1001667A9 /* ChatsListGroupChat.swift in Sources */,
+				FE1A34D6258E7DBC0058B86A /* CurrentDatePublisher.swift in Sources */,
 				FE8F7CF825645C610076C13E /* ConversationEntryState.swift in Sources */,
 				FE6E6BF921384D5F003B1696 /* AvatarView.swift in Sources */,
 				FEEF25392266528E00202B28 /* ContactDetailsViewController.swift in Sources */,

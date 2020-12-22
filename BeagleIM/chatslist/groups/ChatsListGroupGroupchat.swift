@@ -32,8 +32,4 @@ class ChatsListGroupGroupchat: ChatsListGroupAbstractChat {
         return chat is Room || chat is Channel;
     }
 
-    override func newChatItem(chat: Conversation) -> ChatItemProtocol? {
-        return GroupchatItem(chat: chat);
-    }
-
 }

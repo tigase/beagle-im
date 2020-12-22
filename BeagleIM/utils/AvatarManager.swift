@@ -35,8 +35,11 @@ public class Avatar {
         didSet {
             if let hash = hash {
                 // TODO: Could we load it using async?
-                DispatchQueue.main.async {
-                    self.avatar = AvatarManager.instance.avatar(withHash: hash);
+                DispatchQueue.global(qos: .userInteractive).async {
+                    let avatar = AvatarManager.instance.avatar(withHash: hash);
+                    DispatchQueue.main.async {
+                        self.avatar = avatar;
+                    }
                 }
             } else {
                 DispatchQueue.main.async {

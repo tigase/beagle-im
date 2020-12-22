@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import Combine
 
 class AccountsListController: NSViewController, NSTableViewDataSource, NSTableViewDelegate {
     
@@ -40,7 +41,6 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
     override func viewDidLoad() {
         super.viewDidLoad();
         NotificationCenter.default.addObserver(self, selector: #selector(accountChanged), name: AccountManager.ACCOUNT_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(accountStatusChanged), name: XmppService.ACCOUNT_STATUS_CHANGED, object: nil)
     }
     
     override func viewWillAppear() {
@@ -94,21 +94,6 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
             if selectedRow != nil {
                 self.tableView?.selectRowIndexes(IndexSet(integer: selectedRow!), byExtendingSelection: false);
             }
-        }
-    }
-    
-    @objc func accountStatusChanged(_ notification: Notification) {
-        guard let account = notification.object as? BareJID else {
-            return;
-        }
-        DispatchQueue.main.async {
-            if account == self.currentAccount {
-                self.updateButtonsForCurrentAccount();
-            }
-            guard let idx = self.accounts.firstIndex(of: account) else {
-                return;
-            }
-            self.tableView?.reloadData(forRowIndexes: IndexSet(integer: idx), columnIndexes: IndexSet(integer: 0));
         }
     }
     
@@ -261,7 +246,7 @@ class AccountRowView: NSTableRowView {
 class AccountCellView: NSTableCellView {
     
     @IBOutlet var enabledCheckbox: NSButton!;
-    @IBOutlet weak var avatar: AvatarViewWithStatus? {
+    @IBOutlet var avatar: AvatarViewWithStatus! {
         didSet {
             refreshBackgroundSelectionColor();
         }
@@ -270,7 +255,14 @@ class AccountCellView: NSTableCellView {
     @IBOutlet var nickname: NSTextField!;
     @IBOutlet var jid: NSTextField!;
      
+    private var cancellables: Set<AnyCancellable> = [];
+    
     private var accountJid: BareJID?;
+    private var avatarObj: Avatar? {
+        didSet {
+            avatarObj?.$avatar.assign(to: \.avatar, on: avatar).store(in: &cancellables);
+        }
+    }
     
     var isSelected: Bool = false {
         didSet {
@@ -290,9 +282,28 @@ class AccountCellView: NSTableCellView {
     }
 
     func set(account accountJid: BareJID) {
+        cancellables.removeAll();
         self.accountJid = accountJid;
-        avatar?.update(for: accountJid, on: accountJid);
+        avatarObj = AvatarManager.instance.avatarPublisher(for: .init(account: accountJid, jid: accountJid, mucNickname: nil));
         let acc = AccountManager.getAccount(for: accountJid);
+        switch acc?.state.value {
+        case .connected:
+            avatar.status = .online;
+        case .connecting:
+            avatar.status = .away;
+        default:
+            avatar.status = nil;
+        }
+        acc?.state.map({ state -> Presence.Show? in
+            switch state {
+            case .connected:
+                return .online;
+            case .connecting:
+                return .away;
+            default:
+                return nil;
+            }
+        }).receive(on: DispatchQueue.main).assign(to: \.status, on: avatar).store(in: &cancellables);
         enabledCheckbox.state = (acc?.active ?? false) ? .on : .off;
         nickname.stringValue = acc?.nickname ?? "";
         jid.stringValue = accountJid.stringValue

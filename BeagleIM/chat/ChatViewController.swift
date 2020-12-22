@@ -70,10 +70,9 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
 
         conversation.displayNamePublisher.assign(to: \.title, on: buddyNameLabel).store(in: &cancellables);
         conversation.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: buddyAvatarView).store(in: &cancellables);
-        conversation.statusPublisher.assign(to: \.status, on: buddyAvatarView).store(in: &cancellables);
-        conversation.avatarPublisher.assign(to: \.avatar, on: buddyAvatarView).store(in: &cancellables);
-        chat.contact.descriptionPublisher.map({ $0 ?? "" }).assign(to: \.stringValue, on: buddyStatusLabel).store(in: &cancellables);
-        chat.contact.descriptionPublisher.assign(to: \.toolTip, on: buddyStatusLabel).store(in: &cancellables);
+        buddyAvatarView.displayableId = conversation;
+        chat.descriptionPublisher.map({ $0 ?? "" }).assign(to: \.stringValue, on: buddyStatusLabel).store(in: &cancellables);
+        chat.descriptionPublisher.assign(to: \.toolTip, on: buddyStatusLabel).store(in: &cancellables);
         buddyJidLabel.title = jid.stringValue;
 
         buddyAvatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;

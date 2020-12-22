@@ -33,7 +33,6 @@ extension Array {
 extension Array where Element: Hashable {
     
     func calculateChanges(from source: Array<Element>) -> IndexSetChanges {
-        if #available(macOS 10.15, *) {
             let diff = self.difference(from: source);
             
             let removed = diff.removals.map({ change -> Int in
@@ -55,15 +54,6 @@ extension Array where Element: Hashable {
             })
             
             return .init(removed: IndexSet(removed), inserted: IndexSet(inserted));
-        } else {
-            let thisSet = Set(self);
-            let removed = source.filter({ !thisSet.contains($0) }).map({ source.firstIndex(of: $0 )! });
-            
-            let originSet = Set(source);
-            let inserted = self.filter({ !originSet.contains($0) }).map({ self.firstIndex(of: $0 )! });
-            
-            return .init(removed: IndexSet(removed), inserted: IndexSet(inserted));
-        }
     }
     
 }

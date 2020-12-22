@@ -20,34 +20,83 @@
 //
 import AppKit
 import TigaseSwift
+import Combine
+
+struct ConversationItem: ChatsListItemProtocol, Hashable {
+    
+    static func == (lhs: ConversationItem, rhs: ConversationItem) -> Bool {
+        return lhs.chat.id == rhs.chat.id;
+    }
+    
+    var name: String {
+        return chat.displayName;
+    }
+    var chat: Conversation;
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(chat.id);
+    }
+}
 
 class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
     
     let name: String;
     weak var delegate: ChatsListViewDataSourceDelegate?;
-    fileprivate var items: [ChatItemProtocol] = [];
+    fileprivate var items: [ConversationItem] = [];
     let dispatcher: QueueDispatcher;
     
     let canOpenChat: Bool;
+    
+    private var cancellables: Set<AnyCancellable> = [];
     
     init(name: String, dispatcher: QueueDispatcher, delegate: ChatsListViewDataSourceDelegate, canOpenChat: Bool) {
         self.name = name;
         self.delegate = delegate;
         self.dispatcher = dispatcher;
         self.canOpenChat = canOpenChat;
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(chatOpened), name: DBChatStore.CHAT_OPENED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(chatClosed), name: DBChatStore.CHAT_CLOSED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(chatUpdated), name: DBChatStore.CHAT_UPDATED, object: nil);
 
-        dispatcher.async {
-            DispatchQueue.main.sync {
-                self.items = DBChatStore.instance.conversations().filter(self.isAccepted(chat:)).map(self.newChatItem(chat:)).filter({ (item) -> Bool in
-                    item != nil
-                }).map({ item -> ChatItemProtocol in item! }).sorted(by: self.chatsSorter);
-                print("loaded", self.items.count, "during initialization of the view");
-                self.delegate?.reload();
+        DBChatStore.instance.$conversations.receive(on: dispatcher.queue).sink(receiveValue: { [weak self] items in
+            self?.update(items: items);
+        }).store(in: &cancellables);
+    }
+    
+    func update(items: [Conversation]) {
+        let newItems = items.filter(self.isAccepted(chat:)).map({ conversation in ConversationItem(chat: conversation) }).sorted(by: { (c1,c2) in c1.chat.timestamp > c2.chat.timestamp });
+        let oldItems = DispatchQueue.main.sync {
+            return self.items;
+        }
+        
+        let diffs = newItems.difference(from: oldItems).inferringMoves();
+        var removed: [Int] = [];
+        var inserted: [Int] = [];
+        var moved: [(Int,Int)] = [];
+        for action in diffs {
+            switch action {
+            case .remove(let offset, _, let to):
+                if let idx = to {
+                    moved.append((offset, idx));
+                } else {
+                    removed.append(offset);
+                }
+            case .insert(let offset, _, let from):
+                if from == nil {
+                    inserted.append(offset);
+                }
             }
+        }
+        DispatchQueue.main.async {
+            self.items = newItems;
+            self.delegate?.beginUpdates();
+            if !removed.isEmpty {
+                self.delegate?.itemsRemoved(at: IndexSet(removed), inParent: self);
+            }
+            for (from,to) in moved {
+                self.delegate?.itemMoved(from: from, fromParent: self, to: to, toParent: self);
+            }
+            if !inserted.isEmpty {
+                self.delegate?.itemsInserted(at: IndexSet(inserted), inParent: self);
+            }
+            self.delegate?.endUpdates();
         }
     }
     
@@ -55,15 +104,11 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         return items.count;
     }
     
-    func newChatItem(chat: Conversation) -> ChatItemProtocol? {
-        return nil;
-    }
-    
     func getItem(at index: Int) -> ChatsListItemProtocol? {
         return items[index];
     }
     
-    func forChat(_ chat: Conversation, execute: @escaping (ChatItemProtocol) -> Void) {
+    func forChat(_ chat: Conversation, execute: @escaping (ConversationItem) -> Void) {
         self.dispatcher.async {
             let items = DispatchQueue.main.sync { return self.items; };
             guard let item = items.first(where: { (it) -> Bool in
@@ -71,12 +116,12 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
             }) else {
                 return;
             }
-            
+
             execute(item);
         }
     }
-    
-    func forChat(account: BareJID, jid: BareJID, execute: @escaping (ChatItemProtocol) -> Void) {
+
+    func forChat(account: BareJID, jid: BareJID, execute: @escaping (ConversationItem) -> Void) {
         self.dispatcher.async {
             let items = DispatchQueue.main.sync { return self.items; };
             guard let item = items.first(where: { (it) -> Bool in
@@ -84,153 +129,13 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
             }) else {
                 return;
             }
-            
+
             execute(item);
         }
-    }
-    
-    func chatsSorter(i1: ChatItemProtocol, i2: ChatItemProtocol) -> Bool {
-        return i1.lastMessageTs.compare(i2.lastMessageTs) == .orderedDescending;
     }
 
     func isAccepted(chat: Conversation) -> Bool {
         return false;
     }
     
-    @objc func chatOpened(_ notification: Notification) {
-        guard let opened = notification.object as? Conversation, isAccepted(chat: opened) else {
-            return;
-        }
-        
-        addItem(chat: opened);
-    }
-    
-    @objc func chatClosed(_ notification: Notification) {
-        guard let opened = notification.object as? Conversation, isAccepted(chat: opened) else {
-            return;
-        }
-        
-        dispatcher.async {
-            var items = DispatchQueue.main.sync { return self.items };
-            guard let idx = items.firstIndex(where: { (item) -> Bool in
-                item.chat.id == opened.id
-            }) else {
-                return;
-            }
-            
-            _ = items.remove(at: idx);
-            
-            DispatchQueue.main.async {
-                self.items = items;
-                self.delegate?.itemsRemoved(at: IndexSet(integer: idx), inParent: self);
-            }
-        }
-    }
-    
-    @objc func chatUpdated(_ notification: Notification) {
-        guard let e = notification.object as? Conversation, isAccepted(chat: e) else {
-            return;
-        }
-        
-        dispatcher.async {
-            var items = DispatchQueue.main.sync { return self.items };
-            guard let oldIdx = items.firstIndex(where: { (item) -> Bool in
-                item.chat.id == e.id;
-            }) else {
-                return;
-            }
-            
-            let item = items.remove(at: oldIdx);
-            
-            let newIdx = items.firstIndex(where: { (it) -> Bool in
-                it.lastMessageTs.compare(item.lastMessageTs) == .orderedAscending;
-            }) ?? items.count;
-            items.insert(item, at: newIdx);
-            
-            if oldIdx == newIdx {
-                DispatchQueue.main.async {
-                    self.delegate?.itemChanged(item: item);
-                }
-            } else {
-                DispatchQueue.main.async {
-                    self.items = items;
-                    self.delegate?.itemMoved(from: oldIdx, fromParent: self, to: newIdx, toParent: self);
-                    self.delegate?.itemChanged(item: item);
-                }
-            }
-        }
-    }
-
-    func addItem(chat opened: Conversation) {
-        dispatcher.async {
-            print("opened chat account =", opened.account, ", jid =", opened.jid)
-            
-            var items = DispatchQueue.main.sync { return self.items };
-            
-            guard items.firstIndex(where: { (item) -> Bool in
-                item.chat.id == opened.id
-            }) == nil else {
-                return;
-            }
-            
-            guard let item = self.newChatItem(chat: opened) else {
-                return;
-            }
-            let idx = items.firstIndex(where: { (it) -> Bool in
-                it.lastMessageTs.compare(item.lastMessageTs) == .orderedAscending;
-            }) ?? items.count;
-            items.insert(item, at: idx);
-            
-            DispatchQueue.main.async {
-                self.items = items;
-                self.delegate?.itemsInserted(at: IndexSet(integer: idx), inParent: self);
-            }
-        }
-    }
-    
-    func removeItem(for account: BareJID, jid: BareJID) {
-        dispatcher.async {
-            var items = DispatchQueue.main.sync { return self.items };
-            guard let idx = items.firstIndex(where: { (item) -> Bool in
-                item.chat.account == account && item.chat.jid == jid;
-            }) else {
-                return;
-            }
-            
-            _ = items.remove(at: idx);
-            
-            DispatchQueue.main.async {
-                self.items = items;
-                self.delegate?.itemsRemoved(at: IndexSet(integer: idx), inParent: self);
-            }
-        }
-    }
-    
-    func updateItem(for account: BareJID, jid: BareJID, onlyIf: ((ChatItemProtocol)->Bool)? = nil, executeIfExists: ((ChatItemProtocol) -> Void)?, executeIfNotExists: (()->Void)?) {
-        dispatcher.async {
-            let items = DispatchQueue.main.sync { return self.items };
-            guard let idx = items.firstIndex(where: { (item) -> Bool in
-                item.chat.account == account && item.chat.jid == jid
-            }) else {
-                executeIfNotExists?();
-                return;
-            }
-            
-            let item = self.items[idx];
-            if let filter = onlyIf {
-                guard filter(item) else {
-                    return
-                }
-            }
-            if let chat = item.chat as? Chat, chat.remoteChatState == .composing {
-                chat.update(remoteChatState: .active);
-            }
-            
-            executeIfExists?(item);
-            
-            DispatchQueue.main.async {
-                self.delegate?.itemChanged(item: item);
-            }
-        }
-    }
 }

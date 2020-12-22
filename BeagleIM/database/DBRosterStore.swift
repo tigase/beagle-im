@@ -78,6 +78,9 @@ open class DBRosterStore: RosterStore {
     public let dispatcher: QueueDispatcher;
     
     private var accountRosters = [BareJID: AccountRoster]();
+  
+    @Published
+    public private(set) var items: Set<RosterItem> = [];
     
     public init() {
         self.dispatcher = QueueDispatcher(label: "db_roster_store");
@@ -85,7 +88,8 @@ open class DBRosterStore: RosterStore {
     
     public func clear(for account: BareJID) {
         dispatcher.sync {
-            let items = self.items(for: account);
+            let items = Set(self.items(for: account));
+            self.items = self.items.filter({ !items.contains($0) });
             for item in items {
                 remove(for: account, jid: item.jid);
             }
@@ -116,7 +120,8 @@ open class DBRosterStore: RosterStore {
         return item(for: context.userBareJid, jid: jid);
     }
     
-    func updateItem(for account: BareJID, jid: JID, name: String?, subscription: RosterItemSubscription, groups: [String], ask: Bool, annotations: [RosterItemAnnotation]) {
+    public func updateItem(for context: Context, jid: JID, name: String?, subscription: RosterItemSubscription, groups: [String], ask: Bool, annotations: [RosterItemAnnotation]) {
+        let account = context.userBareJid;
         
         let data = DBRosterData(groups: groups, annotations: annotations);
         dispatcher.sync {
@@ -127,8 +132,9 @@ open class DBRosterStore: RosterStore {
                     try database.insert(query: .rosterInsertItem, params: params);
                     return database.lastInsertedRowId
                 })!;
-                let item = RosterItem(id: id, jid: jid, name: name, subscription: subscription, groups: groups, ask: ask, annotations: annotations);
+                let item = RosterItem(id: id, context: context, jid: jid, name: name, subscription: subscription, groups: groups, ask: ask, annotations: annotations);
                 self.accountRosters[account]?.update(item: item);
+                self.items.insert(item);
                 return;
             }
 
@@ -137,15 +143,11 @@ open class DBRosterStore: RosterStore {
                 try database.update(query: .rosterUpdateItem, params: params);
             })
 
-            let newItem = RosterItem(id: item.id, jid: jid, name: name, subscription: subscription, groups: groups, ask: ask, annotations: annotations);
+            let newItem = RosterItem(id: item.id, context: context, jid: jid, name: name, subscription: subscription, groups: groups, ask: ask, annotations: annotations);
             self.accountRosters[account]?.update(item: newItem);
         }
     }
-    
-    public func updateItem(for context: Context, jid: JID, name: String?, subscription: RosterItemSubscription, groups: [String], ask: Bool, annotations: [RosterItemAnnotation]) {
-        self.updateItem(for: context.userBareJid, jid: jid, name: name, subscription: subscription, groups: groups, ask: ask, annotations: annotations);
-    }
-    
+        
     func remove(for account: BareJID, jid: JID) {
         guard let accountRoster = dispatcher.sync(execute: {
             return self.accountRosters[account];
@@ -158,6 +160,7 @@ open class DBRosterStore: RosterStore {
                 try! Database.main.writer({ database in
                     try database.delete(query: .rosterDeleteItem, params: ["id": item.id]);
                 })
+                self.items.remove(item);
             }
         }
     }
@@ -181,16 +184,22 @@ open class DBRosterStore: RosterStore {
             }
             
             let items = try! Database.main.reader({ database in
-                try database.select(query: .rosterFindItemsForAccount, params: ["account": context.userBareJid]).mapAll(RosterItem.from(cursor:))
+                try database.select(query: .rosterFindItemsForAccount, params: ["account": context.userBareJid]).mapAll({ RosterItem.from(cursor: $0, context: context) })
             });
             
             self.accountRosters[context.userBareJid] = AccountRoster(items: items);
+            self.items = Set(self.items + items);
         }
     }
     
     public func deinitialize(context: Context) {
         dispatcher.async {
+            guard let roster = self.accountRosters[context.userBareJid] else {
+                return;
+            }
             self.accountRosters.removeValue(forKey: context.userBareJid);
+            let items = Set(roster.items);
+            self.items = self.items.filter({ !items.contains($0) });
         }
     }
 
@@ -203,9 +212,13 @@ struct DBRosterData: Codable, DatabaseConvertibleStringValue {
         
 }
 
-public class RosterItem: TigaseSwift.RosterItemBase, Identifiable {
+public class RosterItem: TigaseSwift.RosterItemBase, Identifiable, Hashable {
     
-    static func from(cursor: Cursor) -> RosterItem? {
+    public static func == (lhs: RosterItem, rhs: RosterItem) -> Bool {
+        return lhs.id == rhs.id;
+    }
+    
+    static func from(cursor: Cursor, context: Context) -> RosterItem? {
         let itemId: Int = cursor.int(for: "id")!;
         let jid: JID = cursor.jid(for: "jid")!;
         let name: String? = cursor.string(for: "name");
@@ -213,14 +226,20 @@ public class RosterItem: TigaseSwift.RosterItemBase, Identifiable {
         let ask: Bool = cursor.bool(for: "ask");
         let data: DBRosterData = cursor.object(for: "data") ?? DBRosterData(groups: [], annotations: []);
         
-        return RosterItem(id: itemId, jid: jid, name: name, subscription: subscription, groups: data.groups, ask: ask, annotations: data.annotations);
+        return RosterItem(id: itemId, context: context, jid: jid, name: name, subscription: subscription, groups: data.groups, ask: ask, annotations: data.annotations);
     }
     
     public let id: Int;
+    public private(set) weak var context: Context?;
     
-    public init(id: Int, jid: JID, name: String?, subscription: RosterItemSubscription, groups: [String], ask: Bool, annotations: [RosterItemAnnotation]) {
+    public init(id: Int, context: Context, jid: JID, name: String?, subscription: RosterItemSubscription, groups: [String], ask: Bool, annotations: [RosterItemAnnotation]) {
         self.id = id;
+        self.context = context;
         super.init(jid: jid, name: name, subscription: subscription, groups: groups, ask: ask, annotations: annotations);
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id);
     }
         
 }

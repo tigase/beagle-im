@@ -42,7 +42,7 @@ class BaseChatCellView: NSTableCellView {
      
     func set(item: ConversationEntry) {
         cancellables.removeAll();
-        var timestampStr: NSMutableAttributedString? = nil;
+        //var timestampStr: NSMutableAttributedString? = nil;
 
         if let item = item as? ConversationEntryWithSender {
             if let avatar = self.avatar {
@@ -61,23 +61,24 @@ class BaseChatCellView: NSTableCellView {
                 }
             }
             
+            var timestampPrefix: String?;
             switch item.encryption {
             case .decrypted, .notForThisDevice, .decryptionFailed:
-                let secured = NSMutableAttributedString(string: "\u{1F512}");
-                if timestampStr != nil {
-                    timestampStr?.append(secured);
-                } else {
-                    timestampStr = secured;
-                }
+                timestampPrefix = "\u{1F512} ";
             default:
                 break;
             }
                
-            if timestampStr != nil {
-                timestampStr!.append(item.state == .outgoing_unsent ? NSAttributedString(string: " Unsent") : NSMutableAttributedString(string: " " + formatTimestamp(item.timestamp)));
-                self.timestamp?.attributedStringValue = timestampStr!;
-            } else {
-                self.timestamp?.attributedStringValue = item.state == .outgoing_unsent ? NSAttributedString(string: "Unsent") : NSMutableAttributedString(string: formatTimestamp(item.timestamp));
+            if item.state == .outgoing_unsent {
+                if let prefix = timestampPrefix {
+                    timestampPrefix = "\(prefix) Unsent";
+                } else {
+                    timestampPrefix = "Unsent"
+                }
+            }
+            if let timestampView = self.timestamp {
+                let timestamp = item.timestamp;
+                CurrentTimePublisher.publisher.map({ now in BaseChatCellView.formatTimestamp(timestamp, now, prefix: timestampPrefix) }).assign(to: \.stringValue, on: timestampView).store(in: &cancellables);
             }
 
             switch item.state {
@@ -96,7 +97,10 @@ class BaseChatCellView: NSTableCellView {
         } else {
             self.senderName?.stringValue = "";
             self.avatar?.image = nil;
-            self.timestamp?.attributedStringValue = NSMutableAttributedString(string: formatTimestamp(item.timestamp));
+            if let timestampView = self.timestamp {
+                let timestamp = item.timestamp;
+                CurrentTimePublisher.publisher.map({ now in BaseChatCellView.formatTimestamp(timestamp, now, prefix: nil) }).assign(to: \.stringValue, on: timestampView).store(in: &cancellables);
+            }
             self.state?.stringValue = "";
         }
         
@@ -105,17 +109,32 @@ class BaseChatCellView: NSTableCellView {
         self.direction = (item as? ConversationEntryWithSender)?.state.direction ?? .incoming;
     }
     
+    static func formatTimestamp(_ ts: Date, _ now: Date, prefix: String?) -> String {
+        let timestamp = formatTimestamp(ts, now);
+        if let prefix = prefix {
+            return "\(prefix) \(timestamp)";
+        } else {
+            return timestamp;
+        }
+    }
+    
     func prepareTooltip(item: ConversationEntry) -> String {
         return BaseChatCellView.tooltipFormatter.string(from: item.timestamp);
     }
     
-    func formatTimestamp(_ ts: Date) -> String {
-        let flags: Set<Calendar.Component> = [.day, .year];
-        let components = Calendar.current.dateComponents(flags, from: ts, to: Date());
-        if (components.day! == 1) {
-            return "Yesterday";
-        } else if (components.day! < 1) {
-            return BaseChatCellView.todaysFormatter.string(from: ts);
+    private static let relativeForamtter: RelativeDateTimeFormatter = {
+        let formatter = RelativeDateTimeFormatter();
+        formatter.dateTimeStyle = .named;
+        formatter.unitsStyle = .short;
+        return formatter;
+    }();
+
+    private static func formatTimestamp(_ ts: Date, _ now: Date) -> String {
+        let flags: Set<Calendar.Component> = [.minute, .hour, .day, .year];
+        var components = Calendar.current.dateComponents(flags, from: now, to: ts);
+        if (components.day! >= -1) {
+            components.second = 0;
+            return relativeForamtter.localizedString(from: components);
         }
         if (components.year! != 0) {
             return BaseChatCellView.fullFormatter.string(from: ts);
@@ -123,7 +142,7 @@ class BaseChatCellView: NSTableCellView {
             return BaseChatCellView.defaultFormatter.string(from: ts);
         }
     }
-    
+
     override func layout() {
         if !ignoreAlternativeRowColoring && Settings.alternateMessageColoringBasedOnDirection.bool() {
             if let direction = self.direction {

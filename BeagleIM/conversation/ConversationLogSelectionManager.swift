@@ -39,6 +39,13 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         return Set(selectedItems.map({ $0.entry.sender.nickname })).count == 1;
     }
     
+    deinit {
+        if let monitor = mouseMonitor {
+            NSEvent.removeMonitor(monitor);
+        }
+        mouseMonitor = nil;
+    }
+    
     func initilizeHandlers(controller: AbstractConversationLogController) {
         self.controller = controller;
         (self.controller?.tableView as? ChatViewTableView)?.mouseDelegate = self;

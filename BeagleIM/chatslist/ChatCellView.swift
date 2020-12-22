@@ -72,7 +72,7 @@ class ChatCellView: NSTableCellView {
         self.avatar?.name = name;
     }
     
-    func set(lastActivity: LastChatActivity?, ts: Date?, chatState: ChatState, account: BareJID) {
+    func set(lastActivity: LastChatActivity?, chatState: ChatState, account: BareJID) {
         self.chatState = chatState;
         if chatState != .composing {
             self.lastMessage?.stopAnimating();
@@ -146,7 +146,6 @@ class ChatCellView: NSTableCellView {
             self.lastMessage?.startAnimating();
         }
         //self.lastMessage?.preferredMaxLayoutWidth = self.lastMessage!.frame.width;
-        self.lastMessageTs?.stringValue = ts != nil ? formatTimestamp(ts!) : "";
         self.lastMessage?.invalidateIntrinsicContentSize();
     }
     
@@ -171,20 +170,25 @@ class ChatCellView: NSTableCellView {
         }
     }
     
-    fileprivate func formatTimestamp(_ ts: Date) -> String {
-        let flags: Set<Calendar.Component> = [.day, .year];
-        let components = Calendar.current.dateComponents(flags, from: ts, to: Date());
-        if (components.day! == 1) {
-            return "Yesterday";
-        } else if (components.day! < 1) {
-            return ChatCellView.todaysFormatter.string(from: ts);
+    private static let relativeForamtter: RelativeDateTimeFormatter = {
+        let formatter = RelativeDateTimeFormatter();
+        formatter.dateTimeStyle = .named;
+        formatter.unitsStyle = .short;
+        return formatter;
+    }();
+    
+    private static func formatTimestamp(_ ts: Date, _ now: Date) -> String {
+        let flags: Set<Calendar.Component> = [.minute, .hour, .day, .year];
+        var components = Calendar.current.dateComponents(flags, from: now, to: ts);
+        if (components.day! >= -1) {
+            components.second = 0;
+            return relativeForamtter.localizedString(from: components);
         }
         if (components.year! != 0) {
             return ChatCellView.fullFormatter.string(from: ts);
         } else {
             return ChatCellView.defaultFormatter.string(from: ts);
         }
-        
     }
     
     private var cancellables: Set<AnyCancellable> = [];
@@ -193,19 +197,30 @@ class ChatCellView: NSTableCellView {
             cancellables.removeAll();
             conversation?.displayNamePublisher.assign(to: \.stringValue, on: label).store(in: &cancellables);
             conversation?.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: avatar).store(in: &cancellables);
-            conversation?.statusPublisher.assign(to: \.status, on: avatar).store(in: &cancellables);
-            conversation?.avatarPublisher.assign(to: \.avatar, on: avatar).store(in: &cancellables);
-            conversation?.unreadPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
+            avatar.displayableId = conversation;
+            conversation?.unreadPublisher.sink(receiveValue: { [weak self] value in
                 self?.set(unread: value);
             }).store(in: &cancellables);
+            conversation?.timestampPublisher.combineLatest(CurrentTimePublisher.publisher).map({ (value, now) in ChatCellView.formatTimestamp(value,now)}).assign(to: \.stringValue, on: lastMessageTs).store(in: &cancellables);
+            if let account = conversation?.account {
+                if let chat = conversation as? Chat {
+                    conversation?.lastActivityPublisher.combineLatest(chat.$remoteChatState.replaceNil(with: ChatState.active)).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (activity, chatState) in
+                        self?.set(lastActivity: activity, chatState: chatState, account: account);
+                    }).store(in: &cancellables);
+                } else {
+                    conversation?.lastActivityPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
+                        self?.set(lastActivity: value, chatState: .active, account: account);
+                    }).store(in: &cancellables);
+                }
+            }
         }
     }
     
-    func update(from item: ChatItemProtocol) {
+    func update(from item: ConversationItem) {
         conversation = item.chat;
         
 //        self.set(name: item.name);
-        self.set(lastActivity: item.lastActivity, ts: item.lastMessageTs, chatState: (item.chat as? Chat)?.remoteChatState ?? .active, account: item.chat.account);
+//        self.set(lastActivity: item.lastActivity, ts: item.lastMessageTs, chatState: (item.chat as? Chat)?.remoteChatState ?? .active, account: item.chat.account);
 
     }
 

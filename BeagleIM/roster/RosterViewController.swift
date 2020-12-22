@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import Combine
 
 class RosterViewController: NSViewController, NSTableViewDataSource, NSTableViewDelegate, NSTextFieldDelegate {
     
@@ -34,41 +35,67 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
     fileprivate var items: [Item] = [];
     fileprivate let dispatcher = QueueDispatcher(label: "roster_view");
     fileprivate var prevSelection = -1;
-    fileprivate var showOnlyOnline: Bool = true {
-        didSet {
-            guard showOnlyOnline != oldValue else {
-                return;
-            }
-            self.reloadData();
-            self.updateContactsFilterSelector();
-        }
-    }
+    @Published
+    private var showOnlyOnline: Bool = true;
     fileprivate var selectedStatus: StatusShow?;
+    
+    private var cancellables: Set<AnyCancellable> = [];
     
     override func viewDidLoad() {
         super.viewDidLoad();
         
         self.addContactButton.isEnabled = false;
         
-        NotificationCenter.default.addObserver(self, selector: #selector(contactPresenceChanged(_:)), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(rosterItemUpdated), name: DBRosterStore.ITEM_UPDATED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(serviceStatusChanged), name: XmppService.STATUS_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(avatarChanged), name: AvatarManager.AVATAR_CHANGED, object: nil);
-        
+
         self.contactsTableView.menu?.delegate = self;
         
         statusButton.setTitle(statusButton.itemTitle(at: 1));
         
         updateContactsFilterSelector();
-        
-        reloadData();
     }
     
     override func viewWillAppear() {
+        DBRosterStore.instance.$items.combineLatest($showOnlyOnline, PresenceStore.instance.$bestPresences).debounce(for: 0.1, scheduler: dispatcher.queue).sink(receiveValue: { [weak self] (items, available, presences) in
+            self?.update(items: Array(items), presences: presences, available: available);
+        }).store(in: &cancellables);
         super.viewWillAppear();
         self.statusUpdated(XmppService.instance.currentStatus);
     }
-   
+    
+    override func viewDidDisappear() {
+        super.viewDidDisappear();
+        cancellables.removeAll();
+    }
+    
+    private func update(items: [RosterItem], presences: [PresenceStore.Key: Presence], available: Bool) {
+        let oldItems = DispatchQueue.main.sync { self.items };
+        
+        var newItems = items.compactMap({ item -> Item? in
+            guard let account = item.context?.userBareJid else {
+                return nil;
+            }
+            
+            return Item(account: account, jid: item.jid.bareJid, name: item.name, status: presences[.init(account: account, jid: item.jid.bareJid)]?.show);
+        });
+        if available {
+            newItems = newItems.filter({ $0.status != nil });
+        }
+        newItems.sort();
+        
+        let diff = newItems.calculateChanges(from: oldItems);
+        
+        DispatchQueue.main.async {
+            self.items = newItems;
+            if !diff.removed.isEmpty {
+                self.contactsTableView.removeRows(at: diff.removed, withAnimation: .effectFade);
+            }
+            if !diff.inserted.isEmpty {
+                self.contactsTableView.insertRows(at: diff.inserted, withAnimation: .effectFade);
+            }
+        }
+    }
+       
     func updateContactsFilterSelector() {
         contactsFilterSelector?.setSelected(true, forSegment: self.showOnlyOnline ? 1 : 0);
     }
@@ -183,20 +210,6 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
         }
     }
     
-    func reloadData() {
-        XmppService.instance.clients.values.forEach { client in
-            guard let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID) else {
-                return;
-            }
-            
-            let account = client.sessionObject.userBareJid!;
-            
-            for ri in DBRosterStore.instance.items(for: account) {
-                self.updateItem(for: ri.jid.bareJid, on: account, name: ri.name, status: presenceModule.store.getBestPresence(for: ri.jid.bareJid)?.show);
-            }
-        }
-    }
-    
     func numberOfRows(in tableView: NSTableView) -> Int {
         return items.count;
     }
@@ -243,182 +256,20 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
         return view;
     }
     
-    @objc func avatarChanged(_ notification: Notification) {
-        guard let account = notification.userInfo?["account"] as? BareJID, let jid = notification.userInfo?["jid"] as? BareJID else {
-            return;
+    struct Item: Hashable, Comparable {
+        static func < (lhs: RosterViewController.Item, rhs: RosterViewController.Item) -> Bool {
+            return lhs.displayName.lowercased() < rhs.displayName.lowercased();
         }
         
-        dispatcher.async {
-            let items = DispatchQueue.main.sync { return self.items };
-            
-            guard let currIdx = items.firstIndex(where: { i -> Bool in
-                return i.jid == jid && i.account == account;
-            }) else {
-                return;
-            }
-            
-            DispatchQueue.main.async {
-                self.contactsTableView.reloadData(forRowIndexes: IndexSet(integer: currIdx), columnIndexes: IndexSet(integer: 0));
-            }
-        }
-    }
-    
-    @objc func contactPresenceChanged(_ notification: Notification) {
-        guard let e = notification.object as? PresenceModule.ContactPresenceChanged else {
-            return;
-        }
-        
-        guard let from = e.presence.from?.bareJid, let account = e.sessionObject.userBareJid else {
-            return;
-        }
-        
-        updateItem(for: from, on: account, rosterItem: nil, presence: e.presence);
-    }
-
-    @objc func rosterItemUpdated(_ notification: Notification) {
-        guard let e = notification.object as? RosterModule.ItemUpdatedEvent else {
-            return;
-        }
-        
-        guard let account = e.sessionObject.userBareJid, let ri = e.rosterItem else {
-            return;
-        }
-        
-        guard e.action != .removed else {
-            self.removeItem(for: ri.jid.bareJid, on: account);
-            return;
-        }
-        
-        self.updateItem(for: ri.jid.bareJid, on: account, rosterItem: ri, presence: nil);
-    }
-    
-    fileprivate func updateItem(for jid: BareJID, on account: BareJID, rosterItem: RosterItemProtocol?, presence: Presence?) {
-        dispatcher.async {
-            if rosterItem == nil || presence == nil {
-                guard let client = XmppService.instance.getClient(for: account) else {
-                    self.removeItem(for: jid, on: account);
-                    return;
-                }
-                guard let ri = rosterItem ?? DBRosterStore.instance.item(for: client, jid: JID(jid)) else {
-                    self.removeItem(for: jid, on: account);
-                    return;
-                }
-                let p = presence ?? client.presenceStore?.getBestPresence(for: jid);
-                self.updateItem(for: jid, on: account, name: ri.name, status: p?.show);
-            } else {
-                self.updateItem(for: jid, on: account, name: rosterItem!.name, status: presence!.show);
-            }
-        }
-    }
-    
-    fileprivate func updateItem(for jid: BareJID, on account: BareJID, name: String?, status: Presence.Show?) {
-        dispatcher.async {
-            var items = DispatchQueue.main.sync { return self.items };
-            
-            guard let currIdx = items.firstIndex(where: { i -> Bool in
-                return i.jid == jid && i.account == account;
-            }) else {
-                guard !self.showOnlyOnline || status != nil else {
-                    return;
-                }
-
-                let idx = self.findPositionForName(items: items, jid: jid, name: name);
-                items.insert(Item(account: account, jid: jid, name: name, status: status), at: idx);
-                
-                print("for name:", name ?? jid.stringValue, "inserting in:", items.map { i in i.name ?? i.jid.stringValue}, "at:", idx);
-
-                DispatchQueue.main.async {
-                    self.items = items;
-                    self.contactsTableView.insertRows(at: IndexSet(integer: idx), withAnimation: .slideLeft);
-                }
-
-                return;
-            }
-            
-            guard !self.showOnlyOnline || status != nil else {
-                items.remove(at: currIdx);
-                
-                DispatchQueue.main.async {
-                    self.items = items;
-                    self.contactsTableView.removeRows(at: IndexSet(integer: currIdx), withAnimation: .slideRight);
-                }
-                return;
-            }
-
-            let item = items[currIdx];
-            
-            if (name ?? "") == (item.name ?? "") {
-            //if (name == nil && item.name == nil) || (name != nil && name! == item.name!) {
-                // here we are not changing position
-                item.status = status;
-                
-                DispatchQueue.main.async {
-                    self.contactsTableView.reloadData(forRowIndexes: IndexSet(integer: currIdx), columnIndexes: IndexSet(integer: 0));
-                }
-            } else {
-                // we need to change position
-                items.remove(at: currIdx);
-                
-                item.status = status;
-                item.name = name;
-                
-                let newIdx = self.findPositionForName(items: items, jid: item.jid, name: item.name);
-                
-                items.insert(item, at: newIdx);
-                
-                DispatchQueue.main.async {
-                    self.contactsTableView.reloadData(forRowIndexes: IndexSet(integer: currIdx), columnIndexes: IndexSet(integer: 0));
-                    self.items = items;
-                    self.contactsTableView.moveRow(at: currIdx, to: newIdx);
-                }
-            }
-        }
-    }
-    
-    fileprivate func removeItem(for jid: BareJID, on account: BareJID) {
-        dispatcher.async {
-            var items = DispatchQueue.main.sync { return self.items; };
-            guard let currIdx = items.firstIndex(where: { i -> Bool in
-                return i.jid == jid && i.account == account;
-            }) else {
-                return;
-            }
-            items.remove(at: currIdx);
-            
-            DispatchQueue.main.async {
-                self.items = items;
-                self.contactsTableView.removeRows(at: IndexSet(integer: currIdx), withAnimation: .slideRight);
-            }
-        }
-    }
-    
-    func findPositionForName(items: [Item], jid: BareJID, name: String?) -> Int {
-        let newName = name ?? jid.stringValue;
-        return items.firstIndex(where: { (i) -> Bool in
-            let n = i.name ?? i.jid.stringValue;
-            switch newName.localizedCaseInsensitiveCompare(n) {
-            case .orderedDescending:
-                return false;
-            case .orderedAscending:
-                return true;
-            case .orderedSame:
-                return false;
-            }
-        }) ?? items.count;
-    }
-    
-    class Item {
         let account: BareJID;
         let jid: BareJID;
-        var name: String?;
+        var displayName: String;
         var status: Presence.Show?;
-        
-        
-        
+                
         init(account: BareJID, jid: BareJID, name: String?, status: Presence.Show?) {
             self.account = account;
             self.jid = jid;
-            self.name = name;
+            self.displayName = name ?? jid.stringValue;
             self.status = status;
         }
     }
@@ -516,57 +367,53 @@ class RosterRowView: NSTableRowView {
     }
 }
 
+import Combine
+
 class RosterContactView: NSTableCellView {
     
     @IBOutlet var avatar: AvatarViewWithStatus!;
     @IBOutlet var nameAndStatus: NSTextField!;
+    
+    private var cancellables: Set<AnyCancellable> = [];
+    private var contact: Contact? {
+        didSet {
+            cancellables.removeAll();
+            if let contact = contact {
+                contact.$displayName.combineLatest(contact.$description, $hasDarkBackground.removeDuplicates(), { (name, status, hasDarkBackground) -> NSMutableAttributedString in
+                    let label = NSMutableAttributedString(string: name, attributes: [NSAttributedString.Key.font: NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium), NSAttributedString.Key.foregroundColor: (hasDarkBackground ? NSColor.alternateSelectedControlTextColor : NSColor.textColor)]);
+                    if let status = status {
+                        label.append(NSAttributedString(string: "\n"));
+                        label.append(NSAttributedString(string: status, attributes: [NSAttributedString.Key.font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize), NSAttributedString.Key.foregroundColor: NSColor.secondaryLabelColor]));
+                    }
+                    return label;
+                }).assign(to: \.attributedStringValue, on: nameAndStatus).store(in: &cancellables);
+            }
+            avatar.displayableId = contact;
+        }
+    }
     
     fileprivate var item: RosterViewController.Item!;
     
     var selectedBackgroundColor: NSColor? {
         didSet {
             avatar.backgroundColor = selectedBackgroundColor ?? backgroundColor;
-            self.refresh();
+            self.hasDarkBackground = self.selectedBackgroundColor != nil && self.selectedBackgroundColor! == NSColor.alternateSelectedControlColor;
         }
     }
     
     var backgroundColor: NSColor? {
         didSet {
             avatar.backgroundColor = selectedBackgroundColor ?? backgroundColor;
-            self.refresh();
+            self.hasDarkBackground = self.selectedBackgroundColor != nil && self.selectedBackgroundColor! == NSColor.alternateSelectedControlColor;
         }
     }
     
     func update(with item: RosterViewController.Item) {
         self.item = item;
-        avatar.update(for: item.jid, on: item.account);
-        self.refresh();
+        self.contact = ContactManager.instance.contact(for: .init(account: item.account, jid: item.jid, type: .buddy));
     }
     
-    func refresh() {
-        guard item != nil, let modulesManager = XmppService.instance.getClient(for: self.item.account)?.modulesManager else {
-            return;
-        }
-        
-        guard let presenceModule: PresenceModule = modulesManager.getModule(PresenceModule.ID) else {
-            return;
-        }
-        
-        let name = self.item.name ?? self.item.jid.stringValue;
-        
-        let darkBackground = self.selectedBackgroundColor != nil && self.selectedBackgroundColor! == NSColor.alternateSelectedControlColor;//self.backgroundStyle == .dark;
-        
-        let label = NSMutableAttributedString(string: name, attributes: [NSAttributedString.Key.font: NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium), NSAttributedString.Key.foregroundColor: (darkBackground ? NSColor.alternateSelectedControlTextColor : NSColor.textColor)]);
-        
-        avatar.name = name;
-        
-        let status = presenceModule.store.getBestPresence(for: self.item.jid)?.status;
-        if status != nil && !status!.isEmpty {
-            label.append(NSAttributedString(string: "\n"));
-//            label.append(NSAttributedString(string: status!, attributes: [NSAttributedString.Key.font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize), NSAttributedString.Key.foregroundColor: (darkBackground ? NSColor.lightGray : NSColor.darkGray)]));
-            label.append(NSAttributedString(string: status!, attributes: [NSAttributedString.Key.font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize), NSAttributedString.Key.foregroundColor: NSColor.secondaryLabelColor]));
-        }
-        
-        nameAndStatus.attributedStringValue = label;
-    }
+    @Published
+    var hasDarkBackground: Bool = false;
+    
 }

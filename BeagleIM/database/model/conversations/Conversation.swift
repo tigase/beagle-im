@@ -25,7 +25,7 @@ import TigaseSwift
 import Combine
 
 public protocol Conversation: ConversationProtocol, ConversationKey, DisplayableIdProtocol {
-    
+        
     var status: Presence.Show? { get }
     var statusPublisher: Published<Presence.Show?>.Publisher { get }
     
@@ -34,9 +34,11 @@ public protocol Conversation: ConversationProtocol, ConversationKey, Displayable
     
     var id: Int { get }
     var timestamp: Date { get }
+    var timestampPublisher: Published<Date>.Publisher { get }
     var unread: Int { get }
     var unreadPublisher: Published<Int>.Publisher { get }
     var lastActivity: LastConversationActivity? { get }
+    var lastActivityPublisher: Published<LastConversationActivity?>.Publisher { get }
     
     var notifications: ConversationNotification { get }
     

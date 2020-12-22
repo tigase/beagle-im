@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import Combine
 
 class AvatarViewWithStatus: NSView {
 
@@ -59,6 +60,16 @@ class AvatarViewWithStatus: NSView {
         }
     }
     
+    private var cancellables: Set<AnyCancellable> = [];
+    
+    var displayableId: DisplayableIdProtocol? {
+        didSet {
+            cancellables.removeAll();
+            displayableId?.avatarPublisher.assign(to: \.image, on: avatarView).store(in: &cancellables);
+            displayableId?.statusPublisher.assign(to: \.status, on: statusView).store(in: &cancellables);
+        }
+    }
+    
     var backgroundColor: NSColor? {
         didSet {
             statusView.backgroundColor = backgroundColor;
@@ -84,29 +95,6 @@ class AvatarViewWithStatus: NSView {
     required init?(coder: NSCoder) {
         super.init(coder: coder);
         initSubviews();
-    }
-    
-    func update(for jid: BareJID, on account: BareJID, orDefault: NSImage? = nil) {
-        self.avatar = AvatarManager.instance.avatar(for: jid, on: account) ?? orDefault;
-        if jid == account {
-            if let status = XmppService.instance.getClient(for: account)?.state {
-                switch status {
-                case .connected:
-                    self.status = .online;
-                case .connecting:
-                    self.status = .away;
-                default:
-                    self.status = .none;
-                }
-            } else {
-                self.status = .none;
-            }
-        } else {
-            let client = XmppService.instance.getClient(for: account);
-            let presenceModule: PresenceModule? = client?.modulesManager.getModule(PresenceModule.ID);
-            self.statusView.blocked = client != nil && BlockedEventHandler.isBlocked(JID(jid), on: client!);
-            self.status = presenceModule?.store.getBestPresence(for: jid)?.show;
-        }
     }
     
     fileprivate func initSubviews() {

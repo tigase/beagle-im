@@ -22,104 +22,12 @@
 import AppKit
 import TigaseSwift
 
-class AbstractChatItem: ChatItemProtocol {
-    
-    let chat: Conversation;
-    
-    var name: String;
-    var lastActivity: LastChatActivity? {
-        return chat.lastActivity;
-    }
-    var lastMessageTs: Date {
-        return chat.timestamp;
-    }
-    var unread: Int {
-        return chat.unread;
-    }
-    
-    init(chat: Conversation, name: String) {
-        self.chat = chat;
-        self.name = name;
-    }
-}
-
-class ChatItem: AbstractChatItem {
-    
-    let isInRoster: Bool;
-    
-    init(chat: Conversation) {
-        if let rosterItem = DBRosterStore.instance.item(for: chat.account, jid: JID(chat.jid)) {
-            isInRoster = true;
-            super.init(chat: chat, name: rosterItem.name ?? chat.jid.stringValue);
-        } else {
-            isInRoster = false;
-            super.init(chat: chat, name: chat.jid.stringValue);
-        }
-    }
-}
-
-class GroupchatItem: AbstractChatItem {
-
-   override var name: String {
-        get {
-            return (self.chat as? Channel)?.name ?? super.name;
-        }
-        set {
-            super.name = newValue;
-        }
-    }
-    
-    init(chat: Conversation) {
-        super.init(chat: chat, name: (chat as? Room)?.name ?? chat.jid.stringValue);
-    }
-    
-}
-
-class UnifiedChatItem: AbstractChatItem {
-    
-    let isInRoster: Bool;
-    
-    override var name: String {
-         get {
-             return (self.chat as? Channel)?.name ?? super.name;
-         }
-         set {
-             super.name = newValue;
-         }
-     }
-
-    init(chat: Conversation) {
-        var name = chat.jid.stringValue;
-        switch chat {
-        case let c as Chat:
-            if let rosterItem = DBRosterStore.instance.item(for: c.account, jid: JID(c.jid)) {
-                isInRoster = true;
-                if let value = rosterItem.name, !value.isEmpty {
-                    name = value;
-                }
-            } else {
-                isInRoster = false;
-            }
-        case let c as Room:
-            isInRoster = true;
-            if let value = c.name, !value.isEmpty {
-                name = value;
-            }
-        case let c as Channel:
-            isInRoster = true;
-            if let value = c.name, !value.isEmpty {
-                name = value;
-            }
-        default:
-            isInRoster = false;
-        }
-        super.init(chat: chat, name: name);
-    }
-
-}
-
 protocol ChatsListViewDataSourceDelegate: class {
     
+    func beginUpdates()
+    
+    func endUpdates()
+
     func itemsInserted(at: IndexSet, inParent: Any?);
     
     func itemsRemoved(at: IndexSet, inParent: Any?);
@@ -143,14 +51,12 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     var invitationGroup: InvitationGroup?;
 
     override func viewDidLoad() {
-//        self.groups = [ChatsListGroupGroupchat(delegate: self), ChatsListGroupChat(delegate: self), ChatsListGroupChatUnknown(delegate: self)];
         self.groups = Settings.commonChatsList.bool() ? [ChatsListGroupCommon(delegate: self), ChatsListGroupChatUnknown(delegate: self)] : [ChatsListGroupGroupchat(delegate: self), ChatsListGroupChat(delegate: self), ChatsListGroupChatUnknown(delegate: self)];
         self.invitationGroup = InvitationGroup(delegate: self);
         if !InvitationManager.instance.items.isEmpty {
             self.groups.insert(invitationGroup!, at: 0);
         }
         outlineView.reloadData();
-//        outlineView.expandItem(nil, expandChildren: true);
         
         NotificationCenter.default.addObserver(self, selector: #selector(chatSelected), name: ChatsListViewController.CHAT_SELECTED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(closeSelectedChat), name: ChatsListViewController.CLOSE_SELECTED_CHAT, object: nil);
@@ -191,6 +97,14 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         outlineView.reloadData();
     }
     
+    func beginUpdates() {
+        outlineView.beginUpdates();
+    }
+    
+    func endUpdates() {
+        outlineView.endUpdates();
+    }
+    
     func itemsInserted(at: IndexSet, inParent: Any?) {
         outlineView.insertItems(at: at, inParent: inParent, withAnimation: .slideLeft);
     }
@@ -213,7 +127,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
             }
             let view = outlineView.view(atColumn: 0, row: row, makeIfNecessary: false);
             // maybe we should update view?
-            if let v = view as? ChatCellView, let i = item as? ChatItemProtocol {
+            if let v = view as? ChatCellView, let i = item as? ConversationItem {
                 v.update(from: i);
             }
         }
@@ -263,7 +177,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         print("closing chats for: \(self.outlineView.selectedRowIndexes)");
         let toClose = self.outlineView.selectedRowIndexes;
         toClose.forEach { (row) in
-            guard let item = self.outlineView.item(atRow: row) as? ChatItemProtocol else {
+            guard let item = self.outlineView.item(atRow: row) as? ConversationItem else {
                 return;
             }
             
@@ -377,16 +291,10 @@ extension ChatsListViewController: NSOutlineViewDelegate {
             }
             return false;
         }
-        if item is ChatItem {
-            return true;
-        }
-        if item is GroupchatItem {
+        if item is ConversationItem {
             return true;
         }
         if item is InvitationItem {
-            return true;
-        }
-        if item is UnifiedChatItem {
             return true;
         }
         return false;
@@ -409,15 +317,15 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         print("selected row:", selected);
         let item = self.outlineView.selectedRowIndexes.count == 1 ? self.outlineView.item(atRow: selected) : nil;
         if let splitController = self.outlineView.window?.contentViewController as? NSSplitViewController {
-            if let conversation = (item as? AbstractChatItem)?.chat {
+            if let conversation = (item as? ConversationItem)?.chat {
                 let controller = self.conversationController(for: conversation);
                 if let conversationController = controller as? AbstractChatViewController {
                     conversationController.conversation = conversation;
                     _ = conversationController.view;
                     if let msgId = self.scrollChatToMessageWithId {
-                        conversationController.dataSource.loadItems(.with(id: msgId, overhead: 100));
+                        conversationController.dataSource.loadItems(.with(id: msgId, overhead: conversationController.dataSource.defaultPageSize));
                     } else {
-                        conversationController.dataSource.loadItems(.unread(overhead: 100));
+                        conversationController.dataSource.loadItems(.unread(overhead: conversationController.dataSource.defaultPageSize));
                     }
                 }
 
@@ -450,7 +358,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         }
     }
     
-    private func conversationController(for conversation: Conversation) -> NSViewController {
+    private func conversationController(for conversation: Any) -> NSViewController {
         switch conversation {
         case is Chat:
             return self.storyboard!.instantiateController(withIdentifier: "ChatViewController") as! ChatViewController;
@@ -480,7 +388,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 button.isHidden = !group.canOpenChat;
             }
             return view;
-        } else if let chat = item as? ChatItemProtocol {
+        } else if let chat = item as? ConversationItem {
             let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("ChatCell"), owner: nil) as? ChatCellView;
             view?.avatar.backgroundColor = NSColor(named: "sidebarBackgroundColor");
             view?.update(from: chat);
@@ -503,7 +411,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         return nil;
     }
         
-    func close(chat: ChatItemProtocol) {
+    func close(chat: ConversationItem) {
         switch chat.chat {
         case let c as Chat:
             DBChatStore.instance.close(chat: c);

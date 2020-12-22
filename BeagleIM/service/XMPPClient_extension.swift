@@ -35,13 +35,4 @@ extension XMPPClient {
         }
     }
     
-    var presenceStore: PresenceStore? {
-        get {
-            guard let presenceModule: PresenceModule = modulesManager.getModule(PresenceModule.ID) else {
-                return nil;
-            }
-            return presenceModule.store;
-        }
-    }
-    
 }

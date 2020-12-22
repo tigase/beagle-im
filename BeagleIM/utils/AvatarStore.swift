@@ -132,7 +132,11 @@ class AvatarStore {
             }
         }
     }
-    
+ 
+    public class AvatarData {
+        @Published
+        var image: NSImage?;
+    }
 }
 
 public struct AvatarHash: Comparable, Equatable {

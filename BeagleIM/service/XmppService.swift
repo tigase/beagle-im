@@ -22,6 +22,7 @@
 import AppKit
 import TigaseSwift
 import TigaseSwiftOMEMO
+import Combine
 
 class XmppService: EventHandler {
     
@@ -130,7 +131,8 @@ class XmppService: EventHandler {
             if let client = self.initializeClient(jid: accountName) {
                 print("XMPP client for account", accountName, "initialized!");
                 //clients[accountName] = client;
-                _ = self.register(client: client, for: accountName);
+                let account = AccountManager.getAccount(for: accountName)!;
+                _ = self.register(client: client, for: account);
             }
         }
         
@@ -276,6 +278,12 @@ class XmppService: EventHandler {
         }
     }
 
+    private var clientCancellables: [BareJID:AnyCancellable] = [:] {
+        didSet {
+            print("updated client cancellables to:", clientCancellables);
+        }
+    }
+    
     @objc func accountChanged(_ notification: Notification) {
         guard let account = notification.object as? AccountManager.Account else {
             return;
@@ -301,7 +309,8 @@ class XmppService: EventHandler {
                 client.connectionConfiguration.credentials = .password(password: account.password!, authenticationName: nil, cache: nil);
                 client.disconnect();
             } else {
-                let client = self.register(client: self.initializeClient(jid: account.name)!, for: account.name);
+                let client = self.register(client: self.initializeClient(jid: account.name)!, for: account);
+
                 if self.isNetworkAvailable {
                     DispatchQueue.global().async {
                         self.connect(client: client);
@@ -343,6 +352,8 @@ class XmppService: EventHandler {
                 return;
             }
 
+            self.clientCancellables.removeValue(forKey: accountName);
+            
             client.eventBus.unregister(handler: self, for: self.observedEvents);
             self.eventHandlers.forEach { handler in
                 client.eventBus.unregister(handler: handler, for: handler.events);
@@ -390,7 +401,6 @@ class XmppService: EventHandler {
         _ = client.modulesManager.register(PingModule());
         _ = client.modulesManager.register(BlockingCommandModule());
         
-        client.modulesManager.register(CapabilitiesModule(cache: DBCapabilitiesCache.instance, additionalFeatures: [.lastMessageCorrection, .messageRetraction]));
         _ = client.modulesManager.register(PubSubModule());
         _ = client.modulesManager.register(PEPUserAvatarModule());
         _ = client.modulesManager.register(PEPBookmarksModule());
@@ -406,8 +416,9 @@ class XmppService: EventHandler {
         
         _ = client.modulesManager.register(RosterModule(rosterManager: RosterManagerBase(store: DBRosterStore.instance)));
         
-        _ = client.modulesManager.register(PresenceModule());
-        
+        _ = client.modulesManager.register(PresenceModule(store: PresenceStore.instance));
+        client.modulesManager.register(CapabilitiesModule(cache: DBCapabilitiesCache.instance, additionalFeatures: [.lastMessageCorrection, .messageRetraction]));
+
         client.modulesManager.register(MucModule(roomManager: RoomManagerBase(store: DBChatStore.instance)));
                                            
         client.modulesManager.register(MixModule(channelManager: ChannelManagerBase(store: DBChatStore.instance)));
@@ -432,14 +443,16 @@ class XmppService: EventHandler {
         return client;
     }
 
-    fileprivate func register(client: XMPPClient, for account: BareJID) -> XMPPClient {
+    fileprivate func register(client: XMPPClient, for account: AccountManager.Account) -> XMPPClient {
         return dispatcher.sync {
+            clientCancellables[account.name] = client.$state.subscribe(account.state);
+
             client.eventBus.register(handler: self, for: observedEvents);
             eventHandlers.forEach { handler in
                 client.eventBus.register(handler: handler, for: handler.events);
             }
         
-            self._clients[account] = client;
+            self._clients[account.name] = client;
             return client;
         }
     }

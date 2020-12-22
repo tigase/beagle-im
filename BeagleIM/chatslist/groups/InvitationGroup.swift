@@ -49,11 +49,11 @@ class InvitationGroup: ChatsListGroupProtocol {
         return items[at];
     }
     
-    func forChat(_ chat: Conversation, execute: @escaping (ChatItemProtocol) -> Void) {
+    func forChat(_ chat: Conversation, execute: @escaping (ConversationItem) -> Void) {
         // nothing to do...
     }
     
-    func forChat(account: BareJID, jid: BareJID, execute: @escaping (ChatItemProtocol) -> Void) {
+    func forChat(account: BareJID, jid: BareJID, execute: @escaping (ConversationItem) -> Void) {
         // nothing to do..
     }
     

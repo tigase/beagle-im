@@ -34,4 +34,6 @@ public protocol DisplayableIdProtocol {
     
     var avatarPublisher: AnyPublisher<NSImage?,Never> { get }
     
+    var description: String? { get }
+    var descriptionPublisher: Published<String?>.Publisher { get }
 }

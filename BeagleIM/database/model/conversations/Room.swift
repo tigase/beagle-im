@@ -24,24 +24,19 @@ import TigaseSwift
 import AppKit
 import Combine
 
-public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
+public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conversation {
         
     open override var defaultMessageType: StanzaType {
         return .groupchat;
     }
 
     private let occupantsStore = RoomOccupantsStoreBase();
-
-    @Published
-    public var status: Presence.Show? = nil;
-    public var statusPublisher: Published<Presence.Show?>.Publisher {
-        return $status;
-    }
     
     public var occupantsPublisher: AnyPublisher<[MucOccupant], Never> {
         return occupantsStore.occupantsPublisher;
     }
     
+    private let displayable: RoomDisplayableId;
     @Published
     public var role: MucRole = .none;
     @Published
@@ -52,22 +47,30 @@ public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
             switch state {
             case .joined:
                 DispatchQueue.main.async {
-                    self.status = .online;
+                    self.displayable.status = .online;
                 }
             case .requested:
                 DispatchQueue.main.async {
-                    self.status = .away;
+                    self.displayable.status = .away;
                 }
             default:
                 DispatchQueue.main.async {
-                    self.status = nil;
+                    self.displayable.status = nil;
                 }
             }
         }
     }
     
-    @Published
-    public var subject: String? = nil;
+    public var subject: String? {
+        get {
+            return displayable.description;
+        }
+        set {
+            DispatchQueue.main.async {
+                self.displayable.description = newValue;
+            }
+        }
+    }
     
     public var name: String? {
         return options.name;
@@ -80,20 +83,7 @@ public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
     public var password: String? {
         return options.password;
     }
-
-    @Published
-    public var displayName: String;
     
-    public var displayNamePublisher: Published<String>.Publisher {
-        return $displayName;
-    }
-    
-    public let avatar: Avatar;
-    
-    public var avatarPublisher: AnyPublisher<NSImage?, Never> {
-        return avatar.$avatar.replaceNil(with: AvatarManager.instance.defaultGroupchatAvatar).eraseToAnyPublisher();
-    }
-        
     public var automaticallyFetchPreviews: Bool {
         return true;
     }
@@ -102,10 +92,9 @@ public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
         return jid;
     }
 
-    override init(dispatcher: QueueDispatcher,context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: RoomOptions) {
-        displayName = options.name ?? jid.stringValue;
-        avatar = AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: jid, mucNickname: nil));
-        super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options);
+    init(dispatcher: QueueDispatcher,context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: RoomOptions) {
+        self.displayable = RoomDisplayableId(displayName: options.name ?? jid.stringValue, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: jid, mucNickname: nil)), description: nil);
+        super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
     }
 
     public var occupants: [MucOccupant] {
@@ -156,7 +145,7 @@ public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
     public override func updateOptions(_ fn: @escaping (inout RoomOptions) -> Void) {
         super.updateOptions(fn);
         DispatchQueue.main.async {
-            self.displayName = self.options.name ?? self.jid.stringValue;
+            self.displayable.displayName = self.options.name ?? self.jid.stringValue;
         }
     }
     
@@ -194,7 +183,40 @@ public class Room: ConversationBase<RoomOptions>, RoomProtocol, Conversation {
         DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing, sender: .occupant(nickname: self.options.nickname, jid: nil), recipient: .occupant(nickname: occupant.nickname), type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: text, encryption: .none, appendix: nil, linkPreviewAction: .auto, completionHandler: nil);
         self.send(message: message, completionHandler: nil);
     }
-    
+
+    private class RoomDisplayableId: DisplayableIdProtocol {
+        
+        @Published
+        var displayName: String
+        var displayNamePublisher: Published<String>.Publisher {
+            return $displayName;
+        }
+        
+        @Published
+        var status: Presence.Show?
+        var statusPublisher: Published<Presence.Show?>.Publisher {
+            return $status;
+        }
+        
+        @Published
+        var description: String?;
+        var descriptionPublisher: Published<String?>.Publisher {
+            return $description;
+        }
+        
+        let avatar: Avatar;
+        var avatarPublisher: AnyPublisher<NSImage?, Never> {
+            return avatar.$avatar.replaceNil(with: AvatarManager.instance.defaultGroupchatAvatar).eraseToAnyPublisher();
+        }
+        
+        init(displayName: String, status: Presence.Show?, avatar: Avatar, description: String?) {
+            self.displayName = displayName;
+            self.description = description;
+            self.status = status;
+            self.avatar = avatar;
+        }
+        
+    }
 }
 
 public struct RoomOptions: Codable, ChatOptionsProtocol, Equatable {

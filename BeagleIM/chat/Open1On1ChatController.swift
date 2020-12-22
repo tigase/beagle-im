@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import Combine
 
 class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableViewDataSource, NSTableViewDelegate {
  
@@ -215,13 +216,13 @@ class Open1On1ChatItemView: NSTableCellView {
     @IBOutlet var name: NSTextField!
     @IBOutlet var jid: NSTextField!
     @IBOutlet var account: NSTextField!
-    
+        
     func update(from item: Open1On1ChatController.Item) {
         self.avatar.backgroundColor = NSColor.textBackgroundColor;
         self.jid.stringValue = item.jid.stringValue;
         self.name.stringValue = item.name ?? "";
         self.account.stringValue = "using \(item.account)";
-        self.avatar.update(for: item.jid, on: item.account);
+        self.avatar.displayableId = ContactManager.instance.contact(for: .init(account: item.account, jid: item.jid, type: .buddy));
     }
     
 }

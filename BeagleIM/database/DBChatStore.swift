@@ -38,8 +38,8 @@ open class DBChatStore: ContextLifecycleAware {
 
     static let instance: DBChatStore = DBChatStore.init();
 
-    static let CHAT_OPENED = Notification.Name("CHAT_OPENED");
-    static let CHAT_CLOSED = Notification.Name("CHAT_CLOSED");
+//    static let CHAT_OPENED = Notification.Name("CHAT_OPENED");
+//    static let CHAT_CLOSED = Notification.Name("CHAT_CLOSED");
     static let CHAT_UPDATED = Notification.Name("CHAT_UPDATED");
 
     static let UNREAD_MESSAGES_COUNT_CHANGED = Notification.Name("UNREAD_NOTIFICATIONS_COUNT_CHANGED");
@@ -49,6 +49,10 @@ open class DBChatStore: ContextLifecycleAware {
 
     private var accountChats = [BareJID: AccountConversations]();
     
+    @Published
+    public private(set) var conversations: [Conversation] = [];
+    private let conversationsDispatcher = QueueDispatcher(label: "conversationsDispatcher");
+
     fileprivate(set) var unreadMessagesCount: Int = 0 {
         didSet {
             let value = self.unreadMessagesCount;
@@ -68,11 +72,11 @@ open class DBChatStore: ContextLifecycleAware {
         }
     }
 
-    public func conversations() -> [Conversation] {
-        return dispatcher.sync(execute: {
-            return accountChats.values;
-        }).flatMap({ $0.items });
-    }
+//    public func conversations() -> [Conversation] {
+//        return dispatcher.sync(execute: {
+//            return accountChats.values;
+//        }).flatMap({ $0.items });
+//    }
     
     public func conversations(for account: BareJID) -> [Conversation] {
         return dispatcher.sync(execute: {
@@ -100,7 +104,7 @@ open class DBChatStore: ContextLifecycleAware {
                 DBChatHistoryStore.instance.markAsRead(for: conversation, before: Date());
             }
 
-            NotificationCenter.default.post(name: DBChatStore.CHAT_CLOSED, object: conversation);
+//            NotificationCenter.default.post(name: DBChatStore.CHAT_CLOSED, object: conversation);
         }
                 
         return result;
@@ -113,8 +117,14 @@ open class DBChatStore: ContextLifecycleAware {
     public func createConversation<T: Conversation>(for account: BareJID, with jid: BareJID, execute: ()->Conversation) -> T? {
         if let conversation = dispatcher.sync(execute: {
             return accountChats[account];
-        })?.open(with: jid, execute: execute) as? T {
-            NotificationCenter.default.post(name: DBChatStore.CHAT_OPENED, object: conversation);
+        })?.open(with: jid, execute: {
+            let conversation = execute();
+            self.conversationDispatcher.async {
+                self.conversations.append(conversation);
+            }
+            return conversation;
+        }) as? T {
+//            NotificationCenter.default.post(name: DBChatStore.CHAT_OPENED, object: conversation);
             return conversation;
         }
         return nil;
@@ -179,6 +189,10 @@ open class DBChatStore: ContextLifecycleAware {
                             }
                         }
                     }
+                    self.conversationsDispatcher.sync {
+                        let items = self.conversations;
+                        self.conversations = items;
+                    }
                     NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: conversation);
                 }
             }
@@ -229,6 +243,9 @@ open class DBChatStore: ContextLifecycleAware {
     }
 
     private func destroy(conversation: Conversation) {
+        conversationsDispatcher.async {
+            self.conversations.removeAll(where: { $0 === conversation })
+        }
         try! Database.main.writer({ database in
             try database.delete(query: .chatDelete, params: ["id": conversation.id]);
         });
@@ -318,7 +335,11 @@ open class DBChatStore: ContextLifecycleAware {
                 if !self.isMuted(conversation: item) {
                     unread = unread + item.unread;
                 }
-                NotificationCenter.default.post(name: DBChatStore.CHAT_OPENED, object: item);
+//                NotificationCenter.default.post(name: DBChatStore.CHAT_OPENED, object: item);
+            }
+            let items = accountConversation.items;
+            self.conversationsDispatcher.async {
+                self.conversations.append(contentsOf: items);
             }
             if unread > 0 {
                 self.unreadMessagesCount = self.unreadMessagesCount + unread;
@@ -337,8 +358,14 @@ open class DBChatStore: ContextLifecycleAware {
                 if !self.isMuted(conversation: item) {
                     unread = unread + item.unread;
                 }
-                NotificationCenter.default.post(name: DBChatStore.CHAT_CLOSED, object: item);
+//                NotificationCenter.default.post(name: DBChatStore.CHAT_CLOSED, object: item);
             }
+            
+            let removed = accountChats.items;
+            self.conversationsDispatcher.async {
+                self.conversations.removeAll(where: { it in removed.contains(where: { it === $0 }) })
+            }
+            
             if unread > 0 {
                 self.unreadMessagesCount = self.unreadMessagesCount - unread;
             }

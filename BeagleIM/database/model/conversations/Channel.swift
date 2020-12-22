@@ -24,7 +24,7 @@ import TigaseSwift
 import AppKit
 import Combine
 
-public class Channel: ConversationBase<ChannelOptions>, ChannelProtocol, Conversation, LastMessageTimestampAware {
+public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtocol, Conversation, LastMessageTimestampAware {
     
     open override var defaultMessageType: StanzaType {
         return .groupchat;
@@ -68,30 +68,8 @@ public class Channel: ConversationBase<ChannelOptions>, ChannelProtocol, Convers
         return options.name;
     }
     
-    
-    @Published
-    public var status: Presence.Show? = nil;
-    public var statusPublisher: Published<Presence.Show?>.Publisher {
-        return $status;
-    }
-    
-    @Published
-    public var displayName: String;
-    public var displayNamePublisher: Published<String>.Publisher {
-        return $displayName;
-    }
-    
-    @Published
-    public var description: String?;
-    public var descriptionPublisher: Published<String?>.Publisher {
-        return $description;
-    }
-
-    public let avatar: Avatar;
-    public var avatarPublisher: AnyPublisher<NSImage?,Never> {
-        return avatar.$avatar.replaceNil(with: AvatarManager.instance.defaultGroupchatAvatar).eraseToAnyPublisher();
-    }
-
+    private let displayable: ChannelDisplayableId;
+        
     public var participantId: String {
         return options.participantId;
     }
@@ -126,10 +104,8 @@ public class Channel: ConversationBase<ChannelOptions>, ChannelProtocol, Convers
     private var cancellables: Set<AnyCancellable> = [];
 
     init(dispatcher: QueueDispatcher, context: Context, channelJid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: ChannelOptions) {
-        self.displayName = options.name ?? channelJid.stringValue;
-        self.description = options.description;
-        self.avatar = AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: channelJid, mucNickname: nil));
-        super.init(dispatcher: dispatcher, context: context, jid: channelJid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options);
+        self.displayable = ChannelDisplayableId(displayName: options.name ?? channelJid.stringValue, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: channelJid, mucNickname: nil)), description: options.description);
+        super.init(dispatcher: dispatcher, context: context, jid: channelJid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
         context.$state.sink(receiveValue: { [weak self] state in
             self?.connectionState = state;
         }).store(in: &cancellables);
@@ -138,8 +114,8 @@ public class Channel: ConversationBase<ChannelOptions>, ChannelProtocol, Convers
     public override func updateOptions(_ fn: @escaping (inout ChannelOptions) -> Void) {
         super.updateOptions(fn);
         DispatchQueue.main.async {
-            self.displayName = self.options.name ?? self.jid.stringValue;
-            self.description = self.options.description;
+            self.displayable.displayName = self.options.name ?? self.jid.stringValue;
+            self.displayable.description = self.options.description;
             self.updateState();
         }
     }
@@ -169,15 +145,49 @@ public class Channel: ConversationBase<ChannelOptions>, ChannelProtocol, Convers
     private func updateState() {
         switch self.options.state {
         case .left:
-            return self.status = nil;
+            return self.displayable.status = nil;
         case .joined:
             switch self.connectionState {
             case .connected:
-                self.status = .online;
+                self.displayable.status = .online;
             default:
-                self.status = nil;
+                self.displayable.status = nil;
             }
         }
+    }
+    
+    private class ChannelDisplayableId: DisplayableIdProtocol {
+        
+        @Published
+        var displayName: String
+        var displayNamePublisher: Published<String>.Publisher {
+            return $displayName;
+        }
+        
+        @Published
+        var status: Presence.Show?
+        var statusPublisher: Published<Presence.Show?>.Publisher {
+            return $status;
+        }
+        
+        @Published
+        var description: String?;
+        var descriptionPublisher: Published<String?>.Publisher {
+            return $description;
+        }
+        
+        let avatar: Avatar;
+        var avatarPublisher: AnyPublisher<NSImage?, Never> {
+            return avatar.$avatar.replaceNil(with: AvatarManager.instance.defaultGroupchatAvatar).eraseToAnyPublisher();
+        }
+        
+        init(displayName: String, status: Presence.Show?, avatar: Avatar, description: String?) {
+            self.displayName = displayName;
+            self.status = status;
+            self.description = description;
+            self.avatar = avatar;
+        }
+        
     }
 }
 

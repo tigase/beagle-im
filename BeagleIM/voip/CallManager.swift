@@ -279,7 +279,12 @@ class Call: NSObject {
     }
 
     func initiateOutgoingCall(completionHandler: @escaping (Result<Void,Error>)->Void) {
-        guard let client = XmppService.instance.getClient(for: account), let presences = client.presenceStore?.getPresences(for: jid)?.values, !presences.isEmpty else {
+        guard let client = XmppService.instance.getClient(for: account) else {
+            completionHandler(.failure(ErrorCondition.item_not_found));
+            return;
+        }
+        let presences = PresenceStore.instance.presences(for: jid, context: client);
+        guard !presences.isEmpty else {
             completionHandler(.failure(ErrorCondition.item_not_found));
             return;
         };

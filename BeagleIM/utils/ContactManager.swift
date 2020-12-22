@@ -86,6 +86,13 @@ public class ContactManager {
     public static let instance = ContactManager();
     
     private var items: [Contact.Key: Contact.Weak] = [:];
+    private var cancellables: Set<AnyCancellable> = [];
+    
+    public init() {
+        PresenceStore.instance.bestPresenceEvents.receive(on: dispatcher.queue).sink(receiveValue: { [weak self] event in
+            self?.update(presence: event.presence, for: .init(account: event.account, jid: event.jid, type: .buddy));
+        }).store(in: &cancellables);
+    }
     
     public func contact(for key: Contact.Key) -> Contact {
         return dispatcher.sync(execute: {
@@ -129,9 +136,9 @@ public class ContactManager {
     private func status(for key: Contact.Key) -> Presence.Show? {
         switch key.type {
         case .buddy:
-            return XmppService.instance.getClient(for: key.account)?.presenceStore?.getBestPresence(for: key.jid)?.show
+            return PresenceStore.instance.bestPresence(for: key.jid, on: key.account)?.show;
         case .participant(let id):
-            return XmppService.instance.getClient(for: key.account)?.presenceStore?.getBestPresence(for: BareJID(localPart: "\(id)#\(key.jid.localPart ?? "")", domain: key.jid.domain))?.show;
+            return PresenceStore.instance.bestPresence(for: BareJID(localPart: "\(id)#\(key.jid.localPart ?? "")", domain: key.jid.domain), on: key.account)?.show;
         case .occupant(let nickname):
             return (DBChatStore.instance.conversation(for: key.account, with: key.jid) as? Room)?.occupant(nickname: nickname)?.presence.show;
         }
