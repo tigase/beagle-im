@@ -146,7 +146,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                 return;
             }
             
-            let jid = e.action != MessageCarbonsModule.Action.received ? from : to;
+            let jid = e.action == MessageCarbonsModule.Action.received ? from : to;
             let conversation: ConversationKey = DBChatStore.instance.conversation(for: account, with: jid) ?? ConversationKeyItem(account: account, jid: jid);
                         
             DBChatHistoryStore.instance.append(for: conversation, message: e.message, source: .carbons(action: e.action));
