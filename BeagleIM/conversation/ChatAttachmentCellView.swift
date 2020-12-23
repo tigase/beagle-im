@@ -84,7 +84,7 @@ class ChatAttachmentCellView: BaseChatCellView {
                 
         let subviews = self.customView.subviews;
         subviews.forEach { (view) in
-            if #available(macOS 10.15, *), let it = view as? LPLinkViewPool.PoolableLPLinkView {
+            if let it = view as? LPLinkViewPool.PoolableLPLinkView {
                 LPLinkViewPool.instance.release(linkView: it)
             }
             view.removeFromSuperview();
@@ -100,57 +100,44 @@ class ChatAttachmentCellView: BaseChatCellView {
             self.downloadButton?.isHidden = true;
             self.actionButton?.isEnabled = true;
             self.actionButton?.isHidden = false;
-            if #available(macOS 10.15, *) {
-                var metadata = MetadataCache.instance.metadata(for: "\(item.id)");
+            var metadata = MetadataCache.instance.metadata(for: "\(item.id)");
 //                metadata?.videoProvider = nil;
-                var isNew = false;
+            var isNew = false;
 
-                if (metadata == nil) {
-                    metadata = LPLinkMetadata();
-                    metadata!.originalURL = localUrl;
-                    isNew = true;
-                }
+            if (metadata == nil) {
+                metadata = LPLinkMetadata();
+                metadata!.originalURL = localUrl;
+                isNew = true;
+            }
                 
-                let linkView = LPLinkViewPool.instance.acquire(url: localUrl);
+            let linkView = LPLinkViewPool.instance.acquire(url: localUrl);
                 
-                linkView.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
-                linkView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
-                linkView.translatesAutoresizingMaskIntoConstraints = false;
-                linkView.metadata = metadata!;
+            linkView.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
+            linkView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
+            linkView.translatesAutoresizingMaskIntoConstraints = false;
+            linkView.metadata = metadata!;
                 
-                self.customView.addSubview(linkView);
+            self.customView.addSubview(linkView);
 
-                NSLayoutConstraint.activate([
-                    linkView.topAnchor.constraint(equalTo: self.customView.topAnchor, constant: 0),
-                    linkView.bottomAnchor.constraint(equalTo: self.customView.bottomAnchor, constant: 0),
-                    linkView.leadingAnchor.constraint(equalTo: self.customView.leadingAnchor, constant: 0),
-                    linkView.trailingAnchor.constraint(equalTo: self.customView.trailingAnchor, constant: 0)
-                ]);
+            NSLayoutConstraint.activate([
+                linkView.topAnchor.constraint(equalTo: self.customView.topAnchor, constant: 0),
+                linkView.bottomAnchor.constraint(equalTo: self.customView.bottomAnchor, constant: 0),
+                linkView.leadingAnchor.constraint(equalTo: self.customView.leadingAnchor, constant: 0),
+                linkView.trailingAnchor.constraint(equalTo: self.customView.trailingAnchor, constant: 0)
+            ]);
                 
-                if isNew {
-                    MetadataCache.instance.generateMetadata(for: localUrl, withId: "\(item.id)", completionHandler: { [weak linkView] meta1 in
-                        guard let meta = meta1 else {
+            if isNew {
+                MetadataCache.instance.generateMetadata(for: localUrl, withId: "\(item.id)", completionHandler: { [weak linkView] meta1 in
+                    guard let meta = meta1 else {
+                        return;
+                    }
+                    DispatchQueue.main.async {
+                        guard let linkView = linkView, linkView.metadata.originalURL == localUrl else {
                             return;
                         }
-                        DispatchQueue.main.async {
-                            guard let linkView = linkView, linkView.metadata.originalURL == localUrl else {
-                                return;
-                            }
-                            linkView.metadata = meta;
-                        }
-                    })
-                }
-            } else {
-                let attachmentInfo = AttachmentInfoView(frame: .zero);
-                self.customView.addSubview(attachmentInfo);
-                attachmentInfo.cellView = self;
-                NSLayoutConstraint.activate([
-                    customView.leadingAnchor.constraint(equalTo: attachmentInfo.leadingAnchor),
-                    customView.trailingAnchor.constraint(equalTo: attachmentInfo.trailingAnchor),
-                    customView.topAnchor.constraint(equalTo: attachmentInfo.topAnchor),
-                    customView.bottomAnchor.constraint(equalTo: attachmentInfo.bottomAnchor)
-                ])
-                attachmentInfo.set(item: item);
+                        linkView.metadata = meta;
+                    }
+                })
             }
         } else {
             self.downloadButton?.isEnabled = item.appendix.state != .gone;

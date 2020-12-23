@@ -414,7 +414,7 @@ class ConversationDataSource {
                 
         mutating func remove(item: ConversationEntry) -> Int? {
             guard let idx = self.items.firstIndex(where: { (it) -> Bool in
-                return it.id == item.id && !(item is ConversationMessageSystem);
+                return it.id == item.id && !(it is ConversationMessageSystem);
             }) else {
                 return nil;
             }
