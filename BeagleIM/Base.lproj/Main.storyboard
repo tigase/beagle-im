@@ -553,7 +553,10 @@ CA
                                                                     </textFieldCell>
                                                                 </textField>
                                                                 <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ev0-pa-eYe" customClass="ChatCellViewMessage" customModule="BeagleIM" customModuleProvider="target">
-                                                                    <rect key="frame" x="52" y="9" width="246" height="15"/>
+                                                                    <rect key="frame" x="52" y="2" width="246" height="22"/>
+                                                                    <constraints>
+                                                                        <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="22" id="erf-R0-Ebh"/>
+                                                                    </constraints>
                                                                     <textFieldCell key="cell" truncatesLastVisibleLine="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" title="Label" id="9cl-cN-VXM">
                                                                         <font key="font" metaFont="cellTitle"/>
                                                                         <color key="textColor" red="1" green="1" blue="1" alpha="0.79723423591062192" colorSpace="custom" customColorSpace="sRGB"/>
@@ -593,7 +596,7 @@ CA
                                                                 <constraint firstItem="m3j-Rb-M6x" firstAttribute="top" secondItem="17j-oV-5uz" secondAttribute="top" constant="2" id="b59-J4-AXC"/>
                                                                 <constraint firstItem="PqR-oy-TGv" firstAttribute="leading" secondItem="f5J-qG-57Z" secondAttribute="trailing" constant="2" id="fGO-11-ATv"/>
                                                                 <constraint firstItem="6hC-0e-VWh" firstAttribute="top" secondItem="Ev0-pa-eYe" secondAttribute="top" constant="2" id="jlM-is-5pp"/>
-                                                                <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="Ev0-pa-eYe" secondAttribute="bottom" constant="2" id="pQo-Ch-N6g"/>
+                                                                <constraint firstAttribute="bottom" secondItem="Ev0-pa-eYe" secondAttribute="bottom" constant="2" id="pQo-Ch-N6g"/>
                                                                 <constraint firstItem="6hC-0e-VWh" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="17j-oV-5uz" secondAttribute="leading" constant="10" id="pSi-oo-Mpa"/>
                                                                 <constraint firstItem="Aul-om-ezM" firstAttribute="leading" secondItem="17j-oV-5uz" secondAttribute="leading" constant="6" id="uKx-nI-d54"/>
                                                                 <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="6hC-0e-VWh" secondAttribute="bottom" constant="2" id="vFe-Ba-q6J"/>

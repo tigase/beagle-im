@@ -50,10 +50,16 @@ class ChatCellView: NSTableCellView {
         }
     }
     @IBOutlet weak var label: NSTextField!;
-    @IBOutlet weak var lastMessage: ChatCellViewMessage!;
+    @IBOutlet weak var lastMessage: ChatCellViewMessage! {
+        didSet {
+            lastMessageHeightConstraint = lastMessage.heightAnchor.constraint(equalToConstant: 0);
+        }
+    }
     @IBOutlet weak var lastMessageTs: NSTextField!;
     @IBOutlet weak var unreadButton: NSButton!;
     @IBOutlet weak var closeButton: ChatsCellViewCloseButton!
+    
+    var lastMessageHeightConstraint: NSLayoutConstraint!;
     
     var closeFunction: (()->Void)?;
     
@@ -76,6 +82,7 @@ class ChatCellView: NSTableCellView {
         self.chatState = chatState;
         if chatState != .composing {
             self.lastMessage?.stopAnimating();
+            self.lastMessageHeightConstraint.isActive = false;
             if let activity = lastActivity {
                 switch activity {
                 case .message(let lastMessage, let direction, let sender):
@@ -142,6 +149,8 @@ class ChatCellView: NSTableCellView {
             }
             self.lastMessage?.maximumNumberOfLines = 2;
         } else {
+            lastMessageHeightConstraint.constant = self.lastMessage.frame.height;
+            lastMessageHeightConstraint.isActive = true;
             self.lastMessage?.stringValue = "";
             self.lastMessage?.startAnimating();
         }
