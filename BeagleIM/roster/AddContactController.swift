@@ -72,8 +72,8 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
         requestSubscriptionButton = disclosureView.addRow(label: "", field: NSButton(checkboxWithTitle: "Request presence subscription", target: nil, action: nil));
         allowSubscriptionButton = disclosureView.addRow(label: "", field: NSButton(checkboxWithTitle: "Allow presence subscription", target: nil, action: nil));
         
-        requestSubscriptionButton.state = Settings.requestPresenceSubscription.bool() ? .on : .off;
-        allowSubscriptionButton.state = Settings.allowPresenceSubscription.bool() ? .on : .off;
+        requestSubscriptionButton.state = .on;
+        allowSubscriptionButton.state = .on;
         
         disclosureConstraint = disclosureView.heightAnchor.constraint(equalToConstant: 0);
         disclosureConstraint.isActive = true;

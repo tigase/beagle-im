@@ -108,7 +108,7 @@ public enum LastChatActivity {
 
 typealias ConversationEncryption = ChatEncryption
 
-public enum ChatEncryption: String {
+public enum ChatEncryption: String, Codable {
     case none = "none";
     case omemo = "omemo";
 }

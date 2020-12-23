@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import Combine
 
 protocol ChatsListViewDataSourceDelegate: class {
     
@@ -50,19 +51,36 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     
     var invitationGroup: InvitationGroup?;
 
+    private var cancellables: Set<AnyCancellable> = [];
+    
     override func viewDidLoad() {
-        self.groups = Settings.commonChatsList.bool() ? [ChatsListGroupCommon(delegate: self), ChatsListGroupChatUnknown(delegate: self)] : [ChatsListGroupGroupchat(delegate: self), ChatsListGroupChat(delegate: self), ChatsListGroupChatUnknown(delegate: self)];
         self.invitationGroup = InvitationGroup(delegate: self);
-        if !InvitationManager.instance.items.isEmpty {
-            self.groups.insert(invitationGroup!, at: 0);
-        }
+        Settings.$commonChatsList.sink(receiveValue: { [weak self] value in
+            guard let that = self else {
+                return;
+            }
+            var newGroups: [ChatsListGroupProtocol] = [];
+            if !InvitationManager.instance.items.isEmpty {
+                newGroups.insert(that.invitationGroup!, at: 0);
+            }
+
+            if value {
+                newGroups.append(contentsOf: [ChatsListGroupCommon(delegate: that)]);
+            } else {
+                newGroups.append(contentsOf: [ChatsListGroupGroupchat(delegate: that), ChatsListGroupChat(delegate: that)])
+            }
+            newGroups.append(ChatsListGroupChatUnknown(delegate: that));
+            that.groups = newGroups;
+            that.reload();
+            for group in that.groups {
+                that.outlineView.expandItem(group);
+            }
+        }).store(in: &cancellables)
         outlineView.reloadData();
         
         NotificationCenter.default.addObserver(self, selector: #selector(chatSelected), name: ChatsListViewController.CHAT_SELECTED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(closeSelectedChat), name: ChatsListViewController.CLOSE_SELECTED_CHAT, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(invitationClicked(_:)), name: InvitationManager.INVITATION_CLICKED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(hourChanged), name: AppDelegate.HOUR_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(settingsChanged(_:)), name: Settings.CHANGED, object: nil);
     }
     
     override func viewWillAppear() {
@@ -242,42 +260,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
             self.outlineView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false);
         }
     }
-
-    @objc func hourChanged(_ notification: Notification) {
-        DispatchQueue.main.async {
-            for i in 0..<self.outlineView.numberOfRows {
-                if let item = self.outlineView.item(atRow: i) {
-                    self.itemChanged(item: item);
-                }
-            }
-        }
-    }
     
-    @objc func settingsChanged(_ notification: Notification) {
-        guard let setting = notification.object as? Settings else {
-            return;
-        }
-        switch setting {
-        case .commonChatsList:
-            var tmp:[ChatsListGroupProtocol] = [];
-            if let invitations = self.groups.first(where: { $0 is InvitationGroup}) {
-                tmp.append(invitations);
-            }
-
-            if Settings.commonChatsList.bool() {
-                tmp.append(contentsOf: [ChatsListGroupCommon(delegate: self), ChatsListGroupChatUnknown(delegate: self)]);
-            } else {
-                tmp.append(contentsOf: [ChatsListGroupGroupchat(delegate: self), ChatsListGroupChat(delegate: self), ChatsListGroupChatUnknown(delegate: self)])
-            }
-            self.groups = tmp;
-            self.reload();
-            for group in groups {
-                self.outlineView.expandItem(group);
-            }
-        default:
-            break;
-        }
-    }
 }
 
 extension ChatsListViewController: NSOutlineViewDelegate {

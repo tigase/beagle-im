@@ -21,150 +21,178 @@
 
 import AppKit
 import TigaseSwift
+import Combine
 
-enum Settings: String {
-    case requestPresenceSubscription
-    case allowPresenceSubscription
-    case currentStatus
-    case automaticallyConnectAfterStart
-    case rememberLastStatus
-    case enableAutomaticStatus
-    case showRoomDetailsSidebar
-    case defaultAccount
-    
-    case enableMessageCarbons
-    case markMessageCarbonsAsRead
-    case enableBookmarksSync
-    case fileDownloadSizeLimit
-    
-    case enableMarkdownFormatting
-    case showEmoticons
-    case messageEncryption
-    case notificationsFromUnknownSenders
-    case systemMenuIcon
-    case spellchecking
-    
-    case appearance
-    
-    case ignoreJingleSupportCheck
-    case usePublicStunServers
-    
-    // new and highly experimental
-    case alternateMessageColoringBasedOnDirection
-    case messageGrouping
-    
-    case boldKeywords
-    case markKeywords
-    
-    @available(macOS 10.15, *)
-    case linkPreviews
+enum MessageGrouping: String {
+    case none
+    case smart
+    case always
+}
 
-    case commonChatsList
-    case showAdvancedXmppFeatures
+@propertyWrapper class UserDefaultsSetting<Value> {
+    let key: String;
+    var storage: UserDefaults = .standard;
     
-    case imageQuality
-    case videoQuality
+    var value: CurrentValueSubject<Value,Never>;
+        
+    var projectedValue: AnyPublisher<Value,Never> {
+        get {
+            return value.eraseToAnyPublisher();
+        }
+        set {
+            // nothing to do..
+        }
+    }
     
-    public static let CHANGED = Notification.Name("settingChanged");
+    var wrappedValue: Value {
+        get {
+            return value.value;
+        }
+        set {
+            storage.setValue(newValue, forKey: key);
+            self.value.value = newValue;
+        }
+    }
     
-    fileprivate static var observers: [Settings: [UUID: (Settings, Any?)->Void]] = [:];
+    init(key: String, defaultValue: Value, storage: UserDefaults = .standard) {
+        self.key = key;
+        self.storage = storage;
+        let value: Value = storage.value(forKey: key) as? Value ?? defaultValue;
+        self.value = CurrentValueSubject<Value,Never>(value);
+    }
+}
+
+@propertyWrapper class UserDefaultsRawSetting<Value: RawRepresentable> {
+    let key: String;
+    var storage: UserDefaults = .standard;
+    
+    var value: CurrentValueSubject<Value,Never>;
+        
+    var projectedValue: AnyPublisher<Value,Never> {
+        get {
+            return value.eraseToAnyPublisher();
+        }
+        set {
+            // nothing to do..
+        }
+    }
+    
+    var wrappedValue: Value {
+        get {
+            return value.value;
+        }
+        set {
+            storage.setValue(newValue, forKey: key);
+            self.value.value = newValue;
+        }
+    }
+    
+    init(key: String, defaultValue: Value, storage: UserDefaults = .standard) {
+        self.key = key;
+        self.storage = storage;
+        let value: Value = storage.value(forKey: key) ?? defaultValue;
+        self.value = CurrentValueSubject<Value,Never>(value);
+    }
+}
+
+extension UserDefaultsSetting where Value: ExpressibleByNilLiteral {
+    convenience init(key: String, storage: UserDefaults = .standard) {
+        self.init(key: key, defaultValue: nil, storage: storage);
+    }
+}
+
+extension UserDefaults {
+
+    func value<T: RawRepresentable>(forKey key: String) -> T? {
+        guard let value = value(forKey: key) as? T.RawValue else {
+            return nil;
+        }
+        return T(rawValue: value);
+    }
+    
+    func setValue<T: RawRepresentable>(_ value: T?, forKey key: String) {
+        print("called setting raw representable!");
+        set(value?.rawValue, forKey: key);
+    }
+}
+
+class SettingsStore {
+    @UserDefaultsSetting(key: "showRoomDetailsSidebar", defaultValue: true)
+    var showRoomDetailsSidebar: Bool;
+    @UserDefaultsSetting(key: "defaultAccount")
+    var defaultAccount: String?
+    @UserDefaultsSetting(key: "enableBookmarksSync", defaultValue: false)
+    var enableBookmarksSync: Bool;
+    @UserDefaultsSetting(key: "fileDownloadSizeLimit", defaultValue: Int(10*1024*1024))
+    var fileDownloadSizeLimit: Int;
+    @UserDefaultsSetting(key: "enableMarkdownFormatting", defaultValue: true)
+    var enableMarkdownFormatting: Bool;
+    @UserDefaultsSetting(key: "showEmoticons", defaultValue: true)
+    var showEmoticons: Bool;
+    @UserDefaultsRawSetting(key: "messageEncryption", defaultValue: ConversationEncryption.none)
+    var messageEncryption: ConversationEncryption
+    @UserDefaultsSetting(key: "notificationsFromUnknownSenders", defaultValue: false)
+    var notificationsFromUnknownSenders: Bool;
+    @UserDefaultsSetting(key: "systemMenuIcon", defaultValue: false)
+    var systemMenuIcon: Bool;
+    @UserDefaultsSetting(key: "spellchecking", defaultValue: true)
+    var spellchecking: Bool
+    @UserDefaultsRawSetting(key: "appearance", defaultValue: .auto)
+    var appearance: Appearance
+    @UserDefaultsSetting(key: "ignoreJingleSupportCheck", defaultValue: false)
+    var ignoreJingleSupportCheck: Bool
+    @UserDefaultsSetting(key: "usePublicStunServers", defaultValue: true)
+    var usePublicStunServers: Bool
+    @UserDefaultsSetting(key: "alternateMessageColoringBasedOnDirection", defaultValue: false)
+    var alternateMessageColoringBasedOnDirection: Bool
+    @UserDefaultsRawSetting(key: "messageGrouping", defaultValue: .smart)
+    var messageGrouping: MessageGrouping
+    @UserDefaultsSetting(key: "linkPreviews", defaultValue: true)
+    var linkPreviews: Bool;
+    @UserDefaultsSetting(key: "boldKeywords", defaultValue: false)
+    var boldKeywords: Bool;
+    @UserDefaultsSetting(key: "markKeywords", defaultValue: [])
+    var markKeywords: [String]
+    @UserDefaultsSetting(key: "commonChatsList", defaultValue: true)
+    var commonChatsList: Bool
+    @UserDefaultsSetting(key: "showAdvancedXmppFeatures", defaultValue: false)
+    var showAdvancedXmppFeatures: Bool
+    @UserDefaultsRawSetting(key: "imageQuality", defaultValue: .medium)
+    var imageQuality: ImageQuality
+    @UserDefaultsRawSetting(key: "videoQuality", defaultValue: .medium)
+    var videoQuality: VideoQuality
+    
+    var automaticallyConnectAfterStart: Bool {
+        return true;
+    }
+    var enableAutomaticStatus: Bool {
+        return false;
+    }
+    var rememberLastStatus: Bool {
+        return false;
+    }
     
     public static func initialize() {
-        let defaults: [String: Any] = [
-            "automaticallyConnectAfterStart": true,
-            "requestPresenceSubscription": true,
-            "allowPresenceSubscription": true,
-            "enableMessageCarbons": true,
-            "enableAutomaticStatus": true,
-            "messageEncryption": "none",
-            "markMessageCarbonsAsRead": true,
-            "enableMarkdownFormatting": true,
-            "showEmoticons": true,
-            "notificationsFromUnknownSenders": false,
-            "systemMenuIcon": false,
-            "spellchecking": true,
-            "appearance": Appearance.auto.rawValue,
-            "fileDownloadSizeLimit": Int(10*1024*1024),
-            "messageGrouping": "smart",
-            "linkPreviews": true,
-            "usePublicStunServers": true,
-            "imageQuality": ImageQuality.medium.rawValue,
-            "videoQuality": VideoQuality.medium.rawValue
-        ];
-        UserDefaults.standard.register(defaults: defaults);
         if UserDefaults.standard.object(forKey: "imageDownloadSizeLimit") != nil {
             let downloadLimit = UserDefaults.standard.integer(forKey: "imageDownloadSizeLimit");
             UserDefaults.standard.removeObject(forKey: "imageDownloadSizeLimit");
-            Settings.fileDownloadSizeLimit.set(value: downloadLimit);
+            UserDefaults.standard.set(downloadLimit, forKey: "fileDownloadSizeLimit");
         }
         UserDefaults.standard.removeObject(forKey: "turnServer");
-    }
-    
-    func set(value: Bool) {
-        UserDefaults.standard.set(value, forKey: self.rawValue);
-        valueChanged();
-    }
-    
-    func bool() -> Bool {
-        return UserDefaults.standard.bool(forKey: self.rawValue);
-    }
-    
-    func integer() -> Int {
-        return UserDefaults.standard.integer(forKey: self.rawValue);
-    }
-    
-    func set(value: Int) {
-        UserDefaults.standard.set(value, forKey: self.rawValue);
-        valueChanged();
-    }
-    
-    func set(value: String?) {
-        UserDefaults.standard.set(value, forKey: self.rawValue);
-        valueChanged();
-    }
-    
-    func set(values: [String]?) {
-        UserDefaults.standard.set(values, forKey: self.rawValue);
-        valueChanged();
-    }
-    
-    func string() -> String? {
-        return UserDefaults.standard.string(forKey: self.rawValue);
-    }
-    
-    func stringArrays() -> [String]? {
-        return UserDefaults.standard.stringArray(forKey: self.rawValue);
-    }
-    
-    func bareJid() -> BareJID? {
-        guard let str = string() else {
-            return nil;
-        }
-        return BareJID(str);
-    }
-    
-    func set(bareJid: BareJID?) {
-        UserDefaults.standard.set(bareJid?.stringValue, forKey: self.rawValue);
-        valueChanged();
-    }
-    
-    func set(value: CustomDictionaryConvertible) {
-        let dict = value.toDict();
-        UserDefaults.standard.set(dict, forKey: self.rawValue);
-        valueChanged();
-    }
-    
-    func object<T: CustomDictionaryConvertible>() -> T? {
-        guard let dict = UserDefaults.standard.dictionary(forKey: self.rawValue) else {
-            return nil;
-        }
-        return T(from: dict);
-    }
-    
-    fileprivate func valueChanged() {
-        NotificationCenter.default.post(name: Settings.CHANGED, object: self);
+        UserDefaults.standard.removeObject(forKey: "automaticallyConnectAfterStart");
+        UserDefaults.standard.removeObject(forKey: "requestPresenceSubscription");
+        UserDefaults.standard.removeObject(forKey: "allowPresenceSubscription");
+        UserDefaults.standard.removeObject(forKey: "enableAutomaticStatus");
+        UserDefaults.standard.removeObject(forKey: "currentStatus");
+        UserDefaults.standard.removeObject(forKey: "rememberLastStatus");
+        UserDefaults.standard.removeObject(forKey: "markMessageCarbonsAsRead");
     }
 }
+
+let Settings: SettingsStore = {
+    SettingsStore.initialize();
+    return SettingsStore()
+}();
 
 enum Appearance: String {
     case auto

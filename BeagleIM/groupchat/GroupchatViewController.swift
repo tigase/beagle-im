@@ -40,8 +40,6 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     
     fileprivate var participantsContainer: GroupchatParticipantsContainer?;
     
-    private var keywords: [String]? = Settings.markKeywords.stringArrays();
-    
     override var isSharingAvailable: Bool {
         return super.isSharingAvailable && room.state == .joined;
     }
@@ -93,7 +91,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         room.$role.receive(on: DispatchQueue.main).assign(to: \.role, on: self).store(in: &cancellables);
         jidView.stringValue = room.roomJid.stringValue;
 
-        sidebarWidthConstraint.constant = Settings.showRoomDetailsSidebar.bool() ? 200 : 0;
+        sidebarWidthConstraint.constant = Settings.showRoomDetailsSidebar ? 200 : 0;
         avatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
         buttonToGrayscale(button: participantsButton, template: true);
         buttonToGrayscale(button: infoButton, template: false);
@@ -131,7 +129,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     
     @IBAction func participantsClicked(_ sender: NSButton) {
         let currWidth = self.sidebarWidthConstraint.constant;
-        Settings.showRoomDetailsSidebar.set(value: currWidth == 0 ? true : false);
+        Settings.showRoomDetailsSidebar = currWidth == 0 ? true : false;
         NSAnimationContext.runAnimationGroup { (context) in
             context.duration = 0.25;
             context.allowsImplicitAnimation = true;

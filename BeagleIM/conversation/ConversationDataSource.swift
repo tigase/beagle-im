@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Combine
 
 protocol ConversationDataSourceDelegate: class {
     
@@ -65,13 +66,18 @@ class ConversationDataSource {
         return store.count;
     }
     
+    private var cancellables: Set<AnyCancellable> = [];
+    
     init() {
         NotificationCenter.default.addObserver(self, selector: #selector(messageNew), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(messageUpdated(_:)), name: DBChatHistoryStore.MESSAGE_UPDATED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(messageRemoved(_:)), name: DBChatHistoryStore.MESSAGE_REMOVED, object: nil);
-        if #available(macOS 10.15, *) {
-            NotificationCenter.default.addObserver(self, selector: #selector(settingChanged), name: Settings.CHANGED, object: nil);
-        }
+        Settings.$linkPreviews.dropFirst().sink(receiveValue: { [weak self] _ in
+            guard let that = self else {
+                return;
+            }
+            that.loadItems(.unread(overhead: that.count))
+        }).store(in: &cancellables);
     }
     
     @objc fileprivate func messageNew(_ notification: NSNotification) {
@@ -124,15 +130,6 @@ class ConversationDataSource {
             return;
         }
         remove(item: item);
-    }
-
-    @available(macOS 10.15, *)
-    @objc func settingChanged(_ notification: Notification) {
-        guard let setting = notification.object as? Settings, setting == .linkPreviews else {
-            return;
-        }
-        // FIXME:!!!
-//        self.refreshData(unread: 0, completionHandler: nil);
     }
     
     func refreshDataNoReload() {

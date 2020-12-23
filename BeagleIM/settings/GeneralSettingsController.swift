@@ -20,19 +20,14 @@
 //
 
 import AppKit
+import Combine
 
 class GeneralSettingsController: NSViewController {
     
     @IBOutlet var formView: FormView!;
     
-    fileprivate var appearance: NSPopUpButton?;
-    fileprivate var autoconnect: NSButton!;
-    fileprivate var automaticStatus: NSButton!;
-    fileprivate var rememberLastStatusButton: NSButton!;
+    fileprivate var appearance: NSPopUpButton!;
     
-    fileprivate var enableMessageCarbonsButton: NSButton!;
-    fileprivate var messageCarbonsMarkAsReadButton: NSButton!;
-
     fileprivate var notificationsFromUnknownSenders: NSButton!;
     fileprivate var systemMenuIcon: NSButton!;
     
@@ -45,25 +40,18 @@ class GeneralSettingsController: NSViewController {
     private var imageQuality: NSPopUpButton!;
     private var videoQuality: NSPopUpButton!;
     
+    let appearanceOptions: [Appearance] = [.auto, .light, .dark];
     let imageQualityOptions: [ImageQuality] = [.original,.highest,.high,.medium,.low];
     let videoQualityOptions: [VideoQuality] = [.original,.high,.medium,.low];
 
+    private var cancellables: Set<AnyCancellable> = [];
+    
     override func viewDidLoad() {
-        if #available(macOS 10.14, *) {
-            appearance = formView.addRow(label: "Appearance:", field: NSPopUpButton(frame: .zero, pullsDown: false));
-            appearance?.target = self;
-            appearance?.action = #selector(checkboxChanged(_:));
-            formView.groupItems(from: appearance!, to: appearance!);
-        }
-        autoconnect = formView.addRow(label: "Account status:", field: NSButton(checkboxWithTitle: "Connect after start", target: self, action: #selector(checkboxChanged)))
-        automaticStatus = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Automatic status", target: self, action: #selector(checkboxChanged)));
-        rememberLastStatusButton = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Remember last status", target: self, action: #selector(checkboxChanged)));
-        formView.groupItems(from: autoconnect, to: rememberLastStatusButton);
-        
-        enableMessageCarbonsButton = formView.addRow(label: "Message carbons:", field: NSButton(checkboxWithTitle: "Enable", target: self, action: #selector(checkboxChanged(_:))));
-        messageCarbonsMarkAsReadButton = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Mark carbon messages as read", target: self, action: #selector(checkboxChanged(_:))));
-        formView.groupItems(from: enableMessageCarbonsButton, to: messageCarbonsMarkAsReadButton);
-        
+        appearance = formView.addRow(label: "Appearance:", field: NSPopUpButton(frame: .zero, pullsDown: false));
+        appearance.target = self;
+        appearance.action = #selector(checkboxChanged(_:));
+        formView.groupItems(from: appearance!, to: appearance!);
+                
         encryptionButton = formView.addRow(label: "Default encryption:", field: NSPopUpButton(frame: .zero, pullsDown: false));
         encryptionButton?.target = self;
         encryptionButton?.action = #selector(checkboxChanged(_:));
@@ -75,6 +63,7 @@ class GeneralSettingsController: NSViewController {
         
         markdownFormatting = formView.addRow(label: "Message formatting:", field: NSButton(checkboxWithTitle: "Markdown", target: self, action: #selector(checkboxChanged(_:))));
         showEmoticons = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show emoticons", target: self, action: #selector(checkboxChanged(_:))))
+        Settings.$enableMarkdownFormatting.assign(to: \.isEnabled, on: showEmoticons).store(in: &cancellables)
         spellchecking = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Spellchecking", target: self, action: #selector(checkboxChanged(_:))));
         formView.groupItems(from:markdownFormatting, to: spellchecking);
         
@@ -92,88 +81,58 @@ class GeneralSettingsController: NSViewController {
     }
     
     override func viewWillAppear() {
-        if #available(macOS 10.14, *) {
-            appearance?.removeAllItems();
-            appearance?.addItems(withTitles: ["Automatic", "Light", "Dark"]);
-            switch Appearance(rawValue: Settings.appearance.string() ?? "auto")! {
-            case .auto:
-                appearance?.selectItem(at: 0);
-            case .light:
-                appearance?.selectItem(at: 1);
-            case .dark:
-                appearance?.selectItem(at: 2);
-            }
+        appearance.removeAllItems();
+        appearance.addItems(withTitles: ["Automatic", "Light", "Dark"]);
+        switch Settings.appearance {
+        case .auto:
+            appearance.selectItem(at: 0);
+        case .light:
+            appearance.selectItem(at: 1);
+        case .dark:
+            appearance.selectItem(at: 2);
         }
 
-        autoconnect.state = Settings.automaticallyConnectAfterStart.bool() ? .on : .off;
-        automaticStatus.state = Settings.enableAutomaticStatus.bool() ? .on : .off;
-        rememberLastStatusButton.state = Settings.rememberLastStatus.bool() ? .on : .off;
-        enableMessageCarbonsButton.state = Settings.enableMessageCarbons.bool() ? .on : .off;
-        messageCarbonsMarkAsReadButton.state = Settings.markMessageCarbonsAsRead.bool() ? .on : .off;
-        messageCarbonsMarkAsReadButton.isEnabled = Settings.enableMessageCarbons.bool();
-        notificationsFromUnknownSenders.state = Settings.notificationsFromUnknownSenders.bool() ? .on : .off;
-        markdownFormatting.state = Settings.enableMarkdownFormatting.bool() ? .on : .off;
-        showEmoticons.state = Settings.showEmoticons.bool() ? .on : .off;
-        showEmoticons.isEnabled = Settings.enableMarkdownFormatting.bool()
-        systemMenuIcon.state = Settings.systemMenuIcon.bool() ? .on : .off;
-        spellchecking.state = Settings.spellchecking.bool() ? .on : .off;
+        notificationsFromUnknownSenders.state = Settings.notificationsFromUnknownSenders ? .on : .off;
+        markdownFormatting.state = Settings.enableMarkdownFormatting ? .on : .off;
+        showEmoticons.state = Settings.showEmoticons ? .on : .off;
+        systemMenuIcon.state = Settings.systemMenuIcon ? .on : .off;
+        spellchecking.state = Settings.spellchecking ? .on : .off;
         
         encryptionButton.removeAllItems();
         encryptionButton.addItems(withTitles: ["None", "OMEMO"]);
-        encryptionButton.selectItem(at: ChatEncryption(rawValue: Settings.messageEncryption.string() ?? "none") == ChatEncryption.omemo ? 1 : 0);
+        encryptionButton.selectItem(at: Settings.messageEncryption == .omemo ? 1 : 0);
         
         imageQuality.removeAllItems();
         imageQuality.addItems(withTitles: imageQualityOptions.map({ $0.rawValue.capitalized }));
-        imageQuality.selectItem(at: imageQualityOptions.firstIndex(of: ImageQuality.current ?? .medium) ?? 0);
+        imageQuality.selectItem(at: imageQualityOptions.firstIndex(of: ImageQuality.current) ?? 0);
         videoQuality.removeAllItems();
         videoQuality.addItems(withTitles: videoQualityOptions.map({ $0.rawValue.capitalized }));
-        videoQuality.selectItem(at: videoQualityOptions.firstIndex(of: VideoQuality.current ?? .medium) ?? 0);
+        videoQuality.selectItem(at: videoQualityOptions.firstIndex(of: VideoQuality.current) ?? 0);
     }
     
     @objc func checkboxChanged(_ sender: NSButton) {
         switch sender {
-        case autoconnect:
-            Settings.automaticallyConnectAfterStart.set(value: sender.state == .on);
-        case automaticStatus:
-            Settings.enableAutomaticStatus.set(value: sender.state == .on);
-        case rememberLastStatusButton:
-            Settings.rememberLastStatus.set(value: sender.state == .on);
-            if Settings.rememberLastStatus.bool() {
-                Settings.currentStatus.set(value: XmppService.instance.status);
-            } else {
-                Settings.currentStatus.set(value: nil);
-            }
-        case enableMessageCarbonsButton:
-            Settings.enableMessageCarbons.set(value: sender.state == .on);
-            messageCarbonsMarkAsReadButton.isEnabled = sender.state == .on;
-        case messageCarbonsMarkAsReadButton:
-            Settings.markMessageCarbonsAsRead.set(value: sender.state == .on);
         case notificationsFromUnknownSenders:
-            Settings.notificationsFromUnknownSenders.set(value: sender.state == .on);
+            Settings.notificationsFromUnknownSenders = sender.state == .on;
         case systemMenuIcon:
-            Settings.systemMenuIcon.set(value: sender.state == .on);
+            Settings.systemMenuIcon = sender.state == .on;
         case markdownFormatting:
-            Settings.enableMarkdownFormatting.set(value: sender.state == .on);
+            Settings.enableMarkdownFormatting = sender.state == .on;
             showEmoticons.isEnabled = sender.state == .on;
         case spellchecking:
-            Settings.spellchecking.set(value: sender.state == .on);
+            Settings.spellchecking = sender.state == .on;
         case showEmoticons:
-            Settings.showEmoticons.set(value: sender.state == .on);
+            Settings.showEmoticons = sender.state == .on;
         case encryptionButton:
             let encryption: ChatEncryption = encryptionButton.indexOfSelectedItem == 1 ? .omemo : .none;
-            Settings.messageEncryption.set(value: encryption.rawValue);
+            Settings.messageEncryption = encryption;
         case imageQuality:
-            Settings.imageQuality.set(value: imageQualityOptions[imageQuality.indexOfSelectedItem].rawValue);
+            Settings.imageQuality = imageQualityOptions[imageQuality.indexOfSelectedItem];
         case videoQuality:
-            Settings.videoQuality.set(value: videoQualityOptions[videoQuality.indexOfSelectedItem].rawValue);
+            Settings.videoQuality = videoQualityOptions[videoQuality.indexOfSelectedItem];
+        case appearance:
+            Settings.appearance = self.appearanceOptions[appearance.indexOfSelectedItem];
         default:
-            if #available(macOS 10.14, *) {
-                if let appearance = self.appearance, appearance == sender {
-                    let idx = appearance.indexOfSelectedItem;
-                    let app: Appearance = idx == 1 ? .light : (idx == 2 ? .dark : .auto);
-                    Settings.appearance.set(value: app.rawValue);
-                }
-            }
             break;
         }
     }

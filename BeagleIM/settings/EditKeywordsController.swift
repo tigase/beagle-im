@@ -29,7 +29,7 @@ class EditKeywordsController: NSViewController, NSTableViewDataSource, NSTableVi
     @IBOutlet var addRemoveSegmentedControl: NSSegmentedControl!;
     
     override func viewDidLoad() {
-        keywords = Settings.markKeywords.stringArrays() ?? [];
+        keywords = Settings.markKeywords;
         super.viewDidLoad();
         addRemoveSegmentedControl.setEnabled(tableView.selectedRow >= 0, forSegment: 1);
     }
@@ -77,7 +77,7 @@ class EditKeywordsController: NSViewController, NSTableViewDataSource, NSTableVi
         self.view.window?.makeFirstResponder(self);
         DispatchQueue.main.async {
             let validKeywords = self.keywords.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty };
-            Settings.markKeywords.set(values: validKeywords);
+            Settings.markKeywords = validKeywords;
             self.close();
         }
     }

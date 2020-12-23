@@ -54,8 +54,8 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad();
         self.messageField.delegate = self;
-        self.messageField.isContinuousSpellCheckingEnabled = Settings.spellchecking.bool();
-        self.messageField.isGrammarCheckingEnabled = Settings.spellchecking.bool();
+        self.messageField.isContinuousSpellCheckingEnabled = Settings.spellchecking;
+        self.messageField.isGrammarCheckingEnabled = Settings.spellchecking;
     }
     
     override func viewWillAppear() {

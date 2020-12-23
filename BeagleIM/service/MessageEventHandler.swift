@@ -84,32 +84,8 @@ class MessageEventHandler: XmppServiceEventHandler {
     let events: [Event] = [MessageModule.MessageReceivedEvent.TYPE, MessageDeliveryReceiptsModule.ReceiptEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, DiscoveryModule.AccountFeaturesReceivedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, MessageArchiveManagementModule.ArchivedMessageReceivedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, OMEMOModule.AvailabilityChangedEvent.TYPE];
 
     init() {
-        NotificationCenter.default.addObserver(self, selector: #selector(settingsChanged), name: Settings.CHANGED, object: nil);
     }
 
-    @objc func settingsChanged(_ notification: Notification) {
-        guard let setting = notification.object as? Settings else {
-            return;
-        }
-
-        switch setting {
-        case .enableMessageCarbons:
-            XmppService.instance.clients.values.filter { (client) -> Bool in
-                return client.state == .connected
-                }.forEach { client in
-                    guard let mcModule: MessageCarbonsModule = client.modulesManager.getModule(MessageCarbonsModule.ID), mcModule.isAvailable else {
-                        return;
-                    }
-                    if setting.bool() {
-                        mcModule.enable();
-                    } else {
-                        mcModule.disable();
-                    }
-            }
-        default:
-            break;
-        }
-    }
 
     func handle(event: Event) {
         switch event {
@@ -158,9 +134,6 @@ class MessageEventHandler: XmppServiceEventHandler {
                 MessageEventHandler.syncMessagesScheduled(for: account);
             }
         case let e as DiscoveryModule.ServerFeaturesReceivedEvent:
-            guard Settings.enableMessageCarbons.bool() else {
-                return;
-            }
             guard e.features.contains(MessageCarbonsModule.MC_XMLNS) else {
                 return;
             }

@@ -28,11 +28,8 @@ enum ImageQuality: String {
     case medium
     case low
     
-    static var current: ImageQuality? {
-        guard let v = Settings.imageQuality.string() else {
-            return nil;
-        }
-        return ImageQuality(rawValue: v);
+    static var current: ImageQuality {
+        return Settings.imageQuality;
     }
     
     var size: CGFloat {

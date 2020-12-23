@@ -61,12 +61,17 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         infoButton.image = NSImage(cgImage: newRep!.cgImage!, size: infoButton.frame.size);
 
         NotificationCenter.default.addObserver(self, selector: #selector(contactPresenceChanged), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(settingsChanged), name: Settings.CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(omemoAvailabilityChanged), name: MessageEventHandler.OMEMO_AVAILABILITY_CHANGED, object: nil);
     }
 
     override func viewWillAppear() {
         self.conversationLogController?.contextMenuDelegate = self;
+
+        Settings.$messageEncryption.sink(receiveValue: { [weak self] value in
+            DispatchQueue.main.async {
+                self?.refreshEncryptionStatus();
+            }
+        }).store(in: &cancellables);
 
         conversation.displayNamePublisher.assign(to: \.title, on: buddyNameLabel).store(in: &cancellables);
         conversation.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: buddyAvatarView).store(in: &cancellables);
@@ -297,8 +302,8 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
     fileprivate func updateCapabilities() {
         let supported = JingleManager.instance.support(for: JID(jid), on: account);
         DispatchQueue.main.async {
-            self.audioCall.isHidden = !(VideoCallController.hasAudioSupport && (supported.contains(.audio) || Settings.ignoreJingleSupportCheck.bool()));
-            self.videoCall.isHidden = !(VideoCallController.hasAudioSupport && VideoCallController.hasVideoSupport && (supported.contains(.video) || Settings.ignoreJingleSupportCheck.bool()));
+            self.audioCall.isHidden = !(VideoCallController.hasAudioSupport && (supported.contains(.audio) || Settings.ignoreJingleSupportCheck));
+            self.videoCall.isHidden = !(VideoCallController.hasAudioSupport && VideoCallController.hasVideoSupport && (supported.contains(.video) || Settings.ignoreJingleSupportCheck));
         }
     }
 
@@ -362,16 +367,6 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         }
     }
 
-    @objc func settingsChanged(_ notification: Notification) {
-        guard let setting = notification.object as? Settings else {
-            return;
-        }
-
-        if setting == Settings.messageEncryption {
-            refreshEncryptionStatus();
-        }
-    }
-
     fileprivate func refreshEncryptionStatus() {
         DispatchQueue.main.async {
             guard let account = self.account, let jid = self.jid else {
@@ -382,7 +377,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
             if !self.encryptButton.isEnabled {
                 self.encryptButton.item(at: 0)?.image = NSImage(named: NSImage.lockUnlockedTemplateName);
             } else {
-                let encryption = (self.chat as? Chat)?.options.encryption ?? ChatEncryption(rawValue: Settings.messageEncryption.string()!)!;
+                let encryption = (self.chat as? Chat)?.options.encryption ?? Settings.messageEncryption;
                 let locked = encryption == ChatEncryption.omemo;
                 self.encryptButton.item(at: 0)?.image = locked ? NSImage(named: NSImage.lockLockedTemplateName) : NSImage(named: NSImage.lockUnlockedTemplateName);
             }

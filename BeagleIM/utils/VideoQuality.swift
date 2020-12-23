@@ -28,11 +28,8 @@ enum VideoQuality: String {
     case medium
     case low
     
-    static var current: VideoQuality? {
-        guard let v = Settings.videoQuality.string() else {
-            return nil;
-        }
-        return VideoQuality(rawValue: v);
+    static var current: VideoQuality {
+        return Settings.videoQuality;
     }
     
     var preset: String {

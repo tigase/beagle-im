@@ -86,8 +86,8 @@ class ChatCellView: NSTableCellView {
                         self.lastMessage?.attributedStringValue = msg;
                     } else {
                         let msg = NSMutableAttributedString(string: lastMessage);
-                        if Settings.enableMarkdownFormatting.bool() {
-                            Markdown.applyStyling(attributedString: msg, fontSize: NSFont.systemFontSize - 1, showEmoticons: Settings.showEmoticons.bool());
+                        if Settings.enableMarkdownFormatting {
+                            Markdown.applyStyling(attributedString: msg, fontSize: NSFont.systemFontSize - 1, showEmoticons: Settings.showEmoticons);
                         }
                         if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
                             prefix.append(msg);

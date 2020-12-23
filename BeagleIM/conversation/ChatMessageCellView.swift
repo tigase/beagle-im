@@ -33,7 +33,7 @@ class ChatMessageCellView: BaseChatCellView {
     }
         
 
-    func set(retraction item: ConversationMessageRetracted, nickname: String? = nil, keywords: [String]? = nil) {
+    func set(retraction item: ConversationMessageRetracted, nickname: String? = nil) {
         super.set(item: item);
         id = item.id;
         
@@ -43,7 +43,7 @@ class ChatMessageCellView: BaseChatCellView {
         self.message.attributedString = msg;
     }
 
-    func set(message item: ConversationMessage, nickname: String? = nil, keywords: [String]? = nil) {
+    func set(message item: ConversationMessage, nickname: String? = nil) {
         super.set(item: item);
         id = item.id;
         
@@ -56,14 +56,15 @@ class ChatMessageCellView: BaseChatCellView {
         let fontSize = NSFont.systemFontSize;
         msg.setAttributes([.font: NSFont.systemFont(ofSize: fontSize, weight: .light)], range: NSRange(location: 0, length: msg.length));
         
-        if Settings.enableMarkdownFormatting.bool() {
-            Markdown.applyStyling(attributedString: msg, fontSize: fontSize, showEmoticons: Settings.showEmoticons.bool());
+        if Settings.enableMarkdownFormatting {
+            Markdown.applyStyling(attributedString: msg, fontSize: fontSize, showEmoticons: Settings.showEmoticons);
         }
         if let nick = nickname {
-            msg.markMention(of: nick, withColor: NSColor.systemBlue, bold: Settings.boldKeywords.bool());
+            msg.markMention(of: nick, withColor: NSColor.systemBlue, bold: Settings.boldKeywords);
         }
-        if let keys = keywords {
-            msg.mark(keywords: keys, withColor: NSColor.systemRed, bold: Settings.boldKeywords.bool());
+        let keywords = Settings.markKeywords;
+        if !keywords.isEmpty {
+            msg.mark(keywords: keywords, withColor: NSColor.systemRed, bold: Settings.boldKeywords);
         }
         if let errorMessage = item.state.errorMessage {
             msg.append(NSAttributedString(string: "\n------\n\(errorMessage)", attributes: [.foregroundColor : NSColor.systemRed]));

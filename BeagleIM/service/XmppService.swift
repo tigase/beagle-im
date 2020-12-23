@@ -24,6 +24,10 @@ import TigaseSwift
 import TigaseSwiftOMEMO
 import Combine
 
+extension Presence.Show: Codable {
+    
+}
+
 class XmppService: EventHandler {
     
     static let AUTHENTICATION_ERROR = Notification.Name("authenticationError");
@@ -64,7 +68,7 @@ class XmppService: EventHandler {
     fileprivate var nonIdleStatus: Status? = nil;
     var isIdle: Bool = false {
         didSet {
-            if isIdle && Settings.enableAutomaticStatus.bool() {
+            if isIdle && Settings.enableAutomaticStatus {
                 nonIdleStatus = status;
                 status = status.with(show: .xa);
             } else if let restoreStatus = nonIdleStatus {
@@ -89,8 +93,8 @@ class XmppService: EventHandler {
 
     var status: Status = Status(show: nil, message: nil) {
         didSet {
-            if Settings.rememberLastStatus.bool() {
-                Settings.currentStatus.set(value: status);
+            if Settings.rememberLastStatus {
+//                Settings.currentStatus.set(value: status);
             }
             guard isNetworkAvailable else {
                 return;
@@ -143,12 +147,12 @@ class XmppService: EventHandler {
     
     fileprivate func initialize() {
         self.isNetworkAvailable = reachability.isConnectedToNetwork();
-        if Settings.automaticallyConnectAfterStart.bool() {
-            if let status: Status = Settings.currentStatus.object() {
-                self.status = status;
-            } else {
-                self.status = self.status.with(show: .online);
-            }
+        if Settings.automaticallyConnectAfterStart {
+//            if let status: Status = Settings.currentStatus.object() {
+//                self.status = status;
+//            } else {
+            self.status = self.status.with(show: .online);
+//            }
         }
     }
     
@@ -457,7 +461,7 @@ class XmppService: EventHandler {
         }
     }
     
-    class Status: CustomDictionaryConvertible, Equatable {
+    struct Status: Codable, Equatable {
         static func == (lhs: XmppService.Status, rhs: XmppService.Status) -> Bool {
             if (lhs.show == nil && rhs.show == nil) {
                 return (lhs.message ?? "") == (rhs.message ?? "");
@@ -471,11 +475,12 @@ class XmppService: EventHandler {
         let show: Presence.Show?;
         let message: String?;
         
-        required convenience init(from dict: [String: Any?]) {
-            let message = dict["message"] as? String;
-            let showStr = dict["show"] as? String;
-            self.init(show: showStr != nil ? Presence.Show(rawValue: showStr!) : nil, message: message);
-        }
+        
+//        required convenience init(from dict: [String: Any?]) {
+//            let message = dict["message"] as? String;
+//            let showStr = dict["show"] as? String;
+//            self.init(show: showStr != nil ? Presence.Show(rawValue: showStr!) : nil, message: message);
+//        }
         
         init(show: Presence.Show?, message: String?) {
             self.show = show;

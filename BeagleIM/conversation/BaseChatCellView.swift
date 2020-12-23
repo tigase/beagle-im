@@ -144,7 +144,7 @@ class BaseChatCellView: NSTableCellView {
     }
 
     override func layout() {
-        if !ignoreAlternativeRowColoring && Settings.alternateMessageColoringBasedOnDirection.bool() {
+        if !ignoreAlternativeRowColoring && Settings.alternateMessageColoringBasedOnDirection {
             if let direction = self.direction {
                 switch direction {
                 case .incoming:

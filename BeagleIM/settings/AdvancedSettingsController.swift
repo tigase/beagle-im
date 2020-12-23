@@ -20,6 +20,7 @@
 //
 
 import AppKit
+import Combine
 
 class AdvancedSettingsController: NSViewController {
     
@@ -27,17 +28,14 @@ class AdvancedSettingsController: NSViewController {
 
     fileprivate var alternateMessageColoringBasedOnDirection: NSButton!;
     fileprivate var messageGrouping: NSPopUpButton!;
-    
-    fileprivate var requestSubscriptionButton: NSButton!;
-    fileprivate var allowSubscriptionButton: NSButton!;
-    
+        
     fileprivate var imagePreviewMaxSizeLabel: NSTextField!;
     fileprivate var imagePreviewMaxSize: NSSlider!;
     
     fileprivate var ignoreJingleSupportCheck: NSButton!;
     fileprivate var usePublicStunServers: NSButton!;
     fileprivate var enableBookmarksSync: NSButton!;
-    fileprivate var enableLinkPreviews: NSButton?;
+    fileprivate var enableLinkPreviews: NSButton!;
 
     fileprivate var markKeywords: NSButton!;
     fileprivate var markKeywordsWithBold: NSButton!;
@@ -45,6 +43,8 @@ class AdvancedSettingsController: NSViewController {
     
     fileprivate var commonChatsList: NSButton!;
     fileprivate var showAdvancedXmppFeatures: NSButton!;
+    
+    private var cancellables: Set<AnyCancellable> = [];
     
     override func viewDidLoad() {
         messageGrouping = formView.addRow(label: "Message grouping:", field: NSPopUpButton(frame: .zero, pullsDown: false));
@@ -59,30 +59,29 @@ class AdvancedSettingsController: NSViewController {
         markKeywordsWithBold = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Make them bold", target: self, action: #selector(checkboxChanged)));
         editKeywords = formView.addRow(label: "", field: NSButton(title: "Edit keywords", target: self, action: #selector(editKeywordsClicked)));
         formView.groupItems(from: markKeywords, to: editKeywords);
-
-        requestSubscriptionButton = formView.addRow(label: "Adding user:", field: NSButton(checkboxWithTitle: "Request presence subscription", target: self, action: #selector(checkboxChanged)));
-        allowSubscriptionButton = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Allow presence subscription", target: self, action: #selector(checkboxChanged)));
-        formView.groupItems(from: requestSubscriptionButton, to: allowSubscriptionButton);
         
-        imagePreviewMaxSize = formView.addRow(label: "Automatic download size limit:", field: NSSlider(value: Double(Settings.fileDownloadSizeLimit.integer()), minValue: 0, maxValue: 50 * 1024 * 1024, target: self, action: #selector(sliderChanged)));
+        imagePreviewMaxSize = formView.addRow(label: "Automatic download size limit:", field: NSSlider(value: Double(Settings.fileDownloadSizeLimit), minValue: 0, maxValue: 50 * 1024 * 1024, target: self, action: #selector(sliderChanged)));
         imagePreviewMaxSizeLabel = formView.addRow(label: "", field: formView.createLabel(text: "0.0B"));
         imagePreviewMaxSizeLabel.alignment = .center;
         formView.groupItems(from:imagePreviewMaxSize, to: imagePreviewMaxSizeLabel);
-        updateFileDownloadMaxSizeLabel();
         formView.cell(for: imagePreviewMaxSizeLabel)!.xPlacement = .center;
         
         ignoreJingleSupportCheck = formView.addRow(label: "Experimental", field: NSButton(checkboxWithTitle: "Ignore VoIP support check", target: self, action: #selector(checkboxChanged(_:))));
         usePublicStunServers = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Use public STUN servers", target: self, action: #selector(checkboxChanged(_:))));
         enableBookmarksSync = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Enable groupchat bookmarks sync", target: self, action: #selector(checkboxChanged(_:))));
-        if #available(macOS 10.15, *) {
-            enableLinkPreviews = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Enable link previews", target: self, action: #selector(checkboxChanged(_:))));
-        }
+        enableLinkPreviews = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Enable link previews", target: self, action: #selector(checkboxChanged(_:))));
         commonChatsList = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show channels and chats in merged list", target: self, action: #selector(checkboxChanged(_:))));
         showAdvancedXmppFeatures = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show advanced XMPP features", target: self, action: #selector(checkboxChanged(_:))));
         
         let logsDir = formView.addRow(label: "", field: NSButton(title: "Open logs directory", target: self, action: #selector(openLogsDirectory)));
         formView.groupItems(from:ignoreJingleSupportCheck, to: logsDir);
 
+        Settings.$fileDownloadSizeLimit.sink(receiveValue: { [weak self] value in
+            guard let that = self else {
+                return;
+            }
+            self?.imagePreviewMaxSizeLabel.stringValue = "\(that.string(filesize: value))"
+        }).store(in: &cancellables);
         
         self.preferredContentSize = NSSize(width: self.view.frame.size.width, height: self.view.frame.size.height);
     }
@@ -90,30 +89,26 @@ class AdvancedSettingsController: NSViewController {
     override func viewWillAppear() {
         messageGrouping.removeAllItems();
         messageGrouping.addItems(withTitles: ["None", "Smart", "Always"]);
-        switch Settings.messageGrouping.string() {
-        case "none":
+        switch Settings.messageGrouping {
+        case .none:
             messageGrouping?.selectItem(at: 0);
-        case "always":
+        case .always:
             messageGrouping?.selectItem(at: 2);
-        default:
+        case .smart:
             messageGrouping?.selectItem(at: 1);
         }
-        alternateMessageColoringBasedOnDirection.state = Settings.alternateMessageColoringBasedOnDirection.bool() ? .on : .off;
-        requestSubscriptionButton.state = Settings.requestPresenceSubscription.bool() ? .on : .off;
-        allowSubscriptionButton.state = Settings.allowPresenceSubscription.bool() ? .on : .off;
-        ignoreJingleSupportCheck.state = Settings.ignoreJingleSupportCheck.bool() ? .on : .off;
-        usePublicStunServers.state = Settings.usePublicStunServers.bool() ? .on : .off;
-        enableBookmarksSync.state = Settings.enableBookmarksSync.bool() ? .on : .off;
-        if #available(macOS 10.15, *) {
-            enableLinkPreviews?.state = Settings.linkPreviews.bool() ? .on : .off;
-        }
-        let keywords = Settings.markKeywords.stringArrays();
-        markKeywords.state = keywords != nil ? .on : .off;
-        markKeywordsWithBold.state = Settings.boldKeywords.bool() ? .on : .off;
+        alternateMessageColoringBasedOnDirection.state = Settings.alternateMessageColoringBasedOnDirection ? .on : .off;
+        ignoreJingleSupportCheck.state = Settings.ignoreJingleSupportCheck ? .on : .off;
+        usePublicStunServers.state = Settings.usePublicStunServers ? .on : .off;
+        enableBookmarksSync.state = Settings.enableBookmarksSync ? .on : .off;
+        enableLinkPreviews.state = Settings.linkPreviews ? .on : .off;
+        let keywords = Settings.markKeywords;
+        markKeywords.state = !keywords.isEmpty ? .on : .off;
+        markKeywordsWithBold.state = Settings.boldKeywords ? .on : .off;
         markKeywordsWithBold.isEnabled = markKeywords.state == .on;
         editKeywords.isEnabled = markKeywords.state == .on;
-        commonChatsList.state = Settings.commonChatsList.bool() ? .on : .off;
-        showAdvancedXmppFeatures.state = Settings.showAdvancedXmppFeatures.bool() ? .on : .off;
+        commonChatsList.state = Settings.commonChatsList ? .on : .off;
+        showAdvancedXmppFeatures.state = Settings.showAdvancedXmppFeatures ? .on : .off;
     }
     
     @objc func openLogsDirectory(_ sender: NSButton) {
@@ -125,42 +120,34 @@ class AdvancedSettingsController: NSViewController {
         case messageGrouping:
             switch messageGrouping.indexOfSelectedItem {
             case 0:
-                Settings.messageGrouping.set(value: "none");
+                Settings.messageGrouping = .none
             case 1:
-                Settings.messageGrouping.set(value: "smart");
+                Settings.messageGrouping = .smart
             case 2:
-                Settings.messageGrouping.set(value: "always");
+                Settings.messageGrouping = .always;
             default:
-                Settings.messageGrouping.set(value: "smart");
+                Settings.messageGrouping = .smart;
             }
         case alternateMessageColoringBasedOnDirection:
-            Settings.alternateMessageColoringBasedOnDirection.set(value: sender.state == .on);
-        case requestSubscriptionButton:
-            Settings.requestPresenceSubscription.set(value: sender.state == .on);
-        case allowSubscriptionButton:
-            Settings.allowPresenceSubscription.set(value: sender.state == .on);
+            Settings.alternateMessageColoringBasedOnDirection = sender.state == .on;
         case ignoreJingleSupportCheck:
-            Settings.ignoreJingleSupportCheck.set(value: sender.state == .on);
+            Settings.ignoreJingleSupportCheck = sender.state == .on;
         case usePublicStunServers:
-            Settings.usePublicStunServers.set(value: sender.state == .on);
+            Settings.usePublicStunServers = sender.state == .on;
         case enableBookmarksSync:
-            Settings.enableBookmarksSync.set(value: sender.state == .on);
+            Settings.enableBookmarksSync = sender.state == .on;
         case markKeywords:
-            Settings.markKeywords.set(values: (sender.state == .on ? [] : nil) as [String]?);
             markKeywordsWithBold.isEnabled = sender.state == .on;
             editKeywords.isEnabled = markKeywords.state == .on;
         case markKeywordsWithBold:
-            Settings.boldKeywords.set(value: sender.state == .on);
+            Settings.boldKeywords = sender.state == .on;
         case commonChatsList:
-            Settings.commonChatsList.set(value: sender.state == .on);
+            Settings.commonChatsList = sender.state == .on;
         case showAdvancedXmppFeatures:
-            Settings.showAdvancedXmppFeatures.set(value: sender.state == .on);
+            Settings.showAdvancedXmppFeatures = sender.state == .on;
+        case enableLinkPreviews:
+            Settings.linkPreviews = sender.state == .on;
         default:
-            if #available(macOS 10.15, *) {
-                if let linkPreviews = enableLinkPreviews, sender == linkPreviews {
-                    Settings.linkPreviews.set(value: sender.state == .on);
-                }
-            }
             break;
         }
     }
@@ -181,18 +168,13 @@ class AdvancedSettingsController: NSViewController {
         switch sender {
         case imagePreviewMaxSize:
             print("selected value:", sender.integerValue);
-            Settings.fileDownloadSizeLimit.set(value: sender.integerValue);
-            updateFileDownloadMaxSizeLabel();
+            Settings.fileDownloadSizeLimit = sender.integerValue;
             break;
         default:
             break;
         }
     }
-    
-    fileprivate func updateFileDownloadMaxSizeLabel() {
-        self.imagePreviewMaxSizeLabel.stringValue = "\(string(filesize: Settings.fileDownloadSizeLimit.integer()))";
-    }
-    
+        
     fileprivate func string(filesize: Int) -> String {
         var unit = "B";
         var val = Double(filesize) / 1024.0;

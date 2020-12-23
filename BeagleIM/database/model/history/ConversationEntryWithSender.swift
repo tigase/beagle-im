@@ -83,12 +83,12 @@ class ConversationEntryWithSender: ConversationEntry {
     }
     
     func allowedTimeDiff() -> TimeInterval {
-        switch Settings.messageGrouping.string() ?? "smart" {
-        case "none":
+        switch Settings.messageGrouping {
+        case .none:
             return -1.0;
-        case "always":
+        case .always:
             return 60.0 * 60.0 * 24.0;
-        default:
+        case .smart:
             return 30.0;
         }
     }

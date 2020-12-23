@@ -57,10 +57,8 @@ class PresenceAuthorizationRequestController: NSViewController {
         }
             
         presenceModule.subscribed(by: jid);
-            
-        if Settings.requestPresenceSubscription.bool() {
-            presenceModule.subscribe(to: jid);
-        }
+        presenceModule.subscribe(to: jid);
+        
         InvitationManager.instance.remove(invitation: invitation);
     }
     

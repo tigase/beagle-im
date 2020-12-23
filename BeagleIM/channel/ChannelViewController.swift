@@ -34,8 +34,6 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     @IBOutlet var participantsButton: NSButton!;
     @IBOutlet var actionsButton: NSPopUpButton!;
 
-    private var keywords: [String]? = Settings.markKeywords.stringArrays();
-
     private var cancellables: Set<AnyCancellable> = [];
     
     var channel: Channel! {

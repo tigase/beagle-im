@@ -285,7 +285,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
         let configuration = RTCConfiguration();
         configuration.sdpSemantics = .unifiedPlan;
         
-        let iceServers: [RTCIceServer] = (foundIceServers.isEmpty && Settings.usePublicStunServers.bool()) ? publicStunServers : foundIceServers;
+        let iceServers: [RTCIceServer] = (foundIceServers.isEmpty && Settings.usePublicStunServers) ? publicStunServers : foundIceServers;
         
         os_log(OSLogType.debug, log: .jingle, "using ICE servers: %s", iceServers.map({ $0.urlStrings.description }).description);
         

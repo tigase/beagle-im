@@ -33,10 +33,10 @@ open class AccountManager {
 
     static var defaultAccount: BareJID? {
         get {
-            return Settings.defaultAccount.bareJid();
+            return BareJID(Settings.defaultAccount);
         }
         set {
-            Settings.defaultAccount.set(bareJid: newValue);
+            Settings.defaultAccount = newValue?.stringValue;
         }
     }
     

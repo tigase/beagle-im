@@ -108,10 +108,10 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
             for i in 0..<items.count {
                 items[i].isEnabled = i < 3 || connected;
                 if items[i].action == #selector(changeAccountVCardClicked(_:)) {
-                    items[i].isHidden = Settings.showAdvancedXmppFeatures.bool();
+                    items[i].isHidden = Settings.showAdvancedXmppFeatures;
                 }
                 if items[i].hasSubmenu {
-                    items[i].isHidden = !Settings.showAdvancedXmppFeatures.bool();
+                    items[i].isHidden = !Settings.showAdvancedXmppFeatures;
                 }
             }
         }

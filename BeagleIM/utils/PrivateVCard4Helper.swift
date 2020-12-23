@@ -28,7 +28,7 @@ class PrivateVCard4Helper {
     static let NODE = "tigase:vcard:private:0";
     
     static var isEnabled: Bool {
-        return Settings.showAdvancedXmppFeatures.bool();
+        return Settings.showAdvancedXmppFeatures;
     }
     
     static func retrieve(on account: BareJID, from jid: BareJID, completionHandler: @escaping (Result<VCard,ErrorCondition>)->Void) {

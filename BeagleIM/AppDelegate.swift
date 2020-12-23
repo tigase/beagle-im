@@ -25,23 +25,17 @@ import TigaseSwift
 import UserNotifications
 import AVFoundation
 import AVKit
-
+import Combine
 
 extension NSApplication {
     var isDarkMode: Bool {
-        if #available(macOS 10.14, *) {
-            return NSAppearance.current.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua;
-        } else {
-            return false;
-        }
+        return NSAppearance.current.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua;
     }
 }
 
 @NSApplicationMain
-class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDelegate, UNUserNotificationCenterDelegate, NSMenuDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate, NSMenuDelegate {
     
-    public static let HOUR_CHANGED = Notification.Name("hourChanged");
-
     fileprivate let stampFormatter = ({()-> DateFormatter in
         var f = DateFormatter();
         f.locale = Locale(identifier: "en_US_POSIX");
@@ -123,12 +117,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         NSAppleEventManager.shared().setEventHandler(self, andSelector: #selector(self.handleAppleEvent(event:replyEvent:)), forEventClass: AEEventClass(kInternetEventClass), andEventID: AEEventID(kAEGetURL));
     }
     
-    func applicationDidFinishLaunching(_ aNotification: Notification) {        
-        Settings.initialize();
-        
-        if #available(macOS 10.14, *) {
-            updateAppearance();
-        }
+    private var cancellables: Set<AnyCancellable> = [];
+    
+    func applicationDidFinishLaunching(_ aNotification: Notification) {
+        Settings.$appearance.sink(receiveValue: { appearance in
+            switch appearance {
+            case .dark:
+                NSApp.appearance = NSAppearance(named: .darkAqua);
+            case .light:
+                NSApp.appearance = NSAppearance(named: .aqua);
+            default:
+                NSApp.appearance = nil;
+            }
+        }).store(in: &cancellables);
         
         _ = Database.main;
         NotificationCenter.default.addObserver(self, selector: #selector(authenticationFailure), name: XmppService.AUTHENTICATION_ERROR, object: nil);
@@ -147,19 +148,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 //        window.titlebarAppearsTransparent = true;
 //        window.titleVisibility = .hidden;
         
-        NotificationCenter.default.addObserver(self, selector: #selector(settingsChanged), name: Settings.CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(updateStatusItem(_:)), name: XmppService.STATUS_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(unreadMessagesCountChanged), name: DBChatStore.UNREAD_MESSAGES_COUNT_CHANGED, object: nil);
         
-        if #available(OSX 10.14, *) {
-            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (result, error) in
-                print("could not get authorization for notifications", result, error as Any);
-            }
-            UNUserNotificationCenter.current().delegate = self;
-        } else {
-            // Fallback on earlier versions
-            NSUserNotificationCenter.default.delegate = self;
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (result, error) in
+            print("could not get authorization for notifications", result, error as Any);
         }
+        UNUserNotificationCenter.current().delegate = self;
         
         DBChatHistoryStore.convertToAttachments();
 //        let storyboard = NSStoryboard(name: "Main", bundle: nil);
@@ -190,10 +185,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             };
         }
         
-        if Settings.systemMenuIcon.bool() {
-            self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength);
-            self.updateStatusItem();
-        }
+        Settings.$systemMenuIcon.sink(receiveValue: { [weak self] value in
+            if value {
+                if (self?.statusItem == nil) {
+                    self?.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength);
+                }
+                self?.updateStatusItem();
+            } else {
+                if let item = self?.statusItem {
+                    self?.statusItem = nil;
+                    NSStatusBar.system.removeStatusItem(item);
+                }
+            }
+        }).store(in: &cancellables);
         
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receivedSleepNotification), name: NSWorkspace.willSleepNotification, object: nil);
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receivedWakeNotification), name: NSWorkspace.didWakeNotification, object: nil);
@@ -201,25 +205,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receivedScreensSleepNotification), name: NSWorkspace.screensDidSleepNotification, object: nil);
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receivedScreensWakeNotification), name: NSWorkspace.screensDidWakeNotification, object: nil);
         
-        // TODO: maybe should be moved later on...
-        if #available(OSX 10.14, *) {
-            AVCaptureDevice.requestAccess(for: .audio, completionHandler: { granted in
-                print("permission granted: \(granted)");
-                if granted {
-                }
-            })
-            AVCaptureDevice.requestAccess(for: .video, completionHandler: { granted in
-                print("permission granted: \(granted)");
-                if granted {
-                }
-            })
-        } else {
-            // Fallback on earlier versions
-        }
+        AVCaptureDevice.requestAccess(for: .audio, completionHandler: { granted in
+            print("permission granted: \(granted)");
+            if granted {
+            }
+        })
+        AVCaptureDevice.requestAccess(for: .video, completionHandler: { granted in
+            print("permission granted: \(granted)");
+            if granted {
+            }
+        })
         
         NSApp.mainMenu?.item(withTitle: "Window")?.submenu?.delegate = self;
                 
-        scheduleHourlyTimer();
         for windowName in UserDefaults.standard.stringArray(forKey: "openedWindows") ?? ["chats"] {
             switch windowName {
             case "chats":
@@ -315,7 +313,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     func menuNeedsUpdate(_ menu: NSMenu) {
         if let xmlConsoleItem = menu.item(withTitle: "XML Console") {
-            xmlConsoleItem.isHidden = (!NSEvent.modifierFlags.contains(.option)) && (!Settings.showAdvancedXmppFeatures.bool());
+            xmlConsoleItem.isHidden = (!NSEvent.modifierFlags.contains(.option)) && (!Settings.showAdvancedXmppFeatures);
             let accountsMenu = NSMenu(title: "XML Console");
             
             AccountManager.getAccounts().sorted(by: { (a1, a2) -> Bool in
@@ -328,7 +326,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
 
         if let serviceDiscoveryItem = menu.item(withTitle: "Service Discovery") {
-            serviceDiscoveryItem.isHidden = (!NSEvent.modifierFlags.contains(.option)) && (!Settings.showAdvancedXmppFeatures.bool());
+            serviceDiscoveryItem.isHidden = (!NSEvent.modifierFlags.contains(.option)) && (!Settings.showAdvancedXmppFeatures);
             let accountsMenu = NSMenu(title: "Service Discovery");
             
             AccountManager.getAccounts().filter({ (a1) -> Bool in
@@ -404,7 +402,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }.filter({ $0 != nil }).map({ $0! });
         UserDefaults.standard.set(openedWindows, forKey: "openedWindows");
         
-        descheduleHourlyTimer();
         RTCCleanupSSL();
     }
 
@@ -449,51 +446,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
         updateStatusItem();
     }
-    
-    @objc func settingsChanged(_ notification: Notification) {
-        guard let setting = notification.object as? Settings else {
-            return;
-        }
         
-        switch setting {
-        case .systemMenuIcon:
-            if (setting.bool()) {
-                if (self.statusItem == nil) {
-                    self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength);
-                }
-                updateStatusItem();
-            } else {
-                if let item = self.statusItem {
-                    self.statusItem = nil;
-                    NSStatusBar.system.removeStatusItem(item);
-                }
-            }
-        case .appearance:
-            if #available(macOS 10.14, *) {
-                updateAppearance();
-            }
-        default:
-            break;
-        }
-    }
-    
-    @available(OSX 10.14, *)
-    fileprivate func updateAppearance() {
-        let appearance: Appearance = Appearance(rawValue: Settings.appearance.string() ?? "") ??  .auto;
-        switch appearance {
-        case .dark:
-            NSApp.appearance = NSAppearance(named: .darkAqua);
-        case .light:
-            NSApp.appearance = NSAppearance(named: .aqua);
-        default:
-            NSApp.appearance = nil;
-        }
-    }
-    
-    func userNotificationCenter(_ center: NSUserNotificationCenter, didDeliver notification: NSUserNotification) {
-        
-    }
-    
     var preferencesWindowController: NSWindowController? {
         return NSApplication.shared.windows.map({ (window) -> NSWindowController? in
             return window.windowController;
@@ -504,55 +457,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }) ?? NSStoryboard(name: "Settings", bundle: nil).instantiateController(withIdentifier: "PreferencesWindowController") as? NSWindowController;
     }
     
-    func userNotificationCenter(_ center: NSUserNotificationCenter, didActivate notification: NSUserNotification) {
-        center.removeDeliveredNotification(notification);
-        
-        guard let id = notification.userInfo?["id"] as? String else {
-            return;
-        }
-        
-        switch id {
-        case "authentication-failure":
-            guard let _ = BareJID(notification.userInfo?["account"] as? String) else {
-                return;
-            }
-            guard let windowController = preferencesWindowController else {
-                return;
-            }
-            (windowController.contentViewController as? NSTabViewController)?.selectedTabViewItemIndex = 1;
-            windowController.showWindow(self);
-        case "room-join-error":
-            guard let accountStr = notification.userInfo?["account"] as? String, let roomJidStr = notification.userInfo?["roomJid"] as? String, let nickname = notification.userInfo?["nickname"] as? String else {
-                return;
-            }
-            let storyboard = NSStoryboard(name: "Main", bundle: nil);
-            guard let windowController = storyboard.instantiateController(withIdentifier: "OpenGroupchatController") as? NSWindowController else {
-                return;
-            }
-            guard let openRoomController = windowController.contentViewController as? OpenGroupchatController else {
-                return;
-            }
-            let roomJid = BareJID(roomJidStr);
-            openRoomController.searchField.stringValue = roomJidStr;
-            openRoomController.componentJids = [BareJID(roomJid.domain)];
-            openRoomController.account = BareJID(accountStr);
-            openRoomController.nicknameField.stringValue = nickname;
-            guard let window = self.mainWindowController?.window else {
-                return;
-            }
-            window.windowController?.showWindow(self);
-            window.beginSheet(windowController.window!, completionHandler: nil);
-        case "message-new":
-            guard let account = BareJID(notification.userInfo?["account"] as? String), let jid = BareJID(notification.userInfo?["jid"] as? String) else {
-                return;
-            }
-            NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: nil, userInfo: ["account": account, "jid": jid]);
-        default:
-            break;
-        }
-    }
-    
-    @available(OSX 10.14, *)
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         
         UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [response.notification.request.identifier]);
@@ -609,7 +513,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         completionHandler();
     }
     
-    @available(OSX 10.14, *)
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         
         if let account = notification.request.content.userInfo["account"] as? String, let jid = notification.request.content.userInfo["jid"] as? String {
@@ -632,23 +535,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         } else {
             completionHandler([.sound, .alert]);
         }
-    }
-    
-    func userNotificationCenter(_ center: NSUserNotificationCenter, shouldPresent notification: NSUserNotification) -> Bool {
-        if let account = notification.userInfo?["account"] as? String, let jid = notification.userInfo?["jid"] as? String {
-            guard let window = NSApp.windows.first(where: { w -> Bool in
-                return w.windowController is ChatsWindowController
-            }) else {
-                return true;
-            }
-        
-            guard let chatViewController = (window.contentViewController as? NSSplitViewController)?.splitViewItems.last?.viewController as? AbstractChatViewController else {
-                return true;
-            }
-        
-            return (chatViewController.account?.stringValue ?? "") != account || (chatViewController.conversation?.jid.stringValue ?? "") != jid;
-        }
-        return true;
     }
     
     @objc func authenticationFailure(_ notification: Notification) {
@@ -742,7 +628,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         case .mention:
             if let nickname = (item.conversation as? Room)?.nickname ?? (item.conversation as? Channel)?.nickname {
                 if !item.message.contains(nickname) {
-                    if let keywords = Settings.markKeywords.stringArrays(), !keywords.isEmpty {
+                    let keywords = Settings.markKeywords;
+                    if !keywords.isEmpty {
                         if  keywords.first(where: { item.message.contains($0) }) == nil {
                             return;
                         }
@@ -759,7 +646,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         if let conversation = item.conversation as? Conversation {
             if conversation is Chat {
-                guard Settings.notificationsFromUnknownSenders.bool() || conversation.displayName != conversation.jid.stringValue else {
+                guard Settings.notificationsFromUnknownSenders || conversation.displayName != conversation.jid.stringValue else {
                     return;
                 }
             }
@@ -768,7 +655,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             if conversation is Room || conversation is Channel {
                 content.subtitle = item.nickname;
             }
-            content.body = (item.message.contains("`") || !Settings.enableMarkdownFormatting.bool() || !Settings.showEmoticons.bool()) ? item.message : item.message.emojify();
+            content.body = (item.message.contains("`") || !Settings.enableMarkdownFormatting || !Settings.showEmoticons) ? item.message : item.message.emojify();
             content.sound = UNNotificationSound.default
             content.userInfo = ["account": conversation.account.stringValue, "jid": conversation.jid.stringValue, "id": "message-new"];
             let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
@@ -816,30 +703,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
     }
     
-    fileprivate var hourlyTimer: Foundation.Timer? = nil;
-    
-    func descheduleHourlyTimer() {
-        if let timer = self.hourlyTimer {
-            self.hourlyTimer = nil;
-            timer.invalidate();
-        }
-    }
-    
-    @objc func hourlyTimerTriggered() {
-        NotificationCenter.default.post(name: AppDelegate.HOUR_CHANGED, object: self);
-    }
-    
-    func scheduleHourlyTimer() {
-        guard hourlyTimer == nil else {
-            return;
-        }
-        let next = Calendar.current.date(bySetting: .second, value: 1, of: Calendar.current.date(bySetting: .minute, value: 0, of: Date())!)!;
-
-        print("scheduling hourly timer for:", next, "current:", Date());
-        
-        self.hourlyTimer = Foundation.Timer(fireAt: next, interval: 3600.0, target: self, selector: #selector(hourlyTimerTriggered), userInfo: nil, repeats: true);
-        RunLoop.current.add(self.hourlyTimer!, forMode: .common);
-    }
 }
 
 

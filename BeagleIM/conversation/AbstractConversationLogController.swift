@@ -53,7 +53,6 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
         NotificationCenter.default.addObserver(self, selector: #selector(didEndLiveScroll(_:)), name: NSScrollView.didEndLiveScrollNotification, object: self.tableView.enclosingScrollView);
         NotificationCenter.default.addObserver(self, selector: #selector(scrolledRowToVisible(_:)), name: ChatViewTableView.didScrollRowToVisible, object: self.tableView);
         NotificationCenter.default.addObserver(self, selector: #selector(didBecomeKeyWindow), name: NSWindow.didBecomeKeyNotification, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(hourChanged), name: AppDelegate.HOUR_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(boundsChange), name: NSView.boundsDidChangeNotification, object: self.tableView.enclosingScrollView?.contentView);
     }
     
@@ -69,7 +68,6 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
             NSEvent.removeMonitor(mouseMonitor);
         }
         NotificationCenter.default.removeObserver(self, name: NSWindow.didBecomeKeyNotification, object: nil);
-        NotificationCenter.default.removeObserver(self, name: AppDelegate.HOUR_CHANGED, object: nil);
     }
     
     func prepareContextMenu(_ menu: NSMenu, forRow row: Int) {
@@ -179,12 +177,6 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
 
     func numberOfRows(in tableView: NSTableView) -> Int {
         return dataSource.count;
-    }
-
-    @objc func hourChanged(_ notification: Notification) {
-        DispatchQueue.main.async {
-            self.tableView.reloadData(forRowIndexes: IndexSet(integersIn: 0..<self.dataSource.count), columnIndexes: [0]);
-        }
     }
 
 }

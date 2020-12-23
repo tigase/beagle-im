@@ -171,7 +171,7 @@ class ChatAttachmentCellView: BaseChatCellView {
             
             switch item.appendix.state {
             case .new:
-                let sizeLimit = Settings.fileDownloadSizeLimit.integer();
+                let sizeLimit = Settings.fileDownloadSizeLimit;
                 if sizeLimit > 0 {
                     if (DBRosterStore.instance.item(for: item.account, jid: JID(item.jid))?.subscription ?? .none).isFrom || (DBChatStore.instance.conversation(for: item.account, with: item.jid) as? Room != nil) {
                         _ = DownloadManager.instance.download(item: item, maxSize: Int64(sizeLimit));
@@ -312,7 +312,7 @@ class ChatAttachmentCellView: BaseChatCellView {
     
     
     override func layout() {
-        if Settings.alternateMessageColoringBasedOnDirection.bool() {
+        if Settings.alternateMessageColoringBasedOnDirection {
             if let direction = self.direction {
                 switch direction {
                 case .incoming:

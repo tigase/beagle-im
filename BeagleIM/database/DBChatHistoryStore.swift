@@ -358,7 +358,7 @@ class DBChatHistoryStore {
             case .attachment:
                 item = ConversationAttachment(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, recipient: recipient, encryption: encryption, url: data, appendix: (appendix as? ChatAttachmentAppendix) ?? ChatAttachmentAppendix());
             case .linkPreview:
-                if #available(macOS 10.15, *), Settings.linkPreviews.bool() {
+                if Settings.linkPreviews {
                     item = ConversationLinkPreview(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, recipient: recipient, encryption: encryption, url: data);
                 }
             case .messageRetracted, .attachmentRetracted:
@@ -494,13 +494,11 @@ class DBChatHistoryStore {
     }
 
     private func generatePreviews(forItem masterId: Int, conversation: ConversationKey, state: ConversationEntryState) {
-        if #available(macOS 10.15, *) {
-            guard let item = self.message(for: conversation, withId: masterId) as? ConversationMessage else {
-                return;
-            }
-
-            self.generatePreviews(forItem: item.id, conversation: conversation, state: item.state, sender: item.sender, recipient: item.recipient, timestamp: item.timestamp, data: item.message);
+        guard let item = self.message(for: conversation, withId: masterId) as? ConversationMessage else {
+            return;
         }
+
+        self.generatePreviews(forItem: item.id, conversation: conversation, state: item.state, sender: item.sender, recipient: item.recipient, timestamp: item.timestamp, data: item.message);
     }
 
     private var previewsInProgress: [Int: UUID] = [:];
@@ -785,11 +783,7 @@ class DBChatHistoryStore {
     }
 
     fileprivate var linkPreviews: Bool {
-        if #available(macOS 10.15, *) {
-            return Settings.linkPreviews.bool();
-        } else {
-            return false;
-        }
+        return Settings.linkPreviews;
     }
 
     private func itemFrom(cursor: Cursor, for conversation: ConversationKey) -> ConversationEntry? {

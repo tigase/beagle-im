@@ -190,7 +190,7 @@ class MucEventHandler: XmppServiceEventHandler {
                 NSUserNotificationCenter.default.deliver(notification);
             }
         case let e as PEPBookmarksModule.BookmarksChangedEvent:
-            guard let client = XmppService.instance.getClient(for: e.sessionObject.userBareJid!), let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID), Settings.enableBookmarksSync.bool() else {
+            guard let client = XmppService.instance.getClient(for: e.sessionObject.userBareJid!), let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID), Settings.enableBookmarksSync else {
                 return;
             }
             
