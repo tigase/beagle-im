@@ -162,7 +162,7 @@ class Markdown {
                             idx = idx + 1;
                         }
                         if codeCount != count {
-                            idx = idx - 1;
+                            idx = codeStart + codeCount;
                         } else {
                             msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(location: codeStart, length: codeCount));
                             msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(location: (idx+1)-codeCount, length: codeCount));
@@ -171,11 +171,7 @@ class Markdown {
                             if isBlock {
                                 msg.addAttribute(.paragraphStyle, value: codeParagraphStyle, range: NSRange(location: codeStart, length: idx - codeStart));
                             }
-                            if #available(macOS 10.15, *) {
-                                msg.addAttribute(.font, value: NSFont.monospacedSystemFont(ofSize: fontSize, weight: .regular), range: NSRange(location: codeStart, length: (idx+1) - codeStart));
-                            } else if let font = NSFontManager.shared.font(withFamily: "Andale Mono", traits: [], weight: 500, size: fontSize) {
-                                msg.addAttribute(.font, value: font, range: NSRange(location: codeStart, length: (idx+1) - codeStart));
-                            }
+                            msg.addAttribute(.font, value: NSFont.monospacedSystemFont(ofSize: fontSize, weight: .regular), range: NSRange(location: codeStart, length: (idx+1) - codeStart));
                                                         
                             if idx - codeStart > 1 {
                                 let clearRange = NSRange(location: codeStart + codeCount, length: idx - (codeStart + (2*codeCount)));
