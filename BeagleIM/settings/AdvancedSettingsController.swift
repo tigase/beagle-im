@@ -35,13 +35,11 @@ class AdvancedSettingsController: NSViewController {
     fileprivate var ignoreJingleSupportCheck: NSButton!;
     fileprivate var usePublicStunServers: NSButton!;
     fileprivate var enableBookmarksSync: NSButton!;
-    fileprivate var enableLinkPreviews: NSButton!;
 
     fileprivate var markKeywords: NSButton!;
     fileprivate var markKeywordsWithBold: NSButton!;
     fileprivate var editKeywords: NSButton!;
     
-    fileprivate var commonChatsList: NSButton!;
     fileprivate var showAdvancedXmppFeatures: NSButton!;
     
     private var cancellables: Set<AnyCancellable> = [];
@@ -69,8 +67,6 @@ class AdvancedSettingsController: NSViewController {
         ignoreJingleSupportCheck = formView.addRow(label: "Experimental", field: NSButton(checkboxWithTitle: "Ignore VoIP support check", target: self, action: #selector(checkboxChanged(_:))));
         usePublicStunServers = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Use public STUN servers", target: self, action: #selector(checkboxChanged(_:))));
         enableBookmarksSync = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Enable groupchat bookmarks sync", target: self, action: #selector(checkboxChanged(_:))));
-        enableLinkPreviews = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Enable link previews", target: self, action: #selector(checkboxChanged(_:))));
-        commonChatsList = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show channels and chats in merged list", target: self, action: #selector(checkboxChanged(_:))));
         showAdvancedXmppFeatures = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show advanced XMPP features", target: self, action: #selector(checkboxChanged(_:))));
         
         let logsDir = formView.addRow(label: "", field: NSButton(title: "Open logs directory", target: self, action: #selector(openLogsDirectory)));
@@ -101,13 +97,11 @@ class AdvancedSettingsController: NSViewController {
         ignoreJingleSupportCheck.state = Settings.ignoreJingleSupportCheck ? .on : .off;
         usePublicStunServers.state = Settings.usePublicStunServers ? .on : .off;
         enableBookmarksSync.state = Settings.enableBookmarksSync ? .on : .off;
-        enableLinkPreviews.state = Settings.linkPreviews ? .on : .off;
         let keywords = Settings.markKeywords;
         markKeywords.state = !keywords.isEmpty ? .on : .off;
         markKeywordsWithBold.state = Settings.boldKeywords ? .on : .off;
         markKeywordsWithBold.isEnabled = markKeywords.state == .on;
         editKeywords.isEnabled = markKeywords.state == .on;
-        commonChatsList.state = Settings.commonChatsList ? .on : .off;
         showAdvancedXmppFeatures.state = Settings.showAdvancedXmppFeatures ? .on : .off;
     }
     
@@ -141,12 +135,8 @@ class AdvancedSettingsController: NSViewController {
             editKeywords.isEnabled = markKeywords.state == .on;
         case markKeywordsWithBold:
             Settings.boldKeywords = sender.state == .on;
-        case commonChatsList:
-            Settings.commonChatsList = sender.state == .on;
         case showAdvancedXmppFeatures:
             Settings.showAdvancedXmppFeatures = sender.state == .on;
-        case enableLinkPreviews:
-            Settings.linkPreviews = sender.state == .on;
         default:
             break;
         }

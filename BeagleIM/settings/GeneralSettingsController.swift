@@ -40,6 +40,9 @@ class GeneralSettingsController: NSViewController {
     private var imageQuality: NSPopUpButton!;
     private var videoQuality: NSPopUpButton!;
     
+    fileprivate var enableLinkPreviews: NSButton!;
+    fileprivate var commonChatsList: NSButton!;
+
     let appearanceOptions: [Appearance] = [.auto, .light, .dark];
     let imageQualityOptions: [ImageQuality] = [.original,.highest,.high,.medium,.low];
     let videoQualityOptions: [VideoQuality] = [.original,.high,.medium,.low];
@@ -50,7 +53,8 @@ class GeneralSettingsController: NSViewController {
         appearance = formView.addRow(label: "Appearance:", field: NSPopUpButton(frame: .zero, pullsDown: false));
         appearance.target = self;
         appearance.action = #selector(checkboxChanged(_:));
-        formView.groupItems(from: appearance!, to: appearance!);
+        commonChatsList = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show channels and chats in merged list", target: self, action: #selector(checkboxChanged(_:))));
+        formView.groupItems(from: appearance!, to: commonChatsList!);
                 
         encryptionButton = formView.addRow(label: "Default encryption:", field: NSPopUpButton(frame: .zero, pullsDown: false));
         encryptionButton?.target = self;
@@ -65,7 +69,8 @@ class GeneralSettingsController: NSViewController {
         showEmoticons = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show emoticons", target: self, action: #selector(checkboxChanged(_:))))
         Settings.$enableMarkdownFormatting.assign(to: \.isEnabled, on: showEmoticons).store(in: &cancellables)
         spellchecking = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Spellchecking", target: self, action: #selector(checkboxChanged(_:))));
-        formView.groupItems(from:markdownFormatting, to: spellchecking);
+        enableLinkPreviews = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Enable link previews", target: self, action: #selector(checkboxChanged(_:))));
+        formView.groupItems(from:markdownFormatting, to: enableLinkPreviews!);
         
         imageQuality = formView.addRow(label: "Sent images quality:", field: NSPopUpButton(frame: .zero, pullsDown: false));
         imageQuality.target = self;
@@ -98,6 +103,9 @@ class GeneralSettingsController: NSViewController {
         systemMenuIcon.state = Settings.systemMenuIcon ? .on : .off;
         spellchecking.state = Settings.spellchecking ? .on : .off;
         
+        enableLinkPreviews.state = Settings.linkPreviews ? .on : .off;
+        commonChatsList.state = Settings.commonChatsList ? .on : .off;
+
         encryptionButton.removeAllItems();
         encryptionButton.addItems(withTitles: ["None", "OMEMO"]);
         encryptionButton.selectItem(at: Settings.messageEncryption == .omemo ? 1 : 0);
@@ -132,6 +140,10 @@ class GeneralSettingsController: NSViewController {
             Settings.videoQuality = videoQualityOptions[videoQuality.indexOfSelectedItem];
         case appearance:
             Settings.appearance = self.appearanceOptions[appearance.indexOfSelectedItem];
+        case commonChatsList:
+            Settings.commonChatsList = sender.state == .on;
+        case enableLinkPreviews:
+            Settings.linkPreviews = sender.state == .on;
         default:
             break;
         }
