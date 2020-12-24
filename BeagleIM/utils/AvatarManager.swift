@@ -180,7 +180,9 @@ class AvatarManager {
         return dispatcher.sync(flags: .barrier) {
             guard let avatar = avatars[key]?.avatar else {
                 let avatar = Avatar(key: key);
-                avatar.hash = self.avatarHash(for: key.jid, on: key.account, withNickname: key.mucNickname);
+                self.dispatcher.async {
+                    avatar.hash = self.avatarHash(for: key.jid, on: key.account, withNickname: key.mucNickname);
+                }
                 avatars[key] = AvatarWeakRef(avatar: avatar);
                 return avatar;
             }
