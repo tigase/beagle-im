@@ -34,9 +34,9 @@ public protocol Conversation: ConversationProtocol, ConversationKey, Displayable
     
     var id: Int { get }
     var timestamp: Date { get }
-    var timestampPublisher: Published<Date>.Publisher { get }
+    var timestampPublisher: AnyPublisher<Date,Never> { get }
     var unread: Int { get }
-    var unreadPublisher: Published<Int>.Publisher { get }
+    var unreadPublisher: AnyPublisher<Int,Never> { get }
     var lastActivity: LastConversationActivity? { get }
     var lastActivityPublisher: Published<LastConversationActivity?>.Publisher { get }
     

@@ -62,8 +62,8 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
     
     @Published
     public private(set) var timestamp: Date;
-    public var timestampPublisher: Published<Date>.Publisher {
-        return $timestamp;
+    public var timestampPublisher: AnyPublisher<Date,Never> {
+        return $timestamp.receive(on: DispatchQueue.main).eraseToAnyPublisher();
     }
     
     @Published
@@ -74,8 +74,8 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
     
     @Published
     public private(set) var unread: Int;
-    public var unreadPublisher: Published<Int>.Publisher {
-        return $unread;
+    public var unreadPublisher: AnyPublisher<Int,Never> {
+        return $unread.receive(on: DispatchQueue.main).eraseToAnyPublisher();
     }
 
     public init(dispatcher: QueueDispatcher, context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, displayableId: DisplayableIdProtocol) {
@@ -97,9 +97,7 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
             guard unread > 0 else {
                 return false;
             }
-            DispatchQueue.main.sync {
-                unread = max(unread - count, 0);
-            }
+            unread = max(unread - count, 0);
             return true
         }
     }
@@ -107,9 +105,7 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
     public func update(lastActivity: LastChatActivity?, timestamp: Date, isUnread: Bool) -> Bool {
         return dispatcher.sync(flags: .barrier) {
             if isUnread {
-                DispatchQueue.main.sync {
-                    unread = unread + 1;
-                }
+                unread = unread + 1;
             }
             guard self.lastActivity == nil || self.timestamp.compare(timestamp) != .orderedDescending else {
                 return isUnread;
@@ -117,9 +113,7 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
             
             if lastActivity != nil {
                 self.lastActivity = lastActivity;
-                DispatchQueue.main.sync {
-                    self.timestamp = timestamp;
-                }
+                self.timestamp = timestamp;
             }
             
             return true;
