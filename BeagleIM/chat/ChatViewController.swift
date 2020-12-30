@@ -322,26 +322,28 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         case .success(_):
             break;
         case .failure(let err):
-            let alert = NSAlert();
-            alert.alertStyle = .warning;
-            alert.messageText = "Call failed";
-            alert.informativeText = "It was not possible to establish call";
-            switch err {
-            case let e as ErrorCondition:
-                switch e {
-                case .forbidden:
-                    alert.informativeText = "It was not possible to access camera or microphone. Please check permissions in the system settings";
+            DispatchQueue.main.async {
+                let alert = NSAlert();
+                alert.alertStyle = .warning;
+                alert.messageText = "Call failed";
+                alert.informativeText = "It was not possible to establish call";
+                switch err {
+                case let e as ErrorCondition:
+                    switch e {
+                    case .forbidden:
+                        alert.informativeText = "It was not possible to access camera or microphone. Please check permissions in the system settings";
+                    default:
+                        break;
+                    }
                 default:
                     break;
                 }
-            default:
-                break;
+                guard let window = self.view.window else {
+                    return;
+                }
+                alert.addButton(withTitle: "OK");
+                alert.beginSheetModal(for: window, completionHandler: nil);
             }
-            guard let window = self.view.window else {
-                return;
-            }
-            alert.addButton(withTitle: "OK");
-            alert.beginSheetModal(for: window, completionHandler: nil);
         }
     }
 

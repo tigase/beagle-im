@@ -284,7 +284,7 @@ class Call: NSObject {
             return;
         }
         let presences = PresenceStore.instance.presences(for: jid, context: client);
-        guard !presences.isEmpty else {
+        guard !presences.isEmpty || Settings.ignoreJingleSupportCheck else {
             completionHandler(.failure(ErrorCondition.item_not_found));
             return;
         };
@@ -302,7 +302,7 @@ class Call: NSObject {
                 }
             }
         }
-        guard !withJingle.isEmpty else {
+        guard !withJingle.isEmpty || Settings.ignoreJingleSupportCheck else {
             completionHandler(.failure(ErrorCondition.item_not_found));
             return;
         }
@@ -402,32 +402,28 @@ class Call: NSObject {
     }
     
     private func initiateWebRTC(iceServers: [RTCIceServer], completionHandler: @escaping (Result<Void,Error>)->Void) {
-        currentConnection = VideoCallController.initiatePeerConnection(iceServers: iceServers, withDelegate: self);
-        if currentConnection != nil {
+        self.currentConnection = VideoCallController.initiatePeerConnection(iceServers: iceServers, withDelegate: self);
+        if self.currentConnection != nil {
             self.localAudioTrack = VideoCallController.peerConnectionFactory.audioTrack(withTrackId: "audio-" + UUID().uuidString);
             if let localAudioTrack = self.localAudioTrack {
-                currentConnection?.add(localAudioTrack, streamIds: ["RTCmS"]);
+                self.currentConnection?.add(localAudioTrack, streamIds: ["RTCmS"]);
             }
-            if media.contains(.video) && AVCaptureDevice.authorizationStatus(for: .video) == .authorized {
+            if self.media.contains(.video) && AVCaptureDevice.authorizationStatus(for: .video) == .authorized {
                 let videoSource = VideoCallController.peerConnectionFactory.videoSource();
                 self.localVideoSource = videoSource;
                 let localVideoTrack = VideoCallController.peerConnectionFactory.videoTrack(with: videoSource, trackId: "video-" + UUID().uuidString);
                 self.localVideoTrack = localVideoTrack;
                 let localVideoCapturer = RTCCameraVideoCapturer(delegate: videoSource);
                 self.localCapturer = localVideoCapturer;
-                currentConnection?.add(localVideoTrack, streamIds: ["RTCmS"]);
                 if let device = RTCCameraVideoCapturer.captureDevices().first, let format = RTCCameraVideoCapturer.format(for: device, preferredOutputPixelFormat: localVideoCapturer.preferredOutputPixelFormat()) {
                     print("starting video capture on:", device, " with:", format, " fps:", RTCCameraVideoCapturer.fps(for: format));
                     self.localCameraDeviceID = device.uniqueID;
-                    DispatchQueue.main.async {
-                        localVideoCapturer.startCapture(with: device, format: format, fps: RTCCameraVideoCapturer.fps(for:  format), completionHandler: { error in
-                            print("video capturer started!");
-                            DispatchQueue.main.async {
-                                completionHandler(.success(Void()));
-                            }
-                        });
-                        self.delegate?.call(self, didReceiveLocalVideoTrack: localVideoTrack);
-                    }
+                    localVideoCapturer.startCapture(with: device, format: format, fps: RTCCameraVideoCapturer.fps(for:  format), completionHandler: { error in
+                        print("video capturer started!");
+                    });
+                    self.delegate?.call(self, didReceiveLocalVideoTrack: localVideoTrack);
+                    self.currentConnection?.add(localVideoTrack, streamIds: ["RTCmS"]);
+                    completionHandler(.success(Void()));
                 } else {
                     completionHandler(.failure(ErrorCondition.item_not_found));
                 }
@@ -555,6 +551,7 @@ extension Call: RTCPeerConnectionDelegate {
     }
         
     func peerConnectionShouldNegotiate(_ peerConnection: RTCPeerConnection) {
+        print("negotiation required");
     }
         
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceConnectionState) {

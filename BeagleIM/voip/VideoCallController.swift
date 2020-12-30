@@ -96,7 +96,9 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
     }
     
     func call(_ call: Call, didReceiveLocalVideoTrack localTrack: RTCVideoTrack) {
-        self.localVideoTrack = localTrack;
+        DispatchQueue.main.async {
+            self.localVideoTrack = localTrack;
+        }
     }
     
     func call(_ call: Call, didReceiveRemoteVideoTrack remoteTrack: RTCVideoTrack) {
@@ -151,6 +153,8 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
         remoteVideoView.delegate = self;
     }
     
+//    private var timer: Foundation.Timer?;
+    
     override func viewWillAppear() {
         super.viewWillAppear();
         
@@ -164,6 +168,22 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
         }
         self.updateAvatarView();
         self.updateStateLabel();
+        
+//        timer = Foundation.Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true, block: { timer in
+//            guard let tracks = self.call?.currentConnection?.receivers.map({ $0.track }) else {
+//                return;
+//            }
+//            for track in tracks {
+//                self.call?.currentConnection?.stats(for: track, statsOutputLevel: .debug, completionHandler: { report in
+//                    print("stats: \(report)");
+//                })
+//            }
+//        });
+    }
+    
+    override func viewWillDisappear() {
+//        timer?.invalidate();
+        super.viewWillDisappear();
     }
     
     func videoView(_ videoView: RTCVideoRenderer, didChangeVideoSize size: CGSize) {
