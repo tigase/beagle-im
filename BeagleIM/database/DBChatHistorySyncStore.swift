@@ -23,6 +23,7 @@ import Foundation
 import TigaseSwift
 import os
 import TigaseSQLite3
+import Combine
 
 extension Query {
     static let mamSyncInsertPeriod = Query("INSERT INTO chat_history_sync (id, account, component, from_timestamp, from_id, to_timestamp) VALUES (:id, :account, :component, :from_timestamp, :from_id, :to_timestamp)");
@@ -39,16 +40,21 @@ class DBChatHistorySyncStore {
     
     static let instance = DBChatHistorySyncStore()
         
+    private var cancellables: Set<AnyCancellable> = [];
+    
     init() {
-        NotificationCenter.default.addObserver(self, selector: #selector(accountChanged(_:)), name: AccountManager.ACCOUNT_CHANGED, object: nil);
+        AccountManager.accountEventsPublisher.sink(receiveValue: { [weak self] event in
+            self?.accountChanged(event);
+        }).store(in: &cancellables)
     }
     
-    @objc func accountChanged(_ notification: Notification) {
-        guard let acc = notification.object as? AccountManager.Account, AccountManager.getAccount(for: acc.name) == nil else {
-            return;
+    func accountChanged(_ event: AccountManager.Event) {
+        switch event {
+        case .removed(let account):
+            removeSyncPeriods(forAccount: account.name);
+        default:
+            break;
         }
-        
-        removeSyncPeriods(forAccount: acc.name);
     }
 
     func addSyncPeriod(_ period: Period) {

@@ -46,8 +46,6 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
         
         self.addContactButton.isEnabled = false;
         
-        NotificationCenter.default.addObserver(self, selector: #selector(serviceStatusChanged), name: XmppService.STATUS_CHANGED, object: nil);
-
         self.contactsTableView.menu?.delegate = self;
         
         statusButton.setTitle(statusButton.itemTitle(at: 1));
@@ -59,6 +57,7 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
         DBRosterStore.instance.$items.combineLatest($showOnlyOnline, PresenceStore.instance.$bestPresences).debounce(for: 0.1, scheduler: dispatcher.queue).sink(receiveValue: { [weak self] (items, available, presences) in
             self?.update(items: Array(items), presences: presences, available: available);
         }).store(in: &cancellables);
+        XmppService.instance.$currentStatus.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] status in self?.statusUpdated(status) }).store(in: &cancellables);
         super.viewWillAppear();
         self.statusUpdated(XmppService.instance.currentStatus);
     }
@@ -157,11 +156,6 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
             self.statusView.backgroundColor = NSColor.controlColor;
             self.statusView.needsDisplay = true;
         }
-    }
-    
-    @objc func serviceStatusChanged(_ notification: Notification) {
-        let status = notification.object as? XmppService.Status;
-        self.statusUpdated(status);
     }
     
     fileprivate func statusUpdated(_ status: XmppService.Status?) {

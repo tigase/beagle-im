@@ -32,7 +32,6 @@ class XmppService: EventHandler {
     
     static let AUTHENTICATION_ERROR = Notification.Name("authenticationError");
     static let CONTACT_PRESENCE_CHANGED = Notification.Name("contactPresenceChanged");
-    static let STATUS_CHANGED = Notification.Name("statusChanged");
     static let ACCOUNT_STATUS_CHANGED = Notification.Name("accountStatusChanged");
     static let SERVER_CERTIFICATE_ERROR = Notification.Name("serverCertificateError");
     
@@ -49,6 +48,7 @@ class XmppService: EventHandler {
             }
         }
     }
+
     
     fileprivate var _clients = [BareJID: XMPPClient]();
     
@@ -65,117 +65,123 @@ class XmppService: EventHandler {
         }
     }
 
-    fileprivate var nonIdleStatus: Status? = nil;
-    var isIdle: Bool = false {
-        didSet {
-            if isIdle && Settings.enableAutomaticStatus {
-                nonIdleStatus = status;
-                status = status.with(show: .xa);
-            } else if let restoreStatus = nonIdleStatus {
-                status = restoreStatus;
+    @Published
+    var isIdle: Bool = false
+    
+    @Published
+    fileprivate(set) var isNetworkAvailable: Bool = false;
+
+    @Published
+    var status: Status = Status(show: .online, message: nil);
+    
+    public let expectedStatus = CurrentValueSubject<Status,Never>(Status(show: nil, message: nil));
+    
+    @Published
+    fileprivate(set) var currentStatus: Status = Status(show: nil, message: nil);
+    
+    let tasksQueue = KeyedTasksQueue();
+    
+    @Published
+    private var isAnyConnected: Bool = false;
+    
+    private var cancellables: Set<AnyCancellable> = [];
+    
+    init() {
+        NotificationCenter.default.addObserver(self, selector: #selector(networkChanged), name: Reachability.NETWORK_CHANGED, object: nil);
+        
+        self.$status.combineLatest($isIdle, { (status, idle) -> Status in
+            if idle && status.show != nil {
+                return status.with(show: .xa);
             }
-        }
+            return status;
+        }).combineLatest($isNetworkAvailable, { (status, networkAvailble) -> Status in
+            if networkAvailble {
+                return status;
+            } else {
+                return status.with(show: nil);
+            }
+        }).assign(to: \.value, on: expectedStatus).store(in: &cancellables);
+        expectedStatus.map({ status in
+                            return status.show != nil
+        }).removeDuplicates().sink(receiveValue: { [weak self] available in
+            if available {
+                self?.connectClients(ignoreCheck: true);
+            } else {
+                self?.disconnectClients();
+            }
+        }).store(in: &cancellables);
+        expectedStatus.receive(on: self.dispatcher.queue).sink(receiveValue: { [weak self] status in self?.statusUpdated(status) }).store(in: &cancellables);
+        expectedStatus.combineLatest($isAnyConnected).map({ status, connected in
+            if !connected {
+                return status.with(show: nil);
+            }
+            return status;
+        }).sink(receiveValue: { [weak self] status in self?.currentStatus = status }).store(in: &cancellables);
+        
+        AccountManager.accountEventsPublisher.receive(on: self.dispatcher.queue).sink(receiveValue: { [weak self] event in
+            self?.accountChanged(event: event);
+        }).store(in: &cancellables);
     }
     
-    fileprivate(set) var isNetworkAvailable: Bool = false {
-        didSet {
-            if isNetworkAvailable {
-                if !oldValue {
-                    connectClients();
-                } else {
-                    sendKeepAlive();
+    private func accountChanged(event: AccountManager.Event) {
+        switch event {
+        case .enabled(let account):
+            if let client = self._clients[account.name] {
+                // if client exists and is connected, then reconnect it..
+                if client.state != .disconnected() {
+                    client.disconnect();
                 }
             } else {
-                disconnectClients(force: isAwake);
+                let client = self.initializeClient(for: account);
+                _ = self.register(client: client, for: account);
+                self.connect(client: client, for: account);
+            }
+        case .disabled(let account), .removed(let account):
+            if let client = self._clients[account.name] {
+                let prevState = client.state;
+                client.disconnect();
+                if prevState == .disconnected() && client.state == .disconnected() {
+                    self.unregisterClient(client);
+                }
             }
         }
     }
 
-    var status: Status = Status(show: nil, message: nil) {
-        didSet {
-            if Settings.rememberLastStatus {
-//                Settings.currentStatus.set(value: status);
-            }
-            guard isNetworkAvailable else {
-                return;
-            }
-            if status.show == nil && oldValue.show != nil {
-                self.disconnectClients();
-            }
-            else if status.show != nil && oldValue.show == nil {
-                self.connectClients();
-            }
-            else if status.show != nil {
-                self.clients.values.forEach { client in
-                    guard let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID) else {
-                        return;
-                    }
-                    
-                    presenceModule.setPresence(show: status.show!, status: status.message, priority: nil);
-                }
-                self.currentStatus = status;
-            }
-        }
-    }
     
-    fileprivate(set) var currentStatus: Status = Status(show: nil, message: nil) {
-        didSet {
-            if oldValue != currentStatus {
-                NotificationCenter.default.post(name: XmppService.STATUS_CHANGED, object: currentStatus);
-            }
-        }
-    }
-    
-    let tasksQueue = KeyedTasksQueue();
-    
-    init() {
-        let accountNames = AccountManager.getActiveAccounts();
-        
-        accountNames.forEach { accountName in
-            if let client = self.initializeClient(jid: accountName) {
-                print("XMPP client for account", accountName, "initialized!");
-                //clients[accountName] = client;
-                let account = AccountManager.getAccount(for: accountName)!;
-                _ = self.register(client: client, for: account);
-            }
+    func initialize() {
+        for account in AccountManager.getActiveAccounts() {
+            let client = self.initializeClient(for: account);
+            _ = self.register(client: client, for: account);
         }
         
-        NotificationCenter.default.addObserver(self, selector: #selector(networkChanged), name: Reachability.NETWORK_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(accountChanged), name: AccountManager.ACCOUNT_CHANGED, object: nil);
-        initialize();
-    }
-    
-    fileprivate func initialize() {
         self.isNetworkAvailable = reachability.isConnectedToNetwork();
-        if Settings.automaticallyConnectAfterStart {
-//            if let status: Status = Settings.currentStatus.object() {
-//                self.status = status;
-//            } else {
-            self.status = self.status.with(show: .online);
-//            }
+    }
+ 
+    private func statusUpdated(_ status: Status) {
+        if let show = status.show {
+            self._clients.values.forEach { client in
+                client.module(.presence).setPresence(show: show, status: status.message, priority: nil);
+            }
         }
     }
-    
+        
     func getClient(for account: BareJID) -> XMPPClient? {
         return dispatcher.sync {
-            return clients[account];
+            return _clients[account];
         }
     }
     
-    func connectClients() {
-        guard self.isNetworkAvailable && self.status.show != nil else {
-            return;
-        }
+    private func connectClients(ignoreCheck: Bool) {
         dispatcher.async {
-            self.clients.values.forEach { client in
-                self.connect(client: client);
+            self._clients.values.forEach { client in
+                self.reconnect(client: client, ignoreCheck: ignoreCheck);
             }
         }
     }
     
-    func disconnectClients(force: Bool = false) {
+    private func disconnectClients(force: Bool = false) {
         dispatcher.async {
-            self.clients.values.forEach { client in
+            self._clients.values.forEach { client in
                 client.disconnect(force);
             }
         }
@@ -183,7 +189,7 @@ class XmppService: EventHandler {
     
     fileprivate func sendKeepAlive() {
         dispatcher.async {
-            self.clients.values.forEach { client in
+            self._clients.values.forEach { client in
                 client.keepalive();
             }
         }
@@ -192,12 +198,16 @@ class XmppService: EventHandler {
     func handle(event: Event) {
         switch event {
         case let e as StreamManagementModule.ResumedEvent:
-            updateCurrentStatus();
+            self.dispatcher.async {
+                self.isAnyConnected = true;
+            }
             NotificationCenter.default.post(name: XmppService.ACCOUNT_STATUS_CHANGED, object: e.sessionObject.userBareJid);
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
             //test(e.sessionObject);
             print("account", e.sessionObject.userBareJid!, "is now connected!");
-            self.updateCurrentStatus();
+            self.dispatcher.async {
+                self.isAnyConnected = true;
+            }
             NotificationCenter.default.post(name: XmppService.ACCOUNT_STATUS_CHANGED, object: e.sessionObject.userBareJid);
             break;
         case let e as AuthModule.AuthFailedEvent:
@@ -231,7 +241,9 @@ class XmppService: EventHandler {
             }
         case let e as SocketConnector.DisconnectedEvent:
             print("##### \(e.sessionObject.userBareJid!.stringValue) - disconnected", Date());
-            updateCurrentStatus();
+            self.dispatcher.async {
+                self.isAnyConnected = !self._clients.values.map({ $0.state }).filter({ $0 == .connected }).isEmpty;
+            }
             NotificationCenter.default.post(name: XmppService.ACCOUNT_STATUS_CHANGED, object: e.sessionObject.userBareJid);
 
             if let client = self.getClient(for: e.sessionObject.userBareJid!) {
@@ -242,11 +254,17 @@ class XmppService: EventHandler {
         }
     }
     
-    fileprivate func connect(client: XMPPClient) {
-        guard let account = AccountManager.getAccount(for: client.sessionObject.userBareJid!), account.active, self.isNetworkAvailable, self.status.show != nil  else {
-            return;
+    private func reconnect(client: XMPPClient, ignoreCheck: Bool = false) {
+        self.dispatcher.sync {
+            guard client.state == .disconnected(), let account = AccountManager.getAccount(for: client.userBareJid), account.active, ignoreCheck || ( self.isNetworkAvailable && self.status.show != nil)  else {
+                return;
+            }
+            
+            self.connect(client: client, for: account);
         }
-        
+    }
+    
+    private func connect(client: XMPPClient, for account: AccountManager.Account) {
         client.connectionConfiguration.credentials = .password(password: account.password!, authenticationName: nil, cache: nil);
         if let serverCertificate = account.serverCertificate, serverCertificate.accepted {
             client.connectionConfiguration.sslCertificateValidation = .fingerprint(serverCertificate.details.fingerprintSha1);
@@ -266,21 +284,6 @@ class XmppService: EventHandler {
         
         client.login();
     }
-    
-    fileprivate func updateCurrentStatus() {
-        dispatcher.async {
-            let clients = self._clients.values;
-            DispatchQueue.global(qos: .default).async {
-                guard clients.first(where: { (client) -> Bool in
-                    return client.state == .connected;
-                }) != nil else {
-                    DispatchQueue.main.async { self.currentStatus = self.status.with(show: nil); }
-                    return;
-                }
-                DispatchQueue.main.async { self.currentStatus = self.status; }
-            }
-        }
-    }
 
     private var clientCancellables: [BareJID:AnyCancellable] = [:] {
         didSet {
@@ -288,54 +291,22 @@ class XmppService: EventHandler {
         }
     }
     
-    @objc func accountChanged(_ notification: Notification) {
-        guard let account = notification.object as? AccountManager.Account else {
-            return;
-        }
-    
-        let active = AccountManager.getAccount(for: account.name)?.active;
-        guard active ?? false else {
-            dispatcher.sync {
-                guard let client = self._clients[account.name] else {
-                    return;
-                }
-                let prevState = client.state;
-                client.disconnect();
-                if prevState == .disconnected() && client.state == .disconnected() {
-                    self.unregisterClient(client);
-                }
-            }
-            return;
-        }
-        
-        dispatcher.sync {
-            if let client = self._clients[account.name] {
-                client.connectionConfiguration.credentials = .password(password: account.password!, authenticationName: nil, cache: nil);
-                client.disconnect();
-            } else {
-                let client = self.register(client: self.initializeClient(jid: account.name)!, for: account);
-
-                if self.isNetworkAvailable {
-                    DispatchQueue.global().async {
-                        self.connect(client: client);
-                    }
-                }
-            }
-        }
-    }
-    
     private func disconnected(client: XMPPClient) {
         let accountName = client.sessionObject.userBareJid!;
+        defer {
+            DBChatStore.instance.resetChatStates(for: accountName);
+        }
         self.dispatcher.sync {
             let active = AccountManager.getAccount(for: accountName)?.active
             if !(active ?? false) {
                 self.unregisterClient(client, removed: active == nil);
             }
         }
+        
+        
         guard self.status.show != nil || !self.isNetworkAvailable else {
             return;
         }
-        DBChatStore.instance.resetChatStates(for: accountName);
         let retry = client.retryNo;
         client.retryNo = retry + 1;
         var timeout = 2.0 * Double(retry) + 0.5;
@@ -344,7 +315,7 @@ class XmppService: EventHandler {
         }
         DispatchQueue.global().asyncAfter(deadline: DispatchTime.now() + timeout) { [weak client] in
             if let c = client {
-                self.connect(client: c);
+                self.reconnect(client: c);
             }
         }
     }
@@ -381,11 +352,8 @@ class XmppService: EventHandler {
         self.isNetworkAvailable = reachability.isConnectedToNetwork();
     }
     
-    fileprivate func initializeClient(jid: BareJID) -> XMPPClient? {
-        guard AccountManager.getAccount(for: jid)?.active ?? false else {
-            return nil;
-        }
-        
+    fileprivate func initializeClient(for account: AccountManager.Account) -> XMPPClient {
+        let jid = account.name;
         let client = XMPPClient();
         client.connectionConfiguration.dnsResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(), cache: self.dnsCache);
         client.connectionConfiguration.userJid = jid;

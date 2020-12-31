@@ -22,6 +22,7 @@
 import AppKit
 import TigaseSwift
 import TigaseSQLite3
+import Combine
 
 extension Query {
     static let chatInsert = Query("INSERT INTO chats (account, jid, timestamp, type, options) VALUES (:account, :jid, :timestamp, :type, :options)");
@@ -53,17 +54,16 @@ open class DBChatStore: ContextLifecycleAware {
     public private(set) var conversations: [Conversation] = [];
     private let conversationsDispatcher = QueueDispatcher(label: "conversationsDispatcher");
 
-    fileprivate(set) var unreadMessagesCount: Int = 0 {
-        didSet {
-            let value = self.unreadMessagesCount;
-            DispatchQueue.main.async {
-                NotificationCenter.default.post(name: DBChatStore.UNREAD_MESSAGES_COUNT_CHANGED, object: value);
-            }
-        }
-    }
+    @Published
+    fileprivate(set) var unreadMessagesCount: Int = 0;
 
+    private var cancellables: Set<AnyCancellable> = [];
+    
     public init() {
         self.dispatcher = QueueDispatcher(label: "db_chat_store");
+        $unreadMessagesCount.receive(on: DispatchQueue.main).sink(receiveValue: { value in
+            NotificationCenter.default.post(name: DBChatStore.UNREAD_MESSAGES_COUNT_CHANGED, object: value);
+        }).store(in: &cancellables);
     }
 
     public func accountChats(for account: BareJID) -> AccountConversations? {

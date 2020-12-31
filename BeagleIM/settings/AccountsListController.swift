@@ -38,9 +38,13 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
         }
     }
     
+    private var cancellables: Set<AnyCancellable> = [];
+    
     override func viewDidLoad() {
         super.viewDidLoad();
-        NotificationCenter.default.addObserver(self, selector: #selector(accountChanged), name: AccountManager.ACCOUNT_CHANGED, object: nil);
+        AccountManager.accountEventsPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] event in
+            self?.accountChanged();
+        }).store(in: &cancellables);
     }
     
     override func viewWillAppear() {
@@ -87,13 +91,11 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
         return AccountRowView();
     }
         
-    @objc func accountChanged(_ notification: Notification) {
-        DispatchQueue.main.async {
-            let selectedRow = self.tableView?.selectedRow;
-            self.refreshAccounts();
-            if selectedRow != nil {
-                self.tableView?.selectRowIndexes(IndexSet(integer: selectedRow!), byExtendingSelection: false);
-            }
+    func accountChanged() {
+        let selectedRow = self.tableView?.selectedRow;
+        self.refreshAccounts();
+        if selectedRow != nil {
+            self.tableView?.selectRowIndexes(IndexSet(integer: selectedRow!), byExtendingSelection: false);
         }
     }
     

@@ -172,7 +172,6 @@ class AvatarManager {
 
     public init() {
         NotificationCenter.default.addObserver(self, selector: #selector(vcardUpdated), name: DBVCardStore.VCARD_UPDATED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(accountChanged), name: AccountManager.ACCOUNT_CHANGED, object: nil);
     }
 
     private var avatars: [Avatar.Key: AvatarWeakRef] = [:];
@@ -293,20 +292,6 @@ class AvatarManager {
                 self.updateAvatar(hash: hash, forType: .vcardTemp, forJid: vcardItem.jid, on: vcardItem.account);
             }
         }
-    }
-
-    @objc func accountChanged(_ notification: Notification) {
-        guard let account = notification.object as? AccountManager.Account else {
-            return;
-        }
-
-        guard AccountManager.getAccount(for: account.name) == nil else {
-            return;
-        }
-
-//        dispatcher.async(flags: .barrier) {
-//            self.cache.removeValue(forKey: account.name);
-//        }
     }
 
     func retrievePepUserAvatar(for jid: BareJID, on account: BareJID, hash: String) {

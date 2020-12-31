@@ -29,8 +29,8 @@ open class AccountManager {
     private static let dispatcher = QueueDispatcher(label: "AccountManager");
     private static var accounts: [BareJID: Account] = [:];
     
-    public static let ACCOUNT_CHANGED = Notification.Name(rawValue: "accountChanged");
-
+    static let accountEventsPublisher = PassthroughSubject<Event,Never>();
+    
     static var defaultAccount: BareJID? {
         get {
             return BareJID(Settings.defaultAccount);
@@ -74,9 +74,12 @@ open class AccountManager {
         }
     }
     
-    static func getActiveAccounts() -> [BareJID] {
-        return getAccounts().filter({ jid -> Bool in
-            return AccountManager.getAccount(for: jid)?.active ?? false
+    static func getActiveAccounts() -> [Account] {
+        return getAccounts().compactMap({ jid -> Account? in
+            guard let account = getAccount(for: jid), account.active else {
+                return nil;
+            }
+            return account;
         });
     }
     
@@ -86,7 +89,7 @@ open class AccountManager {
         }
     }
     
-    private static func getAccountInt(for jid: BareJID) -> Account? {
+    static func getAccountInt(for jid: BareJID) -> Account? {
         let query: [String: Any] = [ kSecClass as String: kSecClassGenericPassword, kSecMatchLimit as String: kSecMatchLimitOne, kSecReturnAttributes as String: kCFBooleanTrue as Any, kSecAttrService as String: "xmpp" as NSObject, kSecAttrAccount as String : jid.stringValue as NSObject ];
         
         var result: CFTypeRef?;
@@ -128,10 +131,12 @@ open class AccountManager {
         if defaultAccount == nil {
             defaultAccount = account.name;
         }
-            
+         
         self.accounts[account.name] = account;
         
-        AccountManager.accountChanged(account: account);
+        DispatchQueue.main.async {
+        self.accountEventsPublisher.send(account.active ? .enabled(account) : .disabled(account));
+        }
         
         return result;
         }
@@ -146,12 +151,14 @@ open class AccountManager {
         }
         
         if let defAccount = defaultAccount, defAccount == account.name {
-            defaultAccount = AccountManager.getAccounts().first;
+            defaultAccount = getAccounts().first;
         }
-        
-        AccountManager.accountChanged(account: account);
 
         self.accounts.removeValue(forKey: account.name);
+
+        DispatchQueue.main.async {
+            self.accountEventsPublisher.send(.removed(account));
+        }
             
         return true;
         }
@@ -164,11 +171,11 @@ open class AccountManager {
         
         return try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data!) as? [String: Any];
     }
-    
-    static fileprivate func accountChanged(account: Account) {
-        DispatchQueue.main.async {
-            NotificationCenter.default.post(name: AccountManager.ACCOUNT_CHANGED, object: account);
-        }
+        
+    enum Event {
+        case enabled(Account)
+        case disabled(Account)
+        case removed(Account)
     }
     
     struct Account {

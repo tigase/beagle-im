@@ -27,7 +27,7 @@ class PresenceRosterEventHandler: XmppServiceEventHandler {
     let events: [Event] = [RosterModule.ItemUpdatedEvent.TYPE,PresenceModule.BeforePresenceSendEvent.TYPE, PresenceModule.SubscribeRequestEvent.TYPE];
     
     var status: XmppService.Status {
-        return XmppService.instance.status;
+        return XmppService.instance.expectedStatus.value;
     }
     
     func handle(event: Event) {

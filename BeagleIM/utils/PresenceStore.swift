@@ -118,6 +118,7 @@ class PresenceStore: TigaseSwift.PresenceStore {
                 return false;
             } else {
                 self.presencesByBareJID.removeValue(forKey: key);
+                self.bestPresences.removeValue(forKey: key);
                 self.bestPresenceEvents.send(.init(account: context.userBareJid, jid: jid.bareJid, presence: nil));
                 return true;
             }

@@ -148,8 +148,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
 //        window.titlebarAppearsTransparent = true;
 //        window.titleVisibility = .hidden;
         
-        NotificationCenter.default.addObserver(self, selector: #selector(updateStatusItem(_:)), name: XmppService.STATUS_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(unreadMessagesCountChanged), name: DBChatStore.UNREAD_MESSAGES_COUNT_CHANGED, object: nil);
+        XmppService.instance.$currentStatus.combineLatest(DBChatStore.instance.$unreadMessagesCount, Settings.$systemMenuIcon).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (status, unread, show) in
+            self?.updateStatusItem(status: status, unread: unread, show: show);
+        }).store(in: &cancellables);
+        DBChatStore.instance.$unreadMessagesCount.map({ $0 == 0 ? nil : "\($0)" }).receive(on: DispatchQueue.main).assign(to: \.badgeLabel,                                                                                                                            on: NSApplication.shared.dockTile).store(in: &cancellables);
         
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (result, error) in
             print("could not get authorization for notifications", result, error as Any);
@@ -160,7 +162,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
 //        let storyboard = NSStoryboard(name: "Main", bundle: nil);
 //        let rosterWindowController = storyboard.instantiateController(withIdentifier: "RosterWindowController") as! NSWindowController;
 //        rosterWindowController.showWindow(self);
-        _ = XmppService.instance;
+        XmppService.instance.initialize();
         
         if AccountManager.getAccounts().isEmpty {
             let alert = Alert();
@@ -184,20 +186,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                 }
             };
         }
-        
-        Settings.$systemMenuIcon.sink(receiveValue: { [weak self] value in
-            if value {
-                if (self?.statusItem == nil) {
-                    self?.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength);
-                }
-                self?.updateStatusItem();
-            } else {
-                if let item = self?.statusItem {
-                    self?.statusItem = nil;
-                    NSStatusBar.system.removeStatusItem(item);
-                }
-            }
-        }).store(in: &cancellables);
         
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receivedSleepNotification), name: NSWorkspace.willSleepNotification, object: nil);
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receivedWakeNotification), name: NSWorkspace.didWakeNotification, object: nil);
@@ -381,7 +369,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         // Insert code here to tear down your application
         NSAppleEventManager.shared().removeEventHandler(forEventClass: AEEventClass(kInternetEventClass), andEventID: AEEventID(kAEGetURL))
         
-        XmppService.instance.disconnectClients();
+        XmppService.instance.status = XmppService.instance.status.with(show: nil);
         
         let openedWindows = NSApp.windows.map { (window) -> String? in
             guard let windowController = window.windowController else {
@@ -410,14 +398,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         return false;
     }
     
-    @objc func updateStatusItem(_ notification: Notification) {
-        updateStatusItem();
-    }
-    
-    func updateStatusItem() {
+    func updateStatusItem(status: XmppService.Status, unread: Int, show: Bool) {
+        if show {
+            if self.statusItem == nil {
+                self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength);
+            }
+        } else {
+            if let item = self.statusItem {
+                self.statusItem = nil;
+                NSStatusBar.system.removeStatusItem(item);
+            }
+        }
+
         if let statusItem = self.statusItem {
-            let connected = XmppService.instance.currentStatus.show != nil;
-            let hasUnread = DBChatStore.instance.unreadMessagesCount > 0;
+            let connected = status.show != nil;
+            let hasUnread = unread > 0;
             let statusItemImage = NSImage(named: hasUnread ? NSImage.applicationIconName : (connected ? "MenuBarOnline" : "MenuBarOffline"));
             statusItemImage?.resizingMode = .tile;
             let size = min(statusItem.button!.frame.height, statusItem.button!.frame.height);
@@ -433,18 +428,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         DispatchQueue.main.async {
             NSApp.activate(ignoringOtherApps: true);
         }
-    }
-    
-    @objc func unreadMessagesCountChanged(_ notification: Notification) {
-        guard let value = notification.object as? Int else {
-            return;
-        }
-        if value > 0 {
-            NSApplication.shared.dockTile.badgeLabel = "\(value)";
-        } else {
-            NSApplication.shared.dockTile.badgeLabel = nil;
-        }
-        updateStatusItem();
     }
         
     var preferencesWindowController: NSWindowController? {
@@ -576,38 +559,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             return;
         }
         
-        if #available(OSX 10.14, *) {
-            UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
-                let identifiers = notifications.filter({ (n) -> Bool in
-                    let userInfo = n.request.content.userInfo;
-                    guard let id = userInfo["id"] as? String, id == "message-new" else {
-                        return false;
-                    }
-                    guard let account = BareJID(userInfo["account"] as? String), let jid = BareJID(userInfo["jid"] as?    String) else {
-                        return false;
-                    }
-                    guard chat.account == account && chat.jid == jid else {
-                        return false;
-                    }
-                    return true;
-                }).map({ (n) -> String in
-                    return n.request.identifier;
-                });
-                UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: identifiers);
-            }
-        } else {
-            NSUserNotificationCenter.default.deliveredNotifications.forEach { (n) in
-                guard let id = n.userInfo?["id"] as? String, id == "message-new" else {
-                    return;
+        UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
+            let identifiers = notifications.filter({ (n) -> Bool in
+                let userInfo = n.request.content.userInfo;
+                guard let id = userInfo["id"] as? String, id == "message-new" else {
+                    return false;
                 }
-                guard let account = BareJID(n.userInfo?["account"] as? String), let jid = BareJID(n.userInfo?["jid"] as?    String) else {
-                    return;
+                guard let account = BareJID(userInfo["account"] as? String), let jid = BareJID(userInfo["jid"] as?    String) else {
+                    return false;
                 }
                 guard chat.account == account && chat.jid == jid else {
-                    return;
+                    return false;
                 }
-                NSUserNotificationCenter.default.removeDeliveredNotification(n);
-            }
+                return true;
+            }).map({ (n) -> String in
+                return n.request.identifier;
+            });
+            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: identifiers);
         }
     }
 
