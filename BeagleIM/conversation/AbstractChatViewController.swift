@@ -51,6 +51,19 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
         
     private(set) var correctedMessageOriginId: String?;
                 
+    override var acceptsFirstResponder: Bool {
+        return true;
+    }
+    
+    override func keyDown(with event: NSEvent) {
+        guard event.specialKey == nil else {
+            return;
+        }
+    
+        self.view.window?.makeFirstResponder(messageField);
+        messageField.keyDown(with: event);
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad();
         self.messageField.delegate = self;
