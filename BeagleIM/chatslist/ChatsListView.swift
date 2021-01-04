@@ -23,6 +23,12 @@ import AppKit
 import TigaseSwift
 import Combine
 
+enum ChatsListStyle: String {
+    case minimal
+    case small
+    case large
+}
+
 protocol ChatsListViewDataSourceDelegate: class {
     
     func beginUpdates()
@@ -76,8 +82,12 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
                 that.outlineView.expandItem(group);
             }
         }).store(in: &cancellables)
+        Settings.$chatslistStyle.dropFirst().receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] _ in
+            self?.reload()
+        }).store(in: &cancellables);
+
         outlineView.reloadData();
-        
+                
         NotificationCenter.default.addObserver(self, selector: #selector(chatSelected), name: ChatsListViewController.CHAT_SELECTED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(closeSelectedChat), name: ChatsListViewController.CLOSE_SELECTED_CHAT, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(invitationClicked(_:)), name: InvitationManager.INVITATION_CLICKED, object: nil);
@@ -136,19 +146,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     }
     
     func itemChanged(item: Any?) {
-        if #available(macOS 10.15, *) {
-            outlineView.reloadItem(item);
-        } else {
-            let row = outlineView.row(forItem: item);
-            guard row == 0 || row > 0 else {
-                return;
-            }
-            let view = outlineView.view(atColumn: 0, row: row, makeIfNecessary: false);
-            // maybe we should update view?
-            if let v = view as? ChatCellView, let i = item as? ConversationItem {
-                v.update(from: i);
-            }
-        }
+        outlineView.reloadItem(item);
     }
     
     @IBAction func openNewChatClicked(_ sender: NSButton) {
@@ -354,6 +352,22 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         }
     }
 
+    enum ViewType {
+        case conversation
+        case invitation
+    }
+    
+    func viewIdentifier(for type: ViewType) -> NSUserInterfaceItemIdentifier {
+        switch Settings.chatslistStyle {
+        case .minimal:
+            return NSUserInterfaceItemIdentifier("ChatMinimalCell");
+        case .small:
+            return NSUserInterfaceItemIdentifier("ChatSmallCell");
+        case .large:
+            return NSUserInterfaceItemIdentifier("ChatLargeCell");
+        }
+    }
+    
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
         //var view: NSTableCellView?
 //        guard tableColumn?.identifier.rawValue == "ITEM1" else {
@@ -372,7 +386,9 @@ extension ChatsListViewController: NSOutlineViewDelegate {
             }
             return view;
         } else if let chat = item as? ConversationItem {
-            let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("ChatCell"), owner: nil) as? ChatCellView;
+            let view = outlineView.makeView(withIdentifier: self.viewIdentifier(for: .conversation), owner: nil) as? ChatCellView;
+
+//            let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(chat.chat.jid.localPart == "int" ? "ChatBigCell" : "ChatSmallCell"), owner: nil) as? ChatCellView;
             view?.avatar.backgroundColor = NSColor(named: "sidebarBackgroundColor");
             view?.update(from: chat);
 //            view?.lastMessage.preferredMaxLayoutWidth = self.outlineView.outlineTableColumn!.width - 66;

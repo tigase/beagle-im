@@ -21,21 +21,21 @@
 
 import AppKit
 
-class OutlineGroupItemButton: RoundButton {
+class OutlineGroupItemButton: NSButton {
     
     var group: ChatsListGroupProtocol?;
     
-    override var contentTintColor: NSColor? {
-        get {
-            return mouseDown && (NSAppearance.current.bestMatch(from: [.aqua, .darkAqua]) == .aqua) ? backgroundColor : super.contentTintColor;
-        }
-        set {
-            super.contentTintColor = newValue;
-        }
-    }
-    
-    override func draw(_ dirtyRect: NSRect) {
-        backgroundColor = NSColor(named: "sidebarBackgroundColor")!;
-        super.draw(dirtyRect);
-    }
+//    override var contentTintColor: NSColor? {
+//        get {
+//            return mouseDown && (NSAppearance.current.bestMatch(from: [.aqua, .darkAqua]) == .aqua) ? backgroundColor : super.contentTintColor;
+//        }
+//        set {
+//            super.contentTintColor = newValue;
+//        }
+//    }
+//    
+//    override func draw(_ dirtyRect: NSRect) {
+//        backgroundColor = NSColor(named: "sidebarBackgroundColor")!;
+//        super.draw(dirtyRect);
+//    }
 }

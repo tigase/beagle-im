@@ -42,8 +42,10 @@ class GeneralSettingsController: NSViewController {
     
     fileprivate var enableLinkPreviews: NSButton!;
     fileprivate var commonChatsList: NSButton!;
+    private var chatslistStyle: NSPopUpButton!;
 
     let appearanceOptions: [Appearance] = [.auto, .light, .dark];
+    let chatslistStyleOptions: [ChatsListStyle] = [.minimal, .small, .large];
     let imageQualityOptions: [ImageQuality] = [.original,.highest,.high,.medium,.low];
     let videoQualityOptions: [VideoQuality] = [.original,.high,.medium,.low];
 
@@ -56,6 +58,11 @@ class GeneralSettingsController: NSViewController {
         commonChatsList = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show channels and chats in merged list", target: self, action: #selector(checkboxChanged(_:))));
         formView.groupItems(from: appearance!, to: commonChatsList!);
                 
+        chatslistStyle = formView.addRow(label: "Chats list style:", field: NSPopUpButton(frame: .zero, pullsDown: false));
+        chatslistStyle.target = self;
+        chatslistStyle.action = #selector(checkboxChanged(_:));
+        formView.groupItems(from: chatslistStyle!, to: chatslistStyle!);
+
         encryptionButton = formView.addRow(label: "Default encryption:", field: NSPopUpButton(frame: .zero, pullsDown: false));
         encryptionButton?.target = self;
         encryptionButton?.action = #selector(checkboxChanged(_:));
@@ -97,6 +104,17 @@ class GeneralSettingsController: NSViewController {
             appearance.selectItem(at: 2);
         }
 
+        chatslistStyle.removeAllItems();
+        chatslistStyle.addItems(withTitles: ["Minimal", "Small", "Large"]);
+        switch Settings.chatslistStyle {
+        case .minimal:
+            chatslistStyle.selectItem(at: 0);
+        case .small:
+            chatslistStyle.selectItem(at: 1);
+        case .large:
+            chatslistStyle.selectItem(at: 2);
+        }
+        
         notificationsFromUnknownSenders.state = Settings.notificationsFromUnknownSenders ? .on : .off;
         markdownFormatting.state = Settings.enableMarkdownFormatting ? .on : .off;
         showEmoticons.state = Settings.showEmoticons ? .on : .off;
@@ -144,6 +162,8 @@ class GeneralSettingsController: NSViewController {
             Settings.commonChatsList = sender.state == .on;
         case enableLinkPreviews:
             Settings.linkPreviews = sender.state == .on;
+        case chatslistStyle:
+            Settings.chatslistStyle = self.chatslistStyleOptions[chatslistStyle.indexOfSelectedItem];
         default:
             break;
         }

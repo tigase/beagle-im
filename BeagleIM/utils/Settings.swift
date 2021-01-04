@@ -162,6 +162,9 @@ class SettingsStore {
     @UserDefaultsRawSetting(key: "videoQuality", defaultValue: .medium)
     var videoQuality: VideoQuality
     
+    @UserDefaultsRawSetting(key: "chatslistStyle", defaultValue: .small)
+    var chatslistStyle: ChatsListStyle;
+    
     var automaticallyConnectAfterStart: Bool {
         return true;
     }
