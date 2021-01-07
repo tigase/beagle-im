@@ -57,7 +57,11 @@ class ChatCellView: NSTableCellView {
     }
     @IBOutlet weak var lastMessageTs: NSTextField!;
     @IBOutlet weak var unreadButton: NSButton!;
-    @IBOutlet weak var closeButton: ChatsCellViewCloseButton!
+    @IBOutlet weak var closeButton: ChatsCellViewCloseButton! {
+        didSet {
+            closeButton?.appearance = NSAppearance(named: .aqua);
+        }
+    }
     
     var lastMessageHeightConstraint: NSLayoutConstraint?;
     
@@ -205,9 +209,11 @@ class ChatCellView: NSTableCellView {
     private var cancellables: Set<AnyCancellable> = [];
     private var conversation: Conversation? {
         didSet {
+            unreadButton.isHidden = false;
+            lastMessageTs.isHidden = false;
+            avatar.statusView.isHidden = false;
             cancellables.removeAll();
             conversation?.displayNamePublisher.assign(to: \.stringValue, on: label).store(in: &cancellables);
-            conversation?.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: avatar).store(in: &cancellables);
             avatar.displayableId = conversation;
             conversation?.unreadPublisher.sink(receiveValue: { [weak self] value in
                 self?.set(unread: value);
@@ -228,11 +234,27 @@ class ChatCellView: NSTableCellView {
     }
     
     func update(from item: ConversationItem) {
+        contact = nil;
         conversation = item.chat;
-        
-//        self.set(name: item.name);
-//        self.set(lastActivity: item.lastActivity, ts: item.lastMessageTs, chatState: (item.chat as? Chat)?.remoteChatState ?? .active, account: item.chat.account);
-
+    }
+    
+    var contact: Contact? {
+        didSet {
+            cancellables.removeAll();
+            unreadButton.isHidden = true;
+            lastMessageTs.isHidden = true;
+            avatar.statusView.isHidden = true;
+            if let lastMessage = self.lastMessage {
+                contact?.displayNamePublisher.assign(to: \.stringValue, on: lastMessage).store(in: &cancellables);
+            }
+            avatar.displayableId = contact;
+        }
+    }
+    
+    func update(from item: InvitationItem) {
+        conversation = nil;
+        label.stringValue = item.name;
+        contact = ContactManager.instance.contact(for: .init(account: item.account, jid: item.jid.bareJid, type: .buddy));
     }
 
 //    override func layout() {
@@ -251,8 +273,8 @@ class ChatCellView: NSTableCellView {
 //    }
  
     func setMouseHovers(_ val: Bool) {
-        self.lastMessage?.blured = val;
-        self.closeButton.isHidden = !val;
+        self.lastMessage?.blured = val && contact == nil;
+        self.closeButton.isHidden = !val || contact != nil;
     }
 }
 

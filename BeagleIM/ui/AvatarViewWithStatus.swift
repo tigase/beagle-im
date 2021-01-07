@@ -26,7 +26,7 @@ import Combine
 class AvatarViewWithStatus: NSView {
 
     fileprivate(set) var avatarView: AvatarView!;
-    fileprivate var statusView: StatusView!;
+    private(set) var statusView: StatusView!;
     
     var name: String? {
         get {
@@ -65,6 +65,7 @@ class AvatarViewWithStatus: NSView {
     var displayableId: DisplayableIdProtocol? {
         didSet {
             cancellables.removeAll();
+            displayableId?.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: avatarView).store(in: &cancellables);
             displayableId?.avatarPublisher.assign(to: \.image, on: avatarView).store(in: &cancellables);
             displayableId?.statusPublisher.assign(to: \.status, on: statusView).store(in: &cancellables);
         }

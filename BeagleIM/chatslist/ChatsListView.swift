@@ -66,9 +66,9 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
                 return;
             }
             var newGroups: [ChatsListGroupProtocol] = [];
-            if !InvitationManager.instance.items.isEmpty {
-                newGroups.insert(that.invitationGroup!, at: 0);
-            }
+//            if !InvitationManager.instance.items.isEmpty {
+//            newGroups.insert(that.invitationGroup!, at: 0);
+//            }
 
             if value {
                 newGroups.append(contentsOf: [ChatsListGroupCommon(delegate: that)]);
@@ -147,6 +147,17 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     
     func itemChanged(item: Any?) {
         outlineView.reloadItem(item);
+    }
+    
+    func invitationGroup(show: Bool) {
+        if show {
+            groups.insert(invitationGroup!, at: 0);
+            outlineView.insertItems(at: IndexSet(integer: 0), inParent: nil)
+            outlineView.expandItem(invitationGroup!);
+        } else {
+            groups.remove(at: 0);
+            outlineView.removeItems(at: IndexSet(integer: 0), inParent: nil)
+        }
     }
     
     @IBAction func openNewChatClicked(_ sender: NSButton) {
@@ -398,11 +409,12 @@ extension ChatsListViewController: NSOutlineViewDelegate {
             view?.setMouseHovers(false);
             return view;
         } else if let invitation = item as? InvitationItem {
-            let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("InvitationCellView"), owner: nil) as? InvitationCellView;
-            view?.avatar.image = AvatarManager.instance.avatar(for: invitation.jid.bareJid, on: invitation.account) ?? AvatarManager.instance.defaultAvatar;
-            view?.label.stringValue = DBRosterStore.instance.item(for: invitation.account, jid: invitation.jid)?.name ?? invitation.jid.stringValue;
-            view?.message.maximumNumberOfLines = 2;
-            view?.message.stringValue = invitation.name;
+            let view = outlineView.makeView(withIdentifier: self.viewIdentifier(for: .conversation), owner: nil) as? ChatCellView;
+//            view?.avatar.image = AvatarManager.instance.avatar(for: invitation.jid.bareJid, on: invitation.account) ?? AvatarManager.instance.defaultAvatar;
+//            view?.label.stringValue = DBRosterStore.instance.item(for: invitation.account, jid: invitation.jid)?.name ?? invitation.jid.stringValue;
+//            view?.message.maximumNumberOfLines = 2;
+//            view?.message.stringValue = invitation.name;
+            view?.update(from: invitation);
             return view;
         }
         return nil;

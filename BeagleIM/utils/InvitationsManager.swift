@@ -9,35 +9,49 @@
 import AppKit
 import TigaseSwift
 import UserNotifications
+import Combine
 
 class InvitationManager {
     
     static let INVITATION_CLICKED = Notification.Name(rawValue: "invitationClicked");
-    static let INVITATIONS_ADDED = Notification.Name(rawValue: "invitationsAdded");
-    static let INVITATIONS_REMOVED = Notification.Name(rawValue: "invitationsRemoved");
+//    static let INVITATIONS_ADDED = Notification.Name(rawValue: "invitationsAdded");
+//    static let INVITATIONS_REMOVED = Notification.Name(rawValue: "invitationsRemoved");
     
     static let instance = InvitationManager();
  
+    @Published
     private var peristentItems: Set<InvitationItem> = [];
+    @Published
     private var volatileItems: Set<InvitationItem> = [];
 
+    private var cancellables: Set<AnyCancellable> = [];
     let dispatcher = QueueDispatcher(label: "InvitationManagerQueue");
     
-    var items: Set<InvitationItem> {
-        return dispatcher.sync {
-            let connectedAccounts = Set(XmppService.instance.clients.values.filter({ $0.state == .connected }).map({ $0.sessionObject.userBareJid! }));
-            let result = peristentItems.filter({ connectedAccounts.contains($0.account) })
-            return result.union(volatileItems)
-        }
-    }
+    public let itemsPublisher: PassthroughSubject<Set<InvitationItem>, Never> = PassthroughSubject();
+
+    private var order: Int = 1;
     
     init() {
-        NotificationCenter.default.addObserver(self, selector: #selector(accountStatusChanged(_:)), name: XmppService.ACCOUNT_STATUS_CHANGED, object: nil);        
+        XmppService.instance.$connectedClients.receive(on: dispatcher.queue).map({ $0.map({ $0.userBareJid }) }).sink(receiveValue: { accounts in
+            self.volatileItems = self.volatileItems.filter({ accounts.contains($0.account) });
+        }).store(in: &cancellables);
+        XmppService.instance.$connectedClients.receive(on: dispatcher.queue).map({ $0.map({ $0.userBareJid })}).combineLatest($peristentItems, { accounts, invites in
+            return invites.filter({ accounts.contains($0.account) });
+        }).combineLatest($volatileItems, { persistent, volatile -> Set<InvitationItem> in
+            return persistent.union(volatile);
+        }).debounce(for: 0.1, scheduler: DispatchQueue.main).subscribe(itemsPublisher).store(in: &cancellables);
+    }
+    
+    func nextOrder() -> Int {
+        defer {
+            order = order + 1;
+        }
+        return order;
     }
     
     func addPresenceSubscribe(for account: BareJID, from jid: JID) {
         dispatcher.async {
-            let invitation = InvitationItem(type: .presenceSubscription, account: account, jid: jid, object: nil);
+            let invitation = InvitationItem(type: .presenceSubscription, account: account, jid: jid, object: nil, order:  self.nextOrder());
             guard !self.volatileItems.contains(invitation) else {
                 return;
             }
@@ -50,7 +64,7 @@ class InvitationManager {
     func addMucInvitation(for account: BareJID, roomJid: BareJID, invitation mucInvitation: MucModule.Invitation) {
         let jid = JID(roomJid);
         dispatcher.async {
-            let invitation = InvitationItem(type: .mucInvitation, account: account, jid: jid, object: mucInvitation);
+            let invitation = InvitationItem(type: .mucInvitation, account: account, jid: jid, object: mucInvitation, order:  self.nextOrder());
             guard !self.peristentItems.contains(invitation) else {
                 return;
             }
@@ -62,7 +76,7 @@ class InvitationManager {
     
     func mucJoined(on account: BareJID, roomJid: BareJID) {
         dispatcher.async {
-            let tmp = InvitationItem(type: .mucInvitation, account: account, jid: JID(roomJid), object: nil);
+            let tmp = InvitationItem(type: .mucInvitation, account: account, jid: JID(roomJid), object: nil, order:  self.nextOrder());
             if let invitation = self.peristentItems.remove(tmp) {
                 self.removed(invitations: [invitation]);
             }
@@ -130,39 +144,7 @@ class InvitationManager {
         }
     }
  
-    @objc func accountStatusChanged(_ notification: Notification) {
-        guard let account = notification.object as? BareJID else {
-            return;
-        }
-
-        let connected = XmppService.instance.getClient(for: account)?.state ?? .disconnected() == .connected;
-        dispatcher.async {
-            if connected {
-                let toAdd = self.peristentItems.filter({ $0.account == account });
-                self.addded(invitations: Array(toAdd));
-            } else {
-                let toRemove = self.volatileItems.filter({ $0.account == account });
-                self.volatileItems.subtract(toRemove);
-                self.removed(invitations: Array(toRemove.union(self.peristentItems.filter({ $0.account == account }))));
-            }
-        }
-    }
-    
-    private var delayedInvitations: [InvitationItem] = [];
-    private var delayedTimer: Foundation.Timer?
     private func addded(invitations: [InvitationItem]) {
-        delayedInvitations = invitations + delayedInvitations;
-        dispatcher.asyncAfter(deadline: .now() + 0.2, execute: {
-            guard !self.delayedInvitations.isEmpty else {
-                return;
-            }
-            self.delayedAdded(invitations: self.delayedInvitations);
-            self.delayedInvitations = [];
-        })
-    }
-    
-    private func delayedAdded(invitations: [InvitationItem]) {
-        NotificationCenter.default.post(name: InvitationManager.INVITATIONS_ADDED, object: invitations);
         for invitation in invitations {
             switch invitation.type {
             case .mucInvitation:
@@ -172,18 +154,9 @@ class InvitationManager {
             }
         }
     }
-    
+
     private func removed(invitations invites: [InvitationItem]) {
-        var invitations = invites;
-        if !delayedInvitations.isEmpty {
-            let toSkip = Set(delayedInvitations).intersection(invitations);
-            if !toSkip.isEmpty {
-                delayedInvitations.removeAll(where: { toSkip.contains($0)}) ;
-                invitations = invitations.filter({ !toSkip.contains($0) });
-            }
-        }
-        NotificationCenter.default.post(name: InvitationManager.INVITATIONS_REMOVED, object: invitations);
-        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: invitations.map({ $0.id }));
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: invites.map({ $0.id }));
     }
     
     private func deliverPresenceSubscriptionNotification(invitation: InvitationItem) {

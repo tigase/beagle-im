@@ -28,11 +28,22 @@ extension Presence.Show: Codable {
     
 }
 
+extension XMPPClient: Hashable {
+    public static func == (lhs: XMPPClient, rhs: XMPPClient) -> Bool {
+        return lhs.connectionConfiguration.userJid == rhs.connectionConfiguration.userJid;
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(connectionConfiguration.userJid);
+    }
+    
+}
+
 class XmppService: EventHandler {
     
     static let AUTHENTICATION_ERROR = Notification.Name("authenticationError");
     static let CONTACT_PRESENCE_CHANGED = Notification.Name("contactPresenceChanged");
-    static let ACCOUNT_STATUS_CHANGED = Notification.Name("accountStatusChanged");
+//    static let ACCOUNT_STATUS_CHANGED = Notification.Name("accountStatusChanged");
     static let SERVER_CERTIFICATE_ERROR = Notification.Name("serverCertificateError");
     
     static let instance = XmppService();
@@ -82,7 +93,7 @@ class XmppService: EventHandler {
     let tasksQueue = KeyedTasksQueue();
     
     @Published
-    private var isAnyConnected: Bool = false;
+    public private(set) var connectedClients: Set<XMPPClient> = [];
     
     private var cancellables: Set<AnyCancellable> = [];
     
@@ -111,7 +122,7 @@ class XmppService: EventHandler {
             }
         }).store(in: &cancellables);
         expectedStatus.receive(on: self.dispatcher.queue).sink(receiveValue: { [weak self] status in self?.statusUpdated(status) }).store(in: &cancellables);
-        expectedStatus.combineLatest($isAnyConnected).map({ status, connected in
+        expectedStatus.combineLatest($connectedClients.map({ !$0.isEmpty })).map({ status, connected in
             if !connected {
                 return status.with(show: nil);
             }
@@ -199,16 +210,14 @@ class XmppService: EventHandler {
         switch event {
         case let e as StreamManagementModule.ResumedEvent:
             self.dispatcher.async {
-                self.isAnyConnected = true;
+                self.connectedClients.insert(e.context as! XMPPClient);
             }
-            NotificationCenter.default.post(name: XmppService.ACCOUNT_STATUS_CHANGED, object: e.sessionObject.userBareJid);
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
             //test(e.sessionObject);
             print("account", e.sessionObject.userBareJid!, "is now connected!");
             self.dispatcher.async {
-                self.isAnyConnected = true;
+                self.connectedClients.insert(e.context as! XMPPClient);
             }
-            NotificationCenter.default.post(name: XmppService.ACCOUNT_STATUS_CHANGED, object: e.sessionObject.userBareJid);
             break;
         case let e as AuthModule.AuthFailedEvent:
             guard let accountName = e.sessionObject.userBareJid else {
@@ -242,9 +251,8 @@ class XmppService: EventHandler {
         case let e as SocketConnector.DisconnectedEvent:
             print("##### \(e.sessionObject.userBareJid!.stringValue) - disconnected", Date());
             self.dispatcher.async {
-                self.isAnyConnected = !self._clients.values.map({ $0.state }).filter({ $0 == .connected }).isEmpty;
+                self.connectedClients.remove(e.context as! XMPPClient);
             }
-            NotificationCenter.default.post(name: XmppService.ACCOUNT_STATUS_CHANGED, object: e.sessionObject.userBareJid);
 
             if let client = self.getClient(for: e.sessionObject.userBareJid!) {
                 self.disconnected(client: client);

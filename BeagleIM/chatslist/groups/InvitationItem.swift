@@ -39,12 +39,14 @@ class InvitationItem: ChatsListItemProtocol, Identifiable, Equatable, Hashable {
     let account: BareJID;
     let jid: JID;
     let object: Any?;
+    let order: Int;
     
-    init(type: InvitationItemType, account: BareJID, jid: JID, object: Any?) {
+    init(type: InvitationItemType, account: BareJID, jid: JID, object: Any?, order: Int) {
         self.type = type;
         self.jid = jid;
         self.account = account;
         self.object = object;
+        self.order = order;
     }
     
     func hash(into hasher: inout Hasher) {

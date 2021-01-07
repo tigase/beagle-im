@@ -21,6 +21,7 @@
 
 import Foundation
 import TigaseSwift
+import Combine
 
 class InvitationGroup: ChatsListGroupProtocol {
     
@@ -36,13 +37,14 @@ class InvitationGroup: ChatsListGroupProtocol {
     
     weak var delegate: ChatsListViewController?;
     
+    private var cancellables: Set<AnyCancellable> = [];
+    
     init(delegate: ChatsListViewController) {
         self.delegate = delegate;
-        InvitationManager.instance.dispatcher.sync {
-            NotificationCenter.default.addObserver(self, selector: #selector(invitationsAdded(_:)), name: InvitationManager.INVITATIONS_ADDED, object: nil);
-            NotificationCenter.default.addObserver(self, selector: #selector(invitationsRemoved(_:)), name: InvitationManager.INVITATIONS_REMOVED, object: nil);
-            self.items = Array(InvitationManager.instance.items);
-        }
+        
+        InvitationManager.instance.itemsPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] items in
+            self?.update(items: items);
+        }).store(in: &cancellables);
     }
     
     func getItem(at: Int) -> ChatsListItemProtocol? {
@@ -57,44 +59,88 @@ class InvitationGroup: ChatsListGroupProtocol {
         // nothing to do..
     }
     
-    @objc func invitationsAdded(_ notification: Notification) {
-        DispatchQueue.main.async {
-            guard let toAdd = notification.object as? [InvitationItem], !toAdd.isEmpty else {
-                return;
-            }
+    private func update(items: Set<InvitationItem>) {
+        let newItems = items.sorted(by: { (i1, i2) -> Bool in i1.order > i2.order });
+        let oldItems = self.items;
         
-            let added = self.items.isEmpty && !toAdd.isEmpty;
-            if added {
-                self.delegate?.groups.insert(self, at: 0);
-                self.delegate?.itemsInserted(at: IndexSet(integer: 0), inParent: nil);
-            }
-            
-            self.items = toAdd + self.items;
-            self.delegate?.itemsInserted(at: IndexSet(integersIn: 0..<toAdd.count), inParent: self);
-            if added {
-                self.delegate?.outlineView.expandItem(self);
-            }
-        }
-    }
-
-    @objc func invitationsRemoved(_ notification: Notification) {
-        DispatchQueue.main.async {
-            guard let toRemove = notification.object as? [InvitationItem], !toRemove.isEmpty else {
-                return;
-            }
-            
-            let dict = Dictionary(uniqueKeysWithValues: self.items.enumerated().map({ ($0.1, $0.0 )}));
-            
-            let removeSet = Set(toRemove);
-            self.items = self.items.filter({ !removeSet.contains($0) });
-            let removedIdx = toRemove.map({ dict[$0]! });
-            self.delegate?.itemsRemoved(at: IndexSet(removedIdx), inParent: self)
-            
-            if self.items.isEmpty {
-                self.delegate?.groups.remove(at: 0);
-                self.delegate?.itemsRemoved(at: IndexSet(integer: 0), inParent: nil);
+        let diffs = newItems.difference(from: oldItems).inferringMoves();
+        var removed: [Int] = [];
+        var inserted: [Int] = [];
+        var moved: [(Int,Int)] = [];
+        for action in diffs {
+            switch action {
+            case .remove(let offset, _, let to):
+                if let idx = to {
+                    moved.append((offset, idx));
+                } else {
+                    removed.append(offset);
+                }
+            case .insert(let offset, _, let from):
+                if from == nil {
+                    inserted.append(offset);
+                }
             }
         }
+        
+        self.items = newItems;
+        self.delegate?.beginUpdates();
+        if !removed.isEmpty {
+            self.delegate?.itemsRemoved(at: IndexSet(removed), inParent: self);
+            if newItems.isEmpty && !oldItems.isEmpty {
+                self.delegate?.invitationGroup(show: false);
+            }
+        }
+        for (from,to) in moved {
+            self.delegate?.itemMoved(from: from, fromParent: self, to: to, toParent: self);
+        }
+        if !inserted.isEmpty {
+            if oldItems.isEmpty && !newItems.isEmpty {
+                self.delegate?.invitationGroup(show: true);
+            } else {
+                self.delegate?.itemsInserted(at: IndexSet(inserted), inParent: self);
+            }
+        }
+        self.delegate?.endUpdates();
     }
+    
+//    @objc func invitationsAdded(_ notification: Notification) {
+//        DispatchQueue.main.async {
+//            guard let toAdd = notification.object as? [InvitationItem], !toAdd.isEmpty else {
+//                return;
+//            }
+//
+//            let added = self.items.isEmpty && !toAdd.isEmpty;
+//            if added {
+//                self.delegate?.groups.insert(self, at: 0);
+//                self.delegate?.itemsInserted(at: IndexSet(integer: 0), inParent: nil);
+//            }
+//
+//            self.items = toAdd + self.items;
+//            self.delegate?.itemsInserted(at: IndexSet(integersIn: 0..<toAdd.count), inParent: self);
+//            if added {
+//                self.delegate?.outlineView.expandItem(self);
+//            }
+//        }
+//    }
+//
+//    @objc func invitationsRemoved(_ notification: Notification) {
+//        DispatchQueue.main.async {
+//            guard let toRemove = notification.object as? [InvitationItem], !toRemove.isEmpty else {
+//                return;
+//            }
+//
+//            let dict = Dictionary(uniqueKeysWithValues: self.items.enumerated().map({ ($0.1, $0.0 )}));
+//
+//            let removeSet = Set(toRemove);
+//            self.items = self.items.filter({ !removeSet.contains($0) });
+//            let removedIdx = toRemove.map({ dict[$0]! });
+//            self.delegate?.itemsRemoved(at: IndexSet(removedIdx), inParent: self)
+//
+//            if self.items.isEmpty {
+//                self.delegate?.groups.remove(at: 0);
+//                self.delegate?.itemsRemoved(at: IndexSet(integer: 0), inParent: nil);
+//            }
+//        }
+//    }
     
 }
