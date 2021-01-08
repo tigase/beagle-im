@@ -28,7 +28,9 @@ class ConversationEntryWithSender: ConversationEntry {
     let encryption: ConversationEntryEncryption;
     let recipient: ConversationEntryRecipient;
     
-    let avatar: Avatar;
+    lazy var avatar: Avatar = {
+        return sender.avatar(for: self.conversation, direction: self.state.direction);
+    }();
     
     var nickname: String {
         return sender.nickname;
@@ -48,7 +50,6 @@ class ConversationEntryWithSender: ConversationEntry {
         self.sender = sender;
         self.recipient = recipient;
         self.encryption = encryption;
-        self.avatar = sender.avatar(for: conversation, direction: state.direction);
         super.init(id: id, conversation: conversation, timestamp: timestamp);
     }
     

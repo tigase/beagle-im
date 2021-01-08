@@ -91,15 +91,7 @@ class ConversationDataSource {
             return;
         }
         
-        DispatchQueue.main.async {
-            let isNewestMessageVisible = self.delegate?.isVisible(row: 0) ?? false;
-            self.add(item: item);
-//            , completionHandler: { [weak self] (newRows, unread) in
-//                if isNewestMessageVisible && newRows.contains(0) {
-//                    self?.delegate?.scrollRowToVisible(0);
-//                }
-//            });
-        }
+        self.add(item: item);
     }
     
     @objc fileprivate func messageUpdated(_ notification: Notification) {
@@ -113,10 +105,7 @@ class ConversationDataSource {
             return;
         }
         
-        DispatchQueue.main.async {
-            let isNewestMessageVisible = self.delegate?.isVisible(row: 0) ?? false;
-            self.update(item: item);
-        }
+        self.update(item: item);
     }
     
     @objc fileprivate func messageRemoved(_ notification: Notification) {
