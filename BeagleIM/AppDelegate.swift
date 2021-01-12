@@ -134,7 +134,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         _ = Database.main;
         NotificationCenter.default.addObserver(self, selector: #selector(authenticationFailure), name: XmppService.AUTHENTICATION_ERROR, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(serverCertificateError(_:)), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(newMessage), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(chatUpdated), name: DBChatStore.CHAT_UPDATED, object: nil);
         // Insert code here to initialize your application
 //        let window = NSApplication.shared.windows[0];
@@ -576,60 +575,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                 return n.request.identifier;
             });
             UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: identifiers);
-        }
-    }
-
-    @objc func newMessage(_ notification: Notification) {
-        guard let item = notification.object as? ConversationMessage else {
-            return;
-        }
-        
-        guard item.state == .incoming_unread else {
-            return;
-        }
-        
-        let notifications = (item.conversation as? Conversation)?.notifications ?? .none;
-
-        switch notifications {
-        case .none:
-            return;
-        case .mention:
-            if let nickname = (item.conversation as? Room)?.nickname ?? (item.conversation as? Channel)?.nickname {
-                if !item.message.contains(nickname) {
-                    let keywords = Settings.markKeywords;
-                    if !keywords.isEmpty {
-                        if  keywords.first(where: { item.message.contains($0) }) == nil {
-                            return;
-                        }
-                    } else {
-                        return;
-                    }
-                }
-            } else {
-                return;
-            }
-        case .always:
-            break;
-        }
-        
-        if let conversation = item.conversation as? Conversation {
-            if conversation is Chat {
-                guard Settings.notificationsFromUnknownSenders || conversation.displayName != conversation.jid.stringValue else {
-                    return;
-                }
-            }
-            let content = UNMutableNotificationContent();
-            content.title = conversation.displayName;
-            if conversation is Room || conversation is Channel {
-                content.subtitle = item.nickname;
-            }
-            content.body = (item.message.contains("`") || !Settings.enableMarkdownFormatting || !Settings.showEmoticons) ? item.message : item.message.emojify();
-            content.sound = UNNotificationSound.default
-            content.userInfo = ["account": conversation.account.stringValue, "jid": conversation.jid.stringValue, "id": "message-new"];
-            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil);
-            UNUserNotificationCenter.current().add(request) { (error) in
-                print("could not show notification:", error as Any);
-            }
         }
     }
     

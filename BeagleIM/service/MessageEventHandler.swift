@@ -251,8 +251,12 @@ class MessageEventHandler: XmppServiceEventHandler {
     
     static func syncMessagePeriods(for account: BareJID, version: MessageArchiveManagementModule.Version? = nil, componentJID jid: BareJID? = nil) {
         guard let first = DBChatHistorySyncStore.instance.loadSyncPeriods(forAccount: account, component: jid).first else {
+            NotificationManager.instance.syncCompleted(for: account, with: jid)
             return;
         }
+
+        NotificationManager.instance.syncStarted(for: account, with: jid);
+        
         syncSinceQueue.async {
             syncMessages(forPeriod: first, version: version);
         }
@@ -283,6 +287,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             case .failure(let error):
                 guard client.state == .connected, retry > 0 && error != .feature_not_implemented else {
                     os_log("for account %s fetch for component %s with id %s could not synchronize message archive for: %{public}s", log: .chatHistorySync, type: .debug, period.account.stringValue, period.component?.stringValue ?? "nil", queryId, error.description);
+                    NotificationManager.instance.syncCompleted(for: period.account, with: period.component)
                     return;
                 }
                 DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {

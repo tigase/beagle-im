@@ -111,6 +111,7 @@
 		FE6201E423A693ED00C965A5 /* ChatAttachmentCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6201E323A693ED00C965A5 /* ChatAttachmentCellView.swift */; };
 		FE6201E623AA43C900C965A5 /* db-schema-7.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE6201E523AA43C900C965A5 /* db-schema-7.sql */; };
 		FE65A283230314D9001E68EF /* SettingsTabViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE65A282230314D9001E68EF /* SettingsTabViewController.swift */; };
+		FE67E1C325A8E120005D034C /* NotificationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE67E1C225A8E120005D034C /* NotificationsManager.swift */; };
 		FE6E6BF721384D5F003B1696 /* AutoresizingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */; };
 		FE6E6BF821384D5F003B1696 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE321384D5E003B1696 /* ViewController.swift */; };
 		FE6E6BF921384D5F003B1696 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE421384D5E003B1696 /* AvatarView.swift */; };
@@ -356,6 +357,7 @@
 		FE6201E323A693ED00C965A5 /* ChatAttachmentCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAttachmentCellView.swift; sourceTree = "<group>"; };
 		FE6201E523AA43C900C965A5 /* db-schema-7.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-7.sql"; sourceTree = "<group>"; };
 		FE65A282230314D9001E68EF /* SettingsTabViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTabViewController.swift; sourceTree = "<group>"; };
+		FE67E1C225A8E120005D034C /* NotificationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsManager.swift; sourceTree = "<group>"; };
 		FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoresizingTextField.swift; sourceTree = "<group>"; };
 		FE6E6BE321384D5E003B1696 /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		FE6E6BE421384D5E003B1696 /* AvatarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
@@ -650,6 +652,7 @@
 				FE75AA8D2587D76C002B59AE /* ContactManager.swift */,
 				FE1A3481258923EE0058B86A /* Array+IndexChanges.swift */,
 				FE1A34DB2592144A0058B86A /* PresenceStore.swift */,
+				FE67E1C225A8E120005D034C /* NotificationsManager.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -1180,6 +1183,7 @@
 				FEC336ED2408141700EC1A0D /* ChannelParticipantsViewController.swift in Sources */,
 				FE222D0725618A2C00C186A9 /* DBChatStore+ChannelStore.swift in Sources */,
 				FE6E6BFF21384D5F003B1696 /* ChatViewController.swift in Sources */,
+				FE67E1C325A8E120005D034C /* NotificationsManager.swift in Sources */,
 				FE222D0B256192D300C186A9 /* AccountConversations.swift in Sources */,
 				FE28097D21652A7C002F5BD0 /* VCardEditorViewController.swift in Sources */,
 				FE29D35823C208840028D306 /* MetadataCache.swift in Sources */,
