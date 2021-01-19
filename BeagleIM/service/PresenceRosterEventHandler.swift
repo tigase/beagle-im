@@ -36,6 +36,7 @@ class PresenceRosterEventHandler: XmppServiceEventHandler {
             ContactManager.instance.update(name: e.rosterItem.name, for: .init(account: e.context.userBareJid, jid: e.rosterItem.jid.bareJid, type: .buddy))
             NotificationCenter.default.post(name: DBRosterStore.ITEM_UPDATED, object: e);
         case let e as PresenceModule.BeforePresenceSendEvent:
+            print("on account \(e.context.userBareJid) setting show to \(status.show?.rawValue ?? "nil")")
             e.presence.show = status.show;
             e.presence.status = status.message;
         case let e as PresenceModule.SubscribeRequestEvent:

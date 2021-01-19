@@ -171,7 +171,9 @@ class XmppService: EventHandler {
     private func statusUpdated(_ status: Status) {
         if let show = status.show {
             self._clients.values.forEach { client in
-                client.module(.presence).setPresence(show: show, status: status.message, priority: nil);
+                if client.state == .connected {
+                    client.module(.presence).setPresence(show: show, status: status.message, priority: nil);
+                }
             }
         }
     }

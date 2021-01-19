@@ -25,13 +25,15 @@ import TigaseSwift
 class XMLConsoleViewController: NSViewController, StreamLogger {
     
     public static func configureLogging(for client: XMPPClient) {
-        guard let window = NSApp.windows.first(where: { (window) -> Bool in
-            (window.contentViewController as? XMLConsoleViewController)?.account == client.sessionObject.userBareJid!;
-        }) else {
-            client.streamLogger = nil;
-            return;
+        DispatchQueue.main.async {
+            guard let window = NSApp.windows.first(where: { (window) -> Bool in
+                (window.contentViewController as? XMLConsoleViewController)?.account == client.sessionObject.userBareJid!;
+            }) else {
+                client.streamLogger = nil;
+                return;
+            }
+            client.streamLogger = window.contentViewController as? StreamLogger;
         }
-        client.streamLogger = window.contentViewController as? StreamLogger;
     }
     
     public static func open(for account: BareJID) {
