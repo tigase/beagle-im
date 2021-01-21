@@ -28,3 +28,14 @@ class ShowMainWindowSegue: NSStoryboardSegue {
     }
     
 }
+
+class ChatWithWindowSegue: NSStoryboardSegue {
+    
+    override func perform() {
+        if let mainWindow = (NSApplication.shared.delegate as? AppDelegate)?.mainWindowController {
+            mainWindow.showWindow(self);
+            ((mainWindow.contentViewController as? NSSplitViewController)?.splitViewItems.first?.viewController as? ChatsListViewController)?.searchField.becomeFirstResponder();
+        }
+    }
+    
+}

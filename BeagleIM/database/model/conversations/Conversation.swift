@@ -24,7 +24,7 @@ import TigaseSQLite3
 import TigaseSwift
 import Combine
 
-public protocol Conversation: ConversationProtocol, ConversationKey, DisplayableIdProtocol {
+public protocol Conversation: ConversationProtocol, ConversationKey, DisplayableIdWithKeyProtocol {
         
     var status: Presence.Show? { get }
     var statusPublisher: Published<Presence.Show?>.Publisher { get }

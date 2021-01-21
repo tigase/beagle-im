@@ -24,9 +24,16 @@ import TigaseSwift
 import AppKit
 import Combine
 
-public class Contact: DisplayableIdProtocol {
+public class Contact: DisplayableIdWithKeyProtocol {
 
     public let key: Key;
+    
+    public var account: BareJID {
+        return key.account;
+    }
+    public var jid: BareJID {
+        return key.jid;
+    }
     
     @Published
     public var displayName: String;

@@ -24,7 +24,7 @@ import TigaseSwift
 import AppKit
 import Combine
 
-public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hashable, DisplayableIdProtocol {
+public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hashable, DisplayableIdWithKeyProtocol {
     
     public static func == (lhs: ConversationBase, rhs: ConversationBase) -> Bool {
         return lhs.id == rhs.id;
@@ -32,7 +32,7 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
     
     public let id: Int;
     public let dispatcher: QueueDispatcher;
-    public let displayableId: DisplayableIdProtocol;
+    private let displayableId: DisplayableIdProtocol;
 
     public var displayName: String {
         return displayableId.displayName;

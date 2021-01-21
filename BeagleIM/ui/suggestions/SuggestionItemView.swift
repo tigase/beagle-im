@@ -1,8 +1,8 @@
 //
-// DisplayableIdProtocol.swift
+// SuggestionItemView.swift
 //
 // BeagleIM
-// Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2021 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,28 +19,23 @@
 // If not, see https://www.gnu.org/licenses/.
 //
 
-import Foundation
-import TigaseSwift
 import AppKit
-import Combine
 
-public protocol DisplayableIdProtocol {
+class SuggestionItemView<Item>: SuggestionsHighlightingView {
     
-    var displayName: String { get }
-    var displayNamePublisher: Published<String>.Publisher { get }
-
-    var status: Presence.Show? { get }
-    var statusPublisher: Published<Presence.Show?>.Publisher { get }
+    var item: Item?;
     
-    var avatarPublisher: AnyPublisher<NSImage?,Never> { get }
+    required init() {
+        super.init(frame: .zero);
+        isHidden = false;
+//        setContentHuggingPriority(.defaultLow, for: .horizontal);
+//        setContentHuggingPriority(.defaultHigh, for: .vertical);
+        setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
+        setContentCompressionResistancePriority(.defaultHigh, for: .horizontal);
+    }
     
-    var description: String? { get }
-    var descriptionPublisher: Published<String?>.Publisher { get }
-}
-
-public protocol DisplayableIdWithKeyProtocol: DisplayableIdProtocol {
-    
-    var account: BareJID { get }
-    var jid: BareJID { get }
+    required init?(coder: NSCoder) {
+        super.init(coder: coder);
+    }
     
 }

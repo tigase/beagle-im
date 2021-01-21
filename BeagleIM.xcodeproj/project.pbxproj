@@ -167,6 +167,11 @@
 		FE9CDF0D2269E282001039C3 /* MessageEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9CDF0C2269E282001039C3 /* MessageEncryption.swift */; };
 		FE9E069A23A3976500952E9C /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E069923A3976500952E9C /* DownloadManager.swift */; };
 		FE9E1C41244B34C4003751AA /* SearchHistoryTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E1C40244B34C4003751AA /* SearchHistoryTableView.swift */; };
+		FEA2996C25B9ED9F0021865E /* SuggestionItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2996B25B9ED9F0021865E /* SuggestionItemView.swift */; };
+		FEA2997025B9EDC50021865E /* SuggestionsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2996F25B9EDC50021865E /* SuggestionsWindowController.swift */; };
+		FEA2997625B9EE280021865E /* SuggestionsHighlightingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2997525B9EE280021865E /* SuggestionsHighlightingView.swift */; };
+		FEA2997A25B9EE570021865E /* SuggestionsContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2997925B9EE570021865E /* SuggestionsContentView.swift */; };
+		FEA2997E25B9F5930021865E /* ChatsListSuggestionItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2997D25B9F5930021865E /* ChatsListSuggestionItemView.swift */; };
 		FEA2F53522E46A2E009F2E88 /* ShowRosterWindowSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2F53422E46A2E009F2E88 /* ShowRosterWindowSegue.swift */; };
 		FEA2F53722E5F6A2009F2E88 /* AdvancedSettingsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2F53622E5F6A2009F2E88 /* AdvancedSettingsController.swift */; };
 		FEA3D128233D0A10000BD20A /* TasksQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA3D127233D0A10000BD20A /* TasksQueue.swift */; };
@@ -414,6 +419,11 @@
 		FE9D88B3217652DF006CF0D9 /* BeagleIM-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BeagleIM-Bridging-Header.h"; sourceTree = "<group>"; };
 		FE9E069923A3976500952E9C /* DownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManager.swift; sourceTree = "<group>"; };
 		FE9E1C40244B34C4003751AA /* SearchHistoryTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchHistoryTableView.swift; sourceTree = "<group>"; };
+		FEA2996B25B9ED9F0021865E /* SuggestionItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionItemView.swift; sourceTree = "<group>"; };
+		FEA2996F25B9EDC50021865E /* SuggestionsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionsWindowController.swift; sourceTree = "<group>"; };
+		FEA2997525B9EE280021865E /* SuggestionsHighlightingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionsHighlightingView.swift; sourceTree = "<group>"; };
+		FEA2997925B9EE570021865E /* SuggestionsContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionsContentView.swift; sourceTree = "<group>"; };
+		FEA2997D25B9F5930021865E /* ChatsListSuggestionItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListSuggestionItemView.swift; sourceTree = "<group>"; };
 		FEA2F53422E46A2E009F2E88 /* ShowRosterWindowSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowRosterWindowSegue.swift; sourceTree = "<group>"; };
 		FEA2F53622E5F6A2009F2E88 /* AdvancedSettingsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedSettingsController.swift; sourceTree = "<group>"; };
 		FEA3D127233D0A10000BD20A /* TasksQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasksQueue.swift; sourceTree = "<group>"; };
@@ -591,6 +601,7 @@
 		FE6E6BE121384D5E003B1696 /* ui */ = {
 			isa = PBXGroup;
 			children = (
+				FEA2996A25B9ED720021865E /* suggestions */,
 				FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */,
 				FE6E6BE321384D5E003B1696 /* ViewController.swift */,
 				FE6E6BE421384D5E003B1696 /* AvatarView.swift */,
@@ -695,6 +706,7 @@
 				FEDE6AF42143D8130019170A /* ChatsListTableRowView.swift */,
 				FE3F2AF1228813E200737D51 /* EmptyViewController.swift */,
 				FE10BCEC23FAA86900E214F3 /* InvitationCellView.swift */,
+				FEA2997D25B9F5930021865E /* ChatsListSuggestionItemView.swift */,
 			);
 			path = chatslist;
 			sourceTree = "<group>";
@@ -797,6 +809,17 @@
 				FE336EA5256AA4690088DA83 /* ConversationEntryRecipient.swift */,
 			);
 			path = history;
+			sourceTree = "<group>";
+		};
+		FEA2996A25B9ED720021865E /* suggestions */ = {
+			isa = PBXGroup;
+			children = (
+				FEA2996B25B9ED9F0021865E /* SuggestionItemView.swift */,
+				FEA2996F25B9EDC50021865E /* SuggestionsWindowController.swift */,
+				FEA2997525B9EE280021865E /* SuggestionsHighlightingView.swift */,
+				FEA2997925B9EE570021865E /* SuggestionsContentView.swift */,
+			);
+			path = suggestions;
 			sourceTree = "<group>";
 		};
 		FED2ECE72066B01C00F506A5 = {
@@ -1199,6 +1222,7 @@
 				FEF9EC4B242F97840090C913 /* AppendixProtocol.swift in Sources */,
 				FE7561E62566E0E500E5C8F9 /* ConversationEntryWithSender.swift in Sources */,
 				FEF9EC512430B1F10090C913 /* PresenceAuthorizationRequestController.swift in Sources */,
+				FEA2997A25B9EE570021865E /* SuggestionsContentView.swift in Sources */,
 				FE75CD642545E6CE0064A733 /* VideoQuality.swift in Sources */,
 				FE8F7CF0256452E90076C13E /* ConversationEntrySender.swift in Sources */,
 				FE5BE64E213AD19A00463183 /* ChatCellViewMessage.swift in Sources */,
@@ -1211,6 +1235,7 @@
 				FED7AEC921418FA9001E164B /* DBVCardStore.swift in Sources */,
 				FE222D032561879700C186A9 /* DBChatStore+RoomStore.swift in Sources */,
 				FEA8941F2156625E004C3B51 /* ConfigureRoomViewController.swift in Sources */,
+				FEA2997025B9EDC50021865E /* SuggestionsWindowController.swift in Sources */,
 				FE890D3A240153E200107437 /* MixEventHandler.swift in Sources */,
 				FEA2F53522E46A2E009F2E88 /* ShowRosterWindowSegue.swift in Sources */,
 				FE30D8AF214C3B7600670BEC /* NSImage.swift in Sources */,
@@ -1291,6 +1316,7 @@
 				FEA3D128233D0A10000BD20A /* TasksQueue.swift in Sources */,
 				FED7AEBF214035C0001E164B /* AccountsListController.swift in Sources */,
 				FEF8BED2216A6761001DA755 /* InviteToGroupchatController.swift in Sources */,
+				FEA2997625B9EE280021865E /* SuggestionsHighlightingView.swift in Sources */,
 				FE6E6BFD21384D5F003B1696 /* Open1On1ChatController.swift in Sources */,
 				FE2ACA8223546C8E004623BC /* NSMutableAttributedString_extensions.swift in Sources */,
 				FE14044325601BB000BE77E8 /* Chat.swift in Sources */,
@@ -1314,10 +1340,12 @@
 				FEB4EAFE2163714300F8A9E2 /* RoundedScrollView.swift in Sources */,
 				FEB994B1241418FE00B8E7A7 /* InviteToChannelViewController.swift in Sources */,
 				FE41FB37215BBFC800AD86D3 /* DBCapabilitiesCache.swift in Sources */,
+				FEA2996C25B9ED9F0021865E /* SuggestionItemView.swift in Sources */,
 				FE1404552560226500BE77E8 /* Channel.swift in Sources */,
 				FE5C6B29228B34B9003DAB30 /* SelectAdHocCommandController.swift in Sources */,
 				FE6E6BFB21384D5F003B1696 /* XmppService.swift in Sources */,
 				FE9E069A23A3976500952E9C /* DownloadManager.swift in Sources */,
+				FEA2997E25B9F5930021865E /* ChatsListSuggestionItemView.swift in Sources */,
 				FE6E6BF721384D5F003B1696 /* AutoresizingTextField.swift in Sources */,
 				FE41FB2F215A822700AD86D3 /* ManageAffiliationsViewController.swift in Sources */,
 				FE6E6C0521384D5F003B1696 /* DBChatStore.swift in Sources */,

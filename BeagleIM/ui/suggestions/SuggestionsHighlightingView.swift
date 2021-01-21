@@ -1,8 +1,8 @@
 //
-// DisplayableIdProtocol.swift
+// SuggestionsHighlightingView.swift
 //
 // BeagleIM
-// Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2021 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,28 +19,25 @@
 // If not, see https://www.gnu.org/licenses/.
 //
 
-import Foundation
-import TigaseSwift
 import AppKit
-import Combine
 
-public protocol DisplayableIdProtocol {
+class SuggestionsHighlightingView: NSView {
     
-    var displayName: String { get }
-    var displayNamePublisher: Published<String>.Publisher { get }
-
-    var status: Presence.Show? { get }
-    var statusPublisher: Published<Presence.Show?>.Publisher { get }
+    var isHighlighted: Bool = false {
+        didSet {
+            needsDisplay = true;
+        }
+    }
     
-    var avatarPublisher: AnyPublisher<NSImage?,Never> { get }
-    
-    var description: String? { get }
-    var descriptionPublisher: Published<String?>.Publisher { get }
-}
-
-public protocol DisplayableIdWithKeyProtocol: DisplayableIdProtocol {
-    
-    var account: BareJID { get }
-    var jid: BareJID { get }
+    override func draw(_ dirtyRect: NSRect) {
+        if isHighlighted {
+            NSColor.alternateSelectedControlColor.set()
+            __NSRectFillUsingOperation(dirtyRect, .sourceOver)
+        } else {
+            NSColor.clear.set()
+            __NSRectFillUsingOperation(dirtyRect, .sourceOver)
+        }
+     //   super.draw(dirtyRect);
+    }
     
 }
