@@ -456,6 +456,14 @@ class ConversationDataSource {
                 guard result == .orderedSame else {
                     return result;
                 }
+                if it1.id == it2.id {
+                    if it1 is ConversationMessageSystem {
+                        return .orderedAscending;
+                    }
+                    if it2 is ConversationMessageSystem {
+                        return .orderedDescending;
+                    }
+                }
                 return it1.id < it2.id ? .orderedAscending : .orderedDescending;
             } else {
                 if unsent1 {
