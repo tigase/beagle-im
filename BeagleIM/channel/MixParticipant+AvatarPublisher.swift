@@ -1,8 +1,8 @@
 //
-// SuggestionItemView.swift
+// MixParticipant+AvatarPublisher.swift
 //
 // BeagleIM
-// Copyright (C) 2021 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2021  "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,26 +20,16 @@
 //
 
 import AppKit
+import TigaseSwift
 
-class SuggestionItemView<Item>: SuggestionsHighlightingView {
+extension MixParticipant {
     
-    var item: Item?;
-    
-    var itemHeight: Int {
-        return 0;
+    var avatar: Avatar? {
+        if let account = self.channel?.account, let jid = self.jid {
+            return AvatarManager.instance.avatarPublisher(for: .init(account: account, jid: jid, mucNickname: nil));
+        } else {
+            return nil;
+        }
     }
-    
-    required init() {
-        super.init(frame: .zero);
-        isHidden = false;
-//        setContentHuggingPriority(.defaultLow, for: .horizontal);
-//        setContentHuggingPriority(.defaultHigh, for: .vertical);
-        setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
-        setContentCompressionResistancePriority(.defaultHigh, for: .horizontal);
-    }
-    
-    required init?(coder: NSCoder) {
-        super.init(coder: coder);
-    }
-    
+        
 }

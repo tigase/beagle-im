@@ -23,12 +23,27 @@ import AppKit
 
 class SuggestionsWindowController<Item>: NSWindowController {
     
+    enum Edge {
+        case top
+        case bottom
+    }
+    
     var action: Selector?;
     weak var target: AnyObject?;
+    var backgroundColor: NSColor? {
+        get {
+            return (window?.contentView as? SuggestionsContentView)?.backgroundColor;
+        }
+        set {
+            (window?.contentView as? SuggestionsContentView)?.backgroundColor = newValue ?? NSColor.windowBackgroundColor;
+        }
+    }
+    
+    private(set) var range: NSRange?;
     
     private var lostFocusObserver: Any?;
     private var localMouseDownEventMonitor: Any?;
-    private var textField: NSTextField?;
+    private var textField: NSText?;
     
     private var trackingAreas: [NSTrackingArea] = [];
     private var selectedView: SuggestionItemView<Item>? {
@@ -40,6 +55,7 @@ class SuggestionsWindowController<Item>: NSWindowController {
         }
     }
     
+    private let edge: Edge;
     private let viewProvider: SuggestionItemView<Item>.Type;
     private var views: [SuggestionItemView<Item>] = [];
     
@@ -49,8 +65,11 @@ class SuggestionsWindowController<Item>: NSWindowController {
         return selectedView?.item;
     }
     
-    init(viewProvider: SuggestionItemView<Item>.Type) {
+    private var shouldAdjustWidth = true;
+    
+    init(viewProvider: SuggestionItemView<Item>.Type, edge: Edge) {
         self.viewProvider = viewProvider;
+        self.edge = edge;
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 20, height: 20), styleMask: [.borderless], backing: .buffered, defer: true);
     
         window.backgroundColor = NSColor.clear;
@@ -67,25 +86,60 @@ class SuggestionsWindowController<Item>: NSWindowController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    
     func beginFor(textField: NSTextField) {
-        guard let window = self.window, let parentWindow = textField.window else {
+        guard let text = textField.currentEditor(), let window = self.window, let parentWindow = textField.window else {
             return;
         }
-        
         guard var location = textField.superview?.convert(textField.frame.origin, to: nil) else {
             return;
         }
-        location = parentWindow.convertPoint(toScreen: location);
-        location.y = location.y - 2;
         
+        shouldAdjustWidth = false;
+        
+        location = parentWindow.convertPoint(toScreen: location);
+        switch edge {
+        case .bottom:
+            location.y = location.y - 2;
+        case .top:
+            location.y = (location.y + 2 + window.frame.height + textField.frame.height);
+        }
+
         let frame = NSRect(origin: window.frame.origin, size: .init(width: textField.frame.width, height: window.frame.height));
         window.setFrame(frame, display: false);
         window.setFrameTopLeftPoint(location);
+
+        setup(text: text, view: textField);
+    }
+    
+    func beginFor(textView: NSTextView, range: NSRange) {
+        guard let window = self.window else {
+            return;
+        }
+        self.range = range;
+        let rangeFrame = textView.firstRect(forCharacterRange: range, actualRange: nil);
+        var location = rangeFrame.origin;
+        switch edge {
+        case .bottom:
+            location.y = location.y - 2;
+        case .top:
+            print("window height:", window.frame.height, "view height:", rangeFrame.height)
+            location.y = location.y + 2 + window.frame.height + rangeFrame.height;
+        }
         
+        let frame = NSRect(origin: window.frame.origin, size: .init(width: textView.frame.width, height: window.frame.height));
+        window.setFrame(frame, display: false);
+        window.setFrameTopLeftPoint(location);
+
+        setup(text: textView, view: textView);
+    }
+    
+    private func setup(text: NSText, view: NSView) {
+        guard let window = self.window, let parentWindow = text.window, localMouseDownEventMonitor == nil && lostFocusObserver == nil else {
+            return;
+        }
         parentWindow.addChildWindow(window, ordered: .above);
-        
-        self.textField = textField;
+
+        self.textField = text;
         
         localMouseDownEventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown], handler: { event in
             if event.window != window {
@@ -94,8 +148,7 @@ class SuggestionsWindowController<Item>: NSWindowController {
                     let contentView = parentWindow.contentView
                     let locationTest = contentView?.convert(event.locationInWindow, from: nil)
                     let hitView = contentView?.hitTest(locationTest ?? NSPoint.zero)
-                    let fieldEditor = textField.currentEditor()
-                    if hitView != textField && ((fieldEditor != nil) && hitView != fieldEditor) {
+                    if hitView != view && hitView != text {
                         self.cancelSuggestions()
                         return nil;
                     }
@@ -139,6 +192,8 @@ class SuggestionsWindowController<Item>: NSWindowController {
             subview.removeFromSuperview();
         }
         
+        let itemHeight = entries.first?.itemHeight ?? 0;
+        
         let list = NSStackView(views: entries);
         list.orientation = .vertical;
         list.alignment = .leading;
@@ -149,10 +204,21 @@ class SuggestionsWindowController<Item>: NSWindowController {
         self.window!.contentView!.addSubview(list);
         NSLayoutConstraint.activate(entries.map({ list.widthAnchor.constraint(equalTo: $0.widthAnchor, multiplier: 1.0) }) + [self.window!.contentView!.widthAnchor.constraint(equalTo: list.widthAnchor)]);
 
-        let height = CGFloat(44 * entries.count);
-        let y = NSMaxY(window!.frame) - height;
+        let height = CGFloat(itemHeight * entries.count);
+        let y = edge == .bottom ? NSMaxY(window!.frame) - height : NSMinY(window!.frame);
         
-        let frame = NSRect(origin: NSPoint(x: self.window!.frame.origin.x, y: y), size: NSSize(width: self.window!.frame.width, height: height));
+        var newWidth = self.window!.frame.width;
+        var newX = self.window!.frame.origin.x;
+        if shouldAdjustWidth {
+            if let maxX = self.textField?.window?.frame.maxX {
+                newWidth = (entries.map({ $0.fittingSize.width }).max() ?? list.fittingSize.width) + 20;
+                if newX + newWidth > maxX {
+                    newX = maxX - newWidth;
+                }
+            }
+        }
+        
+        let frame = NSRect(origin: NSPoint(x: newX, y: y), size: NSSize(width: newWidth, height: height));
         
         self.window!.setFrame(frame, display: true)
         self.views = entries;
@@ -210,8 +276,8 @@ class SuggestionsWindowController<Item>: NSWindowController {
     }
     
     override func mouseUp(with event: NSEvent) {
-        textField?.validateEditing()
-        textField?.abortEditing();
+//        textField?.validateEditing()
+//        textField?.abortEditing();
         if let action = self.action {
             NSApp.sendAction(action, to: target, from: self);
         }

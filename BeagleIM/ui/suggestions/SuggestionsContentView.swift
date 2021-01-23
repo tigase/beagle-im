@@ -25,10 +25,10 @@ class SuggestionsContentView: NSView {
 
     var cornerRadius: CGFloat = 4.0
     
+    var backgroundColor: NSColor = NSColor.windowBackgroundColor;
+    
     override func draw(_ dirtyRect: NSRect) {
-        //NSColor.windowBackgroundColor.setFill();
-        
-        NSColor(named: "sidebarBackgroundColor")?.setFill();
+        backgroundColor.setFill();
         
         NSBezierPath(roundedRect: dirtyRect, xRadius: cornerRadius, yRadius: cornerRadius).fill();
 //        dirtyRect.fill();

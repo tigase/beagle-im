@@ -65,7 +65,8 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     
     func controlTextDidBeginEditing(_ obj: Notification) {
         if suggestionsController == nil {
-            suggestionsController = SuggestionsWindowController(viewProvider: ChatsListSuggestionItemView.self);
+            suggestionsController = SuggestionsWindowController(viewProvider: ChatsListSuggestionItemView.self, edge: .bottom);
+            suggestionsController?.backgroundColor = NSColor(named: "sidebarBackgroundColor")
             suggestionsController?.target = self;
             suggestionsController?.action = #selector(self.suggestionItemSelected(sender:))
         }

@@ -274,17 +274,37 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         button.image = img;
     }
 
-    private var skipNextSuggestion = false;
-    private var forceSuggestion = false;
-
     override func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
         switch commandSelector {
-        case #selector(NSResponder.moveUp(_:)), #selector(NSResponder.moveDown(_:)):
-            self.skipNextSuggestion = true;
-            return false;
-            //return super.textView(textView, doCommandBy: commandSelector);
+        case #selector(NSResponder.moveUp(_:)):
+            if suggestionsController?.window?.isVisible ?? false {
+                suggestionsController?.moveUp(textView);
+                return true
+            } else {
+                return super.textView(textView, doCommandBy: commandSelector);
+            }
+        case #selector(NSResponder.moveDown(_:)):
+            if suggestionsController?.window?.isVisible ?? false {
+                suggestionsController?.moveDown(textView);
+                return true
+            } else {
+                return super.textView(textView, doCommandBy: commandSelector);
+            }
+        case #selector(NSResponder.cancelOperation(_:)):
+            if suggestionsController?.window?.isVisible ?? false {
+                suggestionsController?.cancelSuggestions();
+                return true;
+            } else {
+                return false;
+            }
+        case #selector(NSResponder.insertNewline(_:)):
+            if let controller = suggestionsController, controller.window?.isVisible ?? false {
+                suggestionItemSelected(sender: controller);
+                return true;
+            } else {
+                return super.textView(textView, doCommandBy: commandSelector);
+            }
         case #selector(NSResponder.deleteForward(_:)), #selector(NSResponder.deleteBackward(_:)):
-            self.skipNextSuggestion = true;
             return super.textView(textView, doCommandBy: commandSelector);
         default:
             return super.textView(textView, doCommandBy: commandSelector);
@@ -293,33 +313,127 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         
     override func textDidChange(_ obj: Notification) {
         super.textDidChange(obj);
-        if !skipNextSuggestion {
-            self.messageField.complete(nil);
-        } else {
-            skipNextSuggestion = false;
-        }
+        self.messageField.complete(nil);
     }
-        
+    
+    var suggestionsController: SuggestionsWindowController<MixParticipant>?;
+    
     func textView(_ textView: NSTextView, completions words: [String], forPartialWordRange charRange: NSRange, indexOfSelectedItem index: UnsafeMutablePointer<Int>?) -> [String] {
         guard charRange.length != 0 && charRange.location != NSNotFound else {
+            suggestionsController?.cancelSuggestions();
             return [];
         }
-        
+
         let tmp = textView.string;
         let utf16 = tmp.utf16;
         let start = utf16.index(utf16.startIndex, offsetBy: charRange.lowerBound);
         let end = utf16.index(utf16.startIndex, offsetBy: charRange.upperBound);
         guard let query = String(utf16[start..<end])?.uppercased() else {
+            suggestionsController?.cancelSuggestions();
             return [];
         }
-                
-        let participantNicknames: [String] = self.channel.participants.compactMap({ $0.nickname });
-        let suggestions = participantNicknames.filter({ (key) -> Bool in
-            return key.uppercased().starts(with: query);
-        }).sorted();
+
+        let suggestions: [MixParticipant] = self.channel.participants.filter({ $0.nickname?.uppercased().starts(with: query) ?? false }).sorted(by: { p1, p2 -> Bool in (p1.nickname ?? "") < (p2.nickname ?? "") });
 
         index?.initialize(to: -1);//suggestions.isEmpty ? -1 : 0);
 
-        return suggestions.map({ name in "\(name) "});
+        if suggestions.isEmpty {
+            suggestionsController?.cancelSuggestions();
+        } else {
+            if suggestionsController == nil {
+                suggestionsController = SuggestionsWindowController(viewProvider: MixParticipantSuggestionItemView.self, edge: .top);
+                suggestionsController?.backgroundColor = NSColor.textBackgroundColor;
+                suggestionsController?.target = self;
+                suggestionsController?.action = #selector(self.suggestionItemSelected(sender:))
+            }
+            let range = NSRange(location: charRange.location - 1, length: charRange.length + 1)
+            DispatchQueue.main.async {
+                self.suggestionsController?.beginFor(textView: textView, range: range);
+                self.suggestionsController?.update(suggestions: suggestions);
+            }
+        }
+        
+        return [];
     }
+    
+    @objc func suggestionItemSelected(sender: Any) {
+        guard let item = (sender as? SuggestionsWindowController<MixParticipant>)?.selected, let range = (sender as? SuggestionsWindowController<MixParticipant>)?.range else {
+            return;
+        }
+        
+        print("selected item: \(item.jid?.stringValue ?? "nil") with nickname: \(item.nickname ?? "nil")")
+        if let nickname = item.nickname {
+            // how to know where we should place it? should we store location in message view somehow?
+            self.messageField.replaceCharacters(in: range, with: "@\(nickname) ");
+        }
+        suggestionsController?.cancelSuggestions();
+
+    }
+}
+
+class MixParticipantSuggestionItemView: SuggestionItemView<MixParticipant> {
+    
+    let avatar: AvatarView;
+    let label: NSTextField;
+    let stack: NSStackView;
+    
+    private var cancellables: Set<AnyCancellable> = [];
+    private var avatarPublisher: Avatar?;
+    
+    override var itemHeight: Int {
+        return 24;
+    }
+    
+    override var item: MixParticipant? {
+        didSet {
+            cancellables.removeAll();
+            label.stringValue = item?.nickname ?? "";
+            avatar.name = item?.nickname ?? "";
+            self.avatarPublisher = item?.avatar;
+            avatarPublisher?.$avatar.assign(to: \.image, on: avatar).store(in: &cancellables);
+        }
+    }
+    
+    required init() {
+        avatar = AvatarView(frame: NSRect(origin: .zero, size: NSSize(width: 16, height: 16)));
+
+        label = NSTextField(labelWithString: "");
+        label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium);
+        label.cell?.truncatesLastVisibleLine = true;
+        label.cell?.lineBreakMode = .byTruncatingTail;
+        label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
+        stack = NSStackView(views: [avatar, label]);
+        stack.translatesAutoresizingMaskIntoConstraints = false;
+        stack.spacing = 6;
+        stack.alignment = .centerY;
+        stack.orientation = .horizontal;
+        stack.distribution = .fill;
+//            stack.setHuggingPriority(.defaultHigh, for: .vertical);
+        stack.setHuggingPriority(.defaultHigh, for: .horizontal);
+        stack.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
+        stack.visibilityPriority(for: label);
+        stack.edgeInsets = NSEdgeInsets(top: 4, left: 4, bottom: 4, right: 4);
+        NSLayoutConstraint.activate([
+            avatar.heightAnchor.constraint(equalToConstant: 20),
+            avatar.widthAnchor.constraint(equalToConstant: 20),
+            avatar.heightAnchor.constraint(equalTo: stack.heightAnchor, multiplier: 1.0, constant: -2 * 2),
+            label.trailingAnchor.constraint(equalTo: stack.trailingAnchor, constant: -2)
+        ])
+        
+        super.init();
+        
+        addSubview(stack);
+        NSLayoutConstraint.activate([
+            self.leadingAnchor.constraint(equalTo: stack.leadingAnchor),
+            self.trailingAnchor.constraint(equalTo: stack.trailingAnchor),
+            self.topAnchor.constraint(equalTo: stack.topAnchor),
+            self.bottomAnchor.constraint(equalTo: stack.bottomAnchor)
+        ])
+        
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
 }

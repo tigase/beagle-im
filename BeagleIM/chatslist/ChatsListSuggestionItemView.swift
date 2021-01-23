@@ -39,6 +39,10 @@ class ChatsListSuggestionItemView: SuggestionItemView<DisplayableIdWithKeyProtoc
         }
     }
     
+    override var itemHeight: Int {
+        return 44;
+    }
+    
     required init() {
         avatar = AvatarView(frame: NSRect(origin: .zero, size: NSSize(width: 40, height: 40)));
         avatar.appearance = NSAppearance(named: .darkAqua);

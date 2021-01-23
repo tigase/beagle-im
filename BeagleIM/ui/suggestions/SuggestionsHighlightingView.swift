@@ -25,6 +25,10 @@ class SuggestionsHighlightingView: NSView {
     
     var isHighlighted: Bool = false {
         didSet {
+            let appearance = self.subviewAppearance();
+            for subview in subviews {
+                subview.appearance = appearance;
+            }
             needsDisplay = true;
         }
     }
@@ -38,6 +42,18 @@ class SuggestionsHighlightingView: NSView {
             __NSRectFillUsingOperation(dirtyRect, .sourceOver)
         }
      //   super.draw(dirtyRect);
+    }
+    
+    func subviewAppearance() -> NSAppearance {
+        let appearance = super.effectiveAppearance;
+        guard isHighlighted else {
+            return appearance;
+        }
+        if appearance.name == .darkAqua {
+            return NSAppearance(named: .aqua)!;
+        } else {
+            return NSAppearance(named: .darkAqua)!;
+        }
     }
     
 }

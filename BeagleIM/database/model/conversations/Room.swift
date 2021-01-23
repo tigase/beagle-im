@@ -110,7 +110,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     }
     
     public func addOccupant(nickname: String, presence: Presence) -> MucOccupant {
-        let occupant = MucOccupant(nickname: nickname, presence: presence);
+        let occupant = MucOccupant(nickname: nickname, presence: presence, for: self);
         dispatcher.async(flags: .barrier) {
             self.occupantsStore.add(occupant: occupant);
         }

@@ -172,6 +172,7 @@
 		FEA2997625B9EE280021865E /* SuggestionsHighlightingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2997525B9EE280021865E /* SuggestionsHighlightingView.swift */; };
 		FEA2997A25B9EE570021865E /* SuggestionsContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2997925B9EE570021865E /* SuggestionsContentView.swift */; };
 		FEA2997E25B9F5930021865E /* ChatsListSuggestionItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2997D25B9F5930021865E /* ChatsListSuggestionItemView.swift */; };
+		FEA2998A25BC3C940021865E /* MixParticipant+AvatarPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2998925BC3C940021865E /* MixParticipant+AvatarPublisher.swift */; };
 		FEA2F53522E46A2E009F2E88 /* ShowRosterWindowSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2F53422E46A2E009F2E88 /* ShowRosterWindowSegue.swift */; };
 		FEA2F53722E5F6A2009F2E88 /* AdvancedSettingsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2F53622E5F6A2009F2E88 /* AdvancedSettingsController.swift */; };
 		FEA3D128233D0A10000BD20A /* TasksQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA3D127233D0A10000BD20A /* TasksQueue.swift */; };
@@ -424,6 +425,7 @@
 		FEA2997525B9EE280021865E /* SuggestionsHighlightingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionsHighlightingView.swift; sourceTree = "<group>"; };
 		FEA2997925B9EE570021865E /* SuggestionsContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionsContentView.swift; sourceTree = "<group>"; };
 		FEA2997D25B9F5930021865E /* ChatsListSuggestionItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListSuggestionItemView.swift; sourceTree = "<group>"; };
+		FEA2998925BC3C940021865E /* MixParticipant+AvatarPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MixParticipant+AvatarPublisher.swift"; sourceTree = "<group>"; };
 		FEA2F53422E46A2E009F2E88 /* ShowRosterWindowSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowRosterWindowSegue.swift; sourceTree = "<group>"; };
 		FEA2F53622E5F6A2009F2E88 /* AdvancedSettingsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedSettingsController.swift; sourceTree = "<group>"; };
 		FEA3D127233D0A10000BD20A /* TasksQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasksQueue.swift; sourceTree = "<group>"; };
@@ -772,6 +774,7 @@
 				FEB994AE2413A03D00B8E7A7 /* ChannelEditConfigViewController.swift */,
 				FEB994B0241418FE00B8E7A7 /* InviteToChannelViewController.swift */,
 				FEB994B224154C1F00B8E7A7 /* ChannelManageParticipants.swift */,
+				FEA2998925BC3C940021865E /* MixParticipant+AvatarPublisher.swift */,
 			);
 			path = channel;
 			sourceTree = "<group>";
@@ -1266,6 +1269,7 @@
 				FE6201E223A573BC00C965A5 /* ConversationAttachment.swift in Sources */,
 				FE4E8DDC215F72130010D88E /* AbstractChatView_ShareExtension.swift in Sources */,
 				FEF9EC47242F8BBC0090C913 /* ConversationInvitation.swift in Sources */,
+				FEA2998A25BC3C940021865E /* MixParticipant+AvatarPublisher.swift in Sources */,
 				FE6E6BF821384D5F003B1696 /* ViewController.swift in Sources */,
 				FE75CD602545E6A90064A733 /* MediaHelper.swift in Sources */,
 				FE9486B221BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift in Sources */,
