@@ -341,7 +341,7 @@ class AbstractSharingTaskItem: NSObject, URLSessionDelegate {
                         MediaHelper.compressImage(url: source, filename: UUID().uuidString, quality: quality, deleteSource: false, completionHandler: { result in
                             switch result {
                             case .success(let url):
-                                completionHandler(.success((url, true)));
+                                completionHandler(.success((url, quality != .original)));
                             case .failure(let error):
                                 completionHandler(.failure(error));
                             }
@@ -363,7 +363,7 @@ class AbstractSharingTaskItem: NSObject, URLSessionDelegate {
                         }, completionHandler: { result in
                             switch result {
                             case .success(let url):
-                                completionHandler(.success((url, true)));
+                                completionHandler(.success((url, quality != .original)));
                             case .failure(let error):
                                 completionHandler(.failure(error));
                             }
