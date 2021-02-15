@@ -21,22 +21,18 @@
 
 import AppKit
 import TigaseSwift
+import Combine
 
 class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSessionTaskDelegate, NSDraggingDestination, PastingDelegate {
 
     @IBOutlet var sharingProgressBar: NSProgressIndicator!;
     @IBOutlet var sharingButton: NSButton!;
-
-    var isSharingAvailable: Bool {
-        guard let uploadModule: HttpFileUploadModule = XmppService.instance.getClient(for: account!)?.modulesManager.getModule(HttpFileUploadModule.ID) else {
-            return false;
-        }
-        return uploadModule.isAvailable;
-    }
+    
+    private var cancellables: Set<AnyCancellable> = [];
     
     override func viewDidLoad() {
         super.viewDidLoad();
-        NotificationCenter.default.addObserver(self, selector: #selector(sharingSupportChanged), name: HttpFileUploadEventHandler.UPLOAD_SUPPORT_CHANGED, object: nil);
+        self.sharingButton.isEnabled = false;
         messageField.dragHandler = self;
         messageField.registerForDraggedTypes([.fileURL] + NSFilePromiseReceiver.readableDraggedTypes.map { NSPasteboard.PasteboardType($0) });
         self.sharingProgressBar.minValue = 0;
@@ -46,15 +42,23 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
     
     override func viewWillAppear() {
         super.viewWillAppear();
-        self.sharingButton.isEnabled = self.isSharingAvailable;
+        createSharingAvailablePublisher()?.receive(on: DispatchQueue.main).assign(to: \.isEnabled, on: self.sharingButton).store(in: &cancellables)
         NotificationCenter.default.addObserver(self, selector: #selector(sharingProgressChanged(_:)), name: SharingTaskManager.PROGRESS_CHANGED, object: conversation);
         self.updateSharingProgress();
+    }
+    
+    override func viewDidDisappear() {
+        self.cancellables.removeAll();
     }
     
     @objc func sharingProgressChanged(_ notification: Notification) {
         DispatchQueue.main.async {
             self.updateSharingProgress();
         }
+    }
+    
+    func createSharingAvailablePublisher() -> AnyPublisher<Bool,Never>? {
+        return (self.conversation?.context?.module(.httpFileUpload) as? HttpFileUploadModule)?.isAvailablePublisher;
     }
     
     func updateSharingProgress() {
@@ -135,18 +139,6 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
             SharingTaskManager.instance.share(task: SharingTaskManager.SharingTask(controller: self, items: tasks, askForQuality: askForQuality));
         }
         return true;
-    }
-    
-    @objc func sharingSupportChanged(_ notification: Notification) {
-        guard let account = notification.object as? BareJID else {
-            return;
-        }
-        guard self.account != nil && self.account! == account else {
-            return;
-        }
-        DispatchQueue.main.async {
-            self.sharingButton.isEnabled = self.isSharingAvailable;
-        }
     }
     
     @IBAction func attachFile(_ sender: NSButton) {

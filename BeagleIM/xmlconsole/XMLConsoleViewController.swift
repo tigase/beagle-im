@@ -95,24 +95,36 @@ class XMLConsoleViewController: NSViewController, StreamLogger {
         self.view.window?.close();
     }
     
-    func incoming(_ value: StreamData) {
+    func incoming(_ value: StreamEvent) {
         DispatchQueue.main.async { [weak self] in
             switch value {
             case .stanza(let stanza):
                 self?.add(timestamp: Date(), incoming: true, text: stanza.element.toPrettyString(secure: false));
-            case .string(let text):
-                self?.add(timestamp: Date(), incoming: true, text: text);
+            case .streamClose(_):
+                self?.add(timestamp: Date(), incoming: true, text: "</stream:stream>");
+            case .streamOpen(let attributes):
+                let attributesString = attributes.map({ "\($0.key)='\($0.value)' "}).joined();
+                let openString = "<stream:stream \(attributesString) version='1.0' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'>";
+                self?.add(timestamp: Date(), incoming: true, text: openString);
+            default:
+                break;
             }
         }
     }
 
-    func outgoing(_ value: StreamData) {
+    func outgoing(_ value: StreamEvent) {
         DispatchQueue.main.async { [weak self] in
             switch value {
             case .stanza(let stanza):
                 self?.add(timestamp: Date(), incoming: false, text: stanza.element.toPrettyString(secure: false));
-            case .string(let text):
-                self?.add(timestamp: Date(), incoming: false, text: text);
+            case .streamClose(_):
+                self?.add(timestamp: Date(), incoming: false, text: "</stream:stream>");
+            case .streamOpen(let attributes):
+                let attributesString = attributes.map({ "\($0.key)='\($0.value)' "}).joined();
+                let openString = "<stream:stream \(attributesString) version='1.0' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'>";
+                self?.add(timestamp: Date(), incoming: false, text: openString);
+            default:
+                break;
             }
         }
     }

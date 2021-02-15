@@ -29,6 +29,7 @@ extension Presence.Show: Codable {
 }
 
 extension XMPPClient: Hashable {
+    
     public static func == (lhs: XMPPClient, rhs: XMPPClient) -> Bool {
         return lhs.connectionConfiguration.userJid == rhs.connectionConfiguration.userJid;
     }
@@ -48,9 +49,9 @@ class XmppService: EventHandler {
     
     static let instance = XmppService();
  
-    fileprivate let observedEvents: [Event] = [ SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, StreamManagementModule.ResumedEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE, AuthModule.AuthFailedEvent.TYPE ];
+    fileprivate let observedEvents: [Event] = [ AuthModule.AuthFailedEvent.TYPE ];
     
-    fileprivate let eventHandlers: [XmppServiceEventHandler] = [MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), MessageEventHandler(), HttpFileUploadEventHandler(), JingleManager.instance, BlockedEventHandler.instance, MixEventHandler.instance];
+    fileprivate let eventHandlers: [XmppServiceEventHandler] = [MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), MessageEventHandler(), JingleManager.instance, BlockedEventHandler.instance, MixEventHandler.instance];
     
     var clients: [BareJID: XMPPClient] {
         get {
@@ -210,17 +211,6 @@ class XmppService: EventHandler {
     
     func handle(event: Event) {
         switch event {
-        case let e as StreamManagementModule.ResumedEvent:
-            self.dispatcher.async {
-                self.connectedClients.insert(e.context as! XMPPClient);
-            }
-        case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
-            //test(e.sessionObject);
-            print("account", e.sessionObject.userBareJid!, "is now connected!");
-            self.dispatcher.async {
-                self.connectedClients.insert(e.context as! XMPPClient);
-            }
-            break;
         case let e as AuthModule.AuthFailedEvent:
             guard let accountName = e.sessionObject.userBareJid else {
                 return;
@@ -241,24 +231,6 @@ class XmppService: EventHandler {
             account.active = false;
             _ = AccountManager.save(account: account);
             NotificationCenter.default.post(name: XmppService.AUTHENTICATION_ERROR, object: accountName, userInfo: ["error": e.error ?? SaslError.not_authorized]);
-        case let e as SocketConnector.CertificateErrorEvent:
-            let certData = ServerCertificateInfo(trust: e.trust);
-            
-            if let accountName = e.sessionObject.userBareJid, var account = AccountManager.getAccount(for: accountName) {
-                account.active = false;
-                account.serverCertificate = certData;
-                _ = AccountManager.save(account: account);
-                NotificationCenter.default.post(name: XmppService.SERVER_CERTIFICATE_ERROR, object: accountName);
-            }
-        case let e as SocketConnector.DisconnectedEvent:
-            print("##### \(e.sessionObject.userBareJid!.stringValue) - disconnected", Date());
-            self.dispatcher.async {
-                self.connectedClients.remove(e.context as! XMPPClient);
-            }
-
-            if let client = self.getClient(for: e.sessionObject.userBareJid!) {
-                self.disconnected(client: client);
-            }
         default:
             break;
         }
@@ -276,11 +248,13 @@ class XmppService: EventHandler {
     
     private func connect(client: XMPPClient, for account: AccountManager.Account) {
         client.connectionConfiguration.credentials = .password(password: account.password!, authenticationName: nil, cache: nil);
-        if let serverCertificate = account.serverCertificate, serverCertificate.accepted {
-            client.connectionConfiguration.sslCertificateValidation = .fingerprint(serverCertificate.details.fingerprintSha1);
-        } else {
-            client.connectionConfiguration.sslCertificateValidation = .default;
-        }
+        client.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
+            if let serverCertificate = account.serverCertificate, serverCertificate.accepted {
+                options.sslCertificateValidation = .fingerprint(serverCertificate.details.fingerprintSha1);
+            } else {
+                options.sslCertificateValidation = .default;
+            }
+        });
 
         switch account.resourceType {
         case .automatic:
@@ -294,8 +268,12 @@ class XmppService: EventHandler {
         
         client.login();
     }
+    
+    private class ClientCancellables {
+        var cancellables: Set<AnyCancellable> = [];
+    }
 
-    private var clientCancellables: [BareJID:AnyCancellable] = [:] {
+    private var clientCancellables: [BareJID:ClientCancellables] = [:] {
         didSet {
             print("updated client cancellables to:", clientCancellables);
         }
@@ -365,7 +343,9 @@ class XmppService: EventHandler {
     fileprivate func initializeClient(for account: AccountManager.Account) -> XMPPClient {
         let jid = account.name;
         let client = XMPPClient();
-        client.connectionConfiguration.dnsResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(), cache: self.dnsCache);
+        client.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
+            options.dnsResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(), cache: self.dnsCache);
+        })
         client.connectionConfiguration.userJid = jid;
         
         _ = client.modulesManager.register(StreamFeaturesModule());
@@ -427,7 +407,11 @@ class XmppService: EventHandler {
 
     fileprivate func register(client: XMPPClient, for account: AccountManager.Account) -> XMPPClient {
         return dispatcher.sync {
-            clientCancellables[account.name] = client.$state.subscribe(account.state);
+            let clientCancellables = ClientCancellables();
+            self.clientCancellables[account.name] = clientCancellables;
+            
+            client.$state.subscribe(account.state).store(in: &clientCancellables.cancellables);
+            client.$state.dropFirst().sink(receiveValue: { state in self.changedState(state, for: client) }).store(in: &clientCancellables.cancellables);
 
             client.eventBus.register(handler: self, for: observedEvents);
             eventHandlers.forEach { handler in
@@ -436,6 +420,34 @@ class XmppService: EventHandler {
         
             self._clients[account.name] = client;
             return client;
+        }
+    }
+    
+    private func changedState(_ state: ConnectorState, for client: XMPPClient) {
+        switch state {
+        case .connected:
+            self.dispatcher.async {
+                self.connectedClients.insert(client);
+            }
+        case .disconnected(let reason):
+            self.dispatcher.async {
+                self.connectedClients.remove(client);
+            }
+            switch reason {
+            case .sslCertError(let trust):
+                let certData = ServerCertificateInfo(trust: trust);
+                if var account = AccountManager.getAccount(for: client.userBareJid) {
+                    account.active = false;
+                    account.serverCertificate = certData;
+                    _ = AccountManager.save(account: account);
+                    NotificationCenter.default.post(name: XmppService.SERVER_CERTIFICATE_ERROR, object: client.userBareJid);
+                }
+            default:
+                break;
+            }
+            self.disconnected(client: client);
+        default:
+            break;
         }
     }
     

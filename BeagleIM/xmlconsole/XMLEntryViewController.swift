@@ -62,14 +62,11 @@ class XMLEntryViewController: NSViewController, NSTextViewDelegate {
             }
         }
         
-        let holder = Holder();
         let xmlDelegate = XMPPParserDelegate();
-        xmlDelegate.delegate = holder;
         let parser = XMLParser(delegate: xmlDelegate);
         let data = xml.data(using: String.Encoding.utf8);
         try? parser.parse(data: data!);
-        
-        guard !holder.parsed.isEmpty && !holder.isError else {
+        guard !xmlDelegate.parsed.isEmpty else {
             let alert = Alert();
             alert.icon = NSImage(named: NSImage.cautionName);
             alert.messageText = "Error";
@@ -80,7 +77,7 @@ class XMLEntryViewController: NSViewController, NSTextViewDelegate {
             return;
         }
         
-        for elem in holder.parsed {
+        for elem in xmlDelegate.parsed {
             let stanza = Stanza.from(element: elem);
             XmppService.instance.getClient(for: account)?.context.writer.write(stanza);
         }

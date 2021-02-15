@@ -42,6 +42,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     @Published
     public var affiliation: MucAffiliation = .none;
     
+    @Published
     public private(set) var state: RoomState = .not_joined {
         didSet {
             switch state {

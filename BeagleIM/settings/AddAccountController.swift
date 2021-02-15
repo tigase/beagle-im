@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import Combine
 
 class AddAccountController: NSViewController, NSTextFieldDelegate {
     
@@ -165,17 +166,19 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
 
     class AccountValidatorTask: EventHandler {
         
+        private var cancellable: AnyCancellable?;
         var client: XMPPClient? {
             willSet {
                 if newValue != nil {
-                    newValue?.eventBus.register(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE);
+                    newValue?.eventBus.register(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE);
                 }
             }
             didSet {
                 if oldValue != nil {
                     oldValue?.disconnect(true);
-                    oldValue?.eventBus.unregister(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE, SocketConnector.DisconnectedEvent.TYPE, SocketConnector.CertificateErrorEvent.TYPE);
+                    oldValue?.eventBus.unregister(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE);
                 }
+                cancellable = client?.$state.sink(receiveValue: { [weak self] state in self?.changedState(state) });
             }
         }
         
@@ -215,29 +218,6 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
                     param = nil;
                 case is SaslModule.SaslAuthFailedEvent:
                     param = ErrorCondition.not_authorized;
-                case let e as SocketConnector.CertificateErrorEvent:
-                    self.callback = nil;
-                    let certData = SslCertificateInfo(trust: e.trust);
-                    let alert = NSStoryboard(name: "Main", bundle: nil).instantiateController(withIdentifier: "ServerCertificateErrorController") as! ServerCertificateErrorController;
-                    alert.account = client?.sessionObject.userBareJid;
-                    alert.certficateInfo = certData;
-                    alert.completionHandler = { accepted in
-                        self.acceptedCertificate = certData;
-                        if (accepted) {
-                            self.client?.connectionConfiguration.sslCertificateValidation = .fingerprint(certData.details.fingerprintSha1);
-                            self.callback = callback;
-                            self.client?.login();
-                        } else {
-                            self.finish();
-                            DispatchQueue.main.async {
-                                callback(.failure(.service_unavailable));
-                            }
-                        }
-                    };
-                    DispatchQueue.main.async {
-                        self.controller?.presentAsSheet(alert);
-                    }
-                    return;
                 default:
                     param = ErrorCondition.service_unavailable;
                 }
@@ -248,7 +228,54 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
                     } else {
                         callback(.success(Void()));
                     }
+                }
+                self.finish();
+            }
+        }
+        
+        func changedState(_ state: ConnectorState) {
+            dispatchQueue.sync {
+                guard let callback = self.callback else {
+                    return;
+                }
+
+                switch state {
+                case .disconnected(let reason):
+                    switch reason {
+                    case .sslCertError(let trust):
+                        self.callback = nil;
+                        let certData = SslCertificateInfo(trust: trust);
+                        let alert = NSStoryboard(name: "Main", bundle: nil).instantiateController(withIdentifier: "ServerCertificateErrorController") as! ServerCertificateErrorController;
+                        alert.account = client?.sessionObject.userBareJid;
+                        alert.certficateInfo = certData;
+                        alert.completionHandler = { accepted in
+                            self.acceptedCertificate = certData;
+                            if (accepted) {
+                                self.client?.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
+                                    options.sslCertificateValidation = .fingerprint(certData.details.fingerprintSha1);
+                                });
+                                self.callback = callback;
+                                self.client?.login();
+                            } else {
+                                self.finish();
+                                DispatchQueue.main.async {
+                                    callback(.failure(.service_unavailable));
+                                }
+                            }
+                        };
+                        DispatchQueue.main.async {
+                            self.controller?.presentAsSheet(alert);
+                        }
+                        return;
+                    default:
+                        break;
+                    }
+                    DispatchQueue.main.async {
+                        callback(.failure(.service_unavailable));
+                    }
                     self.finish();
+                default:
+                    break;
                 }
             }
         }

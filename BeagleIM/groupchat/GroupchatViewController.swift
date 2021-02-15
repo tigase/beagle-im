@@ -40,10 +40,6 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     
     fileprivate var participantsContainer: GroupchatParticipantsContainer?;
     
-    override var isSharingAvailable: Bool {
-        return super.isSharingAvailable && room.state == .joined;
-    }
-    
     private var pmPopupPositioningView: NSView!;
     
     private var cancellables: Set<AnyCancellable> = [];
@@ -100,6 +96,16 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     override func viewDidDisappear() {
         super.viewDidDisappear();
         cancellables.removeAll();
+    }
+    
+    override func createSharingAvailablePublisher() -> AnyPublisher<Bool, Never>? {
+        guard let publisher = super.createSharingAvailablePublisher() else {
+            return nil;
+        }
+
+        return room.$state.combineLatest(publisher, { (state, available) in
+            return available && state == .joined;
+        }).eraseToAnyPublisher();
     }
     
     private func buttonToGrayscale(button: NSButton, template: Bool) {
