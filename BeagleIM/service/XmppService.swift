@@ -345,6 +345,7 @@ class XmppService: EventHandler {
         let client = XMPPClient();
         client.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
             options.dnsResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(), cache: self.dnsCache);
+            options.networkProcessorProviders.append(SSLProcessorProvider());
         })
         client.connectionConfiguration.userJid = jid;
         

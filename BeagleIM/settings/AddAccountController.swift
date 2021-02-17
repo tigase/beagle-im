@@ -252,6 +252,7 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
                             self.acceptedCertificate = certData;
                             if (accepted) {
                                 self.client?.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
+                                    options.networkProcessorProviders.append(SSLProcessorProvider());
                                     options.sslCertificateValidation = .fingerprint(certData.details.fingerprintSha1);
                                 });
                                 self.callback = callback;

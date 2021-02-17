@@ -152,6 +152,9 @@
 		FE890D3A240153E200107437 /* MixEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE890D39240153E200107437 /* MixEventHandler.swift */; };
 		FE890D402404069E00107437 /* MIX.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE890D3F2404069D00107437 /* MIX.storyboard */; };
 		FE890D4524040F1200107437 /* ChannelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE890D4424040F1200107437 /* ChannelViewController.swift */; };
+		FE89341925DD3C07004E38B0 /* SSLCertificate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE89341625DD3C07004E38B0 /* SSLCertificate.swift */; };
+		FE89341A25DD3C07004E38B0 /* SSLProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE89341725DD3C07004E38B0 /* SSLProcessor.swift */; };
+		FE89341B25DD3C07004E38B0 /* SSLContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE89341825DD3C07004E38B0 /* SSLContext.swift */; };
 		FE8C9F5421B3F6BD00BE8332 /* container-migration.plist in Resources */ = {isa = PBXBuildFile; fileRef = FE8C9F5321B3F6BD00BE8332 /* container-migration.plist */; };
 		FE8C9F5621B40F9000BE8332 /* RegisterAccountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8C9F5521B40F9000BE8332 /* RegisterAccountController.swift */; };
 		FE8F7CE82562F8A60076C13E /* ConversationEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8F7CE72562F8A60076C13E /* ConversationEntry.swift */; };
@@ -404,6 +407,9 @@
 		FE890D39240153E200107437 /* MixEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MixEventHandler.swift; sourceTree = "<group>"; };
 		FE890D3F2404069D00107437 /* MIX.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = MIX.storyboard; sourceTree = "<group>"; };
 		FE890D4424040F1200107437 /* ChannelViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChannelViewController.swift; sourceTree = "<group>"; };
+		FE89341625DD3C07004E38B0 /* SSLCertificate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SSLCertificate.swift; sourceTree = "<group>"; };
+		FE89341725DD3C07004E38B0 /* SSLProcessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SSLProcessor.swift; sourceTree = "<group>"; };
+		FE89341825DD3C07004E38B0 /* SSLContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SSLContext.swift; sourceTree = "<group>"; };
 		FE8C9F5321B3F6BD00BE8332 /* container-migration.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "container-migration.plist"; sourceTree = "<group>"; };
 		FE8C9F5521B40F9000BE8332 /* RegisterAccountController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterAccountController.swift; sourceTree = "<group>"; };
 		FE8F7CE72562F8A60076C13E /* ConversationEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationEntry.swift; sourceTree = "<group>"; };
@@ -645,7 +651,7 @@
 		FE6E6BE521384D5E003B1696 /* utils */ = {
 			isa = PBXGroup;
 			children = (
-				FEF5C3F922632C0000889863 /* OpenSSL_AES_GCM_Engine.swift */,
+				FE89341325DD338C004E38B0 /* crypto */,
 				FE6E6BE621384D5E003B1696 /* AccountManager.swift */,
 				FED7AEC221415CB8001E164B /* AvatarManager.swift */,
 				FED7AEC421417328001E164B /* AvatarStore.swift */,
@@ -784,6 +790,17 @@
 				FEA2998925BC3C940021865E /* MixParticipant+AvatarPublisher.swift */,
 			);
 			path = channel;
+			sourceTree = "<group>";
+		};
+		FE89341325DD338C004E38B0 /* crypto */ = {
+			isa = PBXGroup;
+			children = (
+				FE89341625DD3C07004E38B0 /* SSLCertificate.swift */,
+				FE89341825DD3C07004E38B0 /* SSLContext.swift */,
+				FE89341725DD3C07004E38B0 /* SSLProcessor.swift */,
+				FEF5C3F922632C0000889863 /* OpenSSL_AES_GCM_Engine.swift */,
+			);
+			path = crypto;
 			sourceTree = "<group>";
 		};
 		FE8F7CE52562F86C0076C13E /* conversations */ = {
@@ -1184,6 +1201,7 @@
 				FEF5C3FA22632C0000889863 /* OpenSSL_AES_GCM_Engine.swift in Sources */,
 				FE2809852169FB75002F5BD0 /* Alert.swift in Sources */,
 				FE8F7CE82562F8A60076C13E /* ConversationEntry.swift in Sources */,
+				FE89341A25DD3C07004E38B0 /* SSLProcessor.swift in Sources */,
 				FE12FB4B2529E69F002077E7 /* ConversationMessageRetracted.swift in Sources */,
 				FED7AEC321415CB8001E164B /* AvatarManager.swift in Sources */,
 				FE83E363217A3809001DEF09 /* JingleManager.swift in Sources */,
@@ -1309,6 +1327,7 @@
 				FE10BCEF23FAB13800E214F3 /* InvitationsManager.swift in Sources */,
 				FE3AA0CF215406D1001667A9 /* ChatsListGroupChat.swift in Sources */,
 				FE1A34D6258E7DBC0058B86A /* CurrentDatePublisher.swift in Sources */,
+				FE89341925DD3C07004E38B0 /* SSLCertificate.swift in Sources */,
 				FE8F7CF825645C610076C13E /* ConversationEntryState.swift in Sources */,
 				FE6E6BF921384D5F003B1696 /* AvatarView.swift in Sources */,
 				FEEF25392266528E00202B28 /* ContactDetailsViewController.swift in Sources */,
@@ -1350,6 +1369,7 @@
 				FE2ACA842355B967004623BC /* EditKeywordsController.swift in Sources */,
 				FEC336F5240A78AB00EC1A0D /* ChannelEditInfoViewController.swift in Sources */,
 				FEB4EAFE2163714300F8A9E2 /* RoundedScrollView.swift in Sources */,
+				FE89341B25DD3C07004E38B0 /* SSLContext.swift in Sources */,
 				FEB994B1241418FE00B8E7A7 /* InviteToChannelViewController.swift in Sources */,
 				FE41FB37215BBFC800AD86D3 /* DBCapabilitiesCache.swift in Sources */,
 				FEA2996C25B9ED9F0021865E /* SuggestionItemView.swift in Sources */,
