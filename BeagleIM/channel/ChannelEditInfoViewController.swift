@@ -44,7 +44,7 @@ class ChannelEditInfoViewController: NSViewController, ChannelAwareProtocol {
     
     override func viewWillAppear() {
         super.viewWillAppear();
-        guard let client = XmppService.instance.getClient(for: channel.account), let mixModule: MixModule = client.modulesManager.getModule(MixModule.ID) else {
+        guard let client = channel.context else {
             return;
         }
         
@@ -57,7 +57,7 @@ class ChannelEditInfoViewController: NSViewController, ChannelAwareProtocol {
         
         let group = DispatchGroup();
         group.enter();
-        mixModule.retrieveInfo(for: channel.channelJid, completionHandler: { [weak self] result in
+        client.module(.mix).retrieveInfo(for: channel.channelJid, completionHandler: { [weak self] result in
             group.leave();
             switch result {
             case .success(let info):
@@ -79,9 +79,9 @@ class ChannelEditInfoViewController: NSViewController, ChannelAwareProtocol {
                 }
             }
         })
-        if let avatarModule: PEPUserAvatarModule = client.modulesManager.getModule(PEPUserAvatarModule.ID), channel.has(permission: .changeAvatar) {
+        if channel.has(permission: .changeAvatar) {
             group.enter();
-            avatarModule.retrieveAvatarMetadata(from: channel.channelJid, completionHandler: { [weak self] result in
+            client.module(.pepUserAvatar).retrieveAvatarMetadata(from: channel.channelJid, completionHandler: { [weak self] result in
                 switch result {
                 case .success(_):
                     DispatchQueue.main.async {
@@ -116,14 +116,14 @@ class ChannelEditInfoViewController: NSViewController, ChannelAwareProtocol {
         let name = nameField.stringValue;
         let desc = descriptionField.stringValue;
         let info = ChannelInfo(name: name.isEmpty ? nil : name, description: desc.isEmpty ? nil : desc, contact: self.info.contact);
-        guard let client = XmppService.instance.getClient(for: channel.account), let mixModule: MixModule = client.modulesManager.getModule(MixModule.ID) else {
+        guard let client = channel.context else {
             return;
         }
         
         progressIndicator.startAnimation(self);
         submitButton.isEnabled = false;
         
-        mixModule.publishInfo(for: channel.channelJid, info: info, completionHandler: { [weak self] result in
+        client.module(.mix).publishInfo(for: channel.channelJid, info: info, completionHandler: { [weak self] result in
             guard let that = self else {
                 return;
             }
@@ -150,8 +150,8 @@ class ChannelEditInfoViewController: NSViewController, ChannelAwareProtocol {
         })
         
         if avatarButton.isEnabled && avatarButton.image != AvatarManager.instance.avatar(for: channel.channelJid, on: channel.account) {
-            if let avatarModule: PEPUserAvatarModule = client.modulesManager.getModule(PEPUserAvatarModule.ID), let binval = self.avatarButton.image?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8) {
-                avatarModule.publishAvatar(at: channel.channelJid, data: binval, mimeType: "image/jpeg", width: nil, height: nil, completionHandler: { result in
+            if let binval = self.avatarButton.image?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8) {
+                client.module(.pepUserAvatar).publishAvatar(at: channel.channelJid, data: binval, mimeType: "image/jpeg", width: nil, height: nil, completionHandler: { result in
                     switch result {
                     case .success(_):
                         // new avatar published

@@ -38,7 +38,7 @@ class AvatarEventHandler: XmppServiceEventHandler {
                 AvatarManager.instance.avatarHashChanged(for: from, on: to, type: .vcardTemp, hash: photoId);
             } else if let occupantJid = e.presence.from {
                 os_log(OSLogType.debug, log: .avatar, "received presence from %s with avaar hash: %{public}s", e.presence.from!.stringValue, photoId);
-                if !AvatarManager.instance.hasAvatar(withHash: photoId), let vcardTempModule: VCardTempModule = XmppService.instance.getClient(for: to)?.modulesManager.getModule(VCardTempModule.ID) {
+                if !AvatarManager.instance.hasAvatar(withHash: photoId), let vcardTempModule = XmppService.instance.getClient(for: to)?.module(.vcardTemp) {
                     os_log(OSLogType.debug, log: .avatar, "querying %s for VCard for avaar hash: %{public}s", e.presence.from!.stringValue, photoId);
                     vcardTempModule.retrieveVCard(from: occupantJid, completionHandler: { result in
                         switch result {

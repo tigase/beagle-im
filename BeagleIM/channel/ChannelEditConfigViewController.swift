@@ -40,7 +40,7 @@ class ChannelEditConfigViewControlller: NSViewController, ChannelAwareProtocol {
     }
     
     private func retrieveConfig() {
-        guard let mixModule: MixModule = XmppService.instance.getClient(for: channel.account)?.modulesManager.getModule(MixModule.ID) else {
+        guard let mixModule: MixModule = channel.context?.module(.mix) else {
             return;
         }
         
@@ -69,7 +69,7 @@ class ChannelEditConfigViewControlller: NSViewController, ChannelAwareProtocol {
     }
     
     private func submitConfig() {
-        guard let mixModule: MixModule = XmppService.instance.getClient(for: channel.account)?.modulesManager.getModule(MixModule.ID), let config = self.formView.form else {
+        guard let mixModule: MixModule = channel.context?.module(.mix), let config = self.formView.form else {
             return;
         }
 

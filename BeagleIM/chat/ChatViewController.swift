@@ -139,13 +139,10 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
     }
 
     fileprivate func change(chatState: ChatState) {
-        guard let message = (self.chat as? Chat)?.changeChatState(state: chatState) else {
+        guard let message = self.chat.changeChatState(state: chatState) else {
             return;
         }
-        guard let messageModule: MessageModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageModule.ID) else {
-            return;
-        }
-        messageModule.write(message);
+        chat.context?.module(.message).write(message);
     }
 
     override func textDidChange(_ notification: Notification) {
@@ -212,7 +209,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
             return;
         }
 
-        guard let item = dataSource.getItem(withId: tag), let chat = self.chat as? Chat else {
+        guard let item = dataSource.getItem(withId: tag) else {
             return;
         }
 
@@ -291,10 +288,6 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
     }
         
     override func send(message: String, correctedMessageOriginId: String?) -> Bool {
-        guard let chat = self.chat as? Chat else {
-            return false;
-            
-        }
         chat.sendMessage(text: message, correctedMessageOriginId: correctedMessageOriginId);
         return true;
     }
@@ -358,9 +351,6 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
             encryption = nil;
         }
 
-        guard let chat = self.chat as? Chat else {
-            return;
-        }
         chat.updateOptions({ (options) in
             options.encryption = encryption;
         });
@@ -374,12 +364,12 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
             guard let account = self.account, let jid = self.jid else {
                 return;
             }
-            let omemoModule: OMEMOModule? = XmppService.instance.getClient(for: account)?.modulesManager.getModule(OMEMOModule.ID);
+            let omemoModule = XmppService.instance.getClient(for: account)?.module(.omemo);
             self.encryptButton.isEnabled = omemoModule?.isAvailable(for: jid) ?? false//!DBOMEMOStore.instance.allDevices(forAccount: account!, andName: jid!.stringValue, activeAndTrusted: false).isEmpty;
             if !self.encryptButton.isEnabled {
                 self.encryptButton.item(at: 0)?.image = NSImage(named: NSImage.lockUnlockedTemplateName);
             } else {
-                let encryption = (self.chat as? Chat)?.options.encryption ?? Settings.messageEncryption;
+                let encryption = self.chat.options.encryption ?? Settings.messageEncryption;
                 let locked = encryption == ChatEncryption.omemo;
                 self.encryptButton.item(at: 0)?.image = locked ? NSImage(named: NSImage.lockLockedTemplateName) : NSImage(named: NSImage.lockUnlockedTemplateName);
             }

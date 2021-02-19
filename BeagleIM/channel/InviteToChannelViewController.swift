@@ -84,7 +84,8 @@ class InviteToChannelViewControllerController: NSViewController, NSTextFieldDele
                 return jid!;
         }
 
-        if let channel = self.channel, let client = XmppService.instance.getClient(for: channel.account), let mixModule: MixModule = client.modulesManager.getModule(MixModule.ID) {
+        if let channel = self.channel, let client = channel.context {
+            let mixModule = client.module(.mix);
             mixModule.checkAccessPolicy(of: channel.channelJid, completionHandler: { [weak self] result in
                 switch result {
                     case .success(let val):

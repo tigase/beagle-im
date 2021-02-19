@@ -38,7 +38,7 @@ class ChannelManagerParticipants: NSViewController, ChannelAwareProtocol, NSTabV
     private var banned: [BareJID] = [];
     
     override func viewWillAppear() {
-        if let mixModule: MixModule = XmppService.instance.getClient(for: channel.account)?.modulesManager.getModule(MixModule.ID) {
+        if let mixModule = channel.context?.module(.mix) {
             progressIndicator.startAnimation(self);
             let group = DispatchGroup();
             group.enter();
@@ -146,7 +146,7 @@ class ChannelManagerParticipants: NSViewController, ChannelAwareProtocol, NSTabV
     
     @IBAction func addAllowedClicked(_ sender: NSButton) {
         askForJid(title: "Allow access", completionHandler: { jid in
-            if let mixModule: MixModule = XmppService.instance.getClient(for: self.channel.account)?.modulesManager.getModule(MixModule.ID) {
+            if let mixModule = self.channel.context?.module(.mix) {
                 self.progressIndicator.startAnimation(self);
                 mixModule.allowAccess(to: self.channel.channelJid, for: jid, value: true, completionHandler: { result in
                     switch result {
@@ -175,7 +175,7 @@ class ChannelManagerParticipants: NSViewController, ChannelAwareProtocol, NSTabV
         guard row >= 0, let item = allowed?[row] else {
             return;
         }
-        if let mixModule: MixModule = XmppService.instance.getClient(for: channel.account)?.modulesManager.getModule(MixModule.ID) {
+        if let mixModule = self.channel.context?.module(.mix) {
             progressIndicator.startAnimation(self);
             mixModule.allowAccess(to: channel.channelJid, for: item, value: false, completionHandler: { result in
                 switch result {
@@ -196,7 +196,7 @@ class ChannelManagerParticipants: NSViewController, ChannelAwareProtocol, NSTabV
     
     @IBAction func addBannedClicked(_ sender: NSButton) {
         askForJid(title: "Ban access", completionHandler: { jid in
-            if let mixModule: MixModule = XmppService.instance.getClient(for: self.channel.account)?.modulesManager.getModule(MixModule.ID) {
+            if let mixModule = self.channel.context?.module(.mix) {
                 self.progressIndicator.startAnimation(self);
                 mixModule.denyAccess(to: self.channel.channelJid, for: jid, value: true, completionHandler: { result in
                     switch result {
@@ -227,7 +227,7 @@ class ChannelManagerParticipants: NSViewController, ChannelAwareProtocol, NSTabV
             return;
         }
         let item = banned[row];
-        if let mixModule: MixModule = XmppService.instance.getClient(for: channel.account)?.modulesManager.getModule(MixModule.ID) {
+        if let mixModule = self.channel.context?.module(.mix) {
             progressIndicator.startAnimation(self);
             mixModule.denyAccess(to: channel.channelJid, for: item, value: false, completionHandler: { result in
                 switch result {

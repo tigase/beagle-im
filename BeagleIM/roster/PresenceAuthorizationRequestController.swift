@@ -47,12 +47,12 @@ class PresenceAuthorizationRequestController: NSViewController {
         jidField.isHidden = true;
         refreshVCard();
         
-        let blockingModule: BlockingCommandModule? = XmppService.instance.getClient(for: account)?.modulesManager.getModule(BlockingCommandModule.ID);
+        let blockingModule: BlockingCommandModule? = XmppService.instance.getClient(for: account)?.module(.blockingCommand);
         blockButton.isHidden = !(blockingModule?.isAvailable ?? false);
     }
     
     @IBAction func allowClicked(_ sender: Any) {
-        guard let presenceModule: PresenceModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PresenceModule.ID) else {
+        guard let presenceModule: PresenceModule = XmppService.instance.getClient(for: account)?.module(.presence) else {
             return;
         }
             
@@ -63,7 +63,7 @@ class PresenceAuthorizationRequestController: NSViewController {
     }
     
     @IBAction func denyClicked(_ sender: Any) {
-        guard let presenceModule: PresenceModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PresenceModule.ID) else {
+        guard let presenceModule: PresenceModule = XmppService.instance.getClient(for: account)?.module(.presence) else {
             return;
         }
         
@@ -72,15 +72,14 @@ class PresenceAuthorizationRequestController: NSViewController {
     }
     
     @IBAction func blockClicked(_ sender: Any) {
-        guard let blockingModule: BlockingCommandModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(BlockingCommandModule.ID) else {
+        guard let client = XmppService.instance.getClient(for: account) else {
             return;
         }
-        if let presenceModule: PresenceModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PresenceModule.ID) {
-            presenceModule.unsubscribed(by: jid);
-        }
+        
+        client.module(.presence).unsubscribed(by: jid);
 
         InvitationManager.instance.remove(invitation: invitation);
-        blockingModule.block(jids: [jid.withoutResource], completionHandler: { result in
+        client.module(.blockingCommand).block(jids: [jid.withoutResource], completionHandler: { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(_):

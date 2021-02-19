@@ -110,7 +110,7 @@ extension RosterViewController: NSMenuDelegate {
         
         alert.beginSheetModal(for: self.view.window!) { (response) in
             if response == NSApplication.ModalResponse.alertFirstButtonReturn {
-                guard let rosterModule: RosterModule = XmppService.instance.getClient(for: item.account)?.modulesManager.getModule(RosterModule.ID) else {
+                guard let rosterModule: RosterModule = XmppService.instance.getClient(for: item.account)?.module(.roster) else {
                     return;
                 }
 
@@ -124,42 +124,26 @@ extension RosterViewController: NSMenuDelegate {
     @IBAction func authorizationResendTo(_ sender: NSMenuItem) {
         let item = self.getItem(at: self.contactsTableView.clickedRow);
         
-        guard let presenceModule: PresenceModule = XmppService.instance.getClient(for: item.account)?.modulesManager.getModule(PresenceModule.ID) else {
-            return;
-        }
-        
-        presenceModule.subscribed(by: JID(item.jid));
+        XmppService.instance.getClient(for: item.account)?.module(.presence).subscribed(by: JID(item.jid));
         //presenceModule.sendInitialPresence();
     }
     
     @IBAction func authorizationRequestFrom(_ sender: NSMenuItem) {
         let item = self.getItem(at: self.contactsTableView.clickedRow);
         
-        guard let presenceModule: PresenceModule = XmppService.instance.getClient(for: item.account)?.modulesManager.getModule(PresenceModule.ID) else {
-            return;
-        }
-        
-        presenceModule.subscribe(to: JID(item.jid));
+        XmppService.instance.getClient(for: item.account)?.module(.presence).subscribe(to: JID(item.jid));
     }
     
     @IBAction func authorizationRemoveFrom(_ sender: NSMenuItem) {
         let item = self.getItem(at: self.contactsTableView.clickedRow);
         
-        guard let presenceModule: PresenceModule = XmppService.instance.getClient(for: item.account)?.modulesManager.getModule(PresenceModule.ID) else {
-            return;
-        }
-        
-        presenceModule.unsubscribed(by: JID(item.jid));
+        XmppService.instance.getClient(for: item.account)?.module(.presence).unsubscribed(by: JID(item.jid));
     }
     
     @IBAction func removeSelected(_ sender: NSMenuItem) {
         let item = self.getItem(at: self.contactsTableView.clickedRow);
         
-        guard let rosterModule: RosterModule = XmppService.instance.getClient(for: item.account)?.modulesManager.getModule(RosterModule.ID) else {
-            return;
-        }
-        
-        rosterModule.removeItem(jid: JID(item.jid), completionHandler: nil);
+        XmppService.instance.getClient(for: item.account)?.module(.roster).removeItem(jid: JID(item.jid), completionHandler: nil);
     }
  
     fileprivate class InviteToRoomMenuItem: NSMenuItem {

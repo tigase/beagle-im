@@ -36,36 +36,31 @@ class MucEventHandler: XmppServiceEventHandler {
     func handle(event: Event) {
         switch event {
         case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
-            if let client = XmppService.instance.getClient(for: e.sessionObject.userBareJid!), let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) {
-                mucModule.roomManager.rooms(for: client).forEach { (room) in
+            if let client = XmppService.instance.getClient(for: e.sessionObject.userBareJid!) {
+                client.module(.muc).roomManager.rooms(for: client).forEach { (room) in
                     // first we need to check if room supports MAM
-                    if let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID), let mamModule: MessageArchiveManagementModule = client.modulesManager.getModule(MessageArchiveManagementModule.ID) {
-                        discoModule.getInfo(for: JID(room.jid), completionHandler: { result in
-                            var mamVersions: [MessageArchiveManagementModule.Version] = [];
-                            switch result {
-                            case .success(let info):
-                                mamVersions = info.features.map({ MessageArchiveManagementModule.Version(rawValue: $0) }).filter({ $0 != nil}).map({ $0! });
-                            default:
-                                break;
-                            }
-                            if let timestamp = (room as? Room)?.timestamp {
-                                if !mamVersions.isEmpty {
-                                    let account = e.sessionObject.userBareJid!;
-                                    _ = room.rejoin(fetchHistory: .skip, onJoined: { room in
-                                        MessageEventHandler.syncMessages(for: account, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: JID(room.jid), since: timestamp);
-                                    });
-                                } else {
-                                    _ = room.rejoin(fetchHistory: .from(timestamp), onJoined: nil);
-                                }
+                    client.module(.disco).getInfo(for: JID(room.jid), completionHandler: { result in
+                        var mamVersions: [MessageArchiveManagementModule.Version] = [];
+                        switch result {
+                        case .success(let info):
+                            mamVersions = info.features.map({ MessageArchiveManagementModule.Version(rawValue: $0) }).filter({ $0 != nil}).map({ $0! });
+                        default:
+                            break;
+                        }
+                        if let timestamp = (room as? Room)?.timestamp {
+                            if !mamVersions.isEmpty {
+                                let account = e.sessionObject.userBareJid!;
+                                _ = room.rejoin(fetchHistory: .skip, onJoined: { room in
+                                    MessageEventHandler.syncMessages(for: account, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: JID(room.jid), since: timestamp);
+                                });
                             } else {
-                                _ = room.rejoin(fetchHistory: .initial, onJoined: nil);
+                                _ = room.rejoin(fetchHistory: .from(timestamp), onJoined: nil);
                             }
-                            NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
-                    });
-                    } else {
-                        _ = room.rejoin(fetchHistory: .initial, onJoined: nil);
+                        } else {
+                            _ = room.rejoin(fetchHistory: .initial, onJoined: nil);
+                        }
                         NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
-                    }
+                    });
                 }
             }
         case let e as MucModule.YouJoinedEvent:
@@ -135,17 +130,14 @@ class MucEventHandler: XmppServiceEventHandler {
                     }
                 })
             }
-
-            guard let mucModule: MucModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(MucModule.ID) else {
-                return;
-            }
-            mucModule.leave(room: e.room);
+            
+            e.context.module(.muc).leave(room: e.room);
         case let e as MucModule.InvitationReceivedEvent:
-            guard let mucModule: MucModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(MucModule.ID),  e.invitation.roomJid.localPart != nil else {
+            guard e.invitation.roomJid.localPart != nil else {
                 return;
             }
             
-            
+            let mucModule = e.context.module(.muc);
             guard mucModule.roomManager.room(for: e.context, with: e.invitation.roomJid) == nil else {
                 mucModule.decline(invitation: e.invitation, reason: nil);
                 return;
@@ -190,10 +182,11 @@ class MucEventHandler: XmppServiceEventHandler {
                 NSUserNotificationCenter.default.deliver(notification);
             }
         case let e as PEPBookmarksModule.BookmarksChangedEvent:
-            guard let client = XmppService.instance.getClient(for: e.sessionObject.userBareJid!), let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID), Settings.enableBookmarksSync else {
+            guard Settings.enableBookmarksSync else {
                 return;
             }
             
+            let mucModule = e.context.module(.muc);
             e.bookmarks?.items.filter { bookmark in bookmark is Bookmarks.Conference }.map { bookmark in bookmark as! Bookmarks.Conference }.filter { bookmark in
                 return mucModule.roomManager.room(for: e.context, with: bookmark.jid.bareJid) == nil;
                 }.forEach({ (bookmark) in
@@ -208,11 +201,7 @@ class MucEventHandler: XmppServiceEventHandler {
     }
         
     fileprivate func updateRoomName(room: Room) {
-        guard let client = XmppService.instance.getClient(for: room.account), let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID) else {
-            return;
-        }
-        
-        discoModule.getInfo(for: JID(room.jid), completionHandler: { result in
+        room.context?.module(.disco).getInfo(for: JID(room.jid), completionHandler: { result in
             switch result {
             case .success(let info):
                 let newName = info.identities.first(where: { (identity) -> Bool in

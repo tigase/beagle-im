@@ -146,12 +146,12 @@ class VCardEditorViewController: NSViewController, AccountAware {
             } else {
                 progressIndicator.startAnimation(self);
                 self.isEnabled = false;
-                guard let client = XmppService.instance.getClient(for: account), client.state == .connected, let vcard4Module: VCard4Module = client.modulesManager.getModule(VCard4Module.ID) else {
+                guard let client = XmppService.instance.getClient(for: account), client.state == .connected else {
                     self.handleError(title: "Could not retrive current version from the server.", message: "Account is not connected");
                     progressIndicator.stopAnimation(self);
                     return;
                 }
-                vcard4Module.retrieveVCard(completionHandler: { (result) in
+                client.module(.vcard4).retrieveVCard(completionHandler: { (result) in
                     switch result {
                     case .success(let vcard):
                         DBVCardStore.instance.updateVCard(for: account, on: account, vcard: vcard);
@@ -202,7 +202,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
                 self.vcard.photos = data == nil ? [] : [ VCard.Photo(uri: nil, type: "image/jpeg", binval: data!.base64EncodedString(options: []), types: [.home]) ];
                 
                 if data != nil && !self.isPrivate {
-                    guard let account = self.account, let avatarModule: PEPUserAvatarModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PEPUserAvatarModule.ID), avatarModule.isPepAvailable else {
+                    guard let account = self.account, let avatarModule = XmppService.instance.getClient(for: account)?.module(.pepUserAvatar), avatarModule.isPepAvailable else {
                         return;
                     }
                     
@@ -266,7 +266,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
                 })
             }
         } else {
-            guard let account = self.account, let vcard4Module: VCard4Module = XmppService.instance.getClient(for: account)?.modulesManager.getModule(VCard4Module.ID) else {
+            guard let account = self.account, let vcard4Module = XmppService.instance.getClient(for: account)?.module(.vcard4) else {
                 self.handleError(title: "Publication of new version of VCard failed", message: "Account is not connected");
                 return;
             }
@@ -509,7 +509,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
     }
     
     fileprivate func publish(avatar: Data) {
-        guard let account = self.account, let avatarModule: PEPUserAvatarModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PEPUserAvatarModule.ID) else {
+        guard let account = self.account, let avatarModule = XmppService.instance.getClient(for: account)?.module(.pepUserAvatar) else {
             handleError(title: "Publication of avatar failed", message: "Account is not connected");
             return;
         }

@@ -277,7 +277,7 @@ open class SSLProcessor: ConnectorBase.NetworkProcessor, SSLNetworkProcessor {
             if let cert = SecTrustGetCertificateAtIndex(trust, 0 as CFIndex) {
                 var commonName: CFString?;
                 SecCertificateCopyCommonName(cert, &commonName);
-                print("common name: \(commonName)")
+                print("common name: \(String(describing: commonName))")
             }
 
             switch certificateValidation {

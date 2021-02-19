@@ -239,10 +239,10 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         alert.addButton(withTitle: "No");
         alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
             if (response == .alertFirstButtonReturn) {
-                guard let client = XmppService.instance.getClient(for: channel.account), client.state == .connected, let mixModule: MixModule = client.modulesManager.getModule(MixModule.ID), channel.state == .joined else {
+                guard let client = channel.context, client.state == .connected, channel.state == .joined else {
                     return;
                 }
-                mixModule.destroy(channel: channel.channelJid, completionHandler: { result in
+                client.module(.mix).destroy(channel: channel.channelJid, completionHandler: { result in
                     DispatchQueue.main.async {
                         guard let window = self.view.window else {
                             return;

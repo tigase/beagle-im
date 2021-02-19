@@ -392,6 +392,9 @@ class XmppService: EventHandler {
             client.$state.dropFirst().sink(receiveValue: { state in self.changedState(state, for: client) }).store(in: &clientCancellables.cancellables);
 
             client.eventBus.register(handler: self, for: observedEvents);
+            
+            MessageEventHandler.register(for: client, cancellables: &clientCancellables.cancellables)
+            
             eventHandlers.forEach { handler in
                 client.eventBus.register(handler: handler, for: handler.events);
             }

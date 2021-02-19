@@ -99,7 +99,7 @@ class ExecuteAdHocCommandController: NSViewController {
     
     fileprivate func execute() {
         executeButton.isEnabled = false;
-        guard let adhocModule: AdHocCommandsModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(AdHocCommandsModule.ID) else {
+        guard let adhocModule = XmppService.instance.getClient(for: account)?.module(.adhoc) else {
             return;
         }
         self.formView.synchronize();

@@ -96,7 +96,7 @@ class InvitationManager {
         DispatchQueue.main.async {
             switch invitation.type {
             case .mucInvitation:
-                guard let mucModule: MucModule = XmppService.instance.getClient(for: invitation.account)?.modulesManager.getModule(MucModule.ID) else {
+                guard let mucModule = XmppService.instance.getClient(for: invitation.account)?.module(.muc) else {
                     return;
                 }
 

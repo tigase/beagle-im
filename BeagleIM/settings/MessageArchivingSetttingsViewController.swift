@@ -68,7 +68,7 @@ class MessageArchivingSettingsViewController: NSViewController, AccountAware {
         
         progressIndicator.startAnimation(self);
         
-        guard let mamModule: MessageArchiveManagementModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageArchiveManagementModule.ID), mamModule.isAvailable else {
+        guard let mamModule = XmppService.instance.getClient(for: account)?.module(.mam), mamModule.isAvailable else {
             self.progressIndicator.stopAnimation(self);
             return;
         }
@@ -96,7 +96,7 @@ class MessageArchivingSettingsViewController: NSViewController, AccountAware {
     @IBAction func submitClicked(_ sender: NSButton) {
         self.isEnabled = false;
         let enable = sender.state == .on;
-        guard let mamModule: MessageArchiveManagementModule = XmppService.instance.getClient(for: account!)?.modulesManager.getModule(MessageArchiveManagementModule.ID), mamModule.isAvailable else {
+        guard let mamModule = XmppService.instance.getClient(for: account!)?.module(.mam), mamModule.isAvailable else {
             return;
         }
         self.progressIndicator.startAnimation(self);

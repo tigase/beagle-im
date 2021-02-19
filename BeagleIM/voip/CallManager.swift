@@ -237,7 +237,7 @@ class Call: NSObject {
             self.session = nil;
             self.delegate = nil;
             for session in self.establishingSessions {
-                _ = session.terminate();
+                session.terminate();
             }
             self.establishingSessions.removeAll();
         }
@@ -497,7 +497,7 @@ class Call: NSObject {
                             } else {
                                 print("sending answer to remote client");
                                 let (sdp, sid) = SDP.parse(sdpString: sdpAnswer!.sdp, creator: .responder)!;
-                                _ = session.accept(contents: sdp.contents, bundle: sdp.bundle, completionHandler: nil)
+                                session.accept(contents: sdp.contents, bundle: sdp.bundle, completionHandler: nil)
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
                                     self.sendLocalCandidates();
                                 })
@@ -629,7 +629,7 @@ extension Call: JingleSessionDelegate {
                     self.session = sess;
                     self.sendLocalCandidates();
                 } else {
-                    _ = sess.terminate();
+                    sess.terminate();
                 }
             }
             self.establishingSessions.removeAll();

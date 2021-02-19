@@ -187,11 +187,11 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
                 muteNotifications?.state = r.options.notifications == .none ? .on : .off;
             case let c as Chat:
                 muteNotifications?.state = c.options.notifications == .none ? .on : .off;
-                if let client = XmppService.instance.getClient(for: c.account), let blockingModule: BlockingCommandModule = client.modulesManager.getModule(BlockingCommandModule.ID) {
+                if let client = chat.context {
                     blockContact = NSButton(checkboxWithTitle: "Block contact", target: self, action: #selector(blockContactChanged));
                     rows.append(blockContact!);
                     blockContact?.state = BlockedEventHandler.isBlocked(JID(c.jid), on: client) ? .on : .off;
-                    blockContact?.isEnabled = blockingModule.isAvailable;
+                    blockContact?.isEnabled = client.module(.blockingCommand).isAvailable;
                 }
                 if DBRosterStore.instance.item(for: chat.account, jid: JID(chat.jid)) == nil {
                     let button = NSButton(title: "Add to contacts", image: NSImage(named: NSImage.addTemplateName)!, target: self, action: #selector(self.addToRoster(_:)));
@@ -255,9 +255,9 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
     }
     
     @objc func blockContactChanged(_ sender: NSButton) {
-        if let chat = self.chat as? Chat, let blockingModule: BlockingCommandModule = XmppService.instance.getClient(for: chat.account)?.modulesManager.getModule(BlockingCommandModule.ID) {
+        if let chat = self.chat as? Chat, let context = chat.context {
             if sender.state == .on {
-                blockingModule.block(jids: [JID(chat.jid)], completionHandler: { [weak sender] result in
+                context.module(.blockingCommand).block(jids: [JID(chat.jid)], completionHandler: { [weak sender] result in
                     DispatchQueue.main.async {
                         switch result {
                         case .failure(_):
@@ -268,7 +268,7 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
                     }
                 })
             } else {
-                blockingModule.unblock(jids: [JID(chat.jid)], completionHandler: { [weak sender] result in
+                context.module(.blockingCommand).unblock(jids: [JID(chat.jid)], completionHandler: { [weak sender] result in
                     DispatchQueue.main.async {
                         switch result {
                         case .failure(_):
@@ -306,7 +306,11 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
                     if let idx = addContactController.accountSelector.itemTitles.firstIndex(of: chat.account.stringValue) {
                         addContactController.accountSelector.selectItem(at: idx);
                     }
-                    addContactController.labelField.stringValue = fn ?? chat.jid.localPart ?? chat.jid.stringValue;
+                    if fn.isEmpty {
+                        addContactController.labelField.stringValue = chat.jid.localPart ?? chat.jid.stringValue;
+                    } else {
+                        addContactController.labelField.stringValue = fn;
+                    }
                     let window = NSWindow(contentViewController: addContactController);
                     parent.beginSheet(window, completionHandler: nil);
                 }

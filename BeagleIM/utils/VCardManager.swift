@@ -31,30 +31,20 @@ class VCardManager {
     }
     
     open func retrieveVCard(for jid: JID, on account: BareJID, completionHandler: @escaping (Result<VCard,XMPPError>)->Void) {
-        guard let modulesManager = XmppService.instance.getClient(for: account)?.modulesManager else {
+        guard let client = XmppService.instance.getClient(for: account) else {
             completionHandler(.failure(.undefined_condition));
             return;
         }
         
         let queryJid = jid.bareJid == account ? nil : jid;
-        if let vcard4Module: VCard4Module = modulesManager.getModule(VCard4Module.ID) {
-            self.retrieveVCard(module: vcard4Module, for: queryJid, on: account) { (result) in
-                switch result {
-                case .success(let vcard):
-                    completionHandler(.success(vcard));
-                case .failure(let error):
-                    guard let vcardTempModule: VCardTempModule = modulesManager.getModule(VCardTempModule.ID) else {
-                        completionHandler(.failure(error));
-                        return;
-                    }
-                    self.retrieveVCard(module: vcardTempModule, for: queryJid, on: account, completionHandler: completionHandler);
-                }
+        
+        self.retrieveVCard(module: client.module(.vcard4), for: queryJid, on: account) { (result) in
+            switch result {
+            case .success(let vcard):
+                completionHandler(.success(vcard));
+            case .failure(_):
+                self.retrieveVCard(module: client.module(.vcardTemp), for: queryJid, on: account, completionHandler: completionHandler);
             }
-        }
-        else if let vcardTempModule: VCardTempModule = modulesManager.getModule(VCardTempModule.ID) {
-            self.retrieveVCard(module: vcardTempModule, for: queryJid, on: account, completionHandler: completionHandler);
-        } else {
-            completionHandler(.failure(.undefined_condition));
         }
     }
     

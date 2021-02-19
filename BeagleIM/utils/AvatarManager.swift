@@ -295,7 +295,7 @@ class AvatarManager {
     }
 
     func retrievePepUserAvatar(for jid: BareJID, on account: BareJID, hash: String) {
-        guard let pepModule: PEPUserAvatarModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PEPUserAvatarModule.ID) else {
+        guard let pepModule = XmppService.instance.getClient(for: account)?.module(.pepUserAvatar) else {
             return;
         }
 

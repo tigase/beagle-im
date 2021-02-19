@@ -82,7 +82,7 @@ class ChatInvitationCellView: BaseChatCellView {
     }
     
     @IBAction func acceptClicked(_ sender: Any) {
-        guard let account = self.account, let mixInvitation = appendix?.mixInvitation(), let window = self.window, let mixModule: MixModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MixModule.ID) else {
+        guard let account = self.account, let mixInvitation = appendix?.mixInvitation(), let window = self.window, let mixModule = XmppService.instance.getClient(for: account)?.module(.mix) else {
             return;
         }
 

@@ -96,13 +96,13 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
             completionHandler(false);
             return;
         }
+        guard let client = XmppService.instance.getClient(for: account) else {
+            completionHandler(false);
+            return;
+        }
         switch component.type {
         case .muc:
-            guard let mucModule: MucModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MucModule.ID), let discoModule: DiscoveryModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(DiscoveryModule.ID) else {
-                completionHandler(false);
-                return;
-            }
-            discoModule.getInfo(for: channel.jid, node: nil, completionHandler: { [weak self] result in
+            client.module(.disco).getInfo(for: channel.jid, node: nil, completionHandler: { [weak self] result in
                 switch result {
                 case .success(let info):
                     if info.features.contains("muc_passwordprotected") && password == nil {
@@ -129,7 +129,7 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
                         }
                     } else {
                         let room = channel.jid;
-                        _ = mucModule.join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname, password: password);
+                        _ = client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname, password: password);
                         PEPBookmarksModule.updateOrAdd(for: account, bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: true, nick: nickname, password: password));
                         DispatchQueue.main.async {
                             completionHandler(true);
@@ -151,11 +151,7 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
                 }
             });
         case .mix:
-            guard let mixModule: MixModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MixModule.ID) else {
-                completionHandler(false);
-                return;
-            }
-            mixModule.join(channel: channel.jid.bareJid, withNick: nickname, completionHandler: { result in
+            client.module(.mix).join(channel: channel.jid.bareJid, withNick: nickname, completionHandler: { result in
                 switch result {
                 case .success(_):
                     // we have joined, so all what we need to do is close this window
@@ -197,7 +193,7 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
                 }
                 that.remoteQuery = nil;
                 let text = field.stringValue;
-                guard let client = XmppService.instance.getClient(for: account), let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID) else {
+                guard let client = XmppService.instance.getClient(for: account) else {
                     return;
                 }
 
@@ -207,7 +203,7 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
                 for component in that.components {
                     group.enter();
                     let channelJid = JID(BareJID(localPart: text, domain: component.jid.domain));
-                    discoModule.getInfo(for: channelJid, node: nil, completionHandler: { result in
+                    client.module(.disco).getInfo(for: channelJid, node: nil, completionHandler: { result in
                          switch result {
                          case .success(let info):
                              DispatchQueue.main.async {
@@ -285,7 +281,7 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
             self.allItems = [];
             return;
         }
-        guard let client = XmppService.instance.getClient(for: account), let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID) else {
+        guard let client = XmppService.instance.getClient(for: account) else {
             return;
         }
 
@@ -295,7 +291,7 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
         group.enter();
         for component in components {
             group.enter();
-            discoModule.getItems(for: component.jid, completionHandler: { result in
+            client.module(.disco).getItems(for: component.jid, completionHandler: { result in
                 switch result {
                 case .success(let items):
                     DispatchQueue.main.async {

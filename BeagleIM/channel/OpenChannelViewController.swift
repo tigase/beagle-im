@@ -222,7 +222,7 @@ class OpenChannelViewController: NSViewController, OpenChannelViewControllerTabV
     
     func findComponents(for account: BareJID, at domain: String) {
         let domainJid = JID(domain);
-        guard let client = XmppService.instance.getClient(for: account), let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID) else {
+        guard let discoModule = XmppService.instance.getClient(for: account)?.module(.disco) else {
             return;
         }
         operationStarted();

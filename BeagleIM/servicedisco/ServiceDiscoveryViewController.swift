@@ -248,7 +248,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
             return;
         }
         
-        guard let discoModule: DiscoveryModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(DiscoveryModule.ID) else {
+        guard let discoModule = XmppService.instance.getClient(for: account)?.module(.disco) else {
             return;
         }
         
@@ -360,13 +360,10 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
         guard let account = self.account, let client = XmppService.instance.getClient(for: account), client.state == .connected else {
             return;
         }
-        guard let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID) else {
-            return;
-        }
 
         self.progressIndicator.startAnimation(self);
         let node = self.node;
-        discoModule.getInfo(for: jid, node: node, completionHandler: { [weak self] result in
+        client.module(.disco).getInfo(for: jid, node: node, completionHandler: { [weak self] result in
             switch result {
             case .success(let info):
                 let categories = info.identities.map({ (identity) -> String in
@@ -404,12 +401,8 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
             }
             return;
         }
-        guard let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID) else {
-            DispatchQueue.main.async {
-                self.progressIndicator.stopAnimation(self);
-            }
-            return;
-        }
+
+        let discoModule = client.module(.disco);
         discoModule.getItems(for: parentItem.jid, node: parentItem.node, completionHandler: { [weak self] result in
             switch result {
             case .success(let items):
@@ -424,13 +417,6 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                         self?.outlineView.reloadData();
                     } else {
                         self?.outlineView.insertItems(at: IndexSet(0..<parentItem.subitems!.count), inParent: parentItem, withAnimation: .effectGap);
-                    }
-                }
-                var count = items.items.count;
-                let finished = {
-                    count = count - 1;
-                    if count <= 0 {
-                        self?.progressIndicator.stopAnimation(self);
                     }
                 }
                 let group = DispatchGroup();
@@ -451,9 +437,9 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                         discoModule.getInfo(for: item.jid, node: item.node, completionHandler: { result in
                             switch result {
                             case .success(let info):
-                                if info.features.contains("jabber:iq:version"), let softwareVersionModule: SoftwareVersionModule = client.modulesManager.getModule(SoftwareVersionModule.ID) {
+                                if info.features.contains("jabber:iq:version") {
                                     group.enter();
-                                    softwareVersionModule.checkSoftwareVersion(for: item.jid, completionHandler: { result in
+                                    client.module(.softwareVersion).checkSoftwareVersion(for: item.jid, completionHandler: { result in
                                         DispatchQueue.main.async {
                                             switch result {
                                             case .success(let version):

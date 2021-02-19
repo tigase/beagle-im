@@ -23,6 +23,7 @@ import AppKit
 import TigaseSwift
 import TigaseSwiftOMEMO
 import os
+import Combine
 
 class MessageEventHandler: XmppServiceEventHandler {
 
@@ -49,7 +50,7 @@ class MessageEventHandler: XmppServiceEventHandler {
         }
 
         var encryptionErrorBody: String?;
-        if let omemoModule: OMEMOModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(OMEMOModule.ID) {
+        if let omemoModule: OMEMOModule = XmppService.instance.getClient(for: account)?.module(.omemo) {
             switch omemoModule.decode(message: message) {
             case .successMessage(_, let keyFingerprint):
                 encryption = .decrypted;
@@ -81,11 +82,22 @@ class MessageEventHandler: XmppServiceEventHandler {
         return (body, encryption, fingerprint);
     }
 
-    let events: [Event] = [MessageModule.MessageReceivedEvent.TYPE, MessageDeliveryReceiptsModule.ReceiptEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, DiscoveryModule.AccountFeaturesReceivedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, MessageArchiveManagementModule.ArchivedMessageReceivedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, OMEMOModule.AvailabilityChangedEvent.TYPE];
+    let events: [Event] = [MessageModule.MessageReceivedEvent.TYPE, MessageDeliveryReceiptsModule.ReceiptEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, MessageArchiveManagementModule.ArchivedMessageReceivedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, OMEMOModule.AvailabilityChangedEvent.TYPE];
 
     init() {
     }
 
+    static func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
+        client.module(.mam).$availableVersions.sink(receiveValue: { [weak client] versions in
+            guard !versions.isEmpty, let account = client?.userBareJid else {
+                return;
+            }
+            MessageEventHandler.syncMessagesScheduled(for: account);
+        }).store(in: &cancellables);
+        client.module(.messageCarbons).$isAvailable.filter({ $0 }).sink(receiveValue: { [weak client] _ in
+            client?.module(.messageCarbons).enable();
+        }).store(in: &cancellables);
+    }
 
     func handle(event: Event) {
         switch event {
@@ -129,18 +141,6 @@ class MessageEventHandler: XmppServiceEventHandler {
                     }
                 }
             });
-        case let e as DiscoveryModule.AccountFeaturesReceivedEvent:
-            if let account = e.sessionObject.userBareJid, let mamModule: MessageArchiveManagementModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MessageArchiveManagementModule.ID), mamModule.isAvailable {
-                MessageEventHandler.syncMessagesScheduled(for: account);
-            }
-        case let e as DiscoveryModule.ServerFeaturesReceivedEvent:
-            guard e.features.contains(MessageCarbonsModule.MC_XMLNS) else {
-                return;
-            }
-            guard let mcModule: MessageCarbonsModule = XmppService.instance.getClient(for: e.sessionObject.userBareJid!)?.modulesManager.getModule(MessageCarbonsModule.ID) else {
-                return;
-            }
-            mcModule.enable();
         case let e as MessageCarbonsModule.CarbonReceivedEvent:
             guard let account = e.sessionObject.userBareJid, let from = e.message.from?.bareJid, let to = e.message.to?.bareJid else {
                 return;
@@ -263,13 +263,13 @@ class MessageEventHandler: XmppServiceEventHandler {
     }
     
     static func syncMessages(forPeriod period: DBChatHistorySyncStore.Period, version: MessageArchiveManagementModule.Version? = nil, rsmQuery: RSM.Query? = nil, retry: Int = 3) {
-        guard let client = XmppService.instance.getClient(for: period.account), let mamModule: MessageArchiveManagementModule = client.modulesManager.getModule(MessageArchiveManagementModule.ID) else {
+        guard let client = XmppService.instance.getClient(for: period.account) else {
             return;
         }
         
         let start = Date();
         let queryId = UUID().uuidString;
-        mamModule.queryItems(version: version, componentJid: period.component == nil ? nil : JID(period.component!), start: period.from, end: period.to, queryId: queryId, rsm: rsmQuery ?? RSM.Query(after: period.after, max: 150), completionHandler: { (result) in
+        client.module(.mam).queryItems(version: version, componentJid: period.component == nil ? nil : JID(period.component!), start: period.from, end: period.to, queryId: queryId, rsm: rsmQuery ?? RSM.Query(after: period.after, max: 150), completionHandler: { (result) in
             switch result {
             case .success(let response):
                 if response.complete || response.rsm == nil {

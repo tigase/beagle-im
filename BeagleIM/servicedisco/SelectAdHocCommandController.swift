@@ -45,7 +45,7 @@ class SelectAdHocCommandController: NSViewController {
     override func viewWillAppear() {
         executeButton.isEnabled = false;
         commendSelector.removeAllItems();
-        guard let discoveryModule: DiscoveryModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(DiscoveryModule.ID) else {
+        guard let discoveryModule = XmppService.instance.getClient(for: account)?.module(.disco) else {
             return;
         }
         

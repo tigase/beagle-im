@@ -107,7 +107,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                         return session.jid == from && session.account == account;
                     });
                     toClose.forEach({ (session) in
-                        _ = session.terminate();
+                        session.terminate();
                     })
                     if !PresenceStore.instance.isAvailable(for: from.bareJid, context: e.context) {
                         CallManager.instance.terminateCalls(for: e.sessionObject.userBareJid!, with: from.bareJid);
@@ -128,7 +128,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                             // nothing to do as manager will call us back..
                             break;
                         case .failure(_):
-                            _ = session.decline();
+                            session.decline();
                         }
                     });
                 case .retract(let id):
@@ -158,8 +158,6 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                             break;
                         }
                     });
-                default:
-                    break;
                 }
             default:
                 break;
@@ -222,7 +220,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
         
         guard let content = e.contents.first, let _ = content.description as? Jingle.RTP.Description else {
             if let session = session(for: e.sessionObject.userBareJid!, with: e.jid, sid: e.sid) {
-                _ = session.terminate();
+                session.terminate();
             }
             return;
         }
@@ -243,7 +241,7 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
                 case .success(_):
                     break;
                 case .failure(_):
-                    _ = session.terminate();
+                    session.terminate();
                 }
             })
         }

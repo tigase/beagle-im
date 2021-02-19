@@ -32,7 +32,7 @@ class PrivateVCard4Helper {
     }
     
     static func retrieve(on account: BareJID, from jid: BareJID, completionHandler: @escaping (Result<VCard,ErrorCondition>)->Void) {
-        if isEnabled, let pubsubModule: PubSubModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PubSubModule.ID) {
+        if isEnabled, let pubsubModule = XmppService.instance.getClient(for: account)?.module(.pubsub) {
             pubsubModule.retrieveItems(from: jid, for: NODE, limit: .items(withIds: ["current"]), completionHandler: { result in
                 switch result {
                 case .success(let items):
@@ -52,7 +52,7 @@ class PrivateVCard4Helper {
     }
     
     static func publish(on account: BareJID, vcard: VCard, completionHandler: @escaping (PubSubPublishItemResult)->Void) {
-        if isEnabled, let pubsubModule: PubSubModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(PubSubModule.ID) {
+        if isEnabled, let pubsubModule = XmppService.instance.getClient(for: account)?.module(.pubsub) {
             let publishOptions = JabberDataElement(type: .submit);
             publishOptions.addField(HiddenField(name: "FORM_TYPE")).value = "http://jabber.org/protocol/pubsub#publish-options";
             publishOptions.addField(TextSingleField(name: "pubsub#access_model")).value = "presence";

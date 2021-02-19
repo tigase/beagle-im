@@ -244,7 +244,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
     }
     
     func joinChannel(channel: BareJID) {
-        guard let mixModule: MixModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(MixModule.ID) else {
+        guard let mixModule: MixModule = XmppService.instance.getClient(for: account)?.module(.mix) else {
             return;
         }
         
@@ -286,7 +286,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                             DispatchQueue.main.async {
                                 let alert = NSAlert();
                                 alert.messageText = "Could not create";
-                                alert.informativeText = "It was not possible to create a channel. The server returned an error: \(error.message ?? error.description)";
+                                alert.informativeText = "It was not possible to create a channel. The server returned an error: \(errorCondition.message ?? errorCondition.description)";
                                 alert.addButton(withTitle: "OK")
                                 alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
                                     self.close();
@@ -310,20 +310,17 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
     }
     
     func joinRoom(room: BareJID) {
-        guard let discoModule: DiscoveryModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(DiscoveryModule.ID) else {
+        guard let client = XmppService.instance.getClient(for: account) else {
             return;
         }
         
         let nickname = self.nicknameField.stringValue;
-        discoModule.getInfo(for: JID(room), node: nil, completionHandler: { result in
+        client.module(.disco).getInfo(for: JID(room), node: nil, completionHandler: { result in
             switch result {
             case .success(let info):
                 let requiresPassword = info.features.contains("muc_passwordprotected");
                 if !requiresPassword || (requiresPassword && self.password != nil) {
-                    guard let mucModule: MucModule = XmppService.instance.getClient(for: self.account)?.modulesManager.getModule(MucModule.ID) else {
-                        return;
-                    }
-                    _ = mucModule.join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname);
+                    _ = client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname);
                     PEPBookmarksModule.updateOrAdd(for: self.account, bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: true, nick: nickname, password: self.password));
                     DispatchQueue.main.async {
                         self.close();
@@ -343,10 +340,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                             if password.isEmpty || response != .OK {
                                 self.close();
                             } else {
-                                guard let mucModule: MucModule = XmppService.instance.getClient(for: self.account)?.modulesManager.getModule(MucModule.ID) else {
-                                    return;
-                                }
-                                _ = mucModule.join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname, password: password);
+                                _ = client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname, password: password);
                                 
                                 PEPBookmarksModule.updateOrAdd(for: self.account, bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: true, nick: nickname, password: password));
                                 self.close();
@@ -397,7 +391,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
     }
     
     fileprivate func findMucComponent(at account: BareJID) {
-        guard let discoModule: DiscoveryModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(DiscoveryModule.ID) else {
+        guard let discoModule = XmppService.instance.getClient(for: account)?.module(.disco) else {
             return;
         }
         
@@ -409,7 +403,6 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
             switch result {
             case .success(let items):
                 var mucJids: [BareJID] = [];
-                var counter = items.items.count;
 
                 let group = DispatchGroup();
                 
@@ -449,7 +442,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
     var componentType: ComponentType?;
     
     fileprivate func refreshRooms(at mucJid: BareJID) {
-        guard let discoModule: DiscoveryModule = XmppService.instance.getClient(for: account)?.modulesManager.getModule(DiscoveryModule.ID) else {
+        guard let discoModule = XmppService.instance.getClient(for: account)?.module(.disco) else {
             return;
         }
         

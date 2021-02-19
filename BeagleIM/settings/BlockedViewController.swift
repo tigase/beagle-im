@@ -44,24 +44,20 @@ class BlockedViewController: NSViewController, NSTableViewDataSource, NSTableVie
             for client in clients {
                 group.enter();
                 DispatchQueue.global().async {
-                    if let blockingModule: BlockingCommandModule = client.modulesManager.getModule(BlockingCommandModule.ID) {
-                        let account = client.sessionObject.userBareJid!;
-                        blockingModule.retrieveBlockedJids(completionHandler: { result in
-                            DispatchQueue.main.async {
-                                switch result {
-                                case .success(let jids):
-                                    items.append(contentsOf: jids.map({ jid -> Item in
-                                        return Item(account: account, jid: jid);
-                                    }));
-                                case .failure(_):
-                                    break;
-                                }
+                    let account = client.userBareJid;
+                    client.module(.blockingCommand).retrieveBlockedJids(completionHandler: { result in
+                        DispatchQueue.main.async {
+                            switch result {
+                            case .success(let jids):
+                                items.append(contentsOf: jids.map({ jid -> Item in
+                                    return Item(account: account, jid: jid);
+                                }));
+                            case .failure(_):
+                                break;
                             }
-                            group.leave();
-                        });
-                    } else {
+                        }
                         group.leave();
-                    }
+                    });
                 }
             }
             group.notify(queue: DispatchQueue.main, execute: {
@@ -116,7 +112,7 @@ class BlockedViewController: NSViewController, NSTableViewDataSource, NSTableVie
         
         let map = Dictionary(grouping: selected, by: { $0.account });
         map.forEach { (entry) in
-            guard let client = XmppService.instance.getClient(for: entry.key), let blockingModule: BlockingCommandModule = client.modulesManager.getModule(BlockingCommandModule.ID) else {
+            guard let blockingModule: BlockingCommandModule = XmppService.instance.getClient(for: entry.key)?.module(.blockingCommand) else {
                 return;
             }
             group.enter()

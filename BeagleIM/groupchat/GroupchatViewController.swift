@@ -705,7 +705,7 @@ extension GroupchatParticipantsContainer: NSMenuDelegate {
     }
     
     @objc func banUser(_ menuItem: NSMenuItem?) {
-        guard let participant = (menuItem as? MenuItemWithOccupant)?.occupant, let jid = participant.jid, let room = self.room, let mucModule: MucModule = XmppService.instance.getClient(for: room.account)?.modulesManager.getModule(MucModule.ID) else {
+        guard let participant = (menuItem as? MenuItemWithOccupant)?.occupant, let jid = participant.jid, let room = self.room, let mucModule = room.context?.module(.muc) else {
             return;
         }
         

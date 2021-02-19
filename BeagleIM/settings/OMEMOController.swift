@@ -66,7 +66,7 @@ open class OMEMOContoller: NSViewController, AccountAware, NSTableViewDataSource
         guard let keyPair = DBOMEMOStore.instance.keyPair(forAccount: account) else {
             return;
         }
-        let omemoModule: OMEMOModule? = XmppService.instance.getClient(for: account)?.modulesManager.getModule(OMEMOModule.ID);
+        let omemoModule: OMEMOModule? = XmppService.instance.getClient(for: account)?.module(.omemo);
         var fingerprint = keyPair.publicKey?.map { (byte) -> String in
             return String(format: "%02x", byte)
             }.dropFirst(1).joined();
@@ -117,7 +117,7 @@ open class OMEMOContoller: NSViewController, AccountAware, NSTableViewDataSource
             switch response {
             case NSApplication.ModalResponse.alertFirstButtonReturn:
                 self.setIdentities(trust: .compromised, active: false, forIdentities: selected);
-                guard let omemoModule: OMEMOModule = XmppService.instance.getClient(for: self.account!)?.modulesManager.getModule(OMEMOModule.ID) else {
+                guard let omemoModule = XmppService.instance.getClient(for: self.account!)?.module(.omemo) else {
                     return;
                 }
                 
@@ -166,7 +166,7 @@ open class OMEMOContoller: NSViewController, AccountAware, NSTableViewDataSource
         alert.beginSheetModal(for: self.view.window!) { (response) in
             switch response {
             case NSApplication.ModalResponse.alertFirstButtonReturn:
-                guard let omemoModule: OMEMOModule = XmppService.instance.getClient(for: self.account!)?.modulesManager.getModule(OMEMOModule.ID) else {
+                guard let omemoModule: OMEMOModule = XmppService.instance.getClient(for: self.account!)?.module(.omemo) else {
                     return;
                 }
                 

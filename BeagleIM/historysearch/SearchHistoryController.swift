@@ -106,9 +106,7 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
         }
 
         if DBChatStore.instance.conversation(for: item.conversation.account, with: item.conversation.jid) == nil {
-            if let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) {
-                _ = messageModule.chatManager.createChat(for: client, with: item.conversation.jid);
-            }
+            _ = client.module(.message).chatManager.createChat(for: client, with: item.conversation.jid);
         }
 
         self.view.window?.sheetParent?.endSheet(self.view.window!)

@@ -27,12 +27,9 @@ class BlockedEventHandler: XmppServiceEventHandler {
     static let instance = BlockedEventHandler();
 
     let events: [Event] = [BlockingCommandModule.BlockedChangedEvent.TYPE];
-    
-    static func isBlocked(_ jid: JID, on client: XMPPClient) -> Bool {
-        guard let blockingModule: BlockingCommandModule = client.modulesManager.getModule(BlockingCommandModule.ID) else {
-            return false;
-        }
-        return blockingModule.blockedJids?.contains(jid) ?? false;
+
+    static func isBlocked(_ jid: JID, on client: Context) -> Bool {
+        return client.module(.blockingCommand).blockedJids?.contains(jid) ?? false;
     }
     
     static func isBlocked(_ jid: JID, on account: BareJID) -> Bool {

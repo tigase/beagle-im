@@ -141,10 +141,7 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
         client.module(.roster).addItem(jid: jid, name: name.isEmpty ? nil : name, groups: [], completionHandler: { result in
             switch result {
             case .success(_):
-                guard let presenceModule: PresenceModule = client.modulesManager.getModule(PresenceModule.ID) else {
-                    self.close();
-                    return;
-                }
+                let presenceModule = client.module(.presence);
                 if requrestSubscription {
                     presenceModule.subscribe(to: jid, preauth: self.preauthToken);
                 }

@@ -46,12 +46,11 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
     override func viewWillAppear() {
         super.viewWillAppear();
         
-        guard let mucModule: MucModule = XmppService.instance.getClient(for: room.account)?.modulesManager.getModule(MucModule.ID) else {
+        guard let mucModule = room.context?.module(.muc) else {
             return;
         }
         
         let affiliations: [MucAffiliation] = [.member, .admin, .outcast, .owner];
-        var count = affiliations.count;
         self.progressIndicator.startAnimation(nil);
         var errors: [XMPPError] = [];
         let group = DispatchGroup();
@@ -261,7 +260,7 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
             return MucModule.RoomAffiliation(jid: jid, affiliation: affil);
         };
         
-        guard let mucModule: MucModule = XmppService.instance.getClient(for: room.account)?.modulesManager.getModule(MucModule.ID) else {
+        guard let mucModule = room.context?.module(.muc) else {
             return;
         }
         

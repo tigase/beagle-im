@@ -198,7 +198,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         guard event.clickCount == 1 else {
             switch event.clickCount {
             case 2:
-                 if let (itemId, idx, ts, messageView, view) = estimateSelectionPoint(event: event, table: table, superview: superview) {
+                 if let (itemId, idx, ts, messageView, _) = estimateSelectionPoint(event: event, table: table, superview: superview) {
                     if let textStorage = messageView.textStorage {
                         let range = textStorage.doubleClick(at: idx);
                         textStorage.beginEditing();
@@ -218,7 +218,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
                  }
                 break;
             case 3:
-                if let (itemId, idx, ts, messageView, view) = estimateSelectionPoint(event: event, table: table, superview: superview) {
+                if let (itemId, idx, ts, messageView, _) = estimateSelectionPoint(event: event, table: table, superview: superview) {
                     if let textStorage = messageView.textStorage {
                         var before = textStorage.attributedSubstring(from: NSRange(0..<idx)).string;
                         var after = idx < textStorage.length ? textStorage.attributedSubstring(from: NSRange(idx..<textStorage.length)).string : "";
@@ -282,7 +282,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
             return false;
         }
 
-        guard let (itemId, idx, ts, messageView, view) = estimateSelectionPoint(event: event, table: table, superview: superview) else {
+        guard let (itemId, idx, ts, messageView, _) = estimateSelectionPoint(event: event, table: table, superview: superview) else {
             return false;
         }
         

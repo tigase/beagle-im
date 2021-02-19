@@ -76,12 +76,12 @@ class ChangePasswordController: NSViewController, NSTextFieldDelegate, AccountAw
         }
         
         if self.changeOnServer?.state == .on {
-            guard let client = XmppService.instance.getClient(for: account), let register: InBandRegistrationModule = client.modulesManager.getModule(InBandRegistrationModule.ID) else {
+            guard let client = XmppService.instance.getClient(for: account) else {
                 return;
             }
             progressIndicator.startAnimation(self);
             
-            register.changePassword(newPassword: password, completionHandler: { result in
+            client.module(.inBandRegistration).changePassword(newPassword: password, completionHandler: { result in
                 DispatchQueue.main.async {
                     self.progressIndicator.stopAnimation(self);
                     switch result {

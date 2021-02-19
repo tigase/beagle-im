@@ -195,11 +195,11 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
         }
         let selected = self.items[sender.clickedRow];
         
-        guard let client = XmppService.instance.getClient(for: selected.account), let messageModule: MessageModule = client.modulesManager.getModule(MessageModule.ID) else {
+        guard let client = XmppService.instance.getClient(for: selected.account) else {
             return;
         }
         
-        if let chat = messageModule.chatManager.createChat(for: client, with: selected.jid) {
+        if let chat = client.module(.message).chatManager.createChat(for: client, with: selected.jid) {
             NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: chat)
         }
     }

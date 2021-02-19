@@ -85,7 +85,7 @@ class JoinGroupchatViewController: NSViewController, NSTextFieldDelegate {
             return;
         }
         
-        guard let mucModule: MucModule = XmppService.instance.getClient(for: self.account!)?.modulesManager.getModule(MucModule.ID) else {
+        guard let mucModule = XmppService.instance.getClient(for: self.account!)?.module(.muc) else {
             return;
         }
         

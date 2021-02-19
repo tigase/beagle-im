@@ -517,9 +517,9 @@ extension ChatsListViewController: NSOutlineViewDelegate {
     func close(chat: ConversationItem) {
         switch chat.chat {
         case let c as Chat:
-            DBChatStore.instance.close(chat: c);
+            _ = DBChatStore.instance.close(chat: c);
         case let r as Room:
-            guard let mucModule: MucModule = XmppService.instance.getClient(for: r.account)?.modulesManager.getModule(MucModule.ID) else {
+            guard let mucModule = r.context?.module(.muc) else {
                 return;
             }
             
@@ -549,7 +549,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 PEPBookmarksModule.remove(from: r.account, bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: JID(r.jid), autojoin: false));
             }
         case let c as Channel:
-            guard let mixModule: MixModule = XmppService.instance.getClient(for: c.account)?.modulesManager.getModule(MixModule.ID) else {
+            guard let mixModule = c.context?.module(.mix) else {
                 return;
             }
             mixModule.leave(channel: c, completionHandler: { result in

@@ -64,7 +64,7 @@ class ConfigureRoomViewController: NSViewController {
         formView.hideFields = ["muc#roomconfig_roomname"];
         formView.isHidden = true;
         
-        guard let client = XmppService.instance.getClient(for: account), let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) else {
+        guard let mucModule: MucModule = room?.context?.module(.muc) else {
             return;
         }
         
@@ -92,9 +92,9 @@ class ConfigureRoomViewController: NSViewController {
                 }
             }
         });
-        if let vCardTempModule: VCardTempModule = client.modulesManager.getModule(VCardTempModule.ID), let discoModule: DiscoveryModule = client.modulesManager.getModule(DiscoveryModule.ID) {
+        if let client = room?.context {
             dispatchGroup.enter();
-            self.checkVCardSupport(vCardTempModule: vCardTempModule) { [weak self] (result) in
+            self.checkVCardSupport(vCardTempModule: client.module(.vcardTemp)) { [weak self] (result) in
                 guard let that = self else {
                     dispatchGroup.leave();
                     return;
@@ -114,7 +114,7 @@ class ConfigureRoomViewController: NSViewController {
                         }
                         return;
                     }
-                    that.checkVCardSupport(discoModule: discoModule) { (result) in
+                    that.checkVCardSupport(discoModule: client.module(.disco)) { (result) in
                         DispatchQueue.main.async {
                             guard let that = self else {
                                 dispatchGroup.leave();
@@ -165,7 +165,7 @@ class ConfigureRoomViewController: NSViewController {
         let name = roomNameField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines);
         (form?.getField(named: "muc#roomconfig_roomname") as? TextSingleField)?.value = name.isEmpty ? nil : name;
         
-        guard let client = XmppService.instance.getClient(for: account), let mucModule: MucModule = client.modulesManager.getModule(MucModule.ID) else {
+        guard let client = room?.context else {
             return;
         }
         
@@ -180,21 +180,19 @@ class ConfigureRoomViewController: NSViewController {
         let roomJid = self.roomJid!;
         
         if avatarView.isEnabled && avatarView.image != AvatarManager.instance.avatar(for: roomJid, on: account) {
-            if let vCardTempModule: VCardTempModule = client.modulesManager.getModule(VCardTempModule.ID) {
-                let vcard = VCard();
-                if let binval = avatarView.image?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
-                    vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
-                }
-                queue.addOperation {
-                    vCardTempModule.publishVCard(vcard, to: roomJid, completionHandler: nil);
-                }
+            let vcard = VCard();
+            if let binval = avatarView.image?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
+                vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
+            }
+            queue.addOperation {
+                client.module(.vcardTemp).publishVCard(vcard, to: roomJid, completionHandler: nil);
             }
         }
         
         if subjectField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines) != room?.subject ?? "" {
             let newSubject = subjectField.stringValue.isEmpty ? nil : subjectField.stringValue;
             queue.addOperation {
-                mucModule.setRoomSubject(roomJid: roomJid, newSubject: newSubject);
+                client.module(.muc).setRoomSubject(roomJid: roomJid, newSubject: newSubject);
             }
         }
         
@@ -203,6 +201,7 @@ class ConfigureRoomViewController: NSViewController {
         let nickname = self.nickname;
         let password = (form!.getField(named: "muc#roomconfig_roomsecret") as? SingleField)?.rawValue;
         
+        let mucModule = client.module(.muc);
         setRoomConfiguration(mucModule: mucModule, configuration: form!) { [weak self] (result) in
             switch result {
             case .success(_):
