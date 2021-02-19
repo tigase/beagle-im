@@ -43,8 +43,6 @@ open class DBChatStore: ContextLifecycleAware {
 //    static let CHAT_CLOSED = Notification.Name("CHAT_CLOSED");
     static let CHAT_UPDATED = Notification.Name("CHAT_UPDATED");
 
-    static let UNREAD_MESSAGES_COUNT_CHANGED = Notification.Name("UNREAD_NOTIFICATIONS_COUNT_CHANGED");
-
     public let conversationDispatcher = QueueDispatcher(label: "ConversationDispatcher", attributes: .concurrent)
     public let dispatcher: QueueDispatcher;
 
@@ -61,9 +59,6 @@ open class DBChatStore: ContextLifecycleAware {
     
     public init() {
         self.dispatcher = QueueDispatcher(label: "db_chat_store");
-        $unreadMessagesCount.receive(on: DispatchQueue.main).sink(receiveValue: { value in
-            NotificationCenter.default.post(name: DBChatStore.UNREAD_MESSAGES_COUNT_CHANGED, object: value);
-        }).store(in: &cancellables);
     }
 
     public func accountChats(for account: BareJID) -> AccountConversations? {
