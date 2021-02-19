@@ -39,10 +39,6 @@ open class DBChatStore: ContextLifecycleAware {
 
     static let instance: DBChatStore = DBChatStore.init();
 
-//    static let CHAT_OPENED = Notification.Name("CHAT_OPENED");
-//    static let CHAT_CLOSED = Notification.Name("CHAT_CLOSED");
-    static let CHAT_UPDATED = Notification.Name("CHAT_UPDATED");
-
     public let conversationDispatcher = QueueDispatcher(label: "ConversationDispatcher", attributes: .concurrent)
     public let dispatcher: QueueDispatcher;
 
@@ -98,8 +94,6 @@ open class DBChatStore: ContextLifecycleAware {
 
                 DBChatHistoryStore.instance.markAsRead(for: conversation, before: Date());
             }
-
-//            NotificationCenter.default.post(name: DBChatStore.CHAT_CLOSED, object: conversation);
         }
                 
         return result;
@@ -119,7 +113,6 @@ open class DBChatStore: ContextLifecycleAware {
             }
             return conversation;
         }) as? T {
-//            NotificationCenter.default.post(name: DBChatStore.CHAT_OPENED, object: conversation);
             return conversation;
         }
         return nil;
@@ -157,7 +150,6 @@ open class DBChatStore: ContextLifecycleAware {
     func process(chatState remoteChatState: ChatState, for account: BareJID, with jid: BareJID) {
         dispatcher.async {
             if let chat = self.conversation(for: account, with: jid) as? Chat, chat.update(remoteChatState: remoteChatState) {
-                NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: chat);
             }
         }
     }
@@ -188,7 +180,6 @@ open class DBChatStore: ContextLifecycleAware {
                         let items = self.conversations;
                         self.conversations = items;
                     }
-                    NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: conversation);
                 }
             }
             completionHandler();
@@ -203,7 +194,6 @@ open class DBChatStore: ContextLifecycleAware {
                     if !self.isMuted(conversation: conversation) {
                         self.unreadMessagesCount = self.unreadMessagesCount - (count ?? unread);
                     }
-                    NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: conversation);
                 }
             }
         }
@@ -353,7 +343,6 @@ open class DBChatStore: ContextLifecycleAware {
                 if !self.isMuted(conversation: item) {
                     unread = unread + item.unread;
                 }
-//                NotificationCenter.default.post(name: DBChatStore.CHAT_CLOSED, object: item);
             }
             
             let removed = accountChats.items;

@@ -51,8 +51,6 @@ class MixEventHandler: XmppServiceEventHandler {
                     VCardManager.instance.refreshVCard(for: jid, on: e.sessionObject.userBareJid!, completionHandler: nil);
                 })
             }
-        case let e as MixModule.ChannelStateChangedEvent:
-            NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: e.channel);
         case let e as MixModule.ChannelPermissionsChangedEvent:
             NotificationCenter.default.post(name: MixEventHandler.PERMISSIONS_CHANGED, object: e.channel);
         default:

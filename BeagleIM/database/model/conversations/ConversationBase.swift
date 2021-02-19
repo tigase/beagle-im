@@ -147,9 +147,6 @@ public class ConversationBaseWithOptions<Options: ChatOptionsProtocol>: Conversa
             if !options.equals(self._options) {
                 DBChatStore.instance.update(options: options, for: self as! Conversation);
                 self._options = options;
-                DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: self, userInfo: nil);
-                }
             }
         }
     }

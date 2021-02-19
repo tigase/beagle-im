@@ -65,24 +65,13 @@ class XmppService: EventHandler {
     fileprivate var _clients = [BareJID: XMPPClient]();
     
     fileprivate let dispatcher = QueueDispatcher(label: "xmpp_service");
-    fileprivate let reachability = Reachability();
     fileprivate let dnsCache: DNSSrvResolverCache = DNSSrvResolverWithCache.InMemoryCache(store: nil);
-    var isAwake: Bool = true {
-        didSet {
-            if !isAwake {
-                self.isNetworkAvailable = false;
-            } else {
-                self.isNetworkAvailable = self.reachability.isConnectedToNetwork();
-            }
-        }
-    }
+    @Published
+    var isAwake: Bool = true;
 
     @Published
     var isIdle: Bool = false
     
-    @Published
-    fileprivate(set) var isNetworkAvailable: Bool = false;
-
     @Published
     var status: Status = Status(show: .online, message: nil);
     
@@ -99,27 +88,13 @@ class XmppService: EventHandler {
     private var cancellables: Set<AnyCancellable> = [];
     
     init() {
-        NotificationCenter.default.addObserver(self, selector: #selector(networkChanged), name: Reachability.NETWORK_CHANGED, object: nil);
-        
-        self.$status.combineLatest($isIdle, { (status, idle) -> Status in
-            if idle && status.show != nil {
-                return status.with(show: .xa);
-            }
-            return status;
-        }).combineLatest($isNetworkAvailable, { (status, networkAvailble) -> Status in
-            if networkAvailble {
-                return status;
-            } else {
-                return status.with(show: nil);
-            }
-        }).assign(to: \.value, on: expectedStatus).store(in: &cancellables);
         expectedStatus.map({ status in
                             return status.show != nil
         }).removeDuplicates().sink(receiveValue: { [weak self] available in
             if available {
                 self?.connectClients(ignoreCheck: true);
             } else {
-                self?.disconnectClients();
+                self?.disconnectClients(force: !NetworkMonitor.shared.isNetworkAvailable);
             }
         }).store(in: &cancellables);
         expectedStatus.receive(on: self.dispatcher.queue).sink(receiveValue: { [weak self] status in self?.statusUpdated(status) }).store(in: &cancellables);
@@ -165,8 +140,18 @@ class XmppService: EventHandler {
             let client = self.initializeClient(for: account);
             _ = self.register(client: client, for: account);
         }
-        
-        self.isNetworkAvailable = reachability.isConnectedToNetwork();
+        self.$status.combineLatest($isIdle, { (status, idle) -> Status in
+            if idle && status.show != nil {
+                return status.with(show: .xa);
+            }
+            return status;
+        }).combineLatest(NetworkMonitor.shared.$isNetworkAvailable, $isAwake, { (status, networkAvailble, isAwake) -> Status in
+            if networkAvailble && isAwake {
+                return status;
+            } else {
+                return status.with(show: nil);
+            }
+        }).assign(to: \.value, on: expectedStatus).store(in: &cancellables);
     }
  
     private func statusUpdated(_ status: Status) {
@@ -238,7 +223,7 @@ class XmppService: EventHandler {
     
     private func reconnect(client: XMPPClient, ignoreCheck: Bool = false) {
         self.dispatcher.sync {
-            guard client.state == .disconnected(), let account = AccountManager.getAccount(for: client.userBareJid), account.active, ignoreCheck || ( self.isNetworkAvailable && self.status.show != nil)  else {
+            guard client.state == .disconnected(), let account = AccountManager.getAccount(for: client.userBareJid), account.active, ignoreCheck || ( NetworkMonitor.shared.isNetworkAvailable && self.status.show != nil)  else {
                 return;
             }
             
@@ -292,7 +277,7 @@ class XmppService: EventHandler {
         }
         
         
-        guard self.status.show != nil || !self.isNetworkAvailable else {
+        guard self.status.show != nil || !NetworkMonitor.shared.isNetworkAvailable else {
             return;
         }
         let retry = client.retryNo;
@@ -330,14 +315,6 @@ class XmppService: EventHandler {
                 }
             }
         }
-    }
-    
-    @objc func networkChanged(_ notification: Notification) {
-        guard let reachability = notification.object as? Reachability else {
-            return;
-        }
-        
-        self.isNetworkAvailable = reachability.isConnectedToNetwork();
     }
     
     fileprivate func initializeClient(for account: AccountManager.Account) -> XMPPClient {

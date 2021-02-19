@@ -86,7 +86,6 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
                 if that.remoteChatState == .composing {
                     that.remoteChatState = .active;
                     that.remoteChatStateTimer = nil;
-                    NotificationCenter.default.post(name: DBChatStore.CHAT_UPDATED, object: that);
                 }
             });
             }

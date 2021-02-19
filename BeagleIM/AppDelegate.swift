@@ -134,7 +134,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         _ = Database.main;
         NotificationCenter.default.addObserver(self, selector: #selector(authenticationFailure), name: XmppService.AUTHENTICATION_ERROR, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(serverCertificateError(_:)), name: XmppService.SERVER_CERTIFICATE_ERROR, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(chatUpdated), name: DBChatStore.CHAT_UPDATED, object: nil);
         // Insert code here to initialize your application
 //        let window = NSApplication.shared.windows[0];
 //        let titleAccessoryView = NSTitlebarAccessoryViewController();
@@ -551,31 +550,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                 windowController.showWindow(self);
             })
         }        
-    }
-    
-    @objc func chatUpdated(_ notification: Notification) {
-        guard let chat = notification.object as? Conversation, chat.unread == 0 else {
-            return;
-        }
-        
-        UNUserNotificationCenter.current().getDeliveredNotifications { (notifications) in
-            let identifiers = notifications.filter({ (n) -> Bool in
-                let userInfo = n.request.content.userInfo;
-                guard let id = userInfo["id"] as? String, id == "message-new" else {
-                    return false;
-                }
-                guard let account = BareJID(userInfo["account"] as? String), let jid = BareJID(userInfo["jid"] as?    String) else {
-                    return false;
-                }
-                guard chat.account == account && chat.jid == jid else {
-                    return false;
-                }
-                return true;
-            }).map({ (n) -> String in
-                return n.request.identifier;
-            });
-            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: identifiers);
-        }
     }
     
     @objc func receivedSleepNotification(_ notification: Notification) {
