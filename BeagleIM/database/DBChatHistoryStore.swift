@@ -638,6 +638,10 @@ class DBChatHistoryStore {
         }
     }
 
+    func originId(for key: ConversationKey, id: Int, completionHandler: @escaping (String)->Void ){
+        self.originId(for: key.account, with: key.jid, id: id, completionHandler: completionHandler);
+    }
+    
     func originId(for account: BareJID, with jid: BareJID, id: Int, completionHandler: @escaping (String)->Void ){
         if let stanzaId = try! Database.main.reader({ dataase in
             try dataase.select(query: .messageFindMessageOriginId, cached: false, params: ["id": id]).mapFirst({ $0.string(for: "stanza_id")});

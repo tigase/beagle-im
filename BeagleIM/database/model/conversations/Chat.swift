@@ -127,7 +127,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
                 } catch {
                     completionHandler(.failure(.noAccessError));
                 }
-            case .failure(let err):
+            case .failure(_):
                 completionHandler(.failure(.unknownError));
             }
         }

@@ -239,7 +239,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
     @IBAction func correctLastMessage(_ sender: AnyObject) {
         for i in 0..<dataSource.count {
             if let item = dataSource.getItem(at: i) as? ConversationMessage, item.state.direction == .outgoing {
-                DBChatHistoryStore.instance.originId(for: item.account, with: item.conversation.jid, id: item.id, completionHandler: { [weak self] originId in
+                DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id, completionHandler: { [weak self] originId in
                     self?.startMessageCorrection(message: item.message, originId: originId);
                 })
                 return;
@@ -257,7 +257,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
             return;
         }
         
-        DBChatHistoryStore.instance.originId(for: item.account, with: item.conversation.jid, id: item.id, completionHandler: { [weak self] originId in
+        DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id, completionHandler: { [weak self] originId in
             self?.startMessageCorrection(message: item.message, originId: originId);
         })
     }
@@ -268,7 +268,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
             return
         }
         
-        guard let item = dataSource.getItem(withId: tag) as? ConversationEntryWithSender, let chat = self.chat as? Chat else {
+        guard let item = dataSource.getItem(withId: tag) as? ConversationEntryWithSender else {
             return;
         }
         
@@ -280,7 +280,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
             switch result {
             case .alertFirstButtonReturn:
-                chat.retract(entry: item);
+                self.chat.retract(entry: item);
             default:
                 break;
             }

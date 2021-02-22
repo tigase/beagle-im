@@ -51,7 +51,7 @@ class XmppService: EventHandler {
  
     fileprivate let observedEvents: [Event] = [ AuthModule.AuthFailedEvent.TYPE ];
     
-    fileprivate let eventHandlers: [XmppServiceEventHandler] = [MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), MessageEventHandler(), JingleManager.instance, BlockedEventHandler.instance, MixEventHandler.instance];
+    fileprivate let eventHandlers: [XmppServiceEventHandler] = [MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), MessageEventHandler(),  BlockedEventHandler.instance, MixEventHandler.instance];
     
     var clients: [BareJID: XMPPClient] {
         get {

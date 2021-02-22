@@ -122,7 +122,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     @IBAction func correctLastMessage(_ sender: AnyObject) {
         for i in 0..<dataSource.count {
             if let item = dataSource.getItem(at: i) as? ConversationMessage, item.state.direction == .outgoing {
-                DBChatHistoryStore.instance.originId(for: item.account, with: item.conversation.jid, id: item.id, completionHandler: { [weak self] originId in
+                DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id, completionHandler: { [weak self] originId in
                     self?.startMessageCorrection(message: item.message, originId: originId);
                 })
                 return;
@@ -140,7 +140,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             return;
         }
         
-        DBChatHistoryStore.instance.originId(for: item.account, with: item.conversation.jid, id: item.id, completionHandler: { [weak self] originId in
+        DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id, completionHandler: { [weak self] originId in
             self?.startMessageCorrection(message: item.message, originId: originId);
         })
     }

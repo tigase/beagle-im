@@ -361,7 +361,7 @@ class Call: NSObject {
                 }
                 self.connectRemoteSDPPublishers(session: session);
                 _ = session.initiate(contents: sdp.contents, bundle: sdp.bundle);
-            case .failure(let err):
+            case .failure(_):
                 self.reset();
             }
         });

@@ -81,7 +81,7 @@ public class NotificationManager {
                 return;
             }
             
-            if let queue = self.queues[.init(account: message.account, jid: message.jid)] ?? self.queues[.init(account: message.account, jid: nil)] {
+            if let queue = self.queues[.init(account: message.conversation.account, jid: message.conversation.jid)] ?? self.queues[.init(account: message.conversation.account, jid: nil)] {
                 queue.add(message: message);
             } else {
                 self.notifyNewMessage(message: message);

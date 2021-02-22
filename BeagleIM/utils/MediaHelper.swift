@@ -159,7 +159,7 @@ class MediaHelper {
         })
         exportSession.exportAsynchronously {
             timer.invalidate();
-            print("export status:", exportSession.status, exportSession.error)
+            print("export status:", exportSession.status, String(describing: exportSession.error))
             if deleteSource {
                 try? FileManager.default.removeItem(at: url);
             }

@@ -24,11 +24,11 @@ import TigaseSwift
 import WebRTC
 import Combine
 
-class JingleManager: JingleSessionManager, XmppServiceEventHandler {
+class JingleManager: JingleSessionManager {
 
     static let instance = JingleManager();
     
-    let events: [Event] = [JingleModule.JingleMessageInitiationEvent.TYPE, PresenceModule.ContactPresenceChanged.TYPE];
+//    let events: [Event] = [PresenceModule.ContactPresenceChanged.TYPE];
     
     fileprivate var connections: [Session] = [];
     
@@ -51,10 +51,6 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
         }
     }
     
-    func activeSessionSid(for account: BareJID, with jid: JID) -> String? {
-        return session(for: account, with: jid, sid: nil)?.sid;
-    }
-
     func session(for context: Context, with jid: JID, sid: String?) -> Session? {
         return session(for: context.userBareJid, with: jid, sid: sid);
     }
@@ -97,55 +93,24 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
         _ = self.close(for: session.account, with: session.jid, sid: session.sid);
     }
     
-    func handle(event: Event) {
-        dispatcher.async {
-            switch event {
-            case let e as PresenceModule.ContactPresenceChanged:
-                if e.availabilityChanged && (e.presence.type ?? .available) == .unavailable, let account = e.sessionObject.userBareJid, let from = e.presence.from {
-                    let toClose = self.connections.filter({ (session) in
-                        return session.jid == from && session.account == account;
-                    });
-                    toClose.forEach({ (session) in
-                        session.terminate();
-                    })
-                }
-            case let e as JingleModule.JingleMessageInitiationEvent:
-                switch e.action! {
-                case .propose(let id, let descriptions):
-                    guard self.session(for: e.sessionObject.userBareJid!, with: e.jid, sid: id) == nil else {
-                        return;
-                    }
-                    let session = self.open(for: e.context, with: e.jid, sid: id, role: .responder, initiationType: .message);
-                    let media = descriptions.map({ Call.Media.from(string: $0.media) }).filter({ $0 != nil }).map({ $0! });
-                    let call = Call(account: e.sessionObject.userBareJid!, with: e.jid.bareJid, sid: id, direction: .incoming, media: media);
-                    CallManager.instance.reportIncomingCall(call, completionHandler: { result in
-                        switch result {
-                        case .success(_):
-                            // nothing to do as manager will call us back..
-                            break;
-                        case .failure(_):
-                            session.decline();
-                        }
-                    });
-                case .retract(let id):
-                    self.sessionTerminated(account: e.sessionObject.userBareJid!, with: e.jid, sid: id);
-                case .accept(let id):
-                    let account = e.sessionObject.userBareJid!;
-                    self.sessionTerminated(account: account, sid: id);
-                case .reject(let id):
-                    let account = e.sessionObject.userBareJid!;
-                    self.sessionTerminated(account: account, sid: id);
-                case .proceed(let id):
-                    guard let session = self.session(for: e.sessionObject.userBareJid!, with: e.jid, sid: id) else {
-                        return;
-                    }
-                    session.accepted(by: e.jid);
-                }
-            default:
-                break;
-            }
-        }
-    }
+//    func handle(event: Event) {
+//        dispatcher.async {
+//            switch event {
+//            // do we need this?? it is possible to have jingle session after it is established even if XMPP user is not available
+//            case let e as PresenceModule.ContactPresenceChanged:
+//                if e.availabilityChanged && (e.presence.type ?? .available) == .unavailable, let account = e.sessionObject.userBareJid, let from = e.presence.from {
+//                    let toClose = self.connections.filter({ (session) in
+//                        return session.jid == from && session.account == account;
+//                    });
+//                    toClose.forEach({ (session) in
+//                        session.terminate();
+//                    })
+//                }
+//            default:
+//                break;
+//            }
+//        }
+//    }
     
     enum ContentType {
         case audio
@@ -196,6 +161,38 @@ class JingleManager: JingleSessionManager, XmppServiceEventHandler {
         }
         
         return Set(support);
+    }
+    
+    func messageInitiation(for context: Context, from jid: JID, action: Jingle.MessageInitiationAction) throws {
+        switch action {
+        case .propose(let id, let descriptions):
+            guard self.session(for: context.userBareJid, with: jid, sid: id) == nil else {
+                return;
+            }
+            let session = self.open(for: context, with: jid, sid: id, role: .responder, initiationType: .message);
+            let media = descriptions.map({ Call.Media.from(string: $0.media) }).filter({ $0 != nil }).map({ $0! });
+            let call = Call(account: context.userBareJid, with: jid.bareJid, sid: id, direction: .incoming, media: media);
+            CallManager.instance.reportIncomingCall(call, completionHandler: { result in
+                switch result {
+                case .success(_):
+                    // nothing to do as manager will call us back..
+                    break;
+                case .failure(_):
+                    session.decline();
+                }
+            });
+        case .retract(let id):
+            self.sessionTerminated(account: context.userBareJid, with: jid, sid: id);
+        case .accept(let id):
+            self.sessionTerminated(account: context.userBareJid, sid: id);
+        case .reject(let id):
+            self.sessionTerminated(account: context.userBareJid, sid: id);
+        case .proceed(let id):
+            guard let session = self.session(for: context, with: jid, sid: id) else {
+                return;
+            }
+            session.accepted(by: jid);
+        }
     }
     
     func sessionInitiated(for context: Context, with jid: JID, sid: String, contents: [Jingle.Content], bundle: [String]?) throws {

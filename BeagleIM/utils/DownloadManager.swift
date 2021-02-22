@@ -103,7 +103,7 @@ class DownloadManager {
                     DownloadManager.download(session: session, url: url, completionHandler: { result in
                         switch result {
                         case .success((let localUrl, let filename)):
-                            if let encryptionKey = encryptionKey, let omemoModule = XmppService.instance.getClient(for: item.account)?.module(.omemo) {
+                            if let encryptionKey = encryptionKey, let omemoModule = XmppService.instance.getClient(for: item.conversation.account)?.module(.omemo) {
                                 switch omemoModule.decryptFile(url: localUrl, fragment: encryptionKey) {
                                 case .success(let data):
                                     try? data.write(to: localUrl);

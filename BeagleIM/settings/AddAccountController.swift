@@ -175,7 +175,7 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
             }
             didSet {
                 if oldValue != nil {
-                    oldValue?.disconnect(true);
+                    _ = oldValue?.disconnect(true);
                     oldValue?.eventBus.unregister(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE);
                 }
                 cancellable = client?.$state.sink(receiveValue: { [weak self] state in self?.changedState(state) });

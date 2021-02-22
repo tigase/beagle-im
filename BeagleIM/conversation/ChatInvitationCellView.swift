@@ -37,7 +37,7 @@ class ChatInvitationCellView: BaseChatCellView {
     func set(invitation: ConversationInvitation) {
         super.set(item:  invitation);
         
-        self.account = invitation.account;
+        self.account = invitation.conversation.account;
         self.appendix = invitation.appendix;
 
         if invitation.state.direction == .incoming, let account = self.account, let channel = self.appendix?.channel {

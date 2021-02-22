@@ -219,7 +219,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     override func prepareConversationLogContextMenu(dataSource: ConversationDataSource, menu: NSMenu, forRow row: Int) {
         super.prepareConversationLogContextMenu(dataSource: dataSource, menu: menu, forRow: row);
         if row != NSNotFound || !(self.conversationLogController?.selectionManager.hasSingleSender ?? false) {
-            var reply = menu.addItem(withTitle: "Reply with PM", action: #selector(replySelectedMessagesViaPM), keyEquivalent: "");
+            let reply = menu.addItem(withTitle: "Reply with PM", action: #selector(replySelectedMessagesViaPM), keyEquivalent: "");
             reply.target = self
             reply.tag = row;
         }
@@ -279,7 +279,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     @IBAction func correctLastMessage(_ sender: AnyObject) {
         for i in 0..<dataSource.count {
             if let item = dataSource.getItem(at: i) as? ConversationMessage, item.state.direction == .outgoing {
-                DBChatHistoryStore.instance.originId(for: item.account, with: item.conversation.jid, id: item.id, completionHandler: { [weak self] originId in
+                DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id, completionHandler: { [weak self] originId in
                     self?.startMessageCorrection(message: item.message, originId: originId);
                 })
                 return;
@@ -297,7 +297,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             return;
         }
         
-        DBChatHistoryStore.instance.originId(for: item.account, with: item.conversation.jid, id: item.id, completionHandler: { [weak self] originId in
+        DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id, completionHandler: { [weak self] originId in
             self?.startMessageCorrection(message: item.message, originId: originId);
         })
     }

@@ -594,7 +594,7 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
                                 that.image = image;
                                 return;
                             }
-                        case .failure(let error):
+                        case .failure(_):
                             break;
                         }
                         that.image = NSImage(named: NSImage.cautionName);
