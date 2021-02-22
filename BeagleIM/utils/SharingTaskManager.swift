@@ -156,7 +156,7 @@ class SharingTaskManager {
                 self.semaphore.wait();
                 guard let imageQuality = self.imageQuality else {
                     guard let window = self.window else {
-                        completionHandler(.success(ImageQuality.current ?? .medium));
+                        completionHandler(.success(ImageQuality.current));
                         return;
                     }
                     MediaHelper.askImageQuality(window: window, forceQualityQuestion: true, { result in
@@ -181,7 +181,7 @@ class SharingTaskManager {
                 self.semaphore.wait();
                 guard let videoQuality = self.videoQuality else {
                     guard let window = self.window else {
-                        completionHandler(.success(VideoQuality.current ?? .medium));
+                        completionHandler(.success(VideoQuality.current));
                         return;
                     }
                     MediaHelper.askVideoQuality(window: window, forceQualityQuestion: true, { result in
@@ -453,11 +453,15 @@ class AbstractSharingTaskItem: NSObject, URLSessionDelegate {
     }
     
     func uploadFileToHttpServer(url: URL, filename: String, filesize: Int, mimeType: String?, completionHandler: @escaping (Result<URL,ShareError>)->Void) {
+        guard let context = chat.context else {
+            completionHandler(.failure(.unknownError));
+            return;
+        }
         guard let inputStream = InputStream(url: url) else {
             completionHandler(.failure(.noAccessError));
             return;
         }
-        HTTPFileUploadHelper.upload(forAccount: chat.account, filename: filename, inputStream: inputStream, filesize: filesize, mimeType: mimeType, delegate: self, completionHandler: { result in
+        HTTPFileUploadHelper.upload(withClient: context, filename: filename, inputStream: inputStream, filesize: filesize, mimeType: mimeType, delegate: self, completionHandler: { result in
             switch result {
             case .success(let url) :
                 completionHandler(.success(url));

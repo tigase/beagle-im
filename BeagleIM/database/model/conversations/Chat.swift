@@ -68,7 +68,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
 //        }
 //    }
     
-    func update(remoteChatState state: ChatState?) -> Bool {
+    func update(remoteChatState state: ChatState?) {
         // proper handle when we have the same state!!
         let prevState = remoteChatState;
         if prevState == .composing {
@@ -90,7 +90,6 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
             });
             }
         }
-        return remoteChatState != prevState;
     }
     
     public override func createMessage(text: String, id: String, type: StanzaType) -> Message {
@@ -220,7 +219,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
                             callback();
                             return;
                         }
-                        super.send(message: message, completionHandler: { result in
+                        super.send(message: encodedMessage, completionHandler: { result in
                             completionHandler(result);
                             callback();
                         });

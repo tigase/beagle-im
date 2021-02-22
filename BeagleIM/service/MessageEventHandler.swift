@@ -82,7 +82,7 @@ class MessageEventHandler: XmppServiceEventHandler {
         return (body, encryption, fingerprint);
     }
 
-    let events: [Event] = [MessageModule.MessageReceivedEvent.TYPE, MessageDeliveryReceiptsModule.ReceiptEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, DiscoveryModule.ServerFeaturesReceivedEvent.TYPE, MessageArchiveManagementModule.ArchivedMessageReceivedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, OMEMOModule.AvailabilityChangedEvent.TYPE];
+    let events: [Event] = [MessageModule.MessageReceivedEvent.TYPE, MessageDeliveryReceiptsModule.ReceiptEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MessageArchiveManagementModule.ArchivedMessageReceivedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, OMEMOModule.AvailabilityChangedEvent.TYPE];
 
     init() {
     }
@@ -102,7 +102,7 @@ class MessageEventHandler: XmppServiceEventHandler {
     func handle(event: Event) {
         switch event {
         case let e as MessageModule.MessageReceivedEvent:
-            guard e.message.from != nil, let account = e.sessionObject.userBareJid else {
+            guard e.message.from != nil else {
                 return;
             }
 
@@ -189,8 +189,6 @@ class MessageEventHandler: XmppServiceEventHandler {
                 return room.nickname == nickname ? .outgoing : .incoming;
             }
             // we were not able to determine if we were senders or not.
-            return direction;
-        default:
             return direction;
         }
     }

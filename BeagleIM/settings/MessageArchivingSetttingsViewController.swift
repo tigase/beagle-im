@@ -108,7 +108,7 @@ class MessageArchivingSettingsViewController: NSViewController, AccountAware {
                     DispatchQueue.main.async {
                         self.isEnabled = true;
                         switch result {
-                        case .success(let settings):
+                        case .success(_):
                             AccountSettings.messageSyncAuto(self.account!).set(value: self.automaticSynchronization.state == .on && self.automaticSynchronization.isEnabled);
                             let value = Double(self.synchronizationPeriod.selectedItem?.tag ?? 72)
                             AccountSettings.messageSyncPeriod(self.account!).set(value: value);

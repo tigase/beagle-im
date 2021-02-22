@@ -64,7 +64,7 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
     func updateSharingProgress() {
         let progress = SharingTaskManager.instance.progress(for: conversation);
         sharingProgressBar.isIndeterminate = progress != nil;
-        print("setting progress to:", progress);
+        print("setting progress to: \(String(describing: progress))");
         if let value = progress {
             self.sharingProgressBar.doubleValue = value;
             self.sharingProgressBar.isHidden = value == 1;

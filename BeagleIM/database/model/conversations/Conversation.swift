@@ -62,7 +62,7 @@ extension Conversation {
     }
     
     func retract(entry: ConversationEntryWithSender) {
-        guard let context = context else {
+        guard context != nil else {
             return;
         }
         DBChatHistoryStore.instance.originId(for: account, with: jid, id: entry.id, completionHandler: { originId in

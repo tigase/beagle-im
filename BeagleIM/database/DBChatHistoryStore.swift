@@ -260,7 +260,7 @@ class DBChatHistoryStore {
             return;
         }
 
-        if let stableId = serverMsgId, let existingMessageId = self.findItemId(for: conversation.account, serverMsgId: stableId) {
+        if let stableId = serverMsgId, self.findItemId(for: conversation.account, serverMsgId: stableId) != nil {
             return;
         }
 
@@ -427,10 +427,10 @@ class DBChatHistoryStore {
     }
 
     public func retractMessage(for conversation: Conversation, stanzaId: String, sender: ConversationEntrySender, retractionStanzaId: String?, retractionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?) {
-        _ = self.retractMessageSync(for: conversation, stanzaId: stanzaId, sender: sender, retractionStanzaId: retractionStanzaId, retractionTimestamp: retractionTimestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
+        self.retractMessageSync(for: conversation, stanzaId: stanzaId, sender: sender, retractionStanzaId: retractionStanzaId, retractionTimestamp: retractionTimestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
     }
 
-    private func retractMessageSync(for conversation: ConversationKey, stanzaId: String, sender: ConversationEntrySender, retractionStanzaId: String?, retractionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?) -> Bool {
+    private func retractMessageSync(for conversation: ConversationKey, stanzaId: String, sender: ConversationEntrySender, retractionStanzaId: String?, retractionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?) {
         if let oldItem = self.findItem(for: conversation, originId: stanzaId, sender: sender) {
             let itemId = oldItem.id;
             var itemType: ItemType = .messageRetracted;
@@ -446,7 +446,7 @@ class DBChatHistoryStore {
                 NotificationManager.instance.markAsRead(on: conversation.account, with: conversation.jid, itemsIds: [oldItem.id])
 
                 // what should be sent to "newMessage" how to reatract message from there??
-                let activity: LastChatActivity = DBChatStore.instance.getLastActivity(for: conversation.account, jid: conversation.jid) ?? .message("", direction: .incoming, sender: nil);
+                let activity: LastChatActivity = DBChatStore.instance.lastActivity(for: conversation.account, jid: conversation.jid) ?? .message("", direction: .incoming, sender: nil);
                 DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: oldItem.timestamp, lastActivity: activity, state: oldItem.state.direction == .incoming ? .incoming : .outgoing, completionHandler: {
                     print("chat store state updated with message retraction");
                 })
@@ -458,9 +458,6 @@ class DBChatHistoryStore {
 //                   self.itemRemoved(withId: itemId, for: account, with: jid);
                 self.generatePreviews(forItem: itemId, conversation: conversation, state: oldItem.state, action: .remove);
             }
-            return true;
-        } else {
-            return false;
         }
     }
 

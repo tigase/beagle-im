@@ -149,7 +149,8 @@ open class DBChatStore: ContextLifecycleAware {
 
     func process(chatState remoteChatState: ChatState, for account: BareJID, with jid: BareJID) {
         dispatcher.async {
-            if let chat = self.conversation(for: account, with: jid) as? Chat, chat.update(remoteChatState: remoteChatState) {
+            if let chat = self.conversation(for: account, with: jid) as? Chat {
+                chat.update(remoteChatState: remoteChatState);
             }
         }
     }
@@ -169,10 +170,10 @@ open class DBChatStore: ContextLifecycleAware {
                     }
                     if let chat = conversation as? Chat {
                         if remoteChatState != nil {
-                            _ = chat.update(remoteChatState: remoteChatState);
+                            chat.update(remoteChatState: remoteChatState);
                         } else {
                             if chat.remoteChatState == .composing {
-                                _ = chat.update(remoteChatState: .active);
+                                chat.update(remoteChatState: .active);
                             }
                         }
                     }
@@ -242,11 +243,6 @@ open class DBChatStore: ContextLifecycleAware {
     }
 
     public func lastActivity(for account: BareJID, jid: BareJID) -> LastChatActivity? {
-        return getLastActivity(for: account, jid: jid)
-    }
-    
-    @available(*, deprecated, renamed: "lastActivity")
-    public func getLastActivity(for account: BareJID, jid: BareJID) -> LastChatActivity? {
         return dispatcher.sync {
             return try! Database.main.reader({ database in
                 try database.select(query: .chatFindLastActivity, params: ["account": account, "jid": jid]).mapFirst({ cursor -> LastChatActivity? in
@@ -269,6 +265,11 @@ open class DBChatStore: ContextLifecycleAware {
                 });
             })
         }
+    }
+    
+    @available(*, deprecated, renamed: "lastActivity")
+    public func getLastActivity(for account: BareJID, jid: BareJID) -> LastChatActivity? {
+        lastActivity(for: account, jid: jid);
     }
 
     func loadChats(for account: BareJID, context: Context) {

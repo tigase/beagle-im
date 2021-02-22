@@ -162,7 +162,7 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     
     func prepareConversationLogContextMenu(dataSource: ConversationDataSource, menu: NSMenu, forRow row: Int) {
         if row != NSNotFound || (self.conversationLogController?.selectionManager.hasSelection ?? false) {
-            var reply = menu.addItem(withTitle: "Reply", action: #selector(replySelectedMessages), keyEquivalent: "");
+            let reply = menu.addItem(withTitle: "Reply", action: #selector(replySelectedMessages), keyEquivalent: "");
             reply.target = self
             reply.tag = row;
         }

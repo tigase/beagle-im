@@ -116,7 +116,7 @@ class XmppService: EventHandler {
             if let client = self._clients[account.name] {
                 // if client exists and is connected, then reconnect it..
                 if client.state != .disconnected() {
-                    client.disconnect();
+                    _ = client.disconnect();
                 }
             } else {
                 let client = self.initializeClient(for: account);
@@ -126,7 +126,7 @@ class XmppService: EventHandler {
         case .disabled(let account), .removed(let account):
             if let client = self._clients[account.name] {
                 let prevState = client.state;
-                client.disconnect();
+                _ = client.disconnect();
                 if prevState == .disconnected() && client.state == .disconnected() {
                     self.unregisterClient(client);
                 }
@@ -181,7 +181,7 @@ class XmppService: EventHandler {
     private func disconnectClients(force: Bool = false) {
         dispatcher.async {
             self._clients.values.forEach { client in
-                client.disconnect(force);
+                _ = client.disconnect(force);
             }
         }
     }
