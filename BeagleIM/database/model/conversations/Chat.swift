@@ -38,6 +38,10 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
     public var automaticallyFetchPreviews: Bool {
         return DBRosterStore.instance.item(for: account, jid: JID(jid)) != nil;
     }
+    
+    public var debugDescription: String {
+        return "Chat(account: \(account), jid: \(jid))";
+    }
 
     init(dispatcher: QueueDispatcher, context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastConversationActivity?, unread: Int, options: ChatOptions) {
         let contact = ContactManager.instance.contact(for: .init(account: context.userBareJid, jid: jid, type: .buddy));
@@ -205,7 +209,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
                     callback();
                 });
             case .omemo:
-                guard let context = self.context as? XMPPClient, context.state == .connected else {
+                guard let context = self.context as? XMPPClient, context.isConnected else {
                     completionHandler(.failure(.gone(nil)));
                     callback();
                     return;
@@ -214,7 +218,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
                 context.module(.omemo).encode(message: message, completionHandler: { result in
                     switch result {
                     case .successMessage(let encodedMessage, _):
-                        guard context.state == .connected else {
+                        guard context.isConnected else {
                             completionHandler(.failure(.gone(nil)))
                             callback();
                             return;

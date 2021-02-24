@@ -93,6 +93,10 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
         return jid;
     }
 
+    public var debugDescription: String {
+        return "Room(account: \(account), jid: \(jid))";
+    }
+    
     init(dispatcher: QueueDispatcher,context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: RoomOptions) {
         self.displayable = RoomDisplayableId(displayName: options.name ?? jid.stringValue, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: jid, mucNickname: nil)), description: nil);
         super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
@@ -168,7 +172,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     }
     
     public func sendAttachment(url uploadedUrl: String, appendix: ChatAttachmentAppendix, originalUrl: URL?, completionHandler: (() -> Void)?) {
-        guard ((self.context as? XMPPClient)?.state ?? .disconnected()) == .connected, self.state == .joined else {
+        guard ((self.context as? XMPPClient)?.state ?? .disconnected()) == .connected(), self.state == .joined else {
             completionHandler?();
             return;
         }

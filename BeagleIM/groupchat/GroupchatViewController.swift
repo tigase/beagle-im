@@ -328,10 +328,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     }
     
     override func send(message: String, correctedMessageOriginId: String?) -> Bool {
-        guard (XmppService.instance.getClient(for: account)?.state ?? .disconnected()) == .connected else {
-            return false;
-        }
-        guard room.state == .joined else {
+        guard (room.context?.isConnected ?? false) && room.state == .joined else {
             return false;
         }
         

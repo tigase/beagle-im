@@ -22,6 +22,7 @@
 import AppKit
 import TigaseSwift
 import UserNotifications
+import Combine
 
 class MucEventHandler: XmppServiceEventHandler {
     
@@ -31,38 +32,45 @@ class MucEventHandler: XmppServiceEventHandler {
 
     static let instance = MucEventHandler();
     
-    let events: [Event] = [ SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE, MucModule.OccupantChangedNickEvent.TYPE, MucModule.OccupantChangedPresenceEvent.TYPE, MucModule.OccupantLeavedEvent.TYPE, MucModule.OccupantComesEvent.TYPE, MucModule.PresenceErrorEvent.TYPE, MucModule.InvitationReceivedEvent.TYPE, MucModule.InvitationDeclinedEvent.TYPE, PEPBookmarksModule.BookmarksChangedEvent.TYPE ];
+    let events: [Event] = [ MucModule.YouJoinedEvent.TYPE, MucModule.RoomClosedEvent.TYPE, MucModule.MessageReceivedEvent.TYPE, MucModule.OccupantChangedNickEvent.TYPE, MucModule.OccupantChangedPresenceEvent.TYPE, MucModule.OccupantLeavedEvent.TYPE, MucModule.OccupantComesEvent.TYPE, MucModule.PresenceErrorEvent.TYPE, MucModule.InvitationReceivedEvent.TYPE, MucModule.InvitationDeclinedEvent.TYPE, PEPBookmarksModule.BookmarksChangedEvent.TYPE ];
+    
+    func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
+        client.$state.sink(receiveValue: { [weak client] state in
+            guard let client = client, case .connected(let resumed) = state, !resumed else {
+                return;
+            }
+            client.module(.muc).roomManager.rooms(for: client).forEach { (room) in
+                // first we need to check if room supports MAM
+                client.module(.disco).getInfo(for: JID(room.jid), completionHandler: { result in
+                    var mamVersions: [MessageArchiveManagementModule.Version] = [];
+                    switch result {
+                    case .success(let info):
+                        mamVersions = info.features.map({ MessageArchiveManagementModule.Version(rawValue: $0) }).filter({ $0 != nil}).map({ $0! });
+                    default:
+                        break;
+                    }
+                    if let timestamp = (room as? Room)?.timestamp {
+                        if !mamVersions.isEmpty {
+                            _ = room.rejoin(fetchHistory: .skip, onJoined: { [weak client] room in
+                                guard let client = client else {
+                                    return;
+                                }
+                                MessageEventHandler.syncMessages(for: client, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: JID(room.jid), since: timestamp);
+                            });
+                        } else {
+                            _ = room.rejoin(fetchHistory: .from(timestamp), onJoined: nil);
+                        }
+                    } else {
+                        _ = room.rejoin(fetchHistory: .initial, onJoined: nil);
+                    }
+                    NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
+                });
+            }
+        }).store(in: &cancellables);
+    }
     
     func handle(event: Event) {
         switch event {
-        case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
-            if let client = XmppService.instance.getClient(for: e.sessionObject.userBareJid!) {
-                client.module(.muc).roomManager.rooms(for: client).forEach { (room) in
-                    // first we need to check if room supports MAM
-                    client.module(.disco).getInfo(for: JID(room.jid), completionHandler: { result in
-                        var mamVersions: [MessageArchiveManagementModule.Version] = [];
-                        switch result {
-                        case .success(let info):
-                            mamVersions = info.features.map({ MessageArchiveManagementModule.Version(rawValue: $0) }).filter({ $0 != nil}).map({ $0! });
-                        default:
-                            break;
-                        }
-                        if let timestamp = (room as? Room)?.timestamp {
-                            if !mamVersions.isEmpty {
-                                let account = e.sessionObject.userBareJid!;
-                                _ = room.rejoin(fetchHistory: .skip, onJoined: { room in
-                                    MessageEventHandler.syncMessages(for: account, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: JID(room.jid), since: timestamp);
-                                });
-                            } else {
-                                _ = room.rejoin(fetchHistory: .from(timestamp), onJoined: nil);
-                            }
-                        } else {
-                            _ = room.rejoin(fetchHistory: .initial, onJoined: nil);
-                        }
-                        NotificationCenter.default.post(name: MucEventHandler.ROOM_STATUS_CHANGED, object: room);
-                    });
-                }
-            }
         case let e as MucModule.YouJoinedEvent:
             guard let room = e.room as? Room else {
                 return;

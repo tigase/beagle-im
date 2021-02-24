@@ -233,7 +233,7 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
             }
         }
         
-        func changedState(_ state: ConnectorState) {
+        func changedState(_ state: XMPPClient.State) {
             dispatchQueue.sync {
                 guard let callback = self.callback else {
                     return;

@@ -160,7 +160,7 @@ class ChatAttachmentCellView: BaseChatCellView {
             case .new:
                 let sizeLimit = Settings.fileDownloadSizeLimit;
                 if sizeLimit > 0 {
-                    if (DBRosterStore.instance.item(for: item.account, jid: JID(item.jid))?.subscription ?? .none).isFrom || (DBChatStore.instance.conversation(for: item.account, with: item.jid) as? Room != nil) {
+                    if (DBRosterStore.instance.item(for: item.conversation.account, jid: JID(item.conversation.jid))?.subscription ?? .none).isFrom || (DBChatStore.instance.conversation(for: item.conversation.account, with: item.conversation.jid) as? Room != nil) {
                         _ = DownloadManager.instance.download(item: item, maxSize: Int64(sizeLimit));
                         progressIndicator = NSProgressIndicator();
                         return;

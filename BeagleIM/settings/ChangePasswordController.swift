@@ -41,7 +41,7 @@ class ChangePasswordController: NSViewController, NSTextFieldDelegate, AccountAw
         self.changeButton.isEnabled = false;
         self.message.stringValue = "To change password for account \(self.account?.stringValue ?? "") please fill out this form:";
         if let account = self.account {
-            let connected = (XmppService.instance.getClient(for: account)?.state ?? .disconnected()) == .connected;
+            let connected = (XmppService.instance.getClient(for: account)?.state ?? .disconnected()) == .connected();
             if connected {
                 changeOnServer?.isEnabled = connected;
                 changeOnServer?.state = .on;

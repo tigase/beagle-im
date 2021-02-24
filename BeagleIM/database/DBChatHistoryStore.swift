@@ -103,7 +103,7 @@ class DBChatHistoryStore {
             if previews.isEmpty {
                 removePreview(item.id);
             } else {
-                print("converting for:", item.account, "with:", item.jid, "previews:", previews);
+                print("converting for:", item.conversation, "previews:", previews);
                 if previews.count == 1 {
                     let isAttachmentOnly = URL(string: item.message) != nil;
 

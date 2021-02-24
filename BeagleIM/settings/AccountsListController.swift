@@ -105,7 +105,7 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
         self.setDefaultButton.isEnabled = currentAccount != nil;
         
         if let account = currentAccount {
-            let connected = XmppService.instance.getClient(for: account)?.state == .connected;
+            let connected = XmppService.instance.getClient(for: account)?.state == .connected();
             let items = self.editButton.menu?.items ?? [];
             for i in 0..<items.count {
                 items[i].isEnabled = i < 3 || connected;
@@ -188,7 +188,7 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
             switch response {
             case .alertFirstButtonReturn:
                 // remove from the server
-                guard let client = XmppService.instance.getClient(for: jid), client.state == .connected else {
+                guard let client = XmppService.instance.getClient(for: jid), client.isConnected else {
                     let alert = NSAlert();
                     alert.messageText = "Account removal failure";
                     alert.informativeText = "Account needs to be active and connected to remove the acocunt from the server";

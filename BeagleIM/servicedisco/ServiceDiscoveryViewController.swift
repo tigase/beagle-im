@@ -357,7 +357,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
     
     fileprivate func discoInfo(for jid: JID) {
         self.rootItem = nil;
-        guard let account = self.account, let client = XmppService.instance.getClient(for: account), client.state == .connected else {
+        guard let account = self.account, let client = XmppService.instance.getClient(for: account), client.state == .connected() else {
             return;
         }
 
@@ -395,7 +395,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
     }
     
     fileprivate func discoItems(for parentItem: Item, on account: BareJID) {
-        guard let client = XmppService.instance.getClient(for: account), client.state == .connected else {
+        guard let client = XmppService.instance.getClient(for: account), client.state == .connected() else {
             DispatchQueue.main.async {
                 self.progressIndicator.stopAnimation(self);
             }

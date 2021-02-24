@@ -37,7 +37,7 @@ extension RosterViewController: NSMenuDelegate {
         item.isHidden = false;
         
         let row = self.getItem(at: self.contactsTableView.clickedRow);
-        guard (XmppService.instance.getClient(for: row.account)?.state ?? .disconnected()) == .connected else {
+        guard (XmppService.instance.getClient(for: row.account)?.state ?? .disconnected()) == .connected() else {
             item.isEnabled = false;
             return true;
         }
@@ -53,9 +53,7 @@ extension RosterViewController: NSMenuDelegate {
         
         switch identifier.rawValue {
         case "RoomInvite":
-            let rooms = XmppService.instance.clients.values.filter({ (client) -> Bool in
-                return client.state == .connected;
-            }).flatMap({ client -> [Room] in
+            let rooms = XmppService.instance.clients.values.filter(\.isConnected).flatMap({ client -> [Room] in
                 DBChatStore.instance.rooms(for: client).filter({ $0.occupant(nickname: $0.nickname)?.role ?? .none != .none })
             });
             item.isEnabled = rooms.count > 0;

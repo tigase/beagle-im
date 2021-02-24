@@ -94,7 +94,7 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         return timestamp;
     }
     
-    private var connectionState: SocketConnector.State = .disconnected() {
+    private var connectionState: XMPPClient.State = .disconnected() {
         didSet {
             DispatchQueue.main.async {
                 self.updateState();
@@ -103,6 +103,10 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
     }
     private var cancellables: Set<AnyCancellable> = [];
 
+    public var debugDescription: String {
+        return "Channel(account: \(account), jid: \(jid))";
+    }
+    
     init(dispatcher: QueueDispatcher, context: Context, channelJid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: ChannelOptions) {
         self.displayable = ChannelDisplayableId(displayName: options.name ?? channelJid.stringValue, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: channelJid, mucNickname: nil)), description: options.description);
         super.init(dispatcher: dispatcher, context: context, jid: channelJid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
@@ -131,7 +135,7 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
     }
     
     public func sendAttachment(url uploadedUrl: String, appendix: ChatAttachmentAppendix, originalUrl: URL?, completionHandler: (() -> Void)?) {
-        guard ((self.context as? XMPPClient)?.state ?? .disconnected()) == .connected, self.state == .joined else {
+        guard ((self.context as? XMPPClient)?.state ?? .disconnected()) == .connected(), self.state == .joined else {
             completionHandler?();
             return;
         }

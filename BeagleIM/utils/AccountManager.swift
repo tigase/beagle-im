@@ -180,7 +180,7 @@ open class AccountManager {
     
     struct Account {
         
-        public var state = CurrentValueSubject<SocketConnector.State,Never>(.disconnected());
+        public var state = CurrentValueSubject<XMPPClient.State,Never>(.disconnected());
         
         fileprivate var data: [String: Any];
         fileprivate var newPassword: String?;

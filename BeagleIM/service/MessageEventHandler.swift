@@ -27,6 +27,8 @@ import Combine
 
 class MessageEventHandler: XmppServiceEventHandler {
 
+    public static let instance = MessageEventHandler();
+    
     public static let OMEMO_AVAILABILITY_CHANGED = Notification.Name(rawValue: "OMEMOAvailabilityChanged");
 
     static func prepareBody(message: Message, forAccount account: BareJID) -> (String?, MessageEncryption, String?) {
@@ -82,17 +84,44 @@ class MessageEventHandler: XmppServiceEventHandler {
         return (body, encryption, fingerprint);
     }
 
-    let events: [Event] = [MessageModule.MessageReceivedEvent.TYPE, MessageDeliveryReceiptsModule.ReceiptEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MessageArchiveManagementModule.ArchivedMessageReceivedEvent.TYPE, SessionEstablishmentModule.SessionEstablishmentSuccessEvent.TYPE, OMEMOModule.AvailabilityChangedEvent.TYPE];
+    let events: [Event] = [MessageModule.MessageReceivedEvent.TYPE, MessageDeliveryReceiptsModule.ReceiptEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MessageArchiveManagementModule.ArchivedMessageReceivedEvent.TYPE, OMEMOModule.AvailabilityChangedEvent.TYPE];
 
-    init() {
+    private init() {
     }
 
-    static func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
-        client.module(.mam).$availableVersions.sink(receiveValue: { [weak client] versions in
-            guard !versions.isEmpty, let account = client?.userBareJid else {
+    func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
+        client.$state.sink(receiveValue: { [weak client] state in
+            guard case .connected(let resumed) = state, !resumed, let client = client else {
                 return;
             }
-            MessageEventHandler.syncMessagesScheduled(for: account);
+            MessageEventHandler.scheduleMessageSync(for: client.userBareJid);
+            DBChatHistoryStore.instance.loadUnsentMessage(for: client.userBareJid, completionHandler: { (account, messages) in
+                DispatchQueue.global(qos: .background).async {
+                    for message in messages {
+                        var chat = DBChatStore.instance.conversation(for: account, with: message.jid);
+                        if chat == nil {
+                            switch DBChatStore.instance.createChat(for: client, with: message.jid) {
+                            case .created(let newChat):
+                                chat = newChat;
+                            case .found(let existingChat):
+                                chat = existingChat;
+                            case .none:
+                                return;
+                            }
+                        }
+                        if let dbChat = chat as? Chat {
+                            dbChat.resendMessage(content: message.data, isAttachment: message.type == .attachment, encryption: message.encryption != .none ? .omemo : .none, stanzaId: message.correctionStanzaId ?? message.stanzaId, correctedMessageOriginId: message.correctionStanzaId == nil ? nil : message.stanzaId);
+                        }
+
+                    }
+                }
+            });
+        }).store(in: &cancellables);
+        client.module(.mam).$availableVersions.sink(receiveValue: { [weak client] versions in
+            guard !versions.isEmpty, let client = client else {
+                return;
+            }
+            MessageEventHandler.syncMessagesScheduled(for: client);
         }).store(in: &cancellables);
         client.module(.messageCarbons).$isAvailable.filter({ $0 }).sink(receiveValue: { [weak client] _ in
             client?.module(.messageCarbons).enable();
@@ -117,30 +146,6 @@ class MessageEventHandler: XmppServiceEventHandler {
             }
 
             DBChatHistoryStore.instance.updateItemState(for: conversation, stanzaId: e.messageId, from: .outgoing, to: .outgoing_delivered);
-        case let e as SessionEstablishmentModule.SessionEstablishmentSuccessEvent:
-            let account = e.sessionObject.userBareJid!;
-            MessageEventHandler.scheduleMessageSync(for: account);
-            DBChatHistoryStore.instance.loadUnsentMessage(for: account, completionHandler: { (account, messages) in
-                DispatchQueue.global(qos: .background).async {
-                    for message in messages {
-                        var chat = DBChatStore.instance.conversation(for: account, with: message.jid);
-                        if chat == nil {
-                            switch DBChatStore.instance.createChat(for: e.context, with: message.jid) {
-                            case .created(let newChat):
-                                chat = newChat;
-                            case .found(let existingChat):
-                                chat = existingChat;
-                            case .none:
-                                return;
-                            }
-                        }
-                        if let dbChat = chat as? Chat {
-                            dbChat.resendMessage(content: message.data, isAttachment: message.type == .attachment, encryption: message.encryption != .none ? .omemo : .none, stanzaId: message.correctionStanzaId ?? message.stanzaId, correctedMessageOriginId: message.correctionStanzaId == nil ? nil : message.stanzaId);
-                        }
-
-                    }
-                }
-            });
         case let e as MessageCarbonsModule.CarbonReceivedEvent:
             guard let account = e.sessionObject.userBareJid, let from = e.message.from?.bareJid, let to = e.message.to?.bareJid else {
                 return;
@@ -231,65 +236,69 @@ class MessageEventHandler: XmppServiceEventHandler {
         }
     }
     
-    static func syncMessagesScheduled(for account: BareJID) {
+    static func syncMessagesScheduled(for client: XMPPClient) {
         syncSinceQueue.async {
-            guard AccountSettings.messageSyncAuto(account).bool(), let syncMessagesSince = syncSince[account] else {
+            guard AccountSettings.messageSyncAuto(client.userBareJid).bool(), let syncMessagesSince = syncSince[client.userBareJid] else {
                 return;
             }
-            syncMessages(for: account, since: syncMessagesSince);
+            syncMessages(for: client, since: syncMessagesSince);
         }
     }
     
-    static func syncMessages(for account: BareJID, version: MessageArchiveManagementModule.Version? = nil, componentJID: JID? = nil, since: Date, rsmQuery: RSM.Query? = nil) {
-        let period = DBChatHistorySyncStore.Period(account: account, component: componentJID?.bareJid, from: since, after: nil);
+    static func syncMessages(for client: XMPPClient, version: MessageArchiveManagementModule.Version? = nil, componentJID: JID? = nil, since: Date, rsmQuery: RSM.Query? = nil) {
+        let period = DBChatHistorySyncStore.Period(account: client.userBareJid, component: componentJID?.bareJid, from: since, after: nil);
         DBChatHistorySyncStore.instance.addSyncPeriod(period);
         
-        syncMessagePeriods(for: account, version: version, componentJID: componentJID?.bareJid)
+        syncMessagePeriods(for: client, version: version, componentJID: componentJID?.bareJid)
     }
     
-    static func syncMessagePeriods(for account: BareJID, version: MessageArchiveManagementModule.Version? = nil, componentJID jid: BareJID? = nil) {
-        guard let first = DBChatHistorySyncStore.instance.loadSyncPeriods(forAccount: account, component: jid).first else {
-            NotificationManager.instance.syncCompleted(for: account, with: jid)
+    static func syncMessagePeriods(for client: XMPPClient, version: MessageArchiveManagementModule.Version? = nil, componentJID jid: BareJID? = nil) {
+        guard let first = DBChatHistorySyncStore.instance.loadSyncPeriods(forAccount: client.userBareJid, component: jid).first else {
+            NotificationManager.instance.syncCompleted(for: client.userBareJid, with: jid)
             return;
         }
 
-        NotificationManager.instance.syncStarted(for: account, with: jid);
+        NotificationManager.instance.syncStarted(for: client.userBareJid, with: jid);
         
         syncSinceQueue.async {
-            syncMessages(forPeriod: first, version: version);
+            syncMessages(for: client, period: first, version: version);
         }
     }
     
-    static func syncMessages(forPeriod period: DBChatHistorySyncStore.Period, version: MessageArchiveManagementModule.Version? = nil, rsmQuery: RSM.Query? = nil, retry: Int = 3) {
-        guard let client = XmppService.instance.getClient(for: period.account) else {
-            return;
-        }
-        
+    static func syncMessages(for client: XMPPClient, period: DBChatHistorySyncStore.Period, version: MessageArchiveManagementModule.Version? = nil, rsmQuery: RSM.Query? = nil, retry: Int = 3) {
         let start = Date();
         let queryId = UUID().uuidString;
-        client.module(.mam).queryItems(version: version, componentJid: period.component == nil ? nil : JID(period.component!), start: period.from, end: period.to, queryId: queryId, rsm: rsmQuery ?? RSM.Query(after: period.after, max: 150), completionHandler: { (result) in
+        client.module(.mam).queryItems(version: version, componentJid: period.component == nil ? nil : JID(period.component!), start: period.from, end: period.to, queryId: queryId, rsm: rsmQuery ?? RSM.Query(after: period.after, max: 150), completionHandler: { [weak client] result in
             switch result {
             case .success(let response):
                 if response.complete || response.rsm == nil {
                     DBChatHistorySyncStore.instance.removeSyncPerod(period);
-                    syncMessagePeriods(for: period.account, version: version, componentJID: period.component);
+                    if let client = client {
+                        syncMessagePeriods(for: client, version: version, componentJID: period.component);
+                    }
                 } else {
                     if let last = response.rsm?.last, UUID(uuidString: last) != nil {
                         DBChatHistorySyncStore.instance.updatePeriod(period, after: last);
                     }
                     DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                        self.syncMessages(forPeriod: period, version: version, rsmQuery: response.rsm?.next(150));
+                        guard let client = client else {
+                            return;
+                        }
+                        self.syncMessages(for: client, period: period, version: version, rsmQuery: response.rsm?.next(150));
                     }
                 }
                 os_log("for account %s fetch for component %s with id %s executed in %f s", log: .chatHistorySync, type: .debug, period.account.stringValue, period.component?.stringValue ?? "nil", queryId, Date().timeIntervalSince(start));
             case .failure(let error):
-                guard client.state == .connected, retry > 0 && error != .feature_not_implemented else {
+                guard client?.state ?? .disconnected() == .connected(), retry > 0 && error != .feature_not_implemented else {
                     os_log("for account %s fetch for component %s with id %s could not synchronize message archive for: %{public}s", log: .chatHistorySync, type: .debug, period.account.stringValue, period.component?.stringValue ?? "nil", queryId, error.description);
                     NotificationManager.instance.syncCompleted(for: period.account, with: period.component)
                     return;
                 }
                 DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                    self.syncMessages(forPeriod: period, version: version, rsmQuery: rsmQuery, retry: retry - 1);
+                    guard let client = client else {
+                        return;
+                    }
+                    self.syncMessages(for: client, period: period, version: version, rsmQuery: rsmQuery, retry: retry - 1);
                 }
             }
         });

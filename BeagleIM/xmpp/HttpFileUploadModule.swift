@@ -41,7 +41,14 @@ class HttpFileUploadModule: TigaseSwift.HttpFileUploadModule, Resetable {
     override var context: Context? {
         didSet {
             cancellable?.cancel();
-            cancellable = context?.$state.filter({ $0 == .connected }).sink(receiveValue: { [weak self] _ in
+            cancellable = context?.$state.filter({ state in
+                switch state {
+                case .connected(let resumed):
+                    return !resumed;
+                default:
+                    return false;
+                }
+            }).sink(receiveValue: { [weak self] _ in
                 self?.findHttpUploadComponent(completionHandler: { result in
                     switch result {
                     case .success(let values):

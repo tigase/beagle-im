@@ -40,7 +40,7 @@ extension XMPPClient: Hashable {
     
 }
 
-class XmppService: EventHandler {
+class XmppService {
     
     static let AUTHENTICATION_ERROR = Notification.Name("authenticationError");
     static let CONTACT_PRESENCE_CHANGED = Notification.Name("contactPresenceChanged");
@@ -49,9 +49,7 @@ class XmppService: EventHandler {
     
     static let instance = XmppService();
  
-    fileprivate let observedEvents: [Event] = [ AuthModule.AuthFailedEvent.TYPE ];
-    
-    fileprivate let eventHandlers: [XmppServiceEventHandler] = [MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), MessageEventHandler(),  BlockedEventHandler.instance, MixEventHandler.instance];
+    fileprivate let eventHandlers: [XmppServiceEventHandler] = [MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), MessageEventHandler.instance,  BlockedEventHandler.instance, MixEventHandler.instance];
     
     var clients: [BareJID: XMPPClient] {
         get {
@@ -157,7 +155,7 @@ class XmppService: EventHandler {
     private func statusUpdated(_ status: Status) {
         if let show = status.show {
             self._clients.values.forEach { client in
-                if client.state == .connected {
+                if client.isConnected {
                     client.module(.presence).setPresence(show: show, status: status.message, priority: nil);
                 }
             }
@@ -191,33 +189,6 @@ class XmppService: EventHandler {
             self._clients.values.forEach { client in
                 client.keepalive();
             }
-        }
-    }
-    
-    func handle(event: Event) {
-        switch event {
-        case let e as AuthModule.AuthFailedEvent:
-            guard let accountName = e.sessionObject.userBareJid else {
-                return;
-            }
-            if let error = e.error as? SaslError {
-                switch error {
-                case .aborted, .temporary_auth_failure:
-                    // those are temporary errors, we shoud retry
-                    return;
-                default:
-                    break;
-                }
-            }
-            
-            guard var account = AccountManager.getAccount(for: accountName) else {
-                return;
-            }
-            account.active = false;
-            _ = AccountManager.save(account: account);
-            NotificationCenter.default.post(name: XmppService.AUTHENTICATION_ERROR, object: accountName, userInfo: ["error": e.error ?? SaslError.not_authorized]);
-        default:
-            break;
         }
     }
     
@@ -302,7 +273,6 @@ class XmppService: EventHandler {
 
             self.clientCancellables.removeValue(forKey: accountName);
             
-            client.eventBus.unregister(handler: self, for: self.observedEvents);
             self.eventHandlers.forEach { handler in
                 client.eventBus.unregister(handler: handler, for: handler.events);
             }
@@ -390,10 +360,9 @@ class XmppService: EventHandler {
             
             client.$state.subscribe(account.state).store(in: &clientCancellables.cancellables);
             client.$state.dropFirst().sink(receiveValue: { state in self.changedState(state, for: client) }).store(in: &clientCancellables.cancellables);
-
-            client.eventBus.register(handler: self, for: observedEvents);
             
-            MessageEventHandler.register(for: client, cancellables: &clientCancellables.cancellables)
+            MessageEventHandler.instance.register(for: client, cancellables: &clientCancellables.cancellables);
+            MucEventHandler.instance.register(for: client, cancellables: &clientCancellables.cancellables);
             
             eventHandlers.forEach { handler in
                 client.eventBus.register(handler: handler, for: handler.events);
@@ -404,7 +373,7 @@ class XmppService: EventHandler {
         }
     }
     
-    private func changedState(_ state: ConnectorState, for client: XMPPClient) {
+    private func changedState(_ state: XMPPClient.State, for client: XMPPClient) {
         switch state {
         case .connected:
             self.dispatcher.async {
@@ -423,6 +392,18 @@ class XmppService: EventHandler {
                     _ = AccountManager.save(account: account);
                     NotificationCenter.default.post(name: XmppService.SERVER_CERTIFICATE_ERROR, object: client.userBareJid);
                 }
+            case .authenticationFailure(let err):
+                if let error = err as? SaslError {
+                    switch error {
+                    case .aborted, .temporary_auth_failure:
+                        // those are temporary errors, we shoud retry
+                        break;
+                    default:
+                        reportSaslError(on: client.userBareJid, error: error);
+                    }
+                } else {
+                    reportSaslError(on: client.userBareJid, error: .not_authorized);
+                }
             default:
                 break;
             }
@@ -430,6 +411,15 @@ class XmppService: EventHandler {
         default:
             break;
         }
+    }
+    
+    private func reportSaslError(on accountJID: BareJID, error: SaslError) {
+        guard var account = AccountManager.getAccount(for: accountJID) else {
+            return;
+        }
+        account.active = false;
+        _ = AccountManager.save(account: account);
+        NotificationCenter.default.post(name: XmppService.AUTHENTICATION_ERROR, object: accountJID, userInfo: ["error": error]);
     }
     
     struct Status: Codable, Equatable {

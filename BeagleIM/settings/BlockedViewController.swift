@@ -35,7 +35,7 @@ class BlockedViewController: NSViewController, NSTableViewDataSource, NSTableVie
     override func viewWillAppear() {
         super.viewWillAppear();
         let clients = XmppService.instance.clients.values.filter({ (client) -> Bool in
-            return client.state == .connected;
+            return client.state == .connected();
         });
         var items: [Item] = [];
         if !clients.isEmpty {

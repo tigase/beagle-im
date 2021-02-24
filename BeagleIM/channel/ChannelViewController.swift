@@ -92,7 +92,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
                     correct.target = self;
                     correct.tag = item.id;
                 }
-                if (self.conversation as? Channel)?.state ?? .left == .joined && XmppService.instance.getClient(for: item.conversation.account)?.state ?? .disconnected() == .connected {
+                if self.channel.state == .joined && (XmppService.instance.getClient(for: item.conversation.account)?.isConnected ?? false) {
                     let retract = menu.addItem(withTitle: "Retract message", action: #selector(retractMessage), keyEquivalent: "");
                     retract.target = self;
                     retract.tag = item.id;
@@ -171,7 +171,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     }
     
     override func send(message: String, correctedMessageOriginId: String?) -> Bool {
-        guard let client = XmppService.instance.getClient(for: account), client.state == .connected, channel.state == .joined else {
+        guard let client = XmppService.instance.getClient(for: account), client.isConnected, channel.state == .joined else {
             return false;
         }
         channel.sendMessage(text: message, correctedMessageOriginId: correctedMessageOriginId);
@@ -239,7 +239,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         alert.addButton(withTitle: "No");
         alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
             if (response == .alertFirstButtonReturn) {
-                guard let client = channel.context, client.state == .connected, channel.state == .joined else {
+                guard let client = channel.context, client.isConnected, channel.state == .joined else {
                     return;
                 }
                 client.module(.mix).destroy(channel: channel.channelJid, completionHandler: { result in

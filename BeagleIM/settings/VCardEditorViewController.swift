@@ -110,7 +110,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
     
     override func viewWillAppear() {
         super.viewWillAppear();
-        if let account = self.account {
+        if self.account != nil {
             refreshVCard();
         } else {
             self.vcard = VCard(vcard4: Element(name: "vcard", xmlns: "urn:ietf:params:xml:ns:vcard-4.0"))!;
@@ -146,7 +146,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
             } else {
                 progressIndicator.startAnimation(self);
                 self.isEnabled = false;
-                guard let client = XmppService.instance.getClient(for: account), client.state == .connected else {
+                guard let client = XmppService.instance.getClient(for: account), client.state == .connected() else {
                     self.handleError(title: "Could not retrive current version from the server.", message: "Account is not connected");
                     progressIndicator.stopAnimation(self);
                     return;
