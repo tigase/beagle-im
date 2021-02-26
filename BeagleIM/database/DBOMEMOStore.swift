@@ -26,7 +26,7 @@ import TigaseSQLite3
 
 extension Query {
     static let omemoKeyPairForAccount = Query("SELECT key FROM omemo_identities WHERE account = :account AND name = :name AND device_id = :deviceId AND own = 1");
-    static let omemoKeyPairUpdate = Query("UPDATE omemo_identities SET key = :key, fingerprint = :fingerprint, own = :own WHERE account = :account AND name = :name AND device_id = :deviceId");
+    static let omemoKeyPairExists = Query("SELECT count(1) FROM omemo_identities WHERE account = :account AND name = :name AND fingerprint = :fingerprint");
     static let omemoKeyPairInsert = Query("INSERT INTO omemo_identities (account, name, device_id, key, fingerprint, own, status) VALUES (:account,:name,:deviceId,:key,:fingerprint,:own,:status) ON CONFLICT(account, name, fingerprint) DO UPDATE SET device_id = :deviceId, status = :status");
     static let omemoKeyPairLoadStatus = Query("SELECT status FROM omemo_identities WHERE account = :account AND name = :name AND device_id = :deviceId");
     static let omemoKeyPairUpdateStatus = Query("UPDATE omemo_identities SET status = :status WHERE account = :account AND name = :name AND device_id = :deviceId");
@@ -99,52 +99,55 @@ class DBOMEMOStore {
     }
     
     func save(identity: SignalAddress, key: SignalIdentityKeyProtocol?, forAccount account: BareJID, own: Bool = false) -> Bool {
-        guard key != nil else {
+        guard let key = key else {
             // should we remove this key?
             return false;
         }
-        guard let publicKeyData = key?.publicKey else {
+        guard let publicKeyData = key.publicKey else {
             return false;
         }
         
-        let fingerprint: String = publicKeyData.map { (byte) -> String in
-            return String(format: "%02x", byte)
-            }.joined();
-        var params: [String: Any?] = ["account": account, "name": identity.name, "deviceId": identity.deviceId, "key": key!.serialized(), "fingerprint": fingerprint, "own": (own ? 1 : 0)];
-        
+        let fingerprint: String = self.fingerprint(publicKey: publicKeyData);
+                
         defer {
             _ = self.setStatus(.verifiedActive, forIdentity: identity, andAccount: account);
         }
-        return try! Database.main.writer({ database -> Int in
-            try database.update(query: .omemoKeyPairUpdate, params: params);
-            if database.changes == 0 {
-                params["status"] = IdentityStatus.verifiedActive.rawValue;
-                try database.insert(query: .omemoKeyPairInsert, params: params);
-            }
-            return database.changes;
-        }) != 0;
+
+        return save(identity: identity, fingerprint: fingerprint, own: own, data: key.serialized(), forAccount: account);
     }
 
+    func fingerprint(publicKey: Data) -> String {
+        return publicKey.map { (byte) -> String in
+           return String(format: "%02x", byte)
+        }.joined();
+    }
+    
     func save(identity: SignalAddress, publicKeyData: Data?, forAccount account: BareJID) -> Bool {
-        guard publicKeyData != nil else {
+        guard let publicKeyData = publicKeyData else {
             // should we remove this key?
             return false;
         }
         
-        let fingerprint: String = publicKeyData!.map { (byte) -> String in
-            return String(format: "%02x", byte)
-            }.joined();
-        var params: [String: Any?] = ["account": account, "name": identity.name, "deviceId": identity.deviceId, "key": publicKeyData!, "fingerprint": fingerprint, "own": 0];
-        print("updating identity for account \(account) and address \(identity) with fingerprint \(fingerprint)");
-        return try! Database.main.writer({ database -> Int in
-            try database.update(query: .omemoKeyPairUpdate, params: params);
-            if database.changes == 0 {
-                print("inserting identity for account \(account) and address \(identity) with fingerprint \(fingerprint)");
-                params["status"] = IdentityStatus.trustedActive.rawValue;
-                try database.insert(query: .omemoKeyPairInsert, params: params);
+        let fingerprint: String = self.fingerprint(publicKey: publicKeyData);
+        return save(identity: identity, fingerprint: fingerprint, own: false, data: publicKeyData, forAccount: account);
+    }
+        
+    private func save(identity: SignalAddress, fingerprint: String, own: Bool, data: Data?, forAccount account: BareJID) -> Bool {
+        return try! Database.main.writer({ database -> Bool in
+            let paramsCount: [String: Any?] = ["account": account, "name": identity.name, "fingerprint": fingerprint];
+            guard try database.count(query: .omemoKeyPairExists, params: paramsCount) == 0 else {
+                return true;
             }
-            return database.changes;
-        }) == 0;
+            
+            print("inserting identity for account \(account) and address \(identity) with fingerprint \(fingerprint)");
+            var params: [String: Any?] = paramsCount;
+            params["deviceId"] = identity.deviceId;
+            params["key"] = data;
+            params["own"] = own ? 1 : 0;
+            params["status"] = IdentityStatus.trustedActive.rawValue;
+            try database.insert(query: .omemoKeyPairInsert, params: params);
+            return true;
+        });
     }
     
     func setStatus(_ status: IdentityStatus, forIdentity identity: SignalAddress,  andAccount account: BareJID) -> Bool {
