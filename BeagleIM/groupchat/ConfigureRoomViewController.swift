@@ -208,8 +208,19 @@ class ConfigureRoomViewController: NSViewController {
                 if room?.state == RoomState.joined {
                     queue.isSuspended = false;
                 } else if nickname != nil {
-                    _ = mucModule.join(roomName: roomJid.localPart!, mucServer: roomJid.domain, nickname: nickname!, password: password, onJoined: { room in
-                        queue.isSuspended = false;
+                    mucModule.join(roomName: roomJid.localPart!, mucServer: roomJid.domain, nickname: nickname!, password: password).handle({ result in
+                        switch result {
+                        case .success(let r):
+                            switch r {
+                            case .created(let room), .joined(let room):
+                                queue.isSuspended = false;
+                            }
+                        case .failure(let error):
+                            guard let room = DBChatStore.instance.room(for: client, with: room!.roomJid) else {
+                                return;
+                            }
+                            MucEventHandler.showJoinError(error, for: room);
+                        }
                     });
                     PEPBookmarksModule.updateOrAdd(for: account, bookmark: Bookmarks.Conference(name: roomJid.localPart!, jid: JID(roomJid), autojoin: true, nick: nickname!, password: password));
                 }

@@ -21,41 +21,32 @@
 
 import Foundation
 import TigaseSwift
+import Combine
 
-class MixEventHandler: XmppServiceEventHandler {
-    
-    static let PARTICIPANTS_CHANGED = Notification.Name(rawValue: "mixParticipantsChanged");
-    static let PERMISSIONS_CHANGED = Notification.Name(rawValue: "mixPermissionsChanged");
-    
+class MixEventHandler: XmppServiceExtension {
+        
     static let instance = MixEventHandler();
+        
+    private init() {
+    }
     
-    let events: [Event] = [MixModule.MessageReceivedEvent.TYPE, MixModule.ParticipantsChangedEvent.TYPE, MixModule.ChannelStateChangedEvent.TYPE];
-    
-    func handle(event: Event) {
-        switch event {
-        case let e as MixModule.MessageReceivedEvent:
-            // only mix message (with `mix` element) are processed here...
-            guard e.message.mix != nil && e.message.from != nil else {
+    func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
+        client.module(.mix).participantsEvents.sink(receiveValue: { event in
+            guard case .joined(let participant) = event, let channel = participant.channel else {
                 return;
             }
             
+            let jid = participant.jid ?? BareJID(localPart: participant.id + "#" + channel.jid.localPart!, domain: channel.jid.domain);
+            DBVCardStore.instance.vcard(for: jid, completionHandler: { vcard in
+                guard vcard == nil else {
+                    return;
+                }
+                VCardManager.instance.refreshVCard(for: jid, on: channel.account, completionHandler: nil);
+            })
+        }).store(in: &cancellables);
+        client.module(.mix).messagesPublisher.sink(receiveValue: { e in
             DBChatHistoryStore.instance.append(for: e.channel as! Channel, message: e.message, source: .stream);
-        case let e as MixModule.ParticipantsChangedEvent:
-            NotificationCenter.default.post(name: MixEventHandler.PARTICIPANTS_CHANGED, object: e);
-            for participant in e.joined {
-                let jid = participant.jid ?? BareJID(localPart: participant.id + "#" + e.channel.jid.localPart!, domain: e.channel.jid.domain);
-                DBVCardStore.instance.vcard(for: jid, completionHandler: { vcard in
-                    guard vcard == nil else {
-                        return;
-                    }
-                    VCardManager.instance.refreshVCard(for: jid, on: e.sessionObject.userBareJid!, completionHandler: nil);
-                })
-            }
-        case let e as MixModule.ChannelPermissionsChangedEvent:
-            NotificationCenter.default.post(name: MixEventHandler.PERMISSIONS_CHANGED, object: e.channel);
-        default:
-            break;
-        }
+        }).store(in: &cancellables);
     }
-
+    
 }

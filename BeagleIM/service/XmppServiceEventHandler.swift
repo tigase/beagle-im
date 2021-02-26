@@ -21,9 +21,16 @@
 
 import Foundation
 import TigaseSwift
+import Combine
 
 protocol XmppServiceEventHandler: EventHandler {
     
     var events: [Event] { get }
     
+}
+
+protocol XmppServiceExtension {
+    
+    func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>);
+
 }

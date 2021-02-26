@@ -43,13 +43,13 @@ extension XMPPClient: Hashable {
 class XmppService {
     
     static let AUTHENTICATION_ERROR = Notification.Name("authenticationError");
-    static let CONTACT_PRESENCE_CHANGED = Notification.Name("contactPresenceChanged");
-//    static let ACCOUNT_STATUS_CHANGED = Notification.Name("accountStatusChanged");
     static let SERVER_CERTIFICATE_ERROR = Notification.Name("serverCertificateError");
     
     static let instance = XmppService();
  
-    fileprivate let eventHandlers: [XmppServiceEventHandler] = [MucEventHandler.instance, PresenceRosterEventHandler(), AvatarEventHandler(), MessageEventHandler.instance,  BlockedEventHandler.instance, MixEventHandler.instance];
+    fileprivate let eventHandlers: [XmppServiceEventHandler] = [MessageEventHandler.instance];
+    
+    let extensions: [XmppServiceExtension] = [BlockedEventHandler.instance, PresenceRosterEventHandler.instance, AvatarEventHandler.instance, MixEventHandler.instance, MucEventHandler.instance];
     
     var clients: [BareJID: XMPPClient] {
         get {
@@ -329,7 +329,7 @@ class XmppService {
         _ = client.modulesManager.register(PresenceModule(store: PresenceStore.instance));
         client.modulesManager.register(CapabilitiesModule(cache: DBCapabilitiesCache.instance, additionalFeatures: [.lastMessageCorrection, .messageRetraction]));
 
-        client.modulesManager.register(MucModule(roomManager: RoomManagerBase(store: DBChatStore.instance)));
+        client.modulesManager.register(CustomMucModule(roomManager: RoomManagerBase(store: DBChatStore.instance)));
                                            
         client.modulesManager.register(MixModule(channelManager: ChannelManagerBase(store: DBChatStore.instance)));
         
@@ -363,6 +363,10 @@ class XmppService {
             
             MessageEventHandler.instance.register(for: client, cancellables: &clientCancellables.cancellables);
             MucEventHandler.instance.register(for: client, cancellables: &clientCancellables.cancellables);
+            
+            for ext in extensions {
+                ext.register(for: client, cancellables: &clientCancellables.cancellables);
+            }
             
             eventHandlers.forEach { handler in
                 client.eventBus.register(handler: handler, for: handler.events);

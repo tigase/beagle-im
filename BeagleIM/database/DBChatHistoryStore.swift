@@ -166,7 +166,10 @@ class DBChatHistoryStore {
     }
     private var enqueuedItems = 0;
 
-
+    open func append(message: Message, source: MessageSource) {
+        
+    }
+    
     open func append(for conversation: ConversationKey, message: Message, source: MessageSource) {
         let direction: MessageDirection = conversation.account == message.from?.bareJid ? .outgoing : .incoming;
         guard let jidFull = direction == .outgoing ? message.to : message.from else {

@@ -63,20 +63,16 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         channelJidLabel.title = jid.stringValue;
         
         channelAvatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
-
-        NotificationCenter.default.addObserver(self, selector: #selector(participantsChanged(_:)), name: MixEventHandler.PARTICIPANTS_CHANGED, object: nil);
-        NotificationCenter.default.addObserver(self, selector: #selector(permissionsChanged(_:)), name: MixEventHandler.PERMISSIONS_CHANGED, object: channel);
         
-        self.participantsButton.title = "\(channel.participants.count)";
-        updatePermissions();
+        channel.participantsPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] participants in
+            self?.participantsButton.title = "\(participants.count)";
+        }).store(in: &cancellables);
+        channel.permissionsPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] permissions in
+            self?.update(permissions: permissions);
+        }).store(in: &cancellables);
         super.viewWillAppear();
     }
-    
-    override func viewWillDisappear() {
-        super.viewWillDisappear();
-        NotificationCenter.default.removeObserver(self, name: MixEventHandler.PARTICIPANTS_CHANGED, object: nil);
-    }
-    
+        
     override func viewDidDisappear() {
         super.viewDidDisappear();
         cancellables.removeAll();
@@ -178,26 +174,10 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         return true;
     }
     
-    @objc func participantsChanged(_ notification: Notification) {
-        guard let e = notification.object as? MixModule.ParticipantsChangedEvent else {
-            return;
-        }
-        DispatchQueue.main.async {
-            guard self.channel.id == (e.channel as? Channel)?.id else {
-                return;
-            }
-            self.participantsButton.title = "\(self.channel.participants.count)";
-        }
-    }
-    
-    @objc func permissionsChanged(_ notification: Notification) {
-        self.updatePermissions();
-    }
-    
-    private func updatePermissions() {
-        self.actionsButton.item(at: 1)?.isEnabled = channel.has(permission: .changeInfo);
-        self.actionsButton.item(at: 2)?.isEnabled = channel.has(permission: .changeConfig);
-        self.actionsButton.lastItem?.isEnabled = channel.has(permission: .changeConfig);
+    private func update(permissions: Set<ChannelPermission>) {
+        self.actionsButton.item(at: 1)?.isEnabled = permissions.contains(.changeInfo);
+        self.actionsButton.item(at: 2)?.isEnabled = permissions.contains( .changeConfig);
+        self.actionsButton.lastItem?.isEnabled =  permissions.contains( .changeConfig);
     }
     
     @IBAction func showInfoClicked(_ sender: NSButton) {

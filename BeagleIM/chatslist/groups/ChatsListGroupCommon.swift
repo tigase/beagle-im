@@ -26,7 +26,6 @@ class ChatsListGroupCommon: ChatsListGroupAbstractChat {
     
     init(delegate: ChatsListViewDataSourceDelegate) {
         super.init(name: "Conversations", dispatcher: QueueDispatcher(label: "chats_list_group_chats_queue"), delegate: delegate, canOpenChat: true);
-//        NotificationCenter.default.addObserver(self, selector: #selector(rosterItemUpdated), name: DBRosterStore.ITEM_UPDATED, object: nil);
     }
     
     override func isAccepted(chat: Conversation) -> Bool {
@@ -36,33 +35,5 @@ class ChatsListGroupCommon: ChatsListGroupAbstractChat {
 
         return chat is Room || chat is Channel
     }
-
-//    override func newChatItem(chat: Conversation) -> ChatItemProtocol? {
-//        let item = UnifiedChatItem(chat: chat);
-//        guard item.isInRoster else {
-//            return nil;
-//        }
-//        return item;
-//    }
-        
-//    @objc func rosterItemUpdated(_ notification: Notification) {
-//        guard let e = notification.object as? RosterModule.ItemUpdatedEvent else {
-//            return;
-//        }
-//
-//        guard let account = e.sessionObject.userBareJid, let rosterItem = e.rosterItem else {
-//            return;
-//        }
-//
-//        if e.action == .removed {
-//            removeItem(for: account, jid: rosterItem.jid.bareJid);
-//        } else {
-//            guard let chat = DBChatStore.instance.conversation(for: account, with: rosterItem.jid.bareJid) as? Chat else {
-//                return;
-//            }
-//
-//            self.addItem(chat: chat);
-//        }
-//    }
 
 }

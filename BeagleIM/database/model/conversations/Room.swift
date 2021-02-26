@@ -43,7 +43,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     public var affiliation: MucAffiliation = .none;
     
     @Published
-    public private(set) var state: RoomState = .not_joined {
+    public private(set) var state: RoomState = .not_joined() {
         didSet {
             switch state {
             case .joined:
@@ -60,6 +60,9 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
                 }
             }
         }
+    }
+    public var statePublisher: AnyPublisher<RoomState, Never> {
+        return $state.eraseToAnyPublisher();
     }
     
     public var subject: String? {
@@ -144,7 +147,6 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
         updateOptions({ options in
             options.name = name;
         });
-        NotificationCenter.default.post(name: MucEventHandler.ROOM_NAME_CHANGED, object: self);
     }
     
     public override func updateOptions(_ fn: @escaping (inout RoomOptions) -> Void) {

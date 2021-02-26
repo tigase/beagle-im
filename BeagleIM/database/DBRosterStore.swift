@@ -72,7 +72,6 @@ open class DBRosterStore: RosterStore {
     
     public typealias RosterItem = BeagleIM.RosterItem
     
-    static let ITEM_UPDATED = Notification.Name("rosterItemUpdated");
     static let instance: DBRosterStore = DBRosterStore.init();
     
     public let dispatcher: QueueDispatcher;
@@ -135,6 +134,7 @@ open class DBRosterStore: RosterStore {
                 let item = RosterItem(id: id, context: context, jid: jid, name: name, subscription: subscription, groups: groups, ask: ask, annotations: annotations);
                 self.accountRosters[account]?.update(item: item);
                 self.items.insert(item);
+                itemUpdated(item, context: context);
                 return;
             }
 
@@ -145,6 +145,11 @@ open class DBRosterStore: RosterStore {
 
             let newItem = RosterItem(id: item.id, context: context, jid: jid, name: name, subscription: subscription, groups: groups, ask: ask, annotations: annotations);
             self.accountRosters[account]?.update(item: newItem);
+            var newItems = self.items;
+            newItems.remove(item);
+            newItems.insert(newItem);
+            self.items = newItems;
+            itemUpdated(newItem, context: context);
         }
     }
         
@@ -163,6 +168,10 @@ open class DBRosterStore: RosterStore {
                 self.items.remove(item);
             }
         }
+    }
+    
+    func itemUpdated(_ newItem: RosterItem, context: Context) {
+        ContactManager.instance.update(name: newItem.name, for: .init(account: context.userBareJid, jid: newItem.jid.bareJid, type: .buddy))
     }
     
     public func deleteItem(for context: Context, jid: JID) {

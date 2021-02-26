@@ -21,34 +21,30 @@
 
 import AppKit
 import TigaseSwift
+import Combine
 
-class PresenceRosterEventHandler: XmppServiceEventHandler {
+class PresenceRosterEventHandler: XmppServiceExtension {
     
-    let events: [Event] = [RosterModule.ItemUpdatedEvent.TYPE,PresenceModule.BeforePresenceSendEvent.TYPE, PresenceModule.SubscribeRequestEvent.TYPE];
+    public static let instance = PresenceRosterEventHandler();
     
-    var status: XmppService.Status {
-        return XmppService.instance.expectedStatus.value;
+    private init() {
     }
     
-    func handle(event: Event) {
-        switch event {
-        case let e as RosterModule.ItemUpdatedEvent:
-            ContactManager.instance.update(name: e.rosterItem.name, for: .init(account: e.context.userBareJid, jid: e.rosterItem.jid.bareJid, type: .buddy))
-            NotificationCenter.default.post(name: DBRosterStore.ITEM_UPDATED, object: e);
-        case let e as PresenceModule.BeforePresenceSendEvent:
-            print("on account \(e.context.userBareJid) setting show to \(status.show?.rawValue ?? "nil")")
-            e.presence.show = status.show;
-            e.presence.status = status.message;
-        case let e as PresenceModule.SubscribeRequestEvent:
-            guard let jid = e.presence.from else {
+    func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
+        XmppService.instance.expectedStatus.sink(receiveValue: { [weak client] status in
+            client?.module(.presence).setPresence(show: status.show, status: status.message, priority: nil);
+        }).store(in: &cancellables);
+        client.module(.presence).subscriptionPublisher.sink(receiveValue: { [weak client] change in
+            guard let client = client else {
                 return;
             }
-            
-            InvitationManager.instance.addPresenceSubscribe(for: e.sessionObject.userBareJid!,from: jid);
-            
-        default:
-            break;
-        }
+            switch change.action {
+            case .subscribe:
+                InvitationManager.instance.addPresenceSubscribe(for: client.userBareJid, from: change.jid);
+            default:
+                break;
+            }
+        }).store(in: &cancellables);
     }
-    
+        
 }

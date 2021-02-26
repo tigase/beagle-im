@@ -60,7 +60,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         let newRep = representation.converting(to: .genericGray, renderingIntent: .default);
         infoButton.image = NSImage(cgImage: newRep!.cgImage!, size: infoButton.frame.size);
 
-        NotificationCenter.default.addObserver(self, selector: #selector(contactPresenceChanged), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
+//        NotificationCenter.default.addObserver(self, selector: #selector(contactPresenceChanged), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(omemoAvailabilityChanged), name: MessageEventHandler.OMEMO_AVAILABILITY_CHANGED, object: nil);
     }
 
@@ -97,7 +97,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         }
         self.scriptsButton.isHidden = ScriptsManager.instance.contactScripts() == nil;
 
-        self.updateCapabilities();
+//        self.updateCapabilities();
 
         super.viewWillAppear();
         lastTextChangeTimer = Foundation.Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true, block: { (timer) in
@@ -151,34 +151,21 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         self.change(chatState: .composing);
     }
 
-    @objc func avatarChanged(_ notification: Notification) {
-        guard let account = notification.userInfo?["account"] as? BareJID, let jid = notification.userInfo?["jid"] as? BareJID else {
-            return;
-        }
-        guard self.account == account && (self.jid == jid || self.account == jid) else {
-            return;
-        }
-        DispatchQueue.main.async {
-            self.buddyAvatarView.avatar = AvatarManager.instance.avatar(for: jid, on: account);
-            self.conversationLogController?.tableView.reloadData();
-        }
-    }
-
-    @objc func contactPresenceChanged(_ notification: Notification) {
-        guard let e = notification.object as? PresenceModule.ContactPresenceChanged else {
-            return;
-        }
-
-        guard let account = e.sessionObject.userBareJid, let jid = e.presence.from?.bareJid else {
-            return;
-        }
-
-        guard account == self.account && jid == self.jid else {
-            return;
-        }
-
-        self.updateCapabilities();
-    }
+//    @objc func contactPresenceChanged(_ notification: Notification) {
+//        guard let e = notification.object as? PresenceModule.ContactPresenceChanged else {
+//            return;
+//        }
+//
+//        guard let account = e.sessionObject.userBareJid, let jid = e.presence.from?.bareJid else {
+//            return;
+//        }
+//
+//        guard account == self.account && jid == self.jid else {
+//            return;
+//        }
+//
+//        self.updateCapabilities();
+//    }
 
     override func prepareConversationLogContextMenu(dataSource: ConversationDataSource, menu: NSMenu, forRow row: Int) {
         super.prepareConversationLogContextMenu(dataSource: dataSource, menu: menu, forRow: row);
@@ -292,13 +279,13 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         return true;
     }
             
-    fileprivate func updateCapabilities() {
-        let supported = JingleManager.instance.support(for: JID(jid), on: account);
-        DispatchQueue.main.async {
-            self.audioCall.isHidden = !(VideoCallController.hasAudioSupport && (supported.contains(.audio) || Settings.ignoreJingleSupportCheck));
-            self.videoCall.isHidden = !(VideoCallController.hasAudioSupport && VideoCallController.hasVideoSupport && (supported.contains(.video) || Settings.ignoreJingleSupportCheck));
-        }
-    }
+//    fileprivate func updateCapabilities() {
+//        let supported = JingleManager.instance.support(for: JID(jid), on: account);
+//        DispatchQueue.main.async {
+//            self.audioCall.isHidden = !(VideoCallController.hasAudioSupport && (supported.contains(.audio) || Settings.ignoreJingleSupportCheck));
+//            self.videoCall.isHidden = !(VideoCallController.hasAudioSupport && VideoCallController.hasVideoSupport && (supported.contains(.video) || Settings.ignoreJingleSupportCheck));
+//        }
+//    }
 
     @IBAction func audioCallClicked(_ sender: Any) {
         let call = Call(account: self.account, with: self.jid, sid: UUID().uuidString, direction: .outgoing, media: [.audio]);

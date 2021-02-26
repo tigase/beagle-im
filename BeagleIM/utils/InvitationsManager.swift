@@ -121,9 +121,18 @@ class InvitationManager {
                     if response == NSApplication.ModalResponse.alertFirstButtonReturn {
                         let roomName = mucInvitation.roomJid.localPart!;
                         let nickname = AccountManager.getAccount(for: invitation.account)?.nickname ?? invitation.account.localPart!;
-                        _ = mucModule.join(roomName: roomName, mucServer: mucInvitation.roomJid.domain, nickname: nickname, password: mucInvitation.password);
-                        
-                        PEPBookmarksModule.updateOrAdd(for: invitation.account, bookmark: Bookmarks.Conference(name: roomName, jid: JID(BareJID(localPart: roomName, domain: mucInvitation.roomJid.domain)), autojoin: true, nick: nickname, password: mucInvitation.password));
+                        mucModule.join(roomName: roomName, mucServer: mucInvitation.roomJid.domain, nickname: nickname, password: mucInvitation.password).handle({ result in
+                            switch result {
+                            case .failure(let error):
+                                guard let context = mucModule.context, let room = DBChatStore.instance.room(for: context, with: mucInvitation.roomJid) else {
+                                    return;
+                                }
+                                MucEventHandler.showJoinError(error, for: room);
+                            case .success(_):
+                                PEPBookmarksModule.updateOrAdd(for: invitation.account, bookmark: Bookmarks.Conference(name: roomName, jid: JID(BareJID(localPart: roomName, domain: mucInvitation.roomJid.domain)), autojoin: true, nick: nickname, password: mucInvitation.password));
+                            }
+                            self.remove(invitation: invitation);
+                        });
                     } else {
                         mucModule.decline(invitation: mucInvitation, reason: nil);
                     }

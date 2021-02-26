@@ -84,12 +84,13 @@ class MessageEventHandler: XmppServiceEventHandler {
         return (body, encryption, fingerprint);
     }
 
-    let events: [Event] = [MessageModule.MessageReceivedEvent.TYPE, MessageDeliveryReceiptsModule.ReceiptEvent.TYPE, MessageCarbonsModule.CarbonReceivedEvent.TYPE, MessageArchiveManagementModule.ArchivedMessageReceivedEvent.TYPE, OMEMOModule.AvailabilityChangedEvent.TYPE];
+    let events: [Event] = [OMEMOModule.AvailabilityChangedEvent.TYPE];
 
     private init() {
     }
 
     func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
+        let account = client.userBareJid;
         client.$state.sink(receiveValue: { [weak client] state in
             guard case .connected(let resumed) = state, !resumed, let client = client else {
                 return;
@@ -117,11 +118,32 @@ class MessageEventHandler: XmppServiceEventHandler {
                 }
             });
         }).store(in: &cancellables);
+        client.module(.message).messagesPublisher.sink(receiveValue: { e in
+            DBChatHistoryStore.instance.append(for: e.chat as! Chat, message: e.message, source: .stream);
+        }).store(in: &cancellables);
+        client.module(.messageDeliveryReceipts).receiptsPublisher.sink(receiveValue: { receipt in
+            let conversation: ConversationKey = DBChatStore.instance.conversation(for: account, with: receipt.jid.bareJid) ?? ConversationKeyItem(account: account, jid: receipt.jid.bareJid);
+            DBChatHistoryStore.instance.updateItemState(for: conversation, stanzaId: receipt.messageId, from: .outgoing, to: .outgoing_delivered);
+        }).store(in: &cancellables);
+        client.module(.messageCarbons).carbonsPublisher.sink(receiveValue: { carbon in
+            let conversation: ConversationKey = DBChatStore.instance.conversation(for: account, with: carbon.jid.bareJid) ?? ConversationKeyItem(account: account, jid: carbon.jid.bareJid);
+                        
+            DBChatHistoryStore.instance.append(for: conversation, message: carbon.message, source: .carbons(action: carbon.action));
+        }).store(in: &cancellables);
         client.module(.mam).$availableVersions.sink(receiveValue: { [weak client] versions in
             guard !versions.isEmpty, let client = client else {
                 return;
             }
             MessageEventHandler.syncMessagesScheduled(for: client);
+        }).store(in: &cancellables);
+        client.module(.mam).archivedMessagesPublisher.sink(receiveValue: { archived in
+            guard let from = archived.message.from?.bareJid, let to = archived.message.to?.bareJid else {
+                return;
+            }
+            let jid = account != from ? from : to;
+            let conversation: ConversationKey = DBChatStore.instance.conversation(for: account, with: jid) ?? ConversationKeyItem(account: account, jid: jid);
+            
+            DBChatHistoryStore.instance.append(for: conversation, message: archived.message, source: .archive(source: archived.source, version: archived.query.version, messageId: archived.messageId, timestamp: archived.timestamp));
         }).store(in: &cancellables);
         client.module(.messageCarbons).$isAvailable.filter({ $0 }).sink(receiveValue: { [weak client] _ in
             client?.module(.messageCarbons).enable();
@@ -130,41 +152,6 @@ class MessageEventHandler: XmppServiceEventHandler {
 
     func handle(event: Event) {
         switch event {
-        case let e as MessageModule.MessageReceivedEvent:
-            guard e.message.from != nil else {
-                return;
-            }
-
-            DBChatHistoryStore.instance.append(for: e.chat as! Conversation, message: e.message, source: .stream);
-        case let e as MessageDeliveryReceiptsModule.ReceiptEvent:
-            guard let from = e.message.from?.bareJid, let account = e.sessionObject.userBareJid else {
-                return;
-            }
-            
-            guard let conversation = DBChatStore.instance.conversation(for: account, with: from) else {
-                return;
-            }
-
-            DBChatHistoryStore.instance.updateItemState(for: conversation, stanzaId: e.messageId, from: .outgoing, to: .outgoing_delivered);
-        case let e as MessageCarbonsModule.CarbonReceivedEvent:
-            guard let account = e.sessionObject.userBareJid, let from = e.message.from?.bareJid, let to = e.message.to?.bareJid else {
-                return;
-            }
-            
-            let jid = e.action == MessageCarbonsModule.Action.received ? from : to;
-            let conversation: ConversationKey = DBChatStore.instance.conversation(for: account, with: jid) ?? ConversationKeyItem(account: account, jid: jid);
-                        
-            DBChatHistoryStore.instance.append(for: conversation, message: e.message, source: .carbons(action: e.action));
-        case let e as MessageArchiveManagementModule.ArchivedMessageReceivedEvent:
-            guard let account = e.sessionObject.userBareJid, let from = e.message.from?.bareJid, let to = e.message.to?.bareJid else {
-                return;
-            }
-            
-            let jid = from != account ? from : to;
-            
-            let conversation: ConversationKey = DBChatStore.instance.conversation(for: account, with: jid) ?? ConversationKeyItem(account: account, jid: jid);
-            
-            DBChatHistoryStore.instance.append(for: conversation, message: e.message, source: .archive(source: e.source, version: e.version, messageId: e.messageId, timestamp: e.timestamp));
         case let e as OMEMOModule.AvailabilityChangedEvent:
             NotificationCenter.default.post(name: MessageEventHandler.OMEMO_AVAILABILITY_CHANGED, object: e);
         default:

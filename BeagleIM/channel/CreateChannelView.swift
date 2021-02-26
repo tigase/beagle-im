@@ -208,17 +208,30 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
             form.addField(BooleanField(name: "muc#roomconfig_membersonly", value: priv));
             form.addField(BooleanField(name: "muc#roomconfig_publicroom", value: !priv));
             form.addField(TextSingleField(name: "muc#roomconfig_roomdesc", value: channelDescription));
-            mucModule.setRoomConfiguration(roomJid: JID(BareJID(localPart: roomName, domain: component.jid.domain)), configuration: form, completionHandler: { [weak self] result in
+            let roomJid = BareJID(localPart: roomName, domain: component.jid.domain);
+            mucModule.setRoomConfiguration(roomJid: JID(roomJid), configuration: form, completionHandler: { [weak self] result in
                 switch result {
                 case .success(_):
-                    _ = mucModule.join(roomName: roomName, mucServer: component.jid.domain, nickname: nickname, onJoined: { room in
-                        let vcard = VCard();
-                        if let binval = avatar?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
-                            vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
-                        }
-                        client.module(.vcardTemp).publishVCard(vcard, to: room.jid, completionHandler: nil);
-                        if channelDescription != nil {
-                            mucModule.setRoomSubject(roomJid: room.jid, newSubject: channelDescription);
+                    mucModule.join(roomName: roomName, mucServer: component.jid.domain, nickname: nickname).handle({ result in
+                        switch result {
+                        case .success(let r):
+                            switch r {
+                            case .created(let room), .joined(let room):
+                                let vcard = VCard();
+                                if let binval = avatar?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
+                                    vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
+                                }
+                                client.module(.vcardTemp).publishVCard(vcard, to: room.jid, completionHandler: nil);
+                                if channelDescription != nil {
+                                    mucModule.setRoomSubject(roomJid: room.jid, newSubject: channelDescription);
+                                }
+                            }
+                        case .failure(let error):
+                            guard let room = DBChatStore.instance.room(for: client, with: roomJid) else {
+                                return;
+                            }
+                            MucEventHandler.showJoinError(error, for: room);
+                            break;
                         }
                     });
                     DispatchQueue.main.async {

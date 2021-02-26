@@ -30,11 +30,14 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         return .groupchat;
     }
 
-    private var _permissions: Set<ChannelPermission>?;
-    public var permissions: Set<ChannelPermission>? {
-        return dispatcher.sync {
-            return _permissions;
+    @Published
+    open private(set) var permissions: Set<ChannelPermission>?;
+    
+    public var permissionsPublisher: AnyPublisher<Set<ChannelPermission>,Never> {
+        if permissions == nil {
+            context?.module(.mix).retrieveAffiliations(for: self, completionHandler: nil);
         }
+        return $permissions.compactMap({ $0 }).eraseToAnyPublisher();
     }
 
     private let participantsStore: MixParticipantsProtocol = MixParticipantsBase();
@@ -47,7 +50,7 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
     
     public func update(permissions: Set<ChannelPermission>) {
         dispatcher.async(flags: .barrier) {
-            self._permissions = permissions;
+            self.permissions = permissions;
         }
     }
     
@@ -203,6 +206,10 @@ extension Channel: MixParticipantsProtocol {
         }
     }
     
+    public var participantsPublisher: AnyPublisher<[MixParticipant],Never> {
+        return self.participantsStore.participantsPublisher;
+    }
+    
     public func participant(withId: String) -> MixParticipant? {
         return dispatcher.sync {
             return self.participantsStore.participant(withId: withId);
@@ -280,4 +287,16 @@ public struct ChannelOptions: Codable, ChatOptionsProtocol, Equatable {
         case name = "name";
         case description = "desc";
     }
+}
+
+extension MixParticipant: Hashable {
+    
+    public static func == (lhs: MixParticipant, rhs: MixParticipant) -> Bool {
+        return lhs.id == rhs.id;
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        return hasher.combine(id);
+    }
+    
 }

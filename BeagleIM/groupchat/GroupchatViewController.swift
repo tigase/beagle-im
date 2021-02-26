@@ -232,7 +232,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                     correct.tag = item.id;
                 }
                 
-                if (conversation as? Room)?.state ?? .not_joined == .joined {
+                if room.state == .joined {
                     let retract = menu.addItem(withTitle: "Retract message", action: #selector(retractMessage), keyEquivalent: "");
                     retract.target = self;
                     retract.tag = item.id;

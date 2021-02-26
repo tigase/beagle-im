@@ -34,7 +34,6 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
     
     override func viewDidLoad() {
         super.viewDidLoad();
-        NotificationCenter.default.addObserver(self, selector: #selector(contactPresenceChanged), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
     }
     
     override func viewWillAppear() {
@@ -79,26 +78,6 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
         
         _ = client.module(.message).chatManager.createChat(for: client, with: jid);
         self.close();
-    }
-    
-    @objc func contactPresenceChanged(_ notification: Notification) {
-        guard let e = notification.object as? PresenceModule.ContactPresenceChanged else {
-            return;
-        }
-        
-        guard let account = e.sessionObject.userBareJid, let jid = e.presence.from?.bareJid else {
-            return;
-        }
-        
-        DispatchQueue.main.async {
-            guard let idx = self.rows.firstIndex(where: { (item) -> Bool in
-                return item.account == account && item.jid == jid
-            }) else {
-                return;
-            }
-            
-            self.contactsView.reloadData(forRowIndexes: IndexSet(integer: idx), columnIndexes: IndexSet(integer: 0));
-        }
     }
     
     @IBAction func disclosureChangedState(_ sender: NSButton) {
@@ -217,12 +196,21 @@ class Open1On1ChatItemView: NSTableCellView {
     @IBOutlet var jid: NSTextField!
     @IBOutlet var account: NSTextField!
         
+    private var contact: Contact? {
+        didSet {
+            cancellables.removeAll();
+            contact?.displayNamePublisher.assign(to: \.stringValue, on: name).store(in: &cancellables);
+            self.jid.stringValue = contact?.jid.stringValue ?? "";
+            self.account.stringValue = "using \(contact?.account.stringValue ?? "")";
+            self.avatar.displayableId = contact;
+        }
+    }
+    private var cancellables: Set<AnyCancellable> = [];
+    
     func update(from item: Open1On1ChatController.Item) {
         self.avatar.backgroundColor = NSColor.textBackgroundColor;
-        self.jid.stringValue = item.jid.stringValue;
-        self.name.stringValue = item.name ?? "";
-        self.account.stringValue = "using \(item.account)";
-        self.avatar.displayableId = ContactManager.instance.contact(for: .init(account: item.account, jid: item.jid, type: .buddy));
+        
+        self.contact = ContactManager.instance.contact(for: .init(account: item.account, jid: item.jid, type: .buddy));
     }
     
 }

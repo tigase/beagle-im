@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import Combine
 
 class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, NSTableViewDataSource, ChannelAwareProtocol {
     
@@ -37,28 +38,40 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
     private var participants: [MixParticipant] = [] {
         didSet {
             participantsTableViewHeightConstraint.constant = max(min(CGFloat(participants.count) * (24.0 + 4 + 3), 400.0), 0.0);
+            let changes = participants.calculateChanges(from: oldValue);
+            self.participantsTableView.beginUpdates();
+            if !changes.removed.isEmpty {
+                self.participantsTableView.removeRows(at: changes.removed, withAnimation: .effectFade);
+            }
+            if !changes.inserted.isEmpty {
+                self.participantsTableView.insertRows(at: changes.inserted, withAnimation: .effectFade);
+            }
+            self.participantsTableView.endUpdates();
         }
     }
     
     private let participantsDispatcher = QueueDispatcher(label: "participantsQueue");
     
+    private var cancellables: Set<AnyCancellable> = [];
+    
     override func viewWillAppear() {
-        NotificationCenter.default.addObserver(self, selector: #selector(participantsChanged(_:)), name: MixEventHandler.PARTICIPANTS_CHANGED, object: nil);
-        self.participants = self.channel!.participants.sorted(by: self.sortParticipants);
-        self.participantsTableView.reloadData();
+        self.channel.participantsPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] participants in
+            guard let that = self else {
+                return;
+            }
+            that.participants = participants.sorted(by: that.sortParticipants);
+        }).store(in: &cancellables);
+        
         inviteParticipantsButton.isHidden = !channel.has(permission: .changeConfig);
-        if !channel.has(permission: .changeConfig) {
-            manageParticipantsButton.isHidden = true;
-            let constraint = participantsTableView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -10);
-            constraint.priority = .required;
-            constraint.isActive = true;
-        }
+
+        let constraint = participantsTableView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -10);
+        constraint.priority = .required;
+        self.channel.permissionsPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] permissions in
+            self?.manageParticipantsButton.isHidden = !permissions.contains(.changeConfig);
+            constraint.isActive = !permissions.contains(.changeConfig);
+        }).store(in: &cancellables);
     }
-    
-    override func viewWillDisappear() {
-        NotificationCenter.default.removeObserver(self);
-    }
-    
+        
     func numberOfRows(in tableView: NSTableView) -> Int {
         return self.participants.count;
     }
@@ -69,49 +82,6 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
             return view;
         }
         return nil;
-    }
-    
-    @objc func participantsChanged(_ notification: Notification) {
-        guard let e = notification.object as? MixModule.ParticipantsChangedEvent else {
-            return;
-        }
-        self.participantsDispatcher.async {
-            guard var store = DispatchQueue.main.sync(execute: { () -> [MixParticipant]? in
-                guard self.channel.id == (e.channel as? Channel)?.id else {
-                    return nil;
-                }
-                return self.participants;
-            }) else {
-                return;
-            }
-            
-            let refresh = e.joined.filter({ p1 in store.first(where: { p2 in p2.id == p1.id }) != nil});
-            
-            let removeIds = e.left.map({ $0.id }) + refresh.map({ $0.id });
-            let removedIdx = removeIds.map({ id in store.firstIndex(where: { $0.id == id }) }).filter({ $0 != nil}).map({ $0! });
-            
-            store = store.filter({!removeIds.contains($0.id)});
-            
-            let added = e.joined.sorted(by: self.sortParticipants(p1:p2:));
-            var addedIdx: [Int] = [];
-            for item in added {
-                let idx = store.firstIndex(where: { p in !self.sortParticipants(p1: p, p2: item)}) ?? store.count;
-                store.insert(item, at: idx);
-                addedIdx.append(idx);
-            }
-            
-            DispatchQueue.main.async {
-                self.participants = store;
-                self.participantsTableView.beginUpdates();
-                if !removedIdx.isEmpty {
-                    self.participantsTableView.removeRows(at: IndexSet(removedIdx), withAnimation: .effectFade);
-                }
-                if !addedIdx.isEmpty {
-                    self.participantsTableView.insertRows(at: IndexSet(addedIdx), withAnimation: .effectFade);
-                }
-                self.participantsTableView.endUpdates();
-            }
-        }
     }
     
     func sortParticipants(p1: MixParticipant, p2: MixParticipant) -> Bool {
