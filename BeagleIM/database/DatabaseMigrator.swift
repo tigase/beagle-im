@@ -28,9 +28,9 @@ public class DatabaseMigrator: DatabaseSchemaMigrator {
     public let expectedVersion: Int = 12;
     
     public func upgrade(database: DatabaseWriter, newVersion version: Int) throws {
-        try loadSchema(to: database, fromFile: "/db-schema-\(version)");
+        try loadSchema(to: database, fromFile: "/db-schema-\(version).sql");
         
-        if version <= 11 {
+        if version == 11 {
             try cleanupDuplicatedEntries(database: database);
         }
         
@@ -78,7 +78,7 @@ public class DatabaseMigrator: DatabaseSchemaMigrator {
         print("trying to load SQL from file", resourcePath);
         if let dbSchema = try? String(contentsOfFile: resourcePath, encoding: String.Encoding.utf8) {
             print("read schema:", dbSchema);
-            try database.execute(dbSchema);
+            try database.executeQueries(dbSchema);
             print("loaded schema from file", fileName);
         } else {
             print("skipped loading schema from file");

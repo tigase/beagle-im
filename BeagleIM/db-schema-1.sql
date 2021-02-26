@@ -1,5 +1,3 @@
-BEGIN;
-
 CREATE TABLE IF NOT EXISTS chats (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     account TEXT NOT NULL COLLATE NOCASE,
@@ -112,7 +110,3 @@ CREATE TABLE IF NOT EXISTS caps_identities (
 CREATE INDEX IF NOT EXISTS caps_indentities_node_idx on caps_identities (
     node
 );
-
-COMMIT;
-
-PRAGMA user_version = 1;

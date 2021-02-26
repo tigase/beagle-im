@@ -1,5 +1,3 @@
-BEGIN;
-
 CREATE TABLE IF NOT EXISTS omemo_sessions (
     account TEXT NOT NULL COLLATE NOCASE,
     name TEXT NOT NULL,
@@ -41,7 +39,3 @@ CREATE TABLE IF NOT EXISTS omemo_signed_pre_keys (
 ALTER TABLE chats ADD COLUMN encryption TEXT;
 ALTER TABLE chat_history ADD COLUMN encryption int;
 ALTER TABLE chat_history ADD COLUMN fingerprint text;
-
-COMMIT;
-
-PRAGMA user_version = 3;

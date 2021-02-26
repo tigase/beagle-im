@@ -1,5 +1,3 @@
-BEGIN;
-
 CREATE TABLE IF NOT EXISTS chat_history_sync (
     id TEXT NOT NULL COLLATE NOCASE,
     account TEXT NOT NULL COLLATE NOCASE,
@@ -8,7 +6,3 @@ CREATE TABLE IF NOT EXISTS chat_history_sync (
     from_id TEXT,
     to_timestamp INTEGER NOT NULL
 );
-
-COMMIT;
-
-PRAGMA user_version = 10;
