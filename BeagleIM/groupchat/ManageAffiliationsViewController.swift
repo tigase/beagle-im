@@ -77,13 +77,13 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
         
         group.notify(queue: DispatchQueue.main, execute: {
             self.progressIndicator.stopAnimation(nil);
-            if !errors.isEmpty {
+            if let window = self.view.window, !errors.isEmpty {
                 let alert = NSAlert();
                 alert.icon = NSImage(named: NSImage.cautionName);
                 alert.messageText = "Authorization error";
                 alert.informativeText = "You are not authorized to view memeber list of this room.";
                 alert.addButton(withTitle: "OK");
-                alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
+                alert.beginSheetModal(for: window, completionHandler: { result in
                     self.close();
                 });
             }
