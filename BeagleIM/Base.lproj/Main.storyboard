@@ -478,7 +478,7 @@ CA
                                     <rect key="frame" x="0.0" y="0.0" width="303" height="606"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="firstColumnOnly" tableStyle="fullWidth" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" rowHeight="52" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" indentationMarkerFollowsCell="NO" autoresizesOutlineColumn="YES" outlineTableColumn="DEA-O0-PQ6" id="RNd-7b-gdr" customClass="ChatsListView" customModule="BeagleIM" customModuleProvider="target">
+                                        <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="firstColumnOnly" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" rowHeight="52" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" indentationMarkerFollowsCell="NO" autoresizesOutlineColumn="YES" outlineTableColumn="DEA-O0-PQ6" id="RNd-7b-gdr" customClass="ChatsListView" customModule="BeagleIM" customModuleProvider="target">
                                             <rect key="frame" x="0.0" y="0.0" width="303" height="606"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <size key="intercellSpacing" width="2" height="0.0"/>
@@ -517,9 +517,9 @@ CA
                                                                         <constraint firstAttribute="width" constant="22" id="jsY-Xn-xyW"/>
                                                                         <constraint firstAttribute="height" constant="22" id="pzy-wo-Ibu"/>
                                                                     </constraints>
-                                                                    <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="NSTouchBarAddDetailTemplate" imagePosition="only" alignment="center" continuous="YES" imageScaling="proportionallyUpOrDown" inset="2" id="LNb-VG-NLr">
+                                                                    <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="plus.circle" catalog="system" imagePosition="only" alignment="center" continuous="YES" imageScaling="proportionallyUpOrDown" inset="2" id="LNb-VG-NLr">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                                        <font key="font" metaFont="system"/>
+                                                                        <font key="font" metaFont="systemLight" size="13"/>
                                                                     </buttonCell>
                                                                     <color key="contentTintColor" red="0.99999600649999998" green="1" blue="1" alpha="0.86445552147239269" colorSpace="custom" customColorSpace="sRGB"/>
                                                                     <connections>
@@ -1017,7 +1017,7 @@ AAAAAAEGA
                                                 <constraint firstAttribute="width" constant="20" id="1Xs-C1-KSf"/>
                                                 <constraint firstAttribute="height" constant="20" id="VTc-IQ-JYD"/>
                                             </constraints>
-                                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="audioCall" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="UfN-ac-rpr">
+                                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="phone.fill" catalog="system" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="UfN-ac-rpr">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
@@ -1050,7 +1050,7 @@ AAAAAAEGA
                                                 <font key="font" metaFont="menu"/>
                                                 <menu key="menu" id="pYZ-o7-267">
                                                     <items>
-                                                        <menuItem title="Scripts" state="on" image="NSListViewTemplate" hidden="YES" id="yUL-qX-nrr">
+                                                        <menuItem title="Scripts" state="on" image="list.dash" catalog="system" hidden="YES" id="yUL-qX-nrr">
                                                             <modifierMask key="keyEquivalentModifierMask"/>
                                                         </menuItem>
                                                     </items>
@@ -1063,7 +1063,7 @@ AAAAAAEGA
                                                 <constraint firstAttribute="width" constant="20" id="5bj-k1-Zen"/>
                                                 <constraint firstAttribute="height" constant="20" id="8LT-ZX-c1R"/>
                                             </constraints>
-                                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSInfo" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="ceA-Pe-pIU">
+                                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="info.circle.fill" catalog="system" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="ceA-Pe-pIU">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
@@ -1110,15 +1110,15 @@ AAAAAAEGA
                             <progressIndicator hidden="YES" wantsLayer="YES" maxValue="100" controlSize="small" style="bar" translatesAutoresizingMaskIntoConstraints="NO" id="xMh-bV-LhL">
                                 <rect key="frame" x="0.0" y="26" width="361" height="12"/>
                             </progressIndicator>
-                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="FiK-DK-gMw" customClass="RoundButton" customModule="BeagleIM" customModuleProvider="target">
-                                <rect key="frame" x="4" y="6" width="18" height="18"/>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="FiK-DK-gMw">
+                                <rect key="frame" x="2" y="4" width="22" height="22"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="18" id="Hqu-HZ-gun"/>
-                                    <constraint firstAttribute="width" constant="18" id="mqr-NS-AAR"/>
+                                    <constraint firstAttribute="height" constant="22" id="Hqu-HZ-gun"/>
+                                    <constraint firstAttribute="width" constant="22" id="mqr-NS-AAR"/>
                                 </constraints>
-                                <buttonCell key="cell" type="roundRect" bezelStyle="roundedRect" image="NSAddTemplate" imagePosition="only" alignment="center" state="on" imageScaling="proportionallyUpOrDown" inset="2" id="ryi-wJ-njh">
+                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="plus.circle" catalog="system" imagePosition="only" alignment="center" state="on" imageScaling="proportionallyUpOrDown" inset="2" id="ryi-wJ-njh">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="system"/>
+                                    <font key="font" metaFont="systemLight" size="13"/>
                                 </buttonCell>
                                 <connections>
                                     <action selector="attachFile:" target="bJ4-ee-HmU" id="aiD-fG-EcW"/>
@@ -1135,7 +1135,7 @@ AAAAAAEGA
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" name="chatBackgroundColor"/>
-                                            <size key="minSize" width="272" height="14"/>
+                                            <size key="minSize" width="287" height="14"/>
                                             <size key="maxSize" width="100000" height="10000000"/>
                                             <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                         </textView>
@@ -1156,22 +1156,22 @@ AAAAAAEGA
                                 </scroller>
                             </scrollView>
                             <popUpButton translatesAutoresizingMaskIntoConstraints="NO" id="imk-OV-DnT">
-                                <rect key="frame" x="339" y="6" width="18" height="18"/>
+                                <rect key="frame" x="337" y="4" width="22" height="22"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="18" id="D2d-en-dQZ"/>
-                                    <constraint firstAttribute="width" constant="18" id="fd5-7k-XNi"/>
+                                    <constraint firstAttribute="height" constant="22" id="D2d-en-dQZ"/>
+                                    <constraint firstAttribute="width" constant="22" id="fd5-7k-XNi"/>
                                 </constraints>
-                                <popUpButtonCell key="cell" type="square" title="Item 1" bezelStyle="shadowlessSquare" imagePosition="only" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="border" transparent="YES" imageScaling="proportionallyUpOrDown" inset="2" pullsDown="YES" arrowPosition="noArrow" id="Xj5-M2-XVo">
+                                <popUpButtonCell key="cell" type="square" title="Item 1" bezelStyle="shadowlessSquare" imagePosition="only" alignment="left" lineBreakMode="truncatingTail" state="on" imageScaling="proportionallyUpOrDown" inset="2" pullsDown="YES" arrowPosition="noArrow" id="Xj5-M2-XVo">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="menu"/>
                                     <menu key="menu" id="Ghn-01-UNQ">
                                         <items>
-                                            <menuItem title="Item 1" state="on" image="NSLockLockedTemplate" hidden="YES" id="m28-rh-Gul"/>
-                                            <menuItem title="Default" image="NSMenuMixedStateTemplate" id="bPL-Uh-ElJ">
+                                            <menuItem title="Item 1" state="on" image="lock.fill" catalog="system" hidden="YES" id="m28-rh-Gul"/>
+                                            <menuItem title="Default" image="lock.circle" catalog="system" id="bPL-Uh-ElJ">
                                                 <modifierMask key="keyEquivalentModifierMask"/>
                                             </menuItem>
-                                            <menuItem title="Unencrypted" image="NSLockUnlockedTemplate" id="TZh-ZC-TSO"/>
-                                            <menuItem title="OMEMO" image="NSLockLockedTemplate" id="j8n-wt-QLZ"/>
+                                            <menuItem title="Unencrypted" image="lock.open.fill" catalog="system" id="TZh-ZC-TSO"/>
+                                            <menuItem title="OMEMO" image="lock.fill" catalog="system" id="j8n-wt-QLZ"/>
                                         </items>
                                     </menu>
                                 </popUpButtonCell>
@@ -1182,23 +1182,23 @@ AAAAAAEGA
                         </subviews>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="W9i-K3-tjY" secondAttribute="trailing" id="0kI-Cp-IPh"/>
-                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="FiK-DK-gMw" secondAttribute="bottom" constant="4" id="0r0-ah-oMk"/>
-                            <constraint firstItem="FiK-DK-gMw" firstAttribute="top" secondItem="eQY-WT-lv4" secondAttribute="top" constant="2" id="1dH-nr-bnn"/>
-                            <constraint firstItem="imk-OV-DnT" firstAttribute="leading" secondItem="eQY-WT-lv4" secondAttribute="trailing" constant="4" id="EET-Pb-d7M"/>
-                            <constraint firstItem="eQY-WT-lv4" firstAttribute="leading" secondItem="FiK-DK-gMw" secondAttribute="trailing" constant="4" id="KGs-ea-WhJ"/>
+                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="FiK-DK-gMw" secondAttribute="bottom" constant="2" id="0r0-ah-oMk"/>
+                            <constraint firstItem="FiK-DK-gMw" firstAttribute="top" secondItem="eQY-WT-lv4" secondAttribute="top" id="1dH-nr-bnn"/>
+                            <constraint firstItem="imk-OV-DnT" firstAttribute="leading" secondItem="eQY-WT-lv4" secondAttribute="trailing" constant="2" id="EET-Pb-d7M"/>
+                            <constraint firstItem="eQY-WT-lv4" firstAttribute="leading" secondItem="FiK-DK-gMw" secondAttribute="trailing" constant="2" id="KGs-ea-WhJ"/>
                             <constraint firstItem="xMh-bV-LhL" firstAttribute="bottom" secondItem="W9i-K3-tjY" secondAttribute="bottom" id="LGI-RD-JUr"/>
                             <constraint firstItem="W9i-K3-tjY" firstAttribute="leading" secondItem="XWz-tH-btE" secondAttribute="leading" id="NOR-9c-Ej6"/>
                             <constraint firstItem="W9i-K3-tjY" firstAttribute="top" secondItem="FRG-k1-QUa" secondAttribute="bottom" id="VMt-Yf-hzK"/>
-                            <constraint firstItem="imk-OV-DnT" firstAttribute="top" secondItem="eQY-WT-lv4" secondAttribute="top" constant="2" id="a33-Jc-dFc"/>
+                            <constraint firstItem="imk-OV-DnT" firstAttribute="top" secondItem="eQY-WT-lv4" secondAttribute="top" id="a33-Jc-dFc"/>
                             <constraint firstItem="FRG-k1-QUa" firstAttribute="leading" secondItem="XWz-tH-btE" secondAttribute="leading" id="anJ-EZ-b1v"/>
                             <constraint firstItem="xMh-bV-LhL" firstAttribute="leading" secondItem="W9i-K3-tjY" secondAttribute="leading" id="fc6-VI-E31"/>
-                            <constraint firstAttribute="trailing" secondItem="imk-OV-DnT" secondAttribute="trailing" constant="4" id="fvm-o6-ncJ"/>
+                            <constraint firstAttribute="trailing" secondItem="imk-OV-DnT" secondAttribute="trailing" constant="2" id="fvm-o6-ncJ"/>
                             <constraint firstItem="FRG-k1-QUa" firstAttribute="top" secondItem="XWz-tH-btE" secondAttribute="top" id="g43-6o-9Bd"/>
                             <constraint firstItem="eQY-WT-lv4" firstAttribute="top" secondItem="W9i-K3-tjY" secondAttribute="bottom" id="ilb-dN-VPk"/>
-                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="imk-OV-DnT" secondAttribute="bottom" constant="4" id="qOI-bg-66n"/>
+                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="imk-OV-DnT" secondAttribute="bottom" constant="2" id="qOI-bg-66n"/>
                             <constraint firstAttribute="bottom" secondItem="eQY-WT-lv4" secondAttribute="bottom" constant="4" id="tie-AY-KmU"/>
                             <constraint firstItem="xMh-bV-LhL" firstAttribute="trailing" secondItem="W9i-K3-tjY" secondAttribute="trailing" id="xPM-fH-owK"/>
-                            <constraint firstItem="FiK-DK-gMw" firstAttribute="leading" secondItem="XWz-tH-btE" secondAttribute="leading" constant="4" id="y8V-Mp-vge"/>
+                            <constraint firstItem="FiK-DK-gMw" firstAttribute="leading" secondItem="XWz-tH-btE" secondAttribute="leading" constant="2" id="y8V-Mp-vge"/>
                             <constraint firstAttribute="trailing" secondItem="FRG-k1-QUa" secondAttribute="trailing" id="zRg-xX-6hh"/>
                         </constraints>
                         <userDefinedRuntimeAttributes>
@@ -1395,7 +1395,7 @@ AAAAAAEGA
                                     <constraint firstAttribute="height" constant="18" id="7ZT-rC-yDQ"/>
                                     <constraint firstAttribute="width" constant="18" id="7fx-UR-fj2"/>
                                 </constraints>
-                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSRefreshFreestandingTemplate" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="Q8b-bd-K6L">
+                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="arrow.clockwise" catalog="system" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="Q8b-bd-K6L">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
@@ -1472,7 +1472,7 @@ AAAAAAEGA
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Q7w-ER-stg">
-                                <rect key="frame" x="18" y="356" width="109" height="16"/>
+                                <rect key="frame" x="18" y="352" width="109" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Open groupchat" id="A8X-bI-x0h">
                                     <font key="font" metaFont="systemBold"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -1480,7 +1480,7 @@ AAAAAAEGA
                                 </textFieldCell>
                             </textField>
                             <button horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="0XX-Ed-PIO">
-                                <rect key="frame" x="377" y="351" width="27" height="26"/>
+                                <rect key="frame" x="386" y="347" width="27" height="26"/>
                                 <buttonCell key="cell" type="disclosure" bezelStyle="roundedDisclosure" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="K7f-Za-GPk">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES" changeBackground="YES" changeGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -1490,7 +1490,7 @@ AAAAAAEGA
                                 </connections>
                             </button>
                             <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="UNN-jB-M1F">
-                                <rect key="frame" x="17" y="324" width="387" height="25"/>
+                                <rect key="frame" x="17" y="320" width="396" height="25"/>
                                 <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" pullsDown="YES" id="XJd-8J-bvH">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="menu"/>
@@ -1501,7 +1501,7 @@ AAAAAAEGA
                                 </connections>
                             </popUpButton>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="3xe-hD-Jl4">
-                                <rect key="frame" x="20" y="298" width="381" height="21"/>
+                                <rect key="frame" x="20" y="294" width="390" height="21"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Enter JID of conference component" drawsBackground="YES" id="vnL-pc-fd7">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -1509,7 +1509,7 @@ AAAAAAEGA
                                 </textFieldCell>
                             </textField>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="PJf-lh-cWp">
-                                <rect key="frame" x="20" y="269" width="381" height="21"/>
+                                <rect key="frame" x="20" y="265" width="390" height="21"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Find room or enter new name to create room" drawsBackground="YES" id="TWr-Qh-l4X">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -1517,7 +1517,7 @@ AAAAAAEGA
                                 </textFieldCell>
                             </textField>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="KiB-rI-rmC">
-                                <rect key="frame" x="20" y="240" width="381" height="21"/>
+                                <rect key="frame" x="20" y="236" width="390" height="21"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" placeholderString="Nickname (required)" drawsBackground="YES" id="xYL-dD-FdP">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -1525,19 +1525,19 @@ AAAAAAEGA
                                 </textFieldCell>
                             </textField>
                             <scrollView autohidesScrollers="YES" horizontalLineScroll="39" horizontalPageScroll="10" verticalLineScroll="39" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AnO-yI-1ul">
-                                <rect key="frame" x="0.0" y="48" width="421" height="184"/>
+                                <rect key="frame" x="0.0" y="48" width="430" height="180"/>
                                 <clipView key="contentView" drawsBackground="NO" id="bct-ik-0Nb">
-                                    <rect key="frame" x="1" y="1" width="419" height="182"/>
+                                    <rect key="frame" x="1" y="1" width="428" height="178"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="37" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" id="2D2-3c-csM">
-                                            <rect key="frame" x="0.0" y="0.0" width="419" height="182"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="428" height="178"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <size key="intercellSpacing" width="3" height="2"/>
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                             <tableColumns>
-                                                <tableColumn width="416" minWidth="40" maxWidth="1000" id="Zk3-zW-wam">
+                                                <tableColumn width="407" minWidth="40" maxWidth="1000" id="Zk3-zW-wam">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -1550,11 +1550,11 @@ AAAAAAEGA
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView identifier="mucRoomView" misplaced="YES" id="f8U-gl-Od4" customClass="MucRoomView" customModule="BeagleIM" customModuleProvider="target">
-                                                            <rect key="frame" x="1" y="1" width="416" height="37"/>
+                                                            <rect key="frame" x="1" y="1" width="407" height="37"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="78b-zt-T9s">
-                                                                    <rect key="frame" x="6" y="20" width="404" height="16"/>
+                                                                    <rect key="frame" x="6" y="20" width="395" height="16"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" truncatesLastVisibleLine="YES" enabled="NO" sendsActionOnEndEditing="YES" alignment="left" title="Room name" id="Fma-gL-AKS">
                                                                         <font key="font" metaFont="systemMedium" size="13"/>
                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -1562,7 +1562,7 @@ AAAAAAEGA
                                                                     </textFieldCell>
                                                                 </textField>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="vhc-Lp-ERo" userLabel="Room JID">
-                                                                    <rect key="frame" x="6" y="4" width="404" height="14"/>
+                                                                    <rect key="frame" x="6" y="4" width="395" height="14"/>
                                                                     <textFieldCell key="cell" truncatesLastVisibleLine="YES" enabled="NO" sendsActionOnEndEditing="YES" alignment="left" title="room@muc.example.com" id="Xf2-T6-e7X">
                                                                         <font key="font" metaFont="message" size="11"/>
                                                                         <color key="textColor" name="systemGrayColor" catalog="System" colorSpace="catalog"/>
@@ -1602,10 +1602,10 @@ AAAAAAEGA
                                 </scroller>
                             </scrollView>
                             <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="kWE-uo-8q8">
-                                <rect key="frame" x="195" y="124" width="32" height="32"/>
+                                <rect key="frame" x="199" y="122" width="32" height="32"/>
                             </progressIndicator>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="hBx-ct-NxP">
-                                <rect key="frame" x="341" y="10" width="66" height="32"/>
+                                <rect key="frame" x="350" y="10" width="66" height="32"/>
                                 <buttonCell key="cell" type="push" title="Join" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Lhm-KA-rbR">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -1615,7 +1615,7 @@ AAAAAAEGA
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="irz-k8-Fto">
-                                <rect key="frame" x="261" y="10" width="82" height="32"/>
+                                <rect key="frame" x="270" y="10" width="82" height="32"/>
                                 <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="ODq-pM-Ylf">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -2582,8 +2582,8 @@ AAAAAAEGA
                                             </textFieldCell>
                                         </textField>
                                         <button translatesAutoresizingMaskIntoConstraints="NO" id="Sra-s5-1zD">
-                                            <rect key="frame" x="373" y="35" width="18" height="18"/>
-                                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSAddTemplate" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="Qe3-oq-KJN">
+                                            <rect key="frame" x="369" y="35" width="18" height="18"/>
+                                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="plus" catalog="system" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="Qe3-oq-KJN">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
@@ -2592,12 +2592,12 @@ AAAAAAEGA
                                             </connections>
                                         </button>
                                         <button translatesAutoresizingMaskIntoConstraints="NO" id="7xK-y9-tDx">
-                                            <rect key="frame" x="395" y="34" width="20" height="20"/>
+                                            <rect key="frame" x="391" y="34" width="20" height="20"/>
                                             <constraints>
                                                 <constraint firstAttribute="width" constant="20" id="Ya6-0L-MZK"/>
                                                 <constraint firstAttribute="height" constant="20" id="sz5-Ch-knR"/>
                                             </constraints>
-                                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSUser" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="uDh-Jo-uoa">
+                                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="person.fill" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="uDh-Jo-uoa">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
@@ -2606,9 +2606,8 @@ AAAAAAEGA
                                             </connections>
                                         </button>
                                         <popUpButton wantsLayer="YES" alphaValue="0.59999999999999998" translatesAutoresizingMaskIntoConstraints="NO" id="JOG-WH-1Aj">
-                                            <rect key="frame" x="439" y="34" width="40" height="20"/>
+                                            <rect key="frame" x="440" y="34" width="39" height="20"/>
                                             <constraints>
-                                                <constraint firstAttribute="width" constant="40" id="SbH-uF-Gl9"/>
                                                 <constraint firstAttribute="height" constant="20" id="bo5-df-VEf"/>
                                             </constraints>
                                             <popUpButtonCell key="cell" type="bevel" bezelStyle="regularSquare" imagePosition="only" alignment="left" lineBreakMode="truncatingTail" imageScaling="proportionallyUpOrDown" inset="2" pullsDown="YES" autoenablesItems="NO" altersStateOfSelectedItem="NO" selectedItem="V28-Vj-HQj" id="Ssi-vh-g5S">
@@ -2616,7 +2615,7 @@ AAAAAAEGA
                                                 <font key="font" metaFont="menu"/>
                                                 <menu key="menu" autoenablesItems="NO" id="z2A-hv-0Vn">
                                                     <items>
-                                                        <menuItem image="NSActionTemplate" hidden="YES" id="V28-Vj-HQj">
+                                                        <menuItem image="ellipsis.circle" catalog="system" hidden="YES" id="V28-Vj-HQj">
                                                             <attributedString key="attributedTitle"/>
                                                         </menuItem>
                                                         <menuItem title="Configure" id="UOM-RU-Qv2">
@@ -2634,11 +2633,11 @@ AAAAAAEGA
                                             </popUpButtonCell>
                                         </popUpButton>
                                         <button translatesAutoresizingMaskIntoConstraints="NO" id="aLG-u7-09c">
-                                            <rect key="frame" x="419" y="34" width="20" height="20"/>
+                                            <rect key="frame" x="415" y="34" width="20" height="20"/>
                                             <constraints>
                                                 <constraint firstAttribute="width" secondItem="aLG-u7-09c" secondAttribute="height" multiplier="1:1" id="c0c-FJ-rub"/>
                                             </constraints>
-                                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSInfo" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="Lrl-SC-gb0">
+                                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="info.circle.fill" catalog="system" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="Lrl-SC-gb0">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
@@ -2671,7 +2670,7 @@ AAAAAAEGA
                                         <constraint firstAttribute="bottom" secondItem="mMG-Ae-wje" secondAttribute="bottom" id="kGJ-8G-7ca"/>
                                         <constraint firstItem="w1S-5v-cY4" firstAttribute="trailing" secondItem="JOG-WH-1Aj" secondAttribute="trailing" id="kNI-Wh-O2c"/>
                                         <constraint firstAttribute="trailing" secondItem="JOG-WH-1Aj" secondAttribute="trailing" constant="10" id="l8e-Ch-Kzw"/>
-                                        <constraint firstItem="JOG-WH-1Aj" firstAttribute="leading" secondItem="aLG-u7-09c" secondAttribute="trailing" id="q79-pu-Ege"/>
+                                        <constraint firstItem="JOG-WH-1Aj" firstAttribute="leading" secondItem="aLG-u7-09c" secondAttribute="trailing" constant="5" id="q79-pu-Ege"/>
                                         <constraint firstItem="aLG-u7-09c" firstAttribute="width" secondItem="7xK-y9-tDx" secondAttribute="width" id="uaZ-Ht-ZIy"/>
                                         <constraint firstItem="JOG-WH-1Aj" firstAttribute="top" secondItem="7xK-y9-tDx" secondAttribute="top" id="uzk-Yc-1T9"/>
                                         <constraint firstItem="Sra-s5-1zD" firstAttribute="width" secondItem="7xK-y9-tDx" secondAttribute="width" constant="-2" id="w7u-kn-wG8"/>
@@ -2827,15 +2826,15 @@ AAAAAAEGA
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
-                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ehh-GE-Ait" customClass="RoundButton" customModule="BeagleIM" customModuleProvider="target">
-                                <rect key="frame" x="4" y="6" width="18" height="18"/>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ehh-GE-Ait">
+                                <rect key="frame" x="2" y="4" width="22" height="22"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="18" id="awg-Ob-jC4"/>
-                                    <constraint firstAttribute="height" constant="18" id="t0l-nk-u7c"/>
+                                    <constraint firstAttribute="width" constant="22" id="awg-Ob-jC4"/>
+                                    <constraint firstAttribute="height" constant="22" id="t0l-nk-u7c"/>
                                 </constraints>
-                                <buttonCell key="cell" type="roundRect" bezelStyle="roundedRect" image="NSAddTemplate" imagePosition="overlaps" alignment="center" state="on" imageScaling="proportionallyDown" inset="2" id="Nku-PV-0Eh">
+                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="plus.circle" catalog="system" imagePosition="overlaps" alignment="center" state="on" imageScaling="proportionallyUpOrDown" inset="2" id="Nku-PV-0Eh">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="cellTitle"/>
+                                    <font key="font" metaFont="systemLight" size="13"/>
                                 </buttonCell>
                                 <connections>
                                     <action selector="attachFile:" target="vht-52-XAK" id="JeY-XV-5ON"/>
@@ -2843,15 +2842,15 @@ AAAAAAEGA
                             </button>
                         </subviews>
                         <constraints>
-                            <constraint firstItem="17f-xV-Jus" firstAttribute="top" secondItem="Ehh-GE-Ait" secondAttribute="top" constant="-2" id="0Z8-AC-OOJ"/>
+                            <constraint firstItem="17f-xV-Jus" firstAttribute="top" secondItem="Ehh-GE-Ait" secondAttribute="top" id="0Z8-AC-OOJ"/>
                             <constraint firstItem="0O6-Pu-tW4" firstAttribute="leading" secondItem="4Im-fO-8dU" secondAttribute="leading" id="1Q0-ar-aLM"/>
                             <constraint firstItem="17f-xV-Jus" firstAttribute="top" secondItem="FRz-b3-39X" secondAttribute="bottom" constant="4" id="Bmu-wh-kNv"/>
-                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="Ehh-GE-Ait" secondAttribute="bottom" constant="4" id="BnR-PR-gLs"/>
+                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="Ehh-GE-Ait" secondAttribute="bottom" constant="2" id="BnR-PR-gLs"/>
                             <constraint firstItem="UFg-qL-DYr" firstAttribute="top" secondItem="0O6-Pu-tW4" secondAttribute="bottom" id="Ccf-hR-bv3"/>
-                            <constraint firstItem="17f-xV-Jus" firstAttribute="leading" secondItem="Ehh-GE-Ait" secondAttribute="trailing" constant="4" id="Env-Sr-kGe"/>
+                            <constraint firstItem="17f-xV-Jus" firstAttribute="leading" secondItem="Ehh-GE-Ait" secondAttribute="trailing" constant="2" id="Env-Sr-kGe"/>
                             <constraint firstItem="UFg-qL-DYr" firstAttribute="leading" secondItem="4Im-fO-8dU" secondAttribute="leading" id="YGY-9N-MQo"/>
                             <constraint firstItem="FRz-b3-39X" firstAttribute="trailing" secondItem="UFg-qL-DYr" secondAttribute="trailing" id="Yra-Cc-HpO"/>
-                            <constraint firstItem="Ehh-GE-Ait" firstAttribute="leading" secondItem="4Im-fO-8dU" secondAttribute="leading" constant="4" id="bA0-zc-8en"/>
+                            <constraint firstItem="Ehh-GE-Ait" firstAttribute="leading" secondItem="4Im-fO-8dU" secondAttribute="leading" constant="2" id="bA0-zc-8en"/>
                             <constraint firstItem="17f-xV-Jus" firstAttribute="top" secondItem="UFg-qL-DYr" secondAttribute="bottom" constant="4" id="fko-gO-3p6"/>
                             <constraint firstAttribute="bottom" secondItem="17f-xV-Jus" secondAttribute="bottom" constant="4" id="iZR-LW-nir"/>
                             <constraint firstAttribute="trailing" secondItem="UFg-qL-DYr" secondAttribute="trailing" id="jYX-3V-Hhf"/>
@@ -2877,6 +2876,7 @@ AAAAAAEGA
                         <outlet property="participantsButton" destination="7xK-y9-tDx" id="IWA-jh-yxQ"/>
                         <outlet property="participantsTableView" destination="9Zj-K6-yAz" id="E07-d3-ZxL"/>
                         <outlet property="settingsButtin" destination="JOG-WH-1Aj" id="JG9-zY-unN"/>
+                        <outlet property="settingsButtinLeadingConstraint" destination="q79-pu-Ege" id="0eY-Yw-NOh"/>
                         <outlet property="sharingButton" destination="Ehh-GE-Ait" id="WGG-3U-x9w"/>
                         <outlet property="sharingProgressBar" destination="FRz-b3-39X" id="qC1-H9-YMf"/>
                         <outlet property="sidebarWidthConstraint" destination="yeq-GJ-qRd" id="cKP-FH-y24"/>
@@ -3756,22 +3756,25 @@ Gw
         <segue reference="ghz-i8-iKC"/>
     </inferredMetricsTieBreakers>
     <resources>
-        <image name="NSActionTemplate" width="14" height="14"/>
         <image name="NSAddTemplate" width="11" height="11"/>
         <image name="NSCaution" width="32" height="32"/>
         <image name="NSEveryone" width="32" height="32"/>
-        <image name="NSInfo" width="32" height="32"/>
-        <image name="NSListViewTemplate" width="14" height="10"/>
         <image name="NSLockLockedTemplate" width="10" height="14"/>
         <image name="NSLockUnlockedTemplate" width="10" height="14"/>
-        <image name="NSMenuMixedStateTemplate" width="10" height="2"/>
-        <image name="NSRefreshFreestandingTemplate" width="14" height="14"/>
         <image name="NSRemoveTemplate" width="11" height="11"/>
         <image name="NSStopProgressFreestandingTemplate" width="14" height="14"/>
         <image name="NSStopProgressTemplate" width="11" height="11"/>
-        <image name="NSTouchBarAddDetailTemplate" width="18" height="30"/>
-        <image name="NSUser" width="32" height="32"/>
-        <image name="audioCall" width="30" height="30"/>
+        <image name="arrow.clockwise" catalog="system" width="14" height="16"/>
+        <image name="ellipsis.circle" catalog="system" width="15" height="15"/>
+        <image name="info.circle.fill" catalog="system" width="15" height="15"/>
+        <image name="list.dash" catalog="system" width="16" height="11"/>
+        <image name="lock.circle" catalog="system" width="15" height="15"/>
+        <image name="lock.fill" catalog="system" width="14" height="15"/>
+        <image name="lock.open.fill" catalog="system" width="16" height="15"/>
+        <image name="person.fill" width="108" height="128"/>
+        <image name="phone.fill" catalog="system" width="15" height="14"/>
+        <image name="plus" catalog="system" width="14" height="13"/>
+        <image name="plus.circle" catalog="system" width="15" height="15"/>
         <image name="videoCall" width="30" height="30"/>
         <namedColor name="chatBackgroundColor">
             <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

@@ -152,6 +152,9 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     }
     
     override func viewDidLoad() {
+        if #available(macOS 11.0, *) {
+            self.outlineView.style = .fullWidth;
+        }
         self.invitationGroup = InvitationGroup(delegate: self);
         Settings.$commonChatsList.sink(receiveValue: { [weak self] value in
             guard let that = self else {

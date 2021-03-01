@@ -34,6 +34,8 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     @IBOutlet var participantsButton: NSButton!;
     @IBOutlet var actionsButton: NSPopUpButton!;
 
+    @IBOutlet var actionsButtonLeadConstraint: NSLayoutConstraint!;
+    
     private var cancellables: Set<AnyCancellable> = [];
     
     var channel: Channel! {
@@ -43,13 +45,11 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     override func viewDidLoad() {
         super.viewDidLoad();
         
-        let cgRef = infoButton.image!.cgImage(forProposedRect: nil, context: nil, hints: nil);
-        let representation = NSBitmapImageRep(cgImage: cgRef!);
-        let newRep = representation.converting(to: .genericGray, renderingIntent: .default);
-        infoButton.image = NSImage(cgImage: newRep!.cgImage!, size: infoButton.frame.size);
-        buttonToGrayscale(button: infoButton, template: false);
-        buttonToGrayscale(button: participantsButton, template: true);
-        
+        if #available(macOS 11.0, *) {
+        } else {
+            NSLayoutConstraint.activate([self.actionsButton.widthAnchor.constraint(equalToConstant: 40)]);
+            actionsButtonLeadConstraint.constant = 0;
+        }
     }
     
     override func viewWillAppear() {
@@ -243,15 +243,6 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
                 })
             }
         });
-    }
-
-    private func buttonToGrayscale(button: NSButton, template: Bool) {
-        let cgRef = button.image!.cgImage(forProposedRect: nil, context: nil, hints: nil);
-        let representation = NSBitmapImageRep(cgImage: cgRef!);
-        let newRep = representation.converting(to: .genericGray, renderingIntent: .default);
-        let img = NSImage(cgImage: newRep!.cgImage!, size: NSSize(width: button.frame.size.height, height: button.frame.size.height));
-        img.isTemplate = template;
-        button.image = img;
     }
 
     override func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {

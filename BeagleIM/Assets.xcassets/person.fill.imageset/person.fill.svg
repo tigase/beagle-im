@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   width="108"
+   height="128"
+   id="svg13"
+   sodipodi:docname="person.fill.svg"
+   inkscape:version="1.0.1 (c497b03c, 2020-09-10)">
+  <!--glyph: "uni10026A.medium", point size: 100.000000, font version: "Version 16.0d18e1", template writer version: "8"-->
+  <g
+     id="Regular-M"
+     transform="matrix(1 0 0 1 0 100)">
+    <path
+       d="m 53.5645,-35.7422 c 10.4492,0 19.5312,-9.375 19.5312,-21.582 0,-12.0606 -9.082,-20.9961 -19.5312,-20.9961 -10.4493,0 -19.5313,9.1308 -19.5313,21.0937 0,12.1094 9.0332,21.4844 19.5313,21.4844 z M 22.8516,9.47266 h 61.3281 c 7.7148,0 10.4492,-2.19727 10.4492,-6.49414 0,-12.59766 -15.7715,-29.98052 -41.1133,-29.98052 -25.2929,0 -41.0644,17.38286 -41.0644,29.98052 0,4.29687 2.7343,6.49414 10.4004,6.49414 z"
+       id="path10" />
+  </g>
+</svg>

@@ -28,6 +28,9 @@ class ConversationLogController: AbstractConversationLogController, NSTableViewD
     
     override func viewDidLoad() {
         super.viewDidLoad();
+        if #available(macOS 11.0, *) {
+            self.tableView.style = .fullWidth;
+        }
         self.tableView.delegate = self;
     }
     

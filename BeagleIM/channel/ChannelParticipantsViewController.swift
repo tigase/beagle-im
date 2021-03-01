@@ -54,6 +54,12 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
     
     private var cancellables: Set<AnyCancellable> = [];
     
+    override func viewDidLoad() {
+        if #available(macOS 11.0, *) {
+            self.participantsTableView.style = .fullWidth;
+        }
+    }
+    
     override func viewWillAppear() {
         self.channel.participantsPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] participants in
             guard let that = self else {

@@ -34,6 +34,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     @IBOutlet var participantsButton: NSButton!;
     @IBOutlet var infoButton: NSButton!;
     @IBOutlet var settingsButtin: NSPopUpButton!;
+    @IBOutlet var settingsButtinLeadingConstraint : NSLayoutConstraint!;
     
     @IBOutlet var sidebarWidthConstraint: NSLayoutConstraint!;
     @IBOutlet var participantsTableView: NSTableView!;
@@ -61,6 +62,12 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     }
     
     override func viewDidLoad() {
+        if #available(macOS 11.0, *) {
+            self.participantsTableView.style = .fullWidth;
+        } else {
+            NSLayoutConstraint.activate([self.settingsButtin.widthAnchor.constraint(equalToConstant: 40)]);
+            settingsButtinLeadingConstraint.constant = 0;
+        }
         self.participantsContainer = GroupchatParticipantsContainer(delegate: self);
         self.participantsContainer?.tableView = self.participantsTableView;
         self.participantsContainer?.room = self.room;
@@ -89,8 +96,6 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
 
         sidebarWidthConstraint.constant = Settings.showRoomDetailsSidebar ? 200 : 0;
         avatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
-        buttonToGrayscale(button: participantsButton, template: true);
-        buttonToGrayscale(button: infoButton, template: false);
     }
     
     override func viewDidDisappear() {
@@ -108,14 +113,6 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         }).eraseToAnyPublisher();
     }
     
-    private func buttonToGrayscale(button: NSButton, template: Bool) {
-        let cgRef = button.image!.cgImage(forProposedRect: nil, context: nil, hints: nil);
-        let representation = NSBitmapImageRep(cgImage: cgRef!);
-        let newRep = representation.converting(to: .genericGray, renderingIntent: .default);
-        let img = NSImage(cgImage: newRep!.cgImage!, size: button.frame.size);
-        img.isTemplate = template;
-        button.image = img;
-    }
     
     fileprivate func refreshPermissions() {
         let presence = self.room.occupant(nickname: self.room.nickname);
