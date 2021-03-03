@@ -88,6 +88,8 @@ class BaseChatCellView: NSTableCellView {
                 self.state?.stringValue = "\u{1f4e4}";
             case .outgoing_delivered:
                 self.state?.stringValue = "\u{2713}";
+            case .outgoing_read:
+                self.state?.stringValue = "🔖";
             case .outgoing_error, .outgoing_error_unread:
                 self.state?.stringValue = "\u{203c}";
             default:

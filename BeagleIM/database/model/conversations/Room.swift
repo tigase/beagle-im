@@ -105,6 +105,10 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
         super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
     }
 
+    public func isLocalParticipant(jid: JID) -> Bool {
+        return account == jid.bareJid || (roomJid == jid.bareJid && nickname == jid.resource);
+    }
+    
     public var occupants: [MucOccupant] {
         return dispatcher.sync {
             return self.occupantsStore.occupants;

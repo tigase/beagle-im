@@ -118,6 +118,10 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         }).store(in: &cancellables);
     }
         
+    public func isLocalParticipant(jid: JID) -> Bool {
+        return account == jid.bareJid || (channelJid == jid.bareJid && participantId == jid.resource);
+    }
+    
     public override func updateOptions(_ fn: @escaping (inout ChannelOptions) -> Void) {
         super.updateOptions(fn);
         DispatchQueue.main.async {

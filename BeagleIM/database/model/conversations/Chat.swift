@@ -47,7 +47,10 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         let contact = ContactManager.instance.contact(for: .init(account: context.userBareJid, jid: jid, type: .buddy));
         super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options, displayableId: contact);
     }
-        
+    
+    public func isLocalParticipant(jid: JID) -> Bool {
+        return account == jid.bareJid;
+    }
     
     func changeChatState(state: ChatState) -> Message? {
         guard localChatState != state else {
@@ -99,6 +102,8 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
     public override func createMessage(text: String, id: String, type: StanzaType) -> Message {
         let msg = super.createMessage(text: text, id: id, type: type);
         msg.chatState = .active;
+        msg.isMarkable = true;
+        msg.messageDelivery = .request;
         self.localChatState = .active;
         return msg;
     }

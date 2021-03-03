@@ -319,9 +319,11 @@ class XmppService {
         _ = client.modulesManager.register(messageModule);
         
         _ = client.modulesManager.register(MessageCarbonsModule());
-        _ = client.modulesManager.register(MessageDeliveryReceiptsModule());
         _ = client.modulesManager.register(MessageArchiveManagementModule());
-        
+
+        _ = client.modulesManager.register(MessageDeliveryReceiptsModule());
+        _ = client.modulesManager.register(ChatMarkersModule());
+
         _ = client.modulesManager.register(HttpFileUploadModule());
         
         _ = client.modulesManager.register(RosterModule(rosterManager: RosterManagerBase(store: DBRosterStore.instance)));

@@ -122,8 +122,17 @@ class MessageEventHandler: XmppServiceEventHandler {
             DBChatHistoryStore.instance.append(for: e.chat as! Chat, message: e.message, source: .stream);
         }).store(in: &cancellables);
         client.module(.messageDeliveryReceipts).receiptsPublisher.sink(receiveValue: { receipt in
-            let conversation: ConversationKey = DBChatStore.instance.conversation(for: account, with: receipt.jid.bareJid) ?? ConversationKeyItem(account: account, jid: receipt.jid.bareJid);
+            guard let conversation = MessageEventHandler.conversationKey(for: receipt.message, on: account) else {
+                return;
+            }
             DBChatHistoryStore.instance.updateItemState(for: conversation, stanzaId: receipt.messageId, from: .outgoing, to: .outgoing_delivered);
+        }).store(in: &cancellables);
+        client.context.module(.chatMarkers).markersPublisher.sink(receiveValue: { marker in
+            guard let conversation = MessageEventHandler.conversationKey(for: marker.message, on: account), let sender = marker.message.from else {
+                return;
+            }
+            
+            DBChatHistoryStore.instance.mark(conversation: conversation, with: marker.marker, from: sender);
         }).store(in: &cancellables);
         client.module(.messageCarbons).carbonsPublisher.sink(receiveValue: { carbon in
             let conversation: ConversationKey = DBChatStore.instance.conversation(for: account, with: carbon.jid.bareJid) ?? ConversationKeyItem(account: account, jid: carbon.jid.bareJid);
@@ -137,12 +146,9 @@ class MessageEventHandler: XmppServiceEventHandler {
             MessageEventHandler.syncMessagesScheduled(for: client);
         }).store(in: &cancellables);
         client.module(.mam).archivedMessagesPublisher.sink(receiveValue: { archived in
-            guard let from = archived.message.from?.bareJid, let to = archived.message.to?.bareJid else {
+            guard let conversation = MessageEventHandler.conversationKey(for: archived.message, on: account) else {
                 return;
             }
-            let jid = account != from ? from : to;
-            let conversation: ConversationKey = DBChatStore.instance.conversation(for: account, with: jid) ?? ConversationKeyItem(account: account, jid: jid);
-            
             DBChatHistoryStore.instance.append(for: conversation, message: archived.message, source: .archive(source: archived.source, version: archived.query.version, messageId: archived.messageId, timestamp: archived.timestamp));
         }).store(in: &cancellables);
         client.module(.messageCarbons).$isAvailable.filter({ $0 }).sink(receiveValue: { [weak client] _ in
@@ -159,6 +165,15 @@ class MessageEventHandler: XmppServiceEventHandler {
         }
     }
     
+    static func conversationKey(for message: Message, on account: BareJID) -> ConversationKey? {
+        guard let from = message.from?.bareJid, let to = message.to?.bareJid else {
+            return nil;
+        }
+        
+        let jid = account != from ? from : to;
+        
+        return DBChatStore.instance.conversation(for: account, with: jid) ?? ConversationKeyItem(account: account, jid: jid);
+    }
 
     static func calculateDirection(for conversation: ConversationKey, direction: MessageDirection, sender: ConversationEntrySender) -> MessageDirection {
         switch sender {

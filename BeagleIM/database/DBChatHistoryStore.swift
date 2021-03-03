@@ -591,19 +591,36 @@ class DBChatHistoryStore {
         self.updateItemState(for: conversation, itemId: msgId, from: oldState, to: newState, withTimestamp: timestamp);
     }
 
-    open func updateItemState(for conversation: ConversationKey, itemId msgId: Int, from oldState: ConversationEntryState, to newState: ConversationEntryState, withTimestamp timestamp: Date?) {
+    open func updateItemState(for conversation: ConversationKey, itemId msgId: Int, from oldState: ConversationEntryState, to newState: ConversationEntryState, withTimestamp timestamp: Date?) -> Bool {
         guard try! Database.main.writer({ database -> Int in
             try database.update(query: .messageUpdateState, params:  ["id": msgId, "oldState": oldState.code, "newState": newState.code, "newTimestamp": timestamp]);
             return database.changes;
         }) > 0 else {
-            return;
+            return false;
         }
         self.itemUpdated(withId: msgId, for: conversation);
         if oldState == .outgoing_unsent && newState != .outgoing_unsent {
             self.generatePreviews(forItem: msgId, conversation: conversation, state: newState, action: .new);
         }
+        return true;
     }
 
+    open func mark(conversation: ConversationKey, with marker: Message.ChatMarkers, from sender: JID) {
+        // TODO: handle it better in case of MIX or MUC
+        // We need to handle range of messages, not a single message...
+        if conversation.isLocalParticipant(jid: sender) {
+            self.updateItemState(for: conversation, stanzaId: marker.id, from: .incoming_unread, to: .incoming);
+        } else {
+            switch marker {
+            case .received(let id):
+                self.updateItemState(for: conversation, stanzaId: id, from: .outgoing, to: .outgoing_delivered);
+            case .displayed(let id), .acknowledged(let id):
+                self.updateItemState(for: conversation, stanzaId: marker.id, from: .outgoing, to: .outgoing_read);
+                self.updateItemState(for: conversation, stanzaId: marker.id, from: .outgoing_delivered, to: .outgoing_read);
+            }
+        }
+    }
+    
     open func remove(item: ConversationEntry) {
         guard try! Database.main.writer({ database in
             try database.delete(query: .messageDelete, cached: false, params: ["id": item.id]);

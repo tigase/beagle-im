@@ -27,6 +27,8 @@ public protocol ConversationKey: CustomDebugStringConvertible {
     var account: BareJID { get }
     var jid: BareJID { get }
     
+    func isLocalParticipant(jid: JID) -> Bool;
+    
 }
 
 public class ConversationKeyItem: ConversationKey {
@@ -41,6 +43,10 @@ public class ConversationKeyItem: ConversationKey {
     init(account: BareJID, jid: BareJID) {
         self.account = account;
         self.jid = jid;
+    }
+    
+    public func isLocalParticipant(jid: JID) ->Bool {
+        return account == jid.bareJid;
     }
     
 }
