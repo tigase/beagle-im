@@ -125,3 +125,97 @@ public enum ConversationNotification: String {
     case mention
     case always
 }
+
+
+
+private var chatMarkers: [ChatMarkersKey: ChatMarkersHolder] = [:];
+
+private struct ChatMarkersKey: Hashable {
+    let account: BareJID;
+    let conversationJID: BareJID;
+}
+
+private class ChatMarkersHolder {
+
+    @Published
+    var markers: [JID:ChatMarker] = [:];
+        
+    func mark(as markerType: ChatMarker.MarkerType, before: Date, by jid: JID) {
+        if let marker = markers[jid] {
+            switch markerType {
+            case .received:
+                guard marker.timestamp < before else {
+                    return;
+                }
+            case .displayed:
+                guard marker.timestamp <= before else {
+                    return;
+                }
+            }
+        }
+        markers[jid] = ChatMarker(jid: jid, timestamp: before, type: markerType);
+
+//        self.markers = self.markers.filter({ $0.jid != jid || ($0.timestamp > before && $0.type > markerType) }) + [ChatMarker(jid: jid, timestamp: before, type: markerType)];
+    }
+    
+}
+
+public struct ChatMarker: Hashable {
+    let jid: JID;
+    let timestamp: Date;
+    let type: MarkerType;
+    
+    public enum MarkerType: Comparable, Hashable {
+        case received
+        case displayed
+        
+        static func from(chatMarkers: Message.ChatMarkers) -> MarkerType {
+            switch chatMarkers {
+            case .received(_):
+                return .received;
+            case .displayed(_), .acknowledged(_):
+                return .displayed;
+            }
+        }
+    }
+}
+
+fileprivate func chatMarkersHolder(account: BareJID, jid: BareJID) -> ChatMarkersHolder{
+    guard let holder = chatMarkers[.init(account: account, conversationJID: jid)] else {
+        let holder = ChatMarkersHolder();
+        chatMarkers[.init(account: account, conversationJID: jid)] = holder;
+        return holder;
+    }
+    return holder;
+}
+
+extension Conversation {
+    
+    public var markersPublisher: AnyPublisher<[ChatMarker],Never> {
+        return chatMarkersHolder(account: self.account, jid: self.jid).$markers.map({ Array($0.values) }).eraseToAnyPublisher();
+    }
+    
+}
+
+extension Conversation {
+    
+    public func mark(as markerType: ChatMarker.MarkerType, before: Date, by jid: JID) {
+        // for 1-1
+        return chatMarkersHolder(account: self.account, jid: self.jid).mark(as: markerType, before: before, by: jid.withoutResource);
+    }
+     
+//    public func readTillTimestampPublisher(for jid: JID) -> Published<Date?>.Publisher {
+//        return entry(for: jid).$timestamp;
+//    }
+//    
+//    public func markers(inRange range: ClosedRange<Date>) -> [Date] {
+//        return chatMarkers.filter({ (arg0) -> Bool in
+//            let (key, value) = arg0;
+//            return key.account == self.account && key.conversationJID == self.jid && value.timestamp != nil && range.contains(value.timestamp!);
+//        }).map { (arg0) -> Date in
+//            let (_, value) = arg0
+//            return value.timestamp!;
+//        }
+//    }
+    
+}

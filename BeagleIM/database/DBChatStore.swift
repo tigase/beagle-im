@@ -27,12 +27,12 @@ import Combine
 extension Query {
     static let chatInsert = Query("INSERT INTO chats (account, jid, timestamp, type, options) VALUES (:account, :jid, :timestamp, :type, :options)");
     static let chatDelete = Query("DELETE FROM chats WHERE id = :id");
-    static let chatFindAllForAccount = Query("SELECT c.id, c.type, c.jid, c.name, c.nickname, c.password, c.timestamp as creation_timestamp, last.timestamp as timestamp, last1.item_type, last1.data, last1.encryption as lastEncryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue)) AND ch2.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))) as unread, c.options, last1.author_nickname FROM chats c LEFT JOIN (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) GROUP BY ch.account, ch.jid) last ON c.jid = last.jid AND c.account = last.account LEFT JOIN chat_history last1 ON last1.account = c.account AND last1.jid = c.jid AND last1.timestamp = last.timestamp AND last1.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) WHERE c.account = :account");
+    static let chatFindAllForAccount = Query("SELECT c.id, c.type, c.jid, c.name, c.nickname, c.password, c.timestamp as creation_timestamp, last.timestamp as timestamp, last1.item_type, last1.data, last1.encryption as lastEncryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(ConversationEntryState.incoming(.received).rawValue), \(ConversationEntryState.incoming_error(.received).rawValue), \(ConversationEntryState.outgoing_error(.received).rawValue)) AND ch2.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))) as unread, c.options, last1.author_nickname FROM chats c LEFT JOIN (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) GROUP BY ch.account, ch.jid) last ON c.jid = last.jid AND c.account = last.account LEFT JOIN chat_history last1 ON last1.account = c.account AND last1.jid = c.jid AND last1.timestamp = last.timestamp AND last1.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) WHERE c.account = :account");
     static let chatUpdateOptions = Query("UPDATE chats SET options = :options WHERE account = :account AND jid = :jid");
     static let chatUpdateName = Query("UPDATE chats SET name = :name WHERE account = :account AND jid = :jid");
     static let chatUpdateMessageDraft = Query("UPDATE chats SET message_draft = ? WHERE account = ? AND jid = ? AND IFNULL(message_draft, '') <> IFNULL(?, '')");
     static let chatFindMessageDraft = Query("SELECT message_draft FROM chats WHERE account = :account AND jid = :jid");
-    static let chatFindLastActivity = Query("SELECT last.timestamp as timestamp, last1.item_type, last1.data, last1.encryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))) as unread, last1.author_nickname FROM (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.jid = :jid AND ch.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) GROUP BY ch.account, ch.jid) last LEFT JOIN chat_history last1 ON last1.account = last.account AND last1.jid = last.jid AND last1.timestamp = last.timestamp AND last1.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))");
+    static let chatFindLastActivity = Query("SELECT last.timestamp as timestamp, last1.item_type, last1.data, last1.encryption, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(ConversationEntryState.incoming(.received).rawValue), \(ConversationEntryState.incoming_error(.received).rawValue), \(ConversationEntryState.outgoing_error(.received).rawValue))) as unread, last1.author_nickname FROM (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.jid = :jid AND ch.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue)) GROUP BY ch.account, ch.jid) last LEFT JOIN chat_history last1 ON last1.account = last.account AND last1.jid = last.jid AND last1.timestamp = last.timestamp AND last1.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))");
 }
 
 open class DBChatStore: ContextLifecycleAware {
@@ -250,11 +250,8 @@ open class DBChatStore: ContextLifecycleAware {
                     let authorNickname: String? = cursor.string(for: "author_nickname");
                     switch encryption {
                     case .decrypted, .none:
-                        if let state = MessageState(rawValue: cursor.int(for: "state") ?? 0) {
-                            return LastChatActivity.from(itemType: ItemType(rawValue: cursor.int(for: "item_type") ?? -1), data: cursor["data"], direction: state.direction, sender: authorNickname);
-                        } else {
-                            return nil;
-                        }
+                        let state = ConversationEntryState.from(code: cursor.int(for: "state") ?? 0, errorMessage: nil);
+                        return LastChatActivity.from(itemType: ItemType(rawValue: cursor.int(for: "item_type") ?? -1), data: cursor["data"], direction: state.direction, sender: authorNickname);
                     default:
                         if let message = encryption.message() {
                             return .message(message, direction: .incoming, sender: nil);
@@ -289,7 +286,7 @@ open class DBChatStore: ContextLifecycleAware {
                         return nil;
                     }
                     let lastMessageEncryption = MessageEncryption(rawValue: cursor.int(for: "lastEncryption") ?? 0) ?? .none;
-                    let lastActivity = LastChatActivity.from(itemType: ItemType(rawValue: cursor.int(for: "item_type") ?? -1), data: lastMessageEncryption.message() ?? cursor.string(for: "data"), direction: MessageState(rawValue: cursor.int(for: "item_type") ?? -1)?.direction ?? .incoming, sender: cursor.string(for: "author_nickname"));
+                    let lastActivity = LastChatActivity.from(itemType: ItemType(rawValue: cursor.int(for: "item_type") ?? -1), data: lastMessageEncryption.message() ?? cursor.string(for: "data"), direction: ConversationEntryState.from(code: cursor.int(for: "item_type") ?? -1, errorMessage: nil).direction, sender: cursor.string(for: "author_nickname"));
                     let timestamp = creationTimestamp.compare(lastMessageTimestamp) == .orderedAscending ? lastMessageTimestamp : creationTimestamp;
 
                     switch type {

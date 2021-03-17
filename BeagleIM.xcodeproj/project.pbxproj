@@ -197,6 +197,8 @@
 		FEC5DC8421553A7500AA3E4F /* AbstractChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC5DC8321553A7500AA3E4F /* AbstractChatViewController.swift */; };
 		FEC5DC8621553F4700AA3E4F /* GroupchatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC5DC8521553F4700AA3E4F /* GroupchatViewController.swift */; };
 		FEC661F821AABFB0004FDE1E /* NSViewWithTextBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC661F721AABFB0004FDE1E /* NSViewWithTextBackground.swift */; };
+		FED2A95225F00159008828E4 /* DBChatMarkersStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED2A95125F00158008828E4 /* DBChatMarkersStore.swift */; };
+		FED2A95825F0ED03008828E4 /* ChatMarkerCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED2A95725F0ED03008828E4 /* ChatMarkerCellView.swift */; };
 		FED2ECF42066B01C00F506A5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED2ECF32066B01C00F506A5 /* AppDelegate.swift */; };
 		FED2ECF82066B01C00F506A5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FED2ECF72066B01C00F506A5 /* Assets.xcassets */; };
 		FED2ECFB2066B01C00F506A5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FED2ECF92066B01C00F506A5 /* Main.storyboard */; };
@@ -452,6 +454,8 @@
 		FEC5DC8321553A7500AA3E4F /* AbstractChatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractChatViewController.swift; sourceTree = "<group>"; };
 		FEC5DC8521553F4700AA3E4F /* GroupchatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupchatViewController.swift; sourceTree = "<group>"; };
 		FEC661F721AABFB0004FDE1E /* NSViewWithTextBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSViewWithTextBackground.swift; sourceTree = "<group>"; };
+		FED2A95125F00158008828E4 /* DBChatMarkersStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBChatMarkersStore.swift; sourceTree = "<group>"; };
+		FED2A95725F0ED03008828E4 /* ChatMarkerCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMarkerCellView.swift; sourceTree = "<group>"; };
 		FED2ECF02066B01C00F506A5 /* BeagleIM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BeagleIM.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FED2ECF32066B01C00F506A5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FED2ECF72066B01C00F506A5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -731,6 +735,7 @@
 			children = (
 				FE14044125601B9800BE77E8 /* model */,
 				FE6E6BF221384D5E003B1696 /* DBChatHistoryStore.swift */,
+				FED2A95125F00158008828E4 /* DBChatMarkersStore.swift */,
 				FE6E6BF321384D5E003B1696 /* DBRosterStore.swift */,
 				FE6E6BF421384D5E003B1696 /* DatabaseMigrator.swift */,
 				FE6E6BF521384D5E003B1696 /* DBChatStore.swift */,
@@ -761,6 +766,7 @@
 				FE890D1E23FEF0B900107437 /* AbstractConversationLogController.swift */,
 				FEF9EC44242F8BAD0090C913 /* ChatInvitationCellView.swift */,
 				FE30309B244612A8003B9D76 /* ConversationLogSelectionManager.swift */,
+				FED2A95725F0ED03008828E4 /* ChatMarkerCellView.swift */,
 			);
 			path = conversation;
 			sourceTree = "<group>";
@@ -1309,6 +1315,7 @@
 				FE6E6C0121384D5F003B1696 /* ChatsWindowController.swift in Sources */,
 				FE2ACA8023546C4B004623BC /* NSString_extensions.swift in Sources */,
 				FE30309E2447517A003B9D76 /* RosterWindowController.swift in Sources */,
+				FED2A95225F00159008828E4 /* DBChatMarkersStore.swift in Sources */,
 				FE5BE64C213AC3EA00463183 /* ChatsCellViewCloseButton.swift in Sources */,
 				FE75CD702549E9BE0064A733 /* SharingTaskManager.swift in Sources */,
 				FE3AA0D12154077D001667A9 /* ChatsListGroupAbstractChat.swift in Sources */,
@@ -1370,6 +1377,7 @@
 				FEC336F5240A78AB00EC1A0D /* ChannelEditInfoViewController.swift in Sources */,
 				FEB4EAFE2163714300F8A9E2 /* RoundedScrollView.swift in Sources */,
 				FE89341B25DD3C07004E38B0 /* SSLContext.swift in Sources */,
+				FED2A95825F0ED03008828E4 /* ChatMarkerCellView.swift in Sources */,
 				FEB994B1241418FE00B8E7A7 /* InviteToChannelViewController.swift in Sources */,
 				FE41FB37215BBFC800AD86D3 /* DBCapabilitiesCache.swift in Sources */,
 				FEA2996C25B9ED9F0021865E /* SuggestionItemView.swift in Sources */,

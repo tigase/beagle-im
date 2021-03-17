@@ -1,8 +1,8 @@
 //
-// ConversationMessageSystem.swift
+// ChatMarkerCellView.swift
 //
 // BeagleIM
-// Copyright (C) 2020 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,17 +20,19 @@
 //
 
 import Foundation
+import AppKit
 
-class ConversationMessageSystem: ConversationEntry, ConversationEntryRelated {
-    let kind: Kind;
-    let order: ConversationEntry.Order = .first;
+class ChatMarkerCellView: NSTableCellView {
+
+    @IBOutlet var label: NSTextField!;
     
-    init(nextItem item: ConversationEntry, kind: Kind) {
-        self.kind = kind;
-        super.init(id: item.id, conversation: item.conversation, timestamp: item.timestamp);
+    func set(marker: ConversationMarker) {
+        switch marker.marker {
+        case .displayed:
+            self.label?.stringValue = "Displayed";
+        case .received:
+            self.label?.stringValue = "Received";
+        }
     }
     
-    enum Kind {
-        case unreadMessages
-    }
 }

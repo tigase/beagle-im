@@ -22,7 +22,12 @@
 import AppKit
 import TigaseSwift
 
-public class ConversationEntry {
+public class ConversationEntry: Hashable {
+    
+    public static func == (lhs: ConversationEntry, rhs: ConversationEntry) -> Bool {
+        return lhs.id  == rhs.id && lhs.timestamp == rhs.timestamp && lhs.isEqual(entry: rhs);
+    }
+    
     
     let id: Int;
     let conversation: ConversationKey;
@@ -46,6 +51,28 @@ public class ConversationEntry {
         return true;
     }
     
+    func isEqual(entry: ConversationEntry) -> Bool {
+        return true;
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id);
+        hasher.combine(timestamp);
+    }
+    
 }
 
+public protocol ConversationEntryRelated {
 
+    var order: ConversationEntry.Order { get }
+
+}
+
+extension ConversationEntry {
+
+    public enum Order {
+        case first
+        case last
+    }
+    
+}

@@ -98,9 +98,39 @@ class ConversationLogController: AbstractConversationLogController, NSTableViewD
                 return cell;
             }
             return nil;
+        case let item as ConversationMarker:
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMarkerCellView"), owner: nil) as? ChatMarkerCellView {
+                cell.set(marker: item);
+                return cell;
+            }
+            return nil;
         default:
             return nil;
         }
+    }
+}
+
+class ConversationMarker: ConversationEntry, ConversationEntryRelated {
+    
+    let sender: ConversationEntrySender;
+    let order: ConversationEntry.Order = .last;
+    let marker: ChatMarker.MarkerType;
+    
+    init(markedMessageId: Int, conversationKey: ConversationKey, timestamp: Date, sender: ConversationEntrySender, marker: ChatMarker.MarkerType) {
+        self.sender = sender;
+        self.marker = marker;
+        super.init(id: markedMessageId, conversation: conversationKey, timestamp: timestamp);
+    }
+    
+    override func isEqual(entry: ConversationEntry) -> Bool {
+        guard let e = entry as? ConversationMarker else {
+            return false;
+        }
+        return e.marker == marker;
+    }
+    
+    override func hash(into hasher: inout Hasher) {
+        hasher.combine(marker);
     }
 }
 

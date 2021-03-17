@@ -147,7 +147,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         let encryption = self.options.encryption ?? .none;
         
         if let correctedMessageId = correctedMessageOriginId {
-            DBChatHistoryStore.instance.correctMessage(for: self, stanzaId: correctedMessageId, sender: nil, data: text, correctionStanzaId: stanzaId, correctionTimestamp: Date(), newState: .outgoing_unsent);
+            DBChatHistoryStore.instance.correctMessage(for: self, stanzaId: correctedMessageId, sender: nil, data: text, correctionStanzaId: stanzaId, correctionTimestamp: Date(), newState: .outgoing(.unsent));
         } else {
             var messageEncryption: ConversationEntryEncryption = .none;
             switch encryption {
@@ -156,7 +156,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
             case .none:
                 break;
             }
-            DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing_unsent, sender: .me(conversation: self), recipient: .none, type: .message, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: text, encryption: messageEncryption, appendix: nil, linkPreviewAction: .none, completionHandler: nil);
+            DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.unsent), sender: .me(conversation: self), recipient: .none, type: .message, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: text, encryption: messageEncryption, appendix: nil, linkPreviewAction: .none, completionHandler: nil);
         }
         
         resendMessage(content: text, isAttachment: false, encryption: encryption, stanzaId: stanzaId, correctedMessageOriginId: correctedMessageOriginId);
@@ -174,7 +174,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         case .none:
             break;
         }
-        DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing_unsent, sender: .me(conversation: self), recipient: .none, type: .attachment, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: url, encryption: messageEncryption, appendix: nil, linkPreviewAction: .none, completionHandler: { msgId in
+        DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.unsent), sender: .me(conversation: self), recipient: .none, type: .attachment, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: url, encryption: messageEncryption, appendix: nil, linkPreviewAction: .none, completionHandler: { msgId in
             if let url = originalUrl {
                 _ = DownloadStore.instance.store(url, filename: url.lastPathComponent, with: "\(msgId)");
             }
@@ -192,7 +192,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         send(message: message, encryption: encryption, completionHandler: { result in
             switch result {
             case .success(_):
-                DBChatHistoryStore.instance.updateItemState(for: self, stanzaId: correctedMessageOriginId ?? message.id!, from: .outgoing_unsent, to: .outgoing, withTimestamp: correctedMessageOriginId != nil ? nil : Date());
+                DBChatHistoryStore.instance.updateItemState(for: self, stanzaId: correctedMessageOriginId ?? message.id!, from: .outgoing(.unsent), to: .outgoing(.sent), withTimestamp: correctedMessageOriginId != nil ? nil : Date());
             case .failure(let error):
                 switch error {
                 case .gone:

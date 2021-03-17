@@ -125,7 +125,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             guard let conversation = MessageEventHandler.conversationKey(for: receipt.message, on: account) else {
                 return;
             }
-            DBChatHistoryStore.instance.updateItemState(for: conversation, stanzaId: receipt.messageId, from: .outgoing, to: .outgoing_delivered);
+            DBChatHistoryStore.instance.updateItemState(for: conversation, stanzaId: receipt.messageId, from: .outgoing(.sent), to: .outgoing(.delivered));
         }).store(in: &cancellables);
         client.context.module(.chatMarkers).markersPublisher.sink(receiveValue: { marker in
             guard let conversation = MessageEventHandler.conversationKey(for: marker.message, on: account), let sender = marker.message.from else {
@@ -205,14 +205,14 @@ class MessageEventHandler: XmppServiceEventHandler {
         let unread = (!archived) || isMuc;
         if direction == .incoming {
             if error {
-                return unread ? .incoming_error_unread(errorMessage: message.errorText ?? message.errorCondition?.rawValue) : .incoming_error(errorMessage: message.errorText ?? message.errorCondition?.rawValue);
+                return .incoming_error(unread ? .received : .displayed, errorMessage: message.errorText ?? message.errorCondition?.rawValue);
             }
-            return unread ? .incoming_unread : .incoming;
+            return .incoming(unread ? .received : .displayed);
         } else {
             if error {
-                return unread ? .outgoing_error_unread(errorMessage: message.errorText ?? message.errorCondition?.rawValue) : .outgoing_error(errorMessage: message.errorText ?? message.errorCondition?.rawValue);
+                return .outgoing_error(unread ? .received : .displayed,errorMessage: message.errorText ?? message.errorCondition?.rawValue);
             }
-            return .outgoing;
+            return .outgoing(.sent);
         }
     }
     

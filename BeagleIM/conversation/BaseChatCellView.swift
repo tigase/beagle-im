@@ -69,7 +69,7 @@ class BaseChatCellView: NSTableCellView {
                 break;
             }
                
-            if item.state == .outgoing_unsent {
+            if case .outgoing(let state) = item.state, state == .unsent{
                 if let prefix = timestampPrefix {
                     timestampPrefix = "\(prefix) Unsent";
                 } else {
@@ -81,19 +81,56 @@ class BaseChatCellView: NSTableCellView {
                 CurrentTimePublisher.publisher.map({ now in BaseChatCellView.formatTimestamp(timestamp, now, prefix: timestampPrefix) }).assign(to: \.stringValue, on: timestampView).store(in: &cancellables);
             }
 
+            if let conversation = item.conversation as? Conversation {
+                switch item.state {
+                case .incoming(let state):
+                    Just(state).sink(receiveValue: { [weak self] state in
+                        switch state {
+                        case .received:
+                            self?.state?.stringValue = "✉️";
+                        case .displayed:
+                            self?.state?.stringValue = "👁️";
+                        }
+                    }).store(in: &cancellables);
+                case .outgoing(let state):
+                    Just(state).sink(receiveValue: { [weak self] state in
+                        switch state {
+                        case .unsent:
+                            self?.state?.stringValue = "\u{1f4e4}";
+                        case .delivered:
+                            self?.state?.stringValue = "\u{2713}";
+                        case .displayed:
+                            self?.state?.stringValue = "🔖";
+                        case .sent:
+                            self?.state?.stringValue = "";
+                        }
+                    }).store(in: &cancellables);
+                    break;
+                default:
+                    break;
+                }
+            }
+            
             switch item.state {
-            case .incoming_error, .incoming_error_unread:
+            case .incoming_error(_, _):
                 self.state?.stringValue = "\u{203c}";
-            case .outgoing_unsent:
-                self.state?.stringValue = "\u{1f4e4}";
-            case .outgoing_delivered:
-                self.state?.stringValue = "\u{2713}";
-            case .outgoing_read:
-                self.state?.stringValue = "🔖";
-            case .outgoing_error, .outgoing_error_unread:
+            case .outgoing_error(_, _):
                 self.state?.stringValue = "\u{203c}";
-            default:
-                self.state?.stringValue = "";
+            case .outgoing(let state):
+//                switch state {
+//                case .unsent:
+//                    self.state?.stringValue = "\u{1f4e4}";
+//                case .delivered:
+//                    self.state?.stringValue = "\u{2713}";
+//                case .displayed:
+//                    self.state?.stringValue = "🔖";
+//                case .sent:
+//                    self.state?.stringValue = "";
+//                }
+                break;
+            case .incoming(_):
+//                self.state?.stringValue = "";
+                break;
             }
             self.state?.textColor = item.state.isError ? NSColor.systemRed : NSColor.secondaryLabelColor;
         } else {

@@ -191,7 +191,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     
     public func sendPrivateMessage(to occupant: MucOccupant, text: String) {
         let message = self.createPrivateMessage(text, recipientNickname: occupant.nickname);
-        DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing, sender: .occupant(nickname: self.options.nickname, jid: nil), recipient: .occupant(nickname: occupant.nickname), type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: text, encryption: .none, appendix: nil, linkPreviewAction: .auto, completionHandler: nil);
+        DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.options.nickname, jid: nil), recipient: .occupant(nickname: occupant.nickname), type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: text, encryption: .none, appendix: nil, linkPreviewAction: .auto, completionHandler: nil);
         self.send(message: message, completionHandler: nil);
     }
 

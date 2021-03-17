@@ -1,8 +1,8 @@
 //
-// ConversationMessageSystem.swift
+// DBChatMarkersStore.swift
 //
 // BeagleIM
-// Copyright (C) 2020 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2021 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,16 +21,7 @@
 
 import Foundation
 
-class ConversationMessageSystem: ConversationEntry, ConversationEntryRelated {
-    let kind: Kind;
-    let order: ConversationEntry.Order = .first;
+public class DBChatMarkersStore {
     
-    init(nextItem item: ConversationEntry, kind: Kind) {
-        self.kind = kind;
-        super.init(id: item.id, conversation: item.conversation, timestamp: item.timestamp);
-    }
-    
-    enum Kind {
-        case unreadMessages
-    }
+    public static let instance = DBChatMarkersStore();
 }

@@ -70,18 +70,19 @@ class ChatMessageCellView: BaseChatCellView {
             msg.append(NSAttributedString(string: "\n------\n\(errorMessage)", attributes: [.foregroundColor : NSColor.systemRed]));
         }
 
-        switch item.state {
-        case .incoming_error, .incoming_error_unread:
-            self.message.textColor = NSColor.systemRed;
-        case .outgoing_unsent:
-            self.message.textColor = NSColor.secondaryLabelColor;
-        case .outgoing_delivered:
-            self.message.textColor = nil;
-        case .outgoing_error, .outgoing_error_unread:
-            self.message.textColor = nil;
-        default:
-            self.message.textColor = nil;//NSColor.textColor;
-        }
+//        switch item.state {
+//        case .incoming_error(_, _):
+//            self.message.textColor = NSColor.systemRed;
+//        case .outgoing(let state):
+//            switch state {
+//            case .unsent:
+//                self.message.textColor = NSColor.secondaryLabelColor;
+//            default:
+//                self.message.textColor = nil;
+//            }
+//        default:
+//            self.message.textColor = nil;//NSColor.textColor;
+//        }
         self.message.textColor = NSColor.controlTextColor;
         self.message.attributedString = msg;
         updateTextColor();
@@ -136,7 +137,7 @@ class ChatMessageCellView: BaseChatCellView {
     fileprivate func messageBody(item: ConversationMessage) -> String {
         guard let msg = item.encryption.message() else {
             switch item.state {
-            case .incoming_error(let errorMessage), .incoming_error_unread(let errorMessage), .outgoing_error(let errorMessage), .outgoing_error_unread(let errorMessage):
+            case .incoming_error(_, let errorMessage), .outgoing_error(_, let errorMessage):
                 if let error = errorMessage {
                     return "\(item.message)\n-----\n\(error)"
                 }

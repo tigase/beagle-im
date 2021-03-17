@@ -26,7 +26,7 @@ import TigaseSwift
 extension ConversationMessage {
     
     func shouldNotify() -> Bool {
-        guard state == .incoming_unread else {
+        guard case .incoming(let state) = self.state, state == .received else {
             return false;
         }
          

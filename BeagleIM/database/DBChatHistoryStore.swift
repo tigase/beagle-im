@@ -25,7 +25,7 @@ import TigaseSQLite3
 import Combine
 
 extension Query {
-    static let messagesLastTimestampForAccount = Query("SELECT max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.state <> \(MessageState.outgoing_unsent.rawValue)");
+    static let messagesLastTimestampForAccount = Query("SELECT max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.state <> \(ConversationEntryState.outgoing(.unsent).rawValue)");
     static let messageInsert = Query("INSERT INTO chat_history (account, jid, timestamp, item_type, data, stanza_id, state, author_nickname, author_jid, recipient_nickname, participant_id, error, encryption, fingerprint, appendix, server_msg_id, remote_msg_id, master_id) VALUES (:account, :jid, :timestamp, :item_type, :data, :stanza_id, :state, :author_nickname, :author_jid, :recipient_nickname, :participant_id, :error, :encryption, :fingerprint, :appendix, :server_msg_id, :remote_msg_id, :master_id)");
     // if server has MAM:2 then use server_msg_id for checking
     // if there is no result, try to match using origin-id/stanza-id (if there is one in a form of UUID) and update server_msg_id if message is found
@@ -36,20 +36,20 @@ extension Query {
     static let messageFindLinkPreviewsForMessage = Query("SELECT id, account, jid, data FROM chat_history WHERE master_id = :master_id AND item_type = \(ItemType.linkPreview.rawValue)");
     static let messageDelete = Query("DELETE FROM chat_history WHERE id = :id");
     static let messageFindMessageOriginId = Query("select stanza_id from chat_history where id = :id");
-    static let messagesFindUnsent = Query("SELECT ch.account as account, ch.jid as jid, ch.item_type as item_type, ch.data as data, ch.stanza_id as stanza_id, ch.encryption as encryption FROM chat_history ch WHERE ch.account = :account AND ch.state = \(MessageState.outgoing_unsent.rawValue) ORDER BY timestamp ASC");
+    static let messagesFindUnsent = Query("SELECT ch.account as account, ch.jid as jid, ch.item_type as item_type, ch.data as data, ch.stanza_id as stanza_id, ch.encryption as encryption FROM chat_history ch WHERE ch.account = :account AND ch.state = \(ConversationEntryState.outgoing(.unsent).rawValue) ORDER BY timestamp ASC");
     static let messagesFindForChat = Query("SELECT id, author_nickname, author_jid, recipient_nickname, participant_id, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, correction_timestamp FROM chat_history WHERE account = :account AND jid = :jid AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.messageRetracted.rawValue), \(ItemType.attachment.rawValue))) ORDER BY timestamp DESC LIMIT :limit OFFSET :offset");
     static let messageFindPositionInChat = Query("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND id <> :msgId AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue))) AND timestamp > (SELECT timestamp FROM chat_history WHERE id = :msgId)");
     static let messageSearchHistory = Query("SELECT chat_history.id as id, chat_history.account as account, chat_history.jid as jid, author_nickname, author_jid, participant_id,  chat_history.timestamp as timestamp, item_type, chat_history.data as data, state, preview, chat_history.encryption as encryption, fingerprint FROM chat_history INNER JOIN chat_history_fts_index ON chat_history.id = chat_history_fts_index.rowid LEFT JOIN chats ON chats.account = chat_history.account AND chats.jid = chat_history.jid WHERE (chats.id IS NOT NULL OR chat_history.author_nickname is NULL) AND chat_history_fts_index MATCH :query AND (:account IS NULL OR chat_history.account = :account) AND (:jid IS NULL OR chat_history.jid = :jid) AND item_type = \(ItemType.message.rawValue) ORDER BY chat_history.timestamp DESC");
     static let messagesDeleteChatHistory = Query("DELETE FROM chat_history WHERE account = :account AND (:jid IS NULL OR jid = :jid)");
     static let messagesFindChatAttachments = Query("SELECT id, author_nickname, author_jid, recipient_nickname, participant_id, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, correction_timestamp FROM chat_history WHERE account = :account AND jid = :jid AND item_type = \(ItemType.attachment.rawValue) ORDER BY timestamp DESC");
-    static let messageRetract = Query("UPDATE chat_history SET state = case state when \(MessageState.incoming_error_unread.rawValue) then \(MessageState.incoming_error.rawValue) when \(MessageState.outgoing_error_unread.rawValue) then \(MessageState.outgoing_error.rawValue) else \(MessageState.incoming.rawValue) end, item_type = :item_type, correction_stanza_id = :correction_stanza_id, correction_timestamp = :correction_timestamp, remote_msg_id = :remote_msg_id, server_msg_id = COALESCE(:server_msg_id, server_msg_id) WHERE id = :id AND (correction_stanza_id IS NULL OR correction_stanza_id <> :correction_stanza_id) AND (correction_timestamp IS NULL OR correction_timestamp < :correction_timestamp)")
+    static let messageRetract = Query("UPDATE chat_history SET state = case state when \(ConversationEntryState.incoming_error(.received, errorMessage: nil).rawValue) then \(ConversationEntryState.incoming_error(.displayed, errorMessage: nil).rawValue) when \(ConversationEntryState.outgoing_error(.received, errorMessage: nil).rawValue) then \(ConversationEntryState.outgoing_error(.displayed, errorMessage: nil).rawValue) else \(ConversationEntryState.incoming(.displayed).rawValue) end, item_type = :item_type, correction_stanza_id = :correction_stanza_id, correction_timestamp = :correction_timestamp, remote_msg_id = :remote_msg_id, server_msg_id = COALESCE(:server_msg_id, server_msg_id) WHERE id = :id AND (correction_stanza_id IS NULL OR correction_stanza_id <> :correction_stanza_id) AND (correction_timestamp IS NULL OR correction_timestamp < :correction_timestamp)")
     static let messageCorrectLast = Query("UPDATE chat_history SET data = :data, state = :state, correction_stanza_id = :correction_stanza_id, correction_timestamp = :correction_timestamp, remote_msg_id = :remote_msg_id, server_msg_id = COALESCE(:server_msg_id, server_msg_id) WHERE id = :id AND (correction_stanza_id IS NULL OR correction_stanza_id <> :correction_stanza_id) AND (correction_timestamp IS NULL OR correction_timestamp < :correction_timestamp)");
     static let messageFind = Query("SELECT id, account, jid, author_nickname, author_jid, recipient_nickname, participant_id, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, correction_stanza_id, correction_timestamp FROM chat_history WHERE id = :id");
-    static let messagesUnreadBefore = Query("SELECT id FROM chat_history WHERE account = :account AND jid = :jid AND timestamp <= :before AND state in (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))");
-    static let messagesMarkAsReadBefore = Query("UPDATE chat_history SET state = case state when \(MessageState.incoming_error_unread.rawValue) then \(MessageState.incoming_error.rawValue) when \(MessageState.outgoing_error_unread.rawValue) then \(MessageState.outgoing_error.rawValue) else \(MessageState.incoming.rawValue) end WHERE account = :account AND jid = :jid AND timestamp <= :before AND state in (\(MessageState.incoming_unread.rawValue), \(MessageState.incoming_error_unread.rawValue), \(MessageState.outgoing_error_unread.rawValue))");
+    static let messagesUnreadBefore = Query("SELECT id FROM chat_history WHERE account = :account AND jid = :jid AND timestamp <= :before AND state in (\(ConversationEntryState.incoming(.received).rawValue), \(ConversationEntryState.incoming_error(.received, errorMessage: nil).rawValue), \(ConversationEntryState.outgoing_error(.received, errorMessage: nil).rawValue))");
+    static let messagesMarkAsReadBefore = Query("UPDATE chat_history SET state = case state when \(ConversationEntryState.incoming_error(.received).rawValue) then \(ConversationEntryState.incoming_error(.displayed).rawValue) when \(ConversationEntryState.outgoing_error(.received).rawValue) then \(ConversationEntryState.outgoing_error(.displayed).rawValue) else \(ConversationEntryState.incoming(.displayed).rawValue) end WHERE account = :account AND jid = :jid AND timestamp <= :before AND state in (\(ConversationEntryState.incoming(.received).rawValue), \(ConversationEntryState.incoming_error(.received).rawValue), \(ConversationEntryState.outgoing_error(.received).rawValue))");
     static let messageUpdateState = Query("UPDATE chat_history SET state = :newState, timestamp = COALESCE(:newTimestamp, timestamp), error = COALESCE(:error, error) WHERE id = :id AND (:oldState IS NULL OR state = :oldState)");
     static let messageUpdate = Query("UPDATE chat_history SET appendix = :appendix WHERE id = :id");
-    static let messagesCountUnread = Query("select count(id) from chat_history where account = :account and jid = :jid and timestamp >= (select min(timestamp) from chat_history where account = :account and jid = :jid and state in (\(MessageState.incoming_unread.rawValue),\(MessageState.incoming_error_unread.rawValue),\(MessageState.outgoing_error_unread.rawValue)))");
+    static let messagesCountUnread = Query("select count(id) from chat_history where account = :account and jid = :jid and timestamp >= (select min(timestamp) from chat_history where account = :account and jid = :jid and state in (\(ConversationEntryState.incoming(.received).rawValue),\(ConversationEntryState.incoming_error(.received).rawValue),\(ConversationEntryState.outgoing_error(.received).rawValue)))");
 }
 
 class DBChatHistoryStore {
@@ -411,15 +411,15 @@ class DBChatHistoryStore {
             if updated > 0 {
                 NotificationManager.instance.markAsRead(on: conversation.account, with: conversation.jid, itemsIds: [oldItem.id])
 
-                let newMessageState: ConversationEntryState = (oldItem.state.direction == .incoming) ? (oldItem.state.isUnread ? .incoming : (newState.isUnread ? .incoming_unread : .incoming)) : (.outgoing);
+                let newMessageState: ConversationEntryState = (oldItem.state.direction == .incoming) ? (oldItem.state.isUnread ? .incoming(.displayed) : .incoming(newState.isUnread ? .received : .displayed)) : (.outgoing(.sent));
                 DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: oldItem.timestamp, itemType: .message, message: data, state: newMessageState, completionHandler: {
                 })
 
                 print("correcing previews for master id:", itemId);
                 self.itemUpdated(withId: itemId, for: conversation);
                 
-                
-                if newState != .outgoing_unsent {
+                if case .outgoing(let state) = newState, state == .unsent {
+                } else {
                     self.generatePreviews(forItem: itemId, conversation: conversation, state: newState, action: .update);
                 }
             }
@@ -450,7 +450,7 @@ class DBChatHistoryStore {
 
                 // what should be sent to "newMessage" how to reatract message from there??
                 let activity: LastChatActivity = DBChatStore.instance.lastActivity(for: conversation.account, jid: conversation.jid) ?? .message("", direction: .incoming, sender: nil);
-                DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: oldItem.timestamp, lastActivity: activity, state: oldItem.state.direction == .incoming ? .incoming : .outgoing, completionHandler: {
+                DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: oldItem.timestamp, lastActivity: activity, state: oldItem.state.direction == .incoming ? .incoming(.displayed) : .outgoing(.sent), completionHandler: {
                     print("chat store state updated with message retraction");
                 })
                 if oldItem.state.isUnread {
@@ -496,7 +496,7 @@ class DBChatHistoryStore {
         case remove
     }
     
-    private func generatePreviews(forItem masterId: Int, conversation: ConversationKey, state messageState: ConversationEntryState, sender: ConversationEntrySender, recipient: ConversationEntryRecipient, timestamp: Date, data: String, action: PreviewActon) {
+    private func generatePreviews(forItem masterId: Int, conversation: ConversationKey, state entryState: ConversationEntryState, sender: ConversationEntrySender, recipient: ConversationEntryRecipient, timestamp: Date, data: String, action: PreviewActon) {
         let operation = BlockOperation(block: {
             if action != .new {
                 DBChatHistoryStore.instance.removePreviews(idOfRelatedToItem: masterId);
@@ -508,7 +508,7 @@ class DBChatHistoryStore {
             if let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.address.rawValue) {
                 let matches = detector.matches(in: data, range: NSMakeRange(0, data.utf16.count));
                 print("adding previews for master id:", masterId);
-                let state = messageState == .incoming_unread ? .incoming : messageState;
+                let state = entryState == .incoming(.received) ? .incoming(.displayed) : entryState;
                 for match in matches {
                     if let url = match.url, let scheme = url.scheme, ["https", "http"].contains(scheme) {
                         if (data as NSString).range(of: "http", options: .caseInsensitive, range: match.range).location == match.range.location {
@@ -533,12 +533,12 @@ class DBChatHistoryStore {
         }
 
         guard try! Database.main.writer({ database -> Int in
-            try! database.update(query: .messageUpdateState, params: ["id": itemId, "newState": MessageState.outgoing_error_unread.rawValue, "error": errorMessage ?? errorCondition?.rawValue ?? "Unknown error"]);
+            try! database.update(query: .messageUpdateState, params: ["id": itemId, "newState": ConversationEntryState.outgoing_error(.received).rawValue, "error": errorMessage ?? errorCondition?.rawValue ?? "Unknown error"]);
             return database.changes;
         }) > 0 else {
             return false;
         }
-        DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: Date(timeIntervalSince1970: 0), itemType: nil, message: nil, state: .outgoing_error_unread(errorMessage: errorMessage ?? errorCondition?.rawValue ?? "Unknown error")) {
+        DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: Date(timeIntervalSince1970: 0), itemType: nil, message: nil, state: .outgoing_error(.received, errorMessage: errorMessage ?? errorCondition?.rawValue ?? "Unknown error")) {
             self.itemUpdated(withId: itemId, for: conversation);
         }
         return true;
@@ -599,7 +599,7 @@ class DBChatHistoryStore {
             return false;
         }
         self.itemUpdated(withId: msgId, for: conversation);
-        if oldState == .outgoing_unsent && newState != .outgoing_unsent {
+        if oldState == .outgoing(.unsent) && newState != .outgoing(.unsent) {
             self.generatePreviews(forItem: msgId, conversation: conversation, state: newState, action: .new);
         }
         return true;
@@ -607,18 +607,31 @@ class DBChatHistoryStore {
 
     open func mark(conversation: ConversationKey, with marker: Message.ChatMarkers, from sender: JID) {
         // TODO: handle it better in case of MIX or MUC
-        // We need to handle range of messages, not a single message...
-        if conversation.isLocalParticipant(jid: sender) {
-            self.updateItemState(for: conversation, stanzaId: marker.id, from: .incoming_unread, to: .incoming);
-        } else {
-            switch marker {
-            case .received(let id):
-                self.updateItemState(for: conversation, stanzaId: id, from: .outgoing, to: .outgoing_delivered);
-            case .displayed(let id), .acknowledged(let id):
-                self.updateItemState(for: conversation, stanzaId: marker.id, from: .outgoing, to: .outgoing_read);
-                self.updateItemState(for: conversation, stanzaId: marker.id, from: .outgoing_delivered, to: .outgoing_read);
-            }
+        guard let msgId = self.findItemId(for: conversation, originId: marker.id, sender: nil) else {
+            return;
         }
+
+        guard let message = self.message(for: conversation, withId: msgId) else {
+            return;
+        }
+        
+        if let conv = conversation as? Conversation {
+            conv.mark(as: ChatMarker.MarkerType.from(chatMarkers: marker), before: message.timestamp, by: sender);
+        } else if let conv = DBChatStore.instance.conversation(for: conversation.account, with: conversation.jid) {
+            conv.mark(as: ChatMarker.MarkerType.from(chatMarkers: marker), before: message.timestamp, by: sender);
+        }
+        // We need to handle range of messages, not a single message...
+//        if conversation.isLocalParticipant(jid: sender) {
+//            self.updateItemState(for: conversation, stanzaId: marker.id, from: .incoming(.received), to: .incoming(.displayed));
+//        } else {
+//            switch marker {
+//            case .received(let id):
+//                self.updateItemState(for: conversation, stanzaId: id, from: .outgoing(.sent), to: .outgoing(.delivered));
+//            case .displayed(let id), .acknowledged(let id):
+//                self.updateItemState(for: conversation, stanzaId: marker.id, from: .outgoing(.sent), to: .outgoing(.displayed));
+//                self.updateItemState(for: conversation, stanzaId: marker.id, from: .outgoing(.delivered), to: .outgoing(.displayed));
+//            }
+//        }
     }
     
     open func remove(item: ConversationEntry) {
