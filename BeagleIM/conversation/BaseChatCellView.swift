@@ -44,79 +44,83 @@ class BaseChatCellView: NSTableCellView {
         cancellables.removeAll();
         //var timestampStr: NSMutableAttributedString? = nil;
 
-        if let item = item as? ConversationEntryWithSender {
-            if let avatar = self.avatar {
-                item.avatar.$avatar.assign(to: \AvatarView.image, on: avatar).store(in: &cancellables);
+        if let avatar = self.avatar, let avatarPublisher = item.sender.avatar(for: item.conversation)?.avatarPublisher {
+            let name = item.sender.nickname;
+            avatarPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { image in
+                avatar.set(name: name, avatar: image);
+            }).store(in: &cancellables);
+        }
+                    
+        if senderName != nil {
+            switch item.recipient {
+            case .none:
+                self.senderName?.stringValue = item.sender.nickname ?? "";
+            case .occupant(let nickname):
+                let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(item.sender.nickname!) " : "To \(nickname)  ");
+                let font = NSFontManager.shared.convert(NSFont.systemFont(ofSize: senderName!.font!.pointSize - 2), toHaveTrait: [.italicFontMask, .smallCapsFontMask, .unboldFontMask]);
+                val.append(NSAttributedString(string: " (private message)", attributes: [.font: font, .foregroundColor: NSColor.secondaryLabelColor]));
+                self.senderName?.attributedStringValue = val;
             }
+        }
             
-            if senderName != nil {
-                switch item.recipient {
-                case .none:
-                    self.senderName?.stringValue = item.sender.nickname;
-                case .occupant(let nickname):
-                    let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(item.sender.nickname) " : "To \(nickname)  ");
-                    let font = NSFontManager.shared.convert(NSFont.systemFont(ofSize: senderName!.font!.pointSize - 2), toHaveTrait: [.italicFontMask, .smallCapsFontMask, .unboldFontMask]);
-                    val.append(NSAttributedString(string: " (private message)", attributes: [.font: font, .foregroundColor: NSColor.secondaryLabelColor]));
-                    self.senderName?.attributedStringValue = val;
-                }
+        var timestampPrefix: String?;
+        switch item.encryption {
+        case .decrypted, .notForThisDevice, .decryptionFailed:
+            timestampPrefix = "\u{1F512} ";
+        default:
+            break;
+        }
+               
+        if case .outgoing(let state) = item.state, state == .unsent{
+            if let prefix = timestampPrefix {
+                timestampPrefix = "\(prefix) Unsent";
+            } else {
+                timestampPrefix = "Unsent"
             }
-            
-            var timestampPrefix: String?;
-            switch item.encryption {
-            case .decrypted, .notForThisDevice, .decryptionFailed:
-                timestampPrefix = "\u{1F512} ";
+        }
+        if let timestampView = self.timestamp {
+            let timestamp = item.timestamp;
+            CurrentTimePublisher.publisher.map({ now in BaseChatCellView.formatTimestamp(timestamp, now, prefix: timestampPrefix) }).assign(to: \.stringValue, on: timestampView).store(in: &cancellables);
+        }
+
+        if let conversation = item.conversation as? Conversation {
+            switch item.state {
+            case .incoming(let state):
+                Just(state).sink(receiveValue: { [weak self] state in
+                    switch state {
+                    case .received:
+                        self?.state?.stringValue = "✉️";
+                    case .displayed:
+                        self?.state?.stringValue = "👁️";
+                    }
+                }).store(in: &cancellables);
+            case .outgoing(let state):
+                Just(state).sink(receiveValue: { [weak self] state in
+                    switch state {
+                    case .unsent:
+                        self?.state?.stringValue = "\u{1f4e4}";
+                    case .delivered:
+                        self?.state?.stringValue = "\u{2713}";
+                    case .displayed:
+                        self?.state?.stringValue = "🔖";
+                    case .sent:
+                        self?.state?.stringValue = "";
+                    }
+                }).store(in: &cancellables);
+                break;
             default:
                 break;
             }
-               
-            if case .outgoing(let state) = item.state, state == .unsent{
-                if let prefix = timestampPrefix {
-                    timestampPrefix = "\(prefix) Unsent";
-                } else {
-                    timestampPrefix = "Unsent"
-                }
-            }
-            if let timestampView = self.timestamp {
-                let timestamp = item.timestamp;
-                CurrentTimePublisher.publisher.map({ now in BaseChatCellView.formatTimestamp(timestamp, now, prefix: timestampPrefix) }).assign(to: \.stringValue, on: timestampView).store(in: &cancellables);
-            }
-
-            if let conversation = item.conversation as? Conversation {
-                switch item.state {
-                case .incoming(let state):
-                    Just(state).sink(receiveValue: { [weak self] state in
-                        switch state {
-                        case .received:
-                            self?.state?.stringValue = "✉️";
-                        case .displayed:
-                            self?.state?.stringValue = "👁️";
-                        }
-                    }).store(in: &cancellables);
-                case .outgoing(let state):
-                    Just(state).sink(receiveValue: { [weak self] state in
-                        switch state {
-                        case .unsent:
-                            self?.state?.stringValue = "\u{1f4e4}";
-                        case .delivered:
-                            self?.state?.stringValue = "\u{2713}";
-                        case .displayed:
-                            self?.state?.stringValue = "🔖";
-                        case .sent:
-                            self?.state?.stringValue = "";
-                        }
-                    }).store(in: &cancellables);
-                    break;
-                default:
-                    break;
-                }
-            }
+        }
             
-            switch item.state {
-            case .incoming_error(_, _):
-                self.state?.stringValue = "\u{203c}";
-            case .outgoing_error(_, _):
-                self.state?.stringValue = "\u{203c}";
-            case .outgoing(let state):
+        switch item.state {
+        case .none:
+            self.state?.stringValue = "";
+        case .incoming_error(_, _):
+            self.state?.stringValue = "\u{203c}";
+        case .outgoing_error(_, _):
+            self.state?.stringValue = "\u{203c}";
+        case .outgoing(let state):
 //                switch state {
 //                case .unsent:
 //                    self.state?.stringValue = "\u{1f4e4}";
@@ -127,25 +131,15 @@ class BaseChatCellView: NSTableCellView {
 //                case .sent:
 //                    self.state?.stringValue = "";
 //                }
-                break;
-            case .incoming(_):
+            break;
+        case .incoming(_):
 //                self.state?.stringValue = "";
-                break;
-            }
-            self.state?.textColor = item.state.isError ? NSColor.systemRed : NSColor.secondaryLabelColor;
-        } else {
-            self.senderName?.stringValue = "";
-            self.avatar?.image = nil;
-            if let timestampView = self.timestamp {
-                let timestamp = item.timestamp;
-                CurrentTimePublisher.publisher.map({ now in BaseChatCellView.formatTimestamp(timestamp, now, prefix: nil) }).assign(to: \.stringValue, on: timestampView).store(in: &cancellables);
-            }
-            self.state?.stringValue = "";
+            break;
         }
-        
+        self.state?.textColor = item.state.isError ? NSColor.systemRed : NSColor.secondaryLabelColor;
         
         self.toolTip = prepareTooltip(item: item);
-        self.direction = (item as? ConversationEntryWithSender)?.state.direction ?? .incoming;
+        self.direction = item.state.direction;
     }
     
     static func formatTimestamp(_ ts: Date, _ now: Date, prefix: String?) -> String {

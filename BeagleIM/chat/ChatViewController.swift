@@ -171,23 +171,28 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
 
     override func prepareConversationLogContextMenu(dataSource: ConversationDataSource, menu: NSMenu, forRow row: Int) {
         super.prepareConversationLogContextMenu(dataSource: dataSource, menu: menu, forRow: row);
-        if let item = dataSource.getItem(at: row) as? ConversationEntryWithSender, item.state.direction == .outgoing && (item is ConversationMessage || item is ConversationAttachment) {
-            if item.state.isError {
-                let resend = menu.addItem(withTitle: "Resend message", action: #selector(resendMessage), keyEquivalent: "");
-                resend.target = self;
-                resend.tag = item.id;
-            } else {
-                if item is ConversationMessage && !dataSource.isAnyMatching({ ($0 as? ConversationEntryWithSender)?.state.direction == .outgoing && $0 is ConversationMessage }, in: 0..<row) {
-                    let correct = menu.addItem(withTitle: "Correct message", action: #selector(correctMessage), keyEquivalent: "");
-                    correct.target = self;
-                    correct.tag = item.id;
+        if let item = dataSource.getItem(at: row), item.state.direction == .outgoing {
+            switch item.payload {
+            case .message(_, _), .attachment(_, _):
+                if item.state.isError {
+                    let resend = menu.addItem(withTitle: "Resend message", action: #selector(resendMessage), keyEquivalent: "");
+                    resend.target = self;
+                    resend.tag = item.id;
+                } else {
+                    if item.isMessage(), !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0.isMessage() }, in: 0..<row) {
+                        let correct = menu.addItem(withTitle: "Correct message", action: #selector(correctMessage), keyEquivalent: "");
+                        correct.target = self;
+                        correct.tag = item.id;
+                    }
+                    
+                    if XmppService.instance.getClient(for: item.conversation.account)?.isConnected ?? false {
+                        let retract = menu.addItem(withTitle: "Retract message", action: #selector(retractMessage), keyEquivalent: "");
+                        retract.target = self;
+                        retract.tag = item.id;
+                    }
                 }
-                
-                if XmppService.instance.getClient(for: item.conversation.account)?.isConnected ?? false {
-                    let retract = menu.addItem(withTitle: "Retract message", action: #selector(retractMessage), keyEquivalent: "");
-                    retract.target = self;
-                    retract.tag = item.id;
-                }
+            default:
+                break;
             }
         }
     }
@@ -202,13 +207,13 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
             return;
         }
 
-        switch item {
-        case let item as ConversationMessage:
-            chat.sendMessage(text: item.message, correctedMessageOriginId: nil);
+        switch item.payload {
+        case .message(let message, _):
+            chat.sendMessage(text: message, correctedMessageOriginId: nil);
             DBChatHistoryStore.instance.remove(item: item);
-        case let item as ConversationAttachment:
+        case .attachment(let url, let appendix):
             let oldLocalFile = DownloadStore.instance.url(for: "\(item.id)");
-            chat.sendAttachment(url: item.url, appendix: item.appendix, originalUrl: oldLocalFile, completionHandler: {
+            chat.sendAttachment(url: url, appendix: appendix, originalUrl: oldLocalFile, completionHandler: {
                 DBChatHistoryStore.instance.remove(item: item);
             })
         default:
@@ -227,9 +232,9 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
     
     @IBAction func correctLastMessage(_ sender: AnyObject) {
         for i in 0..<dataSource.count {
-            if let item = dataSource.getItem(at: i) as? ConversationMessage, item.state.direction == .outgoing {
+            if let item = dataSource.getItem(at: i), item.state.direction == .outgoing, case .message(let message, _) = item.payload {
                 DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id, completionHandler: { [weak self] originId in
-                    self?.startMessageCorrection(message: item.message, originId: originId);
+                    self?.startMessageCorrection(message: message, originId: originId);
                 })
                 return;
             }
@@ -242,12 +247,12 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
             return
         }
      
-        guard let item = dataSource.getItem(withId: tag) as? ConversationMessage else {
+        guard let item = dataSource.getItem(withId: tag), case .message(let message, _) = item.payload else {
             return;
         }
         
         DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id, completionHandler: { [weak self] originId in
-            self?.startMessageCorrection(message: item.message, originId: originId);
+            self?.startMessageCorrection(message: message, originId: originId);
         })
     }
 
@@ -257,7 +262,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
             return
         }
         
-        guard let item = dataSource.getItem(withId: tag) as? ConversationEntryWithSender else {
+        guard let item = dataSource.getItem(withId: tag), item.sender != .none else {
             return;
         }
         
@@ -542,6 +547,10 @@ class ChatViewTableView: NSTableView {
         }
     }
     
+    override func prepareContent(in rect: NSRect) {
+        // disable chat preloading
+        super.prepareContent(in: self.visibleRect);
+    }
 }
 
 protocol ChatViewTableViewMouseDelegate: class {

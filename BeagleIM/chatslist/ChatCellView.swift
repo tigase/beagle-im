@@ -72,16 +72,7 @@ class ChatCellView: NSTableCellView {
     @IBAction func closeClicked(_ sender: ChatsCellViewCloseButton) {
         closeFunction?();
     }
-    
-    func set(avatar: NSImage?) {
-        self.avatar?.avatar = avatar;
-    }
-    
-    func set(name: String?) {
-        self.label?.stringValue = name ?? "";
-        self.avatar?.name = name;
-    }
-    
+
     func set(lastActivity: LastChatActivity?, chatState: ChatState, account: BareJID) {
         self.unreadButton.appearance = NSAppearance(named: .darkAqua);
         self.chatState = chatState;

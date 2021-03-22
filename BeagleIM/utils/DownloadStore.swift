@@ -48,7 +48,7 @@ class DownloadStore {
     }
     
     @objc func messageRemoved(_ notification: Notification) {
-        guard let item = notification.object as? ConversationEntryDeleted else {
+        guard let item = notification.object as? ConversationEntry else {
             return;
         }
         self.deleteFile(for: "\(item.id)")

@@ -55,7 +55,7 @@ public class Contact: DisplayableIdWithKeyProtocol {
     
     public let avatar: Avatar;
     public var avatarPublisher: AnyPublisher<NSImage?, Never> {
-        return avatar.$avatar.eraseToAnyPublisher();
+        return avatar.avatarPublisher;
     }
 
     public init(key: Key, displayName: String, status: Presence.Show?) {

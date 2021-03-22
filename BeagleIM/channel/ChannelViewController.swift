@@ -80,10 +80,10 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     
     override func prepareConversationLogContextMenu(dataSource: ConversationDataSource, menu: NSMenu, forRow row: Int) {
         super.prepareConversationLogContextMenu(dataSource: dataSource, menu: menu, forRow: row);
-        if let item = dataSource.getItem(at: row) as? ConversationEntryWithSender, item.state.direction == .outgoing {
+        if let item = dataSource.getItem(at: row), item.state.direction == .outgoing {
             if item.state.isError {
             } else {
-                if item is ConversationMessage, !dataSource.isAnyMatching({ ($0 as? ConversationEntryWithSender)?.state.direction == .outgoing && $0 is ConversationMessage }, in: 0..<row) {
+                if item.isMessage() && !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0.isMessage() }, in: 0..<row) {
                     let correct = menu.addItem(withTitle: "Correct message", action: #selector(correctMessage), keyEquivalent: "");
                     correct.target = self;
                     correct.tag = item.id;
@@ -117,9 +117,9 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     
     @IBAction func correctLastMessage(_ sender: AnyObject) {
         for i in 0..<dataSource.count {
-            if let item = dataSource.getItem(at: i) as? ConversationMessage, item.state.direction == .outgoing {
+            if let item = dataSource.getItem(at: i), item.state.direction == .outgoing, case .message(let message, _) = item.payload {
                 DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id, completionHandler: { [weak self] originId in
-                    self?.startMessageCorrection(message: item.message, originId: originId);
+                    self?.startMessageCorrection(message: message, originId: originId);
                 })
                 return;
             }
@@ -132,12 +132,12 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             return
         }
      
-        guard let item = dataSource.getItem(withId: tag) as? ConversationMessage else {
+        guard let item = dataSource.getItem(withId: tag), case .message(let message, _) = item.payload else {
             return;
         }
         
         DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id, completionHandler: { [weak self] originId in
-            self?.startMessageCorrection(message: item.message, originId: originId);
+            self?.startMessageCorrection(message: message, originId: originId);
         })
     }
     
@@ -147,7 +147,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             return
         }
         
-        guard let item = dataSource.getItem(withId: tag) as? ConversationEntryWithSender, let chat = self.conversation as? Channel else {
+        guard let item = dataSource.getItem(withId: tag), item.sender != .none, let chat = self.conversation as? Channel else {
             return;
         }
         
@@ -359,9 +359,13 @@ class MixParticipantSuggestionItemView: SuggestionItemView<MixParticipant> {
         didSet {
             cancellables.removeAll();
             label.stringValue = item?.nickname ?? "";
-            avatar.name = item?.nickname ?? "";
+            let name = item?.nickname ?? "";
             self.avatarPublisher = item?.avatar;
-            avatarPublisher?.$avatar.assign(to: \.image, on: avatar).store(in: &cancellables);
+            if let avatarPublisher = self.avatarPublisher?.avatarPublisher {
+               avatarPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] avatar in
+                    self?.avatar.set(name: name, avatar: avatar);
+                }).store(in: &cancellables);
+            }
         }
     }
     

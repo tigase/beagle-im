@@ -262,7 +262,7 @@ class AccountCellView: NSTableCellView {
     private var accountJid: BareJID?;
     private var avatarObj: Avatar? {
         didSet {
-            avatarObj?.$avatar.assign(to: \.avatar, on: avatar).store(in: &cancellables);
+            avatarObj?.avatarPublisher.receive(on: DispatchQueue.main).assign(to: \.avatar, on: avatar).store(in: &cancellables);
         }
     }
     

@@ -41,22 +41,7 @@ class AvatarViewWithStatus: NSView {
             return avatarView.image;
         }
         set {
-//            let oldValue = avatarView.image;
-//            if newValue == nil || oldValue == nil || ((oldValue!) != (newValue!)) {
-//                NSAnimationContext.runAnimationGroup({ (_) in
-//                    NSAnimationContext.current.duration = 0.2;
-//                    self.avatarView.animator().alphaValue = 0;
-//                }, completionHandler: {() in
-//                    self.avatarView.image = newValue;
-//                    NSAnimationContext.runAnimationGroup({ (_) in
-//                        NSAnimationContext.current.duration = 0.2;
-//                        self.avatarView.animator().alphaValue = 1.0;
-//                    }, completionHandler: nil);
-//                });
-//                statusView.needsDisplay = true;
-//            }
             self.avatarView.image = newValue;
-            statusView.needsDisplay = true;
         }
     }
     
@@ -65,14 +50,20 @@ class AvatarViewWithStatus: NSView {
     var displayableId: DisplayableIdProtocol? {
         didSet {
             cancellables.removeAll();
-            displayableId?.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: avatarView).store(in: &cancellables);
-            displayableId?.avatarPublisher.assign(to: \.image, on: avatarView).store(in: &cancellables);
+            if let namePublisher = displayableId?.displayNamePublisher, let avatarPublisher = displayableId?.avatarPublisher {
+                namePublisher.combineLatest(avatarPublisher).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] name, image in
+                    self?.avatarView.set(name: name, avatar: image);
+                }).store(in: &cancellables);
+            }
             displayableId?.statusPublisher.assign(to: \.status, on: statusView).store(in: &cancellables);
         }
     }
     
     var backgroundColor: NSColor? {
         didSet {
+            guard backgroundColor != statusView.backgroundColor else {
+                return;
+            }
             statusView.backgroundColor = backgroundColor;
             statusView.needsDisplay = true;
         }
@@ -99,26 +90,27 @@ class AvatarViewWithStatus: NSView {
     }
     
     fileprivate func initSubviews() {
-        self.wantsLayer = true;
+        //self.wantsLayer = true;
         self.avatarView = AvatarView(frame: self.frame);
         self.avatarView.translatesAutoresizingMaskIntoConstraints = false;
         self.avatarView.imageScaling = .scaleProportionallyUpOrDown;
         addSubview(avatarView);
-        
-        NSLayoutConstraint(item: self.avatarView!, attribute: .top, relatedBy: .equal, toItem: self, attribute: .top, multiplier: 1, constant: 0).isActive = true;
-        NSLayoutConstraint(item: self.avatarView!, attribute: .left, relatedBy: .equal, toItem: self, attribute: .left, multiplier: 1, constant: 0).isActive = true;
-        NSLayoutConstraint(item: self.avatarView!, attribute: .right, relatedBy: .equal, toItem: self, attribute: .right, multiplier: 1, constant: 0).isActive = true;
-        NSLayoutConstraint(item: self.avatarView!, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1, constant: 0).isActive = true;
-        NSLayoutConstraint(item: self.avatarView!, attribute: .width, relatedBy: .equal, toItem: self, attribute: .width, multiplier: 1, constant: 0).isActive = true;
-        NSLayoutConstraint(item: self.avatarView!, attribute: .height, relatedBy: .equal, toItem: self, attribute: .height, multiplier: 1, constant: 0).isActive = true;
 
         self.statusView = StatusView(frame: self.frame);
         self.statusView.translatesAutoresizingMaskIntoConstraints = false;
         addSubview(statusView, positioned: NSWindow.OrderingMode.above, relativeTo: self.avatarView);
-        NSLayoutConstraint(item: self.statusView!, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1, constant: 0).isActive = true;
-        NSLayoutConstraint(item: self.statusView!, attribute: .right, relatedBy: .equal, toItem: self, attribute: .right, multiplier: 1, constant: 0).isActive = true;
-        NSLayoutConstraint(item: self.statusView!, attribute: .width, relatedBy: .equal, toItem: self, attribute: .width, multiplier: 0.30, constant: 0).isActive = true;
-        NSLayoutConstraint(item: self.statusView!, attribute: .height, relatedBy: .equal, toItem: self, attribute: .height, multiplier: 0.30, constant: 0).isActive = true;
+
+        NSLayoutConstraint.activate([
+        NSLayoutConstraint(item: self.avatarView!, attribute: .top, relatedBy: .equal, toItem: self, attribute: .top, multiplier: 1, constant: 0),
+        NSLayoutConstraint(item: self.avatarView!, attribute: .left, relatedBy: .equal, toItem: self, attribute: .left, multiplier: 1, constant: 0),
+        NSLayoutConstraint(item: self.avatarView!, attribute: .right, relatedBy: .equal, toItem: self, attribute: .right, multiplier: 1, constant: 0),
+        NSLayoutConstraint(item: self.avatarView!, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1, constant: 0),
+        NSLayoutConstraint(item: self.avatarView!, attribute: .width, relatedBy: .equal, toItem: self, attribute: .width, multiplier: 1, constant: 0),
+        NSLayoutConstraint(item: self.avatarView!, attribute: .height, relatedBy: .equal, toItem: self, attribute: .height, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: self.statusView!, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1, constant: 0),
+        NSLayoutConstraint(item: self.statusView!, attribute: .right, relatedBy: .equal, toItem: self, attribute: .right, multiplier: 1, constant: 0),
+        NSLayoutConstraint(item: self.statusView!, attribute: .width, relatedBy: .equal, toItem: self, attribute: .width, multiplier: 0.30, constant: 0),
+        NSLayoutConstraint(item: self.statusView!, attribute: .height, relatedBy: .equal, toItem: self, attribute: .height, multiplier: 0.30, constant: 0)]);
         
         statusView.image = NSImage(named: NSImage.statusAvailableName);
         statusView.imageScaling = .scaleProportionallyUpOrDown;
@@ -158,9 +150,6 @@ class AvatarViewWithStatus: NSView {
         
         override func draw(_ dirtyRect: NSRect) {
             if backgroundColor != nil {
-                let context = NSGraphicsContext.current!;
-                context.saveGraphicsState();
-            
                 backgroundColor!.setFill();
                 let ellipse = NSBezierPath.init(roundedRect: dirtyRect, xRadius: dirtyRect.width/2, yRadius: dirtyRect.height/2);
                 ellipse.fill();
@@ -168,7 +157,6 @@ class AvatarViewWithStatus: NSView {
                 
                 super.draw(dirtyRect);
                 
-                context.restoreGraphicsState();
             } else {
                 super.draw(dirtyRect);
             }

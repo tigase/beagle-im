@@ -44,15 +44,15 @@ class DownloadManager {
         }
     }
 
-    func downloadInProgress(for item: ConversationAttachment) -> Bool {
+    func downloadInProgress(for item: ConversationEntry) -> Bool {
         return dispatcher.sync {
             return self.itemDownloadInProgress.contains(item.id);
         }
     }
 
-    func download(item: ConversationAttachment, maxSize: Int64) -> Bool {
+    func download(item: ConversationEntry, url: String, maxSize: Int64) -> Bool {
         return dispatcher.sync {
-            guard var url = URL(string: item.url) else {
+            guard var url = URL(string: url) else {
                 DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                     appendix.state = .error;
                 });

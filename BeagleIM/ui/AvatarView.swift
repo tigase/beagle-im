@@ -20,6 +20,7 @@
 //
 
 import AppKit
+import Combine
 
 class AvatarView: NSImageView {
 
@@ -32,17 +33,21 @@ class AvatarView: NSImageView {
             } else {
                 self.initials = nil;
             }
-            self.needsDisplay =  true;
         }
     }
-    fileprivate var initials: String?;
+    
+    private var initials: String?;
+    
+    func set(name: String?, avatar: NSImage?) {
+        self.name = name;
+        self.image = avatar;
+        self.needsDisplay = true;
+    }
     
     override func draw(_ dirtyRect: NSRect) {
-        NSGraphicsContext.saveGraphicsState();
-        
         let path = NSBezierPath(roundedRect: dirtyRect, xRadius: frame.width/2, yRadius: frame.width/2);
         path.addClip();
-                
+
         if let image = self.image {
             let size = image.size;
             let widthDiff = max(size.width - size.height, 0) / 2;
@@ -54,12 +59,12 @@ class AvatarView: NSImageView {
             let isDark = (self.appearance ?? NSAppearance.current)!.bestMatch(from: [.aqua, .darkAqua]) != .aqua;
             (isDark ? NSColor.white : NSColor.darkGray).withAlphaComponent(0.3).setFill();
             path.fill();
-            
+
             let font = NSFont.systemFont(ofSize: dirtyRect.width * 0.4, weight: .medium);
             let textAttr: [NSAttributedString.Key: Any] = [.foregroundColor: NSColor.white.withAlphaComponent(0.9), .font: font];
 
             let textSize = text.size(withAttributes: textAttr)
-            
+
             text.draw(in: CGRect(x: dirtyRect.midX - textSize.width/2, y: dirtyRect.midY - textSize.height/2, width: textSize.width, height: textSize.height), withAttributes: textAttr);
         } else {
             let image = NSImage(named: NSImage.userGuestName)!;
@@ -70,8 +75,6 @@ class AvatarView: NSImageView {
             let height = size.height - (2 * heightDiff);
             image.draw(in: dirtyRect, from: NSRect(x: widthDiff, y: heightDiff, width: width, height: height), operation: .sourceOver, fraction: 1.0);
         }
-
-        NSGraphicsContext.restoreGraphicsState();
     }
     
 }

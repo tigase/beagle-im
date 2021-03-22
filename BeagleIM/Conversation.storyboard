@@ -16,13 +16,13 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <scrollView verticalHuggingPriority="249" borderType="none" autohidesScrollers="YES" horizontalLineScroll="27" horizontalPageScroll="10" verticalLineScroll="27" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fFm-Kw-0RT">
-                                <rect key="frame" x="0.0" y="0.0" width="333" height="447"/>
+                                <rect key="frame" x="0.0" y="0.0" width="333" height="448"/>
                                 <clipView key="contentView" copiesOnScroll="NO" id="qKJ-4o-3VI">
-                                    <rect key="frame" x="0.0" y="0.0" width="333" height="447"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="333" height="448"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" tableStyle="fullWidth" selectionHighlightStyle="none" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="27" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" id="n3E-id-LN2" customClass="ChatViewTableView" customModule="BeagleIM" customModuleProvider="target">
-                                            <rect key="frame" x="0.0" y="0.0" width="333" height="447"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="333" height="448"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="backgroundColor" name="chatBackgroundColor"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
@@ -471,31 +471,39 @@
                                                             </connections>
                                                         </tableCellView>
                                                         <tableCellView identifier="ChatMarkerCellView" id="9Vh-KX-Ej1" customClass="ChatMarkerCellView" customModule="BeagleIM" customModuleProvider="target">
-                                                            <rect key="frame" x="0.0" y="194" width="333" height="22"/>
+                                                            <rect key="frame" x="0.0" y="194" width="333" height="18"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="hCC-Jp-Wkg">
                                                                     <rect key="frame" x="259" y="4" width="56" height="14"/>
                                                                     <textFieldCell key="cell" lineBreakMode="clipping" title="Displayed" id="Uix-mm-G9h">
                                                                         <font key="font" metaFont="system" size="11"/>
-                                                                        <color key="textColor" name="tertiaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
                                                                 </textField>
+                                                                <stackView distribution="fill" orientation="horizontal" alignment="top" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="PZ2-c6-dvG">
+                                                                    <rect key="frame" x="257" y="4" width="0.0" height="14"/>
+                                                                </stackView>
                                                             </subviews>
                                                             <constraints>
+                                                                <constraint firstItem="hCC-Jp-Wkg" firstAttribute="leading" secondItem="PZ2-c6-dvG" secondAttribute="trailing" constant="4" id="8Dm-Ib-vp0"/>
                                                                 <constraint firstItem="hCC-Jp-Wkg" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="9Vh-KX-Ej1" secondAttribute="leading" constant="20" id="Hch-xp-IWm"/>
+                                                                <constraint firstItem="PZ2-c6-dvG" firstAttribute="top" secondItem="9Vh-KX-Ej1" secondAttribute="top" id="PcL-nW-pJJ"/>
+                                                                <constraint firstItem="PZ2-c6-dvG" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="9Vh-KX-Ej1" secondAttribute="leading" constant="20" id="YLM-2D-yx3"/>
+                                                                <constraint firstAttribute="bottom" secondItem="PZ2-c6-dvG" secondAttribute="bottom" constant="4" id="YkL-BZ-YEq"/>
                                                                 <constraint firstAttribute="bottom" secondItem="hCC-Jp-Wkg" secondAttribute="bottom" constant="4" id="aFZ-Hd-64Q"/>
-                                                                <constraint firstItem="hCC-Jp-Wkg" firstAttribute="top" secondItem="9Vh-KX-Ej1" secondAttribute="top" constant="4" id="hTr-nb-ljV"/>
+                                                                <constraint firstItem="hCC-Jp-Wkg" firstAttribute="top" secondItem="9Vh-KX-Ej1" secondAttribute="top" id="hTr-nb-ljV"/>
                                                                 <constraint firstAttribute="trailing" secondItem="hCC-Jp-Wkg" secondAttribute="trailing" constant="20" id="rfZ-6Z-O5c"/>
                                                             </constraints>
                                                             <accessibility identifier="ChatMessageSystemCellView"/>
                                                             <connections>
+                                                                <outlet property="avatars" destination="PZ2-c6-dvG" id="GA3-kS-qaA"/>
                                                                 <outlet property="label" destination="hCC-Jp-Wkg" id="gsy-af-Dyo"/>
                                                             </connections>
                                                         </tableCellView>
                                                         <tableCellView identifier="ChatMeSystemCellView" id="0b2-Xg-GKW" customClass="ChatMeMessageCellView" customModule="BeagleIM" customModuleProvider="target">
-                                                            <rect key="frame" x="0.0" y="216" width="333" height="27"/>
+                                                            <rect key="frame" x="0.0" y="212" width="333" height="27"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textView horizontalHuggingPriority="251" verticalHuggingPriority="750" editable="NO" selectable="NO" drawsBackground="NO" verticallyResizable="YES" translatesAutoresizingMaskIntoConstraints="NO" id="chS-VN-Mvn" customClass="MessageTextView" customModule="BeagleIM" customModuleProvider="target">
@@ -526,7 +534,7 @@
                                                             </connections>
                                                         </tableCellView>
                                                         <tableCellView identifier="ChatInvitationCellView" id="YPX-Lw-780" customClass="ChatInvitationCellView" customModule="BeagleIM" customModuleProvider="target">
-                                                            <rect key="frame" x="0.0" y="243" width="333" height="64"/>
+                                                            <rect key="frame" x="0.0" y="239" width="333" height="64"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ABv-7Y-Zaz" customClass="AvatarView" customModule="BeagleIM" customModuleProvider="target">

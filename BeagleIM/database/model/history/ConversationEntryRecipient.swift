@@ -21,7 +21,7 @@
 
 import Foundation
 
-enum ConversationEntryRecipient: Equatable {
+enum ConversationEntryRecipient: Hashable {
     case none
     case occupant(nickname: String)
     

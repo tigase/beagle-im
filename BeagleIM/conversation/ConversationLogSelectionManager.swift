@@ -210,7 +210,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
                         selectionStart = SelectionPoint(entryId: itemId, timestamp: ts, location: range.location);
                         selectionEnd = SelectionPoint(entryId: itemId, timestamp: ts, location: range.location + range.length);
                         selectedItems.removeAll();
-                        if let item = self.controller?.dataSource.getItem(withId: itemId) as? ConversationEntryWithSender {
+                        if let item = self.controller?.dataSource.getItem(withId: itemId) {
                             selectedItems.append(SelectionItem(entry: item, attributedString: messageView.attributedString()));
                             self.selection = Selection(items: selectedItems, ends: selectionEnds());
                         }
@@ -245,7 +245,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
                         textStorage.endEditing();
                         
                         selectedItems.removeAll();
-                        if let item = self.controller?.dataSource.getItem(withId: itemId) as? ConversationEntryWithSender {
+                        if let item = self.controller?.dataSource.getItem(withId: itemId) {
                             selectedItems.append(SelectionItem(entry: item, attributedString: messageView.attributedString()));
                             self.selection = Selection(items: selectedItems, ends: selectionEnds());
                         }
@@ -269,7 +269,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         selectionStart = SelectionPoint(entryId: itemId, timestamp: ts, location: idx);
         inProgress = true;
         if !selectedItems.contains(where: { $0.entryId == itemId }) {
-            if let item = self.controller?.dataSource.getItem(withId: itemId) as? ConversationEntryWithSender {
+            if let item = self.controller?.dataSource.getItem(withId: itemId) {
                 selectedItems.append(SelectionItem(entry: item, attributedString: messageView.attributedString()));
             }
         }
@@ -288,7 +288,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         
         selectionEnd = SelectionPoint(entryId: itemId, timestamp: ts, location: idx);
         if !selectedItems.contains(where: { $0.entryId == itemId }) {
-            if let item = self.controller?.dataSource.getItem(withId: itemId) as? ConversationEntryWithSender {
+            if let item = self.controller?.dataSource.getItem(withId: itemId) {
                 selectedItems.append(SelectionItem(entry: item, attributedString: messageView.attributedString()));
             }
         }
@@ -331,7 +331,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         let tsRange = begin.timestamp...end.timestamp;
         
         table.enumerateAvailableRowViews({ (rowView, id) in
-            if let view = rowView.subviews.first as? ChatMessageCellView, let item = self.controller?.dataSource.getItem(withId: view.id) as? ConversationEntryWithSender {
+            if let view = rowView.subviews.first as? ChatMessageCellView, let item = self.controller?.dataSource.getItem(withId: view.id) {
                 if let textStorage = view.message.textStorage {
                     textStorage.beginEditing();
                     textStorage.removeAttribute(.backgroundColor, range: NSRange(0..<textStorage.length))
@@ -378,7 +378,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         let row = table.row(at: superview.convert(event.locationInWindow, from: nil));
        
         if selection == nil {
-            if row != NSNotFound, let view = table.view(atColumn: 0, row: row, makeIfNecessary: false) as? ChatMessageCellView, let item = controller?.dataSource.getItem(at: row) as? ConversationEntryWithSender {
+            if row != NSNotFound, let view = table.view(atColumn: 0, row: row, makeIfNecessary: false) as? ChatMessageCellView, let item = controller?.dataSource.getItem(at: row) {
                 selection = Selection(items: [SelectionItem(entry: item, attributedString: view.message.attributedString())], ends: nil);
             }
         }
@@ -549,7 +549,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         var timestamp: Date {
             return entry.timestamp;
         }
-        var entry: ConversationEntryWithSender;
+        var entry: ConversationEntry;
         var attributedString: NSAttributedString;
     }
 

@@ -23,6 +23,14 @@ import AppKit
 import TigaseSwift
 import Combine
 
+class GroupchatParticipantsTableView: NSTableView {
+    
+    override func prepareContent(in rect: NSRect) {
+        super.prepareContent(in: self.visibleRect);
+    }
+    
+}
+
 class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableViewDelegate, ConversationLogContextMenuDelegate, NSMenuItemValidation {
 
     @IBOutlet var avatarView: AvatarViewWithStatus!;
@@ -70,7 +78,6 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         }
         self.participantsContainer = GroupchatParticipantsContainer(delegate: self);
         self.participantsContainer?.tableView = self.participantsTableView;
-        self.participantsContainer?.room = self.room;
         self.participantsTableView.delegate = participantsContainer;
         self.participantsTableView.dataSource = participantsContainer;
 
@@ -96,6 +103,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
 
         sidebarWidthConstraint.constant = Settings.showRoomDetailsSidebar ? 200 : 0;
         avatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
+        self.participantsContainer?.room = self.room;
     }
     
     override func viewDidDisappear() {
@@ -220,21 +228,25 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             reply.target = self
             reply.tag = row;
         }
-        if let item = dataSource.getItem(at: row) as? ConversationEntryWithSender, item.state.direction == .outgoing && (item is ConversationMessage || item is ConversationAttachment) {
-            if item.state.isError {
-            } else {
-                if item is ConversationMessage, !dataSource.isAnyMatching({ ($0 as? ConversationEntryWithSender)?.state.direction == .outgoing && $0 is ConversationMessage }, in: 0..<row) {
-                    let correct = menu.addItem(withTitle: "Correct message", action: #selector(correctMessage), keyEquivalent: "");
-                    correct.target = self;
-                    correct.tag = item.id;
-                }
+        if let item = dataSource.getItem(at: row), item.state.direction == .outgoing {
+            switch item.payload {
+            case .message(_, _), .attachment(_, _):
+                if item.state.isError {
+                } else {
+                    if item.isMessage(), !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0.isMessage() }, in: 0..<row) {
+                        let correct = menu.addItem(withTitle: "Correct message", action: #selector(correctMessage), keyEquivalent: "");
+                        correct.target = self;
+                        correct.tag = item.id;
+                    }
                 
-                if room.state == .joined {
-                    let retract = menu.addItem(withTitle: "Retract message", action: #selector(retractMessage), keyEquivalent: "");
-                    retract.target = self;
-                    retract.tag = item.id;
+                    if room.state == .joined {
+                        let retract = menu.addItem(withTitle: "Retract message", action: #selector(retractMessage), keyEquivalent: "");
+                        retract.target = self;
+                        retract.tag = item.id;
+                    }
                 }
-
+            default:
+                break;
             }
         }
     }
@@ -275,9 +287,9 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     
     @IBAction func correctLastMessage(_ sender: AnyObject) {
         for i in 0..<dataSource.count {
-            if let item = dataSource.getItem(at: i) as? ConversationMessage, item.state.direction == .outgoing {
+            if let item = dataSource.getItem(at: i), item.state.direction == .outgoing, case .message(let message, _) = item.payload {
                 DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id, completionHandler: { [weak self] originId in
-                    self?.startMessageCorrection(message: item.message, originId: originId);
+                    self?.startMessageCorrection(message: message, originId: originId);
                 })
                 return;
             }
@@ -290,12 +302,12 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             return
         }
      
-        guard let item = dataSource.getItem(withId: tag) as? ConversationMessage else {
+        guard let item = dataSource.getItem(withId: tag), case .message(let message, _) = item.payload else {
             return;
         }
         
         DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id, completionHandler: { [weak self] originId in
-            self?.startMessageCorrection(message: item.message, originId: originId);
+            self?.startMessageCorrection(message: message, originId: originId);
         })
     }
     
@@ -305,7 +317,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             return
         }
         
-        guard let item = dataSource.getItem(withId: tag) as? ConversationEntryWithSender, let chat = self.conversation as? Room else {
+        guard let item = dataSource.getItem(withId: tag), item.sender != .none, let chat = self.conversation as? Room else {
             return;
         }
         
@@ -434,6 +446,8 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
     
     weak var tableView: NSTableView? {
         didSet {
+            tableView?.usesAutomaticRowHeights = false;
+            tableView?.rowHeight = 28;
             tableView?.menu = self.prepareContextMenu();
             tableView?.menu?.delegate = self;
         }
@@ -441,6 +455,11 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
     var room: Room? {
         didSet {
             cancellables.removeAll();
+//            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+//                self.room?.occupantsPublisher.receive(on: self.dispatcher.queue).sink(receiveValue:{ [weak self] value in
+//                    self?.update(participants: value);
+//                }).store(in: &self.cancellables);
+//            }
             room?.occupantsPublisher.receive(on: self.dispatcher.queue).sink(receiveValue:{ [weak self] value in
                     self?.update(participants: value);
             }).store(in: &cancellables);
@@ -458,15 +477,16 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
     }
     
     private func update(participants: [MucOccupant]) {
-        let oldParticipants = DispatchQueue.main.sync { return self.participants; };
+        let oldParticipants = self.participants;
         let newParticipants = participants.sorted(by: { (i1,i2) -> Bool in i1.nickname.lowercased() < i2.nickname.lowercased() });
         let changes = newParticipants.calculateChanges(from: oldParticipants);
             
-        DispatchQueue.main.async {
+        let initialReload = oldParticipants.isEmpty;
+        DispatchQueue.main.sync {
             self.participants = newParticipants;
             self.tableView?.beginUpdates();
-            self.tableView?.removeRows(at: changes.removed, withAnimation: .effectFade);
-            self.tableView?.insertRows(at: changes.inserted, withAnimation: .effectFade);
+            self.tableView?.removeRows(at: changes.removed, withAnimation: initialReload ? [] : .effectFade);
+            self.tableView?.insertRows(at: changes.inserted, withAnimation: initialReload ? [] : .effectFade);
             self.tableView?.endUpdates();
         }
     }
@@ -477,9 +497,10 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         let participant = participants[row];
-        if let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("GroupchatParticipantCellView"), owner: self) as? GroupchatParticipantCellView {
+        if let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("GroupchatParticipantCellView"), owner: nil) as? GroupchatParticipantCellView {
             
             view.set(occupant: participant, in: room!);
+            view.identifier = NSUserInterfaceItemIdentifier("GroupchatParticipantCellView")
                     
             return view;
         }
@@ -581,7 +602,11 @@ class GroupchatPMPopover: NSPopover {
 
 class GroupchatParticipantCellView: NSTableCellView {
     
-    @IBOutlet var avatar: AvatarViewWithStatus!;
+    @IBOutlet var avatar: AvatarViewWithStatus! {
+        didSet {
+            avatar.backgroundColor = NSColor(named: "chatBackgroundColor")!;
+        }
+    }
     @IBOutlet var label: NSTextField!;
    
     private var cancellables: Set<AnyCancellable> = [];
@@ -603,7 +628,6 @@ class GroupchatParticipantCellView: NSTableCellView {
 
             if let occupant = occupant {
                 let nickname = occupant.nickname;
-                avatar.name = occupant.nickname;
                 label.stringValue = occupant.nickname;
                 
                 occupant.$presence.map({ $0.show }).receive(on: DispatchQueue.main).assign(to: \.status, on: avatar).store(in: &cancellables);
@@ -613,14 +637,16 @@ class GroupchatParticipantCellView: NSTableCellView {
     }
     private var avatarObj: Avatar? {
         didSet {
-            avatarObj?.$avatar.assign(to: \.avatar, on: avatar).store(in: &cancellables);
+            let name = self.label.stringValue;
+            avatarObj?.avatarPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] image in
+                self?.avatar.avatarView.set(name: name, avatar: image);
+            }).store(in: &cancellables);
         }
     }
     
     func set(occupant: MucOccupant, in room: Room) {
         self.occupant = occupant;
         self.avatarObj = occupant.avatar;
-        avatar.backgroundColor = NSColor(named: "chatBackgroundColor")!;
     }
     
 }
@@ -777,7 +803,7 @@ class MucOccupantSuggestionItemView: SuggestionItemView<MucOccupant> {
             label.stringValue = item?.nickname ?? "";
             avatar.name = item?.nickname ?? "";
             self.avatarPublisher = item?.avatar;
-            avatarPublisher?.$avatar.assign(to: \.image, on: avatar).store(in: &cancellables);
+            avatarPublisher?.avatarPublisher.assign(to: \.image, on: avatar).store(in: &cancellables);
         }
     }
     

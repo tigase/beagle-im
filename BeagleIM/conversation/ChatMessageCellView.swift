@@ -33,25 +33,19 @@ class ChatMessageCellView: BaseChatCellView {
     }
         
 
-    func set(retraction item: ConversationMessageRetracted, nickname: String? = nil) {
+    override func set(item: ConversationEntry) {
         super.set(item: item);
         id = item.id;
-        
-        let msg = NSAttributedString(string: "(this message has been removed)", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium), toHaveTrait: .italicFontMask), .foregroundColor: NSColor.secondaryLabelColor]);
-        
-        self.message.textColor = NSColor.secondaryLabelColor;
-        self.message.attributedString = msg;
     }
-
-    func set(message item: ConversationMessage, nickname: String? = nil) {
-        super.set(item: item);
-        id = item.id;
+    
+    func set(item: ConversationEntry, message: String, correctionTimestamp: Date?, nickname: String? = nil) {
+        set(item: item);
         
-        if item.isCorrected && item.state.direction == .incoming {
+        if correctionTimestamp != nil, case .incoming(_) = item.state {
             self.state!.stringValue = "✏️\(self.state!.stringValue)";
         }
         
-        let messageBody = self.messageBody(item: item);
+        let messageBody = self.messageBody(item: item, message: message);
         let msg = NSMutableAttributedString(string: messageBody);
         let fontSize = NSFont.systemFontSize;
         msg.setAttributes([.font: NSFont.systemFont(ofSize: fontSize, weight: .light)], range: NSRange(location: 0, length: msg.length));
@@ -69,24 +63,19 @@ class ChatMessageCellView: BaseChatCellView {
         if let errorMessage = item.state.errorMessage {
             msg.append(NSAttributedString(string: "\n------\n\(errorMessage)", attributes: [.foregroundColor : NSColor.systemRed]));
         }
-
-//        switch item.state {
-//        case .incoming_error(_, _):
-//            self.message.textColor = NSColor.systemRed;
-//        case .outgoing(let state):
-//            switch state {
-//            case .unsent:
-//                self.message.textColor = NSColor.secondaryLabelColor;
-//            default:
-//                self.message.textColor = nil;
-//            }
-//        default:
-//            self.message.textColor = nil;//NSColor.textColor;
-//        }
         self.message.textColor = NSColor.controlTextColor;
         self.message.attributedString = msg;
         updateTextColor();
         autodetectLinksAndData(messageBody: msg.string);
+    }
+    
+    func setRetracted(item: ConversationEntry) {
+        set(item: item);
+
+        let msg = NSAttributedString(string: "(this message has been removed)", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium), toHaveTrait: .italicFontMask), .foregroundColor: NSColor.secondaryLabelColor]);
+        
+        self.message.textColor = NSColor.secondaryLabelColor;
+        self.message.attributedString = msg;
     }
     
     private func autodetectLinksAndData(messageBody: String) {
@@ -127,24 +116,28 @@ class ChatMessageCellView: BaseChatCellView {
     }
     
     override func prepareTooltip(item: ConversationEntry) -> String {
-        if let message = item as? ConversationMessage, let correctionTimestamp = message.correctionTimestamp {
-            return "edited at " + BaseChatCellView.tooltipFormatter.string(from: correctionTimestamp);
-        } else {
-            return super.prepareTooltip(item: item);
+        switch item.payload {
+        case .message(_, let correctionTimestamp):
+            if let timestamp = correctionTimestamp {
+                return "edited at " + BaseChatCellView.tooltipFormatter.string(from: timestamp);
+            }
+        default:
+            break;
         }
+        return super.prepareTooltip(item: item);
     }
     
-    fileprivate func messageBody(item: ConversationMessage) -> String {
+    fileprivate func messageBody(item: ConversationEntry, message: String) -> String {
         guard let msg = item.encryption.message() else {
             switch item.state {
             case .incoming_error(_, let errorMessage), .outgoing_error(_, let errorMessage):
                 if let error = errorMessage {
-                    return "\(item.message)\n-----\n\(error)"
+                    return "\(message)\n-----\n\(error)"
                 }
             default:
                 break;
             }
-            return item.message;
+            return message;
         }
         return msg;
     }

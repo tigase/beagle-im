@@ -26,20 +26,18 @@ class ChatLinkPreviewCellView: NSTableCellView {
     
     var linkView: NSView? {
         didSet {
-            if #available(macOS 10.15, *) {
-                if let value = oldValue as? LPLinkViewPool.PoolableLPLinkView {
-                    LPLinkViewPool.instance.release(linkView: value);
-                    value.removeFromSuperview();
-                }
-                if let value = linkView {
-                    self.addSubview(value);
-                    NSLayoutConstraint.activate([
-                        value.topAnchor.constraint(equalTo: self.topAnchor, constant: 0),
-                        value.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -4),
-                        value.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 40),
-                        value.trailingAnchor.constraint(lessThanOrEqualTo: self.trailingAnchor, constant: -26)
-                    ]);
-                }
+            if let value = oldValue as? LPLinkViewPool.PoolableLPLinkView {
+                LPLinkViewPool.instance.release(linkView: value);
+                value.removeFromSuperview();
+            }
+            if let value = linkView {
+                self.addSubview(value);
+                NSLayoutConstraint.activate([
+                    value.topAnchor.constraint(equalTo: self.topAnchor, constant: 0),
+                    value.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -4),
+                    value.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 40),
+                    value.trailingAnchor.constraint(lessThanOrEqualTo: self.trailingAnchor, constant: -26)
+                ]);
             }
         }
     }
@@ -52,40 +50,38 @@ class ChatLinkPreviewCellView: NSTableCellView {
         }
     }
 
-    func set(item: ConversationLinkPreview) {
+    func set(item: ConversationEntry, url: String) {
         self.linkView = nil;
-        if #available(macOS 10.15, *) {
-            var metadata = MetadataCache.instance.metadata(for: "\(item.id)");
-            var isNew = false;
-            let url = URL(string: item.url)!;
+        var metadata = MetadataCache.instance.metadata(for: "\(item.id)");
+        var isNew = false;
+        let url = URL(string: url)!;
 
-            if (metadata == nil) {
-                metadata = LPLinkMetadata();
-                metadata!.originalURL = url;
-                isNew = true;
-            }
-            let linkView = LPLinkViewPool.instance.acquire(url: url);
-            linkView.translatesAutoresizingMaskIntoConstraints = false;
-            linkView.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
-            linkView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
-            
-            linkView.metadata = metadata!;
+        if (metadata == nil) {
+            metadata = LPLinkMetadata();
+            metadata!.originalURL = url;
+            isNew = true;
+        }
+        let linkView = LPLinkViewPool.instance.acquire(url: url);
+        linkView.translatesAutoresizingMaskIntoConstraints = false;
+        linkView.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
+        linkView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
+        
+        linkView.metadata = metadata!;
 
-            self.linkView = linkView;
+        self.linkView = linkView;
 
-            if isNew && (item.conversation as? Conversation)?.automaticallyFetchPreviews ?? false {
-                MetadataCache.instance.generateMetadata(for: url, withId: "\(item.id)", completionHandler: { [weak linkView] meta1 in
-                    guard let meta = meta1 else {
+        if isNew && (item.conversation as? Conversation)?.automaticallyFetchPreviews ?? false {
+            MetadataCache.instance.generateMetadata(for: url, withId: "\(item.id)", completionHandler: { [weak linkView] meta1 in
+                guard let meta = meta1 else {
+                    return;
+                }
+                DispatchQueue.main.async {
+                    guard let linkView = linkView, linkView.metadata.originalURL == url else {
                         return;
                     }
-                    DispatchQueue.main.async {
-                        guard let linkView = linkView, linkView.metadata.originalURL == url else {
-                            return;
-                        }
-                        linkView.metadata = meta;
-                    }
-                })
-            }
+                    linkView.metadata = meta;
+                }
+            })
         }
     }
 

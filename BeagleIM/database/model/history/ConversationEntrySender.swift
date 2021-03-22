@@ -22,40 +22,45 @@
 import AppKit
 import TigaseSwift
 
-enum ConversationEntrySender: Equatable {
+public enum ConversationEntrySender: Hashable {
     
+    case none
+    case me(nickname: String)
     case buddy(nickname: String)
     case occupant(nickname: String, jid: BareJID?)
     case participant(id: String, nickname: String, jid: BareJID?)
     
-    var nickname: String {
+    var nickname: String? {
         switch self {
+        case .me(let nickname):
+            return nickname;
         case .buddy(let nickname), .occupant(let nickname, _), .participant(_, let nickname,  _):
             return nickname;
+        case .none:
+            return nil;
         }
     }
     
-    func avatar(for key: ConversationKey, direction: MessageDirection) -> Avatar {
-        switch direction {
-        case .outgoing:
+    func avatar(for key: ConversationKey) -> Avatar? {
+        switch self {
+        case .me:
             return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: key.account, mucNickname: nil));
-        case .incoming:
-            switch self {
-            case  .buddy(_):
-                return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: key.jid, mucNickname: nil));
-            case .occupant(let nickname, let jid):
-                if let jid = jid {
-                    return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: jid, mucNickname: nil));
-                } else {
-                    return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: key.jid, mucNickname: nickname));
-                }
-            case .participant(let participantId, _, let jid):
-                if let jid = jid {
-                    return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: jid, mucNickname: nil));
-                } else {
-                    return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: BareJID(localPart: "\(participantId)#\(key.jid.localPart ?? "")", domain: key.jid.domain), mucNickname: nil));
-                }
+        case  .buddy(_):
+            return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: key.jid, mucNickname: nil));
+        case .occupant(let nickname, let jid):
+            if let jid = jid {
+                return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: jid, mucNickname: nil));
+            } else {
+                return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: key.jid, mucNickname: nickname));
             }
+        case .participant(let participantId, _, let jid):
+            if let jid = jid {
+                return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: jid, mucNickname: nil));
+            } else {
+                return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: BareJID(localPart: "\(participantId)#\(key.jid.localPart ?? "")", domain: key.jid.domain), mucNickname: nil));
+            }
+        case .none:
+            return nil;
         }
     }
     
@@ -69,7 +74,7 @@ enum ConversationEntrySender: Equatable {
     }
     
     static func me(conversation: ConversationKey) -> ConversationEntrySender {
-        return .buddy(nickname: AccountManager.getAccount(for: conversation.account)?.nickname ?? conversation.account.stringValue)
+        return .me(nickname: AccountManager.getAccount(for: conversation.account)?.nickname ?? conversation.account.stringValue);
     }
     
     static func buddy(conversation: ConversationKey) -> ConversationEntrySender {

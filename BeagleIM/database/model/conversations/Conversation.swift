@@ -44,12 +44,17 @@ public protocol Conversation: ConversationProtocol, ConversationKey, Displayable
     
     var automaticallyFetchPreviews: Bool { get }
     
+    var markersPublisher: AnyPublisher<[ChatMarker],Never> { get }
+    
+    func mark(as markerType: ChatMarker.MarkerType, before: Date, by sender: ConversationEntrySender);
     func markAsRead(count: Int) -> Bool;
     func update(lastActivity: LastConversationActivity?, timestamp: Date, isUnread: Bool) -> Bool;
     
     func sendMessage(text: String, correctedMessageOriginId: String?);
     func prepareAttachment(url: URL, completionHandler: @escaping (Result<(URL,Bool,((URL)->URL)?),ShareError>)->Void);
     func sendAttachment(url: String, appendix: ChatAttachmentAppendix, originalUrl: URL?, completionHandler: (()->Void)?);
+    
+    func isLocal(sender: ConversationEntrySender) -> Bool;
 }
 
 import TigaseSwiftOMEMO
@@ -61,7 +66,7 @@ extension Conversation {
         return DBChatHistoryStore.instance.history(for: self, queryType: type);
     }
     
-    func retract(entry: ConversationEntryWithSender) {
+    func retract(entry: ConversationEntry) {
         guard context != nil else {
             return;
         }
@@ -126,42 +131,8 @@ public enum ConversationNotification: String {
     case always
 }
 
-
-
-private var chatMarkers: [ChatMarkersKey: ChatMarkersHolder] = [:];
-
-private struct ChatMarkersKey: Hashable {
-    let account: BareJID;
-    let conversationJID: BareJID;
-}
-
-private class ChatMarkersHolder {
-
-    @Published
-    var markers: [JID:ChatMarker] = [:];
-        
-    func mark(as markerType: ChatMarker.MarkerType, before: Date, by jid: JID) {
-        if let marker = markers[jid] {
-            switch markerType {
-            case .received:
-                guard marker.timestamp < before else {
-                    return;
-                }
-            case .displayed:
-                guard marker.timestamp <= before else {
-                    return;
-                }
-            }
-        }
-        markers[jid] = ChatMarker(jid: jid, timestamp: before, type: markerType);
-
-//        self.markers = self.markers.filter({ $0.jid != jid || ($0.timestamp > before && $0.type > markerType) }) + [ChatMarker(jid: jid, timestamp: before, type: markerType)];
-    }
-    
-}
-
 public struct ChatMarker: Hashable {
-    let jid: JID;
+    let sender: ConversationEntrySender;
     let timestamp: Date;
     let type: MarkerType;
     
@@ -180,29 +151,7 @@ public struct ChatMarker: Hashable {
     }
 }
 
-fileprivate func chatMarkersHolder(account: BareJID, jid: BareJID) -> ChatMarkersHolder{
-    guard let holder = chatMarkers[.init(account: account, conversationJID: jid)] else {
-        let holder = ChatMarkersHolder();
-        chatMarkers[.init(account: account, conversationJID: jid)] = holder;
-        return holder;
-    }
-    return holder;
-}
-
 extension Conversation {
-    
-    public var markersPublisher: AnyPublisher<[ChatMarker],Never> {
-        return chatMarkersHolder(account: self.account, jid: self.jid).$markers.map({ Array($0.values) }).eraseToAnyPublisher();
-    }
-    
-}
-
-extension Conversation {
-    
-    public func mark(as markerType: ChatMarker.MarkerType, before: Date, by jid: JID) {
-        // for 1-1
-        return chatMarkersHolder(account: self.account, jid: self.jid).mark(as: markerType, before: before, by: jid.withoutResource);
-    }
      
 //    public func readTillTimestampPublisher(for jid: JID) -> Published<Date?>.Publisher {
 //        return entry(for: jid).$timestamp;

@@ -22,20 +22,7 @@
 import Foundation
 import TigaseSwift
 
-class ConversationAttachment: ConversationEntryWithSender {
-    
-    let url: String;
-    var appendix: ChatAttachmentAppendix;
-    
-    init(id: Int, conversation: ConversationKey, timestamp: Date, state: ConversationEntryState, sender: ConversationEntrySender, recipient: ConversationEntryRecipient, encryption: ConversationEntryEncryption, url: String, appendix: ChatAttachmentAppendix) {
-        self.url = url;
-        self.appendix = appendix;
-        super.init(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, recipient: recipient, encryption: encryption);
-    }
-        
-}
-
-public struct ChatAttachmentAppendix: AppendixProtocol {
+public struct ChatAttachmentAppendix: AppendixProtocol, Hashable {
     
     var state: State = .new;
     var filesize: Int? = nil;

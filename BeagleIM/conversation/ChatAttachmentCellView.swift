@@ -61,7 +61,7 @@ class ChatAttachmentCellView: BaseChatCellView {
     }
     
     fileprivate var direction: MessageDirection? = nil;
-    fileprivate var item: ConversationAttachment?;
+    fileprivate var item: ConversationEntry?;
 
     var customTrackingArea: NSTrackingArea?;
     
@@ -77,7 +77,7 @@ class ChatAttachmentCellView: BaseChatCellView {
     
     
     
-    func set(item: ConversationAttachment) {
+    func set(item: ConversationEntry, url: String, appendix: ChatAttachmentAppendix) {
         self.item = item;
         super.set(item: item);
         self.direction = item.state.direction;
@@ -140,8 +140,8 @@ class ChatAttachmentCellView: BaseChatCellView {
                 })
             }
         } else {
-            self.downloadButton?.isEnabled = item.appendix.state != .gone;
-            self.downloadButton?.isHidden = item.appendix.state == .gone;
+            self.downloadButton?.isEnabled = appendix.state != .gone;
+            self.downloadButton?.isHidden = appendix.state == .gone;
             self.actionButton?.isEnabled = false;
             self.actionButton?.isHidden = true;
             
@@ -154,14 +154,14 @@ class ChatAttachmentCellView: BaseChatCellView {
                 customView.topAnchor.constraint(equalTo: attachmentInfo.topAnchor),
                 customView.bottomAnchor.constraint(equalTo: attachmentInfo.bottomAnchor)
             ])
-            attachmentInfo.set(item: item);
+            attachmentInfo.set(item: item, url: url, appendix: appendix);
             
-            switch item.appendix.state {
+            switch appendix.state {
             case .new:
                 let sizeLimit = Settings.fileDownloadSizeLimit;
                 if sizeLimit > 0 {
                     if (DBRosterStore.instance.item(for: item.conversation.account, jid: JID(item.conversation.jid))?.subscription ?? .none).isFrom || (DBChatStore.instance.conversation(for: item.conversation.account, with: item.conversation.jid) as? Room != nil) {
-                        _ = DownloadManager.instance.download(item: item, maxSize: Int64(sizeLimit));
+                        _ = DownloadManager.instance.download(item: item, url: url, maxSize: Int64(sizeLimit));
                         progressIndicator = NSProgressIndicator();
                         return;
                     }
@@ -178,12 +178,12 @@ class ChatAttachmentCellView: BaseChatCellView {
     }
     
     @IBAction func downloadClicked(_ sender: Any) {
-        guard let item = self.item else {
+        guard let item = self.item, case .attachment(let url, _) = item.payload else {
             return;
         }
         
         guard DownloadStore.instance.url(for: "\(item.id)") != nil else {
-            _ = DownloadManager.instance.download(item: item, maxSize: Int64.max);
+            _ = DownloadManager.instance.download(item: item, url: url, maxSize: Int64.max);
             self.progressIndicator = NSProgressIndicator();
             return;
         }
@@ -450,7 +450,7 @@ class ChatAttachmentCellView: BaseChatCellView {
             NSGraphicsContext.restoreGraphicsState();
         }
                 
-        func set(item: ConversationAttachment) {
+        func set(item: ConversationEntry, url: String, appendix: ChatAttachmentAppendix) {
             if let fileUrl = DownloadStore.instance.url(for: "\(item.id)") {
                 filename.stringValue = fileUrl.lastPathComponent;
                 let fileSize = fileSizeToString(try? FileManager.default.attributesOfItem(atPath: fileUrl.path)[.size] as? UInt64);
@@ -469,14 +469,14 @@ class ChatAttachmentCellView: BaseChatCellView {
                     self.viewType = .file;
                 }
             } else {
-                let filename = item.appendix.filename ?? URL(string: item.url)?.lastPathComponent ?? "";
+                let filename = appendix.filename ?? URL(string: url)?.lastPathComponent ?? "";
                 if filename.isEmpty {
                     self.filename.stringValue =  "Unknown file";
                 } else {
                     self.filename.stringValue = filename;
                 }
-                if let size = item.appendix.filesize {
-                    if let mimetype = item.appendix.mimetype, let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimetype as CFString, nil)?.takeRetainedValue(), let typeName = UTTypeCopyDescription(uti)?.takeRetainedValue() as String? {
+                if let size = appendix.filesize {
+                    if let mimetype = appendix.mimetype, let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimetype as CFString, nil)?.takeRetainedValue(), let typeName = UTTypeCopyDescription(uti)?.takeRetainedValue() as String? {
                         let fileSize = size >= 0 ? fileSizeToString(UInt64(size)) : "--";
                         details.stringValue = "\(typeName) - \(fileSize)";
                         iconView.image = NSWorkspace.shared.icon(forFileType: uti as String);

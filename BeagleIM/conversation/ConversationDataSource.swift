@@ -8,17 +8,22 @@
 
 import Foundation
 import Combine
+import TigaseSwift
 
 protocol ConversationDataSourceDelegate: class {
     
     var conversation: Conversation! { get }
     
-    func itemAdded(at: IndexSet);
+    func beginUpdates();
+    
+    func endUpdates();
+    
+    func itemsAdded(at: IndexSet, initial: Bool);
 
     func itemsUpdated(forRowIndexes: IndexSet);
-    
+
     func itemUpdated(indexPath: IndexPath);
-    
+
     func itemsRemoved(at: IndexSet);
     
     func itemsReloaded();
@@ -28,6 +33,16 @@ protocol ConversationDataSourceDelegate: class {
     func scrollRowToVisible(_ row: Int);
     
     func markAsReadUpToNewestVisibleRow();
+}
+
+extension ConversationDataSourceDelegate {
+
+    func update(_ block: (ConversationDataSourceDelegate)->Void) {
+        beginUpdates();
+        block(self);
+        endUpdates();
+    }
+
 }
 
 public enum ConversationLoadType {
@@ -71,6 +86,12 @@ class ConversationDataSource {
     var count: Int {
         return store.count;
     }
+    
+    private var oldestEntry: ConversationEntry?;
+    private var entries: [ConversationEntry] = [];
+    private var entriesCount: Int = 0;
+    private var markers: [ConversationEntry] = [];
+    private var unreads: [ConversationEntry] = [];
     
     private var cancellables: Set<AnyCancellable> = [];
     private var knownItems: Set<Int> = [];
@@ -127,11 +148,11 @@ class ConversationDataSource {
         }
         remove(item: item);
     }
-    
+        
     func refreshDataNoReload() {
         queue.async {
-            let store = DispatchQueue.main.sync { return self.store; };
-            DispatchQueue.main.async {
+            let store = self.store;
+            DispatchQueue.main.sync {
                 self.store = store;
                 self.delegate?.itemsReloaded();
             }
@@ -144,50 +165,62 @@ class ConversationDataSource {
         guard state != .loading, let conversation = self.delegate?.conversation else {
             return;
         }
+        let initialLoad = self.state == .uninitialized;
         state = .loading;
         queue.async {
             let items: [ConversationEntry] = conversation.loadItems(type);
-            self.add(items: items, scrollTo: .from(loadType: type), completionHandler: {
+            self.add(items: items, scrollTo: .from(loadType: type), initial: initialLoad, completionHandler: {
                 self.state = .loaded;
             });
         }
     }
+        
+    private struct ChatMarkerKey: Hashable {
+        let type: ChatMarker.MarkerType;
+        let timestamp: Date;
+    }
     
-    private var markers: [ChatMarker] = [];
-    
-    private static func sortConversationEntries(it1: ConversationEntry, it2: ConversationEntry) -> Bool {
-        let unsent1 = (it1 as? ConversationEntryWithSender)?.state.isUnsent ?? false;
-        let unsent2 = (it2 as? ConversationEntryWithSender)?.state.isUnsent ?? false;
-        if unsent1 == unsent2 {
-            let result = it1.timestamp.compare(it2.timestamp);
-            guard result == .orderedSame else {
-                return result == .orderedAscending ? false : true;
+    // call only from local dispatch queue
+    private func updateStore(scrollTo: ScrollTo = .none, completionHandler: (()->Void)? = nil) {
+        let entriesCount = entries.count;
+
+        let oldStore = store;
+        let newStore = (entries + unreads + markers).sorted();
+        
+        var scrollToIdx: Int?;
+        switch scrollTo {
+        case .oldestUnread:
+            if let lastUnreadIdx = newStore.lastIndex(where: { $0.state.isUnread }) {
+                scrollToIdx = lastUnreadIdx;
             }
-            if it1.id == it2.id || (it1.id == -1 || it2.id == -1) {
-                if let i1 = it1 as? ConversationEntryRelated {
-                    switch i1.order {
-                    case .first:
-                        return false;
-                    case .last:
-                        return true;
-                    }
-                }
-                if let i2 = it2 as? ConversationEntryRelated {
-                    switch i2.order {
-                    case .first:
-                        return true;
-                    case .last:
-                        return false;
-                    }
-                }
+        case .message(let id):
+            scrollToIdx = newStore.firstIndex(where: { $0.id == id });
+        case .none:
+            break;
+        }
+
+        let oldestEntry = newStore.last(where: { $0.sender != .none });
+        
+        let changes = newStore.calculateChanges(from: oldStore);
+        let initial = self.state != .loaded;
+        DispatchQueue.main.sync {
+            self.store = newStore;
+            self.entriesCount = entriesCount;
+            self.oldestEntry = oldestEntry;
+            completionHandler?();
+            self.delegate?.update({ delegate in
+                // it looks like insert/removed are not detected at all!
+                let inserted = changes.inserted;
+                let removed = changes.removed;
+                delegate.itemsRemoved(at: changes.removed);
+                delegate.itemsAdded(at: changes.inserted, initial: initial);
+            })
+            
+            if let scrollToIdx = scrollToIdx {
+                self.delegate?.scrollRowToVisible(scrollToIdx);
+            } else {
+                self.delegate?.markAsReadUpToNewestVisibleRow();
             }
-            // this does not work well if id is -1..
-            return it1.id < it2.id ? false : true;
-        } else {
-            if unsent1 {
-                return false;
-            }
-            return true;
         }
     }
     
@@ -195,23 +228,16 @@ class ConversationDataSource {
         guard let conversation = self.delegate?.conversation else {
             return;
         }
+                
+        let grouped: [ChatMarkerKey: [ConversationEntrySender]] = markers.reduce(into: [:], { result, marker in
+            result[ChatMarkerKey(type: marker.type, timestamp: marker.timestamp), default: []] += [marker.sender];
+        })
         
-        let oldStore = DispatchQueue.main.sync { return self.store; };
-        var store = oldStore.filter({ !($0 is ConversationMarker)});
-        store.append(contentsOf: markers.map({ ConversationMarker(markedMessageId: -1, conversationKey: conversation, timestamp: $0.timestamp, sender: .buddy(conversation: conversation), marker: $0.type) }));
-        store = store.sorted(by: ConversationDataSource.sortConversationEntries);
-        
-        let changes = store.calculateChanges(from: oldStore);
-        
-        DispatchQueue.main.async {
-            self.store = store;
-//            if changes.removed == 0 && changes.inserted == 0 {
-//                self.delegate?.itemsUpdated(forRowIndexes: <#T##IndexSet#>)
-//            } else {
-                self.delegate?.itemsRemoved(at: changes.removed);
-                self.delegate?.itemAdded(at: changes.inserted);
-//            }
-        }
+        self.markers = grouped.map({ k, v in
+            return ConversationEntry(id: Int.max, conversation: conversation, timestamp: k.timestamp, state: .none, sender: .none, payload: .marker(type: k.type, senders: v), recipient: .none, encryption: .none)
+        });
+
+        self.updateStore();
     }
  
     private func add(item: ConversationEntry) {
@@ -221,16 +247,15 @@ class ConversationDataSource {
     }
     
     func getItem(at row: Int) -> ConversationEntry? {
-        guard store.count > row else {
+        guard store.count > row && row >= 0 else {
             return nil;
         }
         let store = self.store;
         let item = store[row];
         // load more if remaining equals ChatMarkers!
-        if row >= (store.count - 1) && row < store.count {
-            if store.count > 0 {
-                let it = store[store.count - 1];
-                self.loadItems(.before(entry: it, limit: self.defaultPageSize))
+        if row >= (entriesCount - 1) {
+            if let oldestEntry = self.oldestEntry {
+                self.loadItems(.before(entry: oldestEntry, limit: self.defaultPageSize))
             }
         }
         return item;
@@ -269,48 +294,25 @@ class ConversationDataSource {
     
     func remove(item: ConversationEntry) {
         queue.async {
-            var store = DispatchQueue.main.sync { return self.store; };
-            
-            // do something when item needs to be updated, ie. marked as delivered or read..
-            //            items[idx] = item;
-            guard self.knownItems.contains(item.id), let oldIdx = store.firstIndex(of: item) else {
+            guard self.knownItems.contains(item.id) else {
                 return;
             }
             self.knownItems.remove(item.id);
-            store.remove(at: oldIdx);
-            
-            DispatchQueue.main.async {
-                self.store = store;
-                self.delegate?.itemsRemoved(at: IndexSet([oldIdx]));
-                if oldIdx > 0 && self.store.count > 0 {
-                    self.delegate?.itemUpdated(indexPath: IndexPath(item: oldIdx - 1, section: 0));
-                }
-            }
+            self.entries = self.entries.filter({ $0.id == item.id });
+
+            self.updateStore();
         }
     }
 
     func update(item: ConversationEntry) {
         queue.async {
-            let oldStore = DispatchQueue.main.sync { return self.store; };
-            
-            var store = oldStore;
-            // do something when item needs to be updated, ie. marked as delivered or read..
-            //            items[idx] = item;
-            if self.knownItems.contains(item.id), let oldIdx = store.firstIndex(of: item) {
-                store.remove(at: oldIdx);
-            } else {
+            var entries = self.entries.filter({ $0.id != item.id });
+            if !self.knownItems.contains(item.id) {
                 self.knownItems.insert(item.id);
             }
-            store.append(item);
-            store = store.sorted(by: ConversationDataSource.sortConversationEntries(it1:it2:));
-
-            let changes = store.calculateChanges(from: oldStore);
-            
-            DispatchQueue.main.async {
-                self.store = store;
-                self.delegate?.itemsRemoved(at: changes.removed);
-                self.delegate?.itemAdded(at: changes.inserted);
-            }
+            entries.append(item);
+            self.entries = entries
+            self.updateStore();
         }
     }
 
@@ -320,19 +322,12 @@ class ConversationDataSource {
         }
         
         queue.async {
-            let oldStore = DispatchQueue.main.sync { return self.store; };
-            guard oldStore.count > 100 else {
+            guard self.entries.count > 100 else {
                 return;
             }
-            let store = Array(oldStore[0..<100]);
-            let changes = store.calculateChanges(from: oldStore);
-            self.knownItems = Set(store.map({ $0.id }));
-            
-            DispatchQueue.main.async {
-                self.store = store;
-                self.delegate?.itemsRemoved(at: changes.removed);
-                self.delegate?.itemAdded(at: changes.inserted);
-            }
+            self.entries = Array(self.entries.sorted()[0..<100]);
+            self.knownItems = Set(self.entries.map({ $0.id }));
+            self.updateStore();
         }
     }
     
@@ -347,41 +342,24 @@ class ConversationDataSource {
     }
     
     // should be called from internal queue!
-    private func add(items: [ConversationEntry], scrollTo: ScrollTo, completionHandler: (()->Void)?) {
-        let oldStore = DispatchQueue.main.sync { return self.store };
+    private func add(items: [ConversationEntry], scrollTo: ScrollTo, initial: Bool = false, completionHandler: (()->Void)?) {
+        let start = Date();
         let newItems = items.filter({ !self.knownItems.contains($0.id) });
-        let store = (oldStore + newItems).sorted(by: ConversationDataSource.sortConversationEntries(it1:it2:));
-        
-        let changes = store.calculateChanges(from: oldStore);
-        
-        var scrollToIdx: Int?;
-        
-        switch scrollTo {
-        case .oldestUnread:
-            if let lastUnreadIdx = store.lastIndex(where: { ($0 as? ConversationEntryWithSender)?.state.isUnread ?? false }) {
-                scrollToIdx = lastUnreadIdx;
+
+        if case .oldestUnread = scrollTo {
+            if entries.isEmpty,let firstUnread = newItems.first(where: { $0.state.isUnread }) {
+                self.unreads = [.init(id: Int.min, conversation: firstUnread.conversation, timestamp: firstUnread.timestamp, state: .none, sender: .none, payload: .unreadMessages, recipient: .none, encryption: .none)];
             }
-        case .message(let id):
-            scrollToIdx = store.firstIndex(where: { $0.id == id });
-        case .none:
-            break;
         }
-        self.knownItems = Set(newItems.map({ $0.id }) + knownItems);
-        
-        DispatchQueue.main.async {
-            self.store = store;
-            if items.count == 1, let entry = (items.first as? ConversationEntryWithSender), entry.state.isUnsent {
-                print("calculated position:", store.firstIndex(of: entry));
-            }
+
+        self.entries = self.entries + newItems;
+        self.knownItems = Set(self.entries.map({ $0.id }));
+
+        // how to calculate where to scroll before main dispatch queue is fired?
+        self.updateStore(scrollTo: scrollTo, completionHandler: {
+            print("items added in: \(Date().timeIntervalSince(start))")
             completionHandler?();
-            self.delegate?.itemsRemoved(at: changes.removed);
-            self.delegate?.itemAdded(at: changes.inserted);
-            if let scrollToIdx = scrollToIdx {
-                self.delegate?.scrollRowToVisible(scrollToIdx);
-            } else {
-                self.delegate?.markAsReadUpToNewestVisibleRow();
-            }
-        }
+        });
     }
     
     enum ScrollTo {
@@ -401,159 +379,28 @@ class ConversationDataSource {
         }
     }
     
-//    struct MessagesStore {
-//
-//        var knownItems: Set<Int>;
-//        var items: [ConversationEntry] = [];
-//        var count: Int {
-//            return items.count;
-//        }
-//
-//        var timestampRange: ClosedRange<Date>?? {
-//            guard let first = items.first, let last = items.last else {
-//                return nil;
-//            }
-//            return min(first.timestamp, last.timestamp)...max(first.timestamp, last.timestamp);
-//        }
-//
-//        init() {
-//            self.knownItems = Set<Int>();
-//        }
-//
-//        init(items: [ConversationEntry]) {
-//            self.items = items;
-//            self.knownItems = Set<Int>(items.map({ it -> Int in return it.id; }));
-//        }
-//
-//        func item(at row: Int) -> ConversationEntry? {
-//            guard row < self.items.count && row >= 0 else {
-//                return nil;
-//            }
-//            return self.items[row];
-//        }
-//
-//        func indexOf(itemId id: Int) -> Int? {
-//            guard let idx = self.items.firstIndex(where: { (item) -> Bool in
-//                return item.id == id && !(item is ConversationEntryRelated);
-//            }) else {
-//                return nil;
-//            }
-//            return idx;
-//        }
-//
-//        mutating func remove(item: ConversationEntry) -> Int? {
-//            let removeRelated = item is ConversationEntryRelated;
-//            guard let idx = self.items.firstIndex(where: { (it) -> Bool in
-//                // in most cases we should remove "both"?
-//                return it.id == item.id && ((it is ConversationEntryRelated) == removeRelated);
-//            }) else {
-//                return nil;
-//            }
-//            self.items.remove(at: idx);
-//            if !removeRelated {
-//                self.knownItems.remove(item.id);
-//            }
-//            return idx;
-//        }
-//
-//        mutating func add(item: ConversationEntry) -> Int? {
-//            if !(item is ConversationEntryRelated) {
-//                guard !knownItems.contains(item.id) else {
-//                    return nil;
-//                }
-//                knownItems.insert(item.id);
-//
-//            }
-//            guard !items.isEmpty else {
-//                items.append(item);
-//                return 0;
-//            }
-//
-//            if compare(items.first!, item) == .orderedAscending {
-//                items.insert(item, at: 0);
-//                return 0;
-//            } else if let last = items.last {
-//                if compare(last, item) == .orderedDescending {
-//                    let idx = items.count;
-//                    // append to the end
-//                    items.append(item);
-//                    return idx;
-//                } else {
-//                    // insert into the items
-//                    var idx = searchPosition(for: item);
-//                    if idx == (items.count - 1) && items[idx].timestamp == item.timestamp {
-//                        idx = idx + 1;
-////                        if items[idx].id < item.id {
-////                            idx = idx + 1;
-////                        }
-//                    }
-//                    items.insert(item, at: idx);
-//                    return idx;
-//                }
-//            } else {
-//                return nil;
-//            }
-//        }
-//
-//        func compare(_ it1: ConversationEntry, _ it2: ConversationEntry) -> ComparisonResult {
-//            let unsent1 = (it1 as? ConversationEntryWithSender)?.state.isUnsent ?? false;
-//            let unsent2 = (it2 as? ConversationEntryWithSender)?.state.isUnsent ?? false;
-//            if unsent1 == unsent2 {
-//                let result = it1.timestamp.compare(it2.timestamp);
-//                guard result == .orderedSame else {
-//                    return result;
-//                }
-//                if it1.id == it2.id {
-//                    if let i1 = it1 as? ConversationEntryRelated {
-//                        switch i1.order {
-//                        case .first:
-//                            return .orderedAscending;
-//                        case .last:
-//                            return .orderedDescending;
-//                        }
-//                    }
-//                    if let i2 = it2 as? ConversationEntryRelated {
-//                        switch i2.order {
-//                        case .first:
-//                            return .orderedDescending;
-//                        case .last:
-//                            return .orderedAscending;
-//                        }
-//                    }
-//                }
-//                return it1.id < it2.id ? .orderedAscending : .orderedDescending;
-//            } else {
-//                if unsent1 {
-//                    return .orderedDescending;
-//                }
-//                return .orderedAscending;
-//            }
-//        }
-//
-//        mutating func trim() -> [Int] {
-//            guard items.count > 100 else {
-//                return [];
-//            }
-//            let removed = Array(100..<items.count);
-//            self.items = Array(items[0..<100]);
-//            knownItems = Set(items.filter({ !($0 is ConversationEntryRelated) }).map({ it -> Int in return it.id; }));
-//            return removed;
-//        }
-//
-//        fileprivate func searchPosition(for item: ConversationEntry) -> Int {
-//            var start = 0;
-//            var end = items.count - 1;
-//            while start != end {
-//                let idx: Int = Int(ceil(Double(start+end)/2.0));
-//                if compare(items[idx], item) == .orderedAscending {
-//                    end = idx - 1;
-//                } else {
-//                    start = idx;
-//                }
-//            }
-//            return compare(items[start], item) == .orderedAscending  ? (start) : start + 1;
-//        }
-//    }
+}
 
+extension ConversationEntry {
+    func isMessage() -> Bool {
+        switch payload {
+        case .message(_, _):
+            return true;
+        default:
+            return false;
+        }
+    }
+}
+
+extension ConversationEntry {
     
+    func isMarker() -> Bool {
+        switch payload {
+        case .marker(_, _):
+            return true;
+        default:
+            return false;
+        }
+    }
+ 
 }

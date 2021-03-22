@@ -47,26 +47,26 @@ class ConversationLogController: AbstractConversationLogController, NSTableViewD
         let prevItem = row >= 0 && (row + 1) < dataSource.count ? dataSource.getItem(at: row + 1) : nil;
         let continuation = prevItem != nil && item.isMergeable(with: prevItem!);
 
-        switch item {
-        case is ConversationMessageSystem:
+        switch item.payload {
+        case .unreadMessages:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMessageSystemCellView"), owner: nil) as? ChatMessageSystemCellView {
                 cell.message.attributedString = NSAttributedString(string: "Unread messages", attributes: [.font: NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium), .foregroundColor: NSColor.secondaryLabelColor]);
                 return cell;
             }
             return nil;
-        case let item as ConversationMessageRetracted:
+        case .messageRetracted:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
 
                 cell.id = item.id;
-                cell.set(retraction: item);
+                cell.setRetracted(item: item);
 
                 return cell;
             }
             return nil;
-        case let item as ConversationMessage:
-            if item.message.starts(with: "/me ") {
+        case .message(let message, let correctionTimestamp):
+            if message.starts(with: "/me ") {
                 if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMeSystemCellView"), owner: nil) as? ChatMeMessageCellView {
-                    cell.set(item: item);
+                    cell.set(item: item, message: message);
                     return cell;
                 }
                 return nil;
@@ -74,63 +74,39 @@ class ConversationLogController: AbstractConversationLogController, NSTableViewD
                 if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
 
                     cell.id = item.id;
-                    cell.set(message: item);
+                    cell.set(item: item, message: message, correctionTimestamp: correctionTimestamp);
 
                     return cell;
                 }
                 return nil;
             }
-        case let item as ConversationLinkPreview:
+        case .linkPreview(let url):
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatLinkPreviewCellView"), owner: nil) as? ChatLinkPreviewCellView {
-                cell.set(item: item);
+                cell.set(item: item, url: url);
                 return cell;
             }
             return nil;
-        case let item as ConversationAttachment:
+        case .attachment(let url, let appendix):
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatAttachmentContinuationCellView" : "ChatAttachmentCellView"), owner: nil) as? ChatAttachmentCellView {
-                cell.set(item: item);
+                cell.set(item: item, url: url, appendix: appendix);
                 return cell;
             }
             return nil;
-        case let item as ConversationInvitation:
+        case .invitation(let message, let appendix):
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatInvitationCellView"), owner: nil) as? ChatInvitationCellView {
-                cell.set(invitation: item);
+                cell.set(item: item, message: message, appendix: appendix);
                 return cell;
             }
             return nil;
-        case let item as ConversationMarker:
+        case .marker(let type, let senders):
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMarkerCellView"), owner: nil) as? ChatMarkerCellView {
-                cell.set(marker: item);
+                cell.set(item: item, type: type, senders: senders);
                 return cell;
             }
             return nil;
         default:
             return nil;
         }
-    }
-}
-
-class ConversationMarker: ConversationEntry, ConversationEntryRelated {
-    
-    let sender: ConversationEntrySender;
-    let order: ConversationEntry.Order = .last;
-    let marker: ChatMarker.MarkerType;
-    
-    init(markedMessageId: Int, conversationKey: ConversationKey, timestamp: Date, sender: ConversationEntrySender, marker: ChatMarker.MarkerType) {
-        self.sender = sender;
-        self.marker = marker;
-        super.init(id: markedMessageId, conversation: conversationKey, timestamp: timestamp);
-    }
-    
-    override func isEqual(entry: ConversationEntry) -> Bool {
-        guard let e = entry as? ConversationMarker else {
-            return false;
-        }
-        return e.marker == marker;
-    }
-    
-    override func hash(into hasher: inout Hasher) {
-        hasher.combine(marker);
     }
 }
 

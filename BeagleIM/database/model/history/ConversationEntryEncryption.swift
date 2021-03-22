@@ -21,7 +21,7 @@
 
 import Foundation
 
-public enum ConversationEntryEncryption: Equatable {
+public enum ConversationEntryEncryption: Hashable {
     case none
     case decrypted(fingerprint: String?)
     case decryptionFailed

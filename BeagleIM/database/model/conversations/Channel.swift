@@ -118,8 +118,16 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         }).store(in: &cancellables);
     }
         
-    public func isLocalParticipant(jid: JID) -> Bool {
-        return account == jid.bareJid || (channelJid == jid.bareJid && participantId == jid.resource);
+    public override func isLocal(sender: ConversationEntrySender) -> Bool {
+        switch sender {
+        case .participant(let id, _, let jid):
+            guard let jid = jid else {
+                return participantId == id;
+            }
+            return jid == account;
+        default:
+            return false;
+        }
     }
     
     public override func updateOptions(_ fn: @escaping (inout ChannelOptions) -> Void) {
@@ -189,7 +197,7 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         
         let avatar: Avatar;
         var avatarPublisher: AnyPublisher<NSImage?, Never> {
-            return avatar.$avatar.replaceNil(with: AvatarManager.instance.defaultGroupchatAvatar).eraseToAnyPublisher();
+            return avatar.avatarPublisher.replaceNil(with: AvatarManager.instance.defaultGroupchatAvatar).eraseToAnyPublisher();
         }
         
         init(displayName: String, status: Presence.Show?, avatar: Avatar, description: String?) {

@@ -147,7 +147,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         let encryption = self.options.encryption ?? .none;
         
         if let correctedMessageId = correctedMessageOriginId {
-            DBChatHistoryStore.instance.correctMessage(for: self, stanzaId: correctedMessageId, sender: nil, data: text, correctionStanzaId: stanzaId, correctionTimestamp: Date(), newState: .outgoing(.unsent));
+            DBChatHistoryStore.instance.correctMessage(for: self, stanzaId: correctedMessageId, sender: .none, data: text, correctionStanzaId: stanzaId, correctionTimestamp: Date(), newState: .outgoing(.unsent));
         } else {
             var messageEncryption: ConversationEntryEncryption = .none;
             switch encryption {
@@ -248,6 +248,14 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         })
     }
 
+    public override func isLocal(sender: ConversationEntrySender) -> Bool {
+        switch sender {
+        case .me(_):
+            return true;
+        default:
+            return false;
+        }
+    }
 }
 
 typealias ConversationOptionsProtocol = ChatOptionsProtocol

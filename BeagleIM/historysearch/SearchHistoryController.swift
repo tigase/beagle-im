@@ -40,8 +40,8 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         // FIXME: THIS IS NO LONGER TRUE
-        let item = self.items[row] as! ConversationMessage;
-        guard let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMessageCellView"), owner: self) as? ChatMessageCellView else {
+        let item = self.items[row];
+        guard let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMessageCellView"), owner: self) as? ChatMessageCellView, case .message(let message, let correctionTimestamp) = item.payload else {
             return nil;
         }
         view.id = item.id;
@@ -49,7 +49,7 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
 //        view.set(avatar: item.avatar);
 //        view.set(senderName: item.nickname);
         
-        view.set(message: item);
+        view.set(item: item, message: message, correctionTimestamp: correctionTimestamp);
 
         view.message.isSelectable = false;
         view.message.isEditable = false;
@@ -72,7 +72,12 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
         }
         DBChatHistoryStore.instance.searchHistory(search: searchField.stringValue) { (items) in
             DispatchQueue.main.async {
-                self.items = items.filter({ it -> Bool in it is ConversationMessage });
+                self.items = items.filter({ it -> Bool in
+                    if case .message(_,_) = it.payload {
+                        return true;
+                    }
+                    return false;
+                });
             }
         }
     }
@@ -115,8 +120,8 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
         }
     }
     
-    fileprivate func buddyName(for item: ConversationMessage) -> String {
-        return item.nickname;
+    fileprivate func buddyName(for item: ConversationEntry) -> String {
+        return item.sender.nickname!;
     }
     
     class TableRowView: NSTableRowView {

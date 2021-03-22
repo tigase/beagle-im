@@ -23,7 +23,7 @@ import Foundation
 import UserNotifications
 import TigaseSwift
 
-extension ConversationMessage {
+extension ConversationEntry {
     
     func shouldNotify() -> Bool {
         guard case .incoming(let state) = self.state, state == .received else {
@@ -34,6 +34,10 @@ extension ConversationMessage {
             return false;
         }
         
+        guard case .message(let message, _) = payload else {
+            return false;
+        }
+
         switch conversation.notifications {
         case .none:
             return false;
@@ -75,16 +79,16 @@ public class NotificationManager {
     
     private let dispatcher = QueueDispatcher(label: "NotificationManager");
     
-    func newMessage(_ message: ConversationMessage) {
+    func newMessage(_ entry: ConversationEntry) {
         dispatcher.async {
-            guard message.shouldNotify() else {
+            guard entry.shouldNotify() else {
                 return;
             }
             
-            if let queue = self.queues[.init(account: message.conversation.account, jid: message.conversation.jid)] ?? self.queues[.init(account: message.conversation.account, jid: nil)] {
-                queue.add(message: message);
+            if let queue = self.queues[.init(account: entry.conversation.account, jid: entry.conversation.jid)] ?? self.queues[.init(account: entry.conversation.account, jid: nil)] {
+                queue.add(message: entry);
             } else {
-                self.notifyNewMessage(message: message);
+                self.notifyNewMessage(message: entry);
             }
         }
     }
@@ -121,21 +125,25 @@ public class NotificationManager {
         }
     }
     
-    private func notifyNewMessage(message: ConversationMessage) {
-        guard let conversation = message.conversation as? Conversation else {
+    private func notifyNewMessage(message entry: ConversationEntry) {
+        guard let conversation = entry.conversation as? Conversation else {
+            return;
+        }
+        
+        guard case .message(let message, _) = entry.payload else {
             return;
         }
         
         let content = UNMutableNotificationContent();
         content.title = conversation.displayName;
         if conversation is Room || conversation is Channel {
-            content.subtitle = message.nickname;
+            content.subtitle = entry.sender.nickname ?? "";
         }
-        content.body = (message.message.contains("`") || !Settings.enableMarkdownFormatting || !Settings.showEmoticons) ? message.message : message.message.emojify();
+        content.body = (message.contains("`") || !Settings.enableMarkdownFormatting || !Settings.showEmoticons) ? message : message.emojify();
         content.sound = UNNotificationSound.default
         content.userInfo = ["account": conversation.account.stringValue, "jid": conversation.jid.stringValue, "id": "message-new"];
  
-        let request = UNNotificationRequest(identifier: "message:\(message.id):new", content: content, trigger: nil);
+        let request = UNNotificationRequest(identifier: "message:\(entry.id):new", content: content, trigger: nil);
         UNUserNotificationCenter.current().add(request) { (error) in
             print("could not show notification:", error as Any);
         }
@@ -155,9 +163,9 @@ public class NotificationManager {
 
     class NotificationQueue {
         
-        private(set) var unreadMessages: [ConversationMessage] = [];
+        private(set) var unreadMessages: [ConversationEntry] = [];
  
-        func add(message: ConversationMessage) {
+        func add(message: ConversationEntry) {
             unreadMessages.append(message);
         }
         

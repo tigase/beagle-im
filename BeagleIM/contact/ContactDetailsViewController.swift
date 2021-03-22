@@ -1042,7 +1042,7 @@ open class ConversationAttachmentsViewController: NSViewController, ContactDetai
     
     @IBOutlet var heightConstraint: NSLayoutConstraint!;
     
-    var items: [ConversationAttachment] = [];
+    var items: [ConversationEntry] = [];
         
     open override func viewDidLoad() {
         super.viewDidLoad();
@@ -1050,7 +1050,7 @@ open class ConversationAttachmentsViewController: NSViewController, ContactDetai
     }
     
     @objc func openFile(_ sender: NSMenuItem) {
-        guard let item = sender.representedObject as? ConversationAttachment else {
+        guard let item = sender.representedObject as? ConversationEntry else {
             return;
         }
         guard let localUrl = DownloadStore.instance.url(for: "\(item.id)") else {
@@ -1060,7 +1060,7 @@ open class ConversationAttachmentsViewController: NSViewController, ContactDetai
     }
     
     @objc func saveFile(_ sender: NSMenuItem) {
-        guard let item = sender.representedObject as? ConversationAttachment else {
+        guard let item = sender.representedObject as? ConversationEntry else {
             return;
         }
         guard let localUrl = DownloadStore.instance.url(for: "\(item.id)") else {
@@ -1082,7 +1082,7 @@ open class ConversationAttachmentsViewController: NSViewController, ContactDetai
     }
 
     @objc func deleteFile(_ sender: NSMenuItem) {
-        guard let item = sender.representedObject as? ConversationAttachment else {
+        guard let item = sender.representedObject as? ConversationEntry else {
             return;
         }
         DownloadStore.instance.deleteFile(for: "\(item.id)");
@@ -1098,7 +1098,7 @@ open class ConversationAttachmentsViewController: NSViewController, ContactDetai
     }
     
     @objc func shareFile(_ sender: NSMenuItem) {
-        guard let item = sender.representedObject as? ConversationAttachment else {
+        guard let item = sender.representedObject as? ConversationEntry else {
             return;
         }
         guard let localUrl = DownloadStore.instance.url(for: "\(item.id)") else {
@@ -1380,28 +1380,13 @@ class ConversationAttachmentView: NSCollectionViewItem {
 //        }
     }
 
-    func set(item: ConversationAttachment) {
+    func set(item: ConversationEntry) {
         self.id = item.id;
         if let fileUrl = DownloadStore.instance.url(for: "\(item.id)") {
             filenameField.stringValue = fileUrl.lastPathComponent;
             let fileSize = fileSizeToString(try? FileManager.default.attributesOfItem(atPath: fileUrl.path)[.size] as? UInt64);
             detailsField.stringValue = fileSize;
-//
-//            if let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, fileUrl.pathExtension as CFString, nil)?.takeRetainedValue(), let typeName = UTTypeCopyDescription(uti)?.takeRetainedValue() as String? {
-//                //details.stringValue = "\(typeName) - \(fileSize)";
-//                if UTTypeConformsTo(uti, kUTTypeImage) {
-//                    //self.viewType = .imagePreview;
-//                    imageField.image = NSImage(contentsOf: fileUrl)?.square(100);
-//                } else {
-//                    //self.viewType = .file;
-//                    imageField.image = NSWorkspace.shared.icon(forFile: fileUrl.path);
-//                }
-//            } else {
-//                //details.stringValue = fileSize;
-//                imageField.image = NSWorkspace.shared.icon(forFile: fileUrl.path);
-//                //self.viewType = .file;
-//            }
-            if #available(macOS 10.15, *), let imageProvider = MetadataCache.instance.metadata(for: "\(item.id)")?.imageProvider {
+            if let imageProvider = MetadataCache.instance.metadata(for: "\(item.id)")?.imageProvider {
                 viewType = .image;
                 imageField.image = NSWorkspace.shared.icon(forFile: fileUrl.path);
                 imageProvider.loadItem(forTypeIdentifier: kUTTypeImage as String, options: nil, completionHandler: { data, error in
@@ -1436,16 +1421,16 @@ class ConversationAttachmentView: NSCollectionViewItem {
                 imageField.image = NSWorkspace.shared.icon(forFile: fileUrl.path);
                 viewType = .file;
             }
-        } else {
+        } else if case .attachment(let url, let appendix) = item.payload {
             viewType = .file;
-            let filename = item.appendix.filename ?? URL(string: item.url)?.lastPathComponent ?? "";
+            let filename = appendix.filename ?? URL(string: url)?.lastPathComponent ?? "";
             if filename.isEmpty {
                 self.filenameField.stringValue =  "Unknown file";
             } else {
                 self.filenameField.stringValue = filename;
             }
-            if let size = item.appendix.filesize {
-                if let mimetype = item.appendix.mimetype, let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimetype as CFString, nil)?.takeRetainedValue() {
+            if let size = appendix.filesize {
+                if let mimetype = appendix.mimetype, let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimetype as CFString, nil)?.takeRetainedValue() {
                     imageField.image = NSWorkspace.shared.icon(forFileType: uti as String);
                 } else {
                     imageField.image = NSWorkspace.shared.icon(forFileType: "");

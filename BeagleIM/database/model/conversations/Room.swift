@@ -105,9 +105,18 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
         super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
     }
 
-    public func isLocalParticipant(jid: JID) -> Bool {
-        return account == jid.bareJid || (roomJid == jid.bareJid && nickname == jid.resource);
+    public override func isLocal(sender: ConversationEntrySender) -> Bool {
+        switch sender {
+        case .occupant(let nickname, let jid):
+            guard let jid = jid else {
+                return nickname == self.nickname;
+            }
+            return jid == account;
+        default:
+            return false;
+        }
     }
+    
     
     public var occupants: [MucOccupant] {
         return dispatcher.sync {
@@ -217,7 +226,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
         
         let avatar: Avatar;
         var avatarPublisher: AnyPublisher<NSImage?, Never> {
-            return avatar.$avatar.replaceNil(with: AvatarManager.instance.defaultGroupchatAvatar).eraseToAnyPublisher();
+            return avatar.avatarPublisher.replaceNil(with: AvatarManager.instance.defaultGroupchatAvatar).eraseToAnyPublisher();
         }
         
         init(displayName: String, status: Presence.Show?, avatar: Avatar, description: String?) {

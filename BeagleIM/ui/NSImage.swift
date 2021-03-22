@@ -23,6 +23,23 @@ import AppKit
 
 extension NSImage {
     
+    func decoded() -> NSImage {
+        guard let cgImage = self.cgImage else {
+            return self;
+        }
+        
+        let size = CGSize(width: cgImage.width, height: cgImage.height);
+        let context = CGContext(data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: cgImage.bytesPerRow, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue);
+        
+        context?.draw(cgImage, in: .init(origin: .zero, size: size));
+        
+        guard let image = context?.makeImage() else {
+            return self;
+        }
+        
+        return NSImage(cgImage: image, size: size);
+    }
+    
     func rounded() -> NSImage {
         return rounded(radius: min(size.width, size.height)/2);
     }

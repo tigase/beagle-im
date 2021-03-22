@@ -132,7 +132,21 @@ class MessageEventHandler: XmppServiceEventHandler {
                 return;
             }
             
-            DBChatHistoryStore.instance.mark(conversation: conversation, with: marker.marker, from: sender);
+            let type = ChatMarker.MarkerType.from(chatMarkers: marker.marker);
+            switch conversation {
+            case is Chat:
+                DBChatHistoryStore.instance.mark(conversation: conversation, before: marker.marker.id, as: type, by: sender.bareJid == account ? .me(conversation: conversation) : .buddy(conversation: conversation));
+            case is Room:
+                if let nickname = sender.resource {
+                    DBChatHistoryStore.instance.mark(conversation: conversation, before: marker.marker.id, as: type, by: .occupant(nickname: nickname, jid: nil));
+                }
+            case is Channel:
+                if let mix = marker.message.mix, let id = sender.resource, let nickname = mix.nickname {
+                    DBChatHistoryStore.instance.mark(conversation: conversation, before: marker.marker.id, as: type, by: .participant(id: id, nickname: nickname, jid: mix.jid));
+                }
+            default:
+                break;
+            }
         }).store(in: &cancellables);
         client.module(.messageCarbons).carbonsPublisher.sink(receiveValue: { carbon in
             let conversation: ConversationKey = DBChatStore.instance.conversation(for: account, with: carbon.jid.bareJid) ?? ConversationKeyItem(account: account, jid: carbon.jid.bareJid);
@@ -177,8 +191,13 @@ class MessageEventHandler: XmppServiceEventHandler {
 
     static func calculateDirection(for conversation: ConversationKey, direction: MessageDirection, sender: ConversationEntrySender) -> MessageDirection {
         switch sender {
+        case .none:
+            assert(false, "Cannot calculate direction for sender `.none`")
+            return .outgoing;
+        case .me(_):
+            return .outgoing;
         case .buddy(_):
-            return direction;
+            return .incoming;
         case .participant(let id, _, let jid):
             if let senderJid = jid {
                 return senderJid == conversation.account ? .outgoing : .incoming;

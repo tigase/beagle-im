@@ -140,12 +140,16 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
         prevBounds = self.tableView.bounds;
     }
 
-    func itemAdded(at rows: IndexSet) {
-        if dataSource.count == rows.count && rows.count > 1 {
-            tableView.insertRows(at: rows, withAnimation: []);
-        } else {
-            tableView.insertRows(at: rows, withAnimation: NSTableView.AnimationOptions.effectFade)
-        }
+    func beginUpdates() {
+        tableView.beginUpdates();
+    }
+    
+    func endUpdates() {
+        tableView.endUpdates();
+    }
+    
+    func itemsAdded(at rows: IndexSet, initial: Bool) {
+        tableView.insertRows(at: rows, withAnimation: initial ? [] : .effectFade);
     }
     
     func itemUpdated(indexPath: IndexPath) {

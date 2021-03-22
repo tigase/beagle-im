@@ -28,32 +28,48 @@ struct AvatarWeakRef {
 }
 
 public class Avatar {
+
+    private enum AvatarResult: Equatable {
+        case notReady
+        case ready(NSImage?)
+    }
     
     private let key: Key;
 
     public var hash: String? {
         didSet {
             if let hash = hash {
-                // TODO: Could we load it using async?
-                DispatchQueue.global(qos: .userInteractive).async {
-                    let avatar = AvatarManager.instance.avatar(withHash: hash);
-                    DispatchQueue.main.async {
-                        self.avatar = avatar;
+                AvatarManager.instance.avatar(withHash: hash, completionHandler: { result in
+                    guard hash == self.hash else {
+                        return;
                     }
-                }
+                    switch result {
+                    case .success(let avatar):
+                        self.avatarSubject.send(.ready(avatar));
+                    case .failure(_):
+                        self.avatarSubject.send(.ready(nil));
+                    }
+
+                });
             } else {
-                DispatchQueue.main.async {
-                    self.avatar = nil;
-                }
+                self.avatarSubject.send(.ready(nil));
             }
         }
     }
     
-    @Published
-    public var avatar: NSImage?;
+    private let avatarSubject = CurrentValueSubject<AvatarResult,Never>(.notReady);
+    public let avatarPublisher: AnyPublisher<NSImage?,Never>;
     
     init(key: Key) {
         self.key = key;
+        self.avatarPublisher = avatarSubject.filter({ .notReady != $0 }).map({
+            switch $0 {
+            case .notReady:
+                return nil;
+            case .ready(let image):
+                return image;
+            }
+        }).removeDuplicates().eraseToAnyPublisher();
     }
 
     deinit {
@@ -67,62 +83,6 @@ public class Avatar {
     }
 
 }
-//
-//: Publisher {
-//
-//    public typealias Output = NSImage?
-//    public typealias Failure = Never
-//
-//    fileprivate let subject: CurrentValueSubject<NSImage?,Never>;
-//
-//    private let key: Contact.Key;
-//
-//    public var value: NSImage? {
-//        return subject.value;
-//    }
-//
-//    init(key: Contact.Key) {
-//        self.key = key;
-//        // FIXME: !! FOR MUC OCCUPANTS !!
-//        self.subject = CurrentValueSubject(AvatarManager.instance.avatar(for: key.jid, on: key.account));
-//    }
-//
-//    deinit {
-//        AvatarManager.instance.releasePublisher(for: key);
-//    }
-//
-//    public func receive<S>(subscriber: S) where S : Subscriber, Failure == S.Failure, Output == S.Input {
-//        subject.receive(subscriber: Inner(avatar: self, downstream: subscriber));
-//    }
-//
-//    private class Inner<Downstream: Subscriber>: Subscriber where Downstream.Failure == Never, Downstream.Input == NSImage? {
-//
-//        public typealias Input = NSImage?
-//        public typealias Failure = Never;
-//
-//        private let avatar: Avatar;
-//        private let downstream: Downstream;
-//
-//        init(avatar: Avatar, downstream: Downstream) {
-//            self.avatar = avatar
-//            self.downstream = downstream;
-//        }
-//
-//        func receive(subscription: Subscription) {
-//            downstream.receive(subscription: subscription);
-//        }
-//
-//        func receive(_ input: NSImage?) -> Subscribers.Demand {
-//            downstream.receive(input);
-//        }
-//
-//        func receive(completion: Subscribers.Completion<Never>) {
-//            downstream.receive(completion: completion);
-//        }
-//
-//    }
-//
-//}
 
 class AvatarManager {
 
@@ -167,8 +127,6 @@ class AvatarManager {
     // However I wonder how ofter the app will load images as it would use cached version in avatar manager..
     
     fileprivate var dispatcher = QueueDispatcher(label: "avatar_manager", attributes: .concurrent);
-    // TODO: Caching is disabled as with Avatar and Combine there may not give usa lot
-//    private var cache: [BareJID: AccountAvatarHashes] = [:];
 
     public init() {
         NotificationCenter.default.addObserver(self, selector: #selector(vcardUpdated), name: DBVCardStore.VCARD_UPDATED, object: nil);
@@ -179,7 +137,7 @@ class AvatarManager {
         return dispatcher.sync(flags: .barrier) {
             guard let avatar = avatars[key]?.avatar else {
                 let avatar = Avatar(key: key);
-                self.dispatcher.async {
+                DispatchQueue.global(qos: .userInitiated).async {
                     avatar.hash = self.avatarHash(for: key.jid, on: key.account, withNickname: key.mucNickname);
                 }
                 avatars[key] = AvatarWeakRef(avatar: avatar);
@@ -231,6 +189,10 @@ class AvatarManager {
     
     open func avatar(withHash hash: String) -> NSImage? {
         return store.avatar(for: hash);
+    }
+    
+    open func avatar(withHash hash: String, completionHandler: @escaping (Result<NSImage,ErrorCondition>)->Void) {
+        store.avatar(for: hash, completionHandler: completionHandler);
     }
     
     open func storeAvatar(data: Data) -> String {

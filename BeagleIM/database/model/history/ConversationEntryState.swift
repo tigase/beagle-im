@@ -21,7 +21,7 @@
 
 import Foundation
 
-public enum ConversationEntryIncomingState: Equatable {
+public enum ConversationEntryIncomingState: Hashable {
     case received
     case displayed
     
@@ -30,15 +30,17 @@ public enum ConversationEntryIncomingState: Equatable {
     }
 }
 
-public enum ConversationEntryOutogingState: Equatable {
+public enum ConversationEntryOutogingState: Hashable {
     case unsent
     case sent
     case delivered
     case displayed
 }
 
-public enum ConversationEntryState: Equatable {
+public enum ConversationEntryState: Hashable {
 
+    case none
+    
     case incoming(ConversationEntryIncomingState)
     case outgoing(ConversationEntryOutogingState)
 
@@ -73,6 +75,7 @@ public enum ConversationEntryState: Equatable {
             return .outgoing(.displayed);
         default:
             assert(false, "Invalid conversation entry state code")
+            return .outgoing(.sent)
         }
     }
     
@@ -112,6 +115,9 @@ public enum ConversationEntryState: Equatable {
             case .displayed:
                 return 5;
             }
+        case .none:
+            //assert(false, "Invalid conversation entry state code")
+            return -1;
         }
     }
     
@@ -125,6 +131,8 @@ public enum ConversationEntryState: Equatable {
             return .incoming;
         case .outgoing(_), .outgoing_error(_, _):
             return .outgoing;
+        case .none:
+            return .incoming;
         }
     }
 

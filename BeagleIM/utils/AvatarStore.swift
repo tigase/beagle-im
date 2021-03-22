@@ -69,11 +69,38 @@ class AvatarStore {
             if let image = cache.object(forKey: hash as NSString) {
                 return image;
             }
-            if let image = NSImage(contentsOf: self.cacheDirectory.appendingPathComponent(hash)) {
-                cache.setObject(image, forKey: hash as NSString);
-                return image;
+            if let data = try? Data(contentsOf: self.cacheDirectory.appendingPathComponent(hash)), let image = NSImage(data: data) {
+                if let rep = image.bestRepresentation(for: .zero, context: nil, hints: nil) {
+                    let tmpImage = NSImage(size: image.size);
+                    tmpImage.addRepresentation(rep)
+                    cache.setObject(tmpImage, forKey: hash as NSString);
+                    return tmpImage;
+                }
+//                var rect = CGRect(origin: .zero, size: image.size);
+//                if let cgImage = image.cgImage(forProposedRect: &rect, context: nil, hints: nil) {
+//                    let tmpImage = NSImage(cgImage: cgImage, size: image.size);
+//                    cache.setObject(tmpImage, forKey: hash as NSString);
+//                    return tmpImage;
+//                }
+//                cache.setObject(image, forKey: hash as NSString);
+//                return image;
             }
             return nil;
+        }
+    }
+    
+    func avatar(for hash: String, completionHandler: @escaping (Result<NSImage,ErrorCondition>)->Void) {
+        dispatcher.async {
+            if let image = self.cache.object(forKey: hash as NSString) {
+                completionHandler(.success(image));
+                return;
+            }
+            if let data = try? Data(contentsOf: self.cacheDirectory.appendingPathComponent(hash)), let image = NSImage(data: data)? .scaled(maxWidthOrHeight: 48) {//.decoded() {
+                self.cache.setObject(image, forKey: hash as NSString);
+                completionHandler(.success(image));
+                return;
+            }
+            completionHandler(.failure(.conflict))
         }
     }
     

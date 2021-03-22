@@ -34,13 +34,13 @@ class ChatInvitationCellView: BaseChatCellView {
     
     private var buttonBottomContraint: NSLayoutConstraint?;
     
-    func set(invitation: ConversationInvitation) {
-        super.set(item:  invitation);
+    func set(item: ConversationEntry, message: String?, appendix: ChatInvitationAppendix) {
+        super.set(item:  item);
         
-        self.account = invitation.conversation.account;
-        self.appendix = invitation.appendix;
+        self.account = item.conversation.account;
+        self.appendix = appendix;
 
-        if invitation.state.direction == .incoming, let account = self.account, let channel = self.appendix?.channel {
+        if item.state.direction == .incoming, let account = self.account, let channel = self.appendix?.channel {
             acceptButton.isHidden = DBChatStore.instance.conversation(for: account, with: channel) != nil;
         } else {
             acceptButton.isHidden = true;
@@ -57,7 +57,7 @@ class ChatInvitationCellView: BaseChatCellView {
             defBottomButtonConstraint?.isActive = true;
         }
         
-        let messageBody = invitation.message ?? "Invitation to channel \(invitation.appendix.channel.stringValue)";
+        let messageBody = message ?? "Invitation to channel \(appendix.channel.stringValue)";
         let msg = NSMutableAttributedString(string: messageBody);
         if let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue) {
         
@@ -78,7 +78,7 @@ class ChatInvitationCellView: BaseChatCellView {
             }
         }
         msg.addAttribute(NSAttributedString.Key.font, value: self.message.font!, range: NSMakeRange(0, msg.length));
-        message.attributedString = msg;
+        self.message.attributedString = msg;
     }
     
     @IBAction func acceptClicked(_ sender: Any) {

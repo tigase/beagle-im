@@ -32,9 +32,10 @@ class ChatMeMessageCellView: NSTableCellView {
     
     @IBOutlet var message: MessageTextView!;
     
-    func set(item: ConversationMessage) {
-        let message = NSMutableAttributedString(string: "\(item.nickname) ", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium), toHaveTrait: .italicFontMask), .foregroundColor: NSColor.secondaryLabelColor]);
-        message.append(NSAttributedString(string: "\(item.message.dropFirst(4))", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .regular), toHaveTrait: .italicFontMask), .foregroundColor: NSColor.secondaryLabelColor]));
+    func set(item: ConversationEntry, message msg: String) {
+        let nickname = item.sender.nickname ?? "SOMEONE:";
+        let message = NSMutableAttributedString(string: "\(nickname) ", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium), toHaveTrait: .italicFontMask), .foregroundColor: NSColor.secondaryLabelColor]);
+        message.append(NSAttributedString(string: "\(msg.dropFirst(4))", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .regular), toHaveTrait: .italicFontMask), .foregroundColor: NSColor.secondaryLabelColor]));
         self.message.attributedString = message;
     }
 }

@@ -43,7 +43,7 @@ class MetadataCache {
     }
 
     @objc func messageRemoved(_ notification: Notification) {
-        guard let item = notification.object as? ConversationEntryDeleted else {
+        guard let item = notification.object as? ConversationEntry, case .deleted = item.payload else {
             return;
         }
         removeMetadata(for: "\(item.id)");

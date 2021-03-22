@@ -78,6 +78,12 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
         return $unread.receive(on: DispatchQueue.main).eraseToAnyPublisher();
     }
 
+    @Published
+    public private(set) var markers: [ConversationEntrySender: ChatMarker] = [:];
+    public var markersPublisher: AnyPublisher<[ChatMarker],Never> {
+        return $markers.map({ Array($0.values) }).eraseToAnyPublisher();
+    }
+    
     public init(dispatcher: QueueDispatcher, context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, displayableId: DisplayableIdProtocol) {
         self.id = id;
         self.timestamp = timestamp;
@@ -90,6 +96,26 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
     
     public func hash(into hasher: inout Hasher) {
         hasher.combine(id);
+    }
+    
+    public func mark(as markerType: ChatMarker.MarkerType, before: Date, by sender: ConversationEntrySender) {
+        guard !self.isLocal(sender: sender) else {
+            return;
+        }
+        
+        if let marker = markers[sender] {
+            switch markerType {
+            case .received:
+                guard marker.timestamp < before else {
+                    return;
+                }
+            case .displayed:
+                guard marker.timestamp <= before else {
+                    return;
+                }
+            }
+        }
+        markers[sender] = ChatMarker(sender: sender, timestamp: before, type: markerType);
     }
     
     public func markAsRead(count: Int) -> Bool {
@@ -118,6 +144,17 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
             
             return true;
         }
+    }
+    
+    public func refreshMarkers() {
+        let toRemove = self.markers.keys.filter(isLocal(sender:));
+        for sender in toRemove {
+            self.markers.removeValue(forKey: sender);
+        }
+    }
+    
+    public func isLocal(sender: ConversationEntrySender) -> Bool {
+        return false;
     }
 }
 
