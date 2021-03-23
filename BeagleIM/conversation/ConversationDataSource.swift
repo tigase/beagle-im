@@ -210,8 +210,6 @@ class ConversationDataSource {
             completionHandler?();
             self.delegate?.update({ delegate in
                 // it looks like insert/removed are not detected at all!
-                let inserted = changes.inserted;
-                let removed = changes.removed;
                 delegate.itemsRemoved(at: changes.removed);
                 delegate.itemsAdded(at: changes.inserted, initial: initial);
             })
@@ -347,7 +345,7 @@ class ConversationDataSource {
         let newItems = items.filter({ !self.knownItems.contains($0.id) });
 
         if case .oldestUnread = scrollTo {
-            if entries.isEmpty,let firstUnread = newItems.first(where: { $0.state.isUnread }) {
+            if entries.isEmpty,let firstUnread = newItems.last(where: { $0.state.isUnread }) {
                 self.unreads = [.init(id: Int.min, conversation: firstUnread.conversation, timestamp: firstUnread.timestamp, state: .none, sender: .none, payload: .unreadMessages, recipient: .none, encryption: .none)];
             }
         }

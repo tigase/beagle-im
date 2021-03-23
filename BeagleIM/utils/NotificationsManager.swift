@@ -22,6 +22,7 @@
 import Foundation
 import UserNotifications
 import TigaseSwift
+import Combine
 
 extension ConversationEntry {
     
@@ -78,6 +79,18 @@ public class NotificationManager {
     private var queues: [NotificationQueueKey: NotificationQueue] = [:];
     
     private let dispatcher = QueueDispatcher(label: "NotificationManager");
+    private var cancellables: Set<AnyCancellable> = [];
+    
+    init() {
+        MessageEventHandler.eventsPublisher.receive(on: dispatcher.queue).sink(receiveValue: { [weak self] event in
+            switch event {
+            case .started(let account, let jid):
+                self?.syncStarted(for: account, with: jid);
+            case .finished(let account, let jid):
+                self?.syncCompleted(for: account, with: jid);
+            }
+        }).store(in: &cancellables);
+    }
     
     func newMessage(_ entry: ConversationEntry) {
         dispatcher.async {
@@ -106,7 +119,7 @@ public class NotificationManager {
         }
     }
     
-    func syncStarted(for account: BareJID, with jid: BareJID?) {
+    private func syncStarted(for account: BareJID, with jid: BareJID?) {
         dispatcher.async {
             let key = NotificationQueueKey(account: account, jid: jid);
             if self.queues[key] == nil {
@@ -115,7 +128,7 @@ public class NotificationManager {
         }
     }
     
-    func syncCompleted(for account: BareJID, with jid: BareJID?) {
+    private func syncCompleted(for account: BareJID, with jid: BareJID?) {
         dispatcher.async {
             if let messages = self.queues.removeValue(forKey: .init(account: account, jid: jid))?.unreadMessages {
                 for message in messages {

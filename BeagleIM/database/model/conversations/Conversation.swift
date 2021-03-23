@@ -135,11 +135,15 @@ public struct ChatMarker: Hashable {
     let sender: ConversationEntrySender;
     let timestamp: Date;
     let type: MarkerType;
-    
-    public enum MarkerType: Comparable, Hashable {
-        case received
-        case displayed
         
+    public enum MarkerType: Int, Comparable, Hashable {
+        case received = 0
+        case displayed = 1
+
+        public static func < (lhs: MarkerType, rhs: MarkerType) -> Bool {
+            return lhs.rawValue < rhs.rawValue;
+        }
+
         static func from(chatMarkers: Message.ChatMarkers) -> MarkerType {
             switch chatMarkers {
             case .received(_):

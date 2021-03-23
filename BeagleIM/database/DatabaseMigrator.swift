@@ -25,7 +25,7 @@ import TigaseSQLite3
 
 public class DatabaseMigrator: DatabaseSchemaMigrator {
     
-    public let expectedVersion: Int = 12;
+    public let expectedVersion: Int = 13;
     
     public func upgrade(database: DatabaseWriter, newVersion version: Int) throws {
         try loadSchema(to: database, fromFile: "/db-schema-\(version).sql");

@@ -31,6 +31,13 @@ class MessageEventHandler: XmppServiceEventHandler {
     
     public static let OMEMO_AVAILABILITY_CHANGED = Notification.Name(rawValue: "OMEMOAvailabilityChanged");
 
+    public static let eventsPublisher = PassthroughSubject<SyncEvent,Never>();
+    
+    enum SyncEvent {
+        case started(account: BareJID, with: BareJID?)
+        case finished(account: BareJID, with: BareJID?)
+    }
+    
     static func prepareBody(message: Message, forAccount account: BareJID) -> (String?, MessageEncryption, String?) {
         var encryption: MessageEncryption = .none;
         var fingerprint: String? = nil;
@@ -135,14 +142,14 @@ class MessageEventHandler: XmppServiceEventHandler {
             let type = ChatMarker.MarkerType.from(chatMarkers: marker.marker);
             switch conversation {
             case is Chat:
-                DBChatHistoryStore.instance.mark(conversation: conversation, before: marker.marker.id, as: type, by: sender.bareJid == account ? .me(conversation: conversation) : .buddy(conversation: conversation));
+                DBChatMarkersStore.instance.mark(conversation: conversation, before: marker.marker.id, as: type, by: sender.bareJid == account ? .me(conversation: conversation) : .buddy(conversation: conversation));
             case is Room:
                 if let nickname = sender.resource {
-                    DBChatHistoryStore.instance.mark(conversation: conversation, before: marker.marker.id, as: type, by: .occupant(nickname: nickname, jid: nil));
+                    DBChatMarkersStore.instance.mark(conversation: conversation, before: marker.marker.id, as: type, by: .occupant(nickname: nickname, jid: nil));
                 }
             case is Channel:
                 if let mix = marker.message.mix, let id = sender.resource, let nickname = mix.nickname {
-                    DBChatHistoryStore.instance.mark(conversation: conversation, before: marker.marker.id, as: type, by: .participant(id: id, nickname: nickname, jid: mix.jid));
+                    DBChatMarkersStore.instance.mark(conversation: conversation, before: marker.marker.id, as: type, by: .participant(id: id, nickname: nickname, jid: mix.jid));
                 }
             default:
                 break;
@@ -275,11 +282,11 @@ class MessageEventHandler: XmppServiceEventHandler {
     
     static func syncMessagePeriods(for client: XMPPClient, version: MessageArchiveManagementModule.Version? = nil, componentJID jid: BareJID? = nil) {
         guard let first = DBChatHistorySyncStore.instance.loadSyncPeriods(forAccount: client.userBareJid, component: jid).first else {
-            NotificationManager.instance.syncCompleted(for: client.userBareJid, with: jid)
+            eventsPublisher.send(.finished(account: client.userBareJid, with: jid));
             return;
         }
 
-        NotificationManager.instance.syncStarted(for: client.userBareJid, with: jid);
+        eventsPublisher.send(.started(account: client.userBareJid, with: jid));
         
         syncSinceQueue.async {
             syncMessages(for: client, period: first, version: version);
@@ -312,7 +319,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             case .failure(let error):
                 guard client?.state ?? .disconnected() == .connected(), retry > 0 && error != .feature_not_implemented else {
                     os_log("for account %s fetch for component %s with id %s could not synchronize message archive for: %{public}s", log: .chatHistorySync, type: .debug, period.account.stringValue, period.component?.stringValue ?? "nil", queryId, error.description);
-                    NotificationManager.instance.syncCompleted(for: period.account, with: period.component)
+                    eventsPublisher.send(.finished(account: period.account, with: period.component))
                     return;
                 }
                 DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {

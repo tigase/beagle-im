@@ -296,7 +296,7 @@ class DBChatHistoryStore {
         })
     }
 
-    private func findItemId(for conversation: ConversationKey, originId: String, sender: ConversationEntrySender) -> Int? {
+    func findItemId(for conversation: ConversationKey, originId: String, sender: ConversationEntrySender) -> Int? {
         var params: [String: Any?] = ["stanza_id": originId, "account": conversation.account, "jid": conversation.jid, "author_nickname": nil, "participant_id": nil];
         switch sender {
         case .none, .buddy(_), .me(_):
@@ -475,7 +475,7 @@ class DBChatHistoryStore {
         return message(for: conversation, withId: itemId);
     }
 
-    private func message(for conversation: ConversationKey, withId msgId: Int) -> ConversationEntry? {
+    func message(for conversation: ConversationKey, withId msgId: Int) -> ConversationEntry? {
         return try! Database.main.writer({ database -> ConversationEntry? in
             return try database.select(query: .messageFind, params: ["id": msgId]).mapFirst({ cursor -> ConversationEntry? in
                 return self.itemFrom(cursor: cursor, for: conversation);
@@ -607,39 +607,6 @@ class DBChatHistoryStore {
             self.generatePreviews(forItem: msgId, conversation: conversation, state: newState, action: .new);
         }
         return true;
-    }
-
-    open func mark(conversation: ConversationKey, before id: String, as type: ChatMarker.MarkerType, by sender: ConversationEntrySender) {
-        // TODO: handle it better in case of MIX or MUC
-        guard let msgId = self.findItemId(for: conversation, originId: id, sender: .none) else {
-            return;
-        }
-
-        guard let message = self.message(for: conversation, withId: msgId) else {
-            return;
-        }
-        
-        if let conv = conversation as? Conversation {
-            conv.mark(as: type, before: message.timestamp, by: sender);
-        } else if let conv = DBChatStore.instance.conversation(for: conversation.account, with: conversation.jid) {
-            conv.mark(as: type, before: message.timestamp, by: sender);
-        }
-        
-        // what if "conversation" is not available? ie. 1-1 is not opened or room/channel is not joined?
-        
-        
-        // We need to handle range of messages, not a single message...
-//        if conversation.isLocalParticipant(jid: sender) {
-//            self.updateItemState(for: conversation, stanzaId: marker.id, from: .incoming(.received), to: .incoming(.displayed));
-//        } else {
-//            switch marker {
-//            case .received(let id):
-//                self.updateItemState(for: conversation, stanzaId: id, from: .outgoing(.sent), to: .outgoing(.delivered));
-//            case .displayed(let id), .acknowledged(let id):
-//                self.updateItemState(for: conversation, stanzaId: marker.id, from: .outgoing(.sent), to: .outgoing(.displayed));
-//                self.updateItemState(for: conversation, stanzaId: marker.id, from: .outgoing(.delivered), to: .outgoing(.displayed));
-//            }
-//        }
     }
     
     open func remove(item: ConversationEntry) {

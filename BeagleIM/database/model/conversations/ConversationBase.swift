@@ -92,6 +92,9 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
         self.unread = unread;
         self.displayableId = displayableId;
         super.init(context: context, jid: jid);
+        for marker in DBChatMarkersStore.instance.markers(for: (self as! ConversationKey)) {
+            self.markers[marker.sender] = marker;
+        }
     }
     
     public func hash(into hasher: inout Hasher) {
