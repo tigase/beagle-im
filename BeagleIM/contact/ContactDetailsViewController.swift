@@ -171,6 +171,7 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
     
     var muteNotifications: NSButton?;
     var blockContact: NSButton?;
+    var confirmMessages: NSButton?;
     
     open override func viewWillAppear() {
         super.viewWillAppear();
@@ -200,6 +201,23 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
                 }
             default:
                 break;
+            }
+            
+            if Settings.confirmMessages && chat.canSendChatMarker() {
+                confirmMessages = NSButton(checkboxWithTitle: "Confirm messages", target: self, action: #selector(confirmMessagesChanged));
+                switch chat {
+                case let chat as Chat:
+                    confirmMessages?.toolTip = "Disabling will disable syncing information about read messages between your devices!";
+                    confirmMessages?.state = chat.options.confirmMessages ? .on : .off;
+                case let room as Room:
+                    confirmMessages?.state = room.options.confirmMessages ? .on : .off;
+                case let channel as Channel:
+                    confirmMessages?.state = channel.options.confirmMessages ? .on : .off;
+                default:
+                    break;
+                }
+                confirmMessages?.isEnabled = chat.canSendChatMarker();
+                rows.append(confirmMessages!);
             }
         }
 
@@ -251,6 +269,28 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
             room.updateOptions({ (options) in
                 options.notifications = state ? .none : .mention;
             });
+        }
+    }
+    
+    @objc func confirmMessagesChanged(_ sender: NSButton) {
+        let state = sender.state == .on;
+        if let conv = self.chat {
+            switch conv {
+            case let chat as Chat:
+                chat.updateOptions({ options in
+                    options.confirmMessages = state;
+                })
+            case let room as Room:
+                room.updateOptions({ options in
+                    options.confirmMessages = state;
+                })
+            case let channel as Channel:
+                channel.updateOptions({ options in
+                    options.confirmMessages = state;
+                })
+            default:
+                break;
+            }
         }
     }
     

@@ -107,6 +107,24 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         self.localChatState = .active;
         return msg;
     }
+    
+    public func canSendChatMarker() -> Bool {
+        return true;
+    }
+    
+    public func sendChatMarker(_ marker: Message.ChatMarkers, andDeliveryReceipt receipt: Bool) {
+        guard Settings.confirmMessages && options.confirmMessages else {
+            return;
+        }
+        
+        let message = self.createMessage();
+        message.chatMarkers = marker;
+        if receipt {
+            message.messageDelivery = .received(id: marker.id)
+        }
+        message.hints = [.store];
+        self.send(message: message, completionHandler: nil);
+    }
  
     public func prepareAttachment(url originalURL: URL, completionHandler: @escaping (Result<(URL, Bool, ((URL) -> URL)?), ShareError>) -> Void) {
         let encryption = self.options.encryption ?? .none;
@@ -156,7 +174,8 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
             case .none:
                 break;
             }
-            DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.unsent), sender: .me(conversation: self), recipient: .none, type: .message, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: text, encryption: messageEncryption, appendix: nil, linkPreviewAction: .none, completionHandler: nil);
+            let options = ConversationEntry.Options(recipient: .none, encryption: messageEncryption, isMarkable: true)
+            DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.unsent), sender: .me(conversation: self), type: .message, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: text, appendix: nil, options: options, linkPreviewAction: .none, completionHandler: nil);
         }
         
         resendMessage(content: text, isAttachment: false, encryption: encryption, stanzaId: stanzaId, correctedMessageOriginId: correctedMessageOriginId);
@@ -174,7 +193,8 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         case .none:
             break;
         }
-        DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.unsent), sender: .me(conversation: self), recipient: .none, type: .attachment, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: url, encryption: messageEncryption, appendix: nil, linkPreviewAction: .none, completionHandler: { msgId in
+        let options = ConversationEntry.Options(recipient: .none, encryption: messageEncryption, isMarkable: true)
+        DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.unsent), sender: .me(conversation: self), type: .attachment, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: url, appendix: nil, options: options, linkPreviewAction: .none, completionHandler: { msgId in
             if let url = originalUrl {
                 _ = DownloadStore.instance.store(url, filename: url.lastPathComponent, with: "\(msgId)");
             }
@@ -264,6 +284,7 @@ public struct ChatOptions: Codable, ConversationOptionsProtocol, Equatable {
     
     var encryption: ChatEncryption?;
     public var notifications: ConversationNotification = .always;
+    public var confirmMessages: Bool = true;
     
     init() {}
     
@@ -273,6 +294,7 @@ public struct ChatOptions: Codable, ConversationOptionsProtocol, Equatable {
             encryption = ChatEncryption(rawValue: val);
         }
         notifications = ConversationNotification(rawValue: try container.decodeIfPresent(String.self, forKey: .notifications) ?? "") ?? .always;
+        confirmMessages = try container.decodeIfPresent(Bool.self, forKey: .confirmMessages) ?? true;
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -283,6 +305,7 @@ public struct ChatOptions: Codable, ConversationOptionsProtocol, Equatable {
         if notifications != .always {
             try container.encode(notifications.rawValue, forKey: .notifications);
         }
+        try container.encode(confirmMessages, forKey: .confirmMessages);
     }
     
     public func equals(_ options: ChatOptionsProtocol) -> Bool {
@@ -295,5 +318,6 @@ public struct ChatOptions: Codable, ConversationOptionsProtocol, Equatable {
     enum CodingKeys: String, CodingKey {
         case encryption = "encrypt"
         case notifications = "notifications";
+        case confirmMessages = "confirmMessages"
     }
 }

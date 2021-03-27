@@ -100,6 +100,14 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
         return "Room(account: \(account), jid: \(jid))";
     }
     
+    @Published
+    public var features: Set<Feature> = [];
+    
+    public enum Feature: String {
+        case membersOnly = "muc_membersonly"
+        case nonAnonymous = "muc_nonanonymous"
+    }
+    
     init(dispatcher: QueueDispatcher,context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: RoomOptions) {
         self.displayable = RoomDisplayableId(displayName: options.name ?? jid.stringValue, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: jid, mucNickname: nil)), description: nil);
         super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
@@ -176,6 +184,12 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
         }
     }
         
+    public override func createMessage(text: String, id: String, type: StanzaType) -> Message {
+        let msg = super.createMessage(text: text, id: id, type: type);
+        msg.isMarkable = true;
+        return msg;
+    }
+    
     public func sendMessage(text: String, correctedMessageOriginId: String?) {
         let message = self.createMessage(text: text);
         message.lastMessageCorrectionId = correctedMessageOriginId;
@@ -200,10 +214,41 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     
     public func sendPrivateMessage(to occupant: MucOccupant, text: String) {
         let message = self.createPrivateMessage(text, recipientNickname: occupant.nickname);
-        DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.options.nickname, jid: nil), recipient: .occupant(nickname: occupant.nickname), type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: text, encryption: .none, appendix: nil, linkPreviewAction: .auto, completionHandler: nil);
+        let options = ConversationEntry.Options(recipient: .occupant(nickname: occupant.nickname), encryption: .none, isMarkable: false)
+        DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.options.nickname, jid: nil), type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: text, appendix: nil, options: options, linkPreviewAction: .auto, completionHandler: nil);
         self.send(message: message, completionHandler: nil);
     }
-
+    
+    public func canSendChatMarker() -> Bool {
+        return self.features.contains(.membersOnly) && self.features.contains(.nonAnonymous);
+    }
+    
+    public func sendChatMarker(_ marker: Message.ChatMarkers, andDeliveryReceipt receipt: Bool) {
+        guard Settings.confirmMessages else {
+            return;
+        }
+        
+        guard ((self.context as? XMPPClient)?.state ?? .disconnected()) == .connected(), self.state == .joined else {
+            return;
+        }
+        
+        if self.options.confirmMessages && canSendChatMarker() {
+            let message = self.createMessage();
+            message.chatMarkers = marker;
+            message.hints = [.store]
+            if receipt {
+                message.messageDelivery = .received(id: marker.id)
+            }
+            self.send(message: message, completionHandler: nil);
+        } else if case .displayed(_) = marker {
+            let message = self.createPrivateMessage(recipientNickname: self.nickname);
+            message.chatMarkers = marker;
+            message.hints = [.store]
+            self.send(message: message, completionHandler: nil);
+        }
+        
+    }
+    
     private class RoomDisplayableId: DisplayableIdProtocol {
         
         @Published
@@ -246,7 +291,8 @@ public struct RoomOptions: Codable, ChatOptionsProtocol, Equatable {
     public var password: String?;
 
     public var notifications: ConversationNotification = .mention;
-    
+    public var confirmMessages: Bool = true;
+
     init(nickname: String, password: String?) {
         self.nickname = nickname;
         self.password = password;
@@ -262,6 +308,7 @@ public struct RoomOptions: Codable, ChatOptionsProtocol, Equatable {
         nickname = try container.decodeIfPresent(String.self, forKey: .nick) ?? "";
         password = try container.decodeIfPresent(String.self, forKey: .password)
         notifications = ConversationNotification(rawValue: try container.decodeIfPresent(String.self, forKey: .notifications) ?? "") ?? .mention;
+        confirmMessages = try container.decodeIfPresent(Bool.self, forKey: .confirmMessages) ?? true;
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -272,6 +319,7 @@ public struct RoomOptions: Codable, ChatOptionsProtocol, Equatable {
         if notifications != .mention {
             try container.encode(notifications.rawValue, forKey: .notifications);
         }
+        try container.encode(confirmMessages, forKey: .confirmMessages)
     }
      
     public func equals(_ options: ChatOptionsProtocol) -> Bool {
@@ -286,5 +334,6 @@ public struct RoomOptions: Codable, ChatOptionsProtocol, Equatable {
         case nick = "nick";
         case password = "password";
         case notifications = "notifications";
+        case confirmMessages = "confirmMessages"
     }
 }

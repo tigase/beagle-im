@@ -43,18 +43,73 @@ public class DBChatMarkersStore {
         case .buddy(_):
             return ["account": conversation.account, "jid": conversation.jid, "sender_nick": "", "sender_id": "", "sender_jid": conversation.jid];
         case .occupant(let nickname, let jid):
-            return ["account": conversation.account, "jid": conversation.jid, "sender_nick": nickname, "sender_id": "", "sender_jid": jid];
+            return ["account": conversation.account, "jid": conversation.jid, "sender_nick": nickname, "sender_id": "", "sender_jid": jid?.stringValue ?? ""];
         case .participant(let id, let nickname, let jid):
-            return ["account": conversation.account, "jid": conversation.jid, "sender_nick": nickname, "sender_id": id, "sender_jid": jid];
+            return ["account": conversation.account, "jid": conversation.jid, "sender_nick": nickname, "sender_id": id, "sender_jid": jid?.stringValue ?? ""];
         }
     }
     
-    public func mark(conversation: ConversationKey, before id: String, as type: ChatMarker.MarkerType, by sender: ConversationEntrySender) {
+    private var enqueuedChatMarkersQueue = DispatchQueue(label: "EnqueuedChatMarkers");
+    private var enqueuedChatMarkers: [ConversationBase: EnqueuedChatMarkers] = [:];
+    
+    private class EnqueuedChatMarkers {
+        
+        private(set) var queue: [EnqueuedChatMarker] = [];
+        
+        func append(sender: ConversationEntrySender, id: String, type: ChatMarker.MarkerType) {
+            queue.append(.init(sender: sender, id: id, type: type));
+        }
+        
+        func replayQueue(for conversation: ConversationKey) {
+            for item in queue {
+                DBChatMarkersStore.instance.mark(conversation: conversation, before: item.id, as: item.type, by: item.sender, enqueueIfMessageNotFound: false);
+            }
+        }
+    }
+    
+    private struct EnqueuedChatMarker {
+        let sender: ConversationEntrySender;
+        let id: String;
+        let type: ChatMarker.MarkerType;
+    }
+    
+    public func awaitingSync(for room: Room) {
+        enqueuedChatMarkersQueue.async {
+            self.enqueuedChatMarkers[room] = EnqueuedChatMarkers();
+        }
+    }
+    
+    public func syncCompleted(forAccount: BareJID, with jid: BareJID) {
+        enqueuedChatMarkersQueue.sync {
+            if let room = DBChatStore.instance.conversation(for: forAccount, with: jid) as? Room {
+                self.enqueuedChatMarkers.removeValue(forKey: room)?.replayQueue(for: room);
+            }
+        }
+    }
+    
+    private func findItemId(for conversation: ConversationKey, id: String, sender: ConversationEntrySender) -> Int? {
+        if sender.isGroupchat {
+            if let itemId = DBChatHistoryStore.instance.findItemId(for: conversation, remoteMsgId: id) {
+                return itemId;
+            }
+            // we are allowing to fall back to check origin-id as this is what Conversations does..
+        }
+        return DBChatHistoryStore.instance.findItemId(for: conversation, originId: id, sender: .none);
+    }
+    
+    public func mark(conversation: ConversationKey, before id: String, as type: ChatMarker.MarkerType, by sender: ConversationEntrySender, enqueueIfMessageNotFound: Bool = true) {
         guard var params = queryParams(conversation: conversation, sender: sender) else {
             return;
         }
         
-        guard let msgId =  DBChatHistoryStore.instance.findItemId(for: conversation, originId: id, sender: .none) else {
+        guard let msgId = findItemId(for: conversation, id: id, sender: sender) else {
+            if enqueueIfMessageNotFound && sender.isGroupchat && (conversation is Room), let groupchat = conversation as? ConversationBase, groupchat.isLocal(sender: sender) {
+                enqueuedChatMarkersQueue.async {
+                    if let queue = self.enqueuedChatMarkers[groupchat] {
+                        queue.append(sender: sender, id: id, type: type)
+                    }
+                }
+            }
             return;
         }
 
@@ -95,6 +150,7 @@ public class DBChatMarkersStore {
             conv.mark(as: type, before: message.timestamp, by: sender);
             if conv.isLocal(sender: sender) {
                 DBChatHistoryStore.instance.markAsRead(for: conv, before: timestamp);
+                MessageEventHandler.instance.cancelReceived(for: conv, before: timestamp);
             }
         }
     }
@@ -106,17 +162,21 @@ public class DBChatMarkersStore {
     }
     
     private func charMarker(fromCursor c: Cursor, conversation: ConversationKey) -> ChatMarker? {
-        guard let type = ChatMarker.MarkerType(rawValue: c.int(for: "type")!), let timestamp = c.date(for: "timestamp"), let jid = BareJID(c.string(for: "sender_jid")), let nick = c.string(for: "sender_nick"), let id = c.string(for: "sender_id") else {
+        guard let type = ChatMarker.MarkerType(rawValue: c.int(for: "type")!), let timestamp = c.date(for: "timestamp"), let jidStr = c.string(for: "sender_jid"), let nick = c.string(for: "sender_nick"), let id = c.string(for: "sender_id") else {
             return nil;
         }
         
         if nick.isEmpty {
-            if conversation.account == jid {
+            if conversation.account == BareJID(jidStr) {
                 return ChatMarker(sender: .me(conversation: conversation), timestamp: timestamp, type: type);
             } else {
                 return ChatMarker(sender: .buddy(conversation: conversation), timestamp: timestamp, type: type);
             }
         } else {
+            var jid: BareJID?;
+            if !jidStr.isEmpty {
+                jid = BareJID(jidStr);
+            }
             if id.isEmpty {
                 return ChatMarker(sender: .occupant(nickname: nick, jid: jid), timestamp: timestamp, type: type);
             } else {

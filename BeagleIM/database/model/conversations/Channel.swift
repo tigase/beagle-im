@@ -109,6 +109,20 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
     public var debugDescription: String {
         return "Channel(account: \(account), jid: \(jid))";
     }
+        
+    public enum Feature: String, Codable {
+        case avatar = "avatar"
+        case membersOnly = "members-only"
+        
+        public init(from decoder: Decoder) throws {
+            self = Feature(rawValue: try decoder.singleValueContainer().decode(String.self))!
+        }
+        
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer();
+            try container.encode(self.rawValue);
+        }
+    }
     
     init(dispatcher: QueueDispatcher, context: Context, channelJid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: ChannelOptions) {
         self.displayable = ChannelDisplayableId(displayName: options.name ?? channelJid.stringValue, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: channelJid, mucNickname: nil)), description: options.description);
@@ -139,6 +153,12 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         }
     }
     
+    public override func createMessage(text: String, id: String, type: StanzaType) -> Message {
+        let msg = super.createMessage(text: text, id: id, type: type);
+        msg.isMarkable = true;
+        return msg;
+    }
+    
     public func sendMessage(text: String, correctedMessageOriginId: String?) {
         let message = self.createMessage(text: text);
         message.lastMessageCorrectionId = correctedMessageOriginId;
@@ -159,6 +179,32 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         message.oob = uploadedUrl;
         send(message: message, completionHandler: nil)
         completionHandler?();
+    }
+    
+    public func canSendChatMarker() -> Bool {
+        return self.options.features.contains(.membersOnly);
+    }
+    
+    public func sendChatMarker(_ marker: Message.ChatMarkers, andDeliveryReceipt receipt: Bool) {
+        guard Settings.confirmMessages else {
+            return;
+        }
+        
+        if options.confirmMessages && canSendChatMarker() {
+            let message = self.createMessage();
+            message.chatMarkers = marker;
+            message.hints = [.store]
+            if receipt {
+                message.messageDelivery = .received(id: marker.id)
+            }
+            self.send(message: message, completionHandler: nil);
+        } else if case .displayed(_) = marker {
+            let message = createMessage(id: UUID().uuidString, type: .chat);
+            message.to = JID(BareJID(localPart: "\(participantId)#\(jid.localPart!)", domain: jid.domain), resource: nil);
+            message.chatMarkers = marker;
+            message.hints = [.store]
+            self.send(message: message, completionHandler: nil);
+        }
     }
     
     private func updateState() {
@@ -255,6 +301,8 @@ public struct ChannelOptions: Codable, ChatOptionsProtocol, Equatable {
     var description: String?;
     var state: ChannelState;
     public var notifications: ConversationNotification = .always;
+    var features: Set<Channel.Feature> = [];
+    public var confirmMessages: Bool = true;
     
     public init(participantId: String, nick: String?, state: ChannelState) {
         self.participantId = participantId;
@@ -270,6 +318,8 @@ public struct ChannelOptions: Codable, ChatOptionsProtocol, Equatable {
         name = try container.decodeIfPresent(String.self, forKey: .name);
         description = try container.decodeIfPresent(String.self, forKey: .description);
         notifications = ConversationNotification(rawValue: try container.decodeIfPresent(String.self, forKey: .notifications) ?? "") ?? .always;
+        features = try container.decodeIfPresent(Set<Channel.Feature>.self, forKey: .features) ?? [];
+        confirmMessages = try container.decodeIfPresent(Bool.self, forKey: .confirmMessages) ?? false;
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -282,6 +332,8 @@ public struct ChannelOptions: Codable, ChatOptionsProtocol, Equatable {
         if notifications != .always {
             try container.encode(notifications.rawValue, forKey: .notifications);
         }
+        try container.encode(features, forKey: .features);
+        try container.encode(confirmMessages, forKey: .confirmMessages);
     }
     
     public func equals(_ options: ChatOptionsProtocol) -> Bool {
@@ -298,6 +350,8 @@ public struct ChannelOptions: Codable, ChatOptionsProtocol, Equatable {
         case notifications = "notifications";
         case name = "name";
         case description = "desc";
+        case features = "features";
+        case confirmMessages = "confirmMessages";
     }
 }
 

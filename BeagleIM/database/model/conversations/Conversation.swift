@@ -53,6 +53,8 @@ public protocol Conversation: ConversationProtocol, ConversationKey, Displayable
     func sendMessage(text: String, correctedMessageOriginId: String?);
     func prepareAttachment(url: URL, completionHandler: @escaping (Result<(URL,Bool,((URL)->URL)?),ShareError>)->Void);
     func sendAttachment(url: String, appendix: ChatAttachmentAppendix, originalUrl: URL?, completionHandler: (()->Void)?);
+    func canSendChatMarker() -> Bool;
+    func sendChatMarker(_ marker: Message.ChatMarkers, andDeliveryReceipt: Bool);
     
     func isLocal(sender: ConversationEntrySender) -> Bool;
 }
@@ -121,6 +123,8 @@ public enum ChatEncryption: String, Codable {
 public protocol ChatOptionsProtocol: DatabaseConvertibleStringValue {
     
     var notifications: ConversationNotification { get }
+    
+    var confirmMessages: Bool { get }
     
     func equals(_ options: ChatOptionsProtocol) -> Bool
 }

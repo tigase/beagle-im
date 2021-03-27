@@ -93,7 +93,9 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
         self.displayableId = displayableId;
         super.init(context: context, jid: jid);
         for marker in DBChatMarkersStore.instance.markers(for: (self as! ConversationKey)) {
-            self.markers[marker.sender] = marker;
+            if !self.isLocal(sender: marker.sender) {
+                self.markers[marker.sender] = marker;
+            }
         }
     }
     

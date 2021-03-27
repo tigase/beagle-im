@@ -52,7 +52,7 @@ class BaseChatCellView: NSTableCellView {
         }
                     
         if senderName != nil {
-            switch item.recipient {
+            switch item.options.recipient {
             case .none:
                 self.senderName?.stringValue = item.sender.nickname ?? "";
             case .occupant(let nickname):
@@ -64,7 +64,7 @@ class BaseChatCellView: NSTableCellView {
         }
             
         var timestampPrefix: String?;
-        switch item.encryption {
+        switch item.options.encryption {
         case .decrypted, .notForThisDevice, .decryptionFailed:
             timestampPrefix = "\u{1F512} ";
         default:
@@ -83,35 +83,28 @@ class BaseChatCellView: NSTableCellView {
             CurrentTimePublisher.publisher.map({ now in BaseChatCellView.formatTimestamp(timestamp, now, prefix: timestampPrefix) }).assign(to: \.stringValue, on: timestampView).store(in: &cancellables);
         }
 
-        if let conversation = item.conversation as? Conversation {
-            switch item.state {
-            case .incoming(let state):
-                Just(state).sink(receiveValue: { [weak self] state in
-                    switch state {
-                    case .received:
-                        self?.state?.stringValue = "✉️";
-                    case .displayed:
-                        self?.state?.stringValue = "👁️";
-                    }
-                }).store(in: &cancellables);
-            case .outgoing(let state):
-                Just(state).sink(receiveValue: { [weak self] state in
-                    switch state {
-                    case .unsent:
-                        self?.state?.stringValue = "\u{1f4e4}";
-                    case .delivered:
-                        self?.state?.stringValue = "\u{2713}";
-                    case .displayed:
-                        self?.state?.stringValue = "🔖";
-                    case .sent:
-                        self?.state?.stringValue = "";
-                    }
-                }).store(in: &cancellables);
-                break;
-            default:
-                break;
-            }
-        }
+//        if let conversation = item.conversation as? Conversation {
+//            switch item.state {
+//            case .incoming(let state):
+//                break;
+//            case .outgoing(let state):
+//                Just(state).sink(receiveValue: { [weak self] state in
+//                    switch state {
+//                    case .unsent:
+//                        self?.state?.stringValue = "\u{1f4e4}";
+//                    case .delivered:
+//                        self?.state?.stringValue = "\u{2713}";
+//                    case .displayed:
+//                        self?.state?.stringValue = "🔖";
+//                    case .sent:
+//                        self?.state?.stringValue = "";
+//                    }
+//                }).store(in: &cancellables);
+//                break;
+//            default:
+//                break;
+//            }
+//        }
             
         switch item.state {
         case .none:
@@ -121,19 +114,19 @@ class BaseChatCellView: NSTableCellView {
         case .outgoing_error(_, _):
             self.state?.stringValue = "\u{203c}";
         case .outgoing(let state):
-//                switch state {
-//                case .unsent:
-//                    self.state?.stringValue = "\u{1f4e4}";
-//                case .delivered:
-//                    self.state?.stringValue = "\u{2713}";
-//                case .displayed:
-//                    self.state?.stringValue = "🔖";
-//                case .sent:
-//                    self.state?.stringValue = "";
-//                }
+                switch state {
+                case .unsent:
+                    self.state?.stringValue = "\u{1f4e4}";
+                case .delivered:
+                    self.state?.stringValue = "\u{2713}";
+                case .displayed:
+                    self.state?.stringValue = "🔖";
+                case .sent:
+                    self.state?.stringValue = "";
+                }
             break;
         case .incoming(_):
-//                self.state?.stringValue = "";
+                self.state?.stringValue = "";
             break;
         }
         self.state?.textColor = item.state.isError ? NSColor.systemRed : NSColor.secondaryLabelColor;

@@ -232,7 +232,7 @@ class ConversationDataSource {
         })
         
         self.markers = grouped.map({ k, v in
-            return ConversationEntry(id: Int.max, conversation: conversation, timestamp: k.timestamp, state: .none, sender: .none, payload: .marker(type: k.type, senders: v), recipient: .none, encryption: .none)
+            return ConversationEntry(id: Int.max, conversation: conversation, timestamp: k.timestamp, state: .none, sender: .none, payload: .marker(type: k.type, senders: v), options: .none)
         });
 
         self.updateStore();
@@ -346,7 +346,7 @@ class ConversationDataSource {
 
         if case .oldestUnread = scrollTo {
             if entries.isEmpty,let firstUnread = newItems.last(where: { $0.state.isUnread }) {
-                self.unreads = [.init(id: Int.min, conversation: firstUnread.conversation, timestamp: firstUnread.timestamp, state: .none, sender: .none, payload: .unreadMessages, recipient: .none, encryption: .none)];
+                self.unreads = [.init(id: Int.min, conversation: firstUnread.conversation, timestamp: firstUnread.timestamp, state: .none, sender: .none, payload: .unreadMessages, options: .none)];
             }
         }
 

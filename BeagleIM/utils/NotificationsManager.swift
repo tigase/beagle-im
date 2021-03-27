@@ -90,6 +90,9 @@ public class NotificationManager {
                 self?.syncCompleted(for: account, with: jid);
             }
         }).store(in: &cancellables);
+        DBChatHistoryStore.instance.markedAsRead.receive(on: dispatcher.queue).sink(receiveValue: { [weak self] marked in
+            self?.markAsRead(on: marked.account, with: marked.jid, itemsIds: marked.messages.map({ $0.id }));
+        }).store(in: &cancellables);
     }
     
     func newMessage(_ entry: ConversationEntry) {
@@ -106,17 +109,15 @@ public class NotificationManager {
         }
     }
     
-    func markAsRead(on account: BareJID, with jid: BareJID, itemsIds: [Int]) {
-        dispatcher.async {
-            if let queue = self.queues[.init(account: account, jid: jid)] {
-                queue.cancel(forIds: itemsIds);
-            }
-            if let queue = self.queues[.init(account: account, jid: nil)] {
-                queue.cancel(forIds: itemsIds);
-            }
-            let ids = itemsIds.map({ "message:\($0):new" });
-            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ids);
+    private func markAsRead(on account: BareJID, with jid: BareJID, itemsIds: [Int]) {
+        if let queue = self.queues[.init(account: account, jid: jid)] {
+            queue.cancel(forIds: itemsIds);
         }
+        if let queue = self.queues[.init(account: account, jid: nil)] {
+            queue.cancel(forIds: itemsIds);
+        }
+        let ids = itemsIds.map({ "message:\($0):new" });
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ids);
     }
     
     private func syncStarted(for account: BareJID, with jid: BareJID?) {

@@ -66,7 +66,7 @@ public enum ConversationEntrySender: Hashable {
     
     var isGroupchat: Bool {
         switch self {
-        case .buddy(_), .me(_):
+        case .none, .buddy(_), .me(_):
             return false;
         default:
             return true;

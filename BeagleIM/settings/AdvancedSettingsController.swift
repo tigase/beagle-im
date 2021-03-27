@@ -32,6 +32,7 @@ class AdvancedSettingsController: NSViewController {
     fileprivate var imagePreviewMaxSizeLabel: NSTextField!;
     fileprivate var imagePreviewMaxSize: NSSlider!;
     
+    fileprivate var confirmMessages: NSButton!;
     fileprivate var ignoreJingleSupportCheck: NSButton!;
     fileprivate var usePublicStunServers: NSButton!;
     fileprivate var enableBookmarksSync: NSButton!;
@@ -64,13 +65,15 @@ class AdvancedSettingsController: NSViewController {
         formView.groupItems(from:imagePreviewMaxSize, to: imagePreviewMaxSizeLabel);
         formView.cell(for: imagePreviewMaxSizeLabel)!.xPlacement = .center;
         
-        ignoreJingleSupportCheck = formView.addRow(label: "Experimental", field: NSButton(checkboxWithTitle: "Ignore VoIP support check", target: self, action: #selector(checkboxChanged(_:))));
+        confirmMessages = formView.addRow(label: "Experimental", field: NSButton(checkboxWithTitle: "Confirm messages", target: self, action: #selector(checkboxChanged(_:))));
+        confirmMessages.toolTip = "Let your contacts know when you have received and read their messages. Disabling will disable syncing information about read messages between your devices!";
+        ignoreJingleSupportCheck = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Ignore VoIP support check", target: self, action: #selector(checkboxChanged(_:))));
         usePublicStunServers = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Use public STUN servers", target: self, action: #selector(checkboxChanged(_:))));
         enableBookmarksSync = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Enable groupchat bookmarks sync", target: self, action: #selector(checkboxChanged(_:))));
         showAdvancedXmppFeatures = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show advanced XMPP features", target: self, action: #selector(checkboxChanged(_:))));
         
         let logsDir = formView.addRow(label: "", field: NSButton(title: "Open logs directory", target: self, action: #selector(openLogsDirectory)));
-        formView.groupItems(from:ignoreJingleSupportCheck, to: logsDir);
+        formView.groupItems(from:confirmMessages, to: logsDir);
 
         Settings.$fileDownloadSizeLimit.sink(receiveValue: { [weak self] value in
             guard let that = self else {
@@ -94,6 +97,8 @@ class AdvancedSettingsController: NSViewController {
             messageGrouping?.selectItem(at: 1);
         }
         alternateMessageColoringBasedOnDirection.state = Settings.alternateMessageColoringBasedOnDirection ? .on : .off;
+        Settings.$confirmMessages.receive(on: DispatchQueue.main).map({ $0 ? .on : .off }).assign(to: \.state, on: confirmMessages).store(in: &cancellables);
+        confirmMessages.state = Settings.confirmMessages ? .on : .off;
         ignoreJingleSupportCheck.state = Settings.ignoreJingleSupportCheck ? .on : .off;
         usePublicStunServers.state = Settings.usePublicStunServers ? .on : .off;
         enableBookmarksSync.state = Settings.enableBookmarksSync ? .on : .off;
@@ -124,6 +129,8 @@ class AdvancedSettingsController: NSViewController {
             }
         case alternateMessageColoringBasedOnDirection:
             Settings.alternateMessageColoringBasedOnDirection = sender.state == .on;
+        case confirmMessages:
+            Settings.confirmMessages = sender.state == .on;
         case ignoreJingleSupportCheck:
             Settings.ignoreJingleSupportCheck = sender.state == .on;
         case usePublicStunServers:

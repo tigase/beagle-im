@@ -128,7 +128,7 @@ class ChatMessageCellView: BaseChatCellView {
     }
     
     fileprivate func messageBody(item: ConversationEntry, message: String) -> String {
-        guard let msg = item.encryption.message() else {
+        guard let msg = item.options.encryption.message() else {
             switch item.state {
             case .incoming_error(_, let errorMessage), .outgoing_error(_, let errorMessage):
                 if let error = errorMessage {

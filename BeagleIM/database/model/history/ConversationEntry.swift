@@ -37,7 +37,7 @@ public enum ConversationEntryPayload: Hashable {
 public final class ConversationEntry: Hashable {
     
     public static func == (lhs: ConversationEntry, rhs: ConversationEntry) -> Bool {
-        lhs.id == rhs.id && lhs.timestamp == rhs.timestamp && lhs.payload == rhs.payload && lhs.sender == rhs.sender && lhs.state == rhs.state && lhs.recipient == rhs.recipient && lhs.encryption == rhs.encryption;
+        lhs.id == rhs.id && lhs.timestamp == rhs.timestamp && lhs.payload == rhs.payload && lhs.sender == rhs.sender && lhs.state == rhs.state && lhs.options == rhs.options;
     }
     
     let id: Int;
@@ -47,18 +47,16 @@ public final class ConversationEntry: Hashable {
     let sender: ConversationEntrySender;
     
     let payload: ConversationEntryPayload
-    let recipient: ConversationEntryRecipient;
-    let encryption: ConversationEntryEncryption;
+    let options: ConversationEntry.Options;
     
-    init(id: Int, conversation: ConversationKey, timestamp: Date, state: ConversationEntryState, sender: ConversationEntrySender, payload: ConversationEntryPayload, recipient: ConversationEntryRecipient, encryption: ConversationEntryEncryption) {
+    init(id: Int, conversation: ConversationKey, timestamp: Date, state: ConversationEntryState, sender: ConversationEntrySender, payload: ConversationEntryPayload, options: ConversationEntry.Options) {
         self.id = id;
         self.conversation = conversation;
         self.timestamp = timestamp;
         self.state = state;
         self.sender = sender;
         self.payload = payload;
-        self.recipient = recipient;
-        self.encryption = encryption;
+        self.options = options;
     }
     
     func isMergeable() -> Bool {
@@ -80,7 +78,7 @@ public final class ConversationEntry: Hashable {
             return false;
         }
         
-        guard self.encryption == item.encryption else {
+        guard self.options.encryption == item.options.encryption else {
             return false;
         }
         // check encryption state and sender and direction as well..
@@ -96,8 +94,7 @@ public final class ConversationEntry: Hashable {
         hasher.combine(sender);
         hasher.combine(state);
         hasher.combine(payload);
-        hasher.combine(recipient);
-        hasher.combine(encryption);
+        hasher.combine(options);
     }
  
     func allowedTimeDiff() -> TimeInterval {
@@ -111,6 +108,18 @@ public final class ConversationEntry: Hashable {
         }
     }
 
+}
+
+extension ConversationEntry {
+    
+    struct Options: Hashable {
+        let recipient: ConversationEntryRecipient;
+        let encryption: ConversationEntryEncryption;
+        let isMarkable: Bool;
+        
+        static let none = Options(recipient: .none, encryption: .none, isMarkable: false);
+    }
+    
 }
 
 public protocol ConversationEntryRelated {

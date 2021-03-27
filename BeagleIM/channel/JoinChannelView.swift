@@ -129,7 +129,18 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
                         }
                     } else {
                         let room = channel.jid;
-                        _ = client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname, password: password);
+                        let result = client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname, password: password);
+                        result.handle({ r in
+                            switch r {
+                            case .success(let roomResult):
+                                switch roomResult {
+                                case .created(let room), .joined(let room):
+                                    (room as! Room).features = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
+                                }
+                            case .failure(_):
+                                break;
+                            }
+                        })
                         PEPBookmarksModule.updateOrAdd(for: account, bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: true, nick: nickname, password: password));
                         DispatchQueue.main.async {
                             completionHandler(true);
@@ -154,6 +165,18 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
             client.module(.mix).join(channel: channel.jid.bareJid, withNick: nickname, completionHandler: { result in
                 switch result {
                 case .success(_):
+                    if let channel = DBChatStore.instance.channel(for: client, with: channel.jid.bareJid) {
+                        client.module(.disco).getItems(for: JID(channel.jid), completionHandler: { result in
+                            switch result {
+                            case .success(let info):
+                                channel.updateOptions({ options in
+                                    options.features = Set(info.items.compactMap({ $0.node }).compactMap({ Channel.Feature(rawValue: $0) }));
+                                })
+                            case .failure(_):
+                                break;
+                            }
+                        });
+                    }
                     // we have joined, so all what we need to do is close this window
                     DispatchQueue.main.async {
                         completionHandler(true);

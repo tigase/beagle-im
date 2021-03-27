@@ -31,6 +31,24 @@ class MixEventHandler: XmppServiceExtension {
     }
     
     func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
+        client.$state.sink(receiveValue: { [weak client] state in
+            guard let client = client, case .connected(let resumed) = state, !resumed else {
+                return;
+            }
+            let disco = client.module(.disco);
+            for channel in client.module(.mix).channelManager.channels(for: client) {
+                disco.getItems(for: JID(channel.jid), completionHandler: { result in
+                    switch result {
+                    case .success(let info):
+                        (channel as! Channel).updateOptions({ options in
+                            options.features = Set(info.items.compactMap({ $0.node }).compactMap({ Channel.Feature(rawValue: $0) }));
+                        })
+                    case .failure(_):
+                        break;
+                    }
+                });
+            }
+        }).store(in: &cancellables);
         client.module(.mix).participantsEvents.sink(receiveValue: { event in
             guard case .joined(let participant) = event, let channel = participant.channel else {
                 return;

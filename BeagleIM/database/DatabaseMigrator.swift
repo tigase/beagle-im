@@ -68,6 +68,23 @@ public class DatabaseMigrator: DatabaseSchemaMigrator {
             for (id, options) in roomsToUpdate {
                 try database.update("update chats set name = null, nickname = null, password = null, options = :options where id = :id", cached: false, params: ["id": id, "options": options])
             }
+        case 13:
+            try database.execute("ALTER TABLE chat_history ADD COLUMN markable INTEGER NOT NULL DEFAULT 0");
+            try database.executeQueries("""
+ALTER TABLE chat_history_sync RENAME TO chat_history_sync_old;
+CREATE TABLE IF NOT EXISTS chat_history_sync (
+    id TEXT NOT NULL COLLATE NOCASE,
+    account TEXT NOT NULL COLLATE NOCASE,
+    component TEXT COLLATE NOCASE,
+    from_timestamp INTEGER NOT NULL,
+    from_id TEXT,
+    to_timestamp INTEGER
+);
+INSERT INTO chat_history_sync (id, account, component, from_timestamp, from_id, to_timestamp)
+SELECT id, account, component, from_timestamp, from_id, to_timestamp
+FROM chat_history_sync_old;
+DROP TABLE chat_history_sync_old;
+""");
         default:
             break;
         }

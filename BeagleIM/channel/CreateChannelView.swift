@@ -134,6 +134,18 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                     mixModule.join(channel: channelJid, withNick: nickname, completionHandler: { result in
                         switch result {
                         case .success(_):
+                            if let channel = DBChatStore.instance.channel(for: client, with: channelJid) {
+                                client.module(.disco).getItems(for: JID(channel.jid), completionHandler: { result in
+                                    switch result {
+                                    case .success(let info):
+                                        channel.updateOptions({ options in
+                                            options.features = Set(info.items.compactMap({ $0.node }).compactMap({ Channel.Feature(rawValue: $0) }));
+                                        })
+                                    case .failure(_):
+                                        break;
+                                    }
+                                });
+                            }
                             DispatchQueue.main.async {
                                 completionHandler(true);
                             }
@@ -217,6 +229,12 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                         case .success(let r):
                             switch r {
                             case .created(let room), .joined(let room):
+                                var features = Set<Room.Feature>();
+                                features.insert(.nonAnonymous);
+                                if priv {
+                                    features.insert(.membersOnly);
+                                }
+                                (room as! Room).features = features;
                                 let vcard = VCard();
                                 if let binval = avatar?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
                                     vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];

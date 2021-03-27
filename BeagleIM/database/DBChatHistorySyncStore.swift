@@ -58,15 +58,25 @@ class DBChatHistorySyncStore {
     }
 
     func addSyncPeriod(_ period: Period) {
-        if let last = loadSyncPeriods(forAccount: period.account, component: period.component).last, last.from <= period.from && last.to >= period.from {
-            // we only need to update `to` value
-            os_log("updating sync period to for account %s and component %s", log: .chatHistorySync, type: .debug, period.account.stringValue, period.component?.stringValue ?? "nil");
-            try! Database.main.writer({ database in
-                try database.update(query: .mamSyncUpdatePeriodTo, cached: false, params: ["id": last.id.uuidString, "to_timestamp": max(last.to, period.to)]);
-            })
-            return;
+        if let last = loadSyncPeriods(forAccount: period.account, component: period.component).last, last.from <= period.from {
+            if let lastTo = last.to {
+                // we only need to update `to` value
+                if lastTo >= period.from {
+                    os_log("updating sync period to for account %s and component %s", log: .chatHistorySync, type: .debug, period.account.stringValue, period.component?.stringValue ?? "nil");
+                    let newTo = period.to == nil ? nil : max(lastTo, period.to!);
+                    try! Database.main.writer({ database in
+                        try database.update(query: .mamSyncUpdatePeriodTo, cached: false, params: ["id": last.id.uuidString, "to_timestamp": newTo]);
+                    })
+                    return;
+                } else {
+                    // we need a new record..
+                }
+            } else {
+                // lastTo is nil, so sync up to newest..
+                return;
+            }
         }
-        os_log("adding sync period %s for account %s and component %s from %{time_t}d to %{time_t}d", log: .chatHistorySync, type: .debug, period.id.uuidString, period.account.stringValue, period.component?.stringValue ?? "nil", time_t(period.from.timeIntervalSince1970), time_t(period.to.timeIntervalSince1970));
+        os_log("adding sync period %s for account %s and component %s from %{time_t}d to %{time_t}d", log: .chatHistorySync, type: .debug, period.id.uuidString, period.account.stringValue, period.component?.stringValue ?? "nil", time_t(period.from.timeIntervalSince1970), time_t(period.to?.timeIntervalSince1970 ?? 0));
         try! Database.main.writer({ database in
             try database.insert(query: .mamSyncInsertPeriod, cached: false, params: ["id": period.id.uuidString, "account": period.account, "component": period.component, "from_timestamp": period.from, "to_timestamp": period.to]);
         })
@@ -82,7 +92,7 @@ class DBChatHistorySyncStore {
         let query: Query = component == nil ? .mamSyncFindPeriodsForAccount : .mamSyncFindPeriodsForAccountWith;
         let periods = try! Database.main.reader({ database in
             try database.select(query: query, cached: false, params: params).mapAll({ cursor -> Period? in
-                return Period(id: UUID(uuidString: cursor["id"]!)!, account: cursor["account"]!, component: cursor["component"], from: cursor["from_timestamp"]!, after: cursor["from_id"], to: cursor["to_timestamp"]!);
+                return Period(id: UUID(uuidString: cursor["id"]!)!, account: cursor["account"]!, component: cursor["component"], from: cursor["from_timestamp"]!, after: cursor["from_id"], to: cursor["to_timestamp"]);
             })
         })
         os_log("loaded %d sync periods for account %s and component %s", log: .chatHistorySync, type: .debug, periods.count, account.stringValue, component?.stringValue ?? "nil");
@@ -119,9 +129,9 @@ class DBChatHistorySyncStore {
         let component: BareJID?;
         let from: Date;
         var after: String?;
-        let to: Date;
+        let to: Date?;
         
-        init(id: UUID = UUID(), account: BareJID, component: BareJID? = nil, from: Date, after: String?, to: Date = Date()) {
+        init(id: UUID = UUID(), account: BareJID, component: BareJID? = nil, from: Date, after: String?, to: Date?) {
             self.id = id;
             self.account = account;
             self.component = component;

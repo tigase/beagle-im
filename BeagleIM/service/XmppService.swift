@@ -306,6 +306,9 @@ class XmppService {
         _ = client.modulesManager.register(SessionEstablishmentModule());
         _ = client.modulesManager.register(DiscoveryModule(identity: DiscoveryModule.Identity(category: "client", type: "pc", name: Bundle.main.infoDictionary!["CFBundleName"] as! String)));
         _ = client.modulesManager.register(SoftwareVersionModule(version: SoftwareVersionModule.SoftwareVersion(name: Bundle.main.infoDictionary!["CFBundleName"] as! String, version: "\(Bundle.main.infoDictionary!["CFBundleShortVersionString"] as! String) b\(Bundle.main.infoDictionary!["CFBundleVersion"] as! String)", os: "macOS")));
+        
+        _ = client.modulesManager.register(RosterModule(rosterManager: RosterManagerBase(store: DBRosterStore.instance)));
+
         _ = client.modulesManager.register(VCardTempModule());
         _ = client.modulesManager.register(VCard4Module());
         _ = client.modulesManager.register(PingModule());
@@ -321,13 +324,11 @@ class XmppService {
         _ = client.modulesManager.register(MessageCarbonsModule());
         _ = client.modulesManager.register(MessageArchiveManagementModule());
 
-        _ = client.modulesManager.register(MessageDeliveryReceiptsModule());
+        client.modulesManager.register(MessageDeliveryReceiptsModule()).sendReceived = false;
         _ = client.modulesManager.register(ChatMarkersModule());
 
         _ = client.modulesManager.register(HttpFileUploadModule());
-        
-        _ = client.modulesManager.register(RosterModule(rosterManager: RosterManagerBase(store: DBRosterStore.instance)));
-        
+                
         _ = client.modulesManager.register(PresenceModule(store: PresenceStore.instance));
         client.modulesManager.register(CapabilitiesModule(cache: DBCapabilitiesCache.instance, additionalFeatures: [.lastMessageCorrection, .messageRetraction]));
 

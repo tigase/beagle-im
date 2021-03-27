@@ -165,6 +165,9 @@ class SettingsStore {
     @UserDefaultsRawSetting(key: "chatslistStyle", defaultValue: .small)
     var chatslistStyle: ChatsListStyle;
     
+    @UserDefaultsSetting(key: "confirmMessages", defaultValue: true)
+    var confirmMessages: Bool;
+    
     var automaticallyConnectAfterStart: Bool {
         return true;
     }
