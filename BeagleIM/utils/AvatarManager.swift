@@ -161,10 +161,23 @@ class AvatarManager {
     
     private func avatarHash(for jid: BareJID, on account: BareJID, withNickname nickname: String?) -> String? {
         if let nickname = nickname {
-             guard let room = DBChatStore.instance.conversation(for: account, with: jid) as? Room else {
+            guard let room = DBChatStore.instance.conversation(for: account, with: jid) as? Room else {
                 return nil;
             }
-            return room.occupant(nickname: nickname)?.presence.vcardTempPhoto;
+            
+            guard let occupant = room.occupant(nickname: nickname) else {
+                return nil;
+            }
+            
+            guard let hash = occupant.presence.vcardTempPhoto else {
+                guard let occuapntJid = occupant.jid?.bareJid else {
+                    return nil;
+                }
+                
+                return store.avatarHash(for: occuapntJid, on: account).first?.hash;
+            }
+            
+            return hash;
         } else {
             return store.avatarHash(for: jid, on: account).first?.hash;//avatars(on: account).avatarHash(for: jid);
         }
@@ -217,7 +230,15 @@ class AvatarManager {
     
     public func avatarUpdated(hash: String?, for jid: BareJID, on account: BareJID, withNickname nickname: String?) {
         if let avatar = self.existingAvatarPublisher(for: .init(account: account, jid: jid, mucNickname: nickname)) {
-            avatar.hash = hash;
+            if hash == nil, let nickname = nickname {
+                if let room = DBChatStore.instance.conversation(for: account, with: jid) as? Room, let occupantJid = room.occupant(nickname: nickname)?.jid?.bareJid {
+                    avatar.hash = store.avatarHash(for: occupantJid, on: account).first?.hash;
+                } else {
+                    avatar.hash = hash;
+                }
+            } else {
+                avatar.hash = hash;
+            }
         }
     }
     
