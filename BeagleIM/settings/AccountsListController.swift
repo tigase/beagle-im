@@ -200,7 +200,12 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
                 regModule.unregister(completionHander: { (result) in
                     DispatchQueue.main.async {
                         if let account = AccountManager.getAccount(for: jid) {
-                            _ = AccountManager.delete(account: account);
+                            do {
+                                try AccountManager.delete(account: account);
+                            } catch {
+                                let alert = NSAlert(error: error);
+                                alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
+                            }
                         }
                     }
                 })
@@ -208,7 +213,12 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
             case .alertSecondButtonReturn:
                 // remove from the application
                 if let account = AccountManager.getAccount(for: jid) {
-                    _ = AccountManager.delete(account: account);
+                    do {
+                        try AccountManager.delete(account: account);
+                    } catch {
+                        let alert = NSAlert(error: error);
+                        alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
+                    }
                 }
             default:
                 // cancel
@@ -315,7 +325,9 @@ class AccountCellView: NSTableCellView {
     @IBAction func enabledSwitched(_ sender: NSButton) {
         if let accountJid = self.accountJid, var account = AccountManager.getAccount(for: accountJid) {
             account.active = sender.state == .on;
-            if !AccountManager.save(account: account) {
+            do {
+                try AccountManager.save(account: account);
+            } catch {
                 sender.state = sender.state == .on ? .off : .on;
             }
         }

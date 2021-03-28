@@ -396,7 +396,7 @@ class XmppService {
                 if var account = AccountManager.getAccount(for: client.userBareJid) {
                     account.active = false;
                     account.serverCertificate = certData;
-                    _ = AccountManager.save(account: account);
+                    try? AccountManager.save(account: account);
                     NotificationCenter.default.post(name: XmppService.SERVER_CERTIFICATE_ERROR, object: client.userBareJid);
                 }
             case .authenticationFailure(let err):
@@ -425,7 +425,7 @@ class XmppService {
             return;
         }
         account.active = false;
-        _ = AccountManager.save(account: account);
+        try? AccountManager.save(account: account);
         NotificationCenter.default.post(name: XmppService.AUTHENTICATION_ERROR, object: accountJID, userInfo: ["error": error]);
     }
     

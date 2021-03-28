@@ -112,19 +112,25 @@ class ChangePasswordController: NSViewController, NSTextFieldDelegate, AccountAw
         }
 
         acc.password = newPassword;
-        _ = AccountManager.save(account: acc);
+        do {
+            try AccountManager.save(account: acc);
 
-        if self.changeOnServer?.state == .on {
-            let alert = NSAlert();
-            alert.icon = NSImage(named: NSImage.infoName);
-            alert.messageText = "Password changed";
-            alert.addButton(withTitle: "OK")
-            alert.beginSheetModal(for: self.view.window!, completionHandler: { (modalResp) in
+            if self.changeOnServer?.state == .on {
+                let alert = NSAlert();
+                alert.icon = NSImage(named: NSImage.infoName);
+                alert.messageText = "Password changed";
+                alert.addButton(withTitle: "OK")
+                alert.beginSheetModal(for: self.view.window!, completionHandler: { (modalResp) in
+                    self.close();
+                });
+            } else {
                 self.close();
-            });
-        } else {
-            self.close();
+            }
+        } catch {
+            let alert = NSAlert(error: error);
+            alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
         }
+
     }
     
     fileprivate func close() {

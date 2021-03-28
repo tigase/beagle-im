@@ -99,8 +99,14 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
                     if let certInfo = certificateInfo {
                         account.serverCertificate = ServerCertificateInfo(sslCertificateInfo: certInfo, accepted: true);
                     }
-                    _ = AccountManager.save(account: account);
-                    self.view.window?.sheetParent?.endSheet(self.view.window!);
+                    
+                    do {
+                        try AccountManager.save(account: account);
+                        self.view.window?.sheetParent?.endSheet(self.view.window!);
+                    } catch {
+                        let alert = NSAlert(error: error);
+                        alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
+                    }
                 case .failure(let error):
                     let alert = NSAlert();
                     alert.alertStyle = .critical;

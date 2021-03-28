@@ -91,8 +91,14 @@ class AccountDetailsViewController: NSViewController, AccountAware {
         let idx = resourceType.indexOfSelectedItem;
         account.resourceType = idx == 1 ? .automatic : (idx == 2 ? .hostname : .custom);
         account.resourceName = resourceName.stringValue;
-        _ = AccountManager.save(account: account);
-        self.dismiss(self);
+        
+        do {
+            try AccountManager.save(account: account);
+            dismiss(self);
+        } catch {
+            let alert = NSAlert(error: error);
+            alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
+        }
     }
     
     override func prepare(for segue: NSStoryboardSegue, sender: Any?) {

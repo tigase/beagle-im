@@ -89,7 +89,7 @@ class ServerCertificateErrorController: NSViewController {
             }
             account.serverCertificate?.accepted = true;
             account.active = true;
-            _ = AccountManager.save(account: account);
+            try? AccountManager.save(account: account);
         }
     }
 }

@@ -111,8 +111,14 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
         if acceptedCertificate != nil {
             account.serverCertificate = ServerCertificateInfo(sslCertificateInfo: acceptedCertificate!, accepted: true);
         }
-        _ = AccountManager.save(account: account);
-        dismissView();
+        
+        do {
+            try AccountManager.save(account: account);
+            dismissView();
+        } catch {
+            let alert = NSAlert(error: error);
+            alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
+        }
     }
     
     fileprivate func onRegistrationError(errorCondition: ErrorCondition?, message: String?) {
