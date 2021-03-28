@@ -33,7 +33,7 @@ class ChatsListSuggestionItemView: SuggestionItemView<DisplayableIdWithKeyProtoc
     override var item: DisplayableIdWithKeyProtocol? {
         didSet {
             cancellables.removeAll();
-            item?.avatarPublisher.assign(to: \.image, on: self.avatar).store(in: &cancellables);
+            item?.avatarPublisher.assign(to: \.avatar, on: self.avatar).store(in: &cancellables);
             item?.displayNamePublisher.assign(to: \.stringValue, on: self.label).store(in: &cancellables);
             item?.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: self.avatar).store(in: &cancellables);
         }

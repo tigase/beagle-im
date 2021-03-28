@@ -79,7 +79,7 @@ class ConversationDataSource {
         }
     }
     
-    public var defaultPageSize = 100;
+    public var defaultPageSize = 80;
     
     private var state: State = .uninitialized;
     

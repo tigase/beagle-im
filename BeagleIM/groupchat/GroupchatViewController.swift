@@ -455,6 +455,7 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
     var room: Room? {
         didSet {
             cancellables.removeAll();
+            self.tableView?.isHidden = true;
 //            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
 //                self.room?.occupantsPublisher.receive(on: self.dispatcher.queue).sink(receiveValue:{ [weak self] value in
 //                    self?.update(participants: value);
@@ -488,6 +489,7 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
             self.tableView?.removeRows(at: changes.removed, withAnimation: initialReload ? [] : .effectFade);
             self.tableView?.insertRows(at: changes.inserted, withAnimation: initialReload ? [] : .effectFade);
             self.tableView?.endUpdates();
+            self.tableView?.isHidden = false;
         }
     }
     
@@ -803,7 +805,7 @@ class MucOccupantSuggestionItemView: SuggestionItemView<MucOccupant> {
             label.stringValue = item?.nickname ?? "";
             avatar.name = item?.nickname ?? "";
             self.avatarPublisher = item?.avatar;
-            avatarPublisher?.avatarPublisher.assign(to: \.image, on: avatar).store(in: &cancellables);
+            avatarPublisher?.avatarPublisher.assign(to: \.avatar, on: avatar).store(in: &cancellables);
         }
     }
     

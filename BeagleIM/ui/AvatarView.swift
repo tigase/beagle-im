@@ -24,6 +24,8 @@ import Combine
 
 class AvatarView: NSImageView {
 
+    static let defaultImage: NSImage = NSImage(named: NSImage.userGuestName)!;
+    
     var name: String? = nil {
         didSet {
             if let parts = name?.uppercased().components(separatedBy: CharacterSet.letters.inverted) {
@@ -33,14 +35,47 @@ class AvatarView: NSImageView {
             } else {
                 self.initials = nil;
             }
+            updateImage();
         }
     }
     
-    private var initials: String?;
+    var avatar: NSImage? {
+        didSet {
+            updateImage();
+        }
+    }
+    
+    private var initials: String? {
+        didSet {
+            if initials != oldValue {
+                self.needsDisplay = true;
+            }
+        }
+    }
+    
+    private func updateImage() {
+        if avatar != nil {
+            // workaround to properly handle appearance
+            if self.avatar! == AvatarManager.instance.defaultGroupchatAvatar {
+                self.image = self.avatar;
+            } else {
+                self.image = avatar?.square(max(self.frame.size.width, self.frame.size.height));
+            }
+        } else if initials != nil {
+            self.image = nil;
+        } else {
+            self.image = AvatarView.defaultImage;
+        }
+    }
+    
+    override func awakeFromNib() {
+        self.imageScaling = .scaleProportionallyUpOrDown;
+        self.updateImage();
+    }
     
     func set(name: String?, avatar: NSImage?) {
         self.name = name;
-        self.image = avatar;
+        self.avatar = avatar;
         self.needsDisplay = true;
     }
     
@@ -49,12 +84,13 @@ class AvatarView: NSImageView {
         path.addClip();
 
         if let image = self.image {
-            let size = image.size;
-            let widthDiff = max(size.width - size.height, 0) / 2;
-            let heightDiff = max(size.height - size.width, 0) / 2;
-            let width = size.width - (2 * widthDiff);
-            let height = size.height - (2 * heightDiff);
-            image.draw(in: dirtyRect, from: NSRect(x: widthDiff, y: heightDiff, width: width, height: height), operation: .sourceOver, fraction: 1.0);
+//            let size = image.size;
+//            let widthDiff = max(size.width - size.height, 0) / 2;
+//            let heightDiff = max(size.height - size.width, 0) / 2;
+//            let width = size.width - (2 * widthDiff);
+//            let height = size.height - (2 * heightDiff);
+//            image.draw(in: dirtyRect, from: NSRect(x: widthDiff, y: heightDiff, width: width, height: height), operation: .sourceOver, fraction: 1.0);
+            super.draw(dirtyRect);
         } else if let text = self.initials {
             let isDark = (self.appearance ?? NSAppearance.current)!.bestMatch(from: [.aqua, .darkAqua]) != .aqua;
             (isDark ? NSColor.white : NSColor.darkGray).withAlphaComponent(0.3).setFill();
@@ -66,14 +102,14 @@ class AvatarView: NSImageView {
             let textSize = text.size(withAttributes: textAttr)
 
             text.draw(in: CGRect(x: dirtyRect.midX - textSize.width/2, y: dirtyRect.midY - textSize.height/2, width: textSize.width, height: textSize.height), withAttributes: textAttr);
-        } else {
-            let image = NSImage(named: NSImage.userGuestName)!;
-            let size = image.size;
-            let widthDiff = max(size.width - size.height, 0) / 2;
-            let heightDiff = max(size.height - size.width, 0) / 2;
-            let width = size.width - (2 * widthDiff);
-            let height = size.height - (2 * heightDiff);
-            image.draw(in: dirtyRect, from: NSRect(x: widthDiff, y: heightDiff, width: width, height: height), operation: .sourceOver, fraction: 1.0);
+//        } else {
+//            let image = NSImage(named: NSImage.userGuestName)!;
+//            let size = image.size;
+//            let widthDiff = max(size.width - size.height, 0) / 2;
+//            let heightDiff = max(size.height - size.width, 0) / 2;
+//            let width = size.width - (2 * widthDiff);
+//            let height = size.height - (2 * heightDiff);
+//            image.draw(in: dirtyRect, from: NSRect(x: widthDiff, y: heightDiff, width: width, height: height), operation: .sourceOver, fraction: 1.0);
         }
     }
     

@@ -32,7 +32,7 @@ class MessageTextView: NSTextView, NSLayoutManagerDelegate {
 
             textContainer.size = NSSize(width: self.superview!.superview!.bounds.width - 68, height: CGFloat.greatestFiniteMagnitude);
             layoutManager.ensureLayout(for: textContainer);
-            layoutManager.glyphRange(for: textContainer);
+            //layoutManager.glyphRange(for: textContainer);
             let size = layoutManager.usedRect(for: textContainer).size;
             //print("rendered size:", size, self.superview!.superview!.bounds.width, textContainer.size, "for:", self.string, "superview:", self.superview);
             return size;
@@ -69,7 +69,7 @@ class MessageTextView: NSTextView, NSLayoutManagerDelegate {
         
         self.layoutManager?.delegate = self;
         self.layoutManager?.typesetterBehavior = .latestBehavior;
-        self.layoutManager?.backgroundLayoutEnabled = false;
+        //self.layoutManager?.backgroundLayoutEnabled = false;
         self.textContainer?.lineFragmentPadding = 1;
         self.textContainerInset = .zero;
         self.textContainer?.widthTracksTextView = false;

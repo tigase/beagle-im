@@ -146,16 +146,20 @@ extension NSImage {
         let dest = NSImage(size: NSSize(width: size, height: size));
         dest.lockFocus();
     
-        let sourceRect = width > height ? NSRect(x: (width - height) / 2, y: 0, width: height, height: height) : NSRect(x: 0, y: (height - width) / 2, width: width, height: height);
+//        let sourceRect = width > height ? NSRect(x: (width - height) / 2, y: 0, width: height, height: height) : NSRect(x: 0, y: (height - width) / 2, width: width, height: height);
    
         NSGraphicsContext.current?.imageInterpolation = .high;
-
-        let transform = NSAffineTransform();
-        transform.translateX(by: 0.0, yBy: 0);
-        transform.scaleX(by: size / sourceRect.width, yBy: size / sourceRect.height);
-        transform.concat();
         
-        draw(at: .zero, from: sourceRect, operation: .sourceOver, fraction: 1.0);
+//        let transform = NSAffineTransform();
+//        transform.translateX(by: 0.0, yBy: 0);
+//        transform.scaleX(by: size / sourceRect.width, yBy: size / sourceRect.height);
+//        transform.concat();
+//
+//        draw(at: .zero, from: sourceRect, operation: .sourceOver, fraction: 1.0);
+        let widthDiff = max(width - height, 0) / 2;
+        let heightDiff = max(height - width, 0) / 2;
+        draw(in: NSRect(origin: .zero, size: dest.size), from: NSRect(x: widthDiff, y: heightDiff, width: width - (widthDiff * 2), height: height - (heightDiff * 2)), operation: .sourceOver, fraction: 1.0);
+        
         dest.unlockFocus();
         return dest;
     }
