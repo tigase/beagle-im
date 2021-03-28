@@ -38,10 +38,10 @@ class AvatarViewWithStatus: NSView {
     }
     var avatar: NSImage? {
         get {
-            return avatarView.image;
+            return avatarView.avatar;
         }
         set {
-            self.avatarView.image = newValue;
+            self.avatarView.avatar = newValue;
         }
     }
     
