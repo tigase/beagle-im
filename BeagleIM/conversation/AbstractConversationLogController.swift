@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import Combine
 
 class AbstractConversationLogController: NSViewController, NSTableViewDataSource, ConversationDataSourceDelegate {
 
@@ -28,6 +29,8 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
     
     let dataSource = ConversationDataSource();
     var conversation: Conversation!;
+    
+    private let newestVisibleDateSubject = PassthroughSubject<Date,Never>();
     
     private var hasFocus: Bool {
         return view.window?.isKeyWindow ?? false;
@@ -46,6 +49,12 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
     }
     
     override func viewWillAppear() {
+        if let conversation = self.conversation {
+            newestVisibleDateSubject.onlyGreater().throttledSink(for: 0.5, scheduler: DispatchQueue.main, receiveValue: { date in
+                DBChatHistoryStore.instance.markAsRead(for: conversation, before: date);
+            })
+        }
+        
         super.viewWillAppear();
         
         selectionManager.initilizeHandlers(controller: self);
@@ -68,6 +77,11 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
             NSEvent.removeMonitor(mouseMonitor);
         }
         NotificationCenter.default.removeObserver(self, name: NSWindow.didBecomeKeyNotification, object: nil);
+    }
+    
+    override func viewDidDisappear() {
+        newestVisibleDateSubject.send(completion: .finished);
+        super.viewDidDisappear();
     }
     
     func prepareContextMenu(_ menu: NSMenu, forRow row: Int) {
@@ -111,7 +125,8 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
         guard let since = ts else {
             return;
         }
-        DBChatHistoryStore.instance.markAsRead(for: self.conversation, before: since);
+        
+        newestVisibleDateSubject.send(since);
     }
     
     @objc func didBecomeKeyWindow(_ notification: Notification) {

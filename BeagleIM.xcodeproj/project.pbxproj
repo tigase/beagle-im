@@ -181,6 +181,8 @@
 		FEB994B1241418FE00B8E7A7 /* InviteToChannelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB994B0241418FE00B8E7A7 /* InviteToChannelViewController.swift */; };
 		FEB994B324154C1F00B8E7A7 /* ChannelManageParticipants.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB994B224154C1F00B8E7A7 /* ChannelManageParticipants.swift */; };
 		FEB9EA2B2440912B00435937 /* TigaseSwiftOMEMO in Frameworks */ = {isa = PBXBuildFile; productRef = FEB9EA2A2440912B00435937 /* TigaseSwiftOMEMO */; };
+		FEC135E9261254E200054666 /* Publisher+OnlyGetter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC135E8261254E200054666 /* Publisher+OnlyGetter.swift */; };
+		FEC135ED2612550000054666 /* Publisher+ThrottledSink.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC135EC2612550000054666 /* Publisher+ThrottledSink.swift */; };
 		FEC336ED2408141700EC1A0D /* ChannelParticipantsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336EC2408141700EC1A0D /* ChannelParticipantsViewController.swift */; };
 		FEC336EF2408FCD800EC1A0D /* ParticipantsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336EE2408FCD800EC1A0D /* ParticipantsButton.swift */; };
 		FEC336F3240A785400EC1A0D /* ChannelAwareProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336F2240A785400EC1A0D /* ChannelAwareProtocol.swift */; };
@@ -433,6 +435,8 @@
 		FEB994AE2413A03D00B8E7A7 /* ChannelEditConfigViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelEditConfigViewController.swift; sourceTree = "<group>"; };
 		FEB994B0241418FE00B8E7A7 /* InviteToChannelViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteToChannelViewController.swift; sourceTree = "<group>"; };
 		FEB994B224154C1F00B8E7A7 /* ChannelManageParticipants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelManageParticipants.swift; sourceTree = "<group>"; };
+		FEC135E8261254E200054666 /* Publisher+OnlyGetter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publisher+OnlyGetter.swift"; sourceTree = "<group>"; };
+		FEC135EC2612550000054666 /* Publisher+ThrottledSink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publisher+ThrottledSink.swift"; sourceTree = "<group>"; };
 		FEC336EC2408141700EC1A0D /* ChannelParticipantsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelParticipantsViewController.swift; sourceTree = "<group>"; };
 		FEC336EE2408FCD800EC1A0D /* ParticipantsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantsButton.swift; sourceTree = "<group>"; };
 		FEC336F2240A785400EC1A0D /* ChannelAwareProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelAwareProtocol.swift; sourceTree = "<group>"; };
@@ -645,6 +649,7 @@
 		FE6E6BE521384D5E003B1696 /* utils */ = {
 			isa = PBXGroup;
 			children = (
+				FEC135E7261254CF00054666 /* combine */,
 				FE89341325DD338C004E38B0 /* crypto */,
 				FE6E6BE621384D5E003B1696 /* AccountManager.swift */,
 				FED7AEC221415CB8001E164B /* AvatarManager.swift */,
@@ -837,6 +842,15 @@
 				FEA2997925B9EE570021865E /* SuggestionsContentView.swift */,
 			);
 			path = suggestions;
+			sourceTree = "<group>";
+		};
+		FEC135E7261254CF00054666 /* combine */ = {
+			isa = PBXGroup;
+			children = (
+				FEC135E8261254E200054666 /* Publisher+OnlyGetter.swift */,
+				FEC135EC2612550000054666 /* Publisher+ThrottledSink.swift */,
+			);
+			path = combine;
 			sourceTree = "<group>";
 		};
 		FED2ECE72066B01C00F506A5 = {
@@ -1205,9 +1219,11 @@
 				FE2D481E24544A7900C13CE5 /* CallManager.swift in Sources */,
 				FED7AEC721418B83001E164B /* VCardManager.swift in Sources */,
 				FE6E6C0321384D5F003B1696 /* DBRosterStore.swift in Sources */,
+				FEC135E9261254E200054666 /* Publisher+OnlyGetter.swift in Sources */,
 				FE9E1C41244B34C4003751AA /* SearchHistoryTableView.swift in Sources */,
 				FE988C19232C0A0C002D85AF /* ChangePasswordController.swift in Sources */,
 				FE5CAF982215BCD600FABD46 /* ScriptsManager.swift in Sources */,
+				FEC135ED2612550000054666 /* Publisher+ThrottledSink.swift in Sources */,
 				FE34BBD52157DDF200775B07 /* MucModule_RoomError_extension.swift in Sources */,
 				FED2A963260292B6008828E4 /* ConversationAttachment.swift in Sources */,
 				FEDE6AFC21455A2B0019170A /* RosterViewController.swift in Sources */,

@@ -164,7 +164,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             case is Chat:
                 DBChatMarkersStore.instance.mark(conversation: conversation, before: marker.marker.id, as: type, by: sender.bareJid == account ? .me(conversation: conversation) : .buddy(conversation: conversation));
             case is Room:
-                if let nickname = sender.resource {
+                if let nickname = sender.resource, sender.bareJid != conversation.account {
                     DBChatMarkersStore.instance.mark(conversation: conversation, before: marker.marker.id, as: type, by: .occupant(nickname: nickname, jid: nil));
                 }
             case is Channel:
