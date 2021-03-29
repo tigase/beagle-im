@@ -150,7 +150,7 @@ class MessageEventHandler: XmppServiceEventHandler {
             let type = ChatMarker.MarkerType.from(chatMarkers: marker.marker);
             if let idx = sender.localPart?.firstIndex(of: "#"), let localPart = sender.localPart {
                 let participantId = String(localPart[localPart.startIndex..<idx]);
-                let channelLocalPart = String(localPart[localPart.index(after: idx)...localPart.endIndex]);
+                let channelLocalPart = String(localPart[localPart.index(after: idx)..<localPart.endIndex]);
                 if let channel = DBChatStore.instance.conversation(for: account, with: BareJID(localPart: channelLocalPart, domain: sender.domain)) as? Channel, channel.participantId == participantId, let nickname = channel.nickname {
                     DBChatMarkersStore.instance.mark(conversation: conversation, before: marker.marker.id, as: type, by: .participant(id: participantId, nickname: nickname, jid: account))
                 }
