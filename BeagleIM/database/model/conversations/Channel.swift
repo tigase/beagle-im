@@ -114,6 +114,21 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         case avatar = "avatar"
         case membersOnly = "members-only"
         
+        public static func from(node nodeStr: String?) -> Feature? {
+            guard let node = nodeStr else {
+                return nil;
+            }
+            
+            switch node {
+            case "urn:xmpp:mix:nodes:allowed":
+                return .membersOnly;
+            case "urn:xmpp:avatar:metadata":
+                return .avatar;
+            default:
+                return nil;
+            }
+        }
+        
         public init(from decoder: Decoder) throws {
             self = Feature(rawValue: try decoder.singleValueContainer().decode(String.self))!
         }
@@ -122,6 +137,7 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
             var container = encoder.singleValueContainer();
             try container.encode(self.rawValue);
         }
+        
     }
     
     init(dispatcher: QueueDispatcher, context: Context, channelJid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: ChannelOptions) {
@@ -319,7 +335,7 @@ public struct ChannelOptions: Codable, ChatOptionsProtocol, Equatable {
         description = try container.decodeIfPresent(String.self, forKey: .description);
         notifications = ConversationNotification(rawValue: try container.decodeIfPresent(String.self, forKey: .notifications) ?? "") ?? .always;
         features = try container.decodeIfPresent(Set<Channel.Feature>.self, forKey: .features) ?? [];
-        confirmMessages = try container.decodeIfPresent(Bool.self, forKey: .confirmMessages) ?? false;
+        confirmMessages = try container.decodeIfPresent(Bool.self, forKey: .confirmMessages) ?? true;
     }
     
     public func encode(to encoder: Encoder) throws {

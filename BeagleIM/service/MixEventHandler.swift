@@ -37,11 +37,11 @@ class MixEventHandler: XmppServiceExtension {
             }
             let disco = client.module(.disco);
             for channel in client.module(.mix).channelManager.channels(for: client) {
-                disco.getItems(for: JID(channel.jid), completionHandler: { result in
+                disco.getItems(for: JID(channel.jid), node: "mix", completionHandler: { result in
                     switch result {
                     case .success(let info):
                         (channel as! Channel).updateOptions({ options in
-                            options.features = Set(info.items.compactMap({ $0.node }).compactMap({ Channel.Feature(rawValue: $0) }));
+                            options.features = Set(info.items.compactMap({ Channel.Feature.from(node: $0.node) }));
                         })
                     case .failure(_):
                         break;
