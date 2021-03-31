@@ -149,7 +149,9 @@ public class DBChatMarkersStore {
         if let conv = (conversation as? Conversation) ?? DBChatStore.instance.conversation(for: conversation.account, with: conversation.jid) {
             conv.mark(as: type, before: message.timestamp, by: sender);
             if conv.isLocal(sender: sender) {
-                DBChatHistoryStore.instance.markAsRead(for: conv, before: timestamp);
+                if type == .displayed {
+                    DBChatHistoryStore.instance.markAsRead(for: conv, before: timestamp);
+                }
                 MessageEventHandler.instance.cancelReceived(for: conv, before: timestamp);
             }
         }
