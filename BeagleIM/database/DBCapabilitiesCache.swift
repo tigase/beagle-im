@@ -117,9 +117,14 @@ class DBCapabilitiesCache: CapabilitiesCache {
     }
     
     fileprivate func isCached(node: String) -> Bool {
-        return try! Database.main.reader({ database in
-            try database.count(query: .capsCountFeaturesForNode, params: ["node": node]);
-        }) > 0
+        do {
+            return try Database.main.reader({ database in
+                try database.count(query: .capsCountFeaturesForNode, params: ["node": node]);
+            }) > 0
+        } catch {
+            // it is better to assume that we have features...
+            return true;
+        }
     }
 
 }
