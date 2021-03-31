@@ -1472,7 +1472,7 @@ AAAAAAEGA
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Q7w-ER-stg">
-                                <rect key="frame" x="18" y="348" width="109" height="16"/>
+                                <rect key="frame" x="18" y="346" width="109" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Open groupchat" id="A8X-bI-x0h">
                                     <font key="font" metaFont="systemBold"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -1480,7 +1480,7 @@ AAAAAAEGA
                                 </textFieldCell>
                             </textField>
                             <button horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="0XX-Ed-PIO">
-                                <rect key="frame" x="386" y="343" width="27" height="26"/>
+                                <rect key="frame" x="386" y="341" width="27" height="26"/>
                                 <buttonCell key="cell" type="disclosure" bezelStyle="roundedDisclosure" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="K7f-Za-GPk">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES" changeBackground="YES" changeGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -1490,7 +1490,7 @@ AAAAAAEGA
                                 </connections>
                             </button>
                             <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="UNN-jB-M1F">
-                                <rect key="frame" x="17" y="316" width="396" height="25"/>
+                                <rect key="frame" x="17" y="314" width="396" height="25"/>
                                 <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" pullsDown="YES" id="XJd-8J-bvH">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="menu"/>
@@ -1501,7 +1501,7 @@ AAAAAAEGA
                                 </connections>
                             </popUpButton>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="3xe-hD-Jl4">
-                                <rect key="frame" x="20" y="290" width="390" height="21"/>
+                                <rect key="frame" x="20" y="288" width="390" height="21"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Enter JID of conference component" drawsBackground="YES" id="vnL-pc-fd7">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -1509,7 +1509,7 @@ AAAAAAEGA
                                 </textFieldCell>
                             </textField>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="PJf-lh-cWp">
-                                <rect key="frame" x="20" y="261" width="390" height="21"/>
+                                <rect key="frame" x="20" y="259" width="390" height="21"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Find room or enter new name to create room" drawsBackground="YES" id="TWr-Qh-l4X">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -1517,7 +1517,7 @@ AAAAAAEGA
                                 </textFieldCell>
                             </textField>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="KiB-rI-rmC">
-                                <rect key="frame" x="20" y="232" width="390" height="21"/>
+                                <rect key="frame" x="20" y="230" width="390" height="21"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" placeholderString="Nickname (required)" drawsBackground="YES" id="xYL-dD-FdP">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -1525,13 +1525,13 @@ AAAAAAEGA
                                 </textFieldCell>
                             </textField>
                             <scrollView autohidesScrollers="YES" horizontalLineScroll="39" horizontalPageScroll="10" verticalLineScroll="39" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AnO-yI-1ul">
-                                <rect key="frame" x="0.0" y="48" width="430" height="176"/>
+                                <rect key="frame" x="0.0" y="48" width="430" height="174"/>
                                 <clipView key="contentView" drawsBackground="NO" id="bct-ik-0Nb">
-                                    <rect key="frame" x="1" y="1" width="428" height="174"/>
+                                    <rect key="frame" x="1" y="1" width="428" height="172"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="37" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" id="2D2-3c-csM">
-                                            <rect key="frame" x="0.0" y="0.0" width="428" height="174"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="428" height="172"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <size key="intercellSpacing" width="3" height="2"/>
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1602,7 +1602,7 @@ AAAAAAEGA
                                 </scroller>
                             </scrollView>
                             <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="kWE-uo-8q8">
-                                <rect key="frame" x="199" y="120" width="32" height="32"/>
+                                <rect key="frame" x="199" y="119" width="32" height="32"/>
                             </progressIndicator>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="hBx-ct-NxP">
                                 <rect key="frame" x="350" y="10" width="66" height="32"/>

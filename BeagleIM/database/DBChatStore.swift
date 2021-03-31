@@ -177,10 +177,7 @@ open class DBChatStore: ContextLifecycleAware {
                             }
                         }
                     }
-                    self.conversationsDispatcher.sync {
-                        let items = self.conversations;
-                        self.conversations = items;
-                    }
+                    self.refreshConversationsList();
                 }
             }
             completionHandler();
@@ -211,6 +208,13 @@ open class DBChatStore: ContextLifecycleAware {
         }
     }
 
+    func refreshConversationsList() {
+        self.conversationsDispatcher.sync {
+            let items = self.conversations;
+            self.conversations = items;
+        }
+    }
+    
     func messageDraft(for account: BareJID, with jid: BareJID, completionHandler: @escaping (String?)->Void) {
         dispatcher.async {
             let text = try! Database.main.reader({ database -> String? in
