@@ -24,6 +24,7 @@ import AppKit
 class EmptyViewController: NSViewController {
     
     override func viewDidLoad() {
+        super.viewDidLoad();
         self.view.widthAnchor.constraint(greaterThanOrEqualToConstant: 200).isActive = true;
     }
     

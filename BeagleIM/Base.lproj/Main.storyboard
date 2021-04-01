@@ -936,7 +936,7 @@ CA
                 </viewController>
                 <customObject id="A8m-bW-f6M" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-370" y="1354"/>
+            <point key="canvasLocation" x="-419" y="1385"/>
         </scene>
         <!--ConversationLogController-->
         <scene sceneID="0vU-c0-IQ3">
