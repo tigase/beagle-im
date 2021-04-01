@@ -55,16 +55,14 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         self.dispatcher = dispatcher;
         self.canOpenChat = canOpenChat;
 
-        DBChatStore.instance.$conversations.receive(on: dispatcher.queue).sink(receiveValue: { [weak self] items in
+        DBChatStore.instance.$conversations.receive(on: dispatcher.queue).throttle(for: 0.2, scheduler: self.dispatcher.queue, latest: true).sink(receiveValue: { [weak self] items in
             self?.update(items: items);
         }).store(in: &cancellables);
     }
     
     func update(items: [Conversation]) {
         let newItems = items.filter(self.isAccepted(chat:)).map({ conversation in ConversationItem(chat: conversation) }).sorted(by: { (c1,c2) in c1.chat.timestamp > c2.chat.timestamp });
-        let oldItems = DispatchQueue.main.sync {
-            return self.items;
-        }
+        let oldItems = self.items;
         
         let diffs = newItems.difference(from: oldItems).inferringMoves();
         var removed: [Int] = [];
@@ -84,7 +82,12 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
                 }
             }
         }
-        DispatchQueue.main.async {
+        
+        guard (!removed.isEmpty) || (!moved.isEmpty) || (!inserted.isEmpty) else {
+            return;
+        }
+        
+        DispatchQueue.main.sync {
             self.items = newItems;
             self.delegate?.beginUpdates();
             if !removed.isEmpty {
@@ -110,7 +113,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
     
     func forChat(_ chat: Conversation, execute: @escaping (ConversationItem) -> Void) {
         self.dispatcher.async {
-            let items = DispatchQueue.main.sync { return self.items; };
+            let items = self.items;
             guard let item = items.first(where: { (it) -> Bool in
                 it.chat.id == chat.id
             }) else {
@@ -123,7 +126,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
 
     func forChat(account: BareJID, jid: BareJID, execute: @escaping (ConversationItem) -> Void) {
         self.dispatcher.async {
-            let items = DispatchQueue.main.sync { return self.items; };
+            let items = self.items;
             guard let item = items.first(where: { (it) -> Bool in
                 it.chat.account == account && it.chat.jid == jid
             }) else {
