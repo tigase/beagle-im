@@ -403,8 +403,9 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         }
         
         let selected = self.outlineView.selectedRow;
-        print("selected row:", selected);
         let item = self.outlineView.selectedRowIndexes.count == 1 ? self.outlineView.item(atRow: selected) : nil;
+
+        print("selected row: \(selected), item: \(String(describing: item)), selectedRowIndexes: \(self.outlineView.selectedRowIndexes.count)");
         if let splitController = self.outlineView.window?.contentViewController as? NSSplitViewController {
             if let conversation = (item as? ConversationItem)?.chat {
                 let controller = self.conversationController(for: conversation);
@@ -445,6 +446,8 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                     }
                 }
             }
+        } else {
+            print("could not find NSSplitViewController: \(String(describing: self.outlineView.window?.contentView))")
         }
     }
     
@@ -453,10 +456,11 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         case is Chat:
             return self.storyboard!.instantiateController(withIdentifier: "ChatViewController") as! ChatViewController;
         case is Room:
-            return self.storyboard?.instantiateController(withIdentifier: "GroupchatViewController") as! GroupchatViewController;
+            return self.storyboard!.instantiateController(withIdentifier: "GroupchatViewController") as! GroupchatViewController;
         case is Channel:
             return NSStoryboard(name: "MIX", bundle: nil).instantiateController(withIdentifier: "ChannelViewController") as! ChannelViewController;
         default:
+            print("undefined conversation type: \(conversation.self) \(String(describing: conversation))")
             return self.storyboard!.instantiateController(withIdentifier: "EmptyViewController") as! NSViewController;
         }
     }
