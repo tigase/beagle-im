@@ -39,13 +39,31 @@ class ConversationLogController: AbstractConversationLogController, NSTableViewD
         self.contextMenuDelegate?.prepareConversationLogContextMenu(dataSource: self.dataSource, menu: menu, forRow: row);
     }
     
+    private func getPreviousEntry(before row: Int) -> ConversationEntry? {
+        guard row >= 0 && (row + 1) < dataSource.count else {
+            return nil;
+        }
+        return dataSource.getItem(at: row + 1);
+    }
+    
+    private func isContinuation(at row: Int, for entry: ConversationEntry) -> Bool {
+        guard let prevEntry = getPreviousEntry(before: row) else {
+            return false;
+        }
+        switch prevEntry.payload {
+        case .messageRetracted, .message(_, _), .attachment(_, _):
+            return entry.isMergeable(with: prevEntry);
+        case .marker(_, _), .linkPreview(_):
+            return isContinuation(at: row + 1, for: entry);
+        default:
+            return false;
+        }
+    }
+    
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         guard let item = dataSource.getItem(at: row) else {
             return nil;
         }
-        
-        let prevItem = row >= 0 && (row + 1) < dataSource.count ? dataSource.getItem(at: row + 1) : nil;
-        let continuation = prevItem != nil && item.isMergeable(with: prevItem!);
 
         switch item.payload {
         case .unreadMessages:
@@ -55,7 +73,7 @@ class ConversationLogController: AbstractConversationLogController, NSTableViewD
             }
             return nil;
         case .messageRetracted:
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: isContinuation(at: row, for: item) ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
 
                 cell.id = item.id;
                 cell.setRetracted(item: item);
@@ -71,7 +89,7 @@ class ConversationLogController: AbstractConversationLogController, NSTableViewD
                 }
                 return nil;
             } else {
-                if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
+                if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: isContinuation(at: row, for: item) ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
 
                     cell.id = item.id;
                     cell.set(item: item, message: message, correctionTimestamp: correctionTimestamp);
@@ -87,7 +105,7 @@ class ConversationLogController: AbstractConversationLogController, NSTableViewD
             }
             return nil;
         case .attachment(let url, let appendix):
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: continuation ? "ChatAttachmentContinuationCellView" : "ChatAttachmentCellView"), owner: nil) as? ChatAttachmentCellView {
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: isContinuation(at: row, for: item) ? "ChatAttachmentContinuationCellView" : "ChatAttachmentCellView"), owner: nil) as? ChatAttachmentCellView {
                 cell.set(item: item, url: url, appendix: appendix);
                 return cell;
             }
