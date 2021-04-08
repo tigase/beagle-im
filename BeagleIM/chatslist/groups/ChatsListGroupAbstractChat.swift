@@ -31,7 +31,7 @@ struct ConversationItem: ChatsListItemProtocol, Hashable {
     var name: String {
         return chat.displayName;
     }
-    var chat: Conversation;
+    let chat: Conversation;
     
     func hash(into hasher: inout Hasher) {
         hasher.combine(chat.id);
@@ -55,7 +55,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         self.dispatcher = dispatcher;
         self.canOpenChat = canOpenChat;
 
-        DBChatStore.instance.$conversations.receive(on: dispatcher.queue).throttle(for: 0.2, scheduler: self.dispatcher.queue, latest: true).sink(receiveValue: { [weak self] items in
+        DBChatStore.instance.$conversations.throttle(for: 0.1, scheduler: self.dispatcher.queue, latest: true).sink(receiveValue: { [weak self] items in
             self?.update(items: items);
         }).store(in: &cancellables);
     }

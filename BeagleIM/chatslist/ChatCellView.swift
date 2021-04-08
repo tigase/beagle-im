@@ -70,7 +70,11 @@ class ChatCellView: NSTableCellView {
     fileprivate var chatState: ChatState = .active;
     
     @IBAction func closeClicked(_ sender: ChatsCellViewCloseButton) {
-        closeFunction?();
+        guard let fn = closeFunction else {
+            return;
+        }
+        closeFunction = nil;
+        fn();
     }
 
     func set(lastActivity: LastChatActivity?, chatState: ChatState, account: BareJID) {
@@ -225,6 +229,7 @@ class ChatCellView: NSTableCellView {
     }
     
     func update(from item: ConversationItem) {
+        closeFunction = nil;
         contact = nil;
         conversation = item.chat;
     }
@@ -243,6 +248,7 @@ class ChatCellView: NSTableCellView {
     }
     
     func update(from item: InvitationItem) {
+        closeFunction = nil;
         conversation = nil;
         label.stringValue = item.name;
         contact = ContactManager.instance.contact(for: .init(account: item.account, jid: item.jid.bareJid, type: .buddy));
@@ -264,8 +270,9 @@ class ChatCellView: NSTableCellView {
 //    }
  
     func setMouseHovers(_ val: Bool) {
-        self.lastMessage?.blured = val && contact == nil;
-        self.closeButton.isHidden = !val || contact != nil;
+        let visible = val && closeFunction != nil;
+        self.lastMessage?.blured = visible;
+        self.closeButton.isHidden = !visible;
     }
 }
 

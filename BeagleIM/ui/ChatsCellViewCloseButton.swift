@@ -41,9 +41,7 @@ class ChatsCellViewCloseButton: NSButton {
     
     override var isHidden: Bool {
         didSet {
-            if #available(macOS 10.15, *) {
-                self.cell?.backgroundStyle = .light;
-            }
+            self.cell?.backgroundStyle = .light;
         }
     }
     

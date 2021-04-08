@@ -54,7 +54,7 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
     }
     
     override func viewWillAppear() {
-        DBRosterStore.instance.$items.combineLatest($showOnlyOnline, PresenceStore.instance.$bestPresences).debounce(for: 0.1, scheduler: dispatcher.queue).sink(receiveValue: { [weak self] (items, available, presences) in
+        DBRosterStore.instance.$items.combineLatest($showOnlyOnline, PresenceStore.instance.$bestPresences).throttle(for: 0.1, scheduler: dispatcher.queue, latest: true).sink(receiveValue: { [weak self] (items, available, presences) in
             self?.update(items: Array(items), presences: presences, available: available);
         }).store(in: &cancellables);
         XmppService.instance.$currentStatus.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] status in self?.statusUpdated(status) }).store(in: &cancellables);
@@ -68,7 +68,7 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
     }
     
     private func update(items: [RosterItem], presences: [PresenceStore.Key: Presence], available: Bool) {
-        let oldItems = DispatchQueue.main.sync { self.items };
+        let oldItems = self.items;
         
         var newItems = items.compactMap({ item -> Item? in
             guard let account = item.context?.userBareJid else {
@@ -84,7 +84,7 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
         
         let diff = newItems.calculateChanges(from: oldItems);
         
-        DispatchQueue.main.async {
+        DispatchQueue.main.sync {
             self.items = newItems;
             if !diff.removed.isEmpty {
                 self.contactsTableView.removeRows(at: diff.removed, withAnimation: .effectFade);

@@ -161,9 +161,9 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
                 return;
             }
             var newGroups: [ChatsListGroupProtocol] = [];
-//            if !InvitationManager.instance.items.isEmpty {
-//            newGroups.insert(that.invitationGroup!, at: 0);
-//            }
+            if let invitationGroup = that.invitationGroup, !invitationGroup.items.isEmpty {
+                newGroups.append(invitationGroup)
+            }
 
             if value {
                 newGroups.append(contentsOf: [ChatsListGroupCommon(delegate: that)]);
@@ -416,6 +416,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                     } else {
                         conversationController.dataSource.loadItems(.unread(overhead: conversationController.dataSource.defaultPageSize));
                     }
+                    self.scrollChatToMessageWithId = nil;
                 }
 
                 let item = NSSplitViewItem(viewController: controller);
@@ -500,8 +501,8 @@ extension ChatsListViewController: NSOutlineViewDelegate {
             view?.avatar.backgroundColor = NSColor(named: "sidebarBackgroundColor");
             view?.update(from: chat);
 //            view?.lastMessage.preferredMaxLayoutWidth = self.outlineView.outlineTableColumn!.width - 66;
-            view?.closeFunction = {
-                self.close(chat: chat);
+            view?.closeFunction = { [weak self] in
+                self?.close(chat: chat);
             }
             view?.setMouseHovers(false);
             return view;
