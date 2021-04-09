@@ -65,13 +65,16 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     }
     
     override func viewDidLoad() {
+        print("AbstractChatViewController::viewDidLoad() - begin")
         super.viewDidLoad();
         self.messageField.delegate = self;
         self.messageField.isContinuousSpellCheckingEnabled = Settings.spellchecking;
         self.messageField.isGrammarCheckingEnabled = Settings.spellchecking;
+        print("AbstractChatViewController::viewDidLoad() - end")
     }
     
     override func viewWillAppear() {
+        print("AbstractChatViewController::viewWillAppear() - begin")
         super.viewWillAppear();
         self.messageField?.placeholderAttributedString = account != nil ? NSAttributedString(string: "from \(account.stringValue)...", attributes: [.foregroundColor: NSColor.placeholderTextColor, .font: NSFont.systemFont(ofSize: NSFont.systemFontSize)]) : nil;
         
@@ -86,23 +89,28 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
                 self.updateMessageFieldSize();
             }
         });
+        print("AbstractChatViewController::viewWillAppear() - end")
     }
     
     override func viewWillDisappear() {
+        print("AbstractChatViewController::viewWillDisappear() - begin")
         super.viewWillDisappear();
         if let account = self.account, let jid = self.jid {
             let draft = self.messageField.string;
             DBChatStore.instance.storeMessage(draft: draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : draft, for: account, with: jid);
         }
+        print("AbstractChatViewController::viewWillDisappear() - end")
     }
     
     override func viewDidAppear() {
+        print("AbstractChatViewController::viewDidAppear() - begin")
         super.viewDidAppear();
         //DispatchQueue.main.async {
             if !NSEvent.modifierFlags.contains(.shift) {
                 self.view.window?.makeFirstResponder(self.messageField);
             }
         //}
+        print("AbstractChatViewController::viewDidAppear() - end")
     }
     
     func startMessageCorrection(message: String, originId: String) {

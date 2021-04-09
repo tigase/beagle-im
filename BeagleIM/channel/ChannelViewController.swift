@@ -43,6 +43,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     }
     
     override func viewDidLoad() {
+        print("ChannelViewController::viewDidLoad() - begin")
         super.viewDidLoad();
         
         if #available(macOS 11.0, *) {
@@ -50,9 +51,11 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             NSLayoutConstraint.activate([self.actionsButton.widthAnchor.constraint(equalToConstant: 40)]);
             actionsButtonLeadConstraint.constant = 0;
         }
+        print("ChannelViewController::viewDidLoad() - end")
     }
     
     override func viewWillAppear() {
+        print("ChannelViewController::viewWillAppear() - begin")
         self.conversationLogController?.contextMenuDelegate = self;
         
         channel.displayNamePublisher.assign(to: \.title, on: channelNameLabel).store(in: &cancellables);
@@ -71,11 +74,14 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             self?.update(permissions: permissions);
         }).store(in: &cancellables);
         super.viewWillAppear();
+        print("ChannelViewController::viewWillAppear() - end")
     }
         
     override func viewDidDisappear() {
+        print("ChannelViewController::viewDidDisappear() - begin")
         super.viewDidDisappear();
         cancellables.removeAll();
+        print("ChannelViewController::viewDidDisappear() - end")
     }
     
     override func prepareConversationLogContextMenu(dataSource: ConversationDataSource, menu: NSMenu, forRow row: Int) {

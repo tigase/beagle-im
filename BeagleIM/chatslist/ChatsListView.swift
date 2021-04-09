@@ -408,10 +408,14 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         print("selected row: \(selected), item: \(String(describing: item)), selectedRowIndexes: \(self.outlineView.selectedRowIndexes.count)");
         if let splitController = self.outlineView.window?.contentViewController as? NSSplitViewController {
             if let conversation = (item as? ConversationItem)?.chat {
+                print("creating controller for: \(conversation)")
                 let controller = self.conversationController(for: conversation);
+                print("created controller \(controller) for: \(conversation)")
                 if let conversationController = controller as? AbstractChatViewController {
                     conversationController.conversation = conversation;
+                    print("creating view")
                     _ = conversationController.view;
+                    print("loading message history for: \(conversation)");
                     if let msgId = self.scrollChatToMessageWithId {
                         conversationController.dataSource.loadItems(.with(id: msgId, overhead: conversationController.dataSource.defaultPageSize));
                     } else {
@@ -422,20 +426,26 @@ extension ChatsListViewController: NSOutlineViewDelegate {
 
                 let item = NSSplitViewItem(viewController: controller);
                 if splitController.splitViewItems.count == 1 {
+                    print("adding controller to split view")
                     splitController.addSplitViewItem(item);
                 } else {
+                    print("replacing controller in split view")
                     splitController.removeSplitViewItem(splitController.splitViewItems[1]);
                     splitController.addSplitViewItem(item);
                 }
+                print("controller added to split view");
             } else {
                 if let invitation = item as? InvitationItem, invitation.type == .presenceSubscription {
+                    print("preparing controller for invitation: \(invitation)");
                     let controller = NSStoryboard(name: "Roster", bundle: nil).instantiateController(withIdentifier: "PresenceAuthorizationRequestView") as! PresenceAuthorizationRequestController;
                     controller.invitation = invitation;
                     if splitController.splitViewItems.count > 1 {
                         splitController.removeSplitViewItem(splitController.splitViewItems[1]);
                     }
                     splitController.addSplitViewItem(NSSplitViewItem(viewController: controller));
+                    print("controller added to split view");
                 } else {
+                    print("preparing empty controller");
                     let controller = self.storyboard!.instantiateController(withIdentifier: "EmptyViewController") as! NSViewController;
                     if splitController.splitViewItems.count > 1 {
                         splitController.removeSplitViewItem(splitController.splitViewItems[1]);
@@ -444,6 +454,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                     if let invitation = item as? InvitationItem {
                         InvitationManager.instance.handle(invitation: invitation, window: self.view.window!);
                     }
+                    print("controller added to split view");
                 }
             }
         } else {

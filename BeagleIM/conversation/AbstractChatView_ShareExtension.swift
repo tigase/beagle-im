@@ -31,6 +31,7 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
     private var cancellables: Set<AnyCancellable> = [];
     
     override func viewDidLoad() {
+        print("AbstractChatViewControllerWithSharing::viewDidLoad() - begin")
         super.viewDidLoad();
         self.sharingButton.isEnabled = false;
         messageField.dragHandler = self;
@@ -38,17 +39,23 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         self.sharingProgressBar.minValue = 0;
         self.sharingProgressBar.maxValue = 1;
         self.sharingProgressBar.isHidden = true;
+        print("AbstractChatViewControllerWithSharing::viewDidLoad() - end")
     }
     
     override func viewWillAppear() {
+        print("AbstractChatViewControllerWithSharing::viewWillAppear() - begin")
         super.viewWillAppear();
         createSharingAvailablePublisher()?.receive(on: DispatchQueue.main).assign(to: \.isEnabled, on: self.sharingButton).store(in: &cancellables)
         NotificationCenter.default.addObserver(self, selector: #selector(sharingProgressChanged(_:)), name: SharingTaskManager.PROGRESS_CHANGED, object: conversation);
         self.updateSharingProgress();
+        print("AbstractChatViewControllerWithSharing::viewWillAppear() - end")
     }
     
     override func viewDidDisappear() {
+        print("AbstractChatViewControllerWithSharing::viewDidDisappear() - begin")
+        super.viewDidDisappear()
         self.cancellables.removeAll();
+        print("AbstractChatViewControllerWithSharing::viewDidDisappear() - end")
     }
     
     @objc func sharingProgressChanged(_ notification: Notification) {

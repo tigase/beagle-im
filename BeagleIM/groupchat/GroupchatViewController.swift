@@ -70,6 +70,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     }
     
     override func viewDidLoad() {
+        print("GroupchatViewController::viewDidLoad() - begin")
         if #available(macOS 11.0, *) {
             self.participantsTableView.style = .fullWidth;
         } else {
@@ -82,9 +83,11 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         self.participantsTableView.dataSource = participantsContainer;
 
         super.viewDidLoad();
+        print("GroupchatViewController::viewDidLoad() - end")
     }
     
     override func viewWillAppear() {
+        print("GroupchatViewController::viewWillAppear() - begin")
         pmPopupPositioningView = NSView();
         view.addSubview(pmPopupPositioningView!, positioned: .below, relativeTo: messageFieldScroller);
         super.viewWillAppear();
@@ -104,11 +107,14 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         sidebarWidthConstraint.constant = Settings.showRoomDetailsSidebar ? 200 : 0;
         avatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
         self.participantsContainer?.room = self.room;
+        print("GroupchatViewController::viewWillAppear() - end")
     }
     
     override func viewDidDisappear() {
+        print("GroupchatViewController::viewDidDisappear() - begin")
         super.viewDidDisappear();
         cancellables.removeAll();
+        print("GroupchatViewController::viewDidDisappear() - end")
     }
     
     override func createSharingAvailablePublisher() -> AnyPublisher<Bool, Never>? {

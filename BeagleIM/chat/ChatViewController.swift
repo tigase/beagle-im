@@ -49,6 +49,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
     }
     
     override func viewDidLoad() {
+        print("ChatViewController::viewDidLoad() - begin")
         super.viewDidLoad();
         
         audioCall.isHidden = false;
@@ -64,9 +65,11 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         }
 //        NotificationCenter.default.addObserver(self, selector: #selector(contactPresenceChanged), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(omemoAvailabilityChanged), name: MessageEventHandler.OMEMO_AVAILABILITY_CHANGED, object: nil);
+        print("ChatViewController::viewDidLoad() - end")
     }
 
     override func viewWillAppear() {
+        print("ChatViewController::viewWillAppear() - begin")
         self.conversationLogController?.contextMenuDelegate = self;
 
         Settings.$messageEncryption.sink(receiveValue: { [weak self] value in
@@ -109,11 +112,14 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         });
 
         refreshEncryptionStatus();
+        print("ChatViewController::viewWillAppear() - end")
     }
     
     override func viewDidDisappear() {
+        print("ChatViewController::viewDidDisappear() - begin")
         super.viewDidDisappear();
         cancellables.removeAll();
+        print("ChatViewController::viewDidDisappear() - end")
     }
     
     @objc func omemoAvailabilityChanged(_ notification: Notification) {
