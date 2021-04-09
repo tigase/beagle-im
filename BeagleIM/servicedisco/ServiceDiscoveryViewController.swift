@@ -125,7 +125,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
     
     func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
         if let it = item as? Item, let parentItem = outlineView.parent(forItem: it) as? Item ?? rootItem, parentItem.jid.domain == it.jid.domain && !(it.subitems?.isEmpty ?? false) {
-            return it.hasFeature("http://jabber.org/protocol/disco#items") || it.identities.contains(where: { $0.category == "pubsub" && $0.type == "leaf" });
+            return it.hasFeature("http://jabber.org/protocol/disco#items") || it.identities.contains(where: { $0.category == "pubsub" && $0.type == "leaf" }) || it.identities.contains(where: { $0.category == "conference" });
         }
         return false;
     }
@@ -289,7 +289,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
             return;
         }
         
-        browseButton.isEnabled = true;
+        browseButton.isEnabled = item.hasFeature("http://jabber.org/protocol/disco#items") || item.identities.contains(where: { $0.category == "pubsub" && $0.type == "leaf" }) || item.identities.contains(where: { $0.category == "conference" });
         executeButton.isEnabled = item.hasFeature("http://jabber.org/protocol/commands");
         joinButton.isEnabled = item.hasFeature("http://jabber.org/protocol/muc") && item.identities.firstIndex(where: { (identity) -> Bool in
             return identity.category == "conference";
@@ -403,10 +403,12 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
         }
 
         let discoModule = client.module(.disco);
-        discoModule.getItems(for: parentItem.jid, node: parentItem.node, completionHandler: { [weak self] result in
+        let node = parentItem.identities.contains(where: { $0.category == "conference" && $0.type == "mix" }) ? "mix" : parentItem.node;
+        discoModule.getItems(for: parentItem.jid, node: node, completionHandler: { [weak self] result in
             switch result {
             case .success(let items):
                 DispatchQueue.main.async {
+                    let oldItems = parentItem.subitems;
                     parentItem.subitems = items.items.map({ (item) -> Item in
                         return Item(item);
                     }).sorted(by: { (i1, i2) -> Bool in
@@ -416,7 +418,12 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                         self?.rootItem = parentItem;
                         self?.outlineView.reloadData();
                     } else {
+                        self?.outlineView.beginUpdates();
+                        if let oldItemsCount = oldItems?.count {
+                            self?.outlineView.removeItems(at: IndexSet(0..<oldItemsCount), inParent: parentItem, withAnimation: .effectGap);
+                        }
                         self?.outlineView.insertItems(at: IndexSet(0..<parentItem.subitems!.count), inParent: parentItem, withAnimation: .effectGap);
+                        self?.outlineView.endUpdates();
                     }
                 }
                 let group = DispatchGroup();
