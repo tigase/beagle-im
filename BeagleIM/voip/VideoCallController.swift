@@ -210,10 +210,10 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
     
     private func updateAvatarView() {
         if let call = self.call {
-            self.remoteAvatarView?.image = AvatarManager.instance.avatar(for: call.jid, on: call.account);
+            self.remoteAvatarView?.avatar = AvatarManager.instance.avatar(for: call.jid, on: call.account);
             self.remoteAvatarView?.name = DBRosterStore.instance.item(for: call.account, jid: JID(call.jid))?.name ?? call.jid.stringValue;
         } else {
-            self.remoteAvatarView?.image = nil;
+            self.remoteAvatarView?.avatar = nil;
             self.remoteAvatarView?.name = nil;
         }
     }
