@@ -21,6 +21,7 @@
 
 import Foundation
 import TigaseSwift
+import TigaseSwiftOMEMO
 import AppKit
 import Combine
 
@@ -101,7 +102,39 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     }
     
     @Published
-    public var features: Set<Feature> = [];
+    public var features: Set<Feature> = [] {
+        didSet {
+            if self.features.contains(.membersOnly) && self.features.contains(.nonAnonymous) {
+                self.isOMEMOSupported = true;
+                if let mucModule = context?.module(.muc) {
+                    var members: [JID] = [];
+                    let group = DispatchGroup();
+                    for affiliation: MucAffiliation in [.member, .admin, .owner] {
+                        group.enter();
+                        mucModule.getRoomAffiliations(from: self, with: affiliation, completionHandler: { result in
+                            switch result {
+                            case .success(let affs):
+                                members.append(contentsOf: affs.map({ $0.jid }));
+                            case .failure(_):
+                                break;
+                            }
+                            group.leave();
+                        });
+                    }
+                    group.notify(queue: DispatchQueue.global(), execute: { [weak self] in
+                        self?.dispatcher.async {
+                            self?._members = members;
+                        }
+                    })
+                }
+            } else {
+                self.isOMEMOSupported = false;
+            }
+        }
+    }
+    
+    @Published
+    public var isOMEMOSupported: Bool = false;
     
     public enum Feature: String {
         case membersOnly = "muc_membersonly"
@@ -125,6 +158,13 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
         }
     }
     
+    private static let nonMembersAffiliations: Set<MucAffiliation> = [.none, .outcast];
+    private var _members: [JID]?;
+    public var members: [JID]? {
+        return dispatcher.sync {
+            return _members;
+        }
+    }
     
     public var occupants: [MucOccupant] {
         return dispatcher.sync {
@@ -142,6 +182,15 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
         let occupant = MucOccupant(nickname: nickname, presence: presence, for: self);
         dispatcher.async(flags: .barrier) {
             self.occupantsStore.add(occupant: occupant);
+            if let jid = occupant.jid {
+                if !Room.nonMembersAffiliations.contains(occupant.affiliation) {
+                    if !(self._members?.contains(jid) ?? false) {
+                        self._members?.append(jid);
+                    }
+                } else {
+                    self._members = self._members?.filter({ $0 != jid });
+                }
+            }
         }
         return occupant;
     }
@@ -149,6 +198,9 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     public func remove(occupant: MucOccupant) {
         dispatcher.async(flags: .barrier) {
             self.occupantsStore.remove(occupant: occupant);
+            if let jid = occupant.jid {
+                self._members = self._members?.filter({ $0 != jid });
+            }
         }
     }
     
@@ -181,6 +233,9 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
         dispatcher.async(flags: .barrier) {
             self.state = state;
             self.occupantsStore.removeAll();
+            if state != .joined && state != .requested {
+                self._members = nil;
+            }
         }
     }
         
@@ -191,13 +246,62 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     }
     
     public func sendMessage(text: String, correctedMessageOriginId: String?) {
+        let encryption = self.isOMEMOSupported ? self.options.encryption ?? Settings.messageEncryption : .none;
+        
         let message = self.createMessage(text: text);
         message.lastMessageCorrectionId = correctedMessageOriginId;
-        self.send(message: message, completionHandler: nil);
+        
+        if encryption == .omemo, let omemoModule = context?.modulesManager.module(.omemo) {
+            guard let members = self.members else {
+                return;
+            }
+            omemoModule.encode(message: message, for: members.map({ $0.bareJid }), completionHandler: { result in
+                switch result {
+                case .failure(let error):
+                    print("could not encrypt message for", self.roomJid);
+                case .successMessage(let message, let fingerprint):
+                    super.send(message: message, completionHandler: nil);
+                    DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: text, options: .init(recipient: .none, encryption: .decrypted(fingerprint: fingerprint), isMarkable: true), linkPreviewAction: .auto, completionHandler: nil);
+                }
+            });
+        } else {
+            super.send(message: message, completionHandler: nil);
+            DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: text, options: .init(recipient: .none, encryption: .none, isMarkable: true), linkPreviewAction: .auto, completionHandler: nil);
+        }
     }
     
-    public func prepareAttachment(url originalURL: URL, completionHandler: (Result<(URL, Bool, ((URL) -> URL)?), ShareError>) -> Void) {
-        completionHandler(.success((originalURL, false, nil)));
+    public func prepareAttachment(url originalURL: URL, completionHandler: @escaping (Result<(URL, Bool, ((URL) -> URL)?), ShareError>) -> Void) {
+        let encryption = self.isOMEMOSupported ? self.options.encryption ?? Settings.messageEncryption : .none;
+        switch encryption {
+        case .none:
+            completionHandler(.success((originalURL, false, nil)));
+        case .omemo:
+            guard let omemoModule: OMEMOModule = self.context?.module(.omemo), let data = try? Data(contentsOf: originalURL) else {
+                completionHandler(.failure(.unknownError));
+                return;
+            }
+            let result = omemoModule.encryptFile(data: data);
+            switch result {
+            case .success(let (encryptedData, hash)):
+                let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString);
+                do {
+                    try encryptedData.write(to: tmpFile);
+                    completionHandler(.success((tmpFile, true, { url in
+                        var parts = URLComponents(url: url, resolvingAgainstBaseURL: true)!;
+                        parts.scheme = "aesgcm";
+                        parts.fragment = hash;
+                        let shareUrl = parts.url!;
+
+                        print("sending url:", shareUrl.absoluteString);
+                        return shareUrl;
+                    })));
+                } catch {
+                    completionHandler(.failure(.noAccessError));
+                }
+            case .failure(_):
+                completionHandler(.failure(.unknownError));
+            }
+        }
     }
     
     public func sendAttachment(url uploadedUrl: String, appendix: ChatAttachmentAppendix, originalUrl: URL?, completionHandler: (() -> Void)?) {
@@ -206,10 +310,29 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
             return;
         }
         
+        let encryption = self.isOMEMOSupported ? self.options.encryption ?? Settings.messageEncryption : .none;
+        
         let message = self.createMessage(text: uploadedUrl);
-        message.oob = uploadedUrl;
-        send(message: message, completionHandler: nil)
-        completionHandler?();
+        if encryption == .omemo, let omemoModule = context?.modulesManager.module(.omemo) {
+            guard let members = self.members else {
+                completionHandler?();
+                return;
+            }
+            omemoModule.encode(message: message, for: members.map({ $0.bareJid }), completionHandler: { result in
+                switch result {
+                case .failure(let error):
+                    print("could not encrypt message for", self.roomJid);
+                case .successMessage(let message, let fingerprint):
+                    super.send(message: message, completionHandler: nil);
+                    DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: uploadedUrl, options: .init(recipient: .none, encryption: .decrypted(fingerprint: fingerprint), isMarkable: true), linkPreviewAction: .auto, completionHandler: nil);
+                }
+                completionHandler?();
+            });
+        } else {
+            message.oob = uploadedUrl;
+            super.send(message: message, completionHandler: nil);
+            DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: uploadedUrl, options: .init(recipient: .none, encryption: .none, isMarkable: true), linkPreviewAction: .auto, completionHandler: nil);
+        }
     }
     
     public func sendPrivateMessage(to occupant: MucOccupant, text: String) {
@@ -290,6 +413,7 @@ public struct RoomOptions: Codable, ChatOptionsProtocol, Equatable {
     public let nickname: String;
     public var password: String?;
 
+    var encryption: ChatEncryption?;
     public var notifications: ConversationNotification = .mention;
     public var confirmMessages: Bool = true;
 
@@ -304,6 +428,7 @@ public struct RoomOptions: Codable, ChatOptionsProtocol, Equatable {
     
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self);
+        encryption = try container.decodeIfPresent(String.self, forKey: .encryption).flatMap(ChatEncryption.init(rawValue: ));
         name = try container.decodeIfPresent(String.self, forKey: .name)
         nickname = try container.decodeIfPresent(String.self, forKey: .nick) ?? "";
         password = try container.decodeIfPresent(String.self, forKey: .password)
@@ -313,6 +438,7 @@ public struct RoomOptions: Codable, ChatOptionsProtocol, Equatable {
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self);
+        try container.encodeIfPresent(encryption?.rawValue, forKey: .encryption);
         try container.encodeIfPresent(name, forKey: .name);
         try container.encodeIfPresent(nickname, forKey: .nick);
         try container.encodeIfPresent(password, forKey: .password);
@@ -330,6 +456,7 @@ public struct RoomOptions: Codable, ChatOptionsProtocol, Equatable {
     }
     
     enum CodingKeys: String, CodingKey {
+        case encryption = "encrypt"
         case name = "name";
         case nick = "nick";
         case password = "password";

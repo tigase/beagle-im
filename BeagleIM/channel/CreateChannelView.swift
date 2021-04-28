@@ -220,6 +220,7 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
             form.addField(BooleanField(name: "muc#roomconfig_membersonly", value: priv));
             form.addField(BooleanField(name: "muc#roomconfig_publicroom", value: !priv));
             form.addField(TextSingleField(name: "muc#roomconfig_roomdesc", value: channelDescription));
+            form.addField(TextSingleField(name: "muc#roomconfig_whois", value: priv ? "anyone" : "moderators"))
             let roomJid = BareJID(localPart: roomName, domain: component.jid.domain);
             mucModule.setRoomConfiguration(roomJid: JID(roomJid), configuration: form, completionHandler: { [weak self] result in
                 switch result {

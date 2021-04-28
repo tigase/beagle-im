@@ -320,7 +320,18 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
             case .success(let info):
                 let requiresPassword = info.features.contains("muc_passwordprotected");
                 if !requiresPassword || (requiresPassword && self.password != nil) {
-                    _ = client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname);
+                    let result = client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname);
+                    result.handle({ r in
+                        switch r {
+                        case .success(let roomResult):
+                            switch roomResult {
+                            case .created(let room), .joined(let room):
+                                (room as! Room).features = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
+                            }
+                        case .failure(_):
+                            break;
+                        }
+                    })
                     PEPBookmarksModule.updateOrAdd(for: self.account, bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: true, nick: nickname, password: self.password));
                     DispatchQueue.main.async {
                         self.close();
@@ -340,8 +351,18 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                             if password.isEmpty || response != .OK {
                                 self.close();
                             } else {
-                                _ = client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname, password: password);
-                                
+                                let result = client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname, password: password);
+                                result.handle({ r in
+                                    switch r {
+                                    case .success(let roomResult):
+                                        switch roomResult {
+                                        case .created(let room), .joined(let room):
+                                            (room as! Room).features = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
+                                        }
+                                    case .failure(_):
+                                        break;
+                                    }
+                                })
                                 PEPBookmarksModule.updateOrAdd(for: self.account, bookmark: Bookmarks.Conference(name: room.localPart!, jid: JID(room), autojoin: true, nick: nickname, password: password));
                                 self.close();
                             }

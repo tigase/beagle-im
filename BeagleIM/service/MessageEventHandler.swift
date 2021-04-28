@@ -59,8 +59,11 @@ class MessageEventHandler: XmppServiceEventHandler {
         }
 
         var encryptionErrorBody: String?;
-        if let omemoModule: OMEMOModule = XmppService.instance.getClient(for: account)?.module(.omemo) {
-            switch omemoModule.decode(message: message) {
+        if var from = message.from?.bareJid, let context = XmppService.instance.getClient(for: account) {
+            if message.type == .groupchat, let nickname = message.from?.resource, let occupantJid = DBChatStore.instance.room(for: context, with: from)?.occupant(nickname: nickname)?.jid {
+                from = occupantJid.bareJid;
+            }
+            switch context.module(.omemo).decode(message: message, from: from) {
             case .successMessage(_, let keyFingerprint):
                 encryption = .decrypted;
                 fingerprint = keyFingerprint

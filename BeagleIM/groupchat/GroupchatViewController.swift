@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import TigaseSwiftOMEMO
 import Combine
 
 class GroupchatParticipantsTableView: NSTableView {
@@ -50,6 +51,8 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     fileprivate var participantsContainer: GroupchatParticipantsContainer?;
     
     private var pmPopupPositioningView: NSView!;
+    
+    @IBOutlet var encryptButton: NSPopUpButton!;
     
     private var cancellables: Set<AnyCancellable> = [];
     var room: Room! {
@@ -83,6 +86,17 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         self.participantsTableView.dataSource = participantsContainer;
 
         super.viewDidLoad();
+        
+        if #available(macOS 11.0, *) {
+            encryptButton.isBordered = false;
+            encryptButton.isTransparent = false;
+        } else {
+            encryptButton.isBordered = true;
+            encryptButton.isTransparent = true;
+        }
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(omemoAvailabilityChanged), name: MessageEventHandler.OMEMO_AVAILABILITY_CHANGED, object: nil);
+        
         print("GroupchatViewController::viewDidLoad() - end")
     }
     
@@ -94,6 +108,12 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         
         self.conversationLogController?.contextMenuDelegate = self;
 
+        Settings.$messageEncryption.sink(receiveValue: { [weak self] value in
+            DispatchQueue.main.async {
+                self?.refreshEncryptionStatus();
+            }
+        }).store(in: &cancellables);
+        
         room.displayNamePublisher.assign(to: \.stringValue, on: titleView).store(in: &cancellables);
         room.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: avatarView).store(in: &cancellables);
         avatarView.displayableId = conversation;
@@ -102,12 +122,17 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         room.descriptionPublisher.receive(on: DispatchQueue.main).assign(to: \.toolTip, on: subjectView).store(in: &cancellables);
         room.$affiliation.receive(on: DispatchQueue.main).assign(to: \.affiliation, on: self).store(in: &cancellables);
         room.$role.receive(on: DispatchQueue.main).assign(to: \.role, on: self).store(in: &cancellables);
+        room.$features.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] _ in self?.refreshPermissions(); }).store(in: &cancellables);
+        room.$isOMEMOSupported.sink(receiveValue: { [weak self] _ in
+            self?.refreshPermissions();
+        }).store(in: &cancellables);
         jidView.stringValue = room.roomJid.stringValue;
 
         sidebarWidthConstraint.constant = Settings.showRoomDetailsSidebar ? 200 : 0;
         avatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
         self.participantsContainer?.room = self.room;
         print("GroupchatViewController::viewWillAppear() - end")
+        refreshEncryptionStatus();
     }
     
     override func viewDidDisappear() {
@@ -127,6 +152,59 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         }).eraseToAnyPublisher();
     }
     
+    @objc func omemoAvailabilityChanged(_ notification: Notification) {
+        guard let event = notification.object as? OMEMOModule.AvailabilityChangedEvent else {
+            return;
+        }
+        guard event.account == self.account && self.jid == event.jid else {
+            return;
+        }
+        refreshEncryptionStatus();
+    }
+    
+    @IBAction func encryptionChanged(_ sender: NSPopUpButton) {
+        var encryption: ChatEncryption? = nil;
+        switch sender.indexOfSelectedItem {
+        case 2:
+            encryption = ChatEncryption.none;
+        case 3:
+            encryption = ChatEncryption.omemo;
+        default:
+            encryption = nil;
+        }
+
+        room.updateOptions({ (options) in
+            options.encryption = encryption;
+        });
+        DispatchQueue.main.async {
+            self.refreshEncryptionStatus();
+        }
+    }
+    
+    fileprivate func refreshEncryptionStatus() {
+        DispatchQueue.main.async {
+            guard let account = self.account, let jid = self.jid else {
+                return;
+            }
+            let omemoModule = XmppService.instance.getClient(for: account)?.module(.omemo);
+            self.encryptButton.isEnabled = self.room.isOMEMOSupported;
+            if !self.encryptButton.isEnabled {
+                if #available(macOS 11.0, *) {
+                    self.encryptButton.item(at: 0)?.image = self.encryptButton.item(at: 2)?.image;
+                } else {
+                    self.encryptButton.item(at: 0)?.image = NSImage(named: "lock.open.fill");
+                }
+            } else {
+                let encryption = self.room.options.encryption ?? Settings.messageEncryption;
+                let locked = encryption == ChatEncryption.omemo;
+                if #available(macOS 11.0, *) {
+                    self.encryptButton.item(at: 0)?.image = self.encryptButton.item(at: locked ? 3 : 2)?.image;
+                } else {
+                    self.encryptButton.item(at: 0)?.image = NSImage(named: locked ? "lock.fill" : "lock.open.fill");
+                }
+            }
+        }
+    }
     
     fileprivate func refreshPermissions() {
         let presence = self.room.occupant(nickname: self.room.nickname);

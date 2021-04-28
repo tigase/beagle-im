@@ -915,7 +915,7 @@ Gw
                                 <gridCells>
                                     <gridCell row="Yv7-CG-rRE" column="y9c-Id-P2C" id="h8x-VR-QRJ">
                                         <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dgK-Cj-vtK">
-                                            <rect key="frame" x="-2" y="24" width="74" height="21"/>
+                                            <rect key="frame" x="-2" y="25" width="74" height="20"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Name" id="fTU-bT-Php">
                                                 <font key="font" usesAppearanceFont="YES"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -925,7 +925,7 @@ Gw
                                     </gridCell>
                                     <gridCell row="Yv7-CG-rRE" column="sij-F5-Faf" id="Btw-aI-p7i">
                                         <textField key="contentView" verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2Yk-jB-Lk7">
-                                            <rect key="frame" x="76" y="24" width="232" height="21"/>
+                                            <rect key="frame" x="76" y="25" width="232" height="20"/>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" id="90j-8p-MmG">
                                                 <font key="font" usesAppearanceFont="YES"/>
                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -935,7 +935,7 @@ Gw
                                     </gridCell>
                                     <gridCell row="COV-BX-3bn" column="y9c-Id-P2C" id="R5c-0p-F1j">
                                         <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="01E-jd-9Lm">
-                                            <rect key="frame" x="-2" y="0.0" width="74" height="20"/>
+                                            <rect key="frame" x="-2" y="0.0" width="74" height="21"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Description" id="vOA-U1-PZm">
                                                 <font key="font" usesAppearanceFont="YES"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -945,7 +945,7 @@ Gw
                                     </gridCell>
                                     <gridCell row="COV-BX-3bn" column="sij-F5-Faf" id="58w-Bv-8ls">
                                         <textField key="contentView" verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="prm-Bp-Lrs">
-                                            <rect key="frame" x="76" y="0.0" width="232" height="20"/>
+                                            <rect key="frame" x="76" y="0.0" width="232" height="21"/>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" id="Eoo-PR-QiD">
                                                 <font key="font" usesAppearanceFont="YES"/>
                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
