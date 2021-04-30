@@ -251,26 +251,27 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
                     case .sslCertError(let trust):
                         self.callback = nil;
                         let certData = SslCertificateInfo(trust: trust);
-                        let alert = NSStoryboard(name: "Main", bundle: nil).instantiateController(withIdentifier: "ServerCertificateErrorController") as! ServerCertificateErrorController;
-                        alert.account = client?.sessionObject.userBareJid;
-                        alert.certficateInfo = certData;
-                        alert.completionHandler = { accepted in
-                            self.acceptedCertificate = certData;
-                            if (accepted) {
-                                self.client?.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
-                                    options.networkProcessorProviders.append(SSLProcessorProvider());
-                                    options.sslCertificateValidation = .fingerprint(certData.details.fingerprintSha1);
-                                });
-                                self.callback = callback;
-                                self.client?.login();
-                            } else {
-                                self.finish();
-                                DispatchQueue.main.async {
-                                    callback(.failure(.service_unavailable));
-                                }
-                            }
-                        };
                         DispatchQueue.main.async {
+                            let alert = NSStoryboard(name: "Main", bundle: nil).instantiateController(withIdentifier: "ServerCertificateErrorController") as! ServerCertificateErrorController;
+                            _ = alert.view;
+                            alert.account = self.client?.sessionObject.userBareJid;
+                            alert.certficateInfo = certData;
+                            alert.completionHandler = { accepted in
+                                self.acceptedCertificate = certData;
+                                if (accepted) {
+                                    self.client?.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
+                                        options.networkProcessorProviders.append(SSLProcessorProvider());
+                                        options.sslCertificateValidation = .fingerprint(certData.details.fingerprintSha1);
+                                    });
+                                    self.callback = callback;
+                                    self.client?.login();
+                                } else {
+                                    self.finish();
+                                    DispatchQueue.main.async {
+                                        callback(.failure(.service_unavailable));
+                                    }
+                                }
+                            };
                             self.controller?.presentAsSheet(alert);
                         }
                         return;
