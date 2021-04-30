@@ -28,7 +28,7 @@ protocol PastingDelegate {
 }
 
 class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
-  
+    
     @objc var placeholderAttributedString: NSAttributedString?;
     
     weak var dragHandler: (NSDraggingDestination & PastingDelegate)? = nil;
@@ -157,5 +157,8 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
     override func pasteAsPlainText(_ sender: Any?) {
         super.pasteAsPlainText(sender);
     }
-    
+ 
+    override func viewWillMove(toWindow newWindow: NSWindow?) {
+        (self.undoManager ?? self.window?.undoManager)?.removeAllActions();
+    }
 }
