@@ -63,12 +63,16 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     
     private var role: MucRole = .none {
         didSet {
-            self.refreshPermissions();
+            DispatchQueue.main.async {
+                self.refreshPermissions();
+            }
         }
     }
     private var affiliation: MucAffiliation = .none {
         didSet {
-            self.refreshPermissions();
+            DispatchQueue.main.async {
+                self.refreshPermissions();
+            }
         }
     }
     

@@ -33,6 +33,8 @@ struct ConversationItem: ChatsListItemProtocol, Hashable {
     }
     let chat: Conversation;
     
+    let timestamp: Date;
+    
     func hash(into hasher: inout Hasher) {
         hasher.combine(chat.id);
     }
@@ -61,7 +63,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
     }
     
     func update(items: [Conversation]) {
-        let newItems = items.filter(self.isAccepted(chat:)).map({ conversation in ConversationItem(chat: conversation) }).sorted(by: { (c1,c2) in c1.chat.timestamp > c2.chat.timestamp });
+        let newItems = items.filter(self.isAccepted(chat:)).map({ conversation in ConversationItem(chat: conversation, timestamp: conversation.timestamp) }).sorted(by: { (c1,c2) in c1.timestamp > c2.timestamp });
         let oldItems = self.items;
         
         let diffs = newItems.difference(from: oldItems).inferringMoves();
