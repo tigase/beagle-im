@@ -304,7 +304,7 @@ class Call: NSObject {
                         case .success(let sdp):
                             DispatchQueue.main.async {
                                 for jid in withJingle {
-                                    let session = JingleManager.instance.open(for: client, with: jid, sid: self.sid, role: .initiator, initiationType: .message);
+                                    let session = JingleManager.instance.open(for: client, with: jid, sid: self.sid, role: .initiator, initiationType: .iq);
                                     session.$state.removeDuplicates().receive(on: DispatchQueue.main).sink(receiveValue: { state in
                                         switch state {
                                         case .accepted:
