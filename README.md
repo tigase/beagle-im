@@ -45,7 +45,7 @@ If you didn't find an answer in the resources above, feel free to submit an [iss
 You can download it from the [Mac App Store](https://itunes.apple.com/us/app/beagleim-by-tigase-inc/id1445349494?l=pl&ls=1&mt=1) or using [Homebrew](https://brew.sh/) package manager:
 ```
 brew tap tigase/tigase
-brew cask install beagleim
+brew install beagleim
 ```
 
 See [our Homebrew tap](https://github.com/tigase/homebrew-tigase) for details
