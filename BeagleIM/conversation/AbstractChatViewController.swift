@@ -96,7 +96,7 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
         bottomView.addView(messageFieldScroller, in: .center);
         bottomViewHeight = bottomView.heightAnchor.constraint(equalTo: messageFieldScroller.heightAnchor, constant: 2 * 10);
         NSLayoutConstraint.activate([self.messageFieldScrollerHeight, self.bottomViewHeight]);
-        bottomView.spacing = 10;
+        bottomView.spacing = 6;
         bottomView.edgeInsets = NSEdgeInsets(top: 10, left: 10, bottom: 10, right: 10);
         bottomView.setHuggingPriority(.defaultHigh, for: .horizontal);
         bottomView.setHuggingPriority(.defaultHigh, for: .vertical);
