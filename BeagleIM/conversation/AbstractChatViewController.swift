@@ -39,9 +39,11 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
 
     private(set) var dataSource: ConversationDataSource!;
     
-    @IBOutlet var messageFieldScroller: NSScrollView!;
-    @IBOutlet var messageField: AutoresizingTextView!;
-    @IBOutlet var messageFieldScrollerHeight: NSLayoutConstraint!;
+    @IBOutlet var bottomView: NSStackView!;
+    var messageFieldScroller: RoundedScrollView!;
+    var messageField: AutoresizingTextView!;
+    private var messageFieldScrollerHeight: NSLayoutConstraint!;
+    private var bottomViewHeight: NSLayoutConstraint!;
     var conversationLogController: ConversationLogController? {
         didSet {
             self.conversationLogController?.conversation = self.conversation;
@@ -66,11 +68,47 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     
     override func viewDidLoad() {
         print("AbstractChatViewController::viewDidLoad() - begin")
+        self.messageField = AutoresizingTextView();
+        self.messageField.isVerticallyResizable = true;
+//        self.messageField.isHorizontallyResizable = true;
+        self.messageField.autoresizingMask = [.height, .width];
+        self.messageField.translatesAutoresizingMaskIntoConstraints = true;
+        self.messageField.drawsBackground = false;
+        self.messageField.isEditable = true;
+        self.messageField.isRichText = false;
+        self.messageField.allowsUndo = true;
+        self.messageField.font = NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .light);
+        self.messageFieldScroller = RoundedScrollView();
+        self.messageFieldScroller.borderType = .noBorder;
+        self.messageFieldScroller.backgroundColor = NSColor(named: "chatBackgroundColor")!;
+        self.messageFieldScroller.automaticallyAdjustsContentInsets = false;
+        self.messageFieldScroller.contentInsets = NSEdgeInsets(top: 6, left: 11, bottom: 6, right: 11)
+        self.messageFieldScroller.hasVerticalScroller = true;
+        self.messageFieldScroller.autohidesScrollers = true;
+        self.messageFieldScroller.drawsBackground = false;
+        self.messageFieldScroller.documentView = messageField;
+        self.messageFieldScroller.autoresizingMask = [.width, .height];
+        self.messageFieldScroller.setContentHuggingPriority(.defaultHigh, for: .vertical);
+        self.messageFieldScroller.setContentHuggingPriority(.defaultHigh, for: .horizontal);
+        self.messageFieldScroller.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
+        self.messageFieldScroller.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal);
+        self.messageFieldScrollerHeight = messageFieldScroller.heightAnchor.constraint(equalToConstant: 0);
+        bottomView.addView(messageFieldScroller, in: .center);
+        bottomViewHeight = bottomView.heightAnchor.constraint(equalTo: messageFieldScroller.heightAnchor, constant: 2 * 10);
+        NSLayoutConstraint.activate([self.messageFieldScrollerHeight, self.bottomViewHeight]);
+        bottomView.spacing = 10;
+        bottomView.edgeInsets = NSEdgeInsets(top: 10, left: 10, bottom: 10, right: 10);
+        bottomView.setHuggingPriority(.defaultHigh, for: .horizontal);
+        bottomView.setHuggingPriority(.defaultHigh, for: .vertical);
         super.viewDidLoad();
         self.messageField.delegate = self;
         self.messageField.isContinuousSpellCheckingEnabled = Settings.spellchecking;
         self.messageField.isGrammarCheckingEnabled = Settings.spellchecking;
         print("AbstractChatViewController::viewDidLoad() - end")
+    }
+    
+    @objc func test(_ sender: Any) {
+        
     }
     
     override func viewWillAppear() {
@@ -79,6 +117,7 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
         self.messageField?.placeholderAttributedString = account != nil ? NSAttributedString(string: "from \(account.stringValue)...", attributes: [.foregroundColor: NSColor.placeholderTextColor, .font: NSFont.systemFont(ofSize: NSFont.systemFontSize)]) : nil;
         
         self.updateMessageFieldSize();
+        self.messageFieldScroller.cornerRadius = messageFieldScrollerHeight.constant / 2;
                 
         DBChatStore.instance.messageDraft(for: account, with: jid, completionHandler: { draft in
             guard let text = draft else {
@@ -158,7 +197,7 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     }
         
     func updateMessageFieldSize() {
-        let height = min(max(messageField.intrinsicContentSize.height, 14), 100) + self.messageFieldScroller.contentInsets.top + self.messageFieldScroller.contentInsets.bottom;
+        let height = min(max(messageField.intrinsicContentSize.height, 14), 100) + self.messageFieldScroller.contentInsets.top + self.messageFieldScroller.contentInsets.bottom;// + (messageFieldScroller.borderWidth * 2);
         self.messageFieldScrollerHeight.constant = height;
     }
        

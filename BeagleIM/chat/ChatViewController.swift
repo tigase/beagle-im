@@ -40,7 +40,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
 
     @IBOutlet var scriptsButton: NSPopUpButton!;
 
-    @IBOutlet var encryptButton: NSPopUpButton!;
+    @IBOutlet var encryptButton: DropDownButton!;
     
     private var cancellables: Set<AnyCancellable> = [];
     
@@ -52,22 +52,42 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         print("ChatViewController::viewDidLoad() - begin")
         super.viewDidLoad();
         
+        self.encryptButton = createEncryptButton();
+        bottomView.addView(self.encryptButton, in: .trailing)
+
         audioCall.isHidden = false;
         videoCall.isHidden = false;
         scriptsButton.isHidden = true;
 
-        if #available(macOS 11.0, *) {
-            encryptButton.isBordered = false;
-            encryptButton.isTransparent = false;
-        } else {
-            encryptButton.isBordered = true;
-            encryptButton.isTransparent = true;
-        }
-//        NotificationCenter.default.addObserver(self, selector: #selector(contactPresenceChanged), name: XmppService.CONTACT_PRESENCE_CHANGED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(omemoAvailabilityChanged), name: MessageEventHandler.OMEMO_AVAILABILITY_CHANGED, object: nil);
         print("ChatViewController::viewDidLoad() - end")
     }
 
+    func createEncryptButton() -> DropDownButton {
+        let buttonSize = NSFont.systemFontSize * 2;
+        let encryptButton = DropDownButton();
+        let menu = NSMenu(title: "");
+        let unencrypedItem = NSMenuItem(title: "Unencrypted", action: #selector(encryptionChanged(_:)), keyEquivalent: "");
+        unencrypedItem.image = NSImage(named: "lock.open.fill");//?.scaled(maxWidthOrHeight: buttonSize);
+        unencrypedItem.image?.size = NSSize(width: 16, height: 16);
+        menu.addItem(unencrypedItem);
+        let defaultItem = NSMenuItem(title: "Default", action: #selector(encryptionChanged(_:)), keyEquivalent: "");
+        defaultItem.image = NSImage(named: "lock.circle");//?.scaled(maxWidthOrHeight: buttonSize);
+        defaultItem.image?.size = NSSize(width: 16, height: 16);
+        menu.addItem(defaultItem);
+        let omemoItem = NSMenuItem(title: "OMEMO", action: #selector(encryptionChanged(_:)), keyEquivalent: "");
+        omemoItem.image = NSImage(named: "lock.fill");//?.scaled(maxWidthOrHeight: buttonSize);
+        omemoItem.image?.size = NSSize(width: 16, height: 16);
+        menu.addItem(omemoItem);
+        encryptButton.menu = menu;
+        encryptButton.bezelStyle = .regularSquare;
+        NSLayoutConstraint.activate([encryptButton.widthAnchor.constraint(equalToConstant: buttonSize), encryptButton.widthAnchor.constraint(equalTo: encryptButton.heightAnchor)]);
+        
+        encryptButton.isBordered = false;
+
+        return encryptButton;
+    }
+    
     override func viewWillAppear() {
         print("ChatViewController::viewWillAppear() - begin")
         self.conversationLogController?.contextMenuDelegate = self;
@@ -340,12 +360,15 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         }
     }
 
-    @IBAction func encryptionChanged(_ sender: NSPopUpButton) {
+    @objc func encryptionChanged(_ menuItem: NSMenuItem) {
         var encryption: ChatEncryption? = nil;
-        switch sender.indexOfSelectedItem {
-        case 2:
+        let idx = encryptButton.menu?.items.firstIndex(where: { $0.title == menuItem.title }) ?? 0;
+        switch idx {
+        case 0:
+            encryption = nil;
+        case 1:
             encryption = ChatEncryption.none;
-        case 3:
+        case 2:
             encryption = ChatEncryption.omemo;
         default:
             encryption = nil;
@@ -367,19 +390,11 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
             let omemoModule = XmppService.instance.getClient(for: account)?.module(.omemo);
             self.encryptButton.isEnabled = omemoModule?.isAvailable(for: jid) ?? false//!DBOMEMOStore.instance.allDevices(forAccount: account!, andName: jid!.stringValue, activeAndTrusted: false).isEmpty;
             if !self.encryptButton.isEnabled {
-                if #available(macOS 11.0, *) {
-                    self.encryptButton.item(at: 0)?.image = self.encryptButton.item(at: 2)?.image;
-                } else {
-                    self.encryptButton.item(at: 0)?.image = NSImage(named: "lock.open.fill");
-                }
+                self.encryptButton.image = NSImage(named: "lock.open.fill");
             } else {
                 let encryption = self.chat.options.encryption ?? Settings.messageEncryption;
                 let locked = encryption == ChatEncryption.omemo;
-                if #available(macOS 11.0, *) {
-                    self.encryptButton.item(at: 0)?.image = self.encryptButton.item(at: locked ? 3 : 2)?.image;
-                } else {
-                    self.encryptButton.item(at: 0)?.image = NSImage(named: locked ? "lock.fill" : "lock.open.fill");
-                }
+                self.encryptButton.image = NSImage(named: locked ? "lock.fill" : "lock.open.fill");
             }
         }
     }

@@ -52,7 +52,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     
     private var pmPopupPositioningView: NSView!;
     
-    @IBOutlet var encryptButton: NSPopUpButton!;
+    private var encryptButton: DropDownButton!;
     
     private var cancellables: Set<AnyCancellable> = [];
     var room: Room! {
@@ -90,18 +90,39 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         self.participantsTableView.dataSource = participantsContainer;
 
         super.viewDidLoad();
-        
-        if #available(macOS 11.0, *) {
-            encryptButton.isBordered = false;
-            encryptButton.isTransparent = false;
-        } else {
-            encryptButton.isBordered = true;
-            encryptButton.isTransparent = true;
-        }
+
+        self.encryptButton = createEncryptButton();
+        bottomView.addView(self.encryptButton, in: .trailing)
         
         NotificationCenter.default.addObserver(self, selector: #selector(omemoAvailabilityChanged), name: MessageEventHandler.OMEMO_AVAILABILITY_CHANGED, object: nil);
         
         print("GroupchatViewController::viewDidLoad() - end")
+    }
+    
+    
+    func createEncryptButton() -> DropDownButton {
+        let buttonSize = NSFont.systemFontSize * 2;
+        let encryptButton = DropDownButton();
+        let menu = NSMenu(title: "");
+        let unencrypedItem = NSMenuItem(title: "Unencrypted", action: #selector(encryptionChanged(_:)), keyEquivalent: "");
+        unencrypedItem.image = NSImage(named: "lock.open.fill");//?.scaled(maxWidthOrHeight: buttonSize);
+        unencrypedItem.image?.size = NSSize(width: 16, height: 16);
+        menu.addItem(unencrypedItem);
+        let defaultItem = NSMenuItem(title: "Default", action: #selector(encryptionChanged(_:)), keyEquivalent: "");
+        defaultItem.image = NSImage(named: "lock.circle");//?.scaled(maxWidthOrHeight: buttonSize);
+        defaultItem.image?.size = NSSize(width: 16, height: 16);
+        menu.addItem(defaultItem);
+        let omemoItem = NSMenuItem(title: "OMEMO", action: #selector(encryptionChanged(_:)), keyEquivalent: "");
+        omemoItem.image = NSImage(named: "lock.fill");//?.scaled(maxWidthOrHeight: buttonSize);
+        omemoItem.image?.size = NSSize(width: 16, height: 16);
+        menu.addItem(omemoItem);
+        encryptButton.menu = menu;
+        encryptButton.bezelStyle = .regularSquare;
+        NSLayoutConstraint.activate([encryptButton.widthAnchor.constraint(equalToConstant: buttonSize), encryptButton.widthAnchor.constraint(equalTo: encryptButton.heightAnchor)]);
+        
+        encryptButton.isBordered = false;
+
+        return encryptButton;
     }
     
     override func viewWillAppear() {
@@ -112,10 +133,8 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         
         self.conversationLogController?.contextMenuDelegate = self;
 
-        Settings.$messageEncryption.sink(receiveValue: { [weak self] value in
-            DispatchQueue.main.async {
-                self?.refreshEncryptionStatus();
-            }
+        Settings.$messageEncryption.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
+            self?.refreshEncryptionStatus();
         }).store(in: &cancellables);
         
         room.displayNamePublisher.assign(to: \.stringValue, on: titleView).store(in: &cancellables);
@@ -166,12 +185,15 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         refreshEncryptionStatus();
     }
     
-    @IBAction func encryptionChanged(_ sender: NSPopUpButton) {
+    @objc func encryptionChanged(_ menuItem: NSMenuItem) {
         var encryption: ChatEncryption? = nil;
-        switch sender.indexOfSelectedItem {
-        case 2:
+        let idx = encryptButton.menu?.items.firstIndex(where: { $0.title == menuItem.title }) ?? 0;
+        switch idx {
+        case 0:
+            encryption = nil;
+        case 1:
             encryption = ChatEncryption.none;
-        case 3:
+        case 2:
             encryption = ChatEncryption.omemo;
         default:
             encryption = nil;
@@ -190,22 +212,13 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             guard let account = self.account, let jid = self.jid else {
                 return;
             }
-            let omemoModule = XmppService.instance.getClient(for: account)?.module(.omemo);
             self.encryptButton.isEnabled = self.room.isOMEMOSupported;
             if !self.encryptButton.isEnabled {
-                if #available(macOS 11.0, *) {
-                    self.encryptButton.item(at: 0)?.image = self.encryptButton.item(at: 2)?.image;
-                } else {
-                    self.encryptButton.item(at: 0)?.image = NSImage(named: "lock.open.fill");
-                }
+                self.encryptButton.image = NSImage(named: "lock.open.fill");
             } else {
                 let encryption = self.room.options.encryption ?? Settings.messageEncryption;
                 let locked = encryption == ChatEncryption.omemo;
-                if #available(macOS 11.0, *) {
-                    self.encryptButton.item(at: 0)?.image = self.encryptButton.item(at: locked ? 3 : 2)?.image;
-                } else {
-                    self.encryptButton.item(at: 0)?.image = NSImage(named: locked ? "lock.fill" : "lock.open.fill");
-                }
+                self.encryptButton.image = NSImage(named: locked ? "lock.fill" : "lock.open.fill");
             }
         }
     }

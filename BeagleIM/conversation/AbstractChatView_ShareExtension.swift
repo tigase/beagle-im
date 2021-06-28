@@ -26,13 +26,18 @@ import Combine
 class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSessionTaskDelegate, NSDraggingDestination, PastingDelegate {
 
     @IBOutlet var sharingProgressBar: NSProgressIndicator!;
-    @IBOutlet var sharingButton: NSButton!;
+    private(set) var sharingButton: NSButton!;
     
     private var cancellables: Set<AnyCancellable> = [];
     
     override func viewDidLoad() {
         print("AbstractChatViewControllerWithSharing::viewDidLoad() - begin")
         super.viewDidLoad();
+        self.sharingButton = NSButton(image: NSImage(named: "plus.circle")!, target: self, action: #selector(attachFile(_:)));
+        self.sharingButton.bezelStyle = .regularSquare;
+        self.sharingButton.isBordered = false;
+        NSLayoutConstraint.activate([self.sharingButton.widthAnchor.constraint(equalToConstant: NSFont.systemFontSize * 2), self.sharingButton.widthAnchor.constraint(equalTo: self.sharingButton.heightAnchor)]);
+        bottomView.addView(sharingButton, in: .leading)
         self.sharingButton.isEnabled = false;
         messageField.dragHandler = self;
         messageField.registerForDraggedTypes([.fileURL] + NSFilePromiseReceiver.readableDraggedTypes.map { NSPasteboard.PasteboardType($0) });

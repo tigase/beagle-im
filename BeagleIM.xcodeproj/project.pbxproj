@@ -134,6 +134,7 @@
 		FE75CD6C2546FC820064A733 /* HTTPFileUploadHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE75CD6B2546FC820064A733 /* HTTPFileUploadHelper.swift */; };
 		FE75CD702549E9BE0064A733 /* SharingTaskManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE75CD6F2549E9BE0064A733 /* SharingTaskManager.swift */; };
 		FE7F876C2343D99300254AF2 /* CustomScroller.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7F876B2343D99300254AF2 /* CustomScroller.swift */; };
+		FE834882268A1C08000C171A /* DropDownButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE834881268A1C08000C171A /* DropDownButton.swift */; };
 		FE83E363217A3809001DEF09 /* JingleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE83E362217A3809001DEF09 /* JingleManager.swift */; };
 		FE83E365217B0F89001DEF09 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE83E364217B0F89001DEF09 /* AVFoundation.framework */; };
 		FE87C76C2283487300B0B64C /* XMLConsole.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE87C76B2283487300B0B64C /* XMLConsole.storyboard */; };
@@ -388,6 +389,7 @@
 		FE75CD6B2546FC820064A733 /* HTTPFileUploadHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPFileUploadHelper.swift; sourceTree = "<group>"; };
 		FE75CD6F2549E9BE0064A733 /* SharingTaskManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharingTaskManager.swift; sourceTree = "<group>"; };
 		FE7F876B2343D99300254AF2 /* CustomScroller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomScroller.swift; sourceTree = "<group>"; };
+		FE834881268A1C08000C171A /* DropDownButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropDownButton.swift; sourceTree = "<group>"; };
 		FE83E362217A3809001DEF09 /* JingleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager.swift; sourceTree = "<group>"; };
 		FE83E364217B0F89001DEF09 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		FE87C76B2283487300B0B64C /* XMLConsole.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = XMLConsole.storyboard; sourceTree = "<group>"; };
@@ -642,6 +644,7 @@
 				FEC336EE2408FCD800EC1A0D /* ParticipantsButton.swift */,
 				FE30309924438ED6003B9D76 /* MessageTextView.swift */,
 				FE1A34D5258E7DBC0058B86A /* CurrentDatePublisher.swift */,
+				FE834881268A1C08000C171A /* DropDownButton.swift */,
 			);
 			path = ui;
 			sourceTree = "<group>";
@@ -1320,6 +1323,7 @@
 				FE8F7CF425645C450076C13E /* ConversationEntryEncryption.swift in Sources */,
 				FE14044D25601FE600BE77E8 /* Room.swift in Sources */,
 				FE61D6E9246C0D9500FB59F8 /* ChatsListGroupCommon.swift in Sources */,
+				FE834882268A1C08000C171A /* DropDownButton.swift in Sources */,
 				FE5C6B2B228C119A003DAB30 /* ExecuteAdHocCommandController.swift in Sources */,
 				FE41FB3B215CD7F300AD86D3 /* XmppServiceEventHandler.swift in Sources */,
 				FEC336FD240FA36800EC1A0D /* JoinChannelView.swift in Sources */,
