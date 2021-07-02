@@ -134,6 +134,7 @@
 		FE75CD6C2546FC820064A733 /* HTTPFileUploadHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE75CD6B2546FC820064A733 /* HTTPFileUploadHelper.swift */; };
 		FE75CD702549E9BE0064A733 /* SharingTaskManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE75CD6F2549E9BE0064A733 /* SharingTaskManager.swift */; };
 		FE7F876C2343D99300254AF2 /* CustomScroller.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7F876B2343D99300254AF2 /* CustomScroller.swift */; };
+		FE82A72D268E5E550049C844 /* Collection+calculateChanges.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE82A72C268E5E550049C844 /* Collection+calculateChanges.swift */; };
 		FE834882268A1C08000C171A /* DropDownButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE834881268A1C08000C171A /* DropDownButton.swift */; };
 		FE83E363217A3809001DEF09 /* JingleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE83E362217A3809001DEF09 /* JingleManager.swift */; };
 		FE83E365217B0F89001DEF09 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE83E364217B0F89001DEF09 /* AVFoundation.framework */; };
@@ -389,6 +390,7 @@
 		FE75CD6B2546FC820064A733 /* HTTPFileUploadHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPFileUploadHelper.swift; sourceTree = "<group>"; };
 		FE75CD6F2549E9BE0064A733 /* SharingTaskManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharingTaskManager.swift; sourceTree = "<group>"; };
 		FE7F876B2343D99300254AF2 /* CustomScroller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomScroller.swift; sourceTree = "<group>"; };
+		FE82A72C268E5E550049C844 /* Collection+calculateChanges.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Collection+calculateChanges.swift"; sourceTree = "<group>"; };
 		FE834881268A1C08000C171A /* DropDownButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropDownButton.swift; sourceTree = "<group>"; };
 		FE83E362217A3809001DEF09 /* JingleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager.swift; sourceTree = "<group>"; };
 		FE83E364217B0F89001DEF09 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
@@ -682,6 +684,7 @@
 				FE1A3481258923EE0058B86A /* Array+IndexChanges.swift */,
 				FE1A34DB2592144A0058B86A /* PresenceStore.swift */,
 				FE67E1C225A8E120005D034C /* NotificationsManager.swift */,
+				FE82A72C268E5E550049C844 /* Collection+calculateChanges.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -1271,6 +1274,7 @@
 				FEA2F53722E5F6A2009F2E88 /* AdvancedSettingsController.swift in Sources */,
 				FE8F7CEC2562F8BD0076C13E /* ConversationKey.swift in Sources */,
 				FED7AEC921418FA9001E164B /* DBVCardStore.swift in Sources */,
+				FE82A72D268E5E550049C844 /* Collection+calculateChanges.swift in Sources */,
 				FE222D032561879700C186A9 /* DBChatStore+RoomStore.swift in Sources */,
 				FEA8941F2156625E004C3B51 /* ConfigureRoomViewController.swift in Sources */,
 				FEA2997025B9EDC50021865E /* SuggestionsWindowController.swift in Sources */,

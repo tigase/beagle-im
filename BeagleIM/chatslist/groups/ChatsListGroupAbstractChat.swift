@@ -66,40 +66,25 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         let newItems = items.filter(self.isAccepted(chat:)).map({ conversation in ConversationItem(chat: conversation, timestamp: conversation.timestamp) }).sorted(by: { (c1,c2) in c1.timestamp > c2.timestamp });
         let oldItems = self.items;
         
-        let diffs = newItems.difference(from: oldItems).inferringMoves();
-        var removed: [Int] = [];
-        var inserted: [Int] = [];
-        var moved: [(Int,Int)] = [];
-        for action in diffs {
-            switch action {
-            case .remove(let offset, _, let to):
-                if let idx = to {
-                    moved.append((offset, idx));
-                } else {
-                    removed.append(offset);
-                }
-            case .insert(let offset, _, let from):
-                if from == nil {
-                    inserted.append(offset);
-                }
-            }
-        }
+        let changes: [CollectionChange] = newItems.calculateChanges(from: oldItems);
         
-        guard (!removed.isEmpty) || (!moved.isEmpty) || (!inserted.isEmpty) else {
+        guard !changes.isEmpty else {
             return;
         }
         
         DispatchQueue.main.sync {
             self.items = newItems;
             self.delegate?.beginUpdates();
-            if !removed.isEmpty {
-                self.delegate?.itemsRemoved(at: IndexSet(removed), inParent: self);
-            }
-            for (from,to) in moved {
-                self.delegate?.itemMoved(from: from, fromParent: self, to: to, toParent: self);
-            }
-            if !inserted.isEmpty {
-                self.delegate?.itemsInserted(at: IndexSet(inserted), inParent: self);
+            
+            for change in changes {
+                switch change {
+                case .insert(let idx):
+                    self.delegate?.itemsInserted(at: IndexSet(integer: idx), inParent: self);
+                case .remove(let idx):
+                    self.delegate?.itemsRemoved(at: IndexSet(integer: idx), inParent: self);
+                case .move(let from, let to):
+                    self.delegate?.itemMoved(from: from, fromParent: self, to: to, toParent: self);
+                }
             }
             self.delegate?.endUpdates();
         }

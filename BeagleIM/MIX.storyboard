@@ -200,6 +200,7 @@ AAAAAAEGA
                     <connections>
                         <outlet property="actionsButton" destination="d4m-nZ-ark" id="w2n-i1-rLU"/>
                         <outlet property="actionsButtonLeadConstraint" destination="SYm-bT-Q8K" id="pEp-bN-sPD"/>
+                        <outlet property="bottomView" destination="MAp-aV-bfL" id="kSJ-JA-ifD"/>
                         <outlet property="channelAvatarView" destination="yp1-x3-zO9" id="5Et-7z-g3x"/>
                         <outlet property="channelDescriptionLabel" destination="Ri7-Rr-BHY" id="vzO-ef-sMa"/>
                         <outlet property="channelJidLabel" destination="Uwz-yJ-FRm" id="Ie4-Fx-0D3"/>
