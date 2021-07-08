@@ -32,7 +32,19 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
     }
     
     func callDidEnd(_ sender: Call) {
-        // nothing to do..
+        DispatchQueue.main.async {
+            guard let window = self.view.window else {
+                return;
+            }
+
+            let alert = NSAlert();
+            alert.messageText = "Meeting ended";
+            alert.informativeText = "Meeting has ended";
+            alert.alertStyle = .informational;
+            alert.beginSheetModal(for: window, completionHandler: { _ in
+                self.endCall(self);
+            })
+        }
     }
     
     func callStateChanged(_ sender: Call) {

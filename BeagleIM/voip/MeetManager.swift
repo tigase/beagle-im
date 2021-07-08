@@ -93,11 +93,25 @@ class Meet {
     @Published
     fileprivate(set) var incomingCall: Call?;
     
+    private var presenceSent = false;
+    private var cancellables: Set<AnyCancellable> = [];
+    
     public func join() {
         let call = Call(account: client.userBareJid, with: jid.bareJid, sid: UUID().uuidString, direction: .outgoing, media: [.audio, .video]);
         call.webrtcSid = String(UInt64.random(in: UInt64.min...UInt64.max));
         call.changeState(.ringing);
 
+        if !PresenceStore.instance.isAvailable(for: jid.bareJid, context: client) {
+            let presence = Presence();
+            presence.to = jid;
+            client.writer.write(presence);
+            presenceSent = true;
+        }
+        
+        PresenceStore.instance.bestPresenceEvents.filter({ $0.jid == self.jid.bareJid && ($0.presence == nil || $0.presence?.type == .unavailable) }).sink(receiveValue: { [weak self] _ in
+            call.reset();
+        }).store(in: &cancellables);
+        
         MeetController.open(meet: self);
         self.outgoingCall = call;
 
@@ -109,14 +123,24 @@ class Meet {
             case .failure(let error):
                 self.logger.info("initiation of outgoing call of a meet \(self.jid) failed with \(error)")
                 call.reset();
+                self.cancellables.removeAll();
             }
         })
     }
     
     public func leave() {
+        cancellables.removeAll();
+
         MeetManager.instance.unregister(meet: self);
         outgoingCall?.reset();
         incomingCall?.reset();
+
+        if presenceSent {
+            let presence = Presence();
+            presence.type = .unavailable;
+            presence.to = jid;
+            client.writer.write(presence);
+        }
     }
     
     public func muted(value: Bool) {
