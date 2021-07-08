@@ -328,6 +328,7 @@ class XmppService {
         _ = client.modulesManager.register(ChatMarkersModule());
 
         _ = client.modulesManager.register(HttpFileUploadModule());
+        _ = client.modulesManager.register(MeetModule());
                 
         _ = client.modulesManager.register(PresenceModule(store: PresenceStore.instance));
         client.modulesManager.register(CapabilitiesModule(cache: DBCapabilitiesCache.instance, additionalFeatures: [.lastMessageCorrection, .messageRetraction]));

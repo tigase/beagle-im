@@ -29,6 +29,8 @@ public class RoundButton: NSButton {
     @IBInspectable
     var marginRatio: CGFloat = 4.0;
 
+    var hasBorder: Bool = true;
+    
     fileprivate(set) var mouseDown: Bool = false {
         didSet {
             self.highlight(mouseDown);
@@ -50,13 +52,15 @@ public class RoundButton: NSButton {
         }
         path.fill();
 
-        path.lineWidth = 1;
-        if NSApp.isDarkMode {
-            NSColor.darkGray.setStroke();
-        } else {
-            NSColor.lightGray.setStroke();
+        if hasBorder {
+            path.lineWidth = 1;
+            if NSApp.isDarkMode {
+                NSColor.darkGray.setStroke();
+            } else {
+                NSColor.lightGray.setStroke();
+            }
+            path.stroke();
         }
-        path.stroke();
         
         NSGraphicsContext.restoreGraphicsState();
 

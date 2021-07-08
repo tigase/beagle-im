@@ -101,8 +101,16 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
         }
     }
     
-    func call(_ call: Call, didReceiveRemoteVideoTrack remoteTrack: RTCVideoTrack) {
+    func call(_ call: Call, didReceiveRemoteVideoTrack remoteTrack: RTCVideoTrack, forStream: String, fromReceiver: String) {
         self.remoteVideoTrack = remoteTrack;
+    }
+    
+    func call(_ sender: Call, goneLocalVideoTrack localTrack: RTCVideoTrack) {
+        
+    }
+    
+    func call(_ sender: Call, goneRemoteVideoTrack remoteTrack: RTCVideoTrack, fromReceiver: String) {
+        
     }
     
     @IBOutlet var remoteVideoView: RTCMTLNSVideoView!

@@ -269,6 +269,14 @@ class JingleManager: JingleSessionManager {
 
     }
     
+    func contentModified(for context: Context, with jid: JID, sid: String, action: Jingle.ContentAction, contents: [Jingle.Content], bundle: [String]?) throws {
+        guard let session = self.session(for: context, with: jid, sid: sid) else {
+            throw XMPPError.item_not_found;
+        }
+        
+        session.contentModified(action: action, contents: contents, bundle: bundle);
+    }
+    
 }
 
 extension JingleManager {

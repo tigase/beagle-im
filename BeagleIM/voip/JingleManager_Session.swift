@@ -25,125 +25,103 @@ import WebRTC
 import os
 import Combine
 
+protocol JingleSessionActionDelegate: AnyObject {
+    
+    func received(action: JingleManager.Session.Action);
+    
+}
+
 extension JingleManager {
     
-    class Session: JingleSession {
+    public class Session: JingleSession {
                         
-//        weak var delegate: JingleSessionDelegate?;
+        private static let queue = DispatchQueue(label: "JingleSessionQueue");
+
+        private weak var delegate: JingleSessionActionDelegate?;
+        private var actionsQueue: [Action] = [];
         
-        private var cachedRemoteCandidates: [[String]] = [];
-        private let remoteCandidatesSubject = PassthroughSubject<RTCIceCandidate,Never>();
-        public let remoteCandidatesPublisher: AnyPublisher<RTCIceCandidate,Never>;
-        
-        @Published
-        private(set) var remoteDescription: SDP?;
+        public enum Action {
+            case contentSet(SDP)
+            case contentApply(Jingle.ContentAction, SDP)
+            case transportAdd(Jingle.Transport.ICEUDPTransport.Candidate, String);
+            
+            var order: Int {
+                switch self {
+                case .contentSet(_):
+                    return 0;
+                case .contentApply(_,_):
+                    return 0;
+                case .transportAdd(_, _):
+                    return 1;
+                }
+            }
+        }
         
         override init(context: Context, jid: JID, sid: String, role: Jingle.Content.Creator, initiationType: JingleSessionInitiationType) {
-            remoteCandidatesPublisher = remoteCandidatesSubject.makeConnectable().autoconnect().eraseToAnyPublisher();
             super.init(context: context, jid: jid, sid: sid, role: role, initiationType: initiationType);
+        }
+        
+        override func initiate(contents: [Jingle.Content], bundle: [String]?) -> Future<Void, XMPPError> {
+            //self.localDescription = SDP(contents: contents, bundle: bundle);
+            return super.initiate(contents: contents, bundle: bundle);
         }
         
         override func initiated(contents: [Jingle.Content], bundle: [String]?) {
             super.initiated(contents: contents, bundle: bundle)
-            self.remoteDescription = SDP(contents: contents, bundle: bundle);
+            received(action: .contentSet(SDP(contents: contents, bundle: bundle)));
+        }
+        
+        
+        private func received(action: Action) {
+            Session.queue.async {
+                if self.delegate == nil {
+                    if let idx = self.actionsQueue.firstIndex(where: { $0.order > action.order }) {
+                        self.actionsQueue.insert(action, at: idx);
+                    } else {
+                        self.actionsQueue.append(action);
+                    }
+                } else {
+                    self.delegate?.received(action: action);
+                }
+            }
+        }
+        
+        public func setDelegate(_ delegate: JingleSessionActionDelegate) {
+            Session.queue.async {
+                self.delegate = delegate;
+                for action in self.actionsQueue {
+                    self.delegate?.received(action: action);
+                }
+                self.actionsQueue.removeAll();
+            }
         }
         
         override func accept() {
             super.accept();
         }
+        
+        override func accept(contents: [Jingle.Content], bundle: [String]?) -> Future<Void, XMPPError> {
+            //self.localDescription = SDP(contents: contents, bundle: bundle);
+            return super.accept(contents: contents, bundle: bundle);
+        }
                 
         override func accepted(contents: [Jingle.Content], bundle: [String]?) {
             super.accepted(contents: contents, bundle: bundle)
-            self.remoteDescription = SDP(contents: contents, bundle: bundle);
+            received(action: .contentSet(SDP(contents: contents, bundle: bundle)));
         }
         
         func decline() {
             self.terminate(reason: .decline);
         }
         
-//        func terminated() {
-//            guard state != .terminated else {
-//                return;
-//            }
-//            self.state = .terminated;
-//            self.terminateSession();
-//        }
-//        
-//        private func terminateSession() {
-//            os_log(OSLogType.debug, log: .jingle, "terminating session sid: %s", sid);
-//            self.delegate?.sessionTerminated(session: self);
-//            self.delegate = nil;
-//            JingleManager.instance.close(session: self);
-//        }
+
+        open override func contentModified(action: Jingle.ContentAction, contents: [Jingle.Content], bundle: [String]?) {
+            let sdp = SDP(contents: contents, bundle: bundle);
+            received(action: .contentApply(action, sdp));
+        }
         
         func addCandidate(_ candidate: Jingle.Transport.ICEUDPTransport.Candidate, for contentName: String) {
-            let sdp = candidate.toSDP();
-
-            cachedRemoteCandidates.append([contentName, sdp]);
-            receivedRemoteCandidates();
-        }
-        
-        func receivedRemoteCandidates() {
-            guard self.remoteDescription != nil else {
-                return;
-            }
-
-            for arr in cachedRemoteCandidates {
-                let contentName = arr[0];
-                let sdp = arr[1];
-                guard let lines = self.remoteDescription?.toString(withSid: "0").split(separator: "\r\n").map({ (s) -> String in
-                    return String(s);
-                }) else {
-                    return;
-                }
-                
-                let contents = lines.filter { (line) -> Bool in
-                    return line.starts(with: "a=mid:");
-                };
-                    
-                let idx = contents.firstIndex(of: "a=mid:\(contentName)") ?? lines.filter({ (line) -> Bool in
-                    return line.starts(with: "m=")
-                }).firstIndex(where: { (line) -> Bool in
-                    return line.starts(with: "m=\(contentName) ");
-                }) ?? 0;
-                    
-                os_log(OSLogType.debug, log: .jingle, "adding candidate for: %d name: %s sdp: %s", idx, contentName, sdp)
-                remoteCandidatesSubject.send(RTCIceCandidate(sdp: sdp, sdpMLineIndex: Int32(idx), sdpMid: contentName));
-            }
-            cachedRemoteCandidates.removeAll();
-        }
-        
-        fileprivate func onError(_ error: XMPPError) {
-            
-        }
-                
-        func sendLocalCandidate(_ candidate: RTCIceCandidate, peerConnection: RTCPeerConnection) {
-            os_log(OSLogType.debug, log: .jingle, "sending candidate for: %s, index: %d, full SDP: %s", candidate.sdpMid ?? "", candidate.sdpMLineIndex, (peerConnection.localDescription?.sdp ?? ""));
-            
-            guard let jingleCandidate = Jingle.Transport.ICEUDPTransport.Candidate(fromSDP: candidate.sdp) else {
-                return;
-            }
-            guard let mid = candidate.sdpMid else {
-                return;
-            }
-            
-            guard let desc = peerConnection.localDescription, let (sdp,_) = SDP.parse(sdpString: desc.sdp, creator: role) else {
-                return;
-            }
-            
-            guard let content = sdp.contents.first(where: { c -> Bool in
-                return c.name == mid;
-            }), let transport = content.transports.first(where: {t -> Bool in
-                return (t as? Jingle.Transport.ICEUDPTransport) != nil;
-            }) as? Jingle.Transport.ICEUDPTransport else {
-                return;
-            }
-            
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                if (!self.transportInfo(contentName: mid, creator: self.role, transport: Jingle.Transport.ICEUDPTransport(pwd: transport.pwd, ufrag: transport.ufrag, candidates: [jingleCandidate]))) {
-                    self.onError(.remote_server_timeout);
-                }
-            }
+            received(action: .transportAdd(candidate, contentName));
         }
     }
     

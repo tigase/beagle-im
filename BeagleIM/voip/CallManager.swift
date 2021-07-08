@@ -38,6 +38,12 @@ class CallManager {
         dispatcher.async {
             call.webrtcSid = String(UInt64.random(in: UInt64.min...UInt64.max));
             call.changeState(.ringing);
+            
+            guard !MeetManager.instance.reportIncoming(call: call) else {
+                completionHandler(.success(Void()));
+                return;
+            }
+            
             self.checkMediaAvailability(forCall: call, completionHandler: { result in
                 switch result {
                 case .success(_):
@@ -126,7 +132,7 @@ class CallManager {
     
 }
 
-class Call: NSObject {
+class Call: NSObject, JingleSessionActionDelegate {
     static func == (lhs: Call, rhs: Call) -> Bool {
         return lhs.account == rhs.account && lhs.jid == rhs.jid && lhs.sid == rhs.sid;
     }
@@ -147,11 +153,11 @@ class Call: NSObject {
     
     private(set) var state: State = .new;
 
-    fileprivate var webrtcSid: String?;
+    var webrtcSid: String?;
     
     private(set) var currentConnection: RTCPeerConnection?;
     
-    fileprivate(set) weak var delegate: CallDelegate? {
+    weak var delegate: CallDelegate? {
         didSet {
             delegate?.callDidStart(self);
         }
@@ -257,35 +263,40 @@ class Call: NSObject {
         case ended
     }
 
-    func initiateOutgoingCall(completionHandler: @escaping (Result<Void,Error>)->Void) {
+    func initiateOutgoingCall(with callee: JID? = nil, completionHandler: @escaping (Result<Void,Error>)->Void) {
         guard let client = XmppService.instance.getClient(for: account) else {
             completionHandler(.failure(ErrorCondition.item_not_found));
             return;
         }
-        let presences = PresenceStore.instance.presences(for: jid, context: client);
-        guard !presences.isEmpty || Settings.ignoreJingleSupportCheck else {
-            completionHandler(.failure(ErrorCondition.item_not_found));
-            return;
-        };
         var withJingle: [JID] = [];
         var withJMI: [JID] = [];
-        for presence in presences {
-            if let jid = presence.from, let capsNode = presence.capsNode {
-                if let features = DBCapabilitiesCache.instance.getFeatures(for: capsNode) {
-                    if features.contains(JingleModule.XMLNS) && features.contains(Jingle.Transport.ICEUDPTransport.XMLNS) && features.contains("urn:xmpp:jingle:apps:rtp:audio") {
-                        withJingle.append(jid);
-                        if features.contains(JingleModule.MESSAGE_INITIATION_XMLNS) {
-                            withJMI.append(jid);
+
+        if let jid = callee {
+            withJingle.append(jid);
+        } else {
+            let presences = PresenceStore.instance.presences(for: jid, context: client);
+            guard !presences.isEmpty || Settings.ignoreJingleSupportCheck else {
+                completionHandler(.failure(ErrorCondition.item_not_found));
+                return;
+            };
+            for presence in presences {
+                if let jid = presence.from, let capsNode = presence.capsNode {
+                    if let features = DBCapabilitiesCache.instance.getFeatures(for: capsNode) {
+                        if features.contains(JingleModule.XMLNS) && features.contains(Jingle.Transport.ICEUDPTransport.XMLNS) && features.contains("urn:xmpp:jingle:apps:rtp:audio") {
+                            withJingle.append(jid);
+                            if features.contains(JingleModule.MESSAGE_INITIATION_XMLNS) {
+                                withJMI.append(jid);
+                            }
                         }
                     }
                 }
             }
+            guard !withJingle.isEmpty || Settings.ignoreJingleSupportCheck else {
+                completionHandler(.failure(ErrorCondition.item_not_found));
+                return;
+            }
         }
-        guard !withJingle.isEmpty || Settings.ignoreJingleSupportCheck else {
-            completionHandler(.failure(ErrorCondition.item_not_found));
-            return;
-        }
-                
+        
         self.changeState(.ringing);
         initiateWebRTC(completionHandler: { result in
             switch result {
@@ -297,7 +308,11 @@ class Call: NSObject {
                     _ = session.initiate(descriptions: self.media.map({ Jingle.MessageInitiationAction.Description(xmlns: "urn:xmpp:jingle:apps:rtp:1", media: $0.rawValue) }));
                 } else {
                     // we need to establish multiple 1-1 sessions...
-                    self.generateLocalDescription(completionHandler: { result in
+                    guard let peerConnection = self.currentConnection else {
+                        completionHandler(.failure(ErrorCondition.internal_server_error));
+                        return;
+                    }
+                    self.generateOfferAndSet(peerConnection: peerConnection, completionHandler: { result in
                         switch result {
                         case .failure(_):
                             self.reset();
@@ -348,11 +363,11 @@ class Call: NSObject {
     }
         
     private func acceptedOutgingCall() {
-        guard let session = session, session.initiationType == .message, state == .ringing else {
+        guard let session = session, session.initiationType == .message, state == .ringing, let peerConnection = currentConnection else {
             return;
         }
         changeState(.connecting);
-        generateLocalDescription(completionHandler: { result in
+        generateOfferAndSet(peerConnection: peerConnection, completionHandler: { result in
             switch result {
             case .success(let sdp):
                 guard let session = self.session else {
@@ -368,34 +383,9 @@ class Call: NSObject {
     }
     
     private func connectRemoteSDPPublishers(session: JingleManager.Session) {
-        session.$remoteDescription.compactMap({ $0 }).sink(receiveValue: { [weak self] remoteDescription in
-            self?.setRemoteDescription(remoteDescription);
-        }).store(in: &self.cancellables);
-        session.remoteCandidatesPublisher.sink(receiveValue: { [weak self] candidate in
-            self?.addRemoteCandidate(candidate);
-        }).store(in: &self.cancellables);
+        session.setDelegate(self);
     }
-        
-    private func generateLocalDescription(completionHandler: @escaping (Result<SDP,ErrorCondition>)->Void) {
-        if let peerConnection = self.currentConnection {
-            peerConnection.offer(for: VideoCallController.defaultCallConstraints, completionHandler: { (description, error) in
-                guard let desc = description, let (sdp, _) = SDP.parse(sdpString: desc.sdp, creator: .initiator) else {
-                    completionHandler(.failure(.internal_server_error));
-                    return;
-                }
-                peerConnection.setLocalDescription(RTCSessionDescription(type: desc.type, sdp: sdp.toString(withSid: self.webrtcSid!)), completionHandler: { error in
-                    guard error == nil else {
-                        completionHandler(.failure(.internal_server_error));
-                        return;
-                    }
-                    completionHandler(.success(sdp));
-                })
-            })
-        } else {
-            completionHandler(.failure(.item_not_found));
-        }
-    }
-    
+            
     static let VALID_SERVICE_TYPES = ["stun", "stuns", "turn", "turns"];
     
     func initiateWebRTC(completionHandler: @escaping (Result<Void,Error>)->Void) {
@@ -484,51 +474,136 @@ class Call: NSObject {
         reset();
     }
     
-    fileprivate func setRemoteDescription(_ remoteDescription: SDP, peerConnection: RTCPeerConnection, session: JingleManager.Session, completionHandler: @escaping (Result<Void,Error>)->Void) {
-        print("setting remote description");
-        peerConnection.setRemoteDescription(RTCSessionDescription(type: self.direction == .incoming ? .offer : .answer, sdp: remoteDescription.toString(withSid: self.webrtcSid!)), completionHandler: { error in
-            if let err = error {
-                print("failed to set remote description!", err);
-                completionHandler(.failure(err));
-            } else if self.direction == .incoming {
-                //DispatchQueue.main.async {
-                print("retrieving current connection");
-    //                peerConnection.transceivers.forEach({ transceiver in
-    //                    if (!call.media.contains(.audio)) && transceiver.mediaType == .audio {
-    //                        transceiver.stop();
-    //                    }
-    //                    if (!call.media.contains(.video)) && transceiver.mediaType == .video {
-    //                        transceiver.stop();
-    //                    }
-    //                });
-                print("generating answer");
-                peerConnection.answer(for: VideoCallController.defaultCallConstraints, completionHandler: { (sdpAnswer, error) in
-                    if let err = error {
-                        print("answer generation failed:", err);
-                        completionHandler(.failure(err));
-                    } else {
-                        print("setting local description:", sdpAnswer!.sdp);
-                        peerConnection.setLocalDescription(sdpAnswer!, completionHandler: { error in
-                            if let err = error {
-                                print("answer generation failed:", err);
-                                completionHandler(.failure(err));
-                            } else {
-                                print("sending answer to remote client");
-                                let (sdp, _) = SDP.parse(sdpString: sdpAnswer!.sdp, creator: .responder)!;
-                                _ = session.accept(contents: sdp.contents, bundle: sdp.bundle)
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
-                                    self.sendLocalCandidates();
-                                })
-                                completionHandler(.success(Void()));
-                            }
-                        });
-                    }
-                })
-                //}
-            } else {
-            completionHandler(.success(Void()));
+    private var localSessionDescription: SDP?;
+    private var remoteSessionDescription: SDP?;
+    
+    private let remoteSessionSemaphore = DispatchSemaphore(value: 1);
+    
+    public func received(action: JingleManager.Session.Action) {
+        guard let peerConnection = self.currentConnection, let session = self.session else {
+            return;
+        }
+    
+        
+        remoteSessionSemaphore.wait();
+        
+        if case let .transportAdd(candidate, contentName) = action {
+            if let idx = remoteSessionDescription?.contents.firstIndex(where: { $0.name == contentName }) {
+                peerConnection.add(RTCIceCandidate(sdp: candidate.toSDP(), sdpMLineIndex: Int32(idx), sdpMid: contentName));
             }
-        })
+            remoteSessionSemaphore.signal();
+            return;
+        }
+        
+        let result = apply(action: action, on: self.remoteSessionDescription);
+        
+        guard let newSDP = result else {
+            remoteSessionSemaphore.signal();
+            return;
+        }
+        
+        let prevLocalSDP = self.localSessionDescription;
+        setRemoteDescription(newSDP, peerConnection: peerConnection, completionHandler: { result in
+            self.remoteSessionSemaphore.signal();
+            switch result {
+            case .failure(let error):
+                print("error setting remote description:", error)
+                self.reset();
+            case .success(let localSDP):
+                if let sdp = localSDP {
+                    if prevLocalSDP != nil {
+                        let changes = sdp.diff(from: prevLocalSDP!);
+                        if let addSDP = changes[.add] {
+                            _ = session.contentModify(action: .accept, contents: addSDP.contents, bundle: addSDP.bundle);
+                        }
+                        if let modifySDP = changes[.modify] {
+                            // can we safely ignore this?
+                        }
+                    } else {
+                        _ = session.accept(contents: sdp.contents, bundle: sdp.bundle)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
+                            self.sendLocalCandidates();
+                        })
+                    }
+                }
+                break;
+            }
+        });
+    }
+    
+    private func apply(action: JingleManager.Session.Action, on prevSDP: SDP?) -> SDP? {
+        switch action {
+        case .contentSet(let newSDP):
+            return newSDP;
+        case .contentApply(let action, let diffSDP):
+            switch action {
+            case .add, .accept, .remove, .modify:
+                return prevSDP?.applyDiff(action: action, diff: diffSDP);
+            }
+        case .transportAdd(_, _):
+            return nil;
+        }
+    }
+
+    private func setRemoteDescription(_ remoteDescription: SDP, peerConnection: RTCPeerConnection, completionHandler: @escaping (Result<SDP?,Error>)->Void) {
+        print("setting remote description", remoteDescription.toString(withSid: ""));
+        peerConnection.setRemoteDescription(RTCSessionDescription(type: self.direction == .incoming ? .offer : .answer, sdp: remoteDescription.toString(withSid: self.webrtcSid!)), completionHandler: { err in
+            guard let error = err else {
+                self.remoteSessionDescription = remoteDescription;
+                if peerConnection.signalingState == .haveRemoteOffer {
+                    self.generateAnswerAndSet(peerConnection: peerConnection, completionHandler: { result in
+                        switch result {
+                        case .success(let localSDP):
+                            completionHandler(.success(localSDP));
+                        case .failure(let error):
+                            completionHandler(.failure(error));
+                        }
+                    })
+                } else {
+                    completionHandler(.success(nil));
+                }
+                return;
+            }
+            completionHandler(.failure(error));
+        });
+    }
+    
+    private func generateOfferAndSet(peerConnection: RTCPeerConnection, completionHandler: @escaping (Result<SDP,Error>)->Void) {
+        print("generating offer");
+        peerConnection.offer(for: VideoCallController.defaultCallConstraints, completionHandler: { sdpOffer, err in
+            guard let error = err else {
+                self.setLocalDescription(peerConnection: peerConnection, sdp: sdpOffer!, completionHandler: completionHandler);
+                return;
+            }
+            completionHandler(.failure(error));
+        });
+    };
+        
+    private func generateAnswerAndSet(peerConnection: RTCPeerConnection, completionHandler: @escaping (Result<SDP,Error>)->Void) {
+        print("generating answer");
+        peerConnection.answer(for: VideoCallController.defaultCallConstraints, completionHandler: { sdpAnswer, err in
+            guard let error = err else {
+                self.setLocalDescription(peerConnection: peerConnection, sdp: sdpAnswer!, completionHandler: completionHandler);
+                return;
+            }
+            completionHandler(.failure(error));
+        });
+    }
+    
+    private func setLocalDescription(peerConnection: RTCPeerConnection, sdp localSDP: RTCSessionDescription, completionHandler: @escaping (Result<SDP,Error>)->Void) {
+        print("setting local description:", localSDP.sdp);
+        peerConnection.setLocalDescription(localSDP, completionHandler: { err in
+            guard let error = err else {
+                guard let (sdp, _) = SDP.parse(sdpString: localSDP.sdp, creator: .responder) else {
+                    completionHandler(.failure(ErrorCondition.not_acceptable));
+                    return;
+                }
+                self.localSessionDescription = sdp;
+                completionHandler(.success(sdp));
+                return;
+            }
+            completionHandler(.failure(error));
+        });
     }
     
     func changeState(_ state: State) {
@@ -550,7 +625,10 @@ protocol CallDelegate: class {
     func callStateChanged(_ sender: Call);
     
     func call(_ sender: Call, didReceiveLocalVideoTrack localTrack: RTCVideoTrack);
-    func call(_ sender: Call, didReceiveRemoteVideoTrack remoteTrack: RTCVideoTrack);
+    func call(_ sender: Call, didReceiveRemoteVideoTrack remoteTrack: RTCVideoTrack, forStream stream: String, fromReceiver: String);
+    
+    //func call(_ sender: Call, goneLocalVideoTrack localTrack: RTCVideoTrack, forStream stream: String);
+    func call(_ sender: Call, goneRemoteVideoTrack remoteTrack: RTCVideoTrack, fromReceiver: String);
 
     
 }
@@ -575,7 +653,8 @@ extension Call: RTCPeerConnectionDelegate {
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceConnectionState) {
         switch newState {
         case .disconnected:
-            self.reset();
+            break;
+            //self.reset();
         case .connected:
             DispatchQueue.main.async {
                 self.changeState(.connected);
@@ -596,13 +675,35 @@ extension Call: RTCPeerConnectionDelegate {
     }
         
     private func sendLocalCandidates() {
-        guard let session = self.session, let peerConnection = self.currentConnection else {
+        guard let session = self.session else {
             return;
         }
         for candidate in localCandidates {
-            session.sendLocalCandidate(candidate, peerConnection: peerConnection);
+            self.sendLocalCandidate(candidate, session: session);
         }
         self.localCandidates = [];
+    }
+    
+    private func sendLocalCandidate(_ candidate: RTCIceCandidate, session: JingleManager.Session) {
+        guard let jingleCandidate = Jingle.Transport.ICEUDPTransport.Candidate(fromSDP: candidate.sdp) else {
+            return;
+        }
+        guard let mid = candidate.sdpMid else {
+            return;
+        }
+        guard let sdp = self.localSessionDescription else {
+            return;
+        }
+        
+        guard let content = sdp.contents.first(where: { c -> Bool in
+            return c.name == mid;
+        }), let transport = content.transports.first(where: {t -> Bool in
+            return (t as? Jingle.Transport.ICEUDPTransport) != nil;
+        }) as? Jingle.Transport.ICEUDPTransport else {
+            return;
+        }
+        
+        _ = session.transportInfo(contentName: mid, creator: session.role, transport: Jingle.Transport.ICEUDPTransport(pwd: transport.pwd, ufrag: transport.ufrag, candidates: [jingleCandidate]));
     }
         
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove candidates: [RTCIceCandidate]) {
@@ -613,16 +714,33 @@ extension Call: RTCPeerConnectionDelegate {
             
     }
         
+    func peerConnection(_ peerConnection: RTCPeerConnection, didAdd rtpReceiver: RTCRtpReceiver, streams mediaStreams: [RTCMediaStream]) {
+        print("added receiver:", rtpReceiver.receiverId)
+        if let track = rtpReceiver.track as? RTCVideoTrack, let stream = mediaStreams.first {
+            print("added video track:", track, peerConnection.transceivers.map({ "[\($0.mid) - stopped: \($0.isStopped), \($0.receiver.receiverId), \($0.direction.rawValue)]" }).joined(separator: ", "));
+            self.delegate?.call(self, didReceiveRemoteVideoTrack: track, forStream: stream.streamId, fromReceiver: rtpReceiver.receiverId);
+        }
+    }
+    
+    func peerConnection(_ peerConnection: RTCPeerConnection, didRemove rtpReceiver: RTCRtpReceiver) {
+        print("removed receiver:", rtpReceiver.receiverId)
+        if let track = rtpReceiver.track as? RTCVideoTrack {
+            print("removed video track:", track);
+            self.delegate?.call(self, goneRemoteVideoTrack: track, fromReceiver: rtpReceiver.receiverId);
+        }
+    }
+    
     func peerConnection(_ peerConnection: RTCPeerConnection, didStartReceivingOn transceiver: RTCRtpTransceiver) {
         if transceiver.direction == .recvOnly || transceiver.direction == .sendRecv {
             if transceiver.mediaType == .video {
                 print("got video transceiver");
-                guard let track = transceiver.receiver.track as? RTCVideoTrack else {
-                    return;
-                }
-                self.delegate?.call(self, didReceiveRemoteVideoTrack: track)
+//                guard let track = transceiver.receiver.track as? RTCVideoTrack else {
+//                    return;
+//                }
+//                self.delegate?.call(self, didReceiveRemoteVideoTrack: track, forStream: transceiver.mid, fromReceiver: transceiver.receiver.receiverId)
             }
         }
+
         if transceiver.direction == .sendOnly || transceiver.direction == .sendRecv {
             if transceiver.mediaType == .video {
                 guard let track = transceiver.sender.track as? RTCVideoTrack else {
@@ -635,26 +753,6 @@ extension Call: RTCPeerConnectionDelegate {
 }
 
 extension Call {
-    
-    func setRemoteDescription(_ sdp: SDP) {
-        DispatchQueue.main.async {
-            guard let peerConnection = self.currentConnection, let session = self.session else {
-                return;
-            }
-            
-            self.changeState(.connecting);
-            
-            self.setRemoteDescription(sdp, peerConnection: peerConnection, session: session, completionHandler: { result in
-                switch result {
-                case .success(_):
-                    break;
-                case .failure(let err):
-                    print("error setting remote description:", err)
-                    self.reset();
-                }
-            })
-        }
-    }
     
     func sessionTerminated() {
         DispatchQueue.main.async {

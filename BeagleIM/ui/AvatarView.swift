@@ -26,6 +26,12 @@ class AvatarView: NSImageView {
 
     static let defaultImage: NSImage = NSImage(named: NSImage.userGuestName)!;
     
+    override var frame: NSRect {
+        didSet {
+            updateImage();
+        }
+    }
+    
     var name: String? = nil {
         didSet {
             if let parts = name?.uppercased().components(separatedBy: CharacterSet.letters.inverted) {
@@ -59,7 +65,7 @@ class AvatarView: NSImageView {
             if self.avatar! == AvatarManager.instance.defaultGroupchatAvatar {
                 self.image = self.avatar;
             } else {
-                self.image = avatar?.square(max(self.frame.size.width, self.frame.size.height));
+                self.image = self.frame.size.width == 0 ? avatar : avatar?.square(max(self.frame.size.width, self.frame.size.height));
             }
         } else if initials != nil {
             self.image = nil;
