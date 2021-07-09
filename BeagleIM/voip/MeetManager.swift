@@ -28,7 +28,7 @@ class MeetManager {
     
     public static let instance = MeetManager();
     
-    private let dispatcher = QueueDispatcher(label: "MeetManager");
+    fileprivate let dispatcher = QueueDispatcher(label: "MeetManager");
     private var meets: [Key:Meet] = [:]
     
     public func registerMeet(at jid: JID, using client: XMPPClient) -> Meet? {
@@ -93,6 +93,9 @@ class Meet {
     @Published
     fileprivate(set) var incomingCall: Call?;
     
+    @Published
+    fileprivate(set) var publishers: [MeetModule.Publisher] = [];
+    
     private var presenceSent = false;
     private var cancellables: Set<AnyCancellable> = [];
     
@@ -107,6 +110,10 @@ class Meet {
             client.writer.write(presence);
             presenceSent = true;
         }
+        
+        client.module(.meet).eventsPublisher.receive(on: MeetManager.instance.dispatcher.queue).filter({ $0.meetJid == self.jid.bareJid }).sink(receiveValue: { [weak self] event in
+            self?.handle(event: event);
+        }).store(in: &cancellables);
         
         PresenceStore.instance.bestPresenceEvents.filter({ $0.jid == self.jid.bareJid && ($0.presence == nil || $0.presence?.type == .unavailable) }).sink(receiveValue: { [weak self] _ in
             call.reset();
@@ -149,5 +156,14 @@ class Meet {
     
     fileprivate func setIncomingCall(_ call: Call) {
         incomingCall = call;
+    }
+    
+    private func handle(event: MeetModule.MeetEvent) {
+        switch event {
+        case .publisherJoined(_, let publisher):
+            publishers.append(publisher);
+        case .publisherLeft(_, let publisher):
+            publishers = publishers.filter({ $0.jid != publisher.jid })
+        }
     }
 }

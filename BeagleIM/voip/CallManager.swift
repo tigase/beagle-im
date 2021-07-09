@@ -717,8 +717,9 @@ extension Call: RTCPeerConnectionDelegate {
     func peerConnection(_ peerConnection: RTCPeerConnection, didAdd rtpReceiver: RTCRtpReceiver, streams mediaStreams: [RTCMediaStream]) {
         print("added receiver:", rtpReceiver.receiverId)
         if let track = rtpReceiver.track as? RTCVideoTrack, let stream = mediaStreams.first {
+            let mid = peerConnection.transceivers.first(where: { $0.receiver.receiverId == rtpReceiver.receiverId })?.mid;
             print("added video track:", track, peerConnection.transceivers.map({ "[\($0.mid) - stopped: \($0.isStopped), \($0.receiver.receiverId), \($0.direction.rawValue)]" }).joined(separator: ", "));
-            self.delegate?.call(self, didReceiveRemoteVideoTrack: track, forStream: stream.streamId, fromReceiver: rtpReceiver.receiverId);
+            self.delegate?.call(self, didReceiveRemoteVideoTrack: track, forStream: mid ?? stream.streamId, fromReceiver: rtpReceiver.receiverId);
         }
     }
     

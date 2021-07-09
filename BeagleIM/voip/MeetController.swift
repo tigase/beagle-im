@@ -57,9 +57,9 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
         }
     }
     
-    func call(_ sender: Call, didReceiveRemoteVideoTrack remoteTrack: RTCVideoTrack, forStream: String, fromReceiver receiverId: String) {
+    func call(_ sender: Call, didReceiveRemoteVideoTrack remoteTrack: RTCVideoTrack, forStream mid: String, fromReceiver receiverId: String) {
         DispatchQueue.main.async {
-            self.items.append(Item(contact: nil, videoTrack: remoteTrack, receiverId: receiverId));
+            self.items.append(Item(mid: mid, videoTrack: remoteTrack, receiverId: receiverId));
             self.collectionView.animator().performBatchUpdates({
                 self.collectionView.insertItems(at: Set([IndexPath(item: self.items.count - 1, section: 0)]));
             }, completionHandler: nil);
@@ -107,10 +107,8 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
     
     func collectionView(_ collectionView: NSCollectionView, itemForRepresentedObjectAt indexPath: IndexPath) -> NSCollectionViewItem {
         let cell = collectionView.makeItem(withIdentifier: NSUserInterfaceItemIdentifier("VideoStreamCell"), for: indexPath);
-        if let view = cell as? VideoStreamCell {
-            view.contact = items[indexPath.item].contact;
-            view.videoTrack = items[indexPath.item].videoTrack;
-//            items[indexPath.item].videoTrack?.add(view.videoRenderer);
+        if let view = cell as? VideoStreamCell, let account = meet?.client.userBareJid {
+            view.set(item: items[indexPath.item], account: account, publishersPublisher: $publisherByMid);
         }
         return cell;
     }
@@ -137,6 +135,9 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
         }
     }
     
+    @Published
+    private var publisherByMid: [String: MeetModule.Publisher] = [:];
+    
     private var meet: Meet? {
         didSet {
             meet?.$outgoingCall.sink(receiveValue: { [weak self] call in
@@ -150,6 +151,15 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
                     return;
                 }
                 call?.delegate = that;
+            }).store(in: &cancellables);
+            meet?.$publishers.sink(receiveValue: { [weak self] publishers in
+                var dict: [String: MeetModule.Publisher] = [:];
+                for publisher in publishers {
+                    for stream in publisher.streams {
+                        dict[stream] = publisher;
+                    }
+                }
+                self?.publisherByMid = dict;
             }).store(in: &cancellables);
         }
     }
@@ -389,7 +399,7 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
     }
     
     private struct Item {
-        let contact: Contact?;
+        let mid: String;
         let videoTrack: RTCVideoTrack?;
         let receiverId: String;
     }
@@ -398,13 +408,14 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
         
         private let avatarView: AvatarView = AvatarView();
         private let nameLabel: NSTextField = NSTextField(labelWithString: "");
+        private let nameBox = NSView();
         let videoRenderer: RTCMTLNSVideoView = RTCMTLNSVideoView(frame: .zero);
         
         private var cancellables: Set<AnyCancellable> = [];
         
         private var avatarSize: NSLayoutConstraint?;
         
-        var videoTrack: RTCVideoTrack? {
+        private var videoTrack: RTCVideoTrack? {
             willSet {
                 videoTrack?.remove(videoRenderer);
             }
@@ -413,7 +424,7 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
             }
         }
         
-        var contact: Contact? {
+        private var contact: Contact? {
             didSet {
                 cancellables.removeAll();
                 contact?.$displayName.map({ $0 as String? }).receive(on: DispatchQueue.main).assign(to: \.name, on: avatarView).store(in: &cancellables);
@@ -422,33 +433,56 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
             }
         }
         
+        private var item: Item?;
+        
+        private var publisherCancellable: AnyCancellable? {
+            willSet {
+                publisherCancellable?.cancel();
+            }
+        }
+        
+        func set(item: Item, account: BareJID, publishersPublisher: Published<[String:MeetModule.Publisher]>.Publisher) {
+            self.videoTrack = item.videoTrack;
+            self.item = item;
+            publisherCancellable = publishersPublisher.map({ $0[item.mid]?.jid }).removeDuplicates().map({ j -> Contact? in
+                if let jid = j {
+                    return ContactManager.instance.contact(for: .init(account: account, jid: jid, type: .buddy));
+                }
+                return nil;
+            }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] contact in
+                self?.contact = contact;
+            });
+        }
+        
         override func loadView() {
             self.view = NSView();
             view.wantsLayer = true;
             view.layer?.backgroundColor = NSColor.systemGray.cgColor;
             view.layer?.cornerRadius = 10;
             
+            nameBox.translatesAutoresizingMaskIntoConstraints = false;
+            nameBox.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
+            nameBox.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
             avatarView.translatesAutoresizingMaskIntoConstraints = false;
             nameLabel.translatesAutoresizingMaskIntoConstraints = false;
             videoRenderer.translatesAutoresizingMaskIntoConstraints = false;
             videoRenderer.wantsLayer = true;
             for subview in videoRenderer.subviews {
                 (subview as? MTKView)?.layerContentsPlacement = .scaleProportionallyToFill;
-                if let mtkView = subview as? MTKView {
-                    print("found MTKView:", mtkView);
-                }
             }
 
             avatarView.imageScaling = .scaleProportionallyUpOrDown;
             
             nameLabel.alignment = .center;
-            nameLabel.backgroundColor = NSColor.darkGray.withAlphaComponent(0.8);
+            nameBox.wantsLayer = true;
+            nameBox.layer?.backgroundColor = NSColor.darkGray.withAlphaComponent(0.9).cgColor;
             nameLabel.font = NSFont.boldSystemFont(ofSize: NSFont.systemFontSize)
-            nameLabel.drawsBackground = true;
+            //nameLabel.drawsBackground = true;
             
             view.addSubview(avatarView);
             view.addSubview(videoRenderer);
-            view.addSubview(nameLabel);
+            nameBox.addSubview(nameLabel);
+            view.addSubview(nameBox);
             
             avatarSize = avatarView.widthAnchor.constraint(equalToConstant: 0);
             
@@ -464,15 +498,19 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
                 view.trailingAnchor.constraint(equalTo: videoRenderer.trailingAnchor),
                 view.bottomAnchor.constraint(equalTo: videoRenderer.bottomAnchor),
                 
-                view.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor),
-                view.trailingAnchor.constraint(equalTo: nameLabel.trailingAnchor),
-                view.bottomAnchor.constraint(equalTo: nameLabel.bottomAnchor)
+                nameBox.centerXAnchor.constraint(equalTo: nameLabel.centerXAnchor),
+                nameBox.leadingAnchor.constraint(lessThanOrEqualTo: nameLabel.leadingAnchor),
+                nameBox.topAnchor.constraint(equalTo: nameLabel.topAnchor, constant: -6),
+                nameBox.bottomAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 6),
+                
+                view.leadingAnchor.constraint(equalTo: nameBox.leadingAnchor),
+                view.trailingAnchor.constraint(equalTo: nameBox.trailingAnchor),
+                view.bottomAnchor.constraint(equalTo: nameBox.bottomAnchor)
             ])
         }
         
         override func viewWillLayout() {
             avatarSize?.constant = min(self.view.frame.height, self.view.frame.width) * 0.8;
-//            self.updateVideoRendererSize();
             super.viewWillLayout();
         }
         
