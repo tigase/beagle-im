@@ -164,6 +164,8 @@ class Meet {
             publishers.append(publisher);
         case .publisherLeft(_, let publisher):
             publishers = publishers.filter({ $0.jid != publisher.jid })
+        case .inivitation(_, _):
+            break;
         }
     }
 }

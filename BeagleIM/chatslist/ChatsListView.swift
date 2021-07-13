@@ -52,7 +52,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     static let CHAT_SELECTED = Notification.Name("chatSelected");
     static let CLOSE_SELECTED_CHAT = Notification.Name("chatSelectedClose");
     
-    @IBOutlet var searchField: NSSearchField!;
+    @IBOutlet var searchField: ContactSuggestionField!;
     
     @IBOutlet var outlineView: ChatsListView!;
     
@@ -61,101 +61,30 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     var invitationGroup: InvitationGroup?;
 
     private var cancellables: Set<AnyCancellable> = [];
-    private var suggestionsController: SuggestionsWindowController<DisplayableIdWithKeyProtocol>?;
-    
-    func controlTextDidBeginEditing(_ obj: Notification) {
-        if suggestionsController == nil {
-            suggestionsController = SuggestionsWindowController(viewProvider: ChatsListSuggestionItemView.self, edge: .bottom);
-            suggestionsController?.backgroundColor = NSColor(named: "sidebarBackgroundColor")
-            suggestionsController?.target = self;
-            suggestionsController?.action = #selector(self.suggestionItemSelected(sender:))
-        }
-//        suggestionsController?.beginFor(textField: self.searchField!);
-    }
-    
-    func controlTextDidChange(_ obj: Notification) {
-        if searchField.stringValue.count < 2 {
-            suggestionsController?.cancelSuggestions();
-        } else {
-            let query = searchField.stringValue.lowercased();
-            
-            let conversations: [DisplayableIdWithKeyProtocol] = DBChatStore.instance.conversations.filter({ $0.displayName.lowercased().contains(query) || $0.jid.localPart?.lowercased().contains(query) ?? false || $0.jid.domain.lowercased().contains(query) });
-
-            let keys = Set(conversations.map({ Contact.Key(account: $0.account, jid: $0.jid, type: .buddy) }));
-            
-            let contacts: [DisplayableIdWithKeyProtocol] = DBRosterStore.instance.items.filter({ $0.name?.lowercased().contains(searchField.stringValue) ?? false || $0.jid.localPart?.lowercased().contains(query) ?? false || $0.jid.domain.lowercased().contains(query) }).compactMap({ item -> Contact? in
-                guard let account = item.context?.userBareJid, !keys.contains(.init(account: account, jid: item.jid.bareJid, type: .buddy)) else {
-                    return nil;
-                }
-                return ContactManager.instance.contact(for: .init(account: account, jid: item.jid.bareJid, type: .buddy))
-            });
-            
-            
-            let items: [DisplayableIdWithKeyProtocol] = (contacts + conversations).sorted(by: { c1, c2 -> Bool in c1.displayName < c2.displayName });
-            
-            if !items.isEmpty {
-                if !(suggestionsController?.window?.isVisible ?? false) {
-                    suggestionsController?.beginFor(textField: self.searchField!);
-                }
-            }
-            
-            suggestionsController?.update(suggestions: items);
-        }
-    }
-    
-    func controlTextDidEndEditing(_ obj: Notification) {
-        suggestionsController?.cancelSuggestions();
-    }
-    
-    func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
-        switch commandSelector {
-        case #selector(NSResponder.moveUp(_:)):
-            suggestionsController?.moveUp(textView);
-            return true
-        case #selector(NSResponder.moveDown(_:)):
-            suggestionsController?.moveDown(textView);
-            return true
-        case #selector(NSResponder.insertNewline(_:)):
-            if let controller = self.suggestionsController {
-                suggestionItemSelected(sender: controller);
-            }
-        case #selector(NSResponder.complete(_:)):
-            suggestionsController?.cancelSuggestions();
-            return true;
-        default:
-            break;
-        }
-        return false;
-    }
-    
-    @objc func suggestionItemSelected(sender: Any) {
-        guard let item = (sender as? SuggestionsWindowController<DisplayableIdWithKeyProtocol>)?.selected else {
-            return;
-        }
-        
-        self.searchField.stringValue = "";
-        
-        print("selected item: \(item.jid) in \(item.account)")
-        
-        if let conversation = DBChatStore.instance.conversation(for: item.account, with: item.jid) {
-            // we have conversation, select it to open
-            NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: conversation);
-        } else if item is Contact {
-            guard let client = XmppService.instance.getClient(for: item.account) else {
-                return;
-            }
-            
-            if let chat = client.modulesManager.module(.message).chatManager.createChat(for: client, with: item.jid) {
-                NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: chat)
-            }
-        }
-    }
     
     override func viewDidLoad() {
         if #available(macOS 11.0, *) {
             self.outlineView.style = .fullWidth;
         }
         self.invitationGroup = InvitationGroup(delegate: self);
+        self.searchField.suggestionsWindowBackground = NSColor(named: "sidebarBackgroundColor");
+        self.searchField.selectionPublisher.sink(receiveValue: { item in
+            guard let account = item.account else {
+                return;
+            }
+            if let conversation = DBChatStore.instance.conversation(for: account, with: item.jid) {
+                // we have conversation, select it to open
+                NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: conversation);
+            } else if let contact = item.displayableId as? Contact {
+                guard let client = XmppService.instance.getClient(for: contact.account) else {
+                    return;
+                }
+                
+                if let chat = client.modulesManager.module(.message).chatManager.createChat(for: client, with: contact.jid) {
+                    NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: chat)
+                }
+            }
+        }).store(in: &cancellables);
         Settings.$commonChatsList.sink(receiveValue: { [weak self] value in
             guard let that = self else {
                 return;
@@ -186,7 +115,6 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         NotificationCenter.default.addObserver(self, selector: #selector(chatSelected), name: ChatsListViewController.CHAT_SELECTED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(closeSelectedChat), name: ChatsListViewController.CLOSE_SELECTED_CHAT, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(invitationClicked(_:)), name: InvitationManager.INVITATION_CLICKED, object: nil);
-        searchField.delegate = self;
     }
     
     override func viewWillAppear() {

@@ -184,6 +184,9 @@ class SuggestionsWindowController<Item>: NSWindowController {
         
         let entries = suggestions.map({ contact -> SuggestionItemView<Item> in
             let view = viewProvider.init();
+            if self.backgroundColor != NSColor.windowBackgroundColor {
+                view.appearance = NSAppearance(named: .darkAqua);
+            }
             view.item = contact;
             return view;
         });

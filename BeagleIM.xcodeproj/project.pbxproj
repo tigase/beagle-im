@@ -135,6 +135,10 @@
 		FE75CD702549E9BE0064A733 /* SharingTaskManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE75CD6F2549E9BE0064A733 /* SharingTaskManager.swift */; };
 		FE78E30E2691ABF4008131A1 /* MeetController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE78E30D2691ABF4008131A1 /* MeetController.swift */; };
 		FE78E3102694829F008131A1 /* MeetManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE78E30F2694829F008131A1 /* MeetManager.swift */; };
+		FE78E31226999306008131A1 /* ContactSuggestionField.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE78E31126999306008131A1 /* ContactSuggestionField.swift */; };
+		FE78E3142699ACE0008131A1 /* MultiContactSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE78E3132699ACE0008131A1 /* MultiContactSelectionView.swift */; };
+		FE78E316269A1151008131A1 /* CreateMeetingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE78E315269A1151008131A1 /* CreateMeetingController.swift */; };
+		FE78E318269A2568008131A1 /* MeetEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE78E317269A2568008131A1 /* MeetEventHandler.swift */; };
 		FE7F876C2343D99300254AF2 /* CustomScroller.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7F876B2343D99300254AF2 /* CustomScroller.swift */; };
 		FE82A72D268E5E550049C844 /* Collection+calculateChanges.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE82A72C268E5E550049C844 /* Collection+calculateChanges.swift */; };
 		FE834882268A1C08000C171A /* DropDownButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE834881268A1C08000C171A /* DropDownButton.swift */; };
@@ -393,6 +397,10 @@
 		FE75CD6F2549E9BE0064A733 /* SharingTaskManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharingTaskManager.swift; sourceTree = "<group>"; };
 		FE78E30D2691ABF4008131A1 /* MeetController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetController.swift; sourceTree = "<group>"; };
 		FE78E30F2694829F008131A1 /* MeetManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetManager.swift; sourceTree = "<group>"; };
+		FE78E31126999306008131A1 /* ContactSuggestionField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactSuggestionField.swift; sourceTree = "<group>"; };
+		FE78E3132699ACE0008131A1 /* MultiContactSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiContactSelectionView.swift; sourceTree = "<group>"; };
+		FE78E315269A1151008131A1 /* CreateMeetingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateMeetingController.swift; sourceTree = "<group>"; };
+		FE78E317269A2568008131A1 /* MeetEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetEventHandler.swift; sourceTree = "<group>"; };
 		FE7F876B2343D99300254AF2 /* CustomScroller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomScroller.swift; sourceTree = "<group>"; };
 		FE82A72C268E5E550049C844 /* Collection+calculateChanges.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Collection+calculateChanges.swift"; sourceTree = "<group>"; };
 		FE834881268A1C08000C171A /* DropDownButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropDownButton.swift; sourceTree = "<group>"; };
@@ -573,6 +581,7 @@
 				FEEDFCBE2524A8EC00CEB43D /* ExternalServiceDiscoveryModule_Service_extension.swift */,
 				FE78E30D2691ABF4008131A1 /* MeetController.swift */,
 				FE78E30F2694829F008131A1 /* MeetManager.swift */,
+				FE78E315269A1151008131A1 /* CreateMeetingController.swift */,
 			);
 			path = voip;
 			sourceTree = "<group>";
@@ -708,6 +717,7 @@
 				FE4D21372223FEE70058B662 /* PEPBookmarksModule_extension.swift */,
 				FE9CB7012388382A008F1049 /* BlockedEventHandler.swift */,
 				FE890D39240153E200107437 /* MixEventHandler.swift */,
+				FE78E317269A2568008131A1 /* MeetEventHandler.swift */,
 			);
 			path = service;
 			sourceTree = "<group>";
@@ -852,6 +862,8 @@
 				FEA2996F25B9EDC50021865E /* SuggestionsWindowController.swift */,
 				FEA2997525B9EE280021865E /* SuggestionsHighlightingView.swift */,
 				FEA2997925B9EE570021865E /* SuggestionsContentView.swift */,
+				FE78E31126999306008131A1 /* ContactSuggestionField.swift */,
+				FE78E3132699ACE0008131A1 /* MultiContactSelectionView.swift */,
 			);
 			path = suggestions;
 			sourceTree = "<group>";
@@ -1241,6 +1253,7 @@
 				FED2A963260292B6008828E4 /* ConversationAttachment.swift in Sources */,
 				FEDE6AFC21455A2B0019170A /* RosterViewController.swift in Sources */,
 				FE14044925601F9300BE77E8 /* Conversation.swift in Sources */,
+				FE78E3142699ACE0008131A1 /* MultiContactSelectionView.swift in Sources */,
 				FE87C7752285736200B0B64C /* XMLEntryViewController.swift in Sources */,
 				FEC336F9240EBDEF00EC1A0D /* OpenChannelViewController.swift in Sources */,
 				FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */,
@@ -1300,6 +1313,7 @@
 				FE30309A24438ED6003B9D76 /* MessageTextView.swift in Sources */,
 				FE336EAE2570150F0088DA83 /* ConversationBase.swift in Sources */,
 				FE3AA0CD2154069D001667A9 /* ChatsListGroupGroupchat.swift in Sources */,
+				FE78E318269A2568008131A1 /* MeetEventHandler.swift in Sources */,
 				FE1A34DC2592144A0058B86A /* PresenceStore.swift in Sources */,
 				FED7AEC521417328001E164B /* AvatarStore.swift in Sources */,
 				FE75CD6C2546FC820064A733 /* HTTPFileUploadHelper.swift in Sources */,
@@ -1364,6 +1378,7 @@
 				FED2A964260292B6008828E4 /* ConversationInvitation.swift in Sources */,
 				FE87C76F22834E0B00B0B64C /* XMLConsoleViewController.swift in Sources */,
 				FEA3D128233D0A10000BD20A /* TasksQueue.swift in Sources */,
+				FE78E31226999306008131A1 /* ContactSuggestionField.swift in Sources */,
 				FED7AEBF214035C0001E164B /* AccountsListController.swift in Sources */,
 				FEF8BED2216A6761001DA755 /* InviteToGroupchatController.swift in Sources */,
 				FEA2997625B9EE280021865E /* SuggestionsHighlightingView.swift in Sources */,
@@ -1395,6 +1410,7 @@
 				FEA2996C25B9ED9F0021865E /* SuggestionItemView.swift in Sources */,
 				FE1404552560226500BE77E8 /* Channel.swift in Sources */,
 				FE5C6B29228B34B9003DAB30 /* SelectAdHocCommandController.swift in Sources */,
+				FE78E316269A1151008131A1 /* CreateMeetingController.swift in Sources */,
 				FE6E6BFB21384D5F003B1696 /* XmppService.swift in Sources */,
 				FE9E069A23A3976500952E9C /* DownloadManager.swift in Sources */,
 				FEA2997E25B9F5930021865E /* ChatsListSuggestionItemView.swift in Sources */,

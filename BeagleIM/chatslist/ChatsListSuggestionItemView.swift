@@ -22,7 +22,7 @@
 import AppKit
 import Combine
 
-class ChatsListSuggestionItemView: SuggestionItemView<DisplayableIdWithKeyProtocol> {
+class ChatsListSuggestionItemView: SuggestionItemView<ContactSuggestionField.Item> {
     
     let avatar: AvatarView;
     let label: NSTextField;
@@ -30,25 +30,42 @@ class ChatsListSuggestionItemView: SuggestionItemView<DisplayableIdWithKeyProtoc
     
     private var cancellables: Set<AnyCancellable> = [];
     
-    override var item: DisplayableIdWithKeyProtocol? {
+    private let avatarHeightConstraint: NSLayoutConstraint;
+    
+    var avatarSize: CGFloat {
+        get {
+            return avatarHeightConstraint.constant;
+        }
+        set {
+            avatarHeightConstraint.constant = newValue;
+        }
+    }
+    
+    override var item: ContactSuggestionField.Item? {
         didSet {
             cancellables.removeAll();
-            item?.avatarPublisher.assign(to: \.avatar, on: self.avatar).store(in: &cancellables);
-            item?.displayNamePublisher.assign(to: \.stringValue, on: self.label).store(in: &cancellables);
-            item?.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: self.avatar).store(in: &cancellables);
+            if let displayable = item?.displayableId {
+                displayable.avatarPublisher.assign(to: \.avatar, on: self.avatar).store(in: &cancellables);
+                displayable.displayNamePublisher.assign(to: \.stringValue, on: self.label).store(in: &cancellables);
+                displayable.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: self.avatar).store(in: &cancellables);
+            } else {
+                self.avatar.avatar = nil;
+                self.avatar.name = item?.jid.stringValue;
+                self.label.stringValue = item?.jid.stringValue ?? "";
+            }
         }
     }
     
     override var itemHeight: Int {
-        return 44;
+        return Int(avatarSize) + 8;
     }
     
     required init() {
         avatar = AvatarView(frame: NSRect(origin: .zero, size: NSSize(width: 40, height: 40)));
-        avatar.appearance = NSAppearance(named: .darkAqua);
+//        avatar.appearance = NSAppearance(named: .darkAqua);
 
         label = NSTextField(labelWithString: "");
-        label.appearance = NSAppearance(named: .darkAqua);
+//        label.appearance = NSAppearance(named: .darkAqua);
         label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium);
         label.cell?.truncatesLastVisibleLine = true;
         label.cell?.lineBreakMode = .byTruncatingTail;
@@ -64,9 +81,10 @@ class ChatsListSuggestionItemView: SuggestionItemView<DisplayableIdWithKeyProtoc
         stack.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
         stack.visibilityPriority(for: label);
         stack.edgeInsets = NSEdgeInsets(top: 4, left: 4, bottom: 4, right: 4);
+        self.avatarHeightConstraint = avatar.heightAnchor.constraint(equalToConstant: 36);
         NSLayoutConstraint.activate([
-            avatar.heightAnchor.constraint(equalToConstant: 36),
-            avatar.widthAnchor.constraint(equalToConstant: 36),
+            avatarHeightConstraint,
+            avatar.heightAnchor.constraint(equalTo: avatar.widthAnchor),
             avatar.heightAnchor.constraint(equalTo: stack.heightAnchor, multiplier: 1.0, constant: -4 * 2),
             label.trailingAnchor.constraint(equalTo: stack.trailingAnchor, constant: -4)
         ])

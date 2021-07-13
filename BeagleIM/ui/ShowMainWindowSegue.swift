@@ -50,3 +50,18 @@ class JoinChannelWindowSegue: NSStoryboardSegue {
     }
 
 }
+
+
+class CreateMeetingWindowSegue: NSStoryboardSegue {
+
+    override func perform() {
+        if let mainWindow = (NSApplication.shared.delegate as? AppDelegate)?.mainWindowController {
+            mainWindow.showWindow(self);
+            if let window = mainWindow.window {
+                let sheetWindow = NSWindow(contentViewController: destinationController as! NSViewController);
+                window.beginSheet(sheetWindow, completionHandler: nil);
+            }
+        }
+    }
+
+}

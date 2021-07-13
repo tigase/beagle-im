@@ -203,7 +203,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         })
         
         NSApp.mainMenu?.item(withTitle: "Window")?.submenu?.delegate = self;
-                
+        NSApp.mainMenu?.item(withTitle: "File")?.submenu?.delegate = self;
+        
         for windowName in UserDefaults.standard.stringArray(forKey: "openedWindows") ?? ["chats"] {
             switch windowName {
             case "chats":
@@ -298,6 +299,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     }
     
     func menuNeedsUpdate(_ menu: NSMenu) {
+        if let meetItem = menu.item(withTitle: "Create meeting...") {
+            meetItem.isHidden = (!NSEvent.modifierFlags.contains(.option)) && (!Settings.showAdvancedXmppFeatures);
+        }
         if let xmlConsoleItem = menu.item(withTitle: "XML Console") {
             xmlConsoleItem.isHidden = (!NSEvent.modifierFlags.contains(.option)) && (!Settings.showAdvancedXmppFeatures);
             let accountsMenu = NSMenu(title: "XML Console");

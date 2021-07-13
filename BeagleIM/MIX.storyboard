@@ -991,11 +991,11 @@ Gw
             <objects>
                 <viewController id="uPZ-q5-acP" customClass="InviteToChannelViewControllerController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="lxV-Vl-eay">
-                        <rect key="frame" x="0.0" y="0.0" width="450" height="184"/>
+                        <rect key="frame" x="0.0" y="0.0" width="374" height="380"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="wc1-OI-hz2">
-                                <rect key="frame" x="20" y="124" width="40" height="40"/>
+                                <rect key="frame" x="20" y="320" width="40" height="40"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="40" id="Ks5-iB-ofJ"/>
                                     <constraint firstAttribute="width" constant="40" id="ZOS-39-u6s"/>
@@ -1003,26 +1003,15 @@ Gw
                                 <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSEveryone" id="dm2-bT-VuH"/>
                             </imageView>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="XgY-Wp-AIs">
-                                <rect key="frame" x="66" y="135" width="122" height="19"/>
+                                <rect key="frame" x="66" y="331" width="122" height="19"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Invite to channel" id="6zK-gN-sNF">
                                     <font key="font" metaFont="systemSemibold" size="15"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
-                            <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="5sc-yF-rit">
-                                <rect key="frame" x="20" y="50" width="410" height="66"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="66" id="lmq-DX-5CV"/>
-                                </constraints>
-                                <textFieldCell key="cell" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Enter comma separated list of contact names or JIDs to invite them" drawsBackground="YES" id="7wI-bW-87u">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="FXA-nd-FDW">
-                                <rect key="frame" x="370" y="13" width="67" height="32"/>
+                                <rect key="frame" x="294" y="13" width="67" height="32"/>
                                 <buttonCell key="cell" type="push" title="Invite" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="vu1-c0-Fqt">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -1032,7 +1021,7 @@ Gw
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Eby-1G-poe">
-                                <rect key="frame" x="297" y="13" width="76" height="32"/>
+                                <rect key="frame" x="221" y="13" width="76" height="32"/>
                                 <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="8HP-UV-1E7">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -1044,30 +1033,33 @@ Gw
                                     <action selector="cancelClicked:" target="uPZ-q5-acP" id="99G-K3-U1A"/>
                                 </connections>
                             </button>
+                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="ZXT-p2-eV6" customClass="MultiContactSelectionView" customModule="BeagleIM" customModuleProvider="target">
+                                <rect key="frame" x="20" y="60" width="334" height="252"/>
+                            </customView>
                         </subviews>
                         <constraints>
                             <constraint firstItem="FXA-nd-FDW" firstAttribute="leading" secondItem="Eby-1G-poe" secondAttribute="trailing" constant="11" id="2L7-zF-hvV"/>
                             <constraint firstItem="Eby-1G-poe" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="lxV-Vl-eay" secondAttribute="leading" constant="20" id="5Lk-mz-lmU"/>
                             <constraint firstItem="XgY-Wp-AIs" firstAttribute="centerY" secondItem="wc1-OI-hz2" secondAttribute="centerY" id="6Ez-Tm-Pim"/>
-                            <constraint firstAttribute="trailing" secondItem="5sc-yF-rit" secondAttribute="trailing" constant="20" id="6KV-et-IMH"/>
                             <constraint firstItem="XgY-Wp-AIs" firstAttribute="leading" secondItem="wc1-OI-hz2" secondAttribute="trailing" constant="8" id="Bts-Ma-ElW"/>
-                            <constraint firstItem="FXA-nd-FDW" firstAttribute="top" secondItem="5sc-yF-rit" secondAttribute="bottom" constant="10" id="OzV-mk-FfK"/>
+                            <constraint firstAttribute="trailing" secondItem="ZXT-p2-eV6" secondAttribute="trailing" constant="20" symbolic="YES" id="EQ5-WT-VeT"/>
                             <constraint firstAttribute="bottom" secondItem="FXA-nd-FDW" secondAttribute="bottom" constant="20" id="SDS-wf-Sh3"/>
-                            <constraint firstItem="5sc-yF-rit" firstAttribute="top" secondItem="wc1-OI-hz2" secondAttribute="bottom" constant="8" id="XbR-Xo-TZM"/>
                             <constraint firstAttribute="trailing" secondItem="FXA-nd-FDW" secondAttribute="trailing" constant="20" id="YFe-pb-Mcq"/>
-                            <constraint firstItem="5sc-yF-rit" firstAttribute="leading" secondItem="lxV-Vl-eay" secondAttribute="leading" constant="20" id="dVV-1f-qZd"/>
+                            <constraint firstItem="FXA-nd-FDW" firstAttribute="top" secondItem="ZXT-p2-eV6" secondAttribute="bottom" constant="20" symbolic="YES" id="eBd-dz-eFP"/>
                             <constraint firstItem="wc1-OI-hz2" firstAttribute="top" secondItem="lxV-Vl-eay" secondAttribute="top" constant="20" id="fCl-Bc-7jf"/>
+                            <constraint firstItem="ZXT-p2-eV6" firstAttribute="top" secondItem="wc1-OI-hz2" secondAttribute="bottom" constant="8" symbolic="YES" id="gaB-TO-VHk"/>
+                            <constraint firstItem="ZXT-p2-eV6" firstAttribute="leading" secondItem="lxV-Vl-eay" secondAttribute="leading" constant="20" symbolic="YES" id="i4g-N5-Gsz"/>
                             <constraint firstItem="wc1-OI-hz2" firstAttribute="leading" secondItem="lxV-Vl-eay" secondAttribute="leading" constant="20" id="iZi-EH-dxm"/>
                             <constraint firstItem="Eby-1G-poe" firstAttribute="centerY" secondItem="FXA-nd-FDW" secondAttribute="centerY" id="rWk-KC-OgY"/>
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="contactsField" destination="5sc-yF-rit" id="MLL-56-AUF"/>
+                        <outlet property="contactSelectionView" destination="ZXT-p2-eV6" id="7Gn-L6-HEN"/>
                     </connections>
                 </viewController>
                 <customObject id="woA-2Q-eoA" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1033" y="921"/>
+            <point key="canvasLocation" x="978" y="738"/>
         </scene>
     </scenes>
     <resources>

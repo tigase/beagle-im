@@ -146,7 +146,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         room.$affiliation.receive(on: DispatchQueue.main).assign(to: \.affiliation, on: self).store(in: &cancellables);
         room.$role.receive(on: DispatchQueue.main).assign(to: \.role, on: self).store(in: &cancellables);
         room.$features.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] _ in self?.refreshPermissions(); }).store(in: &cancellables);
-        room.$isOMEMOSupported.sink(receiveValue: { [weak self] _ in
+        room.$isOMEMOSupported.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] _ in
             self?.refreshPermissions();
         }).store(in: &cancellables);
         jidView.stringValue = room.roomJid.stringValue;

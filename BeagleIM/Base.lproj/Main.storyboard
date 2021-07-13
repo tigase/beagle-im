@@ -83,6 +83,12 @@
                                                 <segue destination="B8D-0N-5wS" kind="custom" customClass="JoinChannelWindowSegue" customModule="BeagleIM" customModuleProvider="target" id="Rll-kG-u0S"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem title="Create meeting..." id="YIK-58-5aR">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <segue destination="dR5-9V-gas" kind="custom" customClass="CreateMeetingWindowSegue" customModule="BeagleIM" customModuleProvider="target" id="PPf-ug-TfN"/>
+                                            </connections>
+                                        </menuItem>
                                         <menuItem title="Close window" keyEquivalent="w" id="DVo-aG-piG">
                                             <connections>
                                                 <action selector="performClose:" target="Ady-hI-5gd" id="HmO-Ls-i7Q"/>
@@ -415,6 +421,14 @@ CA
             </objects>
             <point key="canvasLocation" x="-205" y="-189"/>
         </scene>
+        <!--CreateMeetingWindowController-->
+        <scene sceneID="WwM-7w-QsY">
+            <objects>
+                <controllerPlaceholder storyboardName="VoIP" referencedIdentifier="CreateMeetingWindowController" id="dR5-9V-gas" sceneMemberID="viewController"/>
+                <customObject id="FUo-sJ-5PW" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="93" y="-46"/>
+        </scene>
         <!--Chats Window-->
         <scene sceneID="R2V-B0-nI4">
             <objects>
@@ -469,7 +483,7 @@ CA
                         <rect key="frame" x="0.0" y="0.0" width="323" height="656"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <searchField wantsLayer="YES" verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Yn-Fz-PdY">
+                            <searchField wantsLayer="YES" verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Yn-Fz-PdY" customClass="ContactSuggestionField" customModule="BeagleIM" customModuleProvider="target">
                                 <rect key="frame" x="10" y="610" width="303" height="22"/>
                                 <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" placeholderString="Chat with.." usesSingleLineMode="YES" bezelStyle="round" id="0LB-vL-6OK">
                                     <font key="font" metaFont="system"/>
@@ -1401,7 +1415,7 @@ AAAAAAEGA
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Q7w-ER-stg">
-                                <rect key="frame" x="18" y="333" width="109" height="16"/>
+                                <rect key="frame" x="18" y="326" width="109" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Open groupchat" id="A8X-bI-x0h">
                                     <font key="font" metaFont="systemBold"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -1409,7 +1423,7 @@ AAAAAAEGA
                                 </textFieldCell>
                             </textField>
                             <button horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="0XX-Ed-PIO">
-                                <rect key="frame" x="406" y="328" width="28" height="26"/>
+                                <rect key="frame" x="406" y="321" width="28" height="26"/>
                                 <buttonCell key="cell" type="disclosure" bezelStyle="roundedDisclosure" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="K7f-Za-GPk">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES" changeBackground="YES" changeGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -1419,7 +1433,7 @@ AAAAAAEGA
                                 </connections>
                             </button>
                             <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="UNN-jB-M1F">
-                                <rect key="frame" x="17" y="301" width="417" height="25"/>
+                                <rect key="frame" x="17" y="294" width="417" height="25"/>
                                 <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" pullsDown="YES" id="XJd-8J-bvH">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="menu"/>
@@ -1430,7 +1444,7 @@ AAAAAAEGA
                                 </connections>
                             </popUpButton>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="3xe-hD-Jl4">
-                                <rect key="frame" x="20" y="276" width="410" height="21"/>
+                                <rect key="frame" x="20" y="269" width="410" height="21"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Enter JID of conference component" drawsBackground="YES" id="vnL-pc-fd7">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -1438,7 +1452,7 @@ AAAAAAEGA
                                 </textFieldCell>
                             </textField>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="PJf-lh-cWp">
-                                <rect key="frame" x="20" y="247" width="410" height="21"/>
+                                <rect key="frame" x="20" y="240" width="410" height="21"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Find room or enter new name to create room" drawsBackground="YES" id="TWr-Qh-l4X">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -1446,7 +1460,7 @@ AAAAAAEGA
                                 </textFieldCell>
                             </textField>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="KiB-rI-rmC">
-                                <rect key="frame" x="20" y="218" width="410" height="21"/>
+                                <rect key="frame" x="20" y="211" width="410" height="21"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" placeholderString="Nickname (required)" drawsBackground="YES" id="xYL-dD-FdP">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -1454,13 +1468,13 @@ AAAAAAEGA
                                 </textFieldCell>
                             </textField>
                             <scrollView autohidesScrollers="YES" horizontalLineScroll="39" horizontalPageScroll="10" verticalLineScroll="39" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AnO-yI-1ul">
-                                <rect key="frame" x="0.0" y="47" width="450" height="163"/>
+                                <rect key="frame" x="0.0" y="47" width="450" height="156"/>
                                 <clipView key="contentView" drawsBackground="NO" id="bct-ik-0Nb">
-                                    <rect key="frame" x="1" y="1" width="448" height="161"/>
+                                    <rect key="frame" x="1" y="1" width="448" height="154"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="37" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" id="2D2-3c-csM">
-                                            <rect key="frame" x="0.0" y="0.0" width="448" height="161"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="448" height="154"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <size key="intercellSpacing" width="3" height="2"/>
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1531,7 +1545,7 @@ AAAAAAEGA
                                 </scroller>
                             </scrollView>
                             <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="kWE-uo-8q8">
-                                <rect key="frame" x="209" y="113" width="32" height="32"/>
+                                <rect key="frame" x="209" y="109" width="32" height="32"/>
                             </progressIndicator>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="hBx-ct-NxP">
                                 <rect key="frame" x="377" y="10" width="60" height="32"/>
@@ -2300,7 +2314,7 @@ Gw
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView identifier="Open1On1ChatItemView" id="kJJ-cr-DKB" customClass="Open1On1ChatItemView" customModule="BeagleIM" customModuleProvider="target">
-                                                            <rect key="frame" x="1" y="1" width="450" height="34"/>
+                                                            <rect key="frame" x="11" y="1" width="450" height="34"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <view horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="svP-Fz-ERm" customClass="AvatarViewWithStatus" customModule="BeagleIM" customModuleProvider="target">
@@ -2611,12 +2625,12 @@ AAAAAAEGA
                             <splitView arrangesAllSubviews="NO" dividerStyle="thin" vertical="YES" translatesAutoresizingMaskIntoConstraints="NO" id="UFg-qL-DYr">
                                 <rect key="frame" x="0.0" y="30" width="290" height="263"/>
                                 <subviews>
-                                    <customView id="Zah-Im-z0B">
+                                    <customView misplaced="YES" id="Zah-Im-z0B">
                                         <rect key="frame" x="0.0" y="0.0" width="289" height="263"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <subviews>
                                             <containerView translatesAutoresizingMaskIntoConstraints="NO" id="B0G-N7-Ff8">
-                                                <rect key="frame" x="0.0" y="0.0" width="289" height="263"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="184" height="263"/>
                                                 <connections>
                                                     <segue destination="FAI-Oi-HUZ" kind="embed" id="dfU-FL-rSC"/>
                                                 </connections>
@@ -2629,14 +2643,14 @@ AAAAAAEGA
                                             <constraint firstAttribute="trailing" secondItem="B0G-N7-Ff8" secondAttribute="trailing" id="vtF-kH-HMl"/>
                                         </constraints>
                                     </customView>
-                                    <customView id="VJJ-Aj-NHT">
+                                    <customView misplaced="YES" id="VJJ-Aj-NHT">
                                         <rect key="frame" x="290" y="0.0" width="0.0" height="263"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <subviews>
                                             <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="30" horizontalPageScroll="10" verticalLineScroll="30" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qPg-RH-BHf">
-                                                <rect key="frame" x="0.0" y="0.0" width="10" height="263"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="105" height="263"/>
                                                 <clipView key="contentView" copiesOnScroll="NO" id="KfR-1C-rOz">
-                                                    <rect key="frame" x="0.0" y="0.0" width="10" height="263"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="105" height="263"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <subviews>
                                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="none" columnReordering="NO" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" typeSelect="NO" enabled="NO" rowHeight="28" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" id="9Zj-K6-yAz" customClass="GroupchatParticipantsTableView" customModule="BeagleIM" customModuleProvider="target">
@@ -2659,7 +2673,7 @@ AAAAAAEGA
                                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
                                                                     <prototypeCellViews>
                                                                         <tableCellView identifier="GroupchatParticipantCellView" id="iPy-qc-Xa9" customClass="GroupchatParticipantCellView" customModule="BeagleIM" customModuleProvider="target">
-                                                                            <rect key="frame" x="11" y="1" width="178" height="28"/>
+                                                                            <rect key="frame" x="11" y="1" width="83" height="28"/>
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                             <subviews>
                                                                                 <customView translatesAutoresizingMaskIntoConstraints="NO" id="kMb-GZ-lma" customClass="AvatarViewWithStatus" customModule="BeagleIM" customModuleProvider="target">
@@ -2821,7 +2835,7 @@ AAAAAAEGA
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView identifier="ManageAffiliationsColumnJidView" id="4zM-6y-hAy">
-                                                            <rect key="frame" x="1" y="1" width="233" height="17"/>
+                                                            <rect key="frame" x="11" y="1" width="233" height="17"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cUI-kb-mw9">
@@ -2852,7 +2866,7 @@ AAAAAAEGA
                                                     </textFieldCell>
                                                     <prototypeCellViews>
                                                         <tableCellView identifier="ManageAffiliationsColumnAffiliationView" id="MkW-Zn-Aho">
-                                                            <rect key="frame" x="237" y="1" width="97" height="21"/>
+                                                            <rect key="frame" x="247" y="1" width="97" height="21"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <popUpButton translatesAutoresizingMaskIntoConstraints="NO" id="fYn-BL-hfM">
@@ -2998,11 +3012,11 @@ Gw
             <objects>
                 <viewController id="weA-EI-UP9" customClass="InviteToGroupchatController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="o0F-YI-8z1">
-                        <rect key="frame" x="0.0" y="0.0" width="450" height="184"/>
+                        <rect key="frame" x="0.0" y="0.0" width="366" height="425"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="XVC-Wl-Ky7">
-                                <rect key="frame" x="20" y="124" width="40" height="40"/>
+                                <rect key="frame" x="20" y="365" width="40" height="40"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="40" id="u4d-JT-eZz"/>
                                     <constraint firstAttribute="width" constant="40" id="xJw-te-tyS"/>
@@ -3010,26 +3024,15 @@ Gw
                                 <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSEveryone" id="Uhm-87-yMU"/>
                             </imageView>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="dPV-84-sLa">
-                                <rect key="frame" x="66" y="135" width="167" height="19"/>
+                                <rect key="frame" x="66" y="376" width="167" height="19"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Invite to the groupchat" id="cxt-am-P6A">
                                     <font key="font" metaFont="systemSemibold" size="15"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
-                            <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="5Mu-x4-COe">
-                                <rect key="frame" x="20" y="50" width="410" height="66"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="66" id="Pu9-w9-Vkw"/>
-                                </constraints>
-                                <textFieldCell key="cell" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Enter comma separated list of contact names or JIDs to invite them" drawsBackground="YES" id="ja1-QT-1na">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kky-q9-ExY">
-                                <rect key="frame" x="370" y="13" width="67" height="32"/>
+                                <rect key="frame" x="286" y="13" width="67" height="32"/>
                                 <buttonCell key="cell" type="push" title="Invite" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="ige-W9-roq">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -3039,7 +3042,7 @@ Gw
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="DyI-39-Inf">
-                                <rect key="frame" x="297" y="13" width="76" height="32"/>
+                                <rect key="frame" x="213" y="13" width="76" height="32"/>
                                 <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="so1-nz-A4R">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -3051,30 +3054,33 @@ Gw
                                     <action selector="cancelClicked:" target="weA-EI-UP9" id="U8K-LQ-dlQ"/>
                                 </connections>
                             </button>
+                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="Vdw-Px-GCs" customClass="MultiContactSelectionView" customModule="BeagleIM" customModuleProvider="target">
+                                <rect key="frame" x="20" y="60" width="326" height="297"/>
+                            </customView>
                         </subviews>
                         <constraints>
                             <constraint firstItem="DyI-39-Inf" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="o0F-YI-8z1" secondAttribute="leading" constant="20" id="2PH-A4-lN4"/>
-                            <constraint firstItem="kky-q9-ExY" firstAttribute="top" secondItem="5Mu-x4-COe" secondAttribute="bottom" constant="10" id="3XM-qB-XcT"/>
-                            <constraint firstItem="5Mu-x4-COe" firstAttribute="leading" secondItem="o0F-YI-8z1" secondAttribute="leading" constant="20" id="5Ao-oz-L5I"/>
                             <constraint firstItem="kky-q9-ExY" firstAttribute="leading" secondItem="DyI-39-Inf" secondAttribute="trailing" constant="11" id="5xm-Vo-zXl"/>
-                            <constraint firstAttribute="trailing" secondItem="5Mu-x4-COe" secondAttribute="trailing" constant="20" id="BI2-Nf-iIB"/>
                             <constraint firstItem="XVC-Wl-Ky7" firstAttribute="leading" secondItem="o0F-YI-8z1" secondAttribute="leading" constant="20" id="OcK-S1-dtm"/>
                             <constraint firstItem="XVC-Wl-Ky7" firstAttribute="top" secondItem="o0F-YI-8z1" secondAttribute="top" constant="20" id="PoO-RC-sHf"/>
                             <constraint firstItem="dPV-84-sLa" firstAttribute="leading" secondItem="XVC-Wl-Ky7" secondAttribute="trailing" constant="8" id="S9e-DB-eEV"/>
                             <constraint firstAttribute="bottom" secondItem="kky-q9-ExY" secondAttribute="bottom" constant="20" id="TUc-Jp-5Ic"/>
                             <constraint firstItem="dPV-84-sLa" firstAttribute="centerY" secondItem="XVC-Wl-Ky7" secondAttribute="centerY" id="XLi-e8-ube"/>
-                            <constraint firstItem="5Mu-x4-COe" firstAttribute="top" secondItem="XVC-Wl-Ky7" secondAttribute="bottom" constant="8" id="Z3t-xC-Gj9"/>
+                            <constraint firstItem="Vdw-Px-GCs" firstAttribute="leading" secondItem="o0F-YI-8z1" secondAttribute="leading" constant="20" symbolic="YES" id="Z4T-VN-UdE"/>
                             <constraint firstAttribute="trailing" secondItem="kky-q9-ExY" secondAttribute="trailing" constant="20" id="bY2-70-Ryq"/>
+                            <constraint firstItem="kky-q9-ExY" firstAttribute="top" secondItem="Vdw-Px-GCs" secondAttribute="bottom" constant="20" symbolic="YES" id="gVO-K3-7ut"/>
                             <constraint firstItem="DyI-39-Inf" firstAttribute="centerY" secondItem="kky-q9-ExY" secondAttribute="centerY" id="jGX-oQ-GE4"/>
+                            <constraint firstItem="Vdw-Px-GCs" firstAttribute="top" secondItem="XVC-Wl-Ky7" secondAttribute="bottom" constant="8" symbolic="YES" id="kuQ-cV-YjP"/>
+                            <constraint firstAttribute="trailing" secondItem="Vdw-Px-GCs" secondAttribute="trailing" constant="20" symbolic="YES" id="ygQ-bU-3Qf"/>
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="contactsField" destination="5Mu-x4-COe" id="N2h-qB-gSU"/>
+                        <outlet property="contactSelectionView" destination="Vdw-Px-GCs" id="4GQ-HJ-KMO"/>
                     </connections>
                 </viewController>
                 <customObject id="Sdn-Lh-ooZ" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1696" y="1443"/>
+            <point key="canvasLocation" x="1650" y="1448.5"/>
         </scene>
         <!--PreferencesWindowController-->
         <scene sceneID="PAz-I7-wsz">

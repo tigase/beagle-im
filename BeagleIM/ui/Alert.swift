@@ -33,6 +33,8 @@ class Alert {
     
     var styleMask: NSWindow.StyleMask?;
     
+    private var windowController: NSWindowController?;
+    
     @discardableResult
     func addButton(withTitle title: String) -> NSButton {
         let button = NSButton(title: title, target: nil, action: nil);
@@ -93,6 +95,11 @@ class Alert {
         
         windowController.showWindow(self);
         windowController.window?.makeKeyAndOrderFront(nil);
+        self.windowController = windowController;
+    }
+    
+    func dismiss() {
+        windowController?.window?.orderOut(self);
     }
     
     enum Item {

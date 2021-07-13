@@ -49,7 +49,7 @@ class XmppService {
  
     fileprivate let eventHandlers: [XmppServiceEventHandler] = [MessageEventHandler.instance];
     
-    let extensions: [XmppServiceExtension] = [BlockedEventHandler.instance, PresenceRosterEventHandler.instance, AvatarEventHandler.instance, MixEventHandler.instance, MucEventHandler.instance];
+    let extensions: [XmppServiceExtension] = [BlockedEventHandler.instance, PresenceRosterEventHandler.instance, AvatarEventHandler.instance, MixEventHandler.instance, MucEventHandler.instance, MeetEventHandler.instance];
     
     var clients: [BareJID: XMPPClient] {
         get {

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="16096"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="18122"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -27,6 +27,111 @@
                 <customObject id="c7J-ri-bWA" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-483" y="148.5"/>
+        </scene>
+        <!--Create Meeting Controller-->
+        <scene sceneID="ga5-EF-oys">
+            <objects>
+                <viewController storyboardIdentifier="CreateMeetingWindowController" id="89k-Hr-EIM" customClass="CreateMeetingController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="f7m-12-T1q">
+                        <rect key="frame" x="0.0" y="0.0" width="419" height="423"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="xLt-vq-e6l">
+                                <rect key="frame" x="20" y="363" width="40" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="40" id="F0W-tE-5sw"/>
+                                    <constraint firstAttribute="height" constant="40" id="czV-Xa-tNm"/>
+                                </constraints>
+                                <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSEveryone" id="Aq9-pt-2fv"/>
+                            </imageView>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="PhB-P8-Gfg">
+                                <rect key="frame" x="66" y="374" width="127" height="19"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Create a meeting" id="XPe-Rj-sU8">
+                                    <font key="font" metaFont="systemSemibold" size="15"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="SBb-me-qvm">
+                                <rect key="frame" x="17" y="319" width="386" height="25"/>
+                                <popUpButtonCell key="cell" type="push" title="Item 1" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="LMW-MV-OBc" id="A8i-UQ-ukr">
+                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="menu"/>
+                                    <menu key="menu" id="5Uf-63-kJ8">
+                                        <items>
+                                            <menuItem title="Item 1" state="on" id="LMW-MV-OBc"/>
+                                            <menuItem title="Item 2" id="J7s-o7-Ev2"/>
+                                            <menuItem title="Item 3" id="opj-fc-VjT"/>
+                                        </items>
+                                    </menu>
+                                </popUpButtonCell>
+                            </popUpButton>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ywP-Uh-n9j">
+                                <rect key="frame" x="282" y="13" width="124" height="32"/>
+                                <buttonCell key="cell" type="push" title="Create &amp; Invite" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="7Gg-ab-wi3">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="createAndInviteClicked:" target="89k-Hr-EIM" id="qhc-Wk-Duq"/>
+                                </connections>
+                            </button>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gJj-kb-K73">
+                                <rect key="frame" x="209" y="13" width="76" height="32"/>
+                                <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="G3n-aI-UbD">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="cancelClicked:" target="89k-Hr-EIM" id="Q4U-07-qz0"/>
+                                </connections>
+                            </button>
+                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="cHR-YO-Om2" customClass="MultiContactSelectionView" customModule="BeagleIM" customModuleProvider="target">
+                                <rect key="frame" x="20" y="60" width="379" height="255"/>
+                                <subviews>
+                                    <progressIndicator maxValue="100" displayedWhenStopped="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="NqC-mW-drC">
+                                        <rect key="frame" x="174" y="112" width="32" height="32"/>
+                                    </progressIndicator>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="NqC-mW-drC" firstAttribute="centerY" secondItem="cHR-YO-Om2" secondAttribute="centerY" id="KL4-mS-ADp"/>
+                                    <constraint firstItem="NqC-mW-drC" firstAttribute="centerX" secondItem="cHR-YO-Om2" secondAttribute="centerX" id="yPX-jd-1Zk"/>
+                                </constraints>
+                            </customView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="xLt-vq-e6l" firstAttribute="top" secondItem="f7m-12-T1q" secondAttribute="top" constant="20" symbolic="YES" id="4zG-JL-OjT"/>
+                            <constraint firstItem="PhB-P8-Gfg" firstAttribute="centerY" secondItem="xLt-vq-e6l" secondAttribute="centerY" id="68L-fb-b5a"/>
+                            <constraint firstAttribute="trailing" secondItem="ywP-Uh-n9j" secondAttribute="trailing" constant="20" symbolic="YES" id="8Ny-wU-Nfh"/>
+                            <constraint firstItem="cHR-YO-Om2" firstAttribute="top" secondItem="SBb-me-qvm" secondAttribute="bottom" constant="8" symbolic="YES" id="92A-NS-dEb"/>
+                            <constraint firstItem="PhB-P8-Gfg" firstAttribute="leading" secondItem="xLt-vq-e6l" secondAttribute="trailing" constant="8" id="CQY-Fd-piL"/>
+                            <constraint firstItem="ywP-Uh-n9j" firstAttribute="leading" secondItem="gJj-kb-K73" secondAttribute="trailing" constant="11" id="F8v-Di-cke"/>
+                            <constraint firstItem="xLt-vq-e6l" firstAttribute="leading" secondItem="f7m-12-T1q" secondAttribute="leading" constant="20" symbolic="YES" id="Iid-Pi-Hkf"/>
+                            <constraint firstItem="gJj-kb-K73" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="f7m-12-T1q" secondAttribute="leading" constant="20" symbolic="YES" id="MHK-ck-hsS"/>
+                            <constraint firstItem="ywP-Uh-n9j" firstAttribute="top" secondItem="cHR-YO-Om2" secondAttribute="bottom" constant="20" symbolic="YES" id="NQa-fz-ptp"/>
+                            <constraint firstItem="cHR-YO-Om2" firstAttribute="leading" secondItem="f7m-12-T1q" secondAttribute="leading" constant="20" symbolic="YES" id="OYp-mM-sJS"/>
+                            <constraint firstItem="SBb-me-qvm" firstAttribute="leading" secondItem="f7m-12-T1q" secondAttribute="leading" constant="20" symbolic="YES" id="X6z-pU-LvJ"/>
+                            <constraint firstItem="SBb-me-qvm" firstAttribute="top" secondItem="xLt-vq-e6l" secondAttribute="bottom" constant="20" symbolic="YES" id="arK-uK-R7y"/>
+                            <constraint firstAttribute="bottom" secondItem="ywP-Uh-n9j" secondAttribute="bottom" constant="20" symbolic="YES" id="oGx-op-Qdm"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="PhB-P8-Gfg" secondAttribute="trailing" constant="20" symbolic="YES" id="pfT-7X-ZFf"/>
+                            <constraint firstAttribute="trailing" secondItem="cHR-YO-Om2" secondAttribute="trailing" constant="20" symbolic="YES" id="s9F-7I-jcF"/>
+                            <constraint firstItem="gJj-kb-K73" firstAttribute="centerY" secondItem="ywP-Uh-n9j" secondAttribute="centerY" id="ugs-hd-AbQ"/>
+                            <constraint firstAttribute="trailing" secondItem="SBb-me-qvm" secondAttribute="trailing" constant="20" symbolic="YES" id="vwO-ZH-l70"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="accountSelection" destination="SBb-me-qvm" id="BaZ-PM-xrd"/>
+                        <outlet property="contactSelectionView" destination="cHR-YO-Om2" id="hpG-5a-3SD"/>
+                        <outlet property="createAndInviteButton" destination="ywP-Uh-n9j" id="rWU-ef-3HS"/>
+                        <outlet property="progressIndicator" destination="NqC-mW-drC" id="rkZ-ed-B2Q"/>
+                    </connections>
+                </viewController>
+                <customObject id="nC7-5W-N4u" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="187.5" y="759.5"/>
         </scene>
         <!--Video Call Controller-->
         <scene sceneID="ZUc-hM-fbD">
@@ -134,6 +239,7 @@
         </scene>
     </scenes>
     <resources>
+        <image name="NSEveryone" width="32" height="32"/>
         <image name="endCall" width="30" height="30"/>
         <image name="muteMicrophone" width="30" height="30"/>
     </resources>
