@@ -111,6 +111,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
             self.accountField.title = self.accountField.itemTitle(at: 1);
             self.account = BareJID(self.accountField.itemTitle(at: 1));
         }
+        
         if nicknameField.stringValue.isEmpty {
             nicknameField.stringValue = AccountManager.getAccount(for: account)?.nickname ?? "";
             if nicknameField.stringValue.isEmpty {
@@ -118,10 +119,8 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
             }
             joinButton.isEnabled = !nicknameField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty;
         }
-        if componentJid == nil {
-            self.findMucComponent(at: account);
-        } else {
-            self.refreshRooms(at: componentJid!);
+        if let componentJid = componentJid {
+            self.refreshRooms(at: componentJid);
         }
     }
     
@@ -147,7 +146,6 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
             showDisclosure(true);
         }
         joinButton.isEnabled = !nicknameField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty;
-        self.findMucComponent(at: account);
     }
     
     func controlTextDidChange(_ notification: Notification) {
@@ -409,55 +407,6 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                 });
             }
         }
-    }
-    
-    fileprivate func findMucComponent(at account: BareJID) {
-        guard let discoModule = XmppService.instance.getClient(for: account)?.module(.disco) else {
-            return;
-        }
-        
-        self.componentJids = [];
-        self.allItems = [];
-        progressIndicator.startAnimation(nil);
-        
-        discoModule.getItems(for: JID(account.domain), completionHandler: { result in
-            switch result {
-            case .success(let items):
-                var mucJids: [BareJID] = [];
-
-                let group = DispatchGroup();
-                
-                group.enter();
-                group.notify(queue: DispatchQueue.main, execute: {
-                    self.progressIndicator.stopAnimation(nil);
-                    self.componentJids = mucJids.sorted(by: { (j1, j2) -> Bool in
-                        return j2.stringValue.compare(j2.stringValue) == .orderedAscending;
-                    });
-                })
-
-                for item in items.items {
-                    group.enter();
-                    discoModule.getInfo(for: item.jid, node: item.node, completionHandler: { result in
-                        switch result {
-                        case .success(let info):
-                            if info.features.contains("http://jabber.org/protocol/muc") {
-                                DispatchQueue.main.async {
-                                    mucJids.append(item.jid.bareJid);
-                                }
-                            }
-                        case .failure(_):
-                            break;
-                        }
-                        group.leave();
-                    });
-                }
-                group.leave();
-            case .failure(_):
-                DispatchQueue.main.async {
-                    self.progressIndicator.stopAnimation(nil);
-                }
-            }
-        });
     }
     
     var componentType: ComponentType?;
