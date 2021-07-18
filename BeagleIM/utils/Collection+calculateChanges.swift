@@ -20,32 +20,86 @@
 //
 import Foundation
 
+private class QueuedForRemoval {
+    var idx: Int;
+    var removed: Bool = false;
+    init(idx: Int) {
+        self.idx = idx;
+    }
+}
+
 extension BidirectionalCollection where Element: Hashable {
     
     func calculateChanges<C>(from other: C) -> [CollectionChange] where C: BidirectionalCollection, Element == C.Element {
+
         let diffs = self.difference(from: other).inferringMoves();
         
         var changes: [CollectionChange] = []
-        var movedOffsets: [Element:Int] = [:];
 
-        for action in diffs {
-            print("action:", action)
-            switch action {
-            case .remove(let offset, let el, let to):
-                if to != nil {
-                    movedOffsets[el] = offset;
-                } else {
-                    changes.append(.remove(offset + movedOffsets.values.filter({ $0 < offset}).count))
+        var queuedForRemoval: [QueuedForRemoval] = [];
+        var mappedForRemoval: [Element: QueuedForRemoval] = [:];
+        
+        let recalculateTarget = { (offset: Int) -> Int in
+            var newTarget = offset;
+            // we check all not removed before insertion place and bump insertion place index
+            for item in queuedForRemoval.reversed() {
+                if (!item.removed) && item.idx <= newTarget {
+                    newTarget = newTarget + 1;
                 }
-            case .insert(let offset, let el, let from):
-                if let idx = from {
-                    movedOffsets.removeValue(forKey: el);
-                    changes.append(.move(idx + movedOffsets.values.filter({ $0 < idx}).count, offset + movedOffsets.values.filter({ $0 < offset}).count));
+            }
+            return newTarget;
+        }
+        
+        for action in diffs {
+            switch action {
+            case .remove(let offset, let element, let associatedWith):
+                if let target = associatedWith {
+                    let item = QueuedForRemoval(idx: offset);
+                    queuedForRemoval.append(item);
+                    mappedForRemoval[element] = item;
                 } else {
-                    changes.append(.insert(offset + movedOffsets.values.filter({ $0 < offset}).count));
+                    queuedForRemoval.forEach({ $0.idx = $0.idx - 1 });
+                    // we are not updating offset as they are descending (no impact on removal)
+                    changes.append(.remove(offset));
+                }
+            case .insert(let offset, let element, let associatedWith):
+                // we need to update offsets as those are ascending
+                if let source = associatedWith {
+                    let removedItem = mappedForRemoval[element]!;
+                    removedItem.removed = true;
+                    
+                    let newSource = removedItem.idx;
+                    let newTarget = recalculateTarget(offset);
+                    
+                    
+                    for item in queuedForRemoval {
+                        if !item.removed {
+                            if item.idx > newSource {
+                                item.idx = item.idx - 1;
+                            }
+                            if item.idx >= newTarget {
+                                item.idx = item.idx + 1;
+                            }
+                        }
+                    }
+                    
+                    changes.append(.move(newSource, newTarget))
+                } else {
+                    let newTarget = recalculateTarget(offset);
+                    changes.append(.insert(newTarget));
+                    for item in queuedForRemoval {
+                        if (!item.removed) {
+                            if item.idx < offset {
+                                break;
+                            }
+                            item.idx = item.idx + 1;
+                        }
+                    }
                 }
             }
         }
+        
+        
         return changes;
     }
     
