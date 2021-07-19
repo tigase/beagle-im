@@ -309,7 +309,7 @@ open class DBChatStore: ContextLifecycleAware {
                         guard let options: ChannelOptions = cursor.object(for: "options") else {
                             return nil;
                         }
-                        return Channel(dispatcher: self.conversationDispatcher, context: context, channelJid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options);
+                        return Channel(dispatcher: self.conversationDispatcher, context: context, channelJid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options, creationTimestamp: cursor.date(for: "creation_timestamp")!);
                     }
                 });
             })

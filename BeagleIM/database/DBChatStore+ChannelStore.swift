@@ -45,7 +45,7 @@ extension DBChatStore: ChannelStore {
             let options = ChannelOptions(participantId: participantId, nick: nick, state: state);
             
             let id = try! self.openConversation(account: account, jid: channelJid, type: .channel, timestamp: timestamp, options: options);
-            let channel = Channel(dispatcher: self.conversationDispatcher, context: context, channelJid: channelJid, id: id, timestamp: timestamp, lastActivity: lastActivity(for: account, jid: channelJid), unread: 0, options: options);
+            let channel = Channel(dispatcher: self.conversationDispatcher, context: context, channelJid: channelJid, id: id, timestamp: timestamp, lastActivity: lastActivity(for: account, jid: channelJid), unread: 0, options: options, creationTimestamp: timestamp);
 
             return channel;
         }) else {
