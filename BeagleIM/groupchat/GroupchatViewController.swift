@@ -190,9 +190,9 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         let idx = encryptButton.menu?.items.firstIndex(where: { $0.title == menuItem.title }) ?? 0;
         switch idx {
         case 0:
-            encryption = nil;
-        case 1:
             encryption = ChatEncryption.none;
+        case 1:
+            encryption = nil;
         case 2:
             encryption = ChatEncryption.omemo;
         default:

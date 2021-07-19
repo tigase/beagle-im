@@ -162,7 +162,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
     
     public func sendMessage(text: String, correctedMessageOriginId: String?) {
         let stanzaId = UUID().uuidString;
-        let encryption = self.options.encryption ?? .none;
+        let encryption = self.options.encryption ?? Settings.messageEncryption;
         
         if let correctedMessageId = correctedMessageOriginId {
             DBChatHistoryStore.instance.correctMessage(for: self, stanzaId: correctedMessageId, sender: .none, data: text, correctionStanzaId: stanzaId, correctionTimestamp: Date(), newState: .outgoing(.unsent));
@@ -184,7 +184,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
     // we are only encrypting URL and not file content, it should be encoded prior uploading
     public func sendAttachment(url: String, appendix: ChatAttachmentAppendix, originalUrl: URL?, completionHandler: (()->Void)?) {
         let stanzaId = UUID().uuidString;
-        let encryption = self.options.encryption ?? .none;
+        let encryption = self.options.encryption ?? Settings.messageEncryption;
 
         var messageEncryption: ConversationEntryEncryption = .none;
         switch encryption {
