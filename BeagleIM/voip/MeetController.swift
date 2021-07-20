@@ -108,6 +108,7 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
     func collectionView(_ collectionView: NSCollectionView, itemForRepresentedObjectAt indexPath: IndexPath) -> NSCollectionViewItem {
         let cell = collectionView.makeItem(withIdentifier: NSUserInterfaceItemIdentifier("VideoStreamCell"), for: indexPath);
         if let view = cell as? VideoStreamCell, let account = meet?.client.userBareJid {
+            view.delegate = self;
             view.set(item: items[indexPath.item], account: account, publishersPublisher: $publisherByMid);
         }
         return cell;
@@ -252,9 +253,7 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
     override func viewDidLoad() {
         super.viewDidLoad();
         self.view.frame = CGRect(origin: .zero, size: CGSize(width: 560, height: 560));
-        
-
-        
+                
         collectionView.register(VideoStreamCell.self, forItemWithIdentifier: NSUserInterfaceItemIdentifier("VideoStreamCell"))
         
         collectionView.dataSource = self;
@@ -271,17 +270,41 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
     }
     
     @objc func inviteToCallClicked(_ sender: Any) {
-        let alert = NSAlert();
-        alert.alertStyle = .informational;
-        alert.messageText = "Temporary placeholder";
-        alert.informativeText = "This functionality is not available yet.";
-        alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
+        let windowController = NSStoryboard(name: "VoIP", bundle: nil).instantiateController(withIdentifier: "InviteToMeetingWindowController") as! NSWindowController;
+        let controller = windowController.contentViewController as! InviteToMeetingController;
+        controller.meet = meet;
+        if let window = windowController.window {
+            window.styleMask = NSWindow.StyleMask(rawValue: window.styleMask.rawValue | NSWindow.StyleMask.nonactivatingPanel.rawValue | NSWindow.StyleMask.utilityWindow.rawValue);
+            window.backgroundColor = NSColor.textBackgroundColor;
+            window.hasShadow = true;
+        }
+        windowController.showWindow(self);
     }
     
     func videoView(_ videoView: RTCVideoRenderer, didChangeVideoSize size: CGSize) {
         DispatchQueue.main.async {
             self.localVideoRendererWidth?.animator().constant = (size.width * self.localVideoRenderer.frame.height) / size.height;
         }
+    }
+    
+    func deny(jid: BareJID) {
+        self.meet?.deny(jids: [jid], completionHandler: { result in
+            switch result {
+            case .success(_):
+                break;
+            case .failure(let error):
+                DispatchQueue.main.async { [weak self] in
+                    guard let window = self?.view.window else {
+                        return;
+                    }
+                    let alert = NSAlert();
+                    alert.alertStyle = .informational;
+                    alert.messageText = "Failed to kick out" ;
+                    alert.informativeText = "It was not possible to kick out \(jid). Server returned an error: \(error.description)";
+                    alert.beginSheetModal(for: window, completionHandler: nil);
+                }
+            }
+        })
     }
     
     private class FlowLayout: NSCollectionViewFlowLayout {
@@ -406,7 +429,47 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
     
     private class VideoStreamCell: NSCollectionViewItem {
         
+        private class HoverView: NSView {
+
+            weak var cell: VideoStreamCell?;
+
+            private var trackingArea : NSTrackingArea?;
+
+            override func updateTrackingAreas() {
+                super.updateTrackingAreas()
+
+                ensureTrackingArea()
+
+                if let trackingArea = trackingArea, !trackingAreas.contains(trackingArea) {
+                    addTrackingArea(trackingArea)
+                }
+            }
+
+            func ensureTrackingArea() {
+                if trackingArea == nil {
+                    trackingArea = NSTrackingArea(rect: .zero,
+                                                  options: [
+                                                    .inVisibleRect,
+                                                    .activeAlways,
+                                                    .mouseEnteredAndExited],
+                                                  owner: self,
+                                                  userInfo: nil)
+                }
+            }
+
+            override func mouseEntered(with event: NSEvent) {
+                self.cell?.mouseEntered(with: event);
+            }
+            
+            override func mouseExited(with event: NSEvent) {
+                self.cell?.mouseExited(with: event);
+            }
+        }
+        
+        weak var delegate: MeetController?;
+        
         private let avatarView: AvatarView = AvatarView();
+        private let closeButton: NSButton = NSButton(image: NSImage(named: "xmark.circle.fill")!, target: nil, action: nil);
         private let nameLabel: NSTextField = NSTextField(labelWithString: "");
         private let nameBox = NSView();
         let videoRenderer: RTCMTLNSVideoView = RTCMTLNSVideoView(frame: .zero);
@@ -455,7 +518,8 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
         }
         
         override func loadView() {
-            self.view = NSView();
+            self.view = HoverView();
+            (self.view as? HoverView)?.cell = self;
             view.wantsLayer = true;
             view.layer?.backgroundColor = NSColor.systemGray.cgColor;
             view.layer?.cornerRadius = 10;
@@ -486,7 +550,19 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
             
             avatarSize = avatarView.widthAnchor.constraint(equalToConstant: 0);
             
+            closeButton.isHidden = true;
+            closeButton.isBordered = false;
+            closeButton.translatesAutoresizingMaskIntoConstraints = false;
+            closeButton.target = self;
+            closeButton.action = #selector(closeClicked(_:));
+            view.addSubview(closeButton);
+            
             NSLayoutConstraint.activate([
+                view.trailingAnchor.constraint(equalTo: closeButton.trailingAnchor, constant: 6),
+                view.topAnchor.constraint(equalTo: closeButton.topAnchor, constant: -6),
+                closeButton.widthAnchor.constraint(equalTo: closeButton.heightAnchor),
+                closeButton.widthAnchor.constraint(equalToConstant: 28),
+                
                 avatarView.heightAnchor.constraint(equalTo: avatarView.widthAnchor),
                 view.centerYAnchor.constraint(equalTo: avatarView.centerYAnchor),
                 view.centerXAnchor.constraint(equalTo: avatarView.centerXAnchor),
@@ -519,6 +595,20 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
             super.viewDidDisappear();
         }
         
+        override func mouseEntered(with event: NSEvent) {
+            closeButton.isHidden = false;
+        }
+        
+        override func mouseExited(with event: NSEvent) {
+            closeButton.isHidden = true;
+        }
+     
+        @objc func closeClicked(_ sender: Any) {
+            guard let jid = contact?.jid else {
+                return;
+            }
+            delegate?.deny(jid: jid);
+        }
     }
 }
 

@@ -133,6 +133,119 @@ Gw
             </objects>
             <point key="canvasLocation" x="187.5" y="759.5"/>
         </scene>
+        <!--Window Controller-->
+        <scene sceneID="jtA-te-Lan">
+            <objects>
+                <windowController storyboardIdentifier="InviteToMeetingWindowController" id="LR0-h3-sQL" sceneMemberID="viewController">
+                    <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" titlebarAppearsTransparent="YES" titleVisibility="hidden" id="6jz-4P-lRj">
+                        <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+                        <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+                        <rect key="contentRect" x="425" y="473" width="480" height="270"/>
+                        <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1440"/>
+                        <view key="contentView" id="irR-Ev-sEN">
+                            <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </view>
+                        <connections>
+                            <outlet property="delegate" destination="LR0-h3-sQL" id="ATc-3h-4Lo"/>
+                        </connections>
+                    </window>
+                    <connections>
+                        <segue destination="iyB-Ch-JZT" kind="relationship" relationship="window.shadowedContentViewController" id="wag-M2-Spw"/>
+                    </connections>
+                </windowController>
+                <customObject id="uoW-Au-inf" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="718" y="336"/>
+        </scene>
+        <!--Invite To Meeting Controller-->
+        <scene sceneID="uPR-pv-LoU">
+            <objects>
+                <viewController storyboardIdentifier="InviteToMeetingController" id="iyB-Ch-JZT" customClass="InviteToMeetingController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="fC4-fT-q1h">
+                        <rect key="frame" x="0.0" y="0.0" width="419" height="423"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="zfP-VQ-GPv">
+                                <rect key="frame" x="20" y="363" width="40" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="40" id="9iI-9S-uCm"/>
+                                    <constraint firstAttribute="width" constant="40" id="RHc-ph-Eom"/>
+                                </constraints>
+                                <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSEveryone" id="LkV-WZ-dp2"/>
+                            </imageView>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="3nC-hY-XCI">
+                                <rect key="frame" x="66" y="374" width="151" height="19"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Invite to the meeting" id="Uy9-Rs-1la">
+                                    <font key="font" metaFont="systemSemibold" size="15"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="osA-Be-dJg">
+                                <rect key="frame" x="339" y="13" width="67" height="32"/>
+                                <buttonCell key="cell" type="push" title="Invite" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="3Sp-Ja-v7c">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="inviteClicked:" target="iyB-Ch-JZT" id="5eE-Jf-bT0"/>
+                                </connections>
+                            </button>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="bul-G5-zqr">
+                                <rect key="frame" x="266" y="13" width="76" height="32"/>
+                                <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="0gP-hb-0EA">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="cancelClicked:" target="iyB-Ch-JZT" id="GyZ-nR-ZlW"/>
+                                </connections>
+                            </button>
+                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="MgI-Qq-OpY" customClass="MultiContactSelectionView" customModule="BeagleIM" customModuleProvider="target">
+                                <rect key="frame" x="20" y="60" width="379" height="295"/>
+                                <subviews>
+                                    <progressIndicator maxValue="100" displayedWhenStopped="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="SBI-IJ-uRu">
+                                        <rect key="frame" x="174" y="132" width="32" height="32"/>
+                                    </progressIndicator>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="SBI-IJ-uRu" firstAttribute="centerY" secondItem="MgI-Qq-OpY" secondAttribute="centerY" id="ZbE-Ja-q8n"/>
+                                    <constraint firstItem="SBI-IJ-uRu" firstAttribute="centerX" secondItem="MgI-Qq-OpY" secondAttribute="centerX" id="fyb-GZ-rRS"/>
+                                </constraints>
+                            </customView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="zfP-VQ-GPv" firstAttribute="top" secondItem="fC4-fT-q1h" secondAttribute="top" constant="20" symbolic="YES" id="JV6-Bs-ZMp"/>
+                            <constraint firstItem="MgI-Qq-OpY" firstAttribute="leading" secondItem="fC4-fT-q1h" secondAttribute="leading" constant="20" symbolic="YES" id="K5K-kY-Rw0"/>
+                            <constraint firstItem="MgI-Qq-OpY" firstAttribute="top" secondItem="zfP-VQ-GPv" secondAttribute="bottom" constant="8" symbolic="YES" id="VPv-Kf-Nus"/>
+                            <constraint firstAttribute="bottom" secondItem="osA-Be-dJg" secondAttribute="bottom" constant="20" symbolic="YES" id="WcC-pq-Mew"/>
+                            <constraint firstAttribute="trailing" secondItem="osA-Be-dJg" secondAttribute="trailing" constant="20" symbolic="YES" id="Xz4-rk-zoq"/>
+                            <constraint firstItem="3nC-hY-XCI" firstAttribute="centerY" secondItem="zfP-VQ-GPv" secondAttribute="centerY" id="Zlf-Yc-jBN"/>
+                            <constraint firstItem="osA-Be-dJg" firstAttribute="leading" secondItem="bul-G5-zqr" secondAttribute="trailing" constant="11" id="cbP-Co-sAX"/>
+                            <constraint firstItem="osA-Be-dJg" firstAttribute="top" secondItem="MgI-Qq-OpY" secondAttribute="bottom" constant="20" symbolic="YES" id="dK9-Ks-QAj"/>
+                            <constraint firstItem="zfP-VQ-GPv" firstAttribute="leading" secondItem="fC4-fT-q1h" secondAttribute="leading" constant="20" symbolic="YES" id="lGA-P9-WkZ"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="3nC-hY-XCI" secondAttribute="trailing" constant="20" symbolic="YES" id="pTc-h7-LBh"/>
+                            <constraint firstItem="bul-G5-zqr" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="fC4-fT-q1h" secondAttribute="leading" constant="20" symbolic="YES" id="pj3-cZ-Q26"/>
+                            <constraint firstItem="bul-G5-zqr" firstAttribute="centerY" secondItem="osA-Be-dJg" secondAttribute="centerY" id="uLD-Is-ndT"/>
+                            <constraint firstAttribute="trailing" secondItem="MgI-Qq-OpY" secondAttribute="trailing" constant="20" symbolic="YES" id="yQS-YI-RcF"/>
+                            <constraint firstItem="3nC-hY-XCI" firstAttribute="leading" secondItem="zfP-VQ-GPv" secondAttribute="trailing" constant="8" id="zn5-Rk-QaX"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="contactSelectionView" destination="MgI-Qq-OpY" id="6GU-Xj-DyH"/>
+                        <outlet property="createAndInviteButton" destination="osA-Be-dJg" id="ZXP-Q0-oh1"/>
+                        <outlet property="inviteButton" destination="osA-Be-dJg" id="n1e-hV-EfY"/>
+                        <outlet property="progressIndicator" destination="SBI-IJ-uRu" id="jU1-14-CND"/>
+                    </connections>
+                </viewController>
+                <customObject id="qUT-Bn-zEJ" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1175" y="634"/>
+        </scene>
         <!--Video Call Controller-->
         <scene sceneID="ZUc-hM-fbD">
             <objects>

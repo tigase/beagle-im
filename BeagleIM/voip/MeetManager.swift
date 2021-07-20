@@ -135,6 +135,18 @@ class Meet {
         })
     }
     
+    public func allow(jids: [BareJID], completionHandler: @escaping (Result<[BareJID],XMPPError>)->Void) {
+        client.module(.meet).allow(jids: jids, in: jid, completionHandler: { result in
+            completionHandler(result.map({ _ in jids }));
+        });
+    }
+    
+    public func deny(jids: [BareJID], completionHandler: @escaping (Result<[BareJID],XMPPError>)->Void) {
+        client.module(.meet).deny(jids: jids, in: jid, completionHandler: { result in
+            completionHandler(result.map({ _ in jids }));
+        });
+    }
+    
     public func leave() {
         cancellables.removeAll();
 
