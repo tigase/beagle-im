@@ -107,7 +107,7 @@ class DBChatHistoryStore {
                 print("converting for:", item.conversation, "previews:", previews);
                 if previews.count == 1 {
                     switch item.payload {
-                    case .message(let message, let correctionTimestamp):
+                    case .message(let message, _):
                         let isAttachmentOnly = URL(string: message) != nil;
                         
                         if isAttachmentOnly {
@@ -637,7 +637,7 @@ class DBChatHistoryStore {
             return;
         }
 
-        self.updateItemState(for: conversation, itemId: msgId, from: oldState, to: newState, withTimestamp: timestamp);
+        _ = self.updateItemState(for: conversation, itemId: msgId, from: oldState, to: newState, withTimestamp: timestamp);
     }
 
     open func updateItemState(for conversation: ConversationKey, itemId msgId: Int, from oldState: ConversationEntryState, to newState: ConversationEntryState, withTimestamp timestamp: Date?) -> Bool {

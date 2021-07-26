@@ -130,7 +130,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
             return;
         }
         let texts: [NSAttributedString] = items.map {
-            let item = NSMutableAttributedString(string: "[\(dateFormatter.string(from: $0.timestamp))] <\($0.entry.sender.nickname)>: ");
+            let item = NSMutableAttributedString(string: "[\(dateFormatter.string(from: $0.timestamp))] <\($0.entry.sender.nickname ?? "")>: ");
             item.applyFontTraits(.boldFontMask, range: NSRange(0..<item.length));
             item.append($0.attributedString);
             item.removeAttribute(.backgroundColor, range: NSRange(location:0, length: item.length));

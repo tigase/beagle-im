@@ -574,7 +574,7 @@ class ChatViewTableView: NSTableView {
     }
 }
 
-protocol ChatViewTableViewMouseDelegate: class {
+protocol ChatViewTableViewMouseDelegate: AnyObject {
     func handleMouse(event: NSEvent) -> Bool;
 }
 

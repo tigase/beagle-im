@@ -29,7 +29,7 @@ enum ChatsListStyle: String {
     case large
 }
 
-protocol ChatsListViewDataSourceDelegate: class {
+protocol ChatsListViewDataSourceDelegate: AnyObject {
     
     func beginUpdates()
     

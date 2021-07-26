@@ -854,7 +854,7 @@ class ConversationGroupingViewController: NSViewController, ContactDetailsAccoun
     
 }
 
-protocol ContactDetailsAccountJidAware: class {
+protocol ContactDetailsAccountJidAware: AnyObject {
     var account: BareJID? { get set }
     var jid: BareJID? { get set }
 }

@@ -89,13 +89,7 @@ class AvatarView: NSImageView {
         let path = NSBezierPath(roundedRect: dirtyRect, xRadius: frame.width/2, yRadius: frame.width/2);
         path.addClip();
 
-        if let image = self.image {
-//            let size = image.size;
-//            let widthDiff = max(size.width - size.height, 0) / 2;
-//            let heightDiff = max(size.height - size.width, 0) / 2;
-//            let width = size.width - (2 * widthDiff);
-//            let height = size.height - (2 * heightDiff);
-//            image.draw(in: dirtyRect, from: NSRect(x: widthDiff, y: heightDiff, width: width, height: height), operation: .sourceOver, fraction: 1.0);
+        if self.image != nil {
             super.draw(dirtyRect);
         } else if let text = self.initials {
             let isDark = (self.appearance ?? NSAppearance.current)!.bestMatch(from: [.aqua, .darkAqua]) != .aqua;
@@ -108,14 +102,6 @@ class AvatarView: NSImageView {
             let textSize = text.size(withAttributes: textAttr)
 
             text.draw(in: CGRect(x: dirtyRect.midX - textSize.width/2, y: dirtyRect.midY - textSize.height/2, width: textSize.width, height: textSize.height), withAttributes: textAttr);
-//        } else {
-//            let image = NSImage(named: NSImage.userGuestName)!;
-//            let size = image.size;
-//            let widthDiff = max(size.width - size.height, 0) / 2;
-//            let heightDiff = max(size.height - size.width, 0) / 2;
-//            let width = size.width - (2 * widthDiff);
-//            let height = size.height - (2 * heightDiff);
-//            image.draw(in: dirtyRect, from: NSRect(x: widthDiff, y: heightDiff, width: width, height: height), operation: .sourceOver, fraction: 1.0);
         }
     }
     

@@ -209,7 +209,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     
     fileprivate func refreshEncryptionStatus() {
         DispatchQueue.main.async {
-            guard let account = self.account, let jid = self.jid else {
+            guard self.account != nil, self.jid != nil else {
                 return;
             }
             self.encryptButton.isEnabled = self.room.isOMEMOSupported;

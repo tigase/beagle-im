@@ -212,7 +212,7 @@ class ConfigureRoomViewController: NSViewController {
                         switch result {
                         case .success(let r):
                             switch r {
-                            case .created(let room), .joined(let room):
+                            case .created(_), .joined(_):
                                 queue.isSuspended = false;
                             }
                         case .failure(let error):

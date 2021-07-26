@@ -335,7 +335,7 @@ class AccountCellView: NSTableCellView {
 
 }
 
-protocol AccountAware: class {
+protocol AccountAware: AnyObject {
     
     var account: BareJID? { get set }
     

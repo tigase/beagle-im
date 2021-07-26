@@ -257,7 +257,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
             }
             omemoModule.encode(message: message, for: members.map({ $0.bareJid }), completionHandler: { result in
                 switch result {
-                case .failure(let error):
+                case .failure(_):
                     print("could not encrypt message for", self.roomJid);
                 case .successMessage(let message, let fingerprint):
                     super.send(message: message, completionHandler: nil);
@@ -320,7 +320,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
             }
             omemoModule.encode(message: message, for: members.map({ $0.bareJid }), completionHandler: { result in
                 switch result {
-                case .failure(let error):
+                case .failure(_):
                     print("could not encrypt message for", self.roomJid);
                 case .successMessage(let message, let fingerprint):
                     super.send(message: message, completionHandler: nil);

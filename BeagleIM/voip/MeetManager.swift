@@ -54,7 +54,7 @@ class MeetManager {
     }
     
     public func unregister(meet: Meet) {
-        dispatcher.sync {
+        _ = dispatcher.sync {
             meets.removeValue(forKey: Key(account: meet.client.userBareJid, jid: meet.jid.bareJid));
         }
     }
@@ -115,7 +115,7 @@ class Meet {
             self?.handle(event: event);
         }).store(in: &cancellables);
         
-        PresenceStore.instance.bestPresenceEvents.filter({ $0.jid == self.jid.bareJid && ($0.presence == nil || $0.presence?.type == .unavailable) }).sink(receiveValue: { [weak self] _ in
+        PresenceStore.instance.bestPresenceEvents.filter({ $0.jid == self.jid.bareJid && ($0.presence == nil || $0.presence?.type == .unavailable) }).sink(receiveValue: { _ in
             call.reset();
         }).store(in: &cancellables);
         

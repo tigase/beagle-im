@@ -53,7 +53,7 @@ extension BidirectionalCollection where Element: Hashable {
         for action in diffs {
             switch action {
             case .remove(let offset, let element, let associatedWith):
-                if let target = associatedWith {
+                if associatedWith != nil {
                     let item = QueuedForRemoval(idx: offset);
                     queuedForRemoval.append(item);
                     mappedForRemoval[element] = item;
@@ -64,7 +64,7 @@ extension BidirectionalCollection where Element: Hashable {
                 }
             case .insert(let offset, let element, let associatedWith):
                 // we need to update offsets as those are ascending
-                if let source = associatedWith {
+                if associatedWith != nil {
                     let removedItem = mappedForRemoval[element]!;
                     removedItem.removed = true;
                     

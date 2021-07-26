@@ -329,7 +329,7 @@ class OpenChannelViewController: NSViewController, OpenChannelViewControllerTabV
     }
 }
 
-protocol OpenChannelViewControllerTabView: class {
+protocol OpenChannelViewControllerTabView: AnyObject {
     
     var account: BareJID? { get set }
     var components: [OpenChannelViewController.Component] { get set }
@@ -346,7 +346,7 @@ protocol OpenChannelViewControllerTabView: class {
     func viewDidDisappear();
 }
 
-protocol OpenChannelViewControllerTabViewDelegate: class {
+protocol OpenChannelViewControllerTabViewDelegate: AnyObject {
     
     func askForNickname(completionHandler: @escaping (String)->Void)
     func operationStarted();

@@ -21,7 +21,7 @@
 
 import Foundation
 
-protocol ChannelAwareProtocol: class {
+protocol ChannelAwareProtocol: AnyObject {
     
     var channel: Channel! { get set }
     

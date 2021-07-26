@@ -617,7 +617,7 @@ class Call: NSObject, JingleSessionActionDelegate {
     
 }
 
-protocol CallDelegate: class {
+protocol CallDelegate: AnyObject {
     
     func callDidStart(_ sender: Call);
     func callDidEnd(_ sender: Call);

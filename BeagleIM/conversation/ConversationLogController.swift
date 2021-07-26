@@ -128,7 +128,7 @@ class ConversationLogController: AbstractConversationLogController, NSTableViewD
     }
 }
 
-protocol ConversationLogContextMenuDelegate: class {
+protocol ConversationLogContextMenuDelegate: AnyObject {
     
     func prepareConversationLogContextMenu(dataSource: ConversationDataSource, menu: NSMenu, forRow row: Int);
     
