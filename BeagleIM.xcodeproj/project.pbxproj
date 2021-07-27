@@ -10,7 +10,16 @@
 		FE02DD11225B8D1100FA08EB /* db-schema-3.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE02DD10225B8D1100FA08EB /* db-schema-3.sql */; };
 		FE02DD13225BC33F00FA08EB /* DBOMEMOStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE02DD12225BC33F00FA08EB /* DBOMEMOStore.swift */; };
 		FE0AE0B226A6ED190010D2E2 /* InviteToMeetingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0AE0B126A6ED190010D2E2 /* InviteToMeetingController.swift */; };
-		FE0C817F2257B48400948C41 /* Settings.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEDC03172257B2B400F24BF4 /* Settings.storyboard */; };
+		FE0AE0B826B0379F0010D2E2 /* Conversation.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE0AE0BA26B0379F0010D2E2 /* Conversation.storyboard */; };
+		FE0AE0BD26B038340010D2E2 /* ConversationDetails.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE0AE0BF26B038340010D2E2 /* ConversationDetails.storyboard */; };
+		FE0AE0C726B0388B0010D2E2 /* ServiceDiscovery.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE0AE0C926B0388B0010D2E2 /* ServiceDiscovery.storyboard */; };
+		FE0AE0CC26B040900010D2E2 /* Settings.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE0AE0CE26B040900010D2E2 /* Settings.storyboard */; };
+		FE0AE0D126B0513D0010D2E2 /* VoIP.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE0AE0D326B0513D0010D2E2 /* VoIP.storyboard */; };
+		FE0AE0D626B051870010D2E2 /* XMLConsole.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE0AE0D826B051870010D2E2 /* XMLConsole.storyboard */; };
+		FE0AE0DB26B051C10010D2E2 /* MIX.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE0AE0DD26B051C10010D2E2 /* MIX.storyboard */; };
+		FE0AE0E026B056170010D2E2 /* Roster.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE0AE0E226B056170010D2E2 /* Roster.storyboard */; };
+		FE0AE12E26B0828A0010D2E2 /* SearchHistory.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE0AE12C26B0828A0010D2E2 /* SearchHistory.storyboard */; };
+		FE0AE13326B08AD20010D2E2 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = FE0AE13126B08AD20010D2E2 /* Localizable.strings */; };
 		FE0E30A5252E2E320030F8C5 /* TigaseSQLite3 in Frameworks */ = {isa = PBXBuildFile; productRef = FE0E30A4252E2E320030F8C5 /* TigaseSQLite3 */; };
 		FE0E3122253CA0F70030F8C5 /* PrivateVCard4Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E3121253CA0F70030F8C5 /* PrivateVCard4Helper.swift */; };
 		FE10BCE923FAA47800E214F3 /* InvitationGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCE823FAA47800E214F3 /* InvitationGroup.swift */; };
@@ -23,7 +32,6 @@
 		FE14044925601F9300BE77E8 /* Conversation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE14044825601F9300BE77E8 /* Conversation.swift */; };
 		FE14044D25601FE600BE77E8 /* Room.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE14044C25601FE600BE77E8 /* Room.swift */; };
 		FE1404552560226500BE77E8 /* Channel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1404542560226500BE77E8 /* Channel.swift */; };
-		FE149D8222A5120300EE4E03 /* SearchHistory.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE149D8122A5120300EE4E03 /* SearchHistory.storyboard */; };
 		FE149D8522A515C900EE4E03 /* SearchHistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE149D8422A515C900EE4E03 /* SearchHistoryController.swift */; };
 		FE149D8722A51AD900EE4E03 /* db-schema-4.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE149D8622A51AD900EE4E03 /* db-schema-4.sql */; };
 		FE17870624DECE3400C4012C /* outgoingCall.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE17870424DECE3400C4012C /* outgoingCall.mp3 */; };
@@ -76,7 +84,6 @@
 		FE3AA0CF215406D1001667A9 /* ChatsListGroupChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0CE215406D1001667A9 /* ChatsListGroupChat.swift */; };
 		FE3AA0D12154077D001667A9 /* ChatsListGroupAbstractChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0D02154077D001667A9 /* ChatsListGroupAbstractChat.swift */; };
 		FE3F2AF2228813E200737D51 /* EmptyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3F2AF1228813E200737D51 /* EmptyViewController.swift */; };
-		FE4073A721BACA2D009CE335 /* VoIP.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE4073A621BACA2D009CE335 /* VoIP.storyboard */; };
 		FE4073A921BACC50009CE335 /* VideoCallController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4073A821BACC50009CE335 /* VideoCallController.swift */; };
 		FE41FB2F215A822700AD86D3 /* ManageAffiliationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB2E215A822700AD86D3 /* ManageAffiliationsViewController.swift */; };
 		FE41FB31215AB32200AD86D3 /* ServerCertificateInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE41FB30215AB32200AD86D3 /* ServerCertificateInfo.swift */; };
@@ -97,7 +104,6 @@
 		FE5202D7227F339D00644C12 /* ChatMessageCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5202D6227F339D00644C12 /* ChatMessageCellView.swift */; };
 		FE5BE64C213AC3EA00463183 /* ChatsCellViewCloseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5BE64B213AC3EA00463183 /* ChatsCellViewCloseButton.swift */; };
 		FE5BE64E213AD19A00463183 /* ChatCellViewMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5BE64D213AD19A00463183 /* ChatCellViewMessage.swift */; };
-		FE5C6B2422896B12003DAB30 /* ServiceDiscovery.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE5C6B2322896B12003DAB30 /* ServiceDiscovery.storyboard */; };
 		FE5C6B2722897F1B003DAB30 /* ServiceDiscoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5C6B2622897F1B003DAB30 /* ServiceDiscoveryViewController.swift */; };
 		FE5C6B29228B34B9003DAB30 /* SelectAdHocCommandController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5C6B28228B34B9003DAB30 /* SelectAdHocCommandController.swift */; };
 		FE5C6B2B228C119A003DAB30 /* ExecuteAdHocCommandController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5C6B2A228C119A003DAB30 /* ExecuteAdHocCommandController.swift */; };
@@ -145,15 +151,12 @@
 		FE834882268A1C08000C171A /* DropDownButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE834881268A1C08000C171A /* DropDownButton.swift */; };
 		FE83E363217A3809001DEF09 /* JingleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE83E362217A3809001DEF09 /* JingleManager.swift */; };
 		FE83E365217B0F89001DEF09 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE83E364217B0F89001DEF09 /* AVFoundation.framework */; };
-		FE87C76C2283487300B0B64C /* XMLConsole.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE87C76B2283487300B0B64C /* XMLConsole.storyboard */; };
 		FE87C76F22834E0B00B0B64C /* XMLConsoleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE87C76E22834E0B00B0B64C /* XMLConsoleViewController.swift */; };
 		FE87C7752285736200B0B64C /* XMLEntryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE87C7742285736200B0B64C /* XMLEntryViewController.swift */; };
-		FE890D1B23FEA5DF00107437 /* Conversation.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE890D1A23FEA5DF00107437 /* Conversation.storyboard */; };
 		FE890D1D23FEED1700107437 /* ConversationLogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE890D1C23FEED1700107437 /* ConversationLogController.swift */; };
 		FE890D1F23FEF0B900107437 /* AbstractConversationLogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE890D1E23FEF0B900107437 /* AbstractConversationLogController.swift */; };
 		FE890D30240020DE00107437 /* db-schema-9.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE890D2F240020DD00107437 /* db-schema-9.sql */; };
 		FE890D3A240153E200107437 /* MixEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE890D39240153E200107437 /* MixEventHandler.swift */; };
-		FE890D402404069E00107437 /* MIX.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE890D3F2404069D00107437 /* MIX.storyboard */; };
 		FE890D4524040F1200107437 /* ChannelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE890D4424040F1200107437 /* ChannelViewController.swift */; };
 		FE89341925DD3C07004E38B0 /* SSLCertificate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE89341625DD3C07004E38B0 /* SSLCertificate.swift */; };
 		FE89341A25DD3C07004E38B0 /* SSLProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE89341725DD3C07004E38B0 /* SSLProcessor.swift */; };
@@ -234,9 +237,7 @@
 		FEF9EC45242F8BAD0090C913 /* ChatInvitationCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF9EC44242F8BAD0090C913 /* ChatInvitationCellView.swift */; };
 		FEF9EC49242F8D620090C913 /* BaseChatCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF9EC48242F8D620090C913 /* BaseChatCellView.swift */; };
 		FEF9EC4B242F97840090C913 /* AppendixProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF9EC4A242F97840090C913 /* AppendixProtocol.swift */; };
-		FEF9EC4F242FC9620090C913 /* Roster.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEF9EC4E242FC9620090C913 /* Roster.storyboard */; };
 		FEF9EC512430B1F10090C913 /* PresenceAuthorizationRequestController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF9EC502430B1F10090C913 /* PresenceAuthorizationRequestController.swift */; };
-		FEFFF7CD232FCF25004CB9CE /* ConversationDetails.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEFFF7CC232FCF25004CB9CE /* ConversationDetails.storyboard */; };
 		FEFFF7CF23313B52004CB9CE /* db-schema-5.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEFFF7CE23313B52004CB9CE /* db-schema-5.sql */; };
 		FEFFF7D12334E71B004CB9CE /* ChatMessageSystemCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEFFF7D02334E71B004CB9CE /* ChatMessageSystemCellView.swift */; };
 /* End PBXBuildFile section */
@@ -277,6 +278,26 @@
 		FE02DD10225B8D1100FA08EB /* db-schema-3.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-3.sql"; sourceTree = "<group>"; };
 		FE02DD12225BC33F00FA08EB /* DBOMEMOStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBOMEMOStore.swift; sourceTree = "<group>"; };
 		FE0AE0B126A6ED190010D2E2 /* InviteToMeetingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteToMeetingController.swift; sourceTree = "<group>"; };
+		FE0AE0B726AFEDC30010D2E2 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = localization/pl.lproj/Main.strings; sourceTree = "<group>"; };
+		FE0AE0B926B0379F0010D2E2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = localization/Base.lproj/Conversation.storyboard; sourceTree = "<group>"; };
+		FE0AE0BC26B037AA0010D2E2 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = localization/pl.lproj/Conversation.strings; sourceTree = "<group>"; };
+		FE0AE0BE26B038340010D2E2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = localization/Base.lproj/ConversationDetails.storyboard; sourceTree = "<group>"; };
+		FE0AE0C126B038390010D2E2 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = localization/pl.lproj/ConversationDetails.strings; sourceTree = "<group>"; };
+		FE0AE0C826B0388B0010D2E2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = localization/Base.lproj/ServiceDiscovery.storyboard; sourceTree = "<group>"; };
+		FE0AE0CB26B0388F0010D2E2 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = localization/pl.lproj/ServiceDiscovery.strings; sourceTree = "<group>"; };
+		FE0AE0CD26B040900010D2E2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = localization/Base.lproj/Settings.storyboard; sourceTree = "<group>"; };
+		FE0AE0D026B040960010D2E2 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = localization/pl.lproj/Settings.strings; sourceTree = "<group>"; };
+		FE0AE0D226B0513D0010D2E2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = localization/Base.lproj/VoIP.storyboard; sourceTree = "<group>"; };
+		FE0AE0D526B051410010D2E2 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = localization/pl.lproj/VoIP.strings; sourceTree = "<group>"; };
+		FE0AE0D726B051870010D2E2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = localization/Base.lproj/XMLConsole.storyboard; sourceTree = "<group>"; };
+		FE0AE0DA26B0518C0010D2E2 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = localization/pl.lproj/XMLConsole.strings; sourceTree = "<group>"; };
+		FE0AE0DC26B051C10010D2E2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = localization/Base.lproj/MIX.storyboard; sourceTree = "<group>"; };
+		FE0AE0DF26B051C60010D2E2 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = localization/pl.lproj/MIX.strings; sourceTree = "<group>"; };
+		FE0AE0E126B056170010D2E2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = localization/Base.lproj/Roster.storyboard; sourceTree = "<group>"; };
+		FE0AE0E426B0561A0010D2E2 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = localization/pl.lproj/Roster.strings; sourceTree = "<group>"; };
+		FE0AE12D26B0828A0010D2E2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = localization/Base.lproj/SearchHistory.storyboard; sourceTree = "<group>"; };
+		FE0AE12F26B082970010D2E2 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = localization/pl.lproj/SearchHistory.strings; sourceTree = "<group>"; };
+		FE0AE13226B08AD20010D2E2 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = localization/pl.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FE0E3121253CA0F70030F8C5 /* PrivateVCard4Helper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateVCard4Helper.swift; sourceTree = "<group>"; };
 		FE10BCE823FAA47800E214F3 /* InvitationGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationGroup.swift; sourceTree = "<group>"; };
 		FE10BCEA23FAA60A00E214F3 /* InvitationItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationItem.swift; sourceTree = "<group>"; };
@@ -288,7 +309,6 @@
 		FE14044825601F9300BE77E8 /* Conversation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Conversation.swift; sourceTree = "<group>"; };
 		FE14044C25601FE600BE77E8 /* Room.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Room.swift; sourceTree = "<group>"; };
 		FE1404542560226500BE77E8 /* Channel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channel.swift; sourceTree = "<group>"; };
-		FE149D8122A5120300EE4E03 /* SearchHistory.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SearchHistory.storyboard; sourceTree = "<group>"; };
 		FE149D8422A515C900EE4E03 /* SearchHistoryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchHistoryController.swift; sourceTree = "<group>"; };
 		FE149D8622A51AD900EE4E03 /* db-schema-4.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-4.sql"; sourceTree = "<group>"; };
 		FE17870424DECE3400C4012C /* outgoingCall.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = outgoingCall.mp3; sourceTree = "<group>"; };
@@ -339,7 +359,6 @@
 		FE3AA0CE215406D1001667A9 /* ChatsListGroupChat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListGroupChat.swift; sourceTree = "<group>"; };
 		FE3AA0D02154077D001667A9 /* ChatsListGroupAbstractChat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListGroupAbstractChat.swift; sourceTree = "<group>"; };
 		FE3F2AF1228813E200737D51 /* EmptyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyViewController.swift; sourceTree = "<group>"; };
-		FE4073A621BACA2D009CE335 /* VoIP.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = VoIP.storyboard; sourceTree = "<group>"; };
 		FE4073A821BACC50009CE335 /* VideoCallController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCallController.swift; sourceTree = "<group>"; };
 		FE41FB2E215A822700AD86D3 /* ManageAffiliationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageAffiliationsViewController.swift; sourceTree = "<group>"; };
 		FE41FB30215AB32200AD86D3 /* ServerCertificateInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerCertificateInfo.swift; sourceTree = "<group>"; };
@@ -360,7 +379,6 @@
 		FE5202D6227F339D00644C12 /* ChatMessageCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageCellView.swift; sourceTree = "<group>"; };
 		FE5BE64B213AC3EA00463183 /* ChatsCellViewCloseButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsCellViewCloseButton.swift; sourceTree = "<group>"; };
 		FE5BE64D213AD19A00463183 /* ChatCellViewMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatCellViewMessage.swift; sourceTree = "<group>"; };
-		FE5C6B2322896B12003DAB30 /* ServiceDiscovery.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ServiceDiscovery.storyboard; sourceTree = "<group>"; };
 		FE5C6B2622897F1B003DAB30 /* ServiceDiscoveryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceDiscoveryViewController.swift; sourceTree = "<group>"; };
 		FE5C6B28228B34B9003DAB30 /* SelectAdHocCommandController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectAdHocCommandController.swift; sourceTree = "<group>"; };
 		FE5C6B2A228C119A003DAB30 /* ExecuteAdHocCommandController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExecuteAdHocCommandController.swift; sourceTree = "<group>"; };
@@ -408,15 +426,12 @@
 		FE834881268A1C08000C171A /* DropDownButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropDownButton.swift; sourceTree = "<group>"; };
 		FE83E362217A3809001DEF09 /* JingleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager.swift; sourceTree = "<group>"; };
 		FE83E364217B0F89001DEF09 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
-		FE87C76B2283487300B0B64C /* XMLConsole.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = XMLConsole.storyboard; sourceTree = "<group>"; };
 		FE87C76E22834E0B00B0B64C /* XMLConsoleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMLConsoleViewController.swift; sourceTree = "<group>"; };
 		FE87C7742285736200B0B64C /* XMLEntryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMLEntryViewController.swift; sourceTree = "<group>"; };
-		FE890D1A23FEA5DF00107437 /* Conversation.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Conversation.storyboard; sourceTree = "<group>"; };
 		FE890D1C23FEED1700107437 /* ConversationLogController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationLogController.swift; sourceTree = "<group>"; };
 		FE890D1E23FEF0B900107437 /* AbstractConversationLogController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractConversationLogController.swift; sourceTree = "<group>"; };
 		FE890D2F240020DD00107437 /* db-schema-9.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "db-schema-9.sql"; sourceTree = "<group>"; };
 		FE890D39240153E200107437 /* MixEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MixEventHandler.swift; sourceTree = "<group>"; };
-		FE890D3F2404069D00107437 /* MIX.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = MIX.storyboard; sourceTree = "<group>"; };
 		FE890D4424040F1200107437 /* ChannelViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChannelViewController.swift; sourceTree = "<group>"; };
 		FE89341625DD3C07004E38B0 /* SSLCertificate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SSLCertificate.swift; sourceTree = "<group>"; };
 		FE89341725DD3C07004E38B0 /* SSLProcessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SSLProcessor.swift; sourceTree = "<group>"; };
@@ -472,7 +487,7 @@
 		FED2ECF02066B01C00F506A5 /* BeagleIM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BeagleIM.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FED2ECF32066B01C00F506A5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FED2ECF72066B01C00F506A5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		FED2ECFA2066B01C00F506A5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		FED2ECFA2066B01C00F506A5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = localization/Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		FED2ECFC2066B01C00F506A5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FED2ECFD2066B01C00F506A5 /* BeagleIM.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BeagleIM.entitlements; sourceTree = "<group>"; };
 		FED2ED022066B01C00F506A5 /* BeagleIMTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BeagleIMTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -487,7 +502,6 @@
 		FED7AEC421417328001E164B /* AvatarStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarStore.swift; sourceTree = "<group>"; };
 		FED7AEC621418B83001E164B /* VCardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VCardManager.swift; sourceTree = "<group>"; };
 		FED7AEC821418FA9001E164B /* DBVCardStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBVCardStore.swift; sourceTree = "<group>"; };
-		FEDC03172257B2B400F24BF4 /* Settings.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Settings.storyboard; sourceTree = "<group>"; };
 		FEDE6AF22142DC590019170A /* AvatarViewWithStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarViewWithStatus.swift; sourceTree = "<group>"; };
 		FEDE6AF42143D8130019170A /* ChatsListTableRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListTableRowView.swift; sourceTree = "<group>"; };
 		FEDE6AF821440AEF0019170A /* StatusHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusHelper.swift; sourceTree = "<group>"; };
@@ -506,9 +520,7 @@
 		FEF9EC44242F8BAD0090C913 /* ChatInvitationCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatInvitationCellView.swift; sourceTree = "<group>"; };
 		FEF9EC48242F8D620090C913 /* BaseChatCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseChatCellView.swift; sourceTree = "<group>"; };
 		FEF9EC4A242F97840090C913 /* AppendixProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppendixProtocol.swift; sourceTree = "<group>"; };
-		FEF9EC4E242FC9620090C913 /* Roster.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Roster.storyboard; sourceTree = "<group>"; };
 		FEF9EC502430B1F10090C913 /* PresenceAuthorizationRequestController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceAuthorizationRequestController.swift; sourceTree = "<group>"; };
-		FEFFF7CC232FCF25004CB9CE /* ConversationDetails.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ConversationDetails.storyboard; sourceTree = "<group>"; };
 		FEFFF7CE23313B52004CB9CE /* db-schema-5.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-5.sql"; sourceTree = "<group>"; };
 		FEFFF7D02334E71B004CB9CE /* ChatMessageSystemCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageSystemCellView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -906,6 +918,7 @@
 		FED2ECF22066B01C00F506A5 /* BeagleIM */ = {
 			isa = PBXGroup;
 			children = (
+				FE0AE13126B08AD20010D2E2 /* Localizable.strings */,
 				FE7561DC2566DFDE00E5C8F9 /* conversation */,
 				FE17870524DECE3400C4012C /* incomingCall.mp3 */,
 				FE17870424DECE3400C4012C /* outgoingCall.mp3 */,
@@ -927,13 +940,13 @@
 				FE32A94624702D5B00E40BB1 /* db-schema-10.sql */,
 				FE31409524952DD0007C5CBC /* db-schema-11.sql */,
 				FE2E3D5826091D4900805F68 /* db-schema-13.sql */,
-				FE890D1A23FEA5DF00107437 /* Conversation.storyboard */,
-				FEFFF7CC232FCF25004CB9CE /* ConversationDetails.storyboard */,
-				FE149D8122A5120300EE4E03 /* SearchHistory.storyboard */,
-				FE5C6B2322896B12003DAB30 /* ServiceDiscovery.storyboard */,
-				FEDC03172257B2B400F24BF4 /* Settings.storyboard */,
-				FE4073A621BACA2D009CE335 /* VoIP.storyboard */,
-				FE87C76B2283487300B0B64C /* XMLConsole.storyboard */,
+				FE0AE0BA26B0379F0010D2E2 /* Conversation.storyboard */,
+				FE0AE0BF26B038340010D2E2 /* ConversationDetails.storyboard */,
+				FE0AE12C26B0828A0010D2E2 /* SearchHistory.storyboard */,
+				FE0AE0C926B0388B0010D2E2 /* ServiceDiscovery.storyboard */,
+				FE0AE0CE26B040900010D2E2 /* Settings.storyboard */,
+				FE0AE0D326B0513D0010D2E2 /* VoIP.storyboard */,
+				FE0AE0D826B051870010D2E2 /* XMLConsole.storyboard */,
 				FED2ECF32066B01C00F506A5 /* AppDelegate.swift */,
 				FED2ECF72066B01C00F506A5 /* Assets.xcassets */,
 				FE6E6BE921384D5E003B1696 /* chat */,
@@ -952,8 +965,8 @@
 				FE1A8BA421CA880100604141 /* voip */,
 				FE87C76D22834DFA00B0B64C /* xmlconsole */,
 				FE68418A25DA9AD50042392E /* xmpp */,
-				FE890D3F2404069D00107437 /* MIX.storyboard */,
-				FEF9EC4E242FC9620090C913 /* Roster.storyboard */,
+				FE0AE0DD26B051C10010D2E2 /* MIX.storyboard */,
+				FE0AE0E226B056170010D2E2 /* Roster.storyboard */,
 			);
 			path = BeagleIM;
 			sourceTree = "<group>";
@@ -1034,6 +1047,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = FED2ED162066B01C00F506A5 /* Build configuration list for PBXNativeTarget "BeagleIM" */;
 			buildPhases = (
+				FE0AE13026B085250010D2E2 /* ShellScript */,
 				FED2ECEC2066B01C00F506A5 /* Sources */,
 				FEB15617225FA973009B0709 /* ShellScript */,
 				FED2ECED2066B01C00F506A5 /* Frameworks */,
@@ -1133,6 +1147,7 @@
 			knownRegions = (
 				en,
 				Base,
+				pl,
 			);
 			mainGroup = FED2ECE72066B01C00F506A5;
 			packageReferences = (
@@ -1155,9 +1170,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE890D1B23FEA5DF00107437 /* Conversation.storyboard in Resources */,
-				FEFFF7CD232FCF25004CB9CE /* ConversationDetails.storyboard in Resources */,
-				FE0C817F2257B48400948C41 /* Settings.storyboard in Resources */,
+				FE0AE0B826B0379F0010D2E2 /* Conversation.storyboard in Resources */,
+				FE0AE0BD26B038340010D2E2 /* ConversationDetails.storyboard in Resources */,
+				FE0AE0CC26B040900010D2E2 /* Settings.storyboard in Resources */,
 				FE4D2132221F2A6E0058B662 /* db-schema-2.sql in Resources */,
 				FE6201E623AA43C900C965A5 /* db-schema-7.sql in Resources */,
 				FEFFF7CF23313B52004CB9CE /* db-schema-5.sql in Resources */,
@@ -1165,7 +1180,7 @@
 				FE17870724DECE3400C4012C /* incomingCall.mp3 in Resources */,
 				FEF9CE1D2082765000B09B6C /* db-schema-1.sql in Resources */,
 				FE25B1712350D2FC00CD69CA /* db-schema-6.sql in Resources */,
-				FE4073A721BACA2D009CE335 /* VoIP.storyboard in Resources */,
+				FE0AE0D126B0513D0010D2E2 /* VoIP.storyboard in Resources */,
 				FE8C9F5421B3F6BD00BE8332 /* container-migration.plist in Resources */,
 				FE10BCF123FC495700E214F3 /* db-schema-8.sql in Resources */,
 				FE02DD11225B8D1100FA08EB /* db-schema-3.sql in Resources */,
@@ -1173,16 +1188,17 @@
 				FE421B4921C92FBF0022DF77 /* LICENSE in Resources */,
 				FE17870624DECE3400C4012C /* outgoingCall.mp3 in Resources */,
 				FE32A94724702D5B00E40BB1 /* db-schema-10.sql in Resources */,
-				FEF9EC4F242FC9620090C913 /* Roster.storyboard in Resources */,
+				FE0AE0E026B056170010D2E2 /* Roster.storyboard in Resources */,
 				FE890D30240020DE00107437 /* db-schema-9.sql in Resources */,
-				FE5C6B2422896B12003DAB30 /* ServiceDiscovery.storyboard in Resources */,
-				FE87C76C2283487300B0B64C /* XMLConsole.storyboard in Resources */,
+				FE0AE0C726B0388B0010D2E2 /* ServiceDiscovery.storyboard in Resources */,
+				FE0AE0D626B051870010D2E2 /* XMLConsole.storyboard in Resources */,
+				FE0AE13326B08AD20010D2E2 /* Localizable.strings in Resources */,
 				FE421B4721C928B00022DF77 /* Credits.rtf in Resources */,
 				FE31409624952DD0007C5CBC /* db-schema-11.sql in Resources */,
-				FE890D402404069E00107437 /* MIX.storyboard in Resources */,
+				FE0AE0DB26B051C10010D2E2 /* MIX.storyboard in Resources */,
 				FED2ECF82066B01C00F506A5 /* Assets.xcassets in Resources */,
 				FED2ECFB2066B01C00F506A5 /* Main.storyboard in Resources */,
-				FE149D8222A5120300EE4E03 /* SearchHistory.storyboard in Resources */,
+				FE0AE12E26B0828A0010D2E2 /* SearchHistory.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1203,6 +1219,23 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		FE0AE13026B085250010D2E2 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which bartycrouch > /dev/null; then\n    bartycrouch update -x\n    bartycrouch lint -x\nelse\n    echo \"warning: BartyCrouch not installed, download it from https://github.com/Flinesoft/BartyCrouch\"\nfi\n";
+		};
 		FEB15617225FA973009B0709 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1456,10 +1489,100 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
+		FE0AE0BA26B0379F0010D2E2 /* Conversation.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FE0AE0B926B0379F0010D2E2 /* Base */,
+				FE0AE0BC26B037AA0010D2E2 /* pl */,
+			);
+			name = Conversation.storyboard;
+			sourceTree = "<group>";
+		};
+		FE0AE0BF26B038340010D2E2 /* ConversationDetails.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FE0AE0BE26B038340010D2E2 /* Base */,
+				FE0AE0C126B038390010D2E2 /* pl */,
+			);
+			name = ConversationDetails.storyboard;
+			sourceTree = "<group>";
+		};
+		FE0AE0C926B0388B0010D2E2 /* ServiceDiscovery.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FE0AE0C826B0388B0010D2E2 /* Base */,
+				FE0AE0CB26B0388F0010D2E2 /* pl */,
+			);
+			name = ServiceDiscovery.storyboard;
+			sourceTree = "<group>";
+		};
+		FE0AE0CE26B040900010D2E2 /* Settings.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FE0AE0CD26B040900010D2E2 /* Base */,
+				FE0AE0D026B040960010D2E2 /* pl */,
+			);
+			name = Settings.storyboard;
+			sourceTree = "<group>";
+		};
+		FE0AE0D326B0513D0010D2E2 /* VoIP.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FE0AE0D226B0513D0010D2E2 /* Base */,
+				FE0AE0D526B051410010D2E2 /* pl */,
+			);
+			name = VoIP.storyboard;
+			sourceTree = "<group>";
+		};
+		FE0AE0D826B051870010D2E2 /* XMLConsole.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FE0AE0D726B051870010D2E2 /* Base */,
+				FE0AE0DA26B0518C0010D2E2 /* pl */,
+			);
+			name = XMLConsole.storyboard;
+			sourceTree = "<group>";
+		};
+		FE0AE0DD26B051C10010D2E2 /* MIX.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FE0AE0DC26B051C10010D2E2 /* Base */,
+				FE0AE0DF26B051C60010D2E2 /* pl */,
+			);
+			name = MIX.storyboard;
+			sourceTree = "<group>";
+		};
+		FE0AE0E226B056170010D2E2 /* Roster.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FE0AE0E126B056170010D2E2 /* Base */,
+				FE0AE0E426B0561A0010D2E2 /* pl */,
+			);
+			name = Roster.storyboard;
+			sourceTree = "<group>";
+		};
+		FE0AE12C26B0828A0010D2E2 /* SearchHistory.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FE0AE12D26B0828A0010D2E2 /* Base */,
+				FE0AE12F26B082970010D2E2 /* pl */,
+			);
+			name = SearchHistory.storyboard;
+			sourceTree = "<group>";
+		};
+		FE0AE13126B08AD20010D2E2 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FE0AE13226B08AD20010D2E2 /* pl */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
 		FED2ECF92066B01C00F506A5 /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
 				FED2ECFA2066B01C00F506A5 /* Base */,
+				FE0AE0B726AFEDC30010D2E2 /* pl */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
@@ -1471,6 +1594,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -1530,6 +1654,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";

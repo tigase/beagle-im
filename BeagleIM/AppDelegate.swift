@@ -27,6 +27,14 @@ import AVFoundation
 import AVKit
 import Combine
 
+extension NSUserInterfaceItemIdentifier {
+    
+    static let createMeetingMenuItem = NSUserInterfaceItemIdentifier("createMeetingMenuItem");
+    static let serviceDiscoveryMenuItem = NSUserInterfaceItemIdentifier("serviceDiscoveryMenuItem")
+    static let xmlConsoleMenuItem = NSUserInterfaceItemIdentifier("xmlConsoleMenuItem");
+}
+
+
 extension NSApplication {
     var isDarkMode: Bool {
         return NSAppearance.current.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua;
@@ -164,10 +172,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         
         if AccountManager.getAccounts().isEmpty {
             let alert = Alert();
-            alert.messageText = "No account";
-            alert.informativeText = "To use BeagleIM you need to have the XMPP account configured. Would you like to add one now?";
-            alert.addButton(withTitle: "Yes");
-            alert.addButton(withTitle: "Not now");
+            alert.messageText = NSLocalizedString("No account", comment: "No account added to BeagleIM");
+            alert.informativeText = NSLocalizedString("To use BeagleIM you need to have the XMPP account configured. Would you like to add one now?", comment: "Should we add one now?");
+            alert.addButton(withTitle: NSLocalizedString("Yes", comment: "Yes, we should add account"));
+            alert.addButton(withTitle: NSLocalizedString("Not now", comment: "Not now, we will ask later"));
             
             alert.run { (response) in
                 switch response {
@@ -202,8 +210,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             }
         })
         
-        NSApp.mainMenu?.item(withTitle: "Window")?.submenu?.delegate = self;
-        NSApp.mainMenu?.item(withTitle: "File")?.submenu?.delegate = self;
+        NSApp.mainMenu?.items.last?.submenu?.delegate = self;
+        NSApp.mainMenu?.items[1].submenu?.delegate = self;
         
         for windowName in UserDefaults.standard.stringArray(forKey: "openedWindows") ?? ["chats"] {
             switch windowName {
@@ -297,12 +305,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             }
         }
     }
-    
+        
     func menuNeedsUpdate(_ menu: NSMenu) {
-        if let meetItem = menu.item(withTitle: "Create meeting...") {
+        if let meetItem = menu.items.first(where: { $0.identifier == .createMeetingMenuItem }) {
             meetItem.isHidden = (!NSEvent.modifierFlags.contains(.option)) && (!Settings.showAdvancedXmppFeatures);
         }
-        if let xmlConsoleItem = menu.item(withTitle: "XML Console") {
+        if let xmlConsoleItem = menu.items.first(where: { $0.identifier == .xmlConsoleMenuItem }) {
             xmlConsoleItem.isHidden = (!NSEvent.modifierFlags.contains(.option)) && (!Settings.showAdvancedXmppFeatures);
             let accountsMenu = NSMenu(title: "XML Console");
             
@@ -315,7 +323,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             xmlConsoleItem.submenu = accountsMenu;
         }
 
-        if let serviceDiscoveryItem = menu.item(withTitle: "Service Discovery") {
+        if let serviceDiscoveryItem = menu.items.first(where: { $0.identifier == .serviceDiscoveryMenuItem }) {
             serviceDiscoveryItem.isHidden = (!NSEvent.modifierFlags.contains(.option)) && (!Settings.showAdvancedXmppFeatures);
             let accountsMenu = NSMenu(title: "Service Discovery");
             

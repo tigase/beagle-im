@@ -1,0 +1,11 @@
+/* No account added to BeagleIM */
+"No account" = "";
+
+/* Not now, we will ask later */
+"Not now" = "";
+
+/* Should we add one now? */
+"To use BeagleIM you need to have the XMPP account configured. Would you like to add one now?" = "";
+
+/* Yes, we should add account */
+"Yes" = "";

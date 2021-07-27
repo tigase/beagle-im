@@ -1,0 +1,107 @@
+/* Class = "NSButtonCell"; title = "Apply"; ObjectID = "4en-st-Tqe"; */
+"4en-st-Tqe.title" = "Zastosuj";
+
+/* Class = "NSTabViewItem"; label = "Banned"; ObjectID = "5pJ-rv-ewh"; */
+"5pJ-rv-ewh.label" = "Zablokowani";
+
+/* Class = "NSTextFieldCell"; title = "Invite to channel"; ObjectID = "6zK-gN-sNF"; */
+"6zK-gN-sNF.title" = "Zaproś do kanału";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "7yP-wX-sXK"; */
+"7yP-wX-sXK.title" = "Text Cell";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "8HP-UV-1E7"; */
+"8HP-UV-1E7.title" = "Anuluj";
+
+/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "8VF-Tj-y0v"; */
+"8VF-Tj-y0v.title" = "Table View Cell";
+
+/* Class = "NSTextFieldCell"; title = "Edit channel details"; ObjectID = "9Pi-qU-Tf4"; */
+"9Pi-qU-Tf4.title" = "Edytuj szczegóły kanału";
+
+/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "DJU-VY-F7n"; */
+"DJU-VY-F7n.title" = "Table View Cell";
+
+/* Class = "NSTextFieldCell"; title = "Edit channel details"; ObjectID = "Eeg-Qz-lKK"; */
+"Eeg-Qz-lKK.title" = "Edytuj szczegóły kanału";
+
+/* Class = "NSMenuItem"; title = "Edit configuration"; ObjectID = "GGr-kd-jLp"; */
+"GGr-kd-jLp.title" = "Zmień konfigurację";
+
+/* Class = "NSMenuItem"; title = "Edit header"; ObjectID = "JjU-H7-MTN"; */
+"JjU-H7-MTN.title" = "Edit nagłówek";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "LXk-pR-XYD"; */
+"LXk-pR-XYD.title" = "Anuluj";
+
+/* Class = "NSButtonCell"; title = "Submit"; ObjectID = "P78-AN-JAR"; */
+"P78-AN-JAR.title" = "Zatwierdź";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "Ptd-Sx-zgF"; */
+"Ptd-Sx-zgF.title" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; title = "user@domain.com"; ObjectID = "Uwz-yJ-FRm"; */
+"Uwz-yJ-FRm.title" = "user@domain.com";
+
+/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "VdV-jZ-iZL"; */
+"VdV-jZ-iZL.title" = "Table View Cell";
+
+/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "YbX-Q8-gSE"; */
+"YbX-Q8-gSE.title" = "Table View Cell";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "dRH-Ov-ia9"; */
+"dRH-Ov-ia9.title" = "Box";
+
+/* Class = "NSTextFieldCell"; title = "Change"; ObjectID = "ezr-pv-ZxF"; */
+"ezr-pv-ZxF.title" = "Zmień";
+
+/* Class = "NSTextFieldCell"; title = "Name"; ObjectID = "fTU-bT-Php"; */
+"fTU-bT-Php.title" = "Nazwa";
+
+/* Class = "NSButtonCell"; title = "Manage"; ObjectID = "jBk-PJ-rEC"; */
+"jBk-PJ-rEC.title" = "Zarządzaj";
+
+/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "jv7-Xc-Zea"; */
+"jv7-Xc-Zea.title" = "Table View Cell";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "kcv-Hu-fqu"; */
+"kcv-Hu-fqu.title" = "Text Cell";
+
+/* Class = "NSButtonCell"; title = "12"; ObjectID = "kmZ-Jc-EdG"; */
+"kmZ-Jc-EdG.title" = "12";
+
+/* Class = "NSTextFieldCell"; title = "Manage participants"; ObjectID = "mp2-T7-9tb"; */
+"mp2-T7-9tb.title" = "Zarządzaj uczestnikami";
+
+/* Class = "NSTextFieldCell"; title = "Participants"; ObjectID = "n18-yk-3yp"; */
+"n18-yk-3yp.title" = "Uczestnicy";
+
+/* Class = "NSMenuItem"; title = "Destroy"; ObjectID = "n6u-Cr-SSU"; */
+"n6u-Cr-SSU.title" = "Zniszcz";
+
+/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "qwE-mK-HCR"; */
+"qwE-mK-HCR.title" = "Label";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "shR-NW-0IT"; */
+"shR-NW-0IT.title" = "Text Cell";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "u6o-Cz-LHu"; */
+"u6o-Cz-LHu.title" = "Anuluj";
+
+/* Class = "NSTextFieldCell"; title = "John Doe"; ObjectID = "v3A-pb-RRk"; */
+"v3A-pb-RRk.title" = "John Doe";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "vD9-VJ-8eu"; */
+"vD9-VJ-8eu.title" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; title = "Description"; ObjectID = "vOA-U1-PZm"; */
+"vOA-U1-PZm.title" = "Opis";
+
+/* Class = "NSButtonCell"; title = "Close"; ObjectID = "vUZ-TL-Ojf"; */
+"vUZ-TL-Ojf.title" = "Zamknij";
+
+/* Class = "NSButtonCell"; title = "Invite"; ObjectID = "vu1-c0-Fqt"; */
+"vu1-c0-Fqt.title" = "Zaproś";
+
+/* Class = "NSTabViewItem"; label = "Allowed"; ObjectID = "xig-C3-GKB"; */
+"xig-C3-GKB.label" = "Dopuszczeni";

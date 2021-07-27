@@ -1,0 +1,32 @@
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "0gP-hb-0EA"; */
+"0gP-hb-0EA.title" = "Anuluj";
+
+/* Class = "NSButtonCell"; title = "Invite"; ObjectID = "3Sp-Ja-v7c"; */
+"3Sp-Ja-v7c.title" = "Zaproś";
+
+/* Class = "NSWindow"; title = "Window"; ObjectID = "6jz-4P-lRj"; */
+"6jz-4P-lRj.title" = "Okno";
+
+/* Class = "NSButtonCell"; title = "Create & Invite"; ObjectID = "7Gg-ab-wi3"; */
+"7Gg-ab-wi3.title" = "Utwórz i zaproś";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "G3n-aI-UbD"; */
+"G3n-aI-UbD.title" = "Anuluj";
+
+/* Class = "NSMenuItem"; title = "Item 2"; ObjectID = "J7s-o7-Ev2"; */
+"J7s-o7-Ev2.title" = "Item 2";
+
+/* Class = "NSMenuItem"; title = "Item 1"; ObjectID = "LMW-MV-OBc"; */
+"LMW-MV-OBc.title" = "Item 1";
+
+/* Class = "NSTextFieldCell"; title = "Invite to the meeting"; ObjectID = "Uy9-Rs-1la"; */
+"Uy9-Rs-1la.title" = "Zaproś do spotkania";
+
+/* Class = "NSTextFieldCell"; title = "Create a meeting"; ObjectID = "XPe-Rj-sU8"; */
+"XPe-Rj-sU8.title" = "Utwórz spotkanie";
+
+/* Class = "NSMenuItem"; title = "Item 3"; ObjectID = "opj-fc-VjT"; */
+"opj-fc-VjT.title" = "Item 3";
+
+/* Class = "NSTextFieldCell"; title = "Connecting..."; ObjectID = "pEi-f7-PFa"; */
+"pEi-f7-PFa.title" = "Łączenie...";

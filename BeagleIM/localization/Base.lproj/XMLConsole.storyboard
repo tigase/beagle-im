@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="18122"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -35,17 +36,17 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <scrollView horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gWy-Dv-TOa">
-                                <rect key="frame" x="10" y="41" width="500" height="369"/>
+                                <rect key="frame" x="10" y="40" width="500" height="370"/>
                                 <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="aTs-bd-HcQ">
-                                    <rect key="frame" x="1" y="1" width="498" height="367"/>
+                                    <rect key="frame" x="1" y="1" width="498" height="368"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <textView editable="NO" importsGraphics="NO" richText="NO" verticallyResizable="YES" smartInsertDelete="YES" id="T5J-OF-01s">
-                                            <rect key="frame" x="0.0" y="0.0" width="498" height="367"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="498" height="368"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                            <size key="minSize" width="498" height="367"/>
+                                            <size key="minSize" width="498" height="368"/>
                                             <size key="maxSize" width="500" height="10000000"/>
                                             <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                         </textView>
@@ -56,12 +57,12 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="Cv3-i0-ZvL">
-                                    <rect key="frame" x="483" y="1" width="16" height="367"/>
+                                    <rect key="frame" x="483" y="1" width="16" height="368"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="9ow-Hv-X6w">
-                                <rect key="frame" x="431" y="3" width="75" height="32"/>
+                                <rect key="frame" x="438" y="3" width="69" height="32"/>
                                 <buttonCell key="cell" type="push" title="Close" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Ylg-td-QUG">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -71,7 +72,7 @@
                                 </buttonCell>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="nnk-VD-zCk">
-                                <rect key="frame" x="316" y="3" width="115" height="32"/>
+                                <rect key="frame" x="331" y="3" width="109" height="32"/>
                                 <buttonCell key="cell" type="push" title="Enter XML..." bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="bdi-zF-Bjp">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -81,7 +82,7 @@
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="HCx-99-L0v">
-                                <rect key="frame" x="244" y="3" width="72" height="32"/>
+                                <rect key="frame" x="267" y="3" width="66" height="32"/>
                                 <buttonCell key="cell" type="push" title="Clear" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="hhi-Ul-ftv">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -143,17 +144,17 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <scrollView borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5So-5K-1mM">
-                                <rect key="frame" x="10" y="41" width="380" height="199"/>
+                                <rect key="frame" x="10" y="40" width="380" height="200"/>
                                 <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="xfb-dc-xwY">
-                                    <rect key="frame" x="0.0" y="0.0" width="380" height="199"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="380" height="200"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <textView importsGraphics="NO" richText="NO" verticallyResizable="YES" smartInsertDelete="YES" id="iAH-eR-nig">
-                                            <rect key="frame" x="0.0" y="0.0" width="380" height="199"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="380" height="200"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                            <size key="minSize" width="380" height="199"/>
+                                            <size key="minSize" width="380" height="200"/>
                                             <size key="maxSize" width="460" height="10000000"/>
                                             <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                         </textView>
@@ -164,12 +165,12 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="YZC-YP-w0o">
-                                    <rect key="frame" x="364" y="0.0" width="16" height="199"/>
+                                    <rect key="frame" x="364" y="0.0" width="16" height="200"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Fh4-lu-vwT">
-                                <rect key="frame" x="315" y="3" width="71" height="32"/>
+                                <rect key="frame" x="322" y="3" width="65" height="32"/>
                                 <buttonCell key="cell" type="push" title="Send" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="YGt-mc-RGn">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -179,7 +180,7 @@
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="MJk-v5-Vzt">
-                                <rect key="frame" x="233" y="3" width="82" height="32"/>
+                                <rect key="frame" x="248" y="3" width="76" height="32"/>
                                 <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="uXL-c3-PVk">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>

@@ -1,0 +1,23 @@
+/* Class = "NSViewController"; title = "Info"; ObjectID = "59p-X5-xhU"; */
+"59p-X5-xhU.title" = "Informacje";
+
+/* Class = "NSTextFieldCell"; title = "Test User"; ObjectID = "7b7-bx-vsU"; */
+"7b7-bx-vsU.title" = "Test User";
+
+/* Class = "NSViewController"; title = "ContactDetailsViewController"; ObjectID = "CNf-2E-dQ8"; */
+"CNf-2E-dQ8.title" = "ContactDetailsViewController";
+
+/* Class = "NSTextFieldCell"; title = "Jid"; ObjectID = "Lkw-eP-Rzq"; */
+"Lkw-eP-Rzq.title" = "Jid";
+
+/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "gFd-Vv-2YU"; */
+"gFd-Vv-2YU.title" = "Label";
+
+/* Class = "NSViewController"; title = "OMEMO"; ObjectID = "jqZ-a2-E6t"; */
+"jqZ-a2-E6t.title" = "OMEMO";
+
+/* Class = "NSViewController"; title = "Details"; ObjectID = "vuF-Zx-mrT"; */
+"vuF-Zx-mrT.title" = "Szcegóły";
+
+/* Class = "NSViewController"; title = "ConversationDetailsViewController"; ObjectID = "yDC-N1-fGo"; */
+"yDC-N1-fGo.title" = "ConversationDetailsViewController";

@@ -1,0 +1,116 @@
+/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "06O-31-S6M"; */
+"06O-31-S6M.title" = "Table View Cell";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "0pT-69-Z2v"; */
+"0pT-69-Z2v.title" = "Anuluj";
+
+/* Class = "NSTextFieldCell"; title = "Please enter nickname to enter to join groupchat at room@muc.example.com."; ObjectID = "7g4-5J-1ra"; */
+"7g4-5J-1ra.title" = "Proszę wprowadzić nick aby dołączyć do pokoju room@muc.example.com.";
+
+/* Class = "NSTextFieldCell"; title = "Instructions"; ObjectID = "936-gG-hyt"; */
+"936-gG-hyt.title" = "Instrukcje";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "9cT-U3-bQ6"; */
+"9cT-U3-bQ6.title" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "AsC-g8-k9h"; */
+"AsC-g8-k9h.title" = "Label";
+
+/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "Dc3-8B-v6D"; */
+"Dc3-8B-v6D.title" = "Label";
+
+/* Class = "NSWindow"; title = "Window"; ObjectID = "EMq-DP-tjf"; */
+"EMq-DP-tjf.title" = "Okno";
+
+/* Class = "NSTableColumn"; headerCell.title = "Node"; ObjectID = "Fd4-9C-hG5"; */
+"Fd4-9C-hG5.headerCell.title" = "Węzeł";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "IOU-HQ-7yz"; */
+"IOU-HQ-7yz.title" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "L7V-PC-vhY"; */
+"L7V-PC-vhY.title" = "Table View Cell";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "NNC-Vl-6GD"; */
+"NNC-Vl-6GD.title" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; placeholderString = "Nickname"; ObjectID = "NUh-n4-HPa"; */
+"NUh-n4-HPa.placeholderString" = "Nick";
+
+/* Class = "NSTableColumn"; headerCell.title = "Name"; ObjectID = "OVH-3d-VQ7"; */
+"OVH-3d-VQ7.headerCell.title" = "Nazwa";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "OlH-O3-Xr2"; */
+"OlH-O3-Xr2.title" = "Text Cell";
+
+/* Class = "NSButtonCell"; title = "Join"; ObjectID = "PEU-R4-1fc"; */
+"PEU-R4-1fc.title" = "Dołącz";
+
+/* Class = "NSButtonCell"; title = "Browse"; ObjectID = "Q9u-UH-DGL"; */
+"Q9u-UH-DGL.title" = "Przeglądaj";
+
+/* Class = "NSButtonCell"; title = "Execute"; ObjectID = "RA9-QT-YFb"; */
+"RA9-QT-YFb.title" = "Wykonaj";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "Sik-v2-cnM"; */
+"Sik-v2-cnM.title" = "Anuluj";
+
+/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "VDA-jm-umk"; */
+"VDA-jm-umk.title" = "Table View Cell";
+
+/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "WHh-uH-Hvc"; */
+"WHh-uH-Hvc.title" = "Table View Cell";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "WaH-Jc-fcj"; */
+"WaH-Jc-fcj.title" = "Text Cell";
+
+/* Class = "NSSecureTextFieldCell"; placeholderString = "Password"; ObjectID = "X43-vI-nTN"; */
+"X43-vI-nTN.placeholderString" = "Hasło";
+
+/* Class = "NSButtonCell"; title = "Join"; ObjectID = "X5p-WC-SbS"; */
+"X5p-WC-SbS.title" = "Dołącz";
+
+/* Class = "NSMenuItem"; title = "Item 1"; ObjectID = "YNT-0e-3Ah"; */
+"YNT-0e-3Ah.title" = "Item 1";
+
+/* Class = "NSMenuItem"; title = "Item 2"; ObjectID = "YPq-yR-sXn"; */
+"YPq-yR-sXn.title" = "Item 2";
+
+/* Class = "NSWindow"; title = "Window"; ObjectID = "ZiJ-VN-l98"; */
+"ZiJ-VN-l98.title" = "Okno";
+
+/* Class = "NSButtonCell"; title = "Execute"; ObjectID = "a3A-f8-U1Y"; */
+"a3A-f8-U1Y.title" = "Wykonaj";
+
+/* Class = "NSTextFieldCell"; title = "Title"; ObjectID = "adu-FV-A6U"; */
+"adu-FV-A6U.title" = "Title";
+
+/* Class = "NSButtonCell"; title = "Close"; ObjectID = "bAv-4n-Bcy"; */
+"bAv-4n-Bcy.title" = "Zamknij";
+
+/* Class = "NSMenuItem"; title = "Item 3"; ObjectID = "bcF-cn-kJ6"; */
+"bcF-cn-kJ6.title" = "Item 3";
+
+/* Class = "NSWindow"; title = "Service Discovery"; ObjectID = "bim-SA-o1h"; */
+"bim-SA-o1h.title" = "Wykrywanie usług";
+
+/* Class = "NSTextFieldCell"; title = "Join groupchat"; ObjectID = "hKh-sl-KSb"; */
+"hKh-sl-KSb.title" = "Dołącz do chatu grupowego";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "mQh-5I-YmH"; */
+"mQh-5I-YmH.title" = "Text Cell";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "ql6-ZM-pSo"; */
+"ql6-ZM-pSo.title" = "Anuluj";
+
+/* Class = "NSWindow"; title = "Window"; ObjectID = "uzQ-me-Xn9"; */
+"uzQ-me-Xn9.title" = "Okno";
+
+/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "vyF-oI-SgR"; */
+"vyF-oI-SgR.title" = "Table View Cell";
+
+/* Class = "NSButtonCell"; title = "Execute"; ObjectID = "wX5-ZE-aMC"; */
+"wX5-ZE-aMC.title" = "Wykonaj";
+
+/* Class = "NSTextFieldCell"; title = "Command to execute"; ObjectID = "x5V-we-asQ"; */
+"x5V-we-asQ.title" = "Komenda do wykonania";

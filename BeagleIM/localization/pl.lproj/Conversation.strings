@@ -1,0 +1,104 @@
+/* Class = "NSTextFieldCell"; title = "📯"; ObjectID = "0wH-YL-WDw"; */
+"0wH-YL-WDw.title" = "📯";
+
+/* Class = "NSMenuItem"; title = "Share"; ObjectID = "19V-oi-bxb"; */
+"19V-oi-bxb.title" = "Udostępnij";
+
+/* Class = "NSTextFieldCell"; title = "📯"; ObjectID = "4dD-Ba-toW"; */
+"4dD-Ba-toW.title" = "📯";
+
+/* Class = "NSMenuItem"; title = "Copy"; ObjectID = "5gx-w0-i1S"; */
+"5gx-w0-i1S.title" = "Kopiuj";
+
+/* Class = "NSTextFieldCell"; title = "20:31:03"; ObjectID = "D3S-Fu-GzK"; */
+"D3S-Fu-GzK.title" = "20:31:03";
+
+/* Class = "NSMenuItem"; title = "Open"; ObjectID = "Emv-Uo-Cfn"; */
+"Emv-Uo-Cfn.title" = "Otwórz";
+
+/* Class = "NSMenu"; title = "Share"; ObjectID = "Fag-bM-rfw"; */
+"Fag-bM-rfw.title" = "Udostępnij";
+
+/* Class = "NSMenuItem"; title = "Item 1"; ObjectID = "GD4-JW-IGJ"; */
+"GD4-JW-IGJ.title" = "Item 1";
+
+/* Class = "NSMenuItem"; title = "Delete"; ObjectID = "HWT-hF-b3o"; */
+"HWT-hF-b3o.title" = "Usuń";
+
+/* Class = "NSMenuItem"; title = "Item"; ObjectID = "MOm-LD-A4E"; */
+"MOm-LD-A4E.title" = "Item";
+
+/* Class = "NSMenuItem"; title = "Copy"; ObjectID = "PQ3-ki-Xrm"; */
+"PQ3-ki-Xrm.title" = "Kopiuj";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "Tzd-gW-Ac3"; */
+"Tzd-gW-Ac3.title" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; title = "Displayed"; ObjectID = "Uix-mm-G9h"; */
+"Uix-mm-G9h.title" = "Wyświetlona";
+
+/* Class = "NSButtonCell"; title = "Accept"; ObjectID = "aMd-4L-YTa"; */
+"aMd-4L-YTa.title" = "Akceptuj";
+
+/* Class = "NSTextFieldCell"; placeholderString = "Testing"; ObjectID = "axe-dt-dii"; */
+"axe-dt-dii.placeholderString" = "Testing";
+
+/* Class = "NSTextFieldCell"; title = "John Doe"; ObjectID = "axe-dt-dii"; */
+"axe-dt-dii.title" = "John Doe";
+
+/* Class = "NSTextFieldCell"; title = "📯"; ObjectID = "buZ-sE-xEt"; */
+"buZ-sE-xEt.title" = "📯";
+
+/* Class = "NSMenuItem"; title = "Share"; ObjectID = "dqA-Id-kiX"; */
+"dqA-Id-kiX.title" = "Udostępnij";
+
+/* Class = "NSTextFieldCell"; title = "📯"; ObjectID = "fhA-iN-Rtr"; */
+"fhA-iN-Rtr.title" = "📯";
+
+/* Class = "NSTextFieldCell"; placeholderString = "Testing"; ObjectID = "hN1-fw-WxL"; */
+"hN1-fw-WxL.placeholderString" = "Testing";
+
+/* Class = "NSTextFieldCell"; title = "John Doe"; ObjectID = "hN1-fw-WxL"; */
+"hN1-fw-WxL.title" = "John Doe";
+
+/* Class = "NSMenuItem"; title = "Item 1"; ObjectID = "hPi-hb-VEB"; */
+"hPi-hb-VEB.title" = "Item 1";
+
+/* Class = "NSTextFieldCell"; title = "📯"; ObjectID = "hR4-5U-Pda"; */
+"hR4-5U-Pda.title" = "📯";
+
+/* Class = "NSButtonCell"; title = "Button"; ObjectID = "isG-WZ-OoS"; */
+"isG-WZ-OoS.title" = "Button";
+
+/* Class = "NSTextFieldCell"; title = "20:31:03"; ObjectID = "lAv-Fw-zDs"; */
+"lAv-Fw-zDs.title" = "20:31:03";
+
+/* Class = "NSMenuItem"; title = "Save"; ObjectID = "oDV-Qj-YF8"; */
+"oDV-Qj-YF8.title" = "Zapisz";
+
+/* Class = "NSTextFieldCell"; title = "20:31:03"; ObjectID = "oFx-wq-xLb"; */
+"oFx-wq-xLb.title" = "20:31:03";
+
+/* Class = "NSMenuItem"; title = "Open"; ObjectID = "rC8-ej-mBc"; */
+"rC8-ej-mBc.title" = "Otwórz";
+
+/* Class = "NSMenuItem"; title = "Save"; ObjectID = "sjT-Dg-qd2"; */
+"sjT-Dg-qd2.title" = "Zapisz";
+
+/* Class = "NSMenu"; title = "Share"; ObjectID = "uWP-Ey-amX"; */
+"uWP-Ey-amX.title" = "Udostępnij";
+
+/* Class = "NSMenuItem"; title = "Delete"; ObjectID = "upd-Ua-LkW"; */
+"upd-Ua-LkW.title" = "Usuń";
+
+/* Class = "NSButtonCell"; title = "Button"; ObjectID = "vAb-nk-RwK"; */
+"vAb-nk-RwK.title" = "Button";
+
+/* Class = "NSMenuItem"; title = "Item"; ObjectID = "vaA-rx-ep2"; */
+"vaA-rx-ep2.title" = "Item";
+
+/* Class = "NSTextFieldCell"; placeholderString = "Testing"; ObjectID = "wCw-o5-xho"; */
+"wCw-o5-xho.placeholderString" = "Testing";
+
+/* Class = "NSTextFieldCell"; title = "John Doe"; ObjectID = "wCw-o5-xho"; */
+"wCw-o5-xho.title" = "John Doe";

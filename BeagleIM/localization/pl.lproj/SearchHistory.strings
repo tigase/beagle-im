@@ -1,0 +1,20 @@
+/* Class = "NSWindow"; title = "Window"; ObjectID = "BV6-uX-z8i"; */
+"BV6-uX-z8i.title" = "Okno";
+
+/* Class = "NSTextFieldCell"; title = "20:31:03"; ObjectID = "Jfs-fH-jds"; */
+"Jfs-fH-jds.title" = "20:31:03";
+
+/* Class = "NSButtonCell"; title = "Close"; ObjectID = "Omc-pD-3mY"; */
+"Omc-pD-3mY.title" = "Zakmnij";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "kok-R8-2if"; */
+"kok-R8-2if.title" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; placeholderString = "Testing"; ObjectID = "rNb-Ca-Sy6"; */
+"rNb-Ca-Sy6.placeholderString" = "Testing";
+
+/* Class = "NSTextFieldCell"; title = "John Doe"; ObjectID = "rNb-Ca-Sy6"; */
+"rNb-Ca-Sy6.title" = "John Doe";
+
+/* Class = "NSButtonCell"; title = "Go to chat"; ObjectID = "zD5-a3-lrl"; */
+"zD5-a3-lrl.title" = "Idź do rozmowy";
