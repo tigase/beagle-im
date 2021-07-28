@@ -68,7 +68,7 @@ class ConversationLogController: AbstractConversationLogController, NSTableViewD
         switch item.payload {
         case .unreadMessages:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMessageSystemCellView"), owner: nil) as? ChatMessageSystemCellView {
-                cell.message.attributedString = NSAttributedString(string: "Unread messages", attributes: [.font: NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium), .foregroundColor: NSColor.secondaryLabelColor]);
+                cell.message.attributedString = NSAttributedString(string: NSLocalizedString("Unread messages", comment: "Label of unread messages"), attributes: [.font: NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium), .foregroundColor: NSColor.secondaryLabelColor]);
                 return cell;
             }
             return nil;

@@ -44,7 +44,7 @@ class MultiContactSelectionView: NSView, NSTableViewDelegate, NSTableViewDataSou
     override func awakeFromNib() {
         super.awakeFromNib();
 
-        searchField.placeholderString = "Enter contact name or jid"
+        searchField.placeholderString = NSLocalizedString("Enter contact name or jid", comment: "contact selector placeholder")
         searchField.translatesAutoresizingMaskIntoConstraints = false;
         scrollView.translatesAutoresizingMaskIntoConstraints = false;
         

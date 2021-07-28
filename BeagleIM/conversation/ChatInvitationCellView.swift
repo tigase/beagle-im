@@ -57,7 +57,7 @@ class ChatInvitationCellView: BaseChatCellView {
             defBottomButtonConstraint?.isActive = true;
         }
         
-        let messageBody = message ?? "Invitation to channel \(appendix.channel.stringValue)";
+        let messageBody = message ?? String.localizedStringWithFormat(NSLocalizedString("Invitation to channel %@", comment: "Invitation to channel message"), appendix.channel.stringValue);
         let msg = NSMutableAttributedString(string: messageBody);
         if let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue) {
         
@@ -94,9 +94,9 @@ class ChatInvitationCellView: BaseChatCellView {
                 case .failure(let error):
                     DispatchQueue.main.async {
                         let alert = NSAlert();
-                        alert.messageText = "Could not join";
-                        alert.informativeText = "It was not possible to join a channel. The server returned an error: \(error.message ?? error.description)";
-                        alert.addButton(withTitle: "OK")
+                        alert.messageText = NSLocalizedString("Could not join", comment: "Title informing that client failed to join");
+                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to join a channel. The server returned an error: %@", comment: "Message informing that client failed to join a channel"), error.message ?? error.description);
+                        alert.addButton(withTitle: NSLocalizedString("OK", comment: "OK"));
                         alert.beginSheetModal(for: window, completionHandler: nil);
                     }
                 }

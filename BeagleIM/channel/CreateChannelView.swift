@@ -62,11 +62,11 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
     @IBAction func updateTypeLabel(typeSelector: NSSegmentedControl) {
         switch typeSelector.selectedSegment {
         case 0:
-            typeDescription.stringValue = "Anyone will be able to join."
+            typeDescription.stringValue = NSLocalizedString("Anyone will be able to join.", comment: "create channel view hine")
         case 1:
-            typeDescription.stringValue = "Only people with valid invitations will be able to join."
+            typeDescription.stringValue = NSLocalizedString("Only people with valid invitations will be able to join.", comment: "create channel view hine")
         default:
-            typeDescription.stringValue = "UNKNOWN";
+            typeDescription.stringValue = NSLocalizedString("UNKNOWN", comment: "create channel view hine")
         }
         useMixChanged();
     }
@@ -156,10 +156,10 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                                     return;
                                 }
                                 let alert = NSAlert();
-                                alert.messageText = "Error occurred";
+                                alert.messageText = NSLocalizedString("Error occurred", comment: "alert window title");
                                 alert.icon = NSImage(named: NSImage.cautionName);
-                                alert.informativeText = "Could not join newly created channel '\(channelJid)' on the server. Got following error: \(error.message ?? error.description)";
-                                alert.addButton(withTitle: "OK");
+                                alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Could not join newly created channel '%@' on the server. Got following error: %@", comment: "alert window message"), channelJid.description, error.message ?? error.description);
+                                alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                                 alert.beginSheetModal(for: window, completionHandler: { result in
                                     self?.delegate?.operationFinished();
                                 });
@@ -197,10 +197,10 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                             return;
                         }
                         let alert = NSAlert();
-                        alert.messageText = "Error occurred";
+                        alert.messageText = NSLocalizedString("Error occurred", comment: "alert window title");
                         alert.icon = NSImage(named: NSImage.cautionName);
-                        alert.informativeText = "Could not create channel on the server. Got following error: \(error.message ?? error.description)";
-                        alert.addButton(withTitle: "OK");
+                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Could not create channel on the server. Got following error: %@", comment: "alert window message"), error.message ?? error.description);
+                        alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                         alert.beginSheetModal(for: window, completionHandler: { result in
                             self?.delegate?.operationFinished();
                         });
@@ -265,10 +265,10 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                             return;
                         }
                         let alert = NSAlert();
-                        alert.messageText = "Error occurred";
+                        alert.messageText = NSLocalizedString("Error occurred", comment: "alert window title");
                         alert.icon = NSImage(named: NSImage.cautionName);
-                        alert.informativeText = "Could not apply room configuration on the server. Got following error: \(error.message ?? error.description)";
-                        alert.addButton(withTitle: "OK");
+                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Could not apply room configuration on the server. Got following error: %@", comment: "alert window message"), error.message ?? error.description);
+                        alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                         alert.beginSheetModal(for: window, completionHandler: { result in
                             self?.delegate?.operationFinished();
                         });

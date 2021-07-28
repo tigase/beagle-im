@@ -27,7 +27,7 @@ class InvitationGroup: ChatsListGroupProtocol {
     
     var items: [InvitationItem] = [];
     
-    let name: String = "Invitations";
+    let name: String = NSLocalizedString("Invitations", comment: "Chats list group name");
     
     var count: Int {
         return items.count;

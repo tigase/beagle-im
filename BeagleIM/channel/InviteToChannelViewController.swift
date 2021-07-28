@@ -80,10 +80,10 @@ class InviteToChannelViewControllerController: NSViewController, NSTextFieldDele
                             return;
                         }
                         let alert = NSAlert();
-                        alert.messageText = "Error occurred";
+                        alert.messageText = NSLocalizedString("Error occurred", comment: "alert window title");
                         alert.icon = NSImage(named: NSImage.cautionName);
-                        alert.informativeText = "Could not invite to channel on the server. Got following error: \(error.message ?? error.description)";
-                        alert.addButton(withTitle: "OK");
+                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Could not invite to channel on the server. Got following error: %@", comment: "alert window message"), error.message ?? error.description);
+                        alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                         alert.beginSheetModal(for: window, completionHandler: nil);
                     }
                 }

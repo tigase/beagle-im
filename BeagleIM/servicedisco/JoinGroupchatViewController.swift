@@ -50,7 +50,8 @@ class JoinGroupchatViewController: NSViewController, NSTextFieldDelegate {
     var isPasswordRequired: Bool = false;
     
     override func viewWillAppear() {
-        self.infoLabel.stringValue = "Please enter nickname\(self.isPasswordRequired ? " and password" : "") to enter to join groupchat at \(roomJid!.stringValue).";
+        let passwordPart = self.isPasswordRequired ? (" " + NSLocalizedString("and password", comment: "join groupchat part")) : "";
+        self.infoLabel.stringValue = String.localizedStringWithFormat(NSLocalizedString("Please enter nickname %@ to enter to join groupchat at %@.", comment: "join groupchat info label"), passwordPart, roomJid!.stringValue);
         
         nicknameField.stringValue = AccountManager.getAccount(for: self.account!)?.nickname ?? "";
         passwordField.isHidden = !isPasswordRequired;

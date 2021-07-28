@@ -70,7 +70,7 @@ class XMLConsoleViewController: NSViewController, StreamLogger {
     var account: BareJID!;
     
     override func viewWillAppear() {
-        self.view.window?.title = "XML Console: \(account!)";
+        self.view.window?.title = String.localizedStringWithFormat(NSLocalizedString("XML Console: %@", comment: "xml console title"), account!.stringValue);
         
         XmppService.instance.getClient(for: account)?.streamLogger = self;
     }

@@ -237,7 +237,7 @@ AAAAAAEGA
                                 <rect key="frame" x="13" y="40" width="353" height="524"/>
                                 <font key="font" metaFont="system"/>
                                 <tabViewItems>
-                                    <tabViewItem label="Allowed" identifier="" id="xig-C3-GKB">
+                                    <tabViewItem label="Allowed" identifier="ParticipantsAllowedTab" id="xig-C3-GKB">
                                         <view key="view" id="MyF-j8-eHd">
                                             <rect key="frame" x="10" y="33" width="333" height="478"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -345,25 +345,25 @@ AAAAAAEGA
                                             </constraints>
                                         </view>
                                     </tabViewItem>
-                                    <tabViewItem label="Banned" identifier="" id="5pJ-rv-ewh">
+                                    <tabViewItem label="Banned" identifier="ParticipantsBannedTab" id="5pJ-rv-ewh">
                                         <view key="view" id="LVn-7o-bVc">
-                                            <rect key="frame" x="10" y="33" width="333" height="477"/>
+                                            <rect key="frame" x="10" y="33" width="333" height="478"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dCH-Q8-5JA">
-                                                    <rect key="frame" x="6" y="28" width="321" height="443"/>
-                                                    <clipView key="contentView" id="sDp-qK-scp">
+                                                <scrollView ambiguous="YES" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dCH-Q8-5JA">
+                                                    <rect key="frame" x="6" y="29" width="321" height="443"/>
+                                                    <clipView key="contentView" ambiguous="YES" id="sDp-qK-scp">
                                                         <rect key="frame" x="1" y="1" width="319" height="441"/>
-                                                        <autoresizingMask key="autoresizingMask"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                         <subviews>
-                                                            <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" viewBased="YES" id="6gw-Rr-4Ke">
+                                                            <tableView verticalHuggingPriority="750" ambiguous="YES" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" viewBased="YES" id="6gw-Rr-4Ke">
                                                                 <rect key="frame" x="0.0" y="0.0" width="319" height="441"/>
                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                 <size key="intercellSpacing" width="3" height="2"/>
                                                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                                 <tableColumns>
-                                                                    <tableColumn width="287" minWidth="40" maxWidth="1000" id="ZNa-TD-xpj">
+                                                                    <tableColumn width="307" minWidth="40" maxWidth="1000" id="ZNa-TD-xpj">
                                                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
                                                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                             <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -376,11 +376,11 @@ AAAAAAEGA
                                                                         <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                                         <prototypeCellViews>
                                                                             <tableCellView identifier="ManageBannedParticipantsTableCellView" id="BY3-2y-iXV">
-                                                                                <rect key="frame" x="11" y="1" width="296" height="17"/>
+                                                                                <rect key="frame" x="1" y="1" width="316" height="17"/>
                                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                                 <subviews>
                                                                                     <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="blk-sC-itu">
-                                                                                        <rect key="frame" x="0.0" y="0.0" width="296" height="17"/>
+                                                                                        <rect key="frame" x="0.0" y="0.0" width="316" height="17"/>
                                                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                                                                         <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="YbX-Q8-gSE">
                                                                                             <font key="font" metaFont="system"/>
@@ -412,8 +412,8 @@ AAAAAAEGA
                                                         <autoresizingMask key="autoresizingMask"/>
                                                     </scroller>
                                                 </scrollView>
-                                                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="z5z-wM-F4k">
-                                                    <rect key="frame" x="6" y="5" width="18" height="20"/>
+                                                <button verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="z5z-wM-F4k">
+                                                    <rect key="frame" x="6" y="6" width="18" height="20"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" secondItem="z5z-wM-F4k" secondAttribute="height" multiplier="1:1" id="YWP-2h-aoe"/>
                                                     </constraints>
@@ -425,8 +425,8 @@ AAAAAAEGA
                                                         <action selector="addBannedClicked:" target="wWZ-ab-ziR" id="Ppy-c4-mSG"/>
                                                     </connections>
                                                 </button>
-                                                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="GHp-Th-DDQ">
-                                                    <rect key="frame" x="24" y="5" width="18" height="20"/>
+                                                <button verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GHp-Th-DDQ">
+                                                    <rect key="frame" x="24" y="6" width="18" height="20"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" secondItem="GHp-Th-DDQ" secondAttribute="height" id="MNb-eb-dS7"/>
                                                     </constraints>

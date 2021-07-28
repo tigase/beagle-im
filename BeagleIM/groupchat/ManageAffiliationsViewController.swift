@@ -80,9 +80,9 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
             if let window = self.view.window, !errors.isEmpty {
                 let alert = NSAlert();
                 alert.icon = NSImage(named: NSImage.cautionName);
-                alert.messageText = "Authorization error";
-                alert.informativeText = "You are not authorized to view memeber list of this room.";
-                alert.addButton(withTitle: "OK");
+                alert.messageText = NSLocalizedString("Authorization error", comment: "alert window title");
+                alert.informativeText = NSLocalizedString("You are not authorized to view memeber list of this room.", comment: "alert window message");
+                alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                 alert.beginSheetModal(for: window, completionHandler: { result in
                     self.close();
                 });
@@ -110,7 +110,7 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
             if let popUpButton = (view.subviews[0] as? NSPopUpButton) {
                 popUpButton.removeAllItems();
                 popUpButton.addItem(withTitle: "");
-                popUpButton.addItems(withTitles: ["Owner", "Admin", "Member", "Outcast"]);
+                popUpButton.addItems(withTitles: [NSLocalizedString("Owner", comment: "popup item"), NSLocalizedString("Admin", comment: "popup item"), NSLocalizedString("Member", comment: "popup item"), NSLocalizedString("Outcast", comment: "popup item")]);
                 switch affil {
                 case .owner:
                     popUpButton.selectItem(at: 1);
@@ -186,30 +186,30 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
     
     @IBAction func addItemClicked(_ sender: NSButton) {
         let alert = NSAlert();
-        alert.messageText = "Add member";
-        alert.informativeText = "Please provide user JID and affiliation to this room.";
+        alert.messageText = NSLocalizedString("Add member", comment: "alert window title");
+        alert.informativeText = NSLocalizedString("Please provide user JID and affiliation to this room.", comment: "alert window message");
         
-        alert.addButton(withTitle: "Add");
-        alert.addButton(withTitle: "Cancel");
+        alert.addButton(withTitle: NSLocalizedString("Add", comment: "Button"));
+        alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Button"));
         
         let view = NSStackView(frame: NSRect(x: 0, y: 0, width: 300, height: 54));
         view.orientation = .vertical;
         
         let jidField = NSTextField(string: "");
-        jidField.placeholderString = "Enter JID"
+        jidField.placeholderString = NSLocalizedString("Enter JID", comment: "add member entry field placeholder");
         jidField.setContentHuggingPriority(.defaultHigh, for: .horizontal);
         view.addView(jidField, in: .bottom);
         
         let popUpButton = NSPopUpButton(frame: NSRect(x: 0, y:0, width: 200, height: 21), pullsDown: true);
         popUpButton.autoenablesItems = true;
         popUpButton.addItem(withTitle: "");
-        popUpButton.addItems(withTitles: ["Owner", "Admin", "Member", "Outcast"]);
+        popUpButton.addItems(withTitles: [NSLocalizedString("Owner", comment: "popup item"), NSLocalizedString("Admin", comment: "popup item"), NSLocalizedString("Member", comment: "popup item"), NSLocalizedString("Outcast", comment: "popup item")]);
         popUpButton.selectItem(at: 3);
         popUpButton.title = popUpButton.titleOfSelectedItem ?? "";
         popUpButton.tag = -1;
         popUpButton.action = #selector(affiliationChangedForRow(_:));
         popUpButton.target = self;
-        let label = NSTextField(labelWithString: "Affiliation:");
+        let label = NSTextField(labelWithString: NSLocalizedString("Affiliation", comment: "add member view field label") + ":");
         label.setContentHuggingPriority(.defaultHigh, for: .horizontal);
         let row = NSStackView(views: [label, popUpButton]);
         view.addView(row, in: .bottom);
@@ -275,9 +275,9 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
                 case .failure(let error):
                     let alert = NSAlert();
                     alert.icon = NSImage(named: NSImage.cautionName);
-                    alert.messageText = "Error occurred";
-                    alert.informativeText = (error == .forbidden()) ? "You are not allowed to modify list of affiliations for this room." : "Server returned an error: \(error.message ?? error.description)";
-                    alert.addButton(withTitle: "OK");
+                    alert.messageText = NSLocalizedString("Error occurred", comment: "alert window title");
+                    alert.informativeText = (error == .forbidden()) ? NSLocalizedString("You are not allowed to modify list of affiliations for this room.", comment: "alert window message") : String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert window message"), error.message ?? error.description);
+                    alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                     alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
                 }
             }

@@ -19,6 +19,7 @@
 // If not, see https://www.gnu.org/licenses/.
 //
 
+import AppKit
 import TigaseSwift
 
 extension MucModule.RoomError {
@@ -26,19 +27,19 @@ extension MucModule.RoomError {
     var reason: String {
         switch self {
         case .banned:
-            return "User is banned";
+            return NSLocalizedString("User is banned", comment: "muc module - room error");
         case .invalidPassword:
-            return "Invalid password";
+            return NSLocalizedString("Invalid password", comment: "muc module - room error");
         case .maxUsersExceeded:
-            return "Maximum number of users exceeded";
+            return NSLocalizedString("Maximum number of users exceeded", comment: "muc module - room error");
         case .nicknameConflict:
-            return "Nickname already in use";
+            return NSLocalizedString("Nickname already in use", comment: "muc module - room error");
         case .nicknameLockedDown:
-            return "Nickname is locked down";
+            return NSLocalizedString("Nickname is locked down", comment: "muc module - room error");
         case .registrationRequired:
-            return "Membership is required to access the room";
+            return NSLocalizedString("Membership is required to access the room", comment: "muc module - room error");
         case .roomLocked:
-            return "Room is locked";
+            return NSLocalizedString("Room is locked", comment: "muc module - room error");
         }
     }
     

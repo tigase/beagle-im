@@ -75,7 +75,7 @@ open class OMEMOContoller: NSViewController, AccountAware, NSTableViewDataSource
             fingerprint = self.remoteIdentitiesTableView.prettify(fingerprint: fingerprint!);
         }
         
-        localFingerprint.stringValue = fingerprint ?? "Key not generated!";
+        localFingerprint.stringValue = fingerprint ?? NSLocalizedString("Key not generated!", comment: "OMEMO settings");
         localFingerprint.textColor = (omemoModule?.isReady ?? false) ?  NSColor.labelColor : NSColor.secondaryLabelColor;
         
         if let tmp = AccountSettings.omemoRegistrationId(account).uint32() {
@@ -110,9 +110,9 @@ open class OMEMOContoller: NSViewController, AccountAware, NSTableViewDataSource
         let selected = self.remoteIdentitiesTableView.selectedIdentities;
 
         let alert = NSAlert();
-        alert.messageText = "Do you want to mark selected identities as compromised?";
-        alert.addButton(withTitle: "Yes")
-        alert.addButton(withTitle: "No")
+        alert.messageText = NSLocalizedString("Do you want to mark selected identities as compromised?", comment: "OMEMO settings");
+        alert.addButton(withTitle: NSLocalizedString("Yes", comment: "Button"))
+        alert.addButton(withTitle: NSLocalizedString("No", comment: "Button"))
         alert.beginSheetModal(for: self.view.window!) { (response) in
             switch response {
             case NSApplication.ModalResponse.alertFirstButtonReturn:
@@ -133,9 +133,9 @@ open class OMEMOContoller: NSViewController, AccountAware, NSTableViewDataSource
     @IBAction func markTrusted(_ sender: Any) {
         let alert = NSAlert();
         let selected = self.remoteIdentitiesTableView.selectedIdentities;
-        alert.messageText = "Do you want to mark selected identities as trusted?";
-        alert.addButton(withTitle: "Yes")
-        alert.addButton(withTitle: "No")
+        alert.messageText = NSLocalizedString("Do you want to mark selected identities as trusted?", comment: "OMEMO settings");
+        alert.addButton(withTitle: NSLocalizedString("Yes", comment: "Button"))
+        alert.addButton(withTitle: NSLocalizedString("No", comment: "Button"))
         alert.beginSheetModal(for: self.view.window!) { (response) in
             switch response {
             case NSApplication.ModalResponse.alertFirstButtonReturn:
@@ -160,9 +160,9 @@ open class OMEMOContoller: NSViewController, AccountAware, NSTableViewDataSource
     @IBAction func deleteIdentity(_ sender: Any) {
         let alert = NSAlert();
         let selected = self.remoteIdentitiesTableView.selectedIdentities;
-        alert.messageText = "Do you want to deactivate and remove selected identities?";
-        alert.addButton(withTitle: "Yes")
-        alert.addButton(withTitle: "No")
+        alert.messageText = NSLocalizedString("Do you want to deactivate and remove selected identities?", comment: "OMEMO settings");
+        alert.addButton(withTitle: NSLocalizedString("Yes", comment: "Button"))
+        alert.addButton(withTitle: NSLocalizedString("No", comment: "Button"))
         alert.beginSheetModal(for: self.view.window!) { (response) in
             switch response {
             case NSApplication.ModalResponse.alertFirstButtonReturn:

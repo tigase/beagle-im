@@ -131,30 +131,30 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
         var msg = message;
 
         if errorCondition == nil {
-            msg = "Server did not respond on registration request";
+            msg = NSLocalizedString("Server did not respond on registration request", comment: "register account error");
         } else {
             if msg == nil || msg == "Unsuccessful registration attempt" {
                 switch errorCondition! {
                 case .feature_not_implemented:
-                    msg = "Registration is not supported by this server";
+                    msg = NSLocalizedString("Registration is not supported by this server", comment: "register account error");
                 case .not_acceptable, .not_allowed:
-                    msg = "Provided values are not acceptable";
+                    msg = NSLocalizedString("Provided values are not acceptable", comment: "register account error");
                 case .conflict:
-                    msg = "User with provided username already exists";
+                    msg = NSLocalizedString("User with provided username already exists", comment: "register account error");
                 case .service_unavailable:
-                    msg = "Service is not available at this time."
+                    msg = NSLocalizedString("Service is not available at this time.", comment: "register account error")
                 default:
-                    msg = "Server returned error: \(errorCondition!.rawValue)";
+                    msg = String.localizedStringWithFormat(NSLocalizedString("Server returned error: %@", comment: "register account error"), errorCondition!.rawValue);
                 }
             }
         }
         
         DispatchQueue.main.async {
             let alert = NSAlert();
-            alert.messageText = "Registration failed!";
+            alert.messageText = NSLocalizedString("Registration failed!", comment: "register account error");
             alert.informativeText = msg!;
             alert.icon = NSImage(named: NSImage.cautionName);
-            alert.addButton(withTitle: "OK");
+            alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
             alert.beginSheetModal(for: self.view.window!) { (response) in
                 print("error dismissed");
                 if errorCondition == ErrorCondition.feature_not_implemented || errorCondition == ErrorCondition.service_unavailable {

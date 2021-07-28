@@ -1,11 +1,968 @@
+/* alert window message part */
+" and node %@" = "";
+
+/* alert window message */
+"%@ requests authorization to access information about you presence" = "";
+
+/* private message mark */
+"(private message)" = "";
+
+/* replaces removed messages */
+"(this message has been removed)" = "";
+
+/* Button */
+"Accept" = "";
+
+/* alert window title */
+"Account is disabled" = "";
+
+/* vcard editor */
+"Account is not connected" = "";
+
+/* alert window message */
+"Account needs to be active and connected to remove the acocunt from the server" = "";
+
+/* alert window title */
+"Account removal" = "";
+
+/* alert window title */
+"Account removal failure" = "";
+
+/* Button */
+"Add" = "";
+
+/* alert window title */
+"Add member" = "";
+
+/* add roster item label */
+"Add to" = "";
+
+/* popup button label */
+"Add to contacts" = "";
+
+/* contact details popup label */
+"Addresses" = "";
+
+/* popup item */
+"Admin" = "";
+
+/* add member view field label */
+"Affiliation" = "";
+
+/* alert window title */
+"Allow access" = "";
+
+/* add roster item label */
+"Allow presence subscription" = "";
+
+/* invite to meeting controller */
+"Allowing access to meeting failed" = "";
+
+/* settings */
+"Alternate colors for incoming/outgoing messages" = "";
+
+/* settings */
+"Always" = "";
+
+/* join groupchat part */
+"and password" = "";
+
+/* create channel view hine */
+"Anyone will be able to join." = "";
+
+/* setting */
+"Appearance" = "";
+
+/* alert window message */
+"Are you sure that you want to leave and destroy channel %@?" = "";
+
+/* alert window message */
+"Are you sure that you want to leave and destroy channel %s?" = "";
+
+/* alert window */
+"Are you sure you want to retract that message?" = "";
+
+/* attachment name in chats list */
+"Attachment" = "";
+
+/* alert window title */
+"Authentication failed" = "";
+
+/* alert window title */
+"Authorization error" = "";
+
+/* alert window title */
+"Authorization request" = "";
+
+/* setting */
+"Automatic" = "";
+
+/* settings */
+"Automatic download size limit" = "";
+
+/* alert windiw title */
+"Ban access" = "";
+
+/* context menu item */
+"Ban user" = "";
+
+/* alert window title */
+"Banning user %@ failed" = "";
+
+/* popup checkbox label */
+"Block contact" = "";
+
+/* video call conroller */
+"Call declined" = "";
+
+/* video call conroller */
+"Call ended" = "";
+
+/* alert window title */
+"Call failed" = "";
+
+/* Button */
+"Cancel" = "";
+
+/* alert window title */
+"Channel destruction failed!" = "";
+
+/* Chats list group name */
+"Channels" = "";
+
+/* setting */
+"Chats list style" = "";
+
+/* vcard editor */
+"Code" = "";
+
+/* omemo key status */
+"Compromised" = "";
+
+/* alert window title */
+"Configuration change failed" = "";
+
+/* popup button label */
+"Confirm messages" = "";
+
+/* connection status */
+"Connected" = "";
+
+/* video call conroller */
+"Connecting..." = "";
+
+/* add roster item label */
+"Contact name" = "";
+
+/* Chats list group name */
+"Conversations" = "";
+
+/* context menu item */
+"Copy link" = "";
+
+/* context menu item */
+"Copy messages" = "";
+
+/* context menu item */
+"Copy text" = "";
+
+/* context menu item */
+"Correct message" = "";
+
+/* alert window message */
+"Could not apply room configuration on the server. Got following error: %@" = "";
+
+/* alert window title */
+"Could not create" = "";
+
+/* alert window message */
+"Could not create channel on the server. Got following error: %@" = "";
+
+/* media helper sharing error */
+"Could not detect MIME type of a file." = "";
+
+/* alert window message */
+"Could not execute command: %@" = "";
+
+/* alert window message */
+"Could not invite to channel on the server. Got following error: %@" = "";
+
+/* Title informing that client failed to join */
+"Could not join" = "";
+
+/* alert window message */
+"Could not join newly created channel '%@' on the server. Got following error: %@" = "";
+
+/* alert window message */
+"Could not join room. Reason:\n%@" = "";
+
+/* alert window title */
+"Could not publish details" = "";
+
+/* alert window title */
+"Could not retrieve config" = "";
+
+/* alert window title */
+"Could not retrieve details" = "";
+
+/* media helper sharing error */
+"Could not retrieve file size." = "";
+
+/* alert window message */
+"Could not retrieve room configuration from the server. Got following error: %@" = "";
+
+/* vcard editor */
+"Could not retrive current version from the server." = "";
+
+/* vcard editor */
+"Could not retrive current version of a private VCard from the server." = "";
+
+/* vcard editor */
+"Country" = "";
+
+/* setting */
+"Dark" = "";
+
+/* Button */
+"Decline" = "";
+
+/* encryption option */
+"Default" = "";
+
+/* setting */
+"Default encryption" = "";
+
+/* context menu item */
+"Delete" = "";
+
+/* Button */
+"Delete chat" = "";
+
+/* alert window title */
+"Delete group chat?" = "";
+
+/* alert window title */
+"Destroy channel?" = "";
+
+/* Chats list group name */
+"Direct messages" = "";
+
+/* popup button label tooltip */
+"Disabling will disable syncing information about read messages between your devices!" = "";
+
+/* connection status */
+"Disconnected" = "";
+
+/* displayed in the chat log */
+"Displayed" = "";
+
+/* displayed in the tooltip */
+"Displayed by %@" = "";
+
+/* displayed in the tooltip */
+"Displayed by %s" = "";
+
+/* video call controller */
+"Do you want to accept this call?" = "";
+
+/* OMEMO settings */
+"Do you want to deactivate and remove selected identities?" = "";
+
+/* OMEMO settings */
+"Do you want to mark selected identities as compromised?" = "";
+
+/* OMEMO settings */
+"Do you want to mark selected identities as trusted?" = "";
+
+/* alert window title */
+"Do you wish to ban user %@?" = "";
+
+/* settings */
+"Edit keywords" = "";
+
+/* mark's message that was edited */
+"edited at %@" = "";
+
+/* mark's message that was edited */
+"edited at %s" = "";
+
+/* contact details popup label */
+"Emails" = "";
+
+/* settings */
+"Enable groupchat bookmarks sync" = "";
+
+/* setting */
+"Enable link previews" = "";
+
+/* settings */
+"Enabled" = "";
+
+/* alert window message */
+"Enter a JID of user you want to add to the list." = "";
+
+/* alert window message */
+"Enter a nickname which you want to use in this channel." = "";
+
+/* contact selector placeholder */
+"Enter contact name or jid" = "";
+
+/* vcard editor */
+"Enter email address" = "";
+
+/* add member entry field placeholder */
+"Enter JID" = "";
+
+/* alert window title */
+"Enter new name" = "";
+
+/* alert window title */
+"Enter password for room" = "";
+
+/* vcard editor */
+"Enter phone number" = "";
+
+/* xml entry controller */
+"Error" = "";
+
+/* account manager error */
+"Error code" = "";
+
+/* alert window title */
+"Error occurred" = "";
+
+/* settings */
+"Experimental" = "";
+
+/* jingle manager */
+"Failed to initialize RTC SSL for WebRTC!" = "";
+
+/* meet controlller */
+"Failed to kick out" = "";
+
+/* media helper sharing error */
+"Feature not supported by XMPP server" = "";
+
+/* media helper sharing error */
+"File is too big to share" = "";
+
+/* alert window message */
+"File upload completed but it was not confirmed correctly by your server. Do you wish to proceed anyway?" = "";
+
+/* sender of PM */
+"From %@" = "";
+
+/* setting */
+"From %@ until %@" = "";
+
+/* placehoder of message entry field */
+"from %@..." = "";
+
+/* sender of PM */
+"From %s" = "";
+
+/* placehoder of message entry field */
+"from %s..." = "";
+
+/* Chats list group name */
+"From unknown" = "";
+
+/* Chats list invitation type */
+"Groupchat invitation" = "";
+
+/* image quality
+   video quality */
+"High" = "";
+
+/* image quality */
+"Highest" = "";
+
+/* contact details popup label */
+"Home" = "";
+
+/* alert window message - part 1 */
+"HTTP File Upload server presented invalid SSL certificate for %@.\nReceived certificate %@ (%@) is issued by %@.\n\nWould you like to connect to the server anyway?" = "";
+
+/* alert window message - part 1 */
+"HTTP File Upload server presented invalid SSL certificate for %@.\nReceived certificate %@ (%@) is self-signed!\n\nWould you like to connect to the server anyway?" = "";
+
+/* settings */
+"Ignore VoIP support check" = "";
+
+/* connection status */
+"Inactive" = "";
+
+/* video call controller */
+"Incoming audio call from %@" = "";
+
+/* video call controller */
+"Incoming video call from %@" = "";
+
+/* muc module - room error */
+"Invalid password" = "";
+
+/* alert window title */
+"Invalid SSL certificate" = "";
+
+/* invitation name in chats list */
+"Invitation" = "";
+
+/* Invitation to channel message */
+"Invitation to channel %@" = "";
+
+/* Invitation to channel message */
+"Invitation to channel %s" = "";
+
+/* alert window title
+   invitation alert - title */
+"Invitation to groupchat" = "";
+
+/* Chats list group name */
+"Invitations" = "";
+
+/* setting */
+"It is not possible to automatically verify server certificate for %@. Please review certificate details:" = "";
+
+/* alert window message */
+"It is not possible to open a chat when the account related to the chat is disabled!" = "";
+
+/* alert window message */
+"It was not possible to access camera or microphone. Please check permissions in the system settings" = "";
+
+/* media helper sharing error */
+"It was not possible to access the file." = "";
+
+/* alert window title */
+"It was not possible to block %@" = "";
+
+/* alert window message */
+"It was not possible to change channel configuration: %@" = "";
+
+/* alert window message */
+"It was not possible to contact XMPP server and sign in." = "";
+
+/* alert window message */
+"It was not possible to create a channel. The server returned an error: %@" = "";
+
+/* create meet controller */
+"It was not possible to create a meeting. Received an error: %@" = "";
+
+/* alert window message */
+"It was not possible to destroy channel %@. Server returned an error: %@" = "";
+
+/* alert window message */
+"It was not possible to destroy channel %s. Server returned an error: %s" = "";
+
+/* alert window message */
+"It was not possible to establish call" = "";
+
+/* invite to meeting controller */
+"It was not possible to grant selected users access to the meeting. Received an error: %@" = "";
+
+/* Message informing that client failed to join a channel */
+"It was not possible to join a channel. The server returned an error: %@" = "";
+
+/* Message informing that client failed to join a channel */
+"It was not possible to join a channel. The server returned an error: %s" = "";
+
+/* alert window message */
+"It was not possible to join a room. The server returned an error: %@" = "";
+
+/* meet controller */
+"It was not possible to kick out %@. Server returned an error: %@" = "";
+
+/* account manager error */
+"It was not possible to modify account." = "";
+
+/* alert window message */
+"It was not possible to publish channel details: %@" = "";
+
+/* alert window message */
+"It was not possible to publish channel details: %s" = "";
+
+/* alert window message */
+"It was not possible to retrieve channel configuration: %@" = "";
+
+/* alert window message */
+"It was not possible to retrieve channel details: %@" = "";
+
+/* alert window message */
+"It was not possible to retrieve channel details: %s" = "";
+
+/* alert window message */
+"It was not possible to retrieve disco#info details from %@\\%@: %@" = "";
+
+/* alert window message */
+"It was not possible to retrieve disco#items details from %@\\%@: %@" = "";
+
+/* omemo encryption error */
+"It was not possible to send encrypted message due to encryption error" = "";
+
+/* alert window message */
+"It was not possible to share %d item(s) due to following errors:\n %@" = "";
+
+/* OMEMO settings */
+"Key not generated!" = "";
+
+/* settings */
+"Keywords" = "";
+
+/* setting */
+"Large" = "";
+
+/* Button */
+"Leave chat" = "";
+
+/* settings */
+"Let your contacts know when you have received and read their messages. Disabling will disable syncing information about read messages between your devices!" = "";
+
+/* setting */
+"Light" = "";
+
+/* vcard editor */
+"Locality" = "";
+
+/* alert window message */
+"Login and password do not match." = "";
+
+/* image quality
+   video quality */
+"Low" = "";
+
+/* settings */
+"Make them bold" = "";
+
+/* setting */
+"Markdown" = "";
+
+/* muc module - room error */
+"Maximum number of users exceeded" = "";
+
+/* /me replacement if no nickname found */
+"Me" = "";
+
+/* image quality
+   video quality */
+"Medium" = "";
+
+/* create meet controller */
+"Meeting creation failed" = "";
+
+/* meet controller */
+"Meeting ended" = "";
+
+/* meet controller */
+"Meeting has ended" = "";
+
+/* popup item */
+"Member" = "";
+
+/* muc module - room error */
+"Membership is required to access the room" = "";
+
+/* OMEMO decryption error */
+"Message decryption failed!" = "";
+
+/* setting */
+"Message formatting" = "";
+
+/* settings */
+"Message grouping" = "";
+
+/* OMEMO decryption error */
+"Message was not encrypted for this devices" = "";
+
+/* setting */
+"Minimal" = "";
+
+/* popup checkbox label */
+"Mute notifications" = "";
+
+/* service disco column name */
+"Name" = "";
+
+/* settings */
+"Never" = "";
+
+/* video call conroller */
+"New call" = "";
+
+/* alert window title */
+"Nickname" = "";
+
+/* muc module - room error */
+"Nickname already in use" = "";
+
+/* muc module - room error */
+"Nickname is locked down" = "";
+
+/* Deny sending files */
+"No" = "";
+
 /* No account added to BeagleIM */
 "No account" = "";
+
+/* attachments view  - no data */
+"No attachments" = "";
+
+/* service disco column name */
+"Node" = "";
+
+/* setting */
+"None" = "";
 
 /* Not now, we will ask later */
 "Not now" = "";
 
+/* setting */
+"Notifications" = "";
+
+/* OK */
+"OK" = "";
+
+/* encryption option */
+"OMEMO" = "";
+
+/* create channel view hine */
+"Only people with valid invitations will be able to join." = "";
+
+/* context menu item */
+"Open" = "";
+
+/* context menu item */
+"Open channel" = "";
+
+/* context menu item */
+"Open chat" = "";
+
+/* settings */
+"Open logs directory" = "";
+
+/* image quality
+   video quality */
+"Original" = "";
+
+/* popup item */
+"Outcast" = "";
+
+/* popup item */
+"Owner" = "";
+
+/* account view */
+"Password" = "";
+
+/* settings */
+"Password change failed" = "";
+
+/* settings */
+"Password changed" = "";
+
+/* join groupchat info label */
+"Please enter nickname %@ to enter to join groupchat at %@." = "";
+
+/* alert window message */
+"Please provide user JID and affiliation to this room." = "";
+
+/* media helper sharing error */
+"Please try again later." = "";
+
+/* Chats list invitation type */
+"Presence subscription" = "";
+
+/* context menu item */
+"Private message" = "";
+
+/* register account error */
+"Provided values are not acceptable" = "";
+
+/* vcard editor */
+"Publication of avatar failed" = "";
+
+/* vcard editor */
+"Publication of new version of private VCard failed" = "";
+
+/* vcard editor */
+"Publication of new version of VCard failed" = "";
+
+/* displayed in the chat log */
+"Received" = "";
+
+/* displayed in the tooltip */
+"Received by %@" = "";
+
+/* displayed in the tooltip */
+"Received by %s" = "";
+
+/* register account error */
+"Registration failed!" = "";
+
+/* register account error */
+"Registration is not supported by this server" = "";
+
+/* Button */
+"Reject" = "";
+
+/* Button */
+"Remove from application" = "";
+
+/* Button */
+"Remove from server" = "";
+
+/* context menu item */
+"Reply" = "";
+
+/* context menu item */
+"Reply with PM" = "";
+
+/* add roster item label */
+"Request presence subscription" = "";
+
+/* account view placeholder */
+"Required" = "";
+
+/* context menu item */
+"Resend message" = "";
+
+/* Button */
+"Retract" = "";
+
+/* context menu item */
+"Retract message" = "";
+
+/* video call conroller */
+"Ringing..." = "";
+
+/* alert window title */
+"Room %@" = "";
+
+/* muc module - room error */
+"Room is locked" = "";
+
+/* context menu item */
+"Save" = "";
+
+/* add roster item label */
+"Select account" = "";
+
+/* Select files to share */
+"Select files to share" = "";
+
+/* media helper question */
+"Select quality" = "";
+
+/* media helper question */
+"Select quality of the image for sharing" = "";
+
+/* media helper question */
+"Select quality of the video for sharing" = "";
+
+/* create meet controller */
+"Selected account does not support creating a meeting. Please select a different account." = "";
+
+/* setting */
+"Self-Signed" = "";
+
+/* context menu item */
+"Send" = "";
+
+/* context menu item */
+"Send private message to %@" = "";
+
+/* Title of alert to confirm sending files */
+"Sending files" = "";
+
+/* setting */
+"Sent images quality" = "";
+
+/* setting */
+"Sent videos quality" = "";
+
+/* media helper sharing error */
+"Server did not confirm file upload correctly." = "";
+
+/* register account error */
+"Server did not respond on registration request" = "";
+
+/* alert window message */
+"Server returned an error: %@" = "";
+
+/* register account error */
+"Server returned error: %@" = "";
+
+/* settings */
+"Server returned following error: %$" = "";
+
+/* alert window title */
+"Service Discovery Failure!" = "";
+
+/* register account error */
+"Service is not available at this time." = "";
+
+/* setting */
+"Set as default app" = "";
+
+/* Share menu title */
+"Share" = "";
+
+/* alert window title */
+"Sharing error" = "";
+
+/* vcard editor - alert window title */
+"Should avatar be updated?" = "";
+
+/* alert window message */
+"Should the account be removed from the server as well?" = "";
+
+/* settings */
+"Show advanced XMPP features" = "";
+
+/* setting */
+"Show channels and chats in merged list" = "";
+
+/* setting */
+"Show emoticons" = "";
+
+/* setting */
+"Show for messages from unknown senders" = "";
+
+/* setting */
+"Show system menu icon" = "";
+
+/* setting */
+"Small" = "";
+
+/* settings */
+"Smart" = "";
+
+/* setting */
+"Spellchecking" = "";
+
+/* setting */
+"SSL certificate of %@ could not be verified" = "";
+
+/* vcard editor */
+"Street" = "";
+
+/* Button */
+"Submit" = "";
+
+/* contact details popup label */
+"Telephone" = "";
+
+/* alert window */
+"That message will be removed immediately and it's receives will be asked to remove it as well." = "";
+
+/* alert window message */
+"The channel %@ was created but it was not possible to join it. The server returned an error: %@" = "";
+
+/* omemo encryption error */
+"There is no trusted device to send message to" = "";
+
+/* alert window message */
+"This room is password protected. You need to provide correct password to join this room." = "";
+
+/* recipient of PM */
+"To %@" = "";
+
+/* recipient of PM */
+"To %s" = "";
+
+/* settings */
+"To change password for account %$ please fill out this form:" = "";
+
 /* Should we add one now? */
 "To use BeagleIM you need to have the XMPP account configured. Would you like to add one now?" = "";
 
+/* omemo key status */
+"Trusted" = "";
+
+/* account manager error */
+"Try again. If removal failed, try accessing Keychain to update account credentials manually." = "";
+
+/* create meet controller */
+"Unable to create a meet" = "";
+
+/* omemo key status */
+"Undecided" = "";
+
+/* encryption option */
+"Unencrypted" = "";
+
+/* create channel view hine */
+"UNKNOWN" = "";
+
+/* setting */
+"Unknown" = "";
+
+/* Unknown file */
+"Unknown file" = "";
+
+/* Label of unread messages */
+"Unread messages" = "";
+
+/* Mark of unsent message */
+"Unsent" = "";
+
+/* media helper sharing error */
+"Upload to HTTP server failed." = "";
+
+/* settings */
+"Use public STUN servers" = "";
+
+/* invitation alert - message */
+"User %@ invited you (%@) to the groupchat %@" = "";
+
+/* muc module - room error */
+"User is banned" = "";
+
+/* register account error */
+"User with provided username already exists" = "";
+
+/* account view */
+"Username" = "";
+
+/* marks used account */
+"using %@" = "";
+
+/* omemo key status */
+"Verified" = "";
+
+/* alert window title */
+"Warning" = "";
+
+/* create meet controller */
+"While checking for support XMPP server returned an error: %@. Please select a different account or try again later." = "";
+
+/* contact details popup label */
+"Work" = "";
+
+/* xml console title */
+"XML Console: %@" = "";
+
+/* add roster item label */
+"XMPP JID" = "";
+
+/* setting */
+"XMPP URI" = "";
+
 /* Yes, we should add account */
 "Yes" = "";
+
+/* alert window message
+   invitation alert - message */
+"You (%@) were invited to the groupchat %@" = "";
+
+/* alert window message */
+"You are leaving the group chat %@" = "";
+
+/* alert window message */
+"You are not allowed to modify list of affiliations for this room." = "";
+
+/* alert window message */
+"You are not authorized to view memeber list of this room." = "";
+
+/* xml entry controller */
+"You have entered invalid XML. It is impossible to send invalid XML as it violates XMPP protocol specification!" = "";
+
+/* Alert confirm sending files message */
+"You have pasted %d file(s). Do you wish to send them?" = "";

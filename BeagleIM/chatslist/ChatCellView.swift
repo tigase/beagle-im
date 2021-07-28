@@ -88,7 +88,7 @@ class ChatCellView: NSTableCellView {
                     switch activity {
                     case .message(let lastMessage, let direction, let sender):
                         if lastMessage.starts(with: "/me ") {
-                            let nick = sender ?? (direction == .incoming ? (self.label?.stringValue ?? "") : (AccountManager.getAccount(for: account)?.nickname ??  "Me"));
+                            let nick = sender ?? (direction == .incoming ? (self.label?.stringValue ?? "") : (AccountManager.getAccount(for: account)?.nickname ??  NSLocalizedString("Me", comment: "/me replacement if no nickname found")));
                             let msg = NSMutableAttributedString(string: "\(nick) ", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium), toHaveTrait: .italicFontMask), .foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
                             msg.append(NSAttributedString(string: "\(lastMessage.dropFirst(4))", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .regular), toHaveTrait: .italicFontMask), .foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]));
                             lastMessageField.attributedStringValue = msg;
@@ -106,7 +106,7 @@ class ChatCellView: NSTableCellView {
                         }
                     case .invitation(_, _, let sender):
                         if let fieldfont = lastMessageField.font {
-                            let msg = NSAttributedString(string: "📨 Invitation", attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask, .boldFontMask]), .foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
+                            let msg = NSAttributedString(string: "📨 " + NSLocalizedString("Invitation", comment: "invitation name in chats list"), attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask, .boldFontMask]), .foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
 
                             if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
                                 prefix.append(msg);
@@ -115,7 +115,7 @@ class ChatCellView: NSTableCellView {
                                 lastMessageField.attributedStringValue = msg;
                             }
                         } else {
-                            let msg = NSAttributedString(string: "📨 Invitation", attributes: [.foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
+                            let msg = NSAttributedString(string: "📨 " + NSLocalizedString("Invitation", comment: "invitation name in chats list"), attributes: [.foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
                         
                             if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
                                 prefix.append(msg);
@@ -126,7 +126,7 @@ class ChatCellView: NSTableCellView {
                         }
                     case .attachment(_, _, let sender):
                         if let fieldfont = self.lastMessage?.font {
-                            let msg = NSAttributedString(string: "📎 Attachment", attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask, .boldFontMask]), .foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
+                            let msg = NSAttributedString(string: "📎 " + NSLocalizedString("Attachment", comment: "attachment name in chats list"), attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask, .boldFontMask]), .foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
 
                             if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
                                 prefix.append(msg);
@@ -135,7 +135,7 @@ class ChatCellView: NSTableCellView {
                                 lastMessageField.attributedStringValue = msg;
                             }
                         } else {
-                            let msg = NSAttributedString(string: "📎 Attachment", attributes: [.foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
+                            let msg = NSAttributedString(string: "📎 " + NSLocalizedString("Attachment", comment: "attachment name in chats list"), attributes: [.foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
                         
                             if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
                                 prefix.append(msg);

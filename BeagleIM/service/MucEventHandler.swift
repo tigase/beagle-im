@@ -121,10 +121,10 @@ class MucEventHandler: XmppServiceExtension {
         
         DispatchQueue.main.async {
             let alert = Alert();
-            alert.messageText = "Room \(room.jid.stringValue)";
-            alert.informativeText = "Could not join room. Reason:\n\(error.reason)";
+            alert.messageText = String.localizedStringWithFormat(NSLocalizedString("Room %@", comment: "alert window title"), room.jid.stringValue);
+            alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Could not join room. Reason:\n%@", comment: "alert window message"), error.reason);
             alert.icon = NSImage(named: NSImage.userGroupName);
-            alert.addButton(withTitle: "OK");
+            alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
             alert.run(completionHandler: { response in
                 if error != .banned && error != .registrationRequired {
                     let storyboard = NSStoryboard(name: "Main", bundle: nil);

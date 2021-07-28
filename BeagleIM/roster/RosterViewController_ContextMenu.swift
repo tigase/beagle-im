@@ -46,7 +46,6 @@ extension RosterViewController: NSMenuDelegate {
             item.submenu?.items.forEach { subitem in
                 subitem.isEnabled = true;
             }
-            print("menu item:", item.title)
         
             return true;
         }
@@ -93,13 +92,11 @@ extension RosterViewController: NSMenuDelegate {
     @IBAction func renameSelected(_ sender: NSMenuItem) {
         let item = self.getItem(at: self.contactsTableView.clickedRow);
         
-        print("rename item:", item.account, item.jid);
-        
         let alert = NSAlert();
-        alert.messageText = "Enter new name:";
+        alert.messageText = NSLocalizedString("Enter new name", comment: "alert window title") + ":";
         alert.icon = NSImage(named: NSImage.userName);//AvatarManager.instance.avatar(for: item.jid, on: item.account).rounded();
-        alert.addButton(withTitle: "OK");
-        alert.addButton(withTitle: "Cancel");
+        alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
+        alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Button"));
         
 //        let textField = NSTextField(string: item.name ?? item.jid.stringValue);
         let textField = NSTextField(frame: NSRect(x: 0, y:0, width: 300, height: 24));

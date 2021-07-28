@@ -179,19 +179,19 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
         let jid = accounts[selectedRow];
         
         let alert = NSAlert();
-        alert.messageText = "Account removal";
-        alert.informativeText = "Should the account be removed from the server as well?";
-        alert.addButton(withTitle: "Remove from server")
-        alert.addButton(withTitle: "Remove from application")
-        alert.addButton(withTitle: "Cancel");
+        alert.messageText = NSLocalizedString("Account removal", comment: "alert window title");
+        alert.informativeText = NSLocalizedString("Should the account be removed from the server as well?", comment: "alert window message");
+        alert.addButton(withTitle: NSLocalizedString("Remove from server", comment: "Button"))
+        alert.addButton(withTitle: NSLocalizedString("Remove from application", comment: "Button"))
+        alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Button"));
         alert.beginSheetModal(for: self.view.window!) { (response) in
             switch response {
             case .alertFirstButtonReturn:
                 // remove from the server
                 guard let client = XmppService.instance.getClient(for: jid), client.isConnected else {
                     let alert = NSAlert();
-                    alert.messageText = "Account removal failure";
-                    alert.informativeText = "Account needs to be active and connected to remove the acocunt from the server";
+                    alert.messageText = NSLocalizedString("Account removal failure", comment: "alert window title");
+                    alert.informativeText = NSLocalizedString("Account needs to be active and connected to remove the acocunt from the server", comment: "alert window message");
                     alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
                     return;
                 }

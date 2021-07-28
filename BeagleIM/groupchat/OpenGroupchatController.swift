@@ -271,21 +271,21 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                                 case .failure(let error):
                                     DispatchQueue.main.async {
                                         let alert = NSAlert();
-                                        alert.messageText = "Could not join";
-                                        alert.informativeText = "The channel \(channel) was created but it was not possible to join it. The server returned an error: \(error.message ?? error.description)";
-                                        alert.addButton(withTitle: "OK")
+                                        alert.messageText = NSLocalizedString("Could not join", comment: "alert window title");
+                                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("The channel %@ was created but it was not possible to join it. The server returned an error: %@", comment: "alert window message"), channel.stringValue, error.message ?? error.description);
+                                        alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"))
                                         alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
                                             self.close();
                                         });
                                     }
                                 }
                             });
-                        case .failure(let errorCondition):
+                        case .failure(let error):
                             DispatchQueue.main.async {
                                 let alert = NSAlert();
-                                alert.messageText = "Could not create";
-                                alert.informativeText = "It was not possible to create a channel. The server returned an error: \(errorCondition.message ?? errorCondition.description)";
-                                alert.addButton(withTitle: "OK")
+                                alert.messageText = NSLocalizedString("Could not create", comment: "alert window title");
+                                alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to create a channel. The server returned an error: %@", comment: "alert window message"), error.message ?? error.description);
+                                alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"))
                                 alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
                                     self.close();
                                 });
@@ -295,9 +295,9 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                 default:
                     DispatchQueue.main.async {
                         let alert = NSAlert();
-                        alert.messageText = "Could not join";
-                        alert.informativeText = "It was not possible to join a channel. The server returned an error: \(error.message ?? error.description)";
-                        alert.addButton(withTitle: "OK")
+                        alert.messageText = NSLocalizedString("Could not join", comment: "alert window title");
+                            alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to join a channel. The server returned an error: %@", comment: "alert window message"), error.message ?? error.description);
+                        alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"))
                         alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
                             self.close();
                         });

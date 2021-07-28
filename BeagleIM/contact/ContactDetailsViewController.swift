@@ -180,7 +180,7 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
         }
         var rows: [NSView] = [];
         if let chat = self.chat {
-            muteNotifications = NSButton(checkboxWithTitle: "Mute notifications", target: self, action: #selector(muteNotificationsChanged));
+            muteNotifications = NSButton(checkboxWithTitle: NSLocalizedString("Mute notifications", comment: "popup checkbox label"), target: self, action: #selector(muteNotificationsChanged));
             rows.append(muteNotifications!);
 
             switch chat {
@@ -189,13 +189,13 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
             case let c as Chat:
                 muteNotifications?.state = c.options.notifications == .none ? .on : .off;
                 if let client = chat.context {
-                    blockContact = NSButton(checkboxWithTitle: "Block contact", target: self, action: #selector(blockContactChanged));
+                    blockContact = NSButton(checkboxWithTitle: NSLocalizedString("Block contact", comment: "popup checkbox label"), target: self, action: #selector(blockContactChanged));
                     rows.append(blockContact!);
                     blockContact?.state = BlockedEventHandler.isBlocked(JID(c.jid), on: client) ? .on : .off;
                     blockContact?.isEnabled = client.module(.blockingCommand).isAvailable;
                 }
                 if DBRosterStore.instance.item(for: chat.account, jid: JID(chat.jid)) == nil {
-                    let button = NSButton(title: "Add to contacts", image: NSImage(named: NSImage.addTemplateName)!, target: self, action: #selector(self.addToRoster(_:)));
+                    let button = NSButton(title: NSLocalizedString("Add to contacts", comment: "popup button label"), image: NSImage(named: NSImage.addTemplateName)!, target: self, action: #selector(self.addToRoster(_:)));
                     button.isBordered = false;
                     rows.append(button);
                 }
@@ -204,10 +204,10 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
             }
             
             if Settings.confirmMessages && chat.canSendChatMarker() {
-                confirmMessages = NSButton(checkboxWithTitle: "Confirm messages", target: self, action: #selector(confirmMessagesChanged));
+                confirmMessages = NSButton(checkboxWithTitle: NSLocalizedString("Confirm messages", comment: "popup button label"), target: self, action: #selector(confirmMessagesChanged));
                 switch chat {
                 case let chat as Chat:
-                    confirmMessages?.toolTip = "Disabling will disable syncing information about read messages between your devices!";
+                    confirmMessages?.toolTip = NSLocalizedString("Disabling will disable syncing information about read messages between your devices!", comment: "popup button label tooltip");
                     confirmMessages?.state = chat.options.confirmMessages ? .on : .off;
                 case let room as Room:
                     confirmMessages?.state = room.options.confirmMessages ? .on : .off;
@@ -449,16 +449,16 @@ class IdentityView: NSView {
         
         let arr: [Trust] = [.trusted, .verified, .compromised, .undecided];
         arr.forEach { (trust) in
-            var title = "Test";
+            var title = "";
             switch trust {
             case .trusted:
-                title = "Trusted";
+                title = NSLocalizedString("Trusted", comment: "omemo key status");
             case .verified:
-                title = "Verified";
+                title = NSLocalizedString("Verified", comment: "omemo key status");
             case .compromised:
-                title = "Compromised";
+                title = NSLocalizedString("Compromised", comment: "omemo key status");
             case .undecided:
-                title = "Undecided";
+                title = NSLocalizedString("Undecided", comment: "omemo key status");
             }
             let item = NSMenuItem(title: title, action: nil, keyEquivalent: "");
             switch trust {
@@ -630,7 +630,7 @@ class ConversationVCardViewController: NSViewController, ContactDetailsAccountJi
         }
         
         if let phones = vcard?.telephones.filter({ !$0.isEmpty }).filter({ $0.uri != "null" && $0.number != "null"  }), !phones.isEmpty {
-            let label = NSTextField(labelWithString: "Telephone")
+            let label = NSTextField(labelWithString: NSLocalizedString("Telephone", comment: "contact details popup label"))
             label.setContentCompressionResistancePriority(.required, for: .vertical);
             label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium);
             label.textColor = NSColor.secondaryLabelColor;
@@ -640,7 +640,7 @@ class ConversationVCardViewController: NSViewController, ContactDetailsAccountJi
             }
         }
         if let emails = vcard?.emails.filter({ !$0.isEmpty }).filter({ $0.address != "null" }), !emails.isEmpty {
-            let label = NSTextField(labelWithString: "Emails")
+            let label = NSTextField(labelWithString: NSLocalizedString("Emails", comment: "contact details popup label"))
             label.setContentCompressionResistancePriority(.required, for: .vertical);
             label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium);
             label.textColor = NSColor.secondaryLabelColor;
@@ -650,7 +650,7 @@ class ConversationVCardViewController: NSViewController, ContactDetailsAccountJi
             }
         }
         if let addresses = vcard?.addresses, !addresses.isEmpty {
-            let label = NSTextField(labelWithString: "Addresses");
+            let label = NSTextField(labelWithString: NSLocalizedString("Addresses", comment: "contact details popup label"));
             label.setContentCompressionResistancePriority(.required, for: .vertical);
             label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium);
             label.textColor = NSColor.secondaryLabelColor;
@@ -735,7 +735,7 @@ class ConversationVCardViewController: NSViewController, ContactDetailsAccountJi
         parts.queryItems = [ URLQueryItem(name: "q", value: str.replacingOccurrences(of: ", ", with: ",")) ];
         
         let field = prepareValueLabel(text: str, url: parts.url);
-        self.addRow(label: (addr.types.first ?? .home) == .home ? "Home" : "Work", valueField: field);
+        self.addRow(label: (addr.types.first ?? .home) == .home ? NSLocalizedString("Home", comment: "contact details popup label") : NSLocalizedString("Work", comment: "contact details popup label"), valueField: field);
     }
     
     func add(email: VCard.Email) {
@@ -753,7 +753,7 @@ class ConversationVCardViewController: NSViewController, ContactDetailsAccountJi
         }
         
         let field = prepareValueLabel(text: label, url: URL(string: address));
-        addRow(label: (email.types.first ?? .home) == .home ? "Home" : "Work", valueField: field);
+        addRow(label: (email.types.first ?? .home) == .home ? NSLocalizedString("Home", comment: "contact details popup label") : NSLocalizedString("Work", comment: "contact details popup label"), valueField: field);
     }
     
     func add(phone: VCard.Telephone) {
@@ -761,7 +761,7 @@ class ConversationVCardViewController: NSViewController, ContactDetailsAccountJi
             return;
         }
         let field = prepareValueLabel(text: number, url: URL(string: uri.replacingOccurrences(of: " ", with: "-")));
-        addRow(label: (phone.types.first ?? .home) == .home ? "Home" : "Work", valueField: field);
+        addRow(label: (phone.types.first ?? .home) == .home ? NSLocalizedString("Home", comment: "contact details popup label") : NSLocalizedString("Work", comment: "contact details popup label"), valueField: field);
     }
     
     func prepareValueLabel(text: String, url: URL?) -> NSTextField {
@@ -993,7 +993,7 @@ open class ContactDetailsViewController1: NSViewController, NSTableViewDelegate 
     }
     
     fileprivate func add(address addr: VCard.Address) {
-        let label = NSTextField(labelWithString: (addr.types.first ?? .home) == .home ? "Home" : "Work");
+        let label = NSTextField(labelWithString: (addr.types.first ?? .home) == .home ? NSLocalizedString("Home", comment: "contact details popup label") : NSLocalizedString("Work", comment: "contact details popup label"));
         label.setContentHuggingPriority(.defaultLow, for: .vertical);
         label.setContentHuggingPriority(.defaultLow, for: .horizontal);
         label.font = NSFont(descriptor: self.roleAndCompany.font!.fontDescriptor.withSymbolicTraits(.bold), size: NSFont.systemFontSize - 2.0)
@@ -1153,10 +1153,10 @@ open class ConversationAttachmentsViewController: NSViewController, ContactDetai
     func collectionView(_ collectionView: NSCollectionView, menuForRepresentedObjectAt indexPath: IndexPath) -> NSMenu? {
         let menu = NSMenu();
         let attachment = items[indexPath.item];
-        menu.addItem(NSMenuItem(title: "Open", action: #selector(openFile(_:)), keyEquivalent: ""));
-        menu.addItem(NSMenuItem(title: "Save", action: #selector(saveFile(_:)), keyEquivalent: ""));
+        menu.addItem(NSMenuItem(title: NSLocalizedString("Open", comment: "context menu item"), action: #selector(openFile(_:)), keyEquivalent: ""));
+        menu.addItem(NSMenuItem(title: NSLocalizedString("Save", comment: "context menu item"), action: #selector(saveFile(_:)), keyEquivalent: ""));
         if let localUrl = DownloadStore.instance.url(for: "\(attachment.id)") {
-            let shareItem = NSMenuItem(title: "Share", action: nil, keyEquivalent: "");
+            let shareItem = NSMenuItem(title: NSLocalizedString("Share", comment: "context menu item"), action: nil, keyEquivalent: "");
             let shareMenu = NSMenu();
             shareItem.submenu = shareMenu;
             let sharingServices = NSSharingService.sharingServices(forItems: [localUrl]);
@@ -1174,8 +1174,8 @@ open class ConversationAttachmentsViewController: NSViewController, ContactDetai
             }
         }
         menu.addItem(NSMenuItem.separator());
-        let deleteItem = NSMenuItem(title: "Delete", action: #selector(deleteFile(_:)), keyEquivalent: "");
-        deleteItem.attributedTitle = NSAttributedString(string: "Delete", attributes: [.foregroundColor: NSColor.systemRed]);
+        let deleteItem = NSMenuItem(title: NSLocalizedString("Delete", comment: "context menu item"), action: #selector(deleteFile(_:)), keyEquivalent: "");
+        deleteItem.attributedTitle = NSAttributedString(string: NSLocalizedString("Delete", comment: "context menu item"), attributes: [.foregroundColor: NSColor.systemRed]);
         menu.addItem(deleteItem);
         for item in menu.items {
             item.representedObject = attachment;
@@ -1194,7 +1194,7 @@ open class ConversationAttachmentsViewController: NSViewController, ContactDetai
                 self.collectionView.reloadData();
                 self.heightConstraint.constant = max(min(CGFloat(ceil(Double(self.items.count) / 3.0)) * 105.0, 350.0), 20);
                 if self.items.isEmpty {
-                    let label = NSTextField(labelWithString: "No attachments");
+                    let label = NSTextField(labelWithString: NSLocalizedString("No attachments", comment: "attachments view  - no data"));
                     label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium);
                     label.alignment = .center;
                     label.setContentHuggingPriority(.defaultHigh, for: .horizontal);
@@ -1465,7 +1465,7 @@ class ConversationAttachmentView: NSCollectionViewItem {
             viewType = .file;
             let filename = appendix.filename ?? URL(string: url)?.lastPathComponent ?? "";
             if filename.isEmpty {
-                self.filenameField.stringValue =  "Unknown file";
+                self.filenameField.stringValue = NSLocalizedString("Unknown file", comment: "unknown file type");
             } else {
                 self.filenameField.stringValue = filename;
             }

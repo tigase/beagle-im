@@ -72,7 +72,7 @@ class ChatMessageCellView: BaseChatCellView {
     func setRetracted(item: ConversationEntry) {
         set(item: item);
 
-        let msg = NSAttributedString(string: "(this message has been removed)", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium), toHaveTrait: .italicFontMask), .foregroundColor: NSColor.secondaryLabelColor]);
+        let msg = NSAttributedString(string: NSLocalizedString("(this message has been removed)", comment: "replaces removed messages"), attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium), toHaveTrait: .italicFontMask), .foregroundColor: NSColor.secondaryLabelColor]);
         
         self.message.textColor = NSColor.secondaryLabelColor;
         self.message.attributedString = msg;
@@ -119,7 +119,7 @@ class ChatMessageCellView: BaseChatCellView {
         switch item.payload {
         case .message(_, let correctionTimestamp):
             if let timestamp = correctionTimestamp {
-                return "edited at " + BaseChatCellView.tooltipFormatter.string(from: timestamp);
+                return String.localizedStringWithFormat(NSLocalizedString("edited at %@", comment: "mark's message that was edited"), BaseChatCellView.tooltipFormatter.string(from: timestamp));
             }
         default:
             break;

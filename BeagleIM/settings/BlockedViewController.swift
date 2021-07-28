@@ -173,6 +173,6 @@ class BlockedTableCellView: NSTableCellView {
     
     func update(with item: BlockedViewController.Item) {
         jidLabel.stringValue = item.jid.stringValue;
-        accountLabel.stringValue = "using \(item.account.stringValue)";
+        accountLabel.stringValue = String.localizedStringWithFormat(NSLocalizedString("using %@", comment: "settings"), item.account.stringValue);
     }
 }

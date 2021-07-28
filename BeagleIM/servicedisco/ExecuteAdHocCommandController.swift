@@ -115,11 +115,10 @@ class ExecuteAdHocCommandController: NSViewController {
                     if let that = self {
                         that.progressIndicator.stopAnimation(nil);
                         let alert = NSAlert();
-                        alert.messageText = "Error occurred";
+                        alert.messageText = NSLocalizedString("Error occurred", comment: "alert window title");
                         alert.icon = NSImage(named: NSImage.cautionName);
-                        let errorText = error.message ?? error.description;
-                        alert.informativeText = "Could not execute command: \(errorText)";
-                        alert.addButton(withTitle: "OK");
+                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Could not execute command: %@", comment: "alert window message"), error.message ?? error.description);
+                        alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                         alert.beginSheetModal(for: that.view.window!, completionHandler: { result in
                             // nothing to do..
                         });

@@ -38,21 +38,21 @@ public enum ShareError: Error {
     var message: String {
         switch self {
         case .invalidResponseCode:
-            return "Server did not confirm file upload correctly."
+            return NSLocalizedString("Server did not confirm file upload correctly.", comment: "media helper sharing error")
         case .unknownError:
-            return "Please try again later."
+            return NSLocalizedString("Please try again later.", comment: "media helper sharing error")
         case .noAccessError:
-            return "It was not possible to access the file."
+            return NSLocalizedString("It was not possible to access the file.", comment: "media helper sharing error")
         case .noFileSizeError:
-            return "Could not retrieve file size.";
+            return NSLocalizedString("Could not retrieve file size.", comment: "media helper sharing error")
         case .noMimeTypeError:
-            return "Could not detect MIME type of a file.";
+            return NSLocalizedString("Could not detect MIME type of a file.", comment: "media helper sharing error")
         case .notSupported:
-            return "Feature not supported by XMPP server";
+            return NSLocalizedString("Feature not supported by XMPP server", comment: "media helper sharing error")
         case .fileTooBig:
-            return "File is too big to share";
+            return NSLocalizedString("File is too big to share", comment: "media helper sharing error")
         case .httpError:
-            return "Upload to HTTP server failed.";
+            return NSLocalizedString("Upload to HTTP server failed.", comment: "media helper sharing error")
         }
     }
 }
@@ -66,11 +66,11 @@ class MediaHelper {
             DispatchQueue.main.async {
                 let alert = NSAlert();
                 alert.icon = NSImage(named: NSImage.infoName);
-                alert.messageText = "Select quality";
-                alert.informativeText = "Select quality of the image for sharing";
+                alert.messageText = NSLocalizedString("Select quality", comment: "media helper question");
+                alert.informativeText = NSLocalizedString("Select quality of the image for sharing", comment: "media helper question");
                 let values: [ImageQuality] = [.original, .highest, .high, .medium, .low];
                 for value in  values {
-                    alert.addButton(withTitle: value.rawValue.capitalized);
+                    alert.addButton(withTitle: value.label);
                 }
                 alert.beginSheetModal(for: window, completionHandler: { response in
                     let idx = response.rawValue - 1000;
@@ -91,12 +91,12 @@ class MediaHelper {
             DispatchQueue.main.async {
                 let alert = NSAlert();
                 alert.icon = NSImage(named: NSImage.infoName);
-                alert.messageText = "Select quality";
-                alert.informativeText = "Select quality of the video for sharing";
+                alert.messageText = NSLocalizedString("Select quality", comment: "media helper question");
+                alert.informativeText = NSLocalizedString("Select quality of the video for sharing", comment: "media helper question");
 
                 let values: [VideoQuality] = [.original, .high, .medium, .low];
                 for value in  values {
-                    alert.addButton(withTitle: value.rawValue.capitalized);
+                    alert.addButton(withTitle: value.label);
                 }
                 alert.beginSheetModal(for: window, completionHandler: { response in
                     let idx = response.rawValue - 1000;

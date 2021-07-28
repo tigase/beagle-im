@@ -104,15 +104,15 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         let buttonSize = NSFont.systemFontSize * 2;
         let encryptButton = DropDownButton();
         let menu = NSMenu(title: "");
-        let unencrypedItem = NSMenuItem(title: "Unencrypted", action: #selector(encryptionChanged(_:)), keyEquivalent: "");
+        let unencrypedItem = NSMenuItem(title: NSLocalizedString("Unencrypted", comment: "encryption option"), action: #selector(encryptionChanged(_:)), keyEquivalent: "");
         unencrypedItem.image = NSImage(named: "lock.open.fill");//?.scaled(maxWidthOrHeight: buttonSize);
         unencrypedItem.image?.size = NSSize(width: 16, height: 16);
         menu.addItem(unencrypedItem);
-        let defaultItem = NSMenuItem(title: "Default", action: #selector(encryptionChanged(_:)), keyEquivalent: "");
+        let defaultItem = NSMenuItem(title: NSLocalizedString("Default", comment: "encryption option"), action: #selector(encryptionChanged(_:)), keyEquivalent: "");
         defaultItem.image = NSImage(named: "lock.circle");//?.scaled(maxWidthOrHeight: buttonSize);
         defaultItem.image?.size = NSSize(width: 16, height: 16);
         menu.addItem(defaultItem);
-        let omemoItem = NSMenuItem(title: "OMEMO", action: #selector(encryptionChanged(_:)), keyEquivalent: "");
+        let omemoItem = NSMenuItem(title: NSLocalizedString("OMEMO", comment: "encryption option"), action: #selector(encryptionChanged(_:)), keyEquivalent: "");
         omemoItem.image = NSImage(named: "lock.fill");//?.scaled(maxWidthOrHeight: buttonSize);
         omemoItem.image?.size = NSSize(width: 16, height: 16);
         menu.addItem(omemoItem);
@@ -310,22 +310,10 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         }
     }
     
-//    @IBAction func enterInInputTextField(_ sender: NSTextField) {
-//        let msg = sender.stringValue
-//        guard !msg.isEmpty else {
-//            return;
-//        }
-//        
-//        guard send(message: msg, correctedMessageOriginId: self.correctedMessageOriginId) else {
-//            return;
-//        }
-//        
-//        (sender as? AutoresizingTextField)?.reset();
-//    }
     override func prepareConversationLogContextMenu(dataSource: ConversationDataSource, menu: NSMenu, forRow row: Int) {
         super.prepareConversationLogContextMenu(dataSource: dataSource, menu: menu, forRow: row);
         if row != NSNotFound || !(self.conversationLogController?.selectionManager.hasSingleSender ?? false) {
-            let reply = menu.addItem(withTitle: "Reply with PM", action: #selector(replySelectedMessagesViaPM), keyEquivalent: "");
+            let reply = menu.addItem(withTitle: NSLocalizedString("Reply with PM", comment: "context menu item"), action: #selector(replySelectedMessagesViaPM), keyEquivalent: "");
             reply.target = self
             reply.tag = row;
         }
@@ -335,13 +323,13 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                 if item.state.isError {
                 } else {
                     if item.isMessage(), !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0.isMessage() }, in: 0..<row) {
-                        let correct = menu.addItem(withTitle: "Correct message", action: #selector(correctMessage), keyEquivalent: "");
+                        let correct = menu.addItem(withTitle: NSLocalizedString("Correct message", comment: "context menu item"), action: #selector(correctMessage), keyEquivalent: "");
                         correct.target = self;
                         correct.tag = item.id;
                     }
                 
                     if room.state == .joined {
-                        let retract = menu.addItem(withTitle: "Retract message", action: #selector(retractMessage), keyEquivalent: "");
+                        let retract = menu.addItem(withTitle: NSLocalizedString("Retract message", comment: "context menu item"), action: #selector(retractMessage), keyEquivalent: "");
                         retract.target = self;
                         retract.tag = item.id;
                     }
@@ -423,10 +411,10 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         }
         
         let alert = NSAlert();
-        alert.messageText = "Are you sure you want to retract that message?"
-        alert.informativeText = "That message will be removed immediately and it's receives will be asked to remove it as well.";
-        alert.addButton(withTitle: "Retract");
-        alert.addButton(withTitle: "Cancel");
+        alert.messageText = NSLocalizedString("Are you sure you want to retract that message?", comment: "alert window title")
+        alert.informativeText = NSLocalizedString("That message will be removed immediately and it's receives will be asked to remove it as well.", comment: "alert window message");
+        alert.addButton(withTitle: NSLocalizedString("Retract", comment: "Button"));
+        alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Button"));
         alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
             switch result {
             case .alertFirstButtonReturn:
@@ -641,7 +629,7 @@ class GroupchatPMPopover: NSPopover {
         super.init();
         let viewController = NSViewController();
         
-        let label = NSTextField(wrappingLabelWithString: "Send private message to \(occupant.nickname):")
+        let label = NSTextField(wrappingLabelWithString: String.localizedStringWithFormat(NSLocalizedString("Send private message to %@", comment: "context menu item"), occupant.nickname));
         label.font = NSFont.boldSystemFont(ofSize: NSFont.systemFontSize);
         label.translatesAutoresizingMaskIntoConstraints = false;
         label.setContentHuggingPriority(.defaultLow, for: .horizontal);
@@ -655,11 +643,11 @@ class GroupchatPMPopover: NSPopover {
         let view = NSView(frame: .zero);
         view.addSubview(label);
         view.addSubview(scrollView);
-        let sendButton = NSButton(title: "Send", target: self, action: #selector(sendPM));
+        let sendButton = NSButton(title: NSLocalizedString("Send", comment: "context menu item"), target: self, action: #selector(sendPM));
         sendButton.translatesAutoresizingMaskIntoConstraints = false;
         sendButton.setContentHuggingPriority(.defaultHigh, for: .horizontal);
         view.addSubview(sendButton);
-        let cancelButton = NSButton(title: "Cancel", target: self, action: #selector(self.close));
+        let cancelButton = NSButton(title: NSLocalizedString("Cancel", comment: "context menu item"), target: self, action: #selector(self.close));
         cancelButton.translatesAutoresizingMaskIntoConstraints = false;
         cancelButton.setContentHuggingPriority(.defaultHigh, for: .horizontal);
         view.addSubview(cancelButton);
@@ -787,8 +775,8 @@ extension GroupchatParticipantsContainer: NSMenuDelegate {
     func prepareContextMenu() -> NSMenu {
         let menu = NSMenu();
         menu.autoenablesItems = true;
-        menu.addItem(MenuItemWithOccupant(title: "Private message", action: #selector(privateMessage(_:)), keyEquivalent: ""));
-        menu.addItem(MenuItemWithOccupant(title: "Ban user", action: #selector(banUser(_:)), keyEquivalent: ""));
+        menu.addItem(MenuItemWithOccupant(title: NSLocalizedString("Private message", comment: "context menu item"), action: #selector(privateMessage(_:)), keyEquivalent: ""));
+        menu.addItem(MenuItemWithOccupant(title: NSLocalizedString("Ban user", comment: "context menu item"), action: #selector(banUser(_:)), keyEquivalent: ""));
         return menu;
     }
     
@@ -838,9 +826,9 @@ extension GroupchatParticipantsContainer: NSMenuDelegate {
         
         let alert = NSAlert();
         alert.icon = NSImage(named: NSImage.cautionName);
-        alert.messageText = "Do you wish to ban user \(participant.nickname)?";
-        alert.addButton(withTitle: "Yes")
-        alert.addButton(withTitle: "No")
+        alert.messageText = String.localizedStringWithFormat(NSLocalizedString("Do you wish to ban user %@?", comment: "alert window title"), participant.nickname);
+        alert.addButton(withTitle: NSLocalizedString("Yes", comment: "Button"))
+        alert.addButton(withTitle: NSLocalizedString("No", comment: "Button"))
         alert.beginSheetModal(for: window, completionHandler: { response in
             switch response {
             case .alertFirstButtonReturn:
@@ -854,9 +842,9 @@ extension GroupchatParticipantsContainer: NSMenuDelegate {
                         DispatchQueue.main.async {
                             let alert = NSAlert();
                             alert.icon = NSImage(named: NSImage.cautionName);
-                            alert.messageText = "Banning user \(participant.nickname) failed";
-                            alert.informativeText = "Server returned an error: \(error.message ?? error.description)";
-                            alert.addButton(withTitle: "OK");
+                            alert.messageText = String.localizedStringWithFormat(NSLocalizedString("Banning user %@ failed", comment: "alert window title"), participant.nickname);
+                            alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert window message"), error.message ?? error.description);
+                            alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                             alert.beginSheetModal(for: window, completionHandler: { response in
                                 //we do not care about the response
                             })

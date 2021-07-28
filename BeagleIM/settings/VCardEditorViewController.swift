@@ -139,7 +139,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
                             self.vcard = vcard;
                             self.isEnabled = true;
                         case .failure(let error):
-                            self.handleError(title: "Could not retrive current version of a private VCard from the server.", message: "Server returned an error: \(error)");
+                            self.handleError(title: NSLocalizedString("Could not retrive current version of a private VCard from the server.", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.rawValue));
                         }
                     }
                 });
@@ -147,7 +147,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
                 progressIndicator.startAnimation(self);
                 self.isEnabled = false;
                 guard let client = XmppService.instance.getClient(for: account), client.state == .connected() else {
-                    self.handleError(title: "Could not retrive current version from the server.", message: "Account is not connected");
+                    self.handleError(title: NSLocalizedString("Could not retrive current version from the server.", comment: "vcard editor"), message: NSLocalizedString("Account is not connected", comment: "vcard editor"));
                     progressIndicator.stopAnimation(self);
                     return;
                 }
@@ -163,7 +163,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
                     case .failure(let error):
                         print("got error:", error as Any);
                         self.progressIndicator.stopAnimation(self);
-                        self.handleError(title: "Could not retrive current version from the server.", message: "Server returned an error: \(error)");
+                        self.handleError(title: NSLocalizedString("Could not retrive current version from the server.", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.description));
                     }
                 })
             }
@@ -208,9 +208,9 @@ class VCardEditorViewController: NSViewController, AccountAware {
                     
                     DispatchQueue.main.async {
                         let alert = NSAlert();
-                        alert.messageText = "Should avatar be updated?";
-                        alert.addButton(withTitle: "Yes");
-                        alert.addButton(withTitle: "No");
+                        alert.messageText = NSLocalizedString("Should avatar be updated?", comment: "vcard editor - alert window title");
+                        alert.addButton(withTitle: NSLocalizedString("Yes", comment: "button"));
+                        alert.addButton(withTitle: NSLocalizedString("No", comment: "button"));
                         alert.icon = NSImage(named: NSImage.userName);
                         alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
                             if response == NSApplication.ModalResponse.alertFirstButtonReturn {
@@ -260,14 +260,14 @@ class VCardEditorViewController: NSViewController, AccountAware {
                         case .success(_):
                             self.dismiss(self);
                         case .failure(let error):
-                            self.handleError(title: "Publication of new version of private VCard failed", message: "Server returned an error: \(error.error.message ?? error.description)");
+                            self.handleError(title: NSLocalizedString("Publication of new version of private VCard failed", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.error.message ?? error.description));
                         }
                     }
                 })
             }
         } else {
             guard let account = self.account, let vcard4Module = XmppService.instance.getClient(for: account)?.module(.vcard4) else {
-                self.handleError(title: "Publication of new version of VCard failed", message: "Account is not connected");
+                self.handleError(title: NSLocalizedString("Publication of new version of VCard failed", comment: "vcard editor"), message: NSLocalizedString("Account is not connected", comment: "vcard editor"));
                 return;
             }
             self.isEnabled = false;
@@ -285,7 +285,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
                     DispatchQueue.main.async {
                         self.progressIndicator.stopAnimation(self);
                         self.isEnabled = true;
-                        self.handleError(title: "Publication of new version of VCard failed", message: "Server returned an error: \(error)");
+                        self.handleError(title: NSLocalizedString("Publication of new version of VCard failed", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.description));
                     }
                 }
             });
@@ -300,7 +300,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
             let alert = NSAlert();
             alert.messageText = title;
             alert.informativeText = msg;
-            alert.addButton(withTitle: "OK");
+            alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
             alert.icon = NSImage(named: NSImage.cautionName);
             alert.beginSheetModal(for: window, completionHandler: nil);
         }
@@ -339,16 +339,16 @@ class VCardEditorViewController: NSViewController, AccountAware {
     fileprivate func addRow(address item: VCard.Address) {
         let tag = nextCounter();
         let streetField = NSTextField(string: item.street ?? "");
-        streetField.placeholderString = "Street";
+        streetField.placeholderString = NSLocalizedString("Street", comment: "vcard editor");
         connect(field: streetField, tag: tag, action: #selector(streetChanged(_:)));
         let zipCodeField = NSTextField(string: item.postalCode ?? "");
-        zipCodeField.placeholderString = "Code";
+        zipCodeField.placeholderString = NSLocalizedString("Code", comment: "vcard editor");
         connect(field: zipCodeField, tag: tag, action: #selector(postalCodeChanged(_:)));
         let cityField = NSTextField(string: item.locality ?? "");
-        cityField.placeholderString = "Locality";
+        cityField.placeholderString = NSLocalizedString("Locality", comment: "vcard editor");
         connect(field: cityField, tag: tag, action: #selector(localityChanged(_:)));
         let countryField = NSTextField(string: item.country ?? "");
-        countryField.placeholderString = "Country";
+        countryField.placeholderString = NSLocalizedString("Country", comment: "vcard editor");
         connect(field: countryField, tag: tag, action: #selector(countryChanged(_:)));
 
         let subdate = NSStackView(views: [zipCodeField, cityField]);
@@ -370,7 +370,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
     fileprivate func addRow(email item: VCard.Email) {
         let tag = nextCounter();
         let numberField = NSTextField(string: item.address ?? "");
-        numberField.placeholderString = "Enter email address";
+        numberField.placeholderString = NSLocalizedString("Enter email address", comment: "vcard editor");
         connect(field: numberField, tag: tag, action: #selector(emailChanged(_:)));
         let stack = Row(views: [createTypeButton(for: item, tag: tag, action: #selector(emailTypeChanged(_:))), numberField, createRemoveButton(for: item)]);
         stack.id = tag;
@@ -382,7 +382,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
     fileprivate func addRow(phone item: VCard.Telephone) {
         let tag = nextCounter();
         let numberField = NSTextField(string: item.number ?? "");
-        numberField.placeholderString = "Enter phone number";
+        numberField.placeholderString = NSLocalizedString("Enter phone number", comment: "vcard editor");
         connect(field: numberField, tag: tag, action: #selector(phoneNumberChanged(_:)));
         let stack = Row(views: [createTypeButton(for: item, tag: tag, action: #selector(phoneNumberTypeChanged(_:))), numberField, createRemoveButton(for: item)]);
         stack.id = tag;
@@ -500,8 +500,8 @@ class VCardEditorViewController: NSViewController, AccountAware {
  
     fileprivate func createTypeButton(for item: VCard.VCardEntryItemTypeAware, tag: Int, action: Selector) -> NSButton {
         let typeButton = NSPopUpButton(frame: .zero, pullsDown: false);
-        typeButton.addItem(withTitle: "Home");
-        typeButton.addItem(withTitle: "Work");
+        typeButton.addItem(withTitle: NSLocalizedString("Home", comment: "vcard editor"));
+        typeButton.addItem(withTitle: NSLocalizedString("Work", comment: "vcard editor"));
         typeButton.selectItem(at: item.types.contains(VCard.EntryType.home) ? 0 : 1);
         typeButton.tag = tag;
         typeButton.action = action;
@@ -510,7 +510,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
     
     fileprivate func publish(avatar: Data) {
         guard let account = self.account, let avatarModule = XmppService.instance.getClient(for: account)?.module(.pepUserAvatar) else {
-            handleError(title: "Publication of avatar failed", message: "Account is not connected");
+            handleError(title: NSLocalizedString("Publication of avatar failed", comment: "vcard editor"), message: NSLocalizedString("Account is not connected", comment: "vcard editor"));
             return;
         }
         avatarModule.publishAvatar(data: avatar, mimeType: "image/png", completionHandler: { result in
@@ -518,7 +518,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
             case .success(_):
                 print("avatar data published");
             case .failure(let error):
-                self.handleError(title: "Publication of avatar failed", message: "Server returned an error: \(error.error.message ?? error.description)");
+                self.handleError(title: NSLocalizedString("Publication of avatar failed", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.error.message ?? error.description));
             }
         });
     }

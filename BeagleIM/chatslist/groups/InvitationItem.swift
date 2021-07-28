@@ -63,9 +63,9 @@ enum InvitationItemType {
     var name: String {
         switch self {
         case .presenceSubscription:
-            return "Presence subscription";
+            return NSLocalizedString("Presence subscription", comment: "Chats list invitation type");
         case .mucInvitation:
-            return "Groupchat invitation";
+            return NSLocalizedString("Groupchat invitation", comment: "Chats list invitation type");
         }
     }
     

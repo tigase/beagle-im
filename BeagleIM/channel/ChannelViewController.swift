@@ -90,12 +90,13 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             if item.state.isError {
             } else {
                 if item.isMessage() && !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0.isMessage() }, in: 0..<row) {
-                    let correct = menu.addItem(withTitle: "Correct message", action: #selector(correctMessage), keyEquivalent: "");
+                    let correct = menu.addItem(withTitle: NSLocalizedString("Correct message", comment: "context menu item"), action: #selector(correctMessage), keyEquivalent: "");
                     correct.target = self;
                     correct.tag = item.id;
                 }
                 if self.channel.state == .joined && (XmppService.instance.getClient(for: item.conversation.account)?.isConnected ?? false) {
-                    let retract = menu.addItem(withTitle: "Retract message", action: #selector(retractMessage), keyEquivalent: "");
+                    let retract = menu.addItem(withTitle: NSLocalizedString("Retract message", comment: "context menu item")
+                                               , action: #selector(retractMessage), keyEquivalent: "");
                     retract.target = self;
                     retract.tag = item.id;
                 }
@@ -158,10 +159,10 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         }
         
         let alert = NSAlert();
-        alert.messageText = "Are you sure you want to retract that message?"
-        alert.informativeText = "That message will be removed immediately and it's receives will be asked to remove it as well.";
-        alert.addButton(withTitle: "Retract");
-        alert.addButton(withTitle: "Cancel");
+        alert.messageText = NSLocalizedString("Are you sure you want to retract that message?", comment: "alert window");
+        alert.informativeText = NSLocalizedString("That message will be removed immediately and it's receives will be asked to remove it as well.", comment: "alert window");
+        alert.addButton(withTitle: NSLocalizedString("Retract", comment: "Button"));
+        alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Button"));
         alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
             switch result {
             case .alertFirstButtonReturn:
@@ -219,10 +220,10 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         let alert = NSAlert();
         alert.alertStyle = .warning;
         alert.icon = NSImage(named: NSImage.cautionName);
-        alert.messageText = "Destroy channel?";
-        alert.informativeText = "Are you sure that you want to leave and destroy channel \(channel.name ?? channel.channelJid.stringValue)?";
-        alert.addButton(withTitle: "Yes");
-        alert.addButton(withTitle: "No");
+        alert.messageText = NSLocalizedString("Destroy channel?", comment: "alert window title");
+        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Are you sure that you want to leave and destroy channel %@?", comment: "alert window message"), channel.name ?? channel.channelJid.stringValue);
+        alert.addButton(withTitle: NSLocalizedString("Yes", comment: "Button"));
+        alert.addButton(withTitle: NSLocalizedString("No", comment: "Button"));
         alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
             if (response == .alertFirstButtonReturn) {
                 guard let client = channel.context, client.isConnected, channel.state == .joined else {
@@ -240,9 +241,9 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
                             let alert = NSAlert();
                             alert.alertStyle = .warning;
                             alert.icon = NSImage(named: NSImage.cautionName);
-                            alert.messageText = "Channel destruction failed!";
-                            alert.informativeText = "It was not possible to destroy channel \(channel.name ?? channel.channelJid.stringValue). Server returned an error: \(error.message ?? error.description)";
-                            alert.addButton(withTitle: "OK");
+                            alert.messageText = NSLocalizedString("Channel destruction failed!", comment: "alert window title");
+                            alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert window message"), channel.name ?? channel.channelJid.stringValue, error.message ?? error.description);
+                            alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                             alert.beginSheetModal(for: window, completionHandler: nil);
                         }
                     }

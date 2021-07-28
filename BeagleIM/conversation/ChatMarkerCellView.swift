@@ -54,16 +54,16 @@ class ChatMarkerCellView: NSTableCellView {
         
         switch type {
         case .displayed:
-            self.label?.stringValue = "\(prefix)Displayed";
+            self.label?.stringValue = prefix + " " + NSLocalizedString("Displayed", comment: "displayed in the chat log");
         case .received:
-            self.label?.stringValue = "\(prefix)Received";
+            self.label?.stringValue = prefix + " " + NSLocalizedString("Received", comment: "displayed in the chat log");
         }
         
         self.toolTip = prepareTooltip(type: type, senders: senders);
     }
     
     func prepareTooltip(type: ChatMarker.MarkerType, senders: [ConversationEntrySender]) -> String {
-        return "\(type.label) by \(senders.compactMap({ $0.nickname }).joined(separator: " "))";
+        return type.localizedLabel(by: senders.compactMap({ $0.nickname }).joined(separator: " "));
     }
     
 }
@@ -79,4 +79,12 @@ extension ChatMarker.MarkerType {
         }
     }
     
+    func localizedLabel(by senders: String) -> String {
+        switch self {
+        case .displayed:
+            return String.localizedStringWithFormat(NSLocalizedString("Displayed by %@", comment: "displayed in the tooltip"), senders);
+        case .received:
+            return String.localizedStringWithFormat(NSLocalizedString("Received by %@", comment: "displayed in the tooltip"), senders);
+        }
+    }
 }

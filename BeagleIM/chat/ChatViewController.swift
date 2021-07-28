@@ -67,15 +67,15 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         let buttonSize = NSFont.systemFontSize * 2;
         let encryptButton = DropDownButton();
         let menu = NSMenu(title: "");
-        let unencrypedItem = NSMenuItem(title: "Unencrypted", action: #selector(encryptionChanged(_:)), keyEquivalent: "");
+        let unencrypedItem = NSMenuItem(title: NSLocalizedString("Unencrypted", comment: "encryption option"), action: #selector(encryptionChanged(_:)), keyEquivalent: "");
         unencrypedItem.image = NSImage(named: "lock.open.fill");//?.scaled(maxWidthOrHeight: buttonSize);
         unencrypedItem.image?.size = NSSize(width: 16, height: 16);
         menu.addItem(unencrypedItem);
-        let defaultItem = NSMenuItem(title: "Default", action: #selector(encryptionChanged(_:)), keyEquivalent: "");
+        let defaultItem = NSMenuItem(title: NSLocalizedString("Default", comment: "encryption option"), action: #selector(encryptionChanged(_:)), keyEquivalent: "");
         defaultItem.image = NSImage(named: "lock.circle");//?.scaled(maxWidthOrHeight: buttonSize);
         defaultItem.image?.size = NSSize(width: 16, height: 16);
         menu.addItem(defaultItem);
-        let omemoItem = NSMenuItem(title: "OMEMO", action: #selector(encryptionChanged(_:)), keyEquivalent: "");
+        let omemoItem = NSMenuItem(title: NSLocalizedString("OMEMO", comment: "encryption option"), action: #selector(encryptionChanged(_:)), keyEquivalent: "");
         omemoItem.image = NSImage(named: "lock.fill");//?.scaled(maxWidthOrHeight: buttonSize);
         omemoItem.image?.size = NSSize(width: 16, height: 16);
         menu.addItem(omemoItem);
@@ -201,18 +201,18 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
             switch item.payload {
             case .message(_, _), .attachment(_, _):
                 if item.state.isError {
-                    let resend = menu.addItem(withTitle: "Resend message", action: #selector(resendMessage), keyEquivalent: "");
+                    let resend = menu.addItem(withTitle: NSLocalizedString("Resend message", comment: "context menu item"), action: #selector(resendMessage), keyEquivalent: "");
                     resend.target = self;
                     resend.tag = item.id;
                 } else {
                     if item.isMessage(), !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0.isMessage() }, in: 0..<row) {
-                        let correct = menu.addItem(withTitle: "Correct message", action: #selector(correctMessage), keyEquivalent: "");
+                        let correct = menu.addItem(withTitle: NSLocalizedString("Correct message", comment: "context menu item"), action: #selector(correctMessage), keyEquivalent: "");
                         correct.target = self;
                         correct.tag = item.id;
                     }
                     
                     if XmppService.instance.getClient(for: item.conversation.account)?.isConnected ?? false {
-                        let retract = menu.addItem(withTitle: "Retract message", action: #selector(retractMessage), keyEquivalent: "");
+                        let retract = menu.addItem(withTitle: NSLocalizedString("Retract message", comment: "context menu item"), action: #selector(retractMessage), keyEquivalent: "");
                         retract.target = self;
                         retract.tag = item.id;
                     }
@@ -293,10 +293,10 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         }
         
         let alert = NSAlert();
-        alert.messageText = "Are you sure you want to retract that message?"
-        alert.informativeText = "That message will be removed immediately and it's receives will be asked to remove it as well.";
-        alert.addButton(withTitle: "Retract");
-        alert.addButton(withTitle: "Cancel");
+        alert.messageText = NSLocalizedString("Are you sure you want to retract that message?", comment: "alert window title")
+        alert.informativeText = NSLocalizedString("That message will be removed immediately and it's receives will be asked to remove it as well.", comment: "alert window message");
+        alert.addButton(withTitle: NSLocalizedString("Retract", comment: "Button"));
+        alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Button"));
         alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
             switch result {
             case .alertFirstButtonReturn:
@@ -338,13 +338,13 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
             DispatchQueue.main.async {
                 let alert = NSAlert();
                 alert.alertStyle = .warning;
-                alert.messageText = "Call failed";
-                alert.informativeText = "It was not possible to establish call";
+                alert.messageText = NSLocalizedString("Call failed", comment: "alert window title");
+                alert.informativeText = NSLocalizedString("It was not possible to establish call", comment: "alert window message");
                 switch err {
                 case let e as ErrorCondition:
                     switch e {
                     case .forbidden:
-                        alert.informativeText = "It was not possible to access camera or microphone. Please check permissions in the system settings";
+                        alert.informativeText = NSLocalizedString("It was not possible to access camera or microphone. Please check permissions in the system settings", comment: "alert window message");
                     default:
                         break;
                     }
@@ -354,7 +354,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
                 guard let window = self.view.window else {
                     return;
                 }
-                alert.addButton(withTitle: "OK");
+                alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                 alert.beginSheetModal(for: window, completionHandler: nil);
             }
         }
@@ -435,57 +435,6 @@ public enum PreviewError: String, Error {
     case NoData = "no_data";
     case Error = "error";
 }
-//
-//public enum MessageState: Int {
-//
-//    // x % 2 == 0 - incoming
-//    // x % 2 == 1 - outgoing
-//    case incoming = 0
-//    case outgoing = 1
-//
-//    case incoming_unread = 2
-//    case outgoing_unsent = 3
-//
-//    case incoming_error = 4
-//    case outgoing_error = 5
-//
-//    case incoming_error_unread = 6
-//    case outgoing_error_unread = 7
-//
-//    case outgoing_delivered = 9
-//    case outgoing_read = 11
-//    
-////    case incoming_retracted = 12
-////    case outgoing_retracted = 13
-//
-//    var direction: MessageDirection {
-//        switch self {
-//        case .incoming, .incoming_unread, .incoming_error, .incoming_error_unread://, .incoming_retracted:
-//            return .incoming;
-//        case .outgoing, .outgoing_unsent, .outgoing_delivered, .outgoing_read, .outgoing_error_unread, .outgoing_error://, .outgoing_retracted:
-//            return .outgoing;
-//        }
-//    }
-//
-//    var isError: Bool {
-//        switch self {
-//        case .incoming_error, .incoming_error_unread, .outgoing_error, .outgoing_error_unread:
-//            return true;
-//        default:
-//            return false;
-//        }
-//    }
-//
-//    var isUnread: Bool {
-//        switch self {
-//        case .incoming_unread, .incoming_error_unread, .outgoing_error_unread:
-//            return true;
-//        default:
-//            return false;
-//        }
-//    }
-//
-//}
 
 public enum MessageDirection: Int {
     case incoming = 0

@@ -39,7 +39,7 @@ class JingleManager: JingleSessionManager {
     init() {
         if !RTCInitializeSSL() {
             let alert = NSAlert();
-            alert.messageText = "Failed to initialize RTC SSL!";
+            alert.messageText = NSLocalizedString("Failed to initialize RTC SSL for WebRTC!", comment: "jingle manager");
             alert.runModal();
         }
         
@@ -92,25 +92,6 @@ class JingleManager: JingleSessionManager {
     func close(session: Session) {
         _ = self.close(for: session.account, with: session.jid, sid: session.sid);
     }
-    
-//    func handle(event: Event) {
-//        dispatcher.async {
-//            switch event {
-//            // do we need this?? it is possible to have jingle session after it is established even if XMPP user is not available
-//            case let e as PresenceModule.ContactPresenceChanged:
-//                if e.availabilityChanged && (e.presence.type ?? .available) == .unavailable, let account = e.sessionObject.userBareJid, let from = e.presence.from {
-//                    let toClose = self.connections.filter({ (session) in
-//                        return session.jid == from && session.account == account;
-//                    });
-//                    toClose.forEach({ (session) in
-//                        session.terminate();
-//                    })
-//                }
-//            default:
-//                break;
-//            }
-//        }
-//    }
     
     enum ContentType {
         case audio

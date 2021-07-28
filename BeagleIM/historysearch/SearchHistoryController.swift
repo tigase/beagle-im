@@ -103,9 +103,9 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
 
         guard let client = XmppService.instance.getClient(for: item.conversation.account) else {
             let alert = NSAlert();
-            alert.messageText = "Account is disabled";
-            alert.informativeText = "It is not possible to open a chat when the account related to the chat is disabled!";
-            alert.addButton(withTitle: "OK");
+            alert.messageText = NSLocalizedString("Account is disabled", comment: "alert window title");
+            alert.informativeText = NSLocalizedString("It is not possible to open a chat when the account related to the chat is disabled!", comment: "alert window message");
+            alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
             alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
             return;
         }

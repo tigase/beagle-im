@@ -38,8 +38,8 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
             }
 
             let alert = NSAlert();
-            alert.messageText = "Meeting ended";
-            alert.informativeText = "Meeting has ended";
+            alert.messageText = NSLocalizedString("Meeting ended", comment: "meet controller");
+            alert.informativeText = NSLocalizedString("Meeting has ended", comment: "meet controller");
             alert.alertStyle = .informational;
             alert.beginSheetModal(for: window, completionHandler: { _ in
                 self.endCall(self);
@@ -299,8 +299,8 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
                     }
                     let alert = NSAlert();
                     alert.alertStyle = .informational;
-                    alert.messageText = "Failed to kick out" ;
-                    alert.informativeText = "It was not possible to kick out \(jid). Server returned an error: \(error.description)";
+                    alert.messageText = NSLocalizedString("Failed to kick out", comment: "meet controlller");
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to kick out %@. Server returned an error: %@", comment: "meet controller"), jid.stringValue, error.description);
                     alert.beginSheetModal(for: window, completionHandler: nil);
                 }
             }

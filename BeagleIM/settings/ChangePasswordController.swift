@@ -39,7 +39,7 @@ class ChangePasswordController: NSViewController, NSTextFieldDelegate, AccountAw
     
     override func viewWillAppear() {
         self.changeButton.isEnabled = false;
-        self.message.stringValue = "To change password for account \(self.account?.stringValue ?? "") please fill out this form:";
+        self.message.stringValue = String.localizedStringWithFormat(NSLocalizedString("To change password for account %$ please fill out this form:", comment: "settings"), self.account?.stringValue ?? "");
         if let account = self.account {
             let connected = (XmppService.instance.getClient(for: account)?.state ?? .disconnected()) == .connected();
             if connected {
@@ -92,9 +92,9 @@ class ChangePasswordController: NSViewController, NSTextFieldDelegate, AccountAw
                         print("password change failed: \(err)");
                         let alert = NSAlert();
                         alert.icon = NSImage(named: NSImage.cautionName);
-                        alert.messageText = "Password change failed";
-                        alert.informativeText = "Server returned following error: \(err.message ?? err.description)";
-                        alert.addButton(withTitle: "OK")
+                        alert.messageText = NSLocalizedString("Password change failed", comment: "settings");
+                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Server returned following error: %$", comment: "settings"), err.message ?? err.description);
+                        alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"))
                         alert.beginSheetModal(for: self.view.window!, completionHandler: { (modalResp) in
                             self.close();
                         });
@@ -118,8 +118,8 @@ class ChangePasswordController: NSViewController, NSTextFieldDelegate, AccountAw
             if self.changeOnServer?.state == .on {
                 let alert = NSAlert();
                 alert.icon = NSImage(named: NSImage.infoName);
-                alert.messageText = "Password changed";
-                alert.addButton(withTitle: "OK")
+                alert.messageText = NSLocalizedString("Password changed", comment: "settings");
+                alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                 alert.beginSheetModal(for: self.view.window!, completionHandler: { (modalResp) in
                     self.close();
                 });

@@ -114,7 +114,7 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     override func viewWillAppear() {
         print("AbstractChatViewController::viewWillAppear() - begin")
         super.viewWillAppear();
-        self.messageField?.placeholderAttributedString = account != nil ? NSAttributedString(string: "from \(account.stringValue)...", attributes: [.foregroundColor: NSColor.placeholderTextColor, .font: NSFont.systemFont(ofSize: NSFont.systemFontSize)]) : nil;
+        self.messageField?.placeholderAttributedString = account != nil ? NSAttributedString(string: String.localizedStringWithFormat(NSLocalizedString("from %@...", comment: "placehoder of message entry field"), account.stringValue), attributes: [.foregroundColor: NSColor.placeholderTextColor, .font: NSFont.systemFont(ofSize: NSFont.systemFontSize)]) : nil;
         
         self.updateMessageFieldSize();
         self.messageFieldScroller.cornerRadius = messageFieldScrollerHeight.constant / 2;
@@ -209,7 +209,7 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     
     func prepareConversationLogContextMenu(dataSource: ConversationDataSource, menu: NSMenu, forRow row: Int) {
         if row != NSNotFound || (self.conversationLogController?.selectionManager.hasSelection ?? false) {
-            let reply = menu.addItem(withTitle: "Reply", action: #selector(replySelectedMessages), keyEquivalent: "");
+            let reply = menu.addItem(withTitle: NSLocalizedString("Reply", comment: "context menu item"), action: #selector(replySelectedMessages), keyEquivalent: "");
             reply.target = self
             reply.tag = row;
         }

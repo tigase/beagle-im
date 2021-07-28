@@ -201,7 +201,7 @@ class Open1On1ChatItemView: NSTableCellView {
             cancellables.removeAll();
             contact?.displayNamePublisher.assign(to: \.stringValue, on: name).store(in: &cancellables);
             self.jid.stringValue = contact?.jid.stringValue ?? "";
-            self.account.stringValue = "using \(contact?.account.stringValue ?? "")";
+            self.account.stringValue = String.localizedStringWithFormat(NSLocalizedString("using %@", comment: "marks used account"), contact?.account.stringValue ?? "");
             self.avatar.displayableId = contact;
         }
     }

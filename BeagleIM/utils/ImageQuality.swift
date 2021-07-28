@@ -32,6 +32,21 @@ enum ImageQuality: String {
         return Settings.imageQuality;
     }
     
+    var label: String {
+        switch self {
+        case .original:
+            return NSLocalizedString("Original", comment: "image quality")
+        case .highest:
+            return NSLocalizedString("Highest", comment: "image quality")
+        case .high:
+            return NSLocalizedString("High", comment: "image quality")
+        case .medium:
+            return NSLocalizedString("Medium", comment: "image quality")
+        case .low:
+            return NSLocalizedString("Low", comment: "image quality")
+        }
+    }
+    
     var size: CGFloat {
         switch self {
         case .original:

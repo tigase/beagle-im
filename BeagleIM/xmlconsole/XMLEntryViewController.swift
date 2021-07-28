@@ -69,9 +69,9 @@ class XMLEntryViewController: NSViewController, NSTextViewDelegate {
         guard !xmlDelegate.parsed.isEmpty else {
             let alert = Alert();
             alert.icon = NSImage(named: NSImage.cautionName);
-            alert.messageText = "Error";
-            alert.informativeText = "You have entered invalid XML. It is impossible to send invalid XML as it violates XMPP protocol specification!";
-            alert.addButton(withTitle: "OK")
+            alert.messageText = NSLocalizedString("Error", comment: "xml entry controller");
+            alert.informativeText = NSLocalizedString("You have entered invalid XML. It is impossible to send invalid XML as it violates XMPP protocol specification!", comment: "xml entry controller");
+            alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
             alert.run { (response) in
             }
             return;

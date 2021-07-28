@@ -50,8 +50,8 @@ class CreateMeetingController: NSViewController {
                             that.meetComponents = [];
                             let alert = NSAlert();
                             alert.alertStyle = .warning;
-                            alert.messageText = "Unable to create a meet"
-                            alert.informativeText = error == .item_not_found ? "Selected account does not support creating a meeting. Please select a different account." : "While checking for support XMPP server returned an error: \(error.description). Please select a different account or try again later.";
+                            alert.messageText = NSLocalizedString("Unable to create a meet", comment: "create meet controller")
+                            alert.informativeText = error == .item_not_found ? NSLocalizedString("Selected account does not support creating a meeting. Please select a different account.", comment: "create meet controller") : String.localizedStringWithFormat(NSLocalizedString("While checking for support XMPP server returned an error: %@. Please select a different account or try again later.", comment: "create meet controller"), error.description);
                             alert.beginSheetModal(for: that.view.window!, completionHandler: { response in
                                 // nothing to do except closing..
                                 //that.close();
@@ -123,8 +123,8 @@ class CreateMeetingController: NSViewController {
                 case .failure(let error):
                     let alert = NSAlert();
                     alert.alertStyle = .warning;
-                    alert.messageText = "Meeting creation failed"
-                    alert.informativeText = "It was not possible to create a meeting. Received an error: \(error.description)";
+                    alert.messageText = NSLocalizedString("Meeting creation failed", comment: "create meet controller");
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to create a meeting. Received an error: %@", comment: "create meet controller"), error.description);
                     alert.beginSheetModal(for: self.view.window!, completionHandler: { response in
                         // nothing to do except closing..
                         self.close();

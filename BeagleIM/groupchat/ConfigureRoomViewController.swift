@@ -82,10 +82,10 @@ class ConfigureRoomViewController: NSViewController {
                         return;
                     }
                     let alert = NSAlert();
-                    alert.messageText = "Error occurred";
+                    alert.messageText = NSLocalizedString("Error occurred", comment: "alert window title");
                     alert.icon = NSImage(named: NSImage.cautionName);
-                    alert.informativeText = "Could not retrieve room configuration from the server. Got following error: \(error.message ?? error.description)";
-                    alert.addButton(withTitle: "OK");
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Could not retrieve room configuration from the server. Got following error: %@", comment: "alert window message"), error.message ?? error.description);
+                    alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                     alert.beginSheetModal(for: that.view.window!, completionHandler: { result in
                         that.close(result: .cancel);
                     });
@@ -232,10 +232,10 @@ class ConfigureRoomViewController: NSViewController {
                         return;
                     }
                     let alert = NSAlert();
-                    alert.messageText = "Error occurred";
+                    alert.messageText = NSLocalizedString("Error occurred", comment: "alert window title");
                     alert.icon = NSImage(named: NSImage.cautionName);
-                    alert.informativeText = "Could not apply room configuration on the server. Got following error: \(error.message ?? error.description)";
-                    alert.addButton(withTitle: "OK");
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Could not apply room configuration on the server. Got following error: %@", comment: "alert window message"), error.message ?? error.description);
+                    alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                     alert.beginSheetModal(for: window, completionHandler: { result in
                         dispatchGroup.leave();
                     });

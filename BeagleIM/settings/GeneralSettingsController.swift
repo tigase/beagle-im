@@ -52,49 +52,49 @@ class GeneralSettingsController: NSViewController {
     private var cancellables: Set<AnyCancellable> = [];
     
     override func viewDidLoad() {
-        appearance = formView.addRow(label: "Appearance:", field: NSPopUpButton(frame: .zero, pullsDown: false));
+        appearance = formView.addRow(label: NSLocalizedString("Appearance", comment: "setting") + ":", field: NSPopUpButton(frame: .zero, pullsDown: false));
         appearance.target = self;
         appearance.action = #selector(checkboxChanged(_:));
-        commonChatsList = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show channels and chats in merged list", target: self, action: #selector(checkboxChanged(_:))));
+        commonChatsList = formView.addRow(label: "", field: NSButton(checkboxWithTitle: NSLocalizedString("Show channels and chats in merged list", comment: "setting"), target: self, action: #selector(checkboxChanged(_:))));
         formView.groupItems(from: appearance!, to: commonChatsList!);
                 
-        chatslistStyle = formView.addRow(label: "Chats list style:", field: NSPopUpButton(frame: .zero, pullsDown: false));
+        chatslistStyle = formView.addRow(label: NSLocalizedString("Chats list style", comment: "setting") + ":", field: NSPopUpButton(frame: .zero, pullsDown: false));
         chatslistStyle.target = self;
         chatslistStyle.action = #selector(checkboxChanged(_:));
         formView.groupItems(from: chatslistStyle!, to: chatslistStyle!);
 
-        encryptionButton = formView.addRow(label: "Default encryption:", field: NSPopUpButton(frame: .zero, pullsDown: false));
+        encryptionButton = formView.addRow(label: NSLocalizedString("Default encryption", comment: "setting") + ":", field: NSPopUpButton(frame: .zero, pullsDown: false));
         encryptionButton?.target = self;
         encryptionButton?.action = #selector(checkboxChanged(_:));
         formView.groupItems(from: encryptionButton, to: encryptionButton);
         
-        notificationsFromUnknownSenders = formView.addRow(label: "Notifications:", field: NSButton(checkboxWithTitle: "Show for messages from unknown senders", target: self, action: #selector(checkboxChanged(_:))));
-        systemMenuIcon = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show system menu icon", target: self, action: #selector(checkboxChanged(_:))));
+        notificationsFromUnknownSenders = formView.addRow(label: NSLocalizedString("Notifications", comment: "setting") + ":", field: NSButton(checkboxWithTitle: NSLocalizedString("Show for messages from unknown senders", comment: "setting"), target: self, action: #selector(checkboxChanged(_:))));
+        systemMenuIcon = formView.addRow(label: "", field: NSButton(checkboxWithTitle: NSLocalizedString("Show system menu icon", comment: "setting"), target: self, action: #selector(checkboxChanged(_:))));
         formView.groupItems(from: notificationsFromUnknownSenders, to: systemMenuIcon);
         
-        markdownFormatting = formView.addRow(label: "Message formatting:", field: NSButton(checkboxWithTitle: "Markdown", target: self, action: #selector(checkboxChanged(_:))));
-        showEmoticons = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Show emoticons", target: self, action: #selector(checkboxChanged(_:))))
+        markdownFormatting = formView.addRow(label: NSLocalizedString("Message formatting", comment: "setting") + ":", field: NSButton(checkboxWithTitle: NSLocalizedString("Markdown", comment: "setting"), target: self, action: #selector(checkboxChanged(_:))));
+        showEmoticons = formView.addRow(label: "", field: NSButton(checkboxWithTitle: NSLocalizedString("Show emoticons", comment: "setting"), target: self, action: #selector(checkboxChanged(_:))))
         Settings.$enableMarkdownFormatting.assign(to: \.isEnabled, on: showEmoticons).store(in: &cancellables)
-        spellchecking = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Spellchecking", target: self, action: #selector(checkboxChanged(_:))));
-        enableLinkPreviews = formView.addRow(label: "", field: NSButton(checkboxWithTitle: "Enable link previews", target: self, action: #selector(checkboxChanged(_:))));
+        spellchecking = formView.addRow(label: "", field: NSButton(checkboxWithTitle: NSLocalizedString("Spellchecking", comment: "setting"), target: self, action: #selector(checkboxChanged(_:))));
+        enableLinkPreviews = formView.addRow(label: "", field: NSButton(checkboxWithTitle: NSLocalizedString("Enable link previews", comment: "setting"), target: self, action: #selector(checkboxChanged(_:))));
         formView.groupItems(from:markdownFormatting, to: enableLinkPreviews!);
         
-        imageQuality = formView.addRow(label: "Sent images quality:", field: NSPopUpButton(frame: .zero, pullsDown: false));
+        imageQuality = formView.addRow(label: NSLocalizedString("Sent images quality", comment: "setting") + ":", field: NSPopUpButton(frame: .zero, pullsDown: false));
         imageQuality.target = self;
         imageQuality.action = #selector(checkboxChanged(_:));
-        videoQuality = formView.addRow(label: "Sent videos quality:", field: NSPopUpButton(frame: .zero, pullsDown: false));
+        videoQuality = formView.addRow(label: NSLocalizedString("Sent videos quality", comment: "setting") + ":", field: NSPopUpButton(frame: .zero, pullsDown: false));
         videoQuality.target = self;
         videoQuality.action = #selector(checkboxChanged(_:));
         formView.groupItems(from: imageQuality, to: videoQuality);
 
-        _ = formView.addRow(label: "XMPP URI", field: NSButton(title: "Set as default app", target: self, action: #selector(showSetAsDefaultWindow)));
+        _ = formView.addRow(label: NSLocalizedString("XMPP URI", comment: "setting") + ":", field: NSButton(title: NSLocalizedString("Set as default app", comment: "setting"), target: self, action: #selector(showSetAsDefaultWindow)));
         
         self.preferredContentSize = NSSize(width: self.view.frame.size.width, height: self.view.frame.size.height);
     }
     
     override func viewWillAppear() {
         appearance.removeAllItems();
-        appearance.addItems(withTitles: ["Automatic", "Light", "Dark"]);
+        appearance.addItems(withTitles: [NSLocalizedString("Automatic", comment: "setting"), NSLocalizedString("Light", comment: "setting"), NSLocalizedString("Dark", comment: "setting")]);
         switch Settings.appearance {
         case .auto:
             appearance.selectItem(at: 0);
@@ -105,7 +105,7 @@ class GeneralSettingsController: NSViewController {
         }
 
         chatslistStyle.removeAllItems();
-        chatslistStyle.addItems(withTitles: ["Minimal", "Small", "Large"]);
+        chatslistStyle.addItems(withTitles: [NSLocalizedString("Minimal", comment: "setting"), NSLocalizedString("Small", comment: "setting"), NSLocalizedString("Large", comment: "setting")]);
         switch Settings.chatslistStyle {
         case .minimal:
             chatslistStyle.selectItem(at: 0);
@@ -125,7 +125,7 @@ class GeneralSettingsController: NSViewController {
         commonChatsList.state = Settings.commonChatsList ? .on : .off;
 
         encryptionButton.removeAllItems();
-        encryptionButton.addItems(withTitles: ["None", "OMEMO"]);
+        encryptionButton.addItems(withTitles: [NSLocalizedString("None", comment: "setting"), NSLocalizedString("OMEMO", comment: "setting")]);
         encryptionButton.selectItem(at: Settings.messageEncryption == .omemo ? 1 : 0);
         
         imageQuality.removeAllItems();

@@ -56,9 +56,9 @@ class BaseChatCellView: NSTableCellView {
             case .none:
                 self.senderName?.stringValue = item.sender.nickname ?? "";
             case .occupant(let nickname):
-                let val = NSMutableAttributedString(string: item.state.direction == .incoming ? "From \(item.sender.nickname!) " : "To \(nickname)  ");
+                let val = NSMutableAttributedString(string: (item.state.direction == .incoming ? String.localizedStringWithFormat(NSLocalizedString("From %@", comment: "sender of PM"), item.sender.nickname!) : String.localizedStringWithFormat(NSLocalizedString("To %@", comment: "recipient of PM"), nickname)) + " ");
                 let font = NSFontManager.shared.convert(NSFont.systemFont(ofSize: senderName!.font!.pointSize - 2), toHaveTrait: [.italicFontMask, .smallCapsFontMask, .unboldFontMask]);
-                val.append(NSAttributedString(string: " (private message)", attributes: [.font: font, .foregroundColor: NSColor.secondaryLabelColor]));
+                val.append(NSAttributedString(string: " " + NSLocalizedString("(private message)", comment: "private message mark"), attributes: [.font: font, .foregroundColor: NSColor.secondaryLabelColor]));
                 self.senderName?.attributedStringValue = val;
             }
         }
@@ -71,11 +71,12 @@ class BaseChatCellView: NSTableCellView {
             break;
         }
                
-        if case .outgoing(let state) = item.state, state == .unsent{
+        if case .outgoing(let state) = item.state, state == .unsent {
+            let unsent = NSLocalizedString("Unsent", comment: "Mark of unsent message")
             if let prefix = timestampPrefix {
-                timestampPrefix = "\(prefix) Unsent";
+                timestampPrefix = "\(prefix) " + unsent;
             } else {
-                timestampPrefix = "Unsent"
+                timestampPrefix = unsent;
             }
         }
         if let timestampView = self.timestamp {

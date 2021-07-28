@@ -87,9 +87,9 @@ class PresenceAuthorizationRequestController: NSViewController {
                     break;
                 case .failure(let err):
                     let alert = Alert();
-                    alert.messageText = "It was not possible to block \(self.jid.stringValue)";
-                    alert.informativeText = "Server returned an error: \(err.message ?? err.description)";
-                    alert.addButton(withTitle: "OK");
+                    alert.messageText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to block %@", comment: "alert window title"), self.jid.stringValue);
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert window message"), err.message ?? err.description);
+                    alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                     alert.run(completionHandler: { res in
                         // do we have anything to do here?
                     });

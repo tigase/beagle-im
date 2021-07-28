@@ -194,11 +194,9 @@ class ChatAttachmentCellView: BaseChatCellView {
             return;
         }
         
-        guard let menu = btn.menu?.item(withTitle: "Share")?.submenu else {
+        guard let menu = btn.menu?.item(withTitle: NSLocalizedString("Share", comment: "Share menu title"))?.submenu else {
             return;
         }
-        
-        print("menu:", menu.items.map({ it in it.title }));
         
         menu.removeAllItems();
         
@@ -217,7 +215,6 @@ class ChatAttachmentCellView: BaseChatCellView {
             item.action = #selector(shareItemSelected);
             item.isEnabled = true;
         }
-        print("menu:", menu.items.map({ it in it.title }));
     }
 
     @objc func shareItemSelected(_ menuItem: NSMenuItem) {
@@ -471,7 +468,7 @@ class ChatAttachmentCellView: BaseChatCellView {
             } else {
                 let filename = appendix.filename ?? URL(string: url)?.lastPathComponent ?? "";
                 if filename.isEmpty {
-                    self.filename.stringValue =  "Unknown file";
+                    self.filename.stringValue = NSLocalizedString("Unknown file", comment: "Unknown file");
                 } else {
                     self.filename.stringValue = filename;
                 }

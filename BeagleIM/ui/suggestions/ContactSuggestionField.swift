@@ -139,41 +139,5 @@ class ContactSuggestionField: NSSearchField, NSSearchFieldDelegate {
         let account: BareJID?;
         let displayableId: DisplayableIdProtocol?;
     }
-    
-//    private class NewItem: DisplayableIdWithKeyProtocol {
-//        var account: BareJID
-//
-//        var jid: BareJID
-//
-//
-//        @Published
-//        private(set) var displayName: String = ""
-//
-//        var displayNamePublisher: Published<String>.Publisher {
-//            return $displayName;
-//        }
-//
-//        @Published
-//        private(set) var status: Presence.Show? = nil;
-//
-//        var statusPublisher: Published<Presence.Show?>.Publisher {
-//            return $status;
-//        }
-//
-//        var avatarPublisher: AnyPublisher<NSImage?, Never> {
-//            return Empty<NSImage?,Never>(completeImmediately: true).eraseToAnyPublisher();
-//        }
-//
-//        @Published
-//        private(set) var description: String?
-//
-//        var descriptionPublisher: Published<String?>.Publisher {
-//            return $description;
-//        }
-//
-//        init(displayName: String) {
-//            displayName = displayName;
-//        }
-//
-//    }
+
 }

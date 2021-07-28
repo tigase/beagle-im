@@ -111,13 +111,13 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
                                 return;
                             }
                             let alert = NSAlert();
-                            alert.messageText = "Enter password for room";
-                            alert.informativeText = "This room is password protected. You need to provide correct password to join this room.";
+                            alert.messageText = NSLocalizedString("Enter password for room", comment: "alert window title");
+                            alert.informativeText = NSLocalizedString("This room is password protected. You need to provide correct password to join this room.", comment: "alert window message");
                             let passwordField = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 200, height: 21));
                             passwordField.setContentHuggingPriority(.defaultLow, for: .horizontal);
                             alert.accessoryView = passwordField;
-                            alert.addButton(withTitle: "OK").tag = NSApplication.ModalResponse.OK.rawValue;
-                            alert.addButton(withTitle: "Cancel");
+                            alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button")).tag = NSApplication.ModalResponse.OK.rawValue;
+                            alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Button"));
                             alert.beginSheetModal(for: window, completionHandler: { (response) in
                                 let password = passwordField.stringValue;
                                 if password.isEmpty || response != .OK {
@@ -152,9 +152,9 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
                             return;
                         }
                         let alert = NSAlert();
-                        alert.messageText = "Could not join";
-                        alert.informativeText = "It was not possible to join a room. The server returned an error: \(error.message ?? error.description)";
-                        alert.addButton(withTitle: "OK")
+                        alert.messageText = NSLocalizedString("Could not join", comment: "alert window title");
+                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to join a room. The server returned an error: %@", comment: "alert window message"), error.message ?? error.description);
+                        alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                         alert.beginSheetModal(for: window, completionHandler: { (response) in
                             completionHandler(false);
                         });
@@ -184,9 +184,9 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
                 case .failure(let error):
                     DispatchQueue.main.async {
                         let alert = NSAlert();
-                        alert.messageText = "Could not join";
-                        alert.informativeText = "It was not possible to join a channel. The server returned an error: \(error.message ?? error.description)";
-                        alert.addButton(withTitle: "OK")
+                        alert.messageText = NSLocalizedString("Could not join", comment: "alert window title");
+                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to join a channel. The server returned an error: %@", comment: "alert window title"), error.message ?? error.description);
+                        alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                         alert.beginSheetModal(for: self.window!, completionHandler: { (response) in
                             completionHandler(false);
                         });

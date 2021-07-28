@@ -58,8 +58,8 @@ class ChannelEditConfigViewControlller: NSViewController, ChannelAwareProtocol {
                     }
                     let alert = NSAlert();
                     alert.alertStyle = .warning;
-                    alert.messageText = "Could not retrieve config"
-                    alert.informativeText = "It was not possible to retrieve channel configuration: \(errorCondition)";
+                    alert.messageText = NSLocalizedString("Could not retrieve config", comment: "alert window title");
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to retrieve channel configuration: %@", comment: "alert window message"), errorCondition.description);
                     alert.beginSheetModal(for: that.view.window!, completionHandler: { response in
                         that.dismiss(that);
                     })
@@ -90,8 +90,8 @@ class ChannelEditConfigViewControlller: NSViewController, ChannelAwareProtocol {
                     }
                     let alert = NSAlert();
                     alert.alertStyle = .warning;
-                    alert.messageText = "Configuration change failed"
-                    alert.informativeText = "It was not possible to change channel configuration: \(errorCondition)";
+                    alert.messageText = NSLocalizedString("Configuration change failed", comment: "alert window title");
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to change channel configuration: %@", comment: "alert window message"), errorCondition.description);
                     alert.beginSheetModal(for: that.view.window!, completionHandler: nil)
                 }
             }

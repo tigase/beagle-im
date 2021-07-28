@@ -140,9 +140,9 @@ class SharingTaskManager {
             
                 if !errors.isEmpty, let window = self.window {
                     let alert = NSAlert();
-                    alert.messageText = "Sharing error";
-                    alert.informativeText = "It was not possible to share \(errors.count) item(s) due to following errors:\n \(errors.map({ $0.message }).joined(separator: "\n"))";
-                    alert.addButton(withTitle: "OK");
+                    alert.messageText = NSLocalizedString("Sharing error", comment: "alert window title");
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to share %d item(s) due to following errors:\n %@", comment: "alert window message"), errors.count, errors.map({ $0.message }).joined(separator: "\n"));
+                    alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                     alert.beginSheetModal(for: window, completionHandler: { response in
                         // nothing to do..
                     })
@@ -214,10 +214,10 @@ class SharingTaskManager {
                     DispatchQueue.main.async {
                         let alert = NSAlert();
                         alert.icon = NSImage(named: NSImage.cautionName);
-                        alert.messageText = "Warning";
-                        alert.informativeText = "File upload completed but it was not confirmed correctly by your server. Do you wish to proceed anyway?";
-                        alert.addButton(withTitle: "Yes");
-                        alert.addButton(withTitle: "No");
+                        alert.messageText = NSLocalizedString("Warning", comment: "alert window title");
+                        alert.informativeText = NSLocalizedString("File upload completed but it was not confirmed correctly by your server. Do you wish to proceed anyway?", comment: "alert window message");
+                        alert.addButton(withTitle: NSLocalizedString("Yes", comment: "Button"));
+                        alert.addButton(withTitle: NSLocalizedString("No", comment: "Button"));
                         alert.beginSheetModal(for: window, completionHandler: { response in
                             switch response {
                             case .alertFirstButtonReturn:
@@ -255,10 +255,10 @@ class SharingTaskManager {
                 DispatchQueue.main.async {
                     let alert = NSAlert();
                     alert.icon = NSImage(named: NSImage.cautionName);
-                    alert.messageText = "Invalid SSL certificate";
-                    alert.informativeText = "HTTP File Upload server presented invalid SSL certificate for \(challenge.protectionSpace.host).\nReceived certificate \(info.details.name) (\(info.details.fingerprintSha1))" + (info.issuer == nil ? " is self-signed!" : " issued by \(info.issuer!.name).") + "\n\nWould you like to connect to the server anyway?";
-                    alert.addButton(withTitle: "Yes");
-                    alert.addButton(withTitle: "No");
+                    alert.messageText = NSLocalizedString("Invalid SSL certificate", comment: "alert window title")
+                    alert.informativeText = info.issuer == nil ? String.localizedStringWithFormat(NSLocalizedString("HTTP File Upload server presented invalid SSL certificate for %@.\nReceived certificate %@ (%@) is self-signed!\n\nWould you like to connect to the server anyway?", comment: "alert window message - part 1"), challenge.protectionSpace.host, info.details.name, info.details.fingerprintSha1) : String.localizedStringWithFormat(NSLocalizedString("HTTP File Upload server presented invalid SSL certificate for %@.\nReceived certificate %@ (%@) is issued by %@.\n\nWould you like to connect to the server anyway?", comment: "alert window message - part 1"), challenge.protectionSpace.host, info.details.name, info.details.fingerprintSha1, info.issuer!.name);
+                    alert.addButton(withTitle: NSLocalizedString("Yes", comment: "Button"));
+                    alert.addButton(withTitle: NSLocalizedString("No", comment: "Button"));
                     alert.beginSheetModal(for: window, completionHandler: { (response) in
                         switch response {
                         case .alertFirstButtonReturn:

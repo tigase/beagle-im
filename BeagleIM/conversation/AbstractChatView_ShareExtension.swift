@@ -94,10 +94,10 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
             let alert = NSAlert();
             alert.alertStyle = .informational;
             alert.icon = NSImage(named: NSImage.shareTemplateName);
-            alert.messageText = "Sending files";
-            alert.informativeText = "You have pasted \(urls.count) file(s). Do you wish to send them?";
-            alert.addButton(withTitle: "Yes");
-            alert.addButton(withTitle: "No");
+            alert.messageText = NSLocalizedString("Sending files", comment: "Title of alert to confirm sending files");
+            alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("You have pasted %d file(s). Do you wish to send them?", comment: "Alert confirm sending files message"), urls.count);
+            alert.addButton(withTitle: NSLocalizedString("Yes", comment: "Confirm sending files"));
+            alert.addButton(withTitle: NSLocalizedString("No", comment: "Deny sending files"));
             alert.beginSheetModal(for: self.view.window!, completionHandler: { response in
                 if response == .alertFirstButtonReturn {
                     let tasks = urls.map({ FileURLSharingTaskItem(chat: self.conversation, url: $0 as URL)});
@@ -164,7 +164,7 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
     func selectFile(completionHandler: @escaping ([URL])->Void) {
         let openFile = NSOpenPanel();
         openFile.worksWhenModal = true;
-        openFile.prompt = "Select files to share";
+        openFile.prompt = NSLocalizedString("Select files to share", comment: "Select files to share");
         openFile.canChooseDirectories = false;
         openFile.canChooseFiles = true;
         openFile.canSelectHiddenExtension = true;

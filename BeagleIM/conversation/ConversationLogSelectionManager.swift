@@ -387,16 +387,16 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         
 
         if row != NSNotFound || (selectionStart != nil && selectionEnd != nil) {
-            var copy = menu.addItem(withTitle: "Copy text", action: #selector(copySelectedText), keyEquivalent: "");
+            var copy = menu.addItem(withTitle: NSLocalizedString("Copy text", comment: "context menu item"), action: #selector(copySelectedText), keyEquivalent: "");
             copy.target = self;
             copy.tag = row;
-            copy = menu.addItem(withTitle: "Copy messages", action: #selector(copySelectedMessages), keyEquivalent: "");
+            copy = menu.addItem(withTitle: NSLocalizedString("Copy messages", comment: "context menu item"), action: #selector(copySelectedMessages), keyEquivalent: "");
             copy.target = self;
             copy.tag = row;
         }
         if let (_,idx,_,messageView,_) = self.estimateSelectionPoint(event: event, table: table, superview: superview) {
             if messageView.textStorage?.length ?? 0 > idx, let link = messageView.textStorage?.attribute(.link, at: idx, effectiveRange: nil) as? URL {
-                let copy = menu.addItem(withTitle: "Copy link", action: #selector(copySelectedText), keyEquivalent: "");
+                let copy = menu.addItem(withTitle: NSLocalizedString("Copy link", comment: "context menu item"), action: #selector(copySelectedText), keyEquivalent: "");
                 copy.target = self;
                 copy.representedObject = link;
             }

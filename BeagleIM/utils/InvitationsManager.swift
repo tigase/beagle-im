@@ -102,7 +102,7 @@ class InvitationManager {
 
                 let mucInvitation = invitation.object as! MucModule.Invitation;
                 let alert = NSAlert();
-                alert.messageText = "Invitation to groupchat";
+                alert.messageText = NSLocalizedString("Invitation to groupchat", comment: "invitation alert - title");
                 if let inviter = mucInvitation.inviter {
                     let name = XmppService.instance.clients.values.compactMap({ (client) -> String? in
                         if let n = DBRosterStore.instance.item(for: client, jid: inviter)?.name {
@@ -111,12 +111,12 @@ class InvitationManager {
                             return nil;
                         }
                     }).first ?? inviter.stringValue;
-                    alert.informativeText = "User \(name) invited you (\(invitation.account)) to the groupchat \(mucInvitation.roomJid)";
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("User %@ invited you (%@) to the groupchat %@", comment: "invitation alert - message"), name, invitation.account.stringValue, mucInvitation.roomJid.stringValue);
                 } else {
-                    alert.informativeText = "You (\(invitation.account)) were invited to the groupchat \(mucInvitation.roomJid)";
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("You (%@) were invited to the groupchat %@", comment: "invitation alert - message"), invitation.account.stringValue, mucInvitation.roomJid.stringValue);
                 }
-                alert.addButton(withTitle: "Accept");
-                alert.addButton(withTitle: "Decline");
+                alert.addButton(withTitle: NSLocalizedString("Accept", comment: "Button"));
+                alert.addButton(withTitle: NSLocalizedString("Decline", comment: "Button"));
                 alert.beginSheetModal(for: window, completionHandler: { response in
                     if response == NSApplication.ModalResponse.alertFirstButtonReturn {
                         let roomName = mucInvitation.roomJid.localPart!;
@@ -171,8 +171,8 @@ class InvitationManager {
     private func deliverPresenceSubscriptionNotification(invitation: InvitationItem) {
         let rosterItem = DBRosterStore.instance.item(for: invitation.account, jid: invitation.jid);
         let content = UNMutableNotificationContent();
-        content.title = "Authorization request";
-        content.body = "\(rosterItem?.name ?? invitation.jid.stringValue) requests authorization to access information about you presence";
+        content.title = NSLocalizedString("Authorization request", comment: "alert window title");
+        content.body = String.localizedStringWithFormat(NSLocalizedString("%@ requests authorization to access information about you presence", comment: "alert window message"), rosterItem?.name ?? invitation.jid.stringValue);
         content.sound = UNNotificationSound.default;
         content.userInfo = ["account": invitation.account.stringValue, "jid": invitation.jid.stringValue, "id": "presence-subscription-request"];
         let request = UNNotificationRequest(identifier: invitation.id, content: content, trigger: nil);
@@ -182,8 +182,8 @@ class InvitationManager {
     private func deliverMucInvitationNotification(invitation: InvitationItem) {
         let mucInvitation = invitation.object as! MucModule.Invitation;
         let content = UNMutableNotificationContent();
-        content.title = "Invitation to groupchat";
-        content.body = "You (\(invitation.account)) were invited to the groupchat \(mucInvitation.roomJid)";
+        content.title = NSLocalizedString("Invitation to groupchat", comment: "alert window title");
+        content.body = String.localizedStringWithFormat(NSLocalizedString("You (%@) were invited to the groupchat %@", comment: "alert window message"), invitation.account.stringValue, mucInvitation.roomJid.stringValue);
         content.sound = UNNotificationSound.default;
         content.userInfo = ["account": invitation.account.stringValue, "jid": invitation.jid.stringValue, "id": "presence-subscription-request"];
         let request = UNNotificationRequest(identifier: invitation.id, content: content, trigger: nil);

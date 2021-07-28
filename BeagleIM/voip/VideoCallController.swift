@@ -74,16 +74,16 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
             self.closeWindow();
         } else {
             self.hideAlert();
-            var title = "Call ended";
+            var title = NSLocalizedString("Call ended", comment: "video call conroller");
             switch sender.state {
             case .ringing:
-                title = "Call declined";
+                title = NSLocalizedString("Call declined", comment: "video call conroller");
             case .connecting:
-                title = "Call failed";
+                title = NSLocalizedString("Call failed", comment: "video call conroller");
             default:
                 break;
             }
-            self.showAlert(title: title, buttons: ["OK"], completionHandler: { response in
+            self.showAlert(title: title, buttons: [NSLocalizedString("OK", comment: "Button")], completionHandler: { response in
                 DispatchQueue.main.async {
                     self.closeWindow();
                 }
@@ -230,20 +230,20 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
         DispatchQueue.main.async {
             switch self.call?.state ?? .new {
             case .new:
-                self.stateLabel.stringValue = "New call";
+                self.stateLabel.stringValue = NSLocalizedString("New call", comment: "video call conroller");
             case .ringing:
-                self.stateLabel.stringValue = "Ringing...";
+                self.stateLabel.stringValue = NSLocalizedString("Ringing...", comment: "video call conroller");
                 if self.call?.direction == .outgoing {
                     self.avplayer = AVPlayer(url: Bundle.main.url(forResource: "outgoingCall", withExtension: "mp3")!);
                 }
             case .connecting:
-                self.stateLabel.stringValue = "Connecting...";
+                self.stateLabel.stringValue = NSLocalizedString("Connecting...", comment: "video call conroller");
             case .connected:
                 self.stateLabel.stringValue = "";
                 self.remoteAvatarView?.isHidden = self.remoteVideoTrack != nil;
                 self.avplayer = nil;
             case .ended:
-                self.stateLabel.stringValue = "Call ended";
+                self.stateLabel.stringValue = NSLocalizedString("Call ended", comment: "video call conroller");
                 self.avplayer = nil;
             }
         }
@@ -277,11 +277,11 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
     func askForAcceptance(for call: Call) {
         DispatchQueue.main.async {
             self.avplayer = AVPlayer(url: Bundle.main.url(forResource: "incomingCall", withExtension: "mp3")!);
-            let buttons = [ "Accept", "Reject" ];
+            let buttons = [ NSLocalizedString("Accept", comment: "Button"), NSLocalizedString("Reject", comment: "Button") ];
             
             let name = DBRosterStore.instance.item(for: call.account, jid: JID(call.jid))?.name ?? call.jid.stringValue;
             
-            self.showAlert(title: "Incoming \(call.media.contains(.video) ? "video" : "audio") call from \(name)", message: "Do you want to accept this call?", buttons: buttons, completionHandler: { (response) in
+            self.showAlert(title: (call.media.contains(.video) ? String.localizedStringWithFormat(NSLocalizedString("Incoming video call from %@", comment: "video call controller"), name) : String.localizedStringWithFormat(NSLocalizedString("Incoming audio call from %@", comment: "video call controller"), name)) + NSLocalizedString("Do you want to accept this call?", comment: "video call controller"), buttons: buttons, completionHandler: { (response) in
                 self.avplayer = nil;
                 switch response {
                 case .alertFirstButtonReturn:

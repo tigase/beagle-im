@@ -46,8 +46,8 @@ class ServerCertificateErrorController: NSViewController {
             guard let domain = account?.domain else {
                 return;
             }
-            windowTitle.stringValue = "SSL certificate of \(domain) could not be verified";
-            message.stringValue = "It is not possible to automatically verify server certificate for \(domain). Please review certificate details:"
+            windowTitle.stringValue = String.localizedStringWithFormat(NSLocalizedString("SSL certificate of %@ could not be verified", comment: "setting"), domain);
+            message.stringValue = String.localizedStringWithFormat(NSLocalizedString("It is not possible to automatically verify server certificate for %@. Please review certificate details:", comment: "setting"), domain);
             self.certficateInfo = AccountManager.getAccount(for: account!)?.serverCertificate;
         }
     }
@@ -59,12 +59,12 @@ class ServerCertificateErrorController: NSViewController {
             certificateName.stringValue = info.details.name;
             if info.details.validFrom != nil && info.details.validTo != nil {
                 let color: NSColor = ((Date() > info.details.validTo!) ? NSColor.systemRed : NSColor.textColor);
-                certificateValidPeriod.attributedStringValue = NSAttributedString(string: "From \(dateFormatter.string(for: info.details.validFrom!)!) until \(dateFormatter.string(for: info.details.validTo!)!)", attributes: [.foregroundColor: color]);
+                certificateValidPeriod.attributedStringValue = NSAttributedString(string: String.localizedStringWithFormat(NSLocalizedString("From %@ until %@", comment: "setting"), dateFormatter.string(for: info.details.validFrom!)!, dateFormatter.string(for: info.details.validTo!)!), attributes: [.foregroundColor: color]);
             } else {
-                certificateValidPeriod.attributedStringValue = NSAttributedString(string: "Unknown", attributes: [.foregroundColor: NSColor.systemOrange]);
+                certificateValidPeriod.attributedStringValue = NSAttributedString(string: NSLocalizedString("Unknown", comment: "setting"), attributes: [.foregroundColor: NSColor.systemOrange]);
             }
             certificateFingerprint.stringValue = info.details.fingerprintSha1;
-            issuerName.stringValue = info.issuer?.name ?? "Self-Signed";
+            issuerName.stringValue = info.issuer?.name ?? NSLocalizedString("Self-Signed", comment: "setting");
             issuesFingerprint.stringValue = info.issuer?.fingerprintSha1 ?? "";
         }
     }

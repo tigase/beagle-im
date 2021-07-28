@@ -200,8 +200,8 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
             self.openChat(self);
         case is ChatsListGroupCommon:
             let menu = NSMenu(title: "");
-            menu.addItem(withTitle: "Open chat", action: #selector(self.openChat(_:)), keyEquivalent: "").image = NSImage(named: NSImage.userName)?.square(20);
-            menu.addItem(withTitle: "Open channel", action: #selector(self.openChannel(_:)), keyEquivalent: "").image = NSImage(named: NSImage.userGroupName)?.square(20);
+            menu.addItem(withTitle: NSLocalizedString("Open chat", comment: "context menu item"), action: #selector(self.openChat(_:)), keyEquivalent: "").image = NSImage(named: NSImage.userName)?.square(20);
+            menu.addItem(withTitle: NSLocalizedString("Open channel", comment: "context menu item"), action: #selector(self.openChannel(_:)), keyEquivalent: "").image = NSImage(named: NSImage.userGroupName)?.square(20);
             for item in menu.items {
                 item.target = self;
             }
@@ -473,11 +473,11 @@ extension ChatsListViewController: NSOutlineViewDelegate {
             if r.occupant(nickname: r.nickname)?.affiliation == .owner {
                 let alert = NSAlert();
                 alert.alertStyle = .warning;
-                alert.messageText = "Delete group chat?"
-                alert.informativeText = "You are leaving the group chat \(r.name ?? r.jid.stringValue)";
-                alert.addButton(withTitle: "Delete chat")
-                alert.addButton(withTitle: "Leave chat")
-                alert.addButton(withTitle: "Cancel")
+                alert.messageText = NSLocalizedString("Delete group chat?", comment: "alert window title");
+                alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("You are leaving the group chat %@", comment: "alert window message"), r.name ?? r.jid.stringValue);
+                alert.addButton(withTitle: NSLocalizedString("Delete chat", comment: "Button"))
+                alert.addButton(withTitle: NSLocalizedString("Leave chat", comment: "Button"))
+                alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Button"))
                 alert.beginSheetModal(for: self.view.window!) { (response) in
                     switch response {
                     case .alertFirstButtonReturn:

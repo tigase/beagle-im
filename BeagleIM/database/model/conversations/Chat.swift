@@ -253,10 +253,10 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
                             callback();
                         });
                     case .failure(let error):
-                        var errorMessage = "It was not possible to send encrypted message due to encryption error";
+                        var errorMessage = NSLocalizedString("It was not possible to send encrypted message due to encryption error", comment: "omemo encryption error");
                         switch error {
                         case .noSession:
-                            errorMessage = "There is no trusted device to send message to";
+                            errorMessage = NSLocalizedString("There is no trusted device to send message to", comment: "omemo encryption error");
                         default:
                             break;
                         }

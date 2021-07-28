@@ -336,11 +336,11 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
 //            self.outlineView.headerView?.isHidden = false;
             let columnWidth = (self.outlineView.visibleRect.width - 10) / 2;
             let nameColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("ComponentPubSubNameColumn"));
-            nameColumn.title = "Name";
+            nameColumn.title = NSLocalizedString("Name", comment: "service disco column name");
             nameColumn.width = columnWidth;
             self.outlineView.addTableColumn(nameColumn);
             let nodeColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("ComponentPubSubNodeColumn"));
-            nodeColumn.title = "Node";
+            nodeColumn.title = NSLocalizedString("Node", comment: "service disco column name");
             nodeColumn.width = columnWidth;
             self.outlineView.addTableColumn(nodeColumn);
             self.outlineView.outlineTableColumn = nameColumn;
@@ -378,13 +378,13 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                     self?.progressIndicator.stopAnimation(self);
                     var node = self?.node ?? "";
                     if !node.isEmpty {
-                        node = " and node \(node)";
+                        node = String.localizedStringWithFormat(NSLocalizedString(" and node %@", comment: "alert window message part"), node);
                     }
                     let alert = Alert();
                     alert.icon = NSImage(named: NSImage.cautionName);
-                    alert.messageText = "Service Discovery Failure!"
-                    alert.informativeText = "It was not possible to retrieve disco#info details from \(jid)\(node): \(error.message ?? error.description)";
-                    alert.addButton(withTitle: "OK");
+                    alert.messageText = NSLocalizedString("Service Discovery Failure!", comment: "alert window title");
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to retrieve disco#info details from %@\\%@: %@", comment: "alert window message"), jid.stringValue, node, error.message ?? error.description);
+                    alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                     alert.run(completionHandler: { (response) in
                         // nothing to do..
                     })
@@ -497,13 +497,13 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                     self?.progressIndicator.stopAnimation(self);
                     var node = parentItem.node ?? "";
                     if !node.isEmpty {
-                        node = " and node \(node)";
+                        node = String.localizedStringWithFormat(NSLocalizedString(" and node %@", comment: "alert window message part"), node);
                     }
                     let alert = Alert();
                     alert.icon = NSImage(named: NSImage.cautionName);
-                    alert.messageText = "Service Discovery Failure!"
-                    alert.informativeText = "It was not possible to retrieve disco#items details from \(parentItem.jid)\(node): \(error.message ?? error.description)";
-                    alert.addButton(withTitle: "OK");
+                    alert.messageText = NSLocalizedString("Service Discovery Failure!", comment: "alert window title");
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to retrieve disco#items details from %@\\%@: %@", comment: "alert window message"), parentItem.jid.stringValue, node, error.message ?? error.description);
+                    alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                     alert.run(completionHandler: { (response) in
                         // nothing to do..
                     });

@@ -37,11 +37,11 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
     
     override func viewWillAppear() {
         super.viewWillAppear();
-        usernameField = addRow(label: "Username", field: NSTextField(string: ""));
+        usernameField = addRow(label: NSLocalizedString("Username", comment: "account view"), field: NSTextField(string: ""));
         usernameField.placeholderString = "user@domain.com";
         usernameField.delegate = self;
-        passwordField = addRow(label: "Password", field: NSSecureTextField(string: ""));
-        passwordField.placeholderString = "Required";
+        passwordField = addRow(label: NSLocalizedString("Password", comment: "account view"), field: NSSecureTextField(string: ""));
+        passwordField.placeholderString = NSLocalizedString("Required", comment: "account view placeholder");
         passwordField.delegate = self;
     }
     
@@ -110,12 +110,12 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
                 case .failure(let error):
                     let alert = NSAlert();
                     alert.alertStyle = .critical;
-                    alert.messageText = "Authentication failed";
+                    alert.messageText = NSLocalizedString("Authentication failed", comment: "alert window title");
                     switch error {
                     case .not_authorized:
-                        alert.informativeText = "Login and password do not match.";
+                        alert.informativeText = NSLocalizedString("Login and password do not match.", comment: "alert window message");
                     default:
-                        alert.informativeText = "It was not possible to contact XMPP server and sign in.";
+                        alert.informativeText = NSLocalizedString("It was not possible to contact XMPP server and sign in.", comment: "alert window message");
                     }
                     alert.beginSheetModal(for: self.view.window!, completionHandler: { _ in
                         // nothing to do.. just wait for user interaction

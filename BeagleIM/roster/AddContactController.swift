@@ -48,8 +48,8 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
         
         addButton.isEnabled = false;
         
-        accountSelector = NSPopUpButton(title: "Select account", target: self, action: #selector(accountSelectionChanged));
-        accountSelector.menu = NSMenu(title: "Select account");
+        accountSelector = NSPopUpButton(title: NSLocalizedString("Select account", comment: "add roster item label"), target: self, action: #selector(accountSelectionChanged));
+        accountSelector.menu = NSMenu(title: NSLocalizedString("Select account", comment: "add roster item label"));
         accountSelector.setContentHuggingPriority(.defaultLow, for: .horizontal);
         accountSelector.setContentHuggingPriority(.defaultHigh, for: .vertical);
         print("hugging:", accountSelector.contentHuggingPriority(for: .horizontal).rawValue);
@@ -58,19 +58,19 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
             }.forEach { account in
             accountSelector.menu?.addItem(NSMenuItem(title: account.stringValue, action: nil, keyEquivalent: ""));
         }
-        _ = formView.addRow(label: "Add to:", field: accountSelector);
+        _ = formView.addRow(label: NSLocalizedString("Add to", comment: "add roster item label") + ":", field: accountSelector);
         formView.groupItems(from: accountSelector, to: accountSelector);
         
-        jidField = formView.addRow(label: "XMPP JID:", field: NSTextField(string: ""));
+        jidField = formView.addRow(label: NSLocalizedString("XMPP JID", comment: "add roster item label") + ":", field: NSTextField(string: ""));
         jidField.setContentHuggingPriority(.defaultLow, for: .vertical);
         jidField.delegate = self;
-        labelField = formView.addRow(label: "Contact name:", field: NSTextField(string: ""));
+        labelField = formView.addRow(label: NSLocalizedString("Contact name", comment: "add roster item label") + ":", field: NSTextField(string: ""));
         labelField.setContentHuggingPriority(.defaultLow, for: .vertical);
         //accountSelector.widthAnchor.constraint(equalTo: labelField.widthAnchor, multiplier: 1.0).isActive = true;
         formView.groupItems(from: jidField, to: labelField);
         
-        requestSubscriptionButton = disclosureView.addRow(label: "", field: NSButton(checkboxWithTitle: "Request presence subscription", target: nil, action: nil));
-        allowSubscriptionButton = disclosureView.addRow(label: "", field: NSButton(checkboxWithTitle: "Allow presence subscription", target: nil, action: nil));
+        requestSubscriptionButton = disclosureView.addRow(label: "", field: NSButton(checkboxWithTitle: NSLocalizedString("Request presence subscription", comment: "add roster item label"), target: nil, action: nil));
+        allowSubscriptionButton = disclosureView.addRow(label: "", field: NSButton(checkboxWithTitle: NSLocalizedString("Allow presence subscription", comment: "add roster item label"), target: nil, action: nil));
         
         requestSubscriptionButton.state = .on;
         allowSubscriptionButton.state = .on;

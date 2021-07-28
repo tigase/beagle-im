@@ -25,7 +25,7 @@ import TigaseSwift
 class ChatsListGroupGroupchat: ChatsListGroupAbstractChat {
     
     init(delegate: ChatsListViewDataSourceDelegate) {
-        super.init(name: "Channels", dispatcher: QueueDispatcher(label: "chats_list_group_groupchats_queue"), delegate: delegate, canOpenChat: true);
+        super.init(name: NSLocalizedString("Channels", comment: "Chats list group name"), dispatcher: QueueDispatcher(label: "chats_list_group_groupchats_queue"), delegate: delegate, canOpenChat: true);
     }
 
     override func isAccepted(chat: Conversation) -> Bool {

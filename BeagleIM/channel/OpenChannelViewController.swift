@@ -199,13 +199,13 @@ class OpenChannelViewController: NSViewController, OpenChannelViewControllerTabV
         let alert = NSAlert();
         alert.alertStyle = .informational;
         alert.icon = NSImage(named: NSImage.userName);
-        alert.messageText = "Nickname"
-        alert.informativeText = "Enter a nickname which you want to use in this channel."
+        alert.messageText = NSLocalizedString("Nickname", comment: "alert window title");
+        alert.informativeText = NSLocalizedString("Enter a nickname which you want to use in this channel.", comment: "alert window message");
         let nicknameField = NSTextField(frame: NSRect(x: 0, y: 0, width: 200, height: 7 + NSFont.systemFontSize));
         nicknameField.stringValue = AccountManager.getAccount(for: account)?.nickname ?? ""
         alert.accessoryView = nicknameField;
-        alert.addButton(withTitle: "Submit");
-        alert.addButton(withTitle: "Cancel");
+        alert.addButton(withTitle: NSLocalizedString("Submit", comment: "Button"));
+        alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Button"));
         alert.beginSheetModal(for: window, completionHandler: { response in
             switch response {
             case .alertFirstButtonReturn:

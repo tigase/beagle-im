@@ -114,7 +114,7 @@ class ChannelManagerParticipants: NSViewController, ChannelAwareProtocol, NSTabV
     }
     
     func tabView(_ tabView: NSTabView, shouldSelect tabViewItem: NSTabViewItem?) -> Bool {
-        if tabViewItem?.label == "Allowed" && self.allowed == nil {
+        if (tabViewItem?.identifier as? String) == "ParticipantsAllowedTab" && self.allowed == nil {
             return false;
         }
         return true;
@@ -125,11 +125,11 @@ class ChannelManagerParticipants: NSViewController, ChannelAwareProtocol, NSTabV
         alert.alertStyle = .informational;
         alert.icon = NSImage(named: NSImage.userName);
         alert.messageText = title;
-        alert.informativeText = "Enter a JID of user you want to add to the list."
+        alert.informativeText = NSLocalizedString("Enter a JID of user you want to add to the list.", comment: "alert window message");
         let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 200, height: 7 + NSFont.systemFontSize));
         alert.accessoryView = field;
-        alert.addButton(withTitle: "Add");
-        alert.addButton(withTitle: "Cancel");
+        alert.addButton(withTitle: NSLocalizedString("Add", comment: "Button"));
+        alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Button"));
         alert.beginSheetModal(for: self.view.window!, completionHandler: { response in
             switch response {
             case .alertFirstButtonReturn:
@@ -145,7 +145,7 @@ class ChannelManagerParticipants: NSViewController, ChannelAwareProtocol, NSTabV
     }
     
     @IBAction func addAllowedClicked(_ sender: NSButton) {
-        askForJid(title: "Allow access", completionHandler: { jid in
+        askForJid(title: NSLocalizedString("Allow access", comment: "alert window title"), completionHandler: { jid in
             if let mixModule = self.channel.context?.module(.mix) {
                 self.progressIndicator.startAnimation(self);
                 mixModule.allowAccess(to: self.channel.channelJid, for: jid, value: true, completionHandler: { result in
@@ -195,7 +195,7 @@ class ChannelManagerParticipants: NSViewController, ChannelAwareProtocol, NSTabV
     }
     
     @IBAction func addBannedClicked(_ sender: NSButton) {
-        askForJid(title: "Ban access", completionHandler: { jid in
+        askForJid(title: NSLocalizedString("Ban access", comment: "alert windiw title"), completionHandler: { jid in
             if let mixModule = self.channel.context?.module(.mix) {
                 self.progressIndicator.startAnimation(self);
                 mixModule.denyAccess(to: self.channel.channelJid, for: jid, value: true, completionHandler: { result in

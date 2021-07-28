@@ -296,11 +296,11 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
         var name: String? {
             switch self {
             case .offline:
-                return "Disconnected";
+                return NSLocalizedString("Disconnected", comment: "connection status");
             case .away, .xa:
-                return "Inactive";
+                return NSLocalizedString("Inactive", comment: "connection status");
             default:
-                return "Connected";
+                return NSLocalizedString("Connected", comment: "connection status");
             }
         }
         
