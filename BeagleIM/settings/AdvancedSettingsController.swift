@@ -54,18 +54,22 @@ class AdvancedSettingsController: NSViewController {
         alternateMessageColoringBasedOnDirection = formView.addRow(label: "", field: NSButton(checkboxWithTitle: NSLocalizedString("Alternate colors for incoming/outgoing messages", comment: "settings"), target: self, action: #selector(checkboxChanged(_:))));
         formView.groupItems(from: alternateMessageColoringBasedOnDirection, to: alternateMessageColoringBasedOnDirection);
         
-        markKeywords = formView.addRow(label: NSLocalizedString("Keywords", comment: "settings"), field: NSButton(checkboxWithTitle: NSLocalizedString("Enabled", comment: "settings"), target: self, action: #selector(checkboxChanged)));
+        markKeywords = formView.addRow(label: NSLocalizedString("Keywords", comment: "settings") + ":", field: NSButton(checkboxWithTitle: NSLocalizedString("Enabled", comment: "settings"), target: self, action: #selector(checkboxChanged)));
         markKeywordsWithBold = formView.addRow(label: "", field: NSButton(checkboxWithTitle: NSLocalizedString("Make them bold", comment: "settings"), target: self, action: #selector(checkboxChanged)));
         editKeywords = formView.addRow(label: "", field: NSButton(title: NSLocalizedString("Edit keywords", comment: "settings"), target: self, action: #selector(editKeywordsClicked)));
         formView.groupItems(from: markKeywords, to: editKeywords);
         
-        imagePreviewMaxSize = formView.addRow(label: NSLocalizedString("Automatic download size limit", comment: "settings"), field: NSSlider(value: Double(Settings.fileDownloadSizeLimit), minValue: 0, maxValue: 50 * 1024 * 1024, target: self, action: #selector(sliderChanged)));
+        _ = formView.addRow(label: NSLocalizedString("Automatic attachments download", comment: "settings"), field: NSGridCell.emptyContentView);
+        let autoDownload = formView.row(at: formView.numberOfRows - 1).cell(at: 0).contentView!;
+        formView.row(at: formView.numberOfRows - 1).mergeCells(in: NSMakeRange(0, 2));
+        (autoDownload as? NSTextField)?.alignment = .left;
+        imagePreviewMaxSize = formView.addRow(label: NSLocalizedString("Filesize limit", comment: "settings") + ":", field: NSSlider(value: Double(Settings.fileDownloadSizeLimit), minValue: 0, maxValue: 50 * 1024 * 1024, target: self, action: #selector(sliderChanged)));
         imagePreviewMaxSizeLabel = formView.addRow(label: "", field: formView.createLabel(text: "0.0B"));
         imagePreviewMaxSizeLabel.alignment = .center;
-        formView.groupItems(from:imagePreviewMaxSize, to: imagePreviewMaxSizeLabel);
+        formView.groupItems(from:autoDownload, to: imagePreviewMaxSizeLabel);
         formView.cell(for: imagePreviewMaxSizeLabel)!.xPlacement = .center;
         
-        confirmMessages = formView.addRow(label: NSLocalizedString("Experimental", comment: "settings"), field: NSButton(checkboxWithTitle: NSLocalizedString("Confirm messages", comment: "settings"), target: self, action: #selector(checkboxChanged(_:))));
+        confirmMessages = formView.addRow(label: NSLocalizedString("Experimental", comment: "settings") + ":", field: NSButton(checkboxWithTitle: NSLocalizedString("Confirm messages", comment: "settings"), target: self, action: #selector(checkboxChanged(_:))));
         confirmMessages.toolTip = NSLocalizedString("Let your contacts know when you have received and read their messages. Disabling will disable syncing information about read messages between your devices!", comment: "settings");
         ignoreJingleSupportCheck = formView.addRow(label: "", field: NSButton(checkboxWithTitle: NSLocalizedString("Ignore VoIP support check", comment: "settings"), target: self, action: #selector(checkboxChanged(_:))));
         usePublicStunServers = formView.addRow(label: "", field: NSButton(checkboxWithTitle: NSLocalizedString("Use public STUN servers", comment: "settings"), target: self, action: #selector(checkboxChanged(_:))));

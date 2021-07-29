@@ -548,7 +548,7 @@
 "Sent images quality" = "Jakość wysyłanych zdjęć";
 
 /* setting */
-"Sent videos quality" = "Jakość wysyłwanych fimów";
+"Sent videos quality" = "Jakość wysyłanych fimów";
 
 /* setting */
 "Set as default app" = "Ustaw jako domyślną aplikację";
@@ -641,7 +641,7 @@
 "Always" = "Zawsze";
 
 /* settings */
-"Automatic download size limit" = "Limit wielkości pliku automatycznego pobierania";
+"Automatic download size limit" = "Limit rozmiaru pliku do automatycznego pobierania";
 
 /* OMEMO settings */
 "Do you want to deactivate and remove selected identities?" = "Czy chcesz dezaktywować i usunąć wybrane tożsamości?";
@@ -659,7 +659,7 @@
 "Enable groupchat bookmarks sync" = "Włącz synchronizację zakładej rozmów grupowych";
 
 /* settings */
-"Enabled" = "Włoczone";
+"Enabled" = "Włączone";
 
 /* settings */
 "Experimental" = "Eksperymentalne";
@@ -844,89 +844,95 @@
 "It was not possible to create a meeting. Received an error: %@" = "Nie udało się utworzyć spotkania. Wystąpił błąd %@";
 
 /* invite to meeting controller */
-"It was not possible to grant selected users access to the meeting. Received an error: %@" = "";
+"It was not possible to grant selected users access to the meeting. Received an error: %@" = "Nie udało się nadać prawa dostępu do spotkania. Wystąpił błąd: %@";
 
 /* meet controller */
-"It was not possible to kick out %@. Server returned an error: %@" = "";
+"It was not possible to kick out %@. Server returned an error: %@" = "Nie udało się wyrzucic %@ ze spotkania. Serwer zwrócił błąd: %@";
 
 /* alert window message */
-"It was not possible to share %d item(s) due to following errors:\n %@" = "";
+"It was not possible to share %d item(s) due to following errors:\n %@" = "Nie udało się udostępnić %d rzeczy z uwagi na błędy: %@";
 
 /* image quality
    video quality */
-"Low" = "";
+"Low" = "Niska";
 
 /* image quality
    video quality */
-"Medium" = "";
+"Medium" = "Średnia";
 
 /* create meet controller */
-"Meeting creation failed" = "";
+"Meeting creation failed" = "Tworzenie spotkania nie powiodło się";
 
 /* meet controller */
-"Meeting ended" = "";
+"Meeting ended" = "Spotkanie zakończone";
 
 /* meet controller */
-"Meeting has ended" = "";
+"Meeting has ended" = "Spotkanie skończyło się";
 
 /* video call conroller */
-"New call" = "";
+"New call" = "Nowe połączenie";
 
 /* image quality
    video quality */
-"Original" = "";
+"Original" = "Oryginalna";
 
 /* media helper sharing error */
-"Please try again later." = "";
+"Please try again later." = "Spróbuj ponownie później";
 
 /* Button */
-"Reject" = "";
+"Reject" = "Odrzuć";
 
 /* video call conroller */
-"Ringing..." = "";
+"Ringing..." = "Dzwoni...";
 
 /* media helper question */
-"Select quality" = "";
+"Select quality" = "Wybierz jakość";
 
 /* media helper question */
-"Select quality of the image for sharing" = "";
+"Select quality of the image for sharing" = "Wybierz jakość udostępnianych obrazów";
 
 /* media helper question */
-"Select quality of the video for sharing" = "";
+"Select quality of the video for sharing" = "Wybierz jakość udostępnianych filmów";
 
 /* create meet controller */
-"Selected account does not support creating a meeting. Please select a different account." = "";
+"Selected account does not support creating a meeting. Please select a different account." = "Wybierane konto nie wspiera spotkań. Proszę wybrać inne konto.";
 
 /* media helper sharing error */
-"Server did not confirm file upload correctly." = "";
+"Server did not confirm file upload correctly." = "Serwer nie potwierdził poprawnego odebrania pliku.";
 
 /* alert window title */
-"Sharing error" = "";
+"Sharing error" = "Błąd udostępniania";
 
 /* create meet controller */
-"Unable to create a meet" = "";
+"Unable to create a meet" = "Nie udało się stworzyć spotkania";
 
 /* media helper sharing error */
-"Upload to HTTP server failed." = "";
+"Upload to HTTP server failed." = "Przesył pliku do serwera HTTP nie powiódł się";
 
 /* invitation alert - message */
-"User %@ invited you (%@) to the groupchat %@" = "";
+"User %@ invited you (%@) to the groupchat %@" = "Użytkownik %@ zaprosił cię (%@) do rozmowy grupowej %@";
 
 /* alert window title */
-"Warning" = "";
+"Warning" = "Ostrzeżenie";
 
 /* create meet controller */
-"While checking for support XMPP server returned an error: %@. Please select a different account or try again later." = "";
+"While checking for support XMPP server returned an error: %@. Please select a different account or try again later." = "Podczas sprawdzania wsparcia na serwerze XMPP wystąpił błąd: %@. Proszę wybrać inne konto lub spróbować ponownie później.";
 
 /* xml console title */
-"XML Console: %@" = "";
+"XML Console: %@" = "Konsola XML: %@";
 
 /* alert window message
    invitation alert - message */
-"You (%@) were invited to the groupchat %@" = "";
+"You (%@) were invited to the groupchat %@" = "Zostałeś (%@) zaproszony do rozmowy grupowej %@";
 
 /* xml entry controller */
-"You have entered invalid XML. It is impossible to send invalid XML as it violates XMPP protocol specification!" = "";
+"You have entered invalid XML. It is impossible to send invalid XML as it violates XMPP protocol specification!" = "Wprowadziłeś niepoprawny XML. Nie można go wysłać ponieważ jest to zabronione przez specyfikację protokołu XMPP!";
 
 /* contact selector placeholder */
-"Enter contact name or jid" = "";
+"Enter contact name or jid" = "Wprowadź nazwę kontaktu lub jid";
+
+/* settings */
+"Automatic attachments download" = "Automatyczne pobieranie załączników";
+
+/* settings */
+"Filesize limit" = "Limit rozmiaru pliku";

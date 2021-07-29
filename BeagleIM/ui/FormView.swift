@@ -67,11 +67,14 @@ class FormView: NSGridView, NSTextFieldDelegate {
     }
     
     func createLabel(text: String) -> NSTextField {
-        let label = NSTextField(labelWithString: text);
+        let label = NSTextField(wrappingLabelWithString: text);
+        label.maximumNumberOfLines = 2;
         label.isEditable = false;
         label.isBordered = false;
         label.setContentHuggingPriority(.defaultLow, for: .vertical);
         label.setContentHuggingPriority(.defaultLow, for: .horizontal);
+        label.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal);
+//        label.setContentCompressionResistancePriority(.defaultHigh, for: .vertical);
         label.drawsBackground = false;
         return label;
     }

@@ -129,10 +129,10 @@ class GeneralSettingsController: NSViewController {
         encryptionButton.selectItem(at: Settings.messageEncryption == .omemo ? 1 : 0);
         
         imageQuality.removeAllItems();
-        imageQuality.addItems(withTitles: imageQualityOptions.map({ $0.rawValue.capitalized }));
+        imageQuality.addItems(withTitles: imageQualityOptions.map({ $0.label }));
         imageQuality.selectItem(at: imageQualityOptions.firstIndex(of: ImageQuality.current) ?? 0);
         videoQuality.removeAllItems();
-        videoQuality.addItems(withTitles: videoQualityOptions.map({ $0.rawValue.capitalized }));
+        videoQuality.addItems(withTitles: videoQualityOptions.map({ $0.label }));
         videoQuality.selectItem(at: videoQualityOptions.firstIndex(of: VideoQuality.current) ?? 0);
     }
     

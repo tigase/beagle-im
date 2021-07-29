@@ -43,8 +43,8 @@
 /* Class = "NSMenuItem"; title = "Archiving settings"; ObjectID = "8Yp-ys-b1g"; */
 "8Yp-ys-b1g.title" = "Ustawienia archiwizacji";
 
-/* Class = "NSTextFieldCell"; title = "Username"; ObjectID = "8pC-eX-DvY"; */
-"8pC-eX-DvY.title" = "Nazwa użytkownika";
+/* Class = "NSTextFieldCell"; title = "XMPP ID"; ObjectID = "8pC-eX-DvY"; */
+"8pC-eX-DvY.title" = "XMPP ID";
 
 /* Class = "NSTabViewItem"; label = "General"; ObjectID = "9pN-Un-W2y"; */
 "9pN-Un-W2y.label" = "Ogólne";

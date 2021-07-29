@@ -98,6 +98,12 @@
 "Automatic" = "";
 
 /* settings */
+"Automatic attachments download" = "";
+
+/* settings */
+"Automatic download" = "";
+
+/* settings */
 "Automatic download size limit" = "";
 
 /* alert windiw title */
@@ -348,6 +354,9 @@
 
 /* alert window message */
 "File upload completed but it was not confirmed correctly by your server. Do you wish to proceed anyway?" = "";
+
+/* settings */
+"Filesize limit" = "";
 
 /* sender of PM */
 "From %@" = "";
