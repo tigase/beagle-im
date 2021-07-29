@@ -11,8 +11,8 @@
         <scene sceneID="WMf-br-L8K">
             <objects>
                 <viewController storyboardIdentifier="ConversationLogController" id="gtG-eO-LSV" customClass="ConversationLogController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" misplaced="YES" id="hqu-Lr-eCL">
-                        <rect key="frame" x="0.0" y="0.0" width="333" height="418"/>
+                    <view key="view" id="hqu-Lr-eCL">
+                        <rect key="frame" x="0.0" y="0.0" width="333" height="503"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <scrollView verticalHuggingPriority="249" borderType="none" autohidesScrollers="YES" horizontalLineScroll="27" horizontalPageScroll="10" verticalLineScroll="27" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fFm-Kw-0RT">
@@ -51,16 +51,16 @@
                                                                     </constraints>
                                                                     <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="gym-1g-9wn"/>
                                                                 </imageView>
-                                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="751" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zBO-tP-VuA">
-                                                                    <rect key="frame" x="40" y="18" width="60" height="15"/>
+                                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="zBO-tP-VuA">
+                                                                    <rect key="frame" x="40" y="19" width="60" height="16"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" title="John Doe" placeholderString="Testing" id="hN1-fw-WxL">
                                                                         <font key="font" metaFont="systemSemibold" size="12"/>
                                                                         <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
                                                                 </textField>
-                                                                <textView verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" ambiguous="YES" editable="NO" selectable="NO" drawsBackground="NO" verticallyResizable="YES" dataDetection="YES" translatesAutoresizingMaskIntoConstraints="NO" id="JuY-h9-yrg" customClass="MessageTextView" customModule="BeagleIM" customModuleProvider="target">
-                                                                    <rect key="frame" x="42" y="4" width="265" height="13"/>
+                                                                <textView verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" editable="NO" selectable="NO" drawsBackground="NO" verticallyResizable="YES" dataDetection="YES" translatesAutoresizingMaskIntoConstraints="NO" id="JuY-h9-yrg" customClass="MessageTextView" customModule="BeagleIM" customModuleProvider="target">
+                                                                    <rect key="frame" x="42" y="4" width="265" height="14"/>
                                                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     <size key="maxSize" width="10000" height="10000"/>
@@ -85,8 +85,8 @@
                                                                         <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
                                                                 </textField>
-                                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0Dy-LN-gMD">
-                                                                    <rect key="frame" x="279" y="18" width="50" height="15"/>
+                                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" verticalCompressionResistancePriority="752" translatesAutoresizingMaskIntoConstraints="NO" id="0Dy-LN-gMD">
+                                                                    <rect key="frame" x="279" y="19" width="50" height="14"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" alignment="right" title="20:31:03" id="D3S-Fu-GzK">
                                                                         <font key="font" metaFont="systemLight" size="11"/>
                                                                         <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
@@ -126,7 +126,7 @@
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textView horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" editable="NO" selectable="NO" drawsBackground="NO" verticallyResizable="YES" dataDetection="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4qp-eQ-eZJ" customClass="MessageTextView" customModule="BeagleIM" customModuleProvider="target">
-                                                                    <rect key="frame" x="42" y="-13" width="265" height="32"/>
+                                                                    <rect key="frame" x="42" y="4" width="265" height="15"/>
                                                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     <size key="maxSize" width="10000" height="10000"/>
