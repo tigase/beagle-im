@@ -30,7 +30,7 @@ class MessageTextView: NSTextView, NSLayoutManagerDelegate {
                 return .zero
             }
 
-            textContainer.size = NSSize(width: self.superview!.superview!.bounds.width - 68, height: CGFloat.greatestFiniteMagnitude);
+            textContainer.size = NSSize(width: self.superview!.bounds.width - 68, height: CGFloat.greatestFiniteMagnitude);
             layoutManager.ensureLayout(for: textContainer);
             //layoutManager.glyphRange(for: textContainer);
             let size = layoutManager.usedRect(for: textContainer).size;
