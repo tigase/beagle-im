@@ -69,6 +69,7 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     override func viewDidLoad() {
         print("AbstractChatViewController::viewDidLoad() - begin")
         self.messageField = AutoresizingTextView();
+        self.messageField.setup();
         self.messageField.isVerticallyResizable = true;
 //        self.messageField.isHorizontallyResizable = true;
         self.messageField.autoresizingMask = [.height, .width];

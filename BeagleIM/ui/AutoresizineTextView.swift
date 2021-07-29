@@ -60,6 +60,10 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
     }
     
     override func awakeFromNib() {
+        setup();
+    }
+    
+    func setup() {
         self.font = NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .light);
         self.textStorage?.delegate = self;
         self.textContainer!.replaceLayoutManager(MessageTextView.CustomLayoutManager());
@@ -99,14 +103,14 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
     }
     
     func textStorage(_ textStorage: NSTextStorage, didProcessEditing editedMask: NSTextStorageEditActions, range editedRange: NSRange, changeInLength delta: Int) {
-        self.font = NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .light);
+        self.font = NSFont.systemFont(ofSize: NSFont.systemFontSize);
         let fullRange = NSRange(0..<textStorage.length);
         textStorage.fixAttributes(in: fullRange);
-        //textStorage.setAttributes([.font: self.font!], range: fullRange);
+//        textStorage.setAttributes([.font: self.font!], range: fullRange);
         textStorage.addAttributes([.foregroundColor: NSColor.textColor], range: fullRange);
         
         if Settings.enableMarkdownFormatting {
-            Markdown.applyStyling(attributedString: textStorage, fontSize: NSFont.systemFontSize, showEmoticons: false);
+             Markdown.applyStyling(attributedString: textStorage, fontSize: NSFont.systemFontSize, showEmoticons: false);
         }
     }
     

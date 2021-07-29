@@ -48,7 +48,7 @@ class ChatMessageCellView: BaseChatCellView {
         let messageBody = self.messageBody(item: item, message: message);
         let msg = NSMutableAttributedString(string: messageBody);
         let fontSize = NSFont.systemFontSize;
-        msg.setAttributes([.font: NSFont.systemFont(ofSize: fontSize, weight: .light)], range: NSRange(location: 0, length: msg.length));
+        msg.setAttributes([.font: NSFont.systemFont(ofSize: fontSize)], range: NSRange(location: 0, length: msg.length));
         
         if Settings.enableMarkdownFormatting {
             Markdown.applyStyling(attributedString: msg, fontSize: fontSize, showEmoticons: Settings.showEmoticons);

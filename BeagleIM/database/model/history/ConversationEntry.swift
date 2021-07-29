@@ -104,7 +104,7 @@ public final class ConversationEntry: Hashable {
         case .always:
             return 60.0 * 60.0 * 24.0;
         case .smart:
-            return 30.0;
+            return 60.0;
         }
     }
 

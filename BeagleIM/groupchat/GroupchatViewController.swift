@@ -612,6 +612,7 @@ class GroupchatPMPopover: NSPopover {
         self.room = room;
         self.occupant = occupant;
         textView = AutoresizingTextView(frame: NSRect(origin: .zero, size: NSSize(width: size.width-20, height: size.height)));
+        textView.setup();
         scrollView = RoundedScrollView(frame: NSRect(origin: .zero, size: size));
         scrollView.translatesAutoresizingMaskIntoConstraints = false;
         scrollView.hasVerticalScroller = true;
