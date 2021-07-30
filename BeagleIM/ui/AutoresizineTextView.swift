@@ -103,10 +103,10 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
     }
     
     func textStorage(_ textStorage: NSTextStorage, didProcessEditing editedMask: NSTextStorageEditActions, range editedRange: NSRange, changeInLength delta: Int) {
-        self.font = NSFont.systemFont(ofSize: NSFont.systemFontSize);
+        let font = NSFont.systemFont(ofSize: NSFont.systemFontSize);
         let fullRange = NSRange(0..<textStorage.length);
+        textStorage.setAttributes([.font: font], range: fullRange);
         textStorage.fixAttributes(in: fullRange);
-//        textStorage.setAttributes([.font: self.font!], range: fullRange);
         textStorage.addAttributes([.foregroundColor: NSColor.textColor], range: fullRange);
         
         if Settings.enableMarkdownFormatting {
