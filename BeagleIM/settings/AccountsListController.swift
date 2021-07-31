@@ -180,7 +180,7 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
         
         let alert = NSAlert();
         alert.messageText = NSLocalizedString("Account removal", comment: "alert window title");
-        alert.informativeText = NSLocalizedString("Should the account be removed from the server as well?", comment: "alert window message");
+        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Should the account %@ be removed from the server as well?", comment: "alert window message"), jid.stringValue);
         alert.addButton(withTitle: NSLocalizedString("Remove from server", comment: "Button"))
         alert.addButton(withTitle: NSLocalizedString("Remove from application", comment: "Button"))
         alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Button"));

@@ -554,7 +554,7 @@
 "Set as default app" = "Ustaw jako domyślną aplikację";
 
 /* alert window message */
-"Should the account be removed from the server as well?" = "Czy usunąć konto również z serwera?";
+"Should the account %@ be removed from the server as well?" = "Czy usunąć konto %@ również z serwera?";
 
 /* setting */
 "Show channels and chats in merged list" = "Pokaż kanały i rozmowy w jednej liście";
