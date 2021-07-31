@@ -85,23 +85,29 @@ class MessageTextView: NSTextView, NSLayoutManagerDelegate {
             
             let charRange = self.characterRange(forGlyphRange: glyphsToShow, actualGlyphRange: nil);
             textStorage!.enumerateAttribute(.paragraphStyle, in: charRange, options: [], using: { (value, range, pth) in
-                guard let paragraph = value as? NSParagraphStyle else {
+                guard let paragraph = value as? Markdown.ParagraphStyle else {
                     return;
                 }
-                if paragraph.tailIndent != 0 {
-                    let glyphRange = self.glyphRange(forCharacterRange: range, actualCharacterRange: nil);
-                    let rect = self.boundingRect(forGlyphRange: glyphRange, in: self.textContainers.first!)
                 
-                    NSColor.textColor.withAlphaComponent(0.5).setFill();
-                    let path = NSBezierPath(rect: NSRect(origin: rect.origin, size: NSSize(width: 2, height: rect.height)));
-                    path.fill();
-                } else if paragraph.headIndent != 0 {
+                if let type = paragraph.type {
+                    switch type {
+                    case .quote:
                         let glyphRange = self.glyphRange(forCharacterRange: range, actualCharacterRange: nil);
                         let rect = self.boundingRect(forGlyphRange: glyphRange, in: self.textContainers.first!)
                     
                         NSColor.textColor.withAlphaComponent(0.2).setFill();
-                    let path = NSBezierPath(rect: NSRect(x: (rect.origin.x > paragraph.firstLineHeadIndent) ? 1 : rect.origin.x, y: rect.origin.y, width: 2, height: rect.height));
+                        let path = NSBezierPath(rect: NSRect(x: (rect.origin.x > paragraph.firstLineHeadIndent) ? 1 : rect.origin.x, y: rect.origin.y, width: 2, height: rect.height));
                         path.fill();
+                    case .code:
+                        let glyphRange = self.glyphRange(forCharacterRange: range, actualCharacterRange: nil);
+                        let rect = self.boundingRect(forGlyphRange: glyphRange, in: self.textContainers.first!)
+                    
+                        NSColor.textColor.withAlphaComponent(0.5).setFill();
+                        let path = NSBezierPath(rect: NSRect(origin: rect.origin, size: NSSize(width: 2, height: rect.height)));
+                        path.fill();
+                    case .list:
+                        break;
+                    }
                 }
             })
         }

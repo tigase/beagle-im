@@ -31,8 +31,20 @@ extension unichar: ExpressibleByUnicodeScalarLiteral {
 
 class Markdown {
     
+    class ParagraphStyle: NSMutableParagraphStyle {
+        
+        var type: `Type`?;
+        
+        enum `Type` {
+            case quote
+            case code
+            case list
+        }
+    }
+    
     static let quoteParagraphStyle: NSParagraphStyle = {
-        var paragraphStyle = NSMutableParagraphStyle();
+        var paragraphStyle = ParagraphStyle();
+        paragraphStyle.type = .quote;
         paragraphStyle.headIndent = 16;
         paragraphStyle.firstLineHeadIndent = 4;
         paragraphStyle.alignment = .natural;
@@ -40,13 +52,33 @@ class Markdown {
     }();
     
     static let codeParagraphStyle: NSParagraphStyle = {
-        var paragraphStyle = NSMutableParagraphStyle();
-            paragraphStyle.headIndent = 10;
-            paragraphStyle.tailIndent = -10;
-            paragraphStyle.firstLineHeadIndent = 10;
-            paragraphStyle.alignment = .natural;
-            return paragraphStyle;
-        }();
+        var paragraphStyle = ParagraphStyle();
+        paragraphStyle.type = .code;
+        paragraphStyle.headIndent = 10;
+        paragraphStyle.tailIndent = -10;
+        paragraphStyle.firstLineHeadIndent = 10;
+        paragraphStyle.alignment = .natural;
+        return paragraphStyle;
+    }();
+    
+    static let listParagraphStyle: NSParagraphStyle = {
+        var paragraphStyle = ParagraphStyle();
+        paragraphStyle.type = .list;
+        paragraphStyle.headIndent = 22;
+        paragraphStyle.alignment = .natural;
+        paragraphStyle.paragraphSpacingBefore = 5;
+        paragraphStyle.firstLineHeadIndent = 10;
+        return paragraphStyle;
+    }();
+    
+    static let listParagraphContinuationStyle: NSParagraphStyle = {
+        var paragraphStyle = ParagraphStyle();
+        paragraphStyle.type = .list;
+        paragraphStyle.headIndent = 22;
+        paragraphStyle.alignment = .natural;
+        paragraphStyle.firstLineHeadIndent = 22;
+        return paragraphStyle;
+    }();
     
     static let NEW_LINE: unichar = "\n";
     static let GT_SIGN: unichar = ">";
@@ -55,8 +87,37 @@ class Markdown {
     static let UNDERSCORE: unichar = "_";
     static let GRAVE_ACCENT: unichar = "`";
     static let CR_SIGN: unichar = "\r";
+    static let DOT: unichar = ".";
+    static let MINUS: unichar = "-";
+    
+    static let ZERO: unichar = "0";
+    static let ONE: unichar = "1";
+    static let TWO: unichar = "2";
+    static let THREE: unichar = "3";
+    static let FOUR: unichar = "4";
+    static let FIVE: unichar = "5";
+    static let SIX: unichar = "6";
+    static let SEVEN: unichar = "7";
+    static let EIGHT: unichar = "8";
+    static let NINE: unichar = "9";
+    
+    static let TILDE: unichar = "~";
+
+    static func isNumber(_ c: unichar) -> Bool {
+        return c >= 48 && c <= 57;
+    }
+        
+    static var usedTime: Int = 0;
+    
+    enum ListMarker {
+        case number
+        case minus
+        case asterisk
+    }
     
     static func applyStyling(attributedString msg: NSMutableAttributedString, fontSize: CGFloat, showEmoticons: Bool) {
+        let start = Date();
+        
         let stylingColor = NSColor(calibratedWhite: 0.5, alpha: 1.0);
         
         var message = msg.string as NSString;
@@ -66,9 +127,12 @@ class Markdown {
         var underlineStart: Int? = nil;
         var quoteStart: Int? = nil;
         var quoteLevel = 0;
+        var listStart: Int? = nil;
+        var crossOutStart: Int? = nil;
         var idx = 0;
         
         var canStart = true;
+        var listMarker: ListMarker?;
         
         var wordIdx: Int? = showEmoticons ? 0 : nil;
         
@@ -92,35 +156,62 @@ class Markdown {
                     }
                 }
             case ASTERISK:
-                let nidx = idx + 1;
-                if nidx < message.length, message.character(at: nidx) == ASTERISK {
-                    if boldStart == nil {
-                        if canStart {
-                            boldStart = idx;
+                if let nextChar = idx + 1 < message.length ? message.character(at: idx + 1) : nil {
+                    if nextChar == ASTERISK {
+                        if boldStart == nil {
+                            if canStart {
+                                boldStart = idx;
+                            }
+                        } else {
+                            msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(location: boldStart!, length: (idx+2) - idx));
+                            msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(location: idx, length: (idx+2) - idx));
+                            
+                            msg.applyFontTraits(.boldFontMask, range: NSRange(location: boldStart!, length: (idx+2) - boldStart!));
+                            boldStart = nil;
                         }
-                    } else {
-                        msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(location: boldStart!, length: (nidx+1) - idx));
-                        msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(location: idx, length: (nidx+1) - idx));
-                        
-                        msg.applyFontTraits(.boldFontMask, range: NSRange(location: boldStart!, length: (nidx+1) - boldStart!));
-                        boldStart = nil;
+                        canStart = true;
+                        idx = idx + 1;
+                        break;
+                    } else if nextChar == SPACE && listStart == nil && (idx == 0 || message.character(at: idx-1) == NEW_LINE) {
+                        listStart = idx;
+                        listMarker = .asterisk;
+                        msg.applyFontTraits(.boldFontMask, range: NSRange(location: idx, length: 1));
+                        break;
                     }
-                    canStart = true;
-                    idx = nidx;
-                } else {
-                    if italicStart == nil {
-                        if canStart {
-                            italicStart = idx;
-                        }
-                    } else {
-                        msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(location: italicStart!, length: 1));
-                        msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(location: idx, length: 1));
-                        
-                        msg.applyFontTraits(.italicFontMask, range: NSRange(location: italicStart!, length: (idx+1) - italicStart!));
-                        italicStart = nil;
-                    }
-                    canStart = true;
                 }
+                
+                if italicStart == nil {
+                    if canStart {
+                        italicStart = idx;
+                    }
+                } else {
+                    msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(location: italicStart!, length: 1));
+                    msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(location: idx, length: 1));
+                    
+                    msg.applyFontTraits(.italicFontMask, range: NSRange(location: italicStart!, length: (idx+1) - italicStart!));
+                    italicStart = nil;
+                }
+                canStart = true;
+            case MINUS:
+                if listStart == nil && canStart && (idx == 0 || message.character(at: idx-1) == NEW_LINE) && ((idx + 1) < message.length && message.character(at: idx + 1) == SPACE) {
+                    listStart = idx;
+                    listMarker = .minus;
+                    msg.applyFontTraits(.boldFontMask, range: NSRange(location: idx, length: 1));
+                }
+            case TILDE:
+                if crossOutStart == nil {
+                    if canStart && idx + 2 < message.length && message.character(at: idx + 1) == TILDE {
+                        crossOutStart = idx;
+                        idx = idx + 1;
+                    }
+                } else if idx + 1 < message.length && message.character(at: idx + 1) == TILDE {
+                    msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(location: crossOutStart!, length: 2));
+                    msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(location: idx, length: 2));
+                    msg.addAttribute(.strikethroughStyle, value: NSUnderlineStyle.thick.rawValue, range: NSRange(location: crossOutStart! + 2, length: (idx - (crossOutStart! + 2))));
+                    idx = idx + 1;
+                    crossOutStart = nil;
+                }
+                canStart = true;
             case UNDERSCORE:
                 if underlineStart == nil {
                     if canStart {
@@ -130,7 +221,7 @@ class Markdown {
                     msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(location: underlineStart!, length: 1));
                     msg.addAttribute(.foregroundColor, value: stylingColor, range: NSRange(location: idx, length: 1));
                     
-                    msg.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: NSRange(location: underlineStart!, length: idx - underlineStart!));
+                    msg.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: NSRange(location: underlineStart! + 1, length: idx - (underlineStart! + 1)));
                     underlineStart = nil;
                 }
                 canStart = true;
@@ -222,8 +313,56 @@ class Markdown {
                         }
                         quoteStart = nil;
                     }
+                    if listStart != nil {
+                        if let paragraphStyle = listParagraphStyle(for: message, startAt: listStart, listMarker: listMarker) {
+                            let range = NSRange(location: listStart!, length: idx - listStart!);
+                            msg.addAttribute(.paragraphStyle, value: paragraphStyle, range: range);
+                        }
+                        listStart = nil;
+
+                        if idx + 1 < message.length && message.character(at: idx + 1) != NEW_LINE  {
+                            if isContinuation(char: message.character(at: idx + 1), listMarker: listMarker!) {
+                                listStart = idx + 1;
+                            }
+                        } else {
+                            listMarker = nil;
+                        }
+                    }
                 }
                 canStart = true;
+            case ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE:
+                if listStart == nil && (idx == 0 || message.character(at: idx - 1) == NEW_LINE) {
+                    var nidx = idx + 1;
+                    var hadDot = false;
+                    while nidx < message.length {
+                        let c1 = message.character(at: nidx);
+                        if hadDot {
+                            if c1 != SPACE {
+                                // not a valid list!
+                                break
+                            } else {
+                                // we have found a list!
+                                listMarker = .number;
+                                listStart = idx;
+                                msg.applyFontTraits(.boldFontMask, range: NSRange(location: idx, length: (nidx - idx) - 1));
+                                idx = nidx - 1;
+                                break;
+                            }
+                        } else {
+                            if c1 == DOT {
+                                hadDot = true;
+                            } else if isNumber(c1) {
+                                // ok, still a number..
+                            } else {
+                                // not a valid list!
+                                break;
+                            }
+                        }
+                        nidx = nidx + 1;
+                    }
+                }
+                canStart = false;
+                break;
             default:
                 canStart = false;
                 break;
@@ -234,8 +373,16 @@ class Markdown {
         }
 
         if (quoteStart != nil) {
-            msg.addAttribute(.paragraphStyle, value: Markdown.quoteParagraphStyle, range: NSRange(location: quoteStart!, length: idx - quoteStart!));
+            msg.addAttribute(.paragraphStyle, value: Markdown.quoteParagraphStyle, range: NSRange(location: quoteStart!, length: (idx - quoteStart!)-1));
             quoteStart = nil;
+        }
+
+        if (listStart != nil) {
+            if let paragraphStyle = listParagraphStyle(for: message, startAt: listStart, listMarker: listMarker) {
+                let range = NSRange(location: listStart!, length: (idx - listStart!) - 1);
+                msg.addAttribute(.paragraphStyle, value: paragraphStyle, range: range);
+            }
+            listStart = nil;
         }
 
         if showEmoticons && wordIdx != nil && wordIdx! != idx {
@@ -244,6 +391,41 @@ class Markdown {
                 msg.replaceCharacters(in: range, with: emoji);
                 message = msg.string as NSString;
             }
+        }
+        
+        let end = Date();
+        usedTime = usedTime + Int((end.timeIntervalSince1970 - start.timeIntervalSince1970) * 1000);
+        print("time used for markdown parsing:", usedTime)
+    }
+    
+    static func listParagraphStyle(for message: NSString, startAt: Int?, listMarker: ListMarker?) -> NSParagraphStyle? {
+        guard let startAt = startAt, let listMarker = listMarker else {
+            return nil;
+        }
+        
+        let c = message.character(at: startAt);
+        switch listMarker {
+        case .asterisk:
+            return c == ASTERISK ? listParagraphStyle : listParagraphContinuationStyle;
+        case .minus:
+            return c == MINUS ? listParagraphStyle : listParagraphContinuationStyle;
+        case .number:
+            return isNumber(c) ? listParagraphStyle : listParagraphContinuationStyle;
+        default:
+            return nil;
+        }
+    }
+    
+    static func isContinuation(char c: unichar, listMarker: ListMarker) -> Bool {
+        switch listMarker {
+        case .asterisk:
+            return c != ASTERISK;
+        case .minus:
+            return c != MINUS;
+        case .number:
+            return !isNumber(c);
+        default:
+            return true;
         }
     }
  
