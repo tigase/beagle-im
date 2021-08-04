@@ -107,16 +107,17 @@ class CreateMeetingController: NSViewController {
     }
     
     @IBAction func createAndInviteClicked(_ sender: NSButton) {
-        guard let meetComponentJid = meetComponents.first?.jid, let client = self.client else {
+        let participants = contactSelectionView.items.map({ $0.jid });
+        guard let meetComponentJid = meetComponents.first?.jid, let client = self.client, !participants.isEmpty else {
             return;
         }
         self.operationInProgress = true;
-        client.module(.meet).createMeet(at: meetComponentJid, media: [.audio,.video], completionHandler: { result in
+        client.module(.meet).createMeet(at: meetComponentJid, media: [.audio,.video], participants: participants, completionHandler: { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let meetJid):
                     MeetManager.instance.registerMeet(at: meetJid, using: client)?.join();
-                    for jid in self.contactSelectionView.items.map({ $0.jid }) {
+                    for jid in participants {
                         client.module(.meet).sendMessageInitiation(action: .propose(id: UUID().uuidString, meetJid: meetJid, media: [.audio,.video]), to: JID(jid));
                     }
                     self.close();
