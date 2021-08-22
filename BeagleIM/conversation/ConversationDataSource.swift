@@ -357,6 +357,13 @@ class ConversationDataSource {
     private func add(items: [ConversationEntry], scrollTo: ScrollTo, initial: Bool = false, completionHandler: (()->Void)?) {
         let start = Date();
         let newItems = items.filter({ !self.knownItems.contains($0.id) });
+        guard !newItems.isEmpty else {
+            DispatchQueue.main.async {
+                completionHandler?();
+            }
+            print("skipped adding rows as no rows were loadad!")
+            return;
+        }
 
         if case .oldestUnread = scrollTo {
             if entries.isEmpty,let firstUnread = newItems.last(where: { $0.state.isUnread }) {
