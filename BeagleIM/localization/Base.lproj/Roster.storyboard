@@ -297,12 +297,12 @@
             <objects>
                 <customObject id="fbJ-92-egC" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <viewController identifier="AddContactController" storyboardIdentifier="AddContactController" id="9iP-4I-gmg" userLabel="Add contact controller" customClass="AddContactController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" misplaced="YES" id="LgS-os-mTw">
-                        <rect key="frame" x="0.0" y="0.0" width="250" height="177"/>
+                    <view key="view" id="LgS-os-mTw">
+                        <rect key="frame" x="0.0" y="0.0" width="240" height="190"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="8iC-zD-aaz">
-                                <rect key="frame" x="20" y="117" width="40" height="40"/>
+                                <rect key="frame" x="20" y="130" width="40" height="40"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="40" id="70x-W7-JXQ"/>
                                     <constraint firstAttribute="height" constant="40" id="nBh-o0-mcw"/>
@@ -310,7 +310,7 @@
                                 <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSUserAccounts" id="Pij-vH-egD"/>
                             </imageView>
                             <textField horizontalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="JSL-SS-i4q">
-                                <rect key="frame" x="66" y="128" width="91" height="19"/>
+                                <rect key="frame" x="66" y="141" width="91" height="19"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Add contact" id="zjm-mS-Mle">
                                     <font key="font" metaFont="systemSemibold" size="15"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -318,15 +318,15 @@
                                 </textFieldCell>
                             </textField>
                             <textField horizontalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="yYL-kB-0WR">
-                                <rect key="frame" x="18" y="65" width="204" height="43"/>
+                                <rect key="frame" x="18" y="86" width="204" height="35"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Enter contact details:" id="n57-KC-z4m">
-                                    <font key="font" metaFont="cellTitle"/>
+                                    <font key="font" metaFont="system"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
                             <gridView xPlacement="leading" yPlacement="bottom" rowAlignment="none" translatesAutoresizingMaskIntoConstraints="NO" id="LZ9-5t-MWz" customClass="FormView" customModule="BeagleIM" customModuleProvider="target">
-                                <rect key="frame" x="20" y="55" width="0.0" height="0.0"/>
+                                <rect key="frame" x="20" y="76" width="0.0" height="0.0"/>
                                 <rows>
                                     <gridRow id="4OB-ma-2tL"/>
                                 </rows>
@@ -348,7 +348,7 @@
                                 </connections>
                             </button>
                             <gridView xPlacement="leading" yPlacement="bottom" rowAlignment="none" translatesAutoresizingMaskIntoConstraints="NO" id="Ckf-gj-2pO" customClass="FormView" customModule="BeagleIM" customModuleProvider="target">
-                                <rect key="frame" x="20" y="50" width="0.0" height="0.0"/>
+                                <rect key="frame" x="20" y="76" width="0.0" height="0.0"/>
                                 <rows>
                                     <gridRow id="ClS-56-Kpa"/>
                                 </rows>
@@ -359,6 +359,13 @@
                                     <gridCell row="ClS-56-Kpa" column="Qao-WJ-yFQ" id="Wog-6e-a4Z"/>
                                 </gridCells>
                             </gridView>
+                            <button verticalHuggingPriority="750" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="2Ub-M4-oNr">
+                                <rect key="frame" x="18" y="49" width="202" height="18"/>
+                                <buttonCell key="cell" type="check" title="Do not ask again" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="NJ4-NC-GJS">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                            </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="0OT-9C-0Ry">
                                 <rect key="frame" x="93" y="13" width="76" height="32"/>
                                 <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="qnx-gv-kFT">
@@ -373,7 +380,7 @@ Gw
                                 </connections>
                             </button>
                             <button horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="xRy-4R-upv">
-                                <rect key="frame" x="26" y="59" width="198" height="22"/>
+                                <rect key="frame" x="26" y="80" width="198" height="22"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="16" id="wk2-pS-wK9"/>
                                 </constraints>
@@ -390,23 +397,25 @@ Gw
                             <constraint firstItem="Ckf-gj-2pO" firstAttribute="leading" secondItem="LgS-os-mTw" secondAttribute="leading" constant="20" id="8fj-i0-GGM"/>
                             <constraint firstAttribute="trailing" secondItem="hlS-Ra-voj" secondAttribute="trailing" constant="20" id="9QJ-YI-MjB"/>
                             <constraint firstItem="xRy-4R-upv" firstAttribute="leading" secondItem="Ckf-gj-2pO" secondAttribute="trailing" constant="10" id="9QZ-XS-rAg"/>
+                            <constraint firstAttribute="trailing" secondItem="2Ub-M4-oNr" secondAttribute="trailing" constant="20" symbolic="YES" id="D1T-M1-20v"/>
                             <constraint firstItem="LZ9-5t-MWz" firstAttribute="leading" secondItem="LgS-os-mTw" secondAttribute="leading" constant="20" id="Dg9-ce-MiN"/>
-                            <constraint firstItem="0OT-9C-0Ry" firstAttribute="top" relation="greaterThanOrEqual" secondItem="xRy-4R-upv" secondAttribute="bottom" constant="10" id="EzK-VP-nvx"/>
                             <constraint firstItem="yYL-kB-0WR" firstAttribute="leading" secondItem="LgS-os-mTw" secondAttribute="leading" constant="20" id="IT9-sr-cc1"/>
                             <constraint firstItem="hlS-Ra-voj" firstAttribute="leading" secondItem="0OT-9C-0Ry" secondAttribute="trailing" constant="13" id="K1m-sc-31Y"/>
                             <constraint firstItem="JSL-SS-i4q" firstAttribute="centerY" secondItem="8iC-zD-aaz" secondAttribute="centerY" id="MT0-fX-bTG"/>
                             <constraint firstAttribute="trailing" secondItem="xRy-4R-upv" secondAttribute="trailing" constant="20" id="N77-yR-krT"/>
                             <constraint firstAttribute="bottom" secondItem="0OT-9C-0Ry" secondAttribute="bottom" constant="20" id="OJx-JO-ljU"/>
                             <constraint firstAttribute="bottom" secondItem="hlS-Ra-voj" secondAttribute="bottom" constant="20" id="ac3-9a-X00"/>
+                            <constraint firstItem="0OT-9C-0Ry" firstAttribute="top" secondItem="2Ub-M4-oNr" secondAttribute="bottom" constant="10" id="b0N-T5-OWN"/>
                             <constraint firstItem="8iC-zD-aaz" firstAttribute="top" secondItem="LgS-os-mTw" secondAttribute="top" constant="20" id="bRH-Um-omF"/>
                             <constraint firstItem="yYL-kB-0WR" firstAttribute="top" secondItem="8iC-zD-aaz" secondAttribute="bottom" constant="9" id="eWb-Td-eFq"/>
                             <constraint firstItem="0OT-9C-0Ry" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="LgS-os-mTw" secondAttribute="leading" constant="100" id="fFG-Uk-eqR"/>
                             <constraint firstItem="8iC-zD-aaz" firstAttribute="leading" secondItem="LgS-os-mTw" secondAttribute="leading" constant="20" id="kNf-8N-M7H"/>
-                            <constraint firstItem="Ckf-gj-2pO" firstAttribute="top" secondItem="LZ9-5t-MWz" secondAttribute="bottom" constant="5" id="kOm-TS-v1l"/>
+                            <constraint firstItem="Ckf-gj-2pO" firstAttribute="top" secondItem="LZ9-5t-MWz" secondAttribute="bottom" id="kOm-TS-v1l"/>
+                            <constraint firstItem="2Ub-M4-oNr" firstAttribute="top" secondItem="Ckf-gj-2pO" secondAttribute="bottom" constant="10" id="kWx-bm-FsE"/>
                             <constraint firstItem="LZ9-5t-MWz" firstAttribute="top" secondItem="yYL-kB-0WR" secondAttribute="bottom" constant="10" id="mOf-Xs-6AI"/>
                             <constraint firstAttribute="trailing" secondItem="yYL-kB-0WR" secondAttribute="trailing" constant="20" id="mQx-DW-PC0"/>
-                            <constraint firstItem="0OT-9C-0Ry" firstAttribute="top" secondItem="Ckf-gj-2pO" secondAttribute="bottom" constant="10" id="nL1-f9-SAJ"/>
                             <constraint firstItem="JSL-SS-i4q" firstAttribute="leading" secondItem="8iC-zD-aaz" secondAttribute="trailing" constant="8" id="s7N-cL-Inw"/>
+                            <constraint firstItem="2Ub-M4-oNr" firstAttribute="leading" secondItem="LgS-os-mTw" secondAttribute="leading" constant="20" symbolic="YES" id="udO-V1-0l1"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="JSL-SS-i4q" secondAttribute="trailing" constant="20" id="vWP-CQ-NcY"/>
                             <constraint firstItem="Ckf-gj-2pO" firstAttribute="trailing" secondItem="LZ9-5t-MWz" secondAttribute="trailing" id="wqD-fZ-BUK"/>
                             <constraint firstItem="xRy-4R-upv" firstAttribute="bottom" secondItem="LZ9-5t-MWz" secondAttribute="bottom" constant="-7" id="ykq-Ay-RwJ"/>
@@ -416,12 +425,13 @@ Gw
                         <outlet property="addButton" destination="hlS-Ra-voj" id="rlr-cd-7mL"/>
                         <outlet property="disclosureButton" destination="xRy-4R-upv" id="4Bm-X1-n5p"/>
                         <outlet property="disclosureView" destination="Ckf-gj-2pO" id="RWN-a9-aMf"/>
+                        <outlet property="doNotAskAgain" destination="2Ub-M4-oNr" id="Ds4-6l-qob"/>
                         <outlet property="formView" destination="LZ9-5t-MWz" id="HTx-ZN-CtC"/>
                         <outlet property="imageView" destination="8iC-zD-aaz" id="kBP-KX-ztQ"/>
                     </connections>
                 </viewController>
             </objects>
-            <point key="canvasLocation" x="-165" y="3343.5"/>
+            <point key="canvasLocation" x="-133" y="3343"/>
         </scene>
         <!--Roster Window Controller-->
         <scene sceneID="XYQ-CH-kbi">

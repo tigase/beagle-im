@@ -126,3 +126,6 @@
 
 /* Class = "NSTextFieldCell"; title = "Add contact"; ObjectID = "zjm-mS-Mle"; */
 "zjm-mS-Mle.title" = "Dodaj kontakt";
+
+/* Class = "NSButtonCell"; title = "Do not ask again"; ObjectID = "NJ4-NC-GJS"; */
+"NJ4-NC-GJS.title" = "Nie pytaj ponownie";

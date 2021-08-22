@@ -76,9 +76,29 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
             return;
         }
         
+        let created = client.module(.message).chatManager.chat(for: client, with: jid) == nil;
         if let chat = client.module(.message).chatManager.createChat(for: client, with: jid) {
-            DispatchQueue.main.async {                
+            DispatchQueue.main.async {
                 NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: chat)
+                
+                guard created && DBRosterStore.instance.item(for: account, jid: JID(jid)) == nil && Settings.askToAddContactOnChatOpening else {
+                    return;
+                }
+                
+                // we are opening a chat with someone not in our roster
+                let addContact = NSStoryboard(name: "Roster", bundle: nil).instantiateController(withIdentifier: "AddContactController") as! AddContactController;
+                addContact.showDoNotAskAgain = true;
+                
+                _ = addContact.view;
+                if let idx = addContact.accountSelector.itemTitles.firstIndex(of: account.stringValue) {
+                    addContact.accountSelector.selectItem(at: idx);
+                }
+                addContact.jidField.stringValue = jid.stringValue
+
+                if let window = (NSApplication.shared.delegate as? AppDelegate)?.mainWindowController?.window {
+                    window.contentViewController?.presentAsSheet(addContact);
+                }
+                addContact.verify();
             }
         }
         self.close();

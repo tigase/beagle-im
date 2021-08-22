@@ -31,11 +31,14 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
     var allowSubscriptionButton: NSButton!;
     var preauthToken: String?;
     
+    var showDoNotAskAgain: Bool = false;
+    
     @IBOutlet var imageView: NSImageView!;
     @IBOutlet var addButton: NSButton!;
     @IBOutlet var formView: FormView!;
     @IBOutlet var disclosureView: FormView!;
     @IBOutlet var disclosureButton: NSButton!;
+    @IBOutlet var doNotAskAgain: NSButton!;
     
     var disclosureConstraint: NSLayoutConstraint!;
     var formViewHeightConstraint: NSLayoutConstraint?;
@@ -78,6 +81,9 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
         disclosureConstraint = disclosureView.heightAnchor.constraint(equalToConstant: 0);
         disclosureConstraint.isActive = true;
         disclosureView.isHidden = true;
+        
+        doNotAskAgain.state = Settings.askToAddContactOnChatOpening ? .off : .on;
+        doNotAskAgain.isHidden = !showDoNotAskAgain;
         //accountSelector.widthAnchor.constraint(equalTo: requestSubscriptionButton.widthAnchor, multiplier: 1.0).isActive = true;
     }
     
@@ -88,6 +94,10 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
     
     func controlTextDidChange(_ obj: Notification) {
         verify();
+    }
+    
+    @objc func doNotAskAgain(_ sender: Any) {
+        Settings.askToAddContactOnChatOpening = doNotAskAgain.state == .off;
     }
     
     @objc func accountSelectionChanged() {

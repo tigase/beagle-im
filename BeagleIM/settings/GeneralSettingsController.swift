@@ -43,7 +43,8 @@ class GeneralSettingsController: NSViewController {
     fileprivate var enableLinkPreviews: NSButton!;
     fileprivate var commonChatsList: NSButton!;
     private var chatslistStyle: NSPopUpButton!;
-
+    private var askToAddToRoster: NSButton!;
+    
     let appearanceOptions: [Appearance] = [.auto, .light, .dark];
     let chatslistStyleOptions: [ChatsListStyle] = [.minimal, .small, .large];
     let imageQualityOptions: [ImageQuality] = [.original,.highest,.high,.medium,.low];
@@ -87,6 +88,8 @@ class GeneralSettingsController: NSViewController {
         videoQuality.action = #selector(checkboxChanged(_:));
         formView.groupItems(from: imageQuality, to: videoQuality);
 
+        askToAddToRoster = formView.addRow(label: NSLocalizedString("Opening chat with JID", comment: "setting") + ":", field: NSButton(checkboxWithTitle: NSLocalizedString("Ask to add to roster", comment: "settings"), target: self, action: #selector(checkboxChanged(_:))))
+        
         _ = formView.addRow(label: NSLocalizedString("XMPP URI", comment: "setting") + ":", field: NSButton(title: NSLocalizedString("Set as default app", comment: "setting"), target: self, action: #selector(showSetAsDefaultWindow)));
         
         self.preferredContentSize = NSSize(width: self.view.frame.size.width, height: self.view.frame.size.height);
@@ -134,6 +137,8 @@ class GeneralSettingsController: NSViewController {
         videoQuality.removeAllItems();
         videoQuality.addItems(withTitles: videoQualityOptions.map({ $0.label }));
         videoQuality.selectItem(at: videoQualityOptions.firstIndex(of: VideoQuality.current) ?? 0);
+        
+        askToAddToRoster.state = Settings.askToAddContactOnChatOpening ? .on : .off;
     }
     
     @objc func checkboxChanged(_ sender: NSButton) {
@@ -164,6 +169,8 @@ class GeneralSettingsController: NSViewController {
             Settings.linkPreviews = sender.state == .on;
         case chatslistStyle:
             Settings.chatslistStyle = self.chatslistStyleOptions[chatslistStyle.indexOfSelectedItem];
+        case askToAddToRoster:
+            Settings.askToAddContactOnChatOpening = sender.state == .on;
         default:
             break;
         }

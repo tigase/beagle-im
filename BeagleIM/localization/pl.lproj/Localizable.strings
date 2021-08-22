@@ -936,3 +936,9 @@
 
 /* settings */
 "Filesize limit" = "Limit rozmiaru pliku";
+
+/* setting */
+"Opening chat with JID" = "Otwieranie rozmowy z JID";
+
+/* settings */
+"Ask to add to roster" = "Pytaj czy dodać do rostera";

@@ -168,6 +168,9 @@ class SettingsStore {
     @UserDefaultsSetting(key: "confirmMessages", defaultValue: true)
     var confirmMessages: Bool;
     
+    @UserDefaultsSetting(key: "askToAddContactOnChatOpening", defaultValue: true)
+    var askToAddContactOnChatOpening: Bool;
+    
     var automaticallyConnectAfterStart: Bool {
         return true;
     }
