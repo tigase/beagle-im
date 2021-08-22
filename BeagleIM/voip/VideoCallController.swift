@@ -83,6 +83,9 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
             default:
                 break;
             }
+            DispatchQueue.main.async {
+                self.avplayer = nil;
+            }
             self.showAlert(title: title, buttons: [NSLocalizedString("OK", comment: "Button")], completionHandler: { response in
                 DispatchQueue.main.async {
                     self.closeWindow();
