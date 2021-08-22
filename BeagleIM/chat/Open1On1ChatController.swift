@@ -76,7 +76,11 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
             return;
         }
         
-        _ = client.module(.message).chatManager.createChat(for: client, with: jid);
+        if let chat = client.module(.message).chatManager.createChat(for: client, with: jid) {
+            DispatchQueue.main.async {                
+                NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: chat)
+            }
+        }
         self.close();
     }
     
