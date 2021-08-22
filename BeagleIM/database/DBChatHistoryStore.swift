@@ -774,13 +774,16 @@ class DBChatHistoryStore {
     }
 
     open func searchHistory(for account: BareJID? = nil, with jid: JID? = nil, search: String, completionHandler: @escaping ([ConversationEntry])->Void) {
-        // TODO: Remove this dispatch. async is OK but it is not needed to be done in a blocking maner
         let tokens = search.unicodeScalars.split(whereSeparator: { (c) -> Bool in
             return CharacterSet.punctuationCharacters.contains(c) || CharacterSet.whitespacesAndNewlines.contains(c);
         }).map({ (s) -> String in
             return String(s) + "*";
         });
         let query = tokens.joined(separator: " + ");
+        guard !query.isEmpty else {
+            completionHandler([]);
+            return;
+        }
         print("searching for:", tokens, "query:", query);
         let items = try! Database.main.reader({ database in
             try database.select(query: .messageSearchHistory, params: ["account": account, "jid": jid, "query": query]).mapAll({ cursor -> ConversationEntry? in
