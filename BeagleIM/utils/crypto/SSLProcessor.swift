@@ -161,13 +161,9 @@ open class SSLProcessor: ConnectorBase.NetworkProcessor, SSLNetworkProcessor {
     
     public var serverName: String? {
         didSet {
-            if let name = serverName {
-                if var data = name.data(using: .utf8) {
-                    _ = data.withUnsafeMutableBytes({ ptr in
-                        SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, Int(TLSEXT_NAMETYPE_host_name), ptr.baseAddress!);
-                    })
-                }
-            }
+            _ = serverName?.withCString({
+                SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, Int(TLSEXT_NAMETYPE_host_name), UnsafeMutableRawPointer(mutating: $0));
+            })
         }
     }
     
