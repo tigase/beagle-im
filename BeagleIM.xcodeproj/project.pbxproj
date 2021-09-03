@@ -176,6 +176,8 @@
 		FE9CDF0D2269E282001039C3 /* MessageEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9CDF0C2269E282001039C3 /* MessageEncryption.swift */; };
 		FE9E069A23A3976500952E9C /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E069923A3976500952E9C /* DownloadManager.swift */; };
 		FE9E1C41244B34C4003751AA /* SearchHistoryTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9E1C40244B34C4003751AA /* SearchHistoryTableView.swift */; };
+		FEA153BA26DE8441009D8140 /* VoiceRecordingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA153B926DE8441009D8140 /* VoiceRecordingView.swift */; };
+		FEA153BC26E299C5009D8140 /* CaptureDeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA153BB26E299C5009D8140 /* CaptureDeviceManager.swift */; };
 		FEA2996C25B9ED9F0021865E /* SuggestionItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2996B25B9ED9F0021865E /* SuggestionItemView.swift */; };
 		FEA2997025B9EDC50021865E /* SuggestionsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2996F25B9EDC50021865E /* SuggestionsWindowController.swift */; };
 		FEA2997625B9EE280021865E /* SuggestionsHighlightingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2997525B9EE280021865E /* SuggestionsHighlightingView.swift */; };
@@ -452,6 +454,8 @@
 		FE9D88B3217652DF006CF0D9 /* BeagleIM-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BeagleIM-Bridging-Header.h"; sourceTree = "<group>"; };
 		FE9E069923A3976500952E9C /* DownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManager.swift; sourceTree = "<group>"; };
 		FE9E1C40244B34C4003751AA /* SearchHistoryTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchHistoryTableView.swift; sourceTree = "<group>"; };
+		FEA153B926DE8441009D8140 /* VoiceRecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceRecordingView.swift; sourceTree = "<group>"; };
+		FEA153BB26E299C5009D8140 /* CaptureDeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureDeviceManager.swift; sourceTree = "<group>"; };
 		FEA2996B25B9ED9F0021865E /* SuggestionItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionItemView.swift; sourceTree = "<group>"; };
 		FEA2996F25B9EDC50021865E /* SuggestionsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionsWindowController.swift; sourceTree = "<group>"; };
 		FEA2997525B9EE280021865E /* SuggestionsHighlightingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionsHighlightingView.swift; sourceTree = "<group>"; };
@@ -715,6 +719,7 @@
 				FE1A34DB2592144A0058B86A /* PresenceStore.swift */,
 				FE67E1C225A8E120005D034C /* NotificationsManager.swift */,
 				FE82A72C268E5E550049C844 /* Collection+calculateChanges.swift */,
+				FEA153BB26E299C5009D8140 /* CaptureDeviceManager.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -799,6 +804,7 @@
 				FEF9EC44242F8BAD0090C913 /* ChatInvitationCellView.swift */,
 				FE30309B244612A8003B9D76 /* ConversationLogSelectionManager.swift */,
 				FED2A95725F0ED03008828E4 /* ChatMarkerCellView.swift */,
+				FEA153B926DE8441009D8140 /* VoiceRecordingView.swift */,
 			);
 			path = conversation;
 			sourceTree = "<group>";
@@ -1339,6 +1345,7 @@
 				FEA2F53522E46A2E009F2E88 /* ShowRosterWindowSegue.swift in Sources */,
 				FE30D8AF214C3B7600670BEC /* NSImage.swift in Sources */,
 				FE6201E023A5357B00C965A5 /* ChatLinkPreviewCellView.swift in Sources */,
+				FEA153BA26DE8441009D8140 /* VoiceRecordingView.swift in Sources */,
 				FE6201E423A693ED00C965A5 /* ChatAttachmentCellView.swift in Sources */,
 				FE7F876C2343D99300254AF2 /* CustomScroller.swift in Sources */,
 				FE6E6C0421384D5F003B1696 /* DatabaseMigrator.swift in Sources */,
@@ -1367,6 +1374,7 @@
 				FEA2998A25BC3C940021865E /* MixParticipant+AvatarPublisher.swift in Sources */,
 				FE6E6BF821384D5F003B1696 /* ViewController.swift in Sources */,
 				FE75CD602545E6A90064A733 /* MediaHelper.swift in Sources */,
+				FEA153BC26E299C5009D8140 /* CaptureDeviceManager.swift in Sources */,
 				FE9486B221BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift in Sources */,
 				FE34BBD12157901100775B07 /* JabberDataFormView.swift in Sources */,
 				FE30D8B5214D39A700670BEC /* GeneralSettingsController.swift in Sources */,

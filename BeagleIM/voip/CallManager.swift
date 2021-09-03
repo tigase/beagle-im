@@ -112,18 +112,11 @@ class CallManager {
     }
     
     func checkAccesssPermission(media: Call.Media, completionHandler: @escaping(Result<Void,Error>)->Void) {
-        switch AVCaptureDevice.authorizationStatus(for: media.avmedia) {
-        case .authorized:
-            completionHandler(.success(Void()));
-        case .denied, .restricted:
-            completionHandler(.failure(ErrorCondition.forbidden));
-        case .notDetermined:
-            AVCaptureDevice.requestAccess(for: media.avmedia, completionHandler: { result in
+        CaptureDeviceManager.requestAccess(for: media.avmedia, completionHandler: { result in
+            DispatchQueue.main.async {
                 completionHandler(result ? .success(Void()) : .failure(ErrorCondition.forbidden));
-            })
-        default:
-            completionHandler(.failure(ErrorCondition.forbidden));
-        }
+            }
+        });
     }
     
     private func initializeCall(_ call: Call, completionHandler: @escaping (Result<Void,Error>)->Void) {
@@ -416,7 +409,7 @@ class Call: NSObject, JingleSessionActionDelegate {
             if let localAudioTrack = self.localAudioTrack {
                 self.currentConnection?.add(localAudioTrack, streamIds: ["RTCmS"]);
             }
-            if self.media.contains(.video) && AVCaptureDevice.authorizationStatus(for: .video) == .authorized {
+            if self.media.contains(.video) && CaptureDeviceManager.authorizationStatus(for: .video) == .authorized {
                 let videoSource = VideoCallController.peerConnectionFactory.videoSource();
                 self.localVideoSource = videoSource;
                 let localVideoTrack = VideoCallController.peerConnectionFactory.videoTrack(with: videoSource, trackId: "video-" + UUID().uuidString);

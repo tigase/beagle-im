@@ -123,6 +123,13 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         self.scriptsButton.isHidden = ScriptsManager.instance.contactScripts() == nil;
 
 //        self.updateCapabilities();
+        
+        CaptureDeviceManager.authorizationStatusPublisher(for: .audio).map({ $0 == .authorized || $0 == .notDetermined }).map({ !$0 }).receive(on: DispatchQueue.main).assign(to: \.isHidden, on: audioCall).store(in: &cancellables);
+        CaptureDeviceManager.authorizationStatusPublisher(for: .audio).map({ permission -> Bool in
+            return permission == .authorized || permission == .notDetermined;
+        }).combineLatest(CaptureDeviceManager.authorizationStatusPublisher(for: .video).map({ permission -> Bool in permission == .authorized || permission == .notDetermined }), { audio, video -> Bool in
+                return !(audio && video);
+        }).receive(on: DispatchQueue.main).assign(to: \.isHidden, on: videoCall).store(in: &cancellables);
 
         super.viewWillAppear();
         lastTextChangeTimer = Foundation.Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true, block: { (timer) in

@@ -22,6 +22,7 @@
 import AppKit
 import TigaseSwift
 import LinkPresentation
+import AVFoundation
 
 class ChatAttachmentCellView: BaseChatCellView {
 
@@ -94,8 +95,12 @@ class ChatAttachmentCellView: BaseChatCellView {
         }
         
         self.progressIndicator = nil;
+
+        guard case let .attachment(url, appendix) = item.payload else {
+            return;
+        }
         
-        if let localUrl = DownloadStore.instance.url(for: "\(item.id)") {
+        if !(appendix.mimetype?.starts(with: "audio/") ?? false), let localUrl = DownloadStore.instance.url(for: "\(item.id)") {
             self.downloadButton?.isEnabled = false;
             self.downloadButton?.isHidden = true;
             self.actionButton?.isEnabled = true;
@@ -140,10 +145,10 @@ class ChatAttachmentCellView: BaseChatCellView {
                 })
             }
         } else {
-            self.downloadButton?.isEnabled = appendix.state != .gone;
-            self.downloadButton?.isHidden = appendix.state == .gone;
-            self.actionButton?.isEnabled = false;
-            self.actionButton?.isHidden = true;
+            self.downloadButton?.isEnabled = (appendix.state != .gone && appendix.state != .downloaded);
+            self.downloadButton?.isHidden = (appendix.state == .gone || appendix.state == .downloaded);
+            self.actionButton?.isEnabled = appendix.state == .downloaded;
+            self.actionButton?.isHidden = appendix.state != .downloaded;
             
             let attachmentInfo = AttachmentInfoView(frame: .zero);
             attachmentInfo.cellView = self;
@@ -320,11 +325,20 @@ class ChatAttachmentCellView: BaseChatCellView {
         }
     }
     
-    class AttachmentInfoView: NSView {
+    class AttachmentInfoView: NSView, AVAudioPlayerDelegate {
+        
+        static let timeFormatter: DateComponentsFormatter = {
+            let formatter = DateComponentsFormatter();
+            formatter.unitsStyle = .abbreviated;
+            formatter.zeroFormattingBehavior = .dropAll;
+            formatter.allowedUnits = [.minute,.second]
+            return formatter;
+        }();
         
         let iconView: ImageAttachmentPreview;
         let filename: NSTextField;
         let details: NSTextField;
+        let actionButton: NSButton!;
         
         weak var cellView: ChatAttachmentCellView?;
         
@@ -336,24 +350,30 @@ class ChatAttachmentCellView: BaseChatCellView {
                 switch oldValue {
                 case .none:
                     break;
+                case .audioFile:
+                    NSLayoutConstraint.deactivate(audioFileViewConstraints);
                 case .file:
                     NSLayoutConstraint.deactivate(fileViewConstraints);
                 case .imagePreview:
                     NSLayoutConstraint.deactivate(imagePreviewConstraints);
                 }
                 switch viewType {
-                    case .none:
-                        break;
-                    case .file:
-                        NSLayoutConstraint.activate(fileViewConstraints);
-                    case .imagePreview:
-                        NSLayoutConstraint.activate(imagePreviewConstraints);
+                case .none:
+                    break;
+                case .audioFile:
+                    NSLayoutConstraint.activate(audioFileViewConstraints);
+                case .file:
+                    NSLayoutConstraint.activate(fileViewConstraints);
+                case .imagePreview:
+                    NSLayoutConstraint.activate(imagePreviewConstraints);
                 }
                 iconView.isImagePreview = viewType == .imagePreview;
             }
         }
+        private var audioFileViewConstraints: [NSLayoutConstraint] = [];
         private var fileViewConstraints: [NSLayoutConstraint] = [];
         private var imagePreviewConstraints: [NSLayoutConstraint] = [];
+        private var fileUrl: URL?;
         
         override init(frame: NSRect) {
             iconView = ImageAttachmentPreview(frame: .zero);
@@ -370,19 +390,27 @@ class ChatAttachmentCellView: BaseChatCellView {
             filename = NSTextField(labelWithString: "File");
             filename.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .semibold);
             filename.textColor = NSColor.labelColor;
+            filename.setContentHuggingPriority(.defaultLow, for: .horizontal)
             filename.translatesAutoresizingMaskIntoConstraints = false;
+            
+            actionButton = NSButton(image: NSImage(named: "play.circle.fill")!, target: nil, action: nil);
+            actionButton.translatesAutoresizingMaskIntoConstraints = false;
+            actionButton.isBordered = false;
+            actionButton.contentTintColor = NSColor.secondaryLabelColor;
             
             details = NSTextField(labelWithString: "");
             details.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 2, weight: .regular);
             details.textColor = NSColor.secondaryLabelColor;
+            details.setContentHuggingPriority(.defaultLow, for: .horizontal)
             details.translatesAutoresizingMaskIntoConstraints = false;
-            
+
             super.init(frame: frame);
             self.translatesAutoresizingMaskIntoConstraints = false;
             
             self.addSubview(iconView);
             self.addSubview(filename);
             self.addSubview(details);
+            self.addSubview(actionButton);
             
             fileViewConstraints = [
                 iconView.heightAnchor.constraint(equalToConstant: 30),
@@ -399,7 +427,37 @@ class ChatAttachmentCellView: BaseChatCellView {
                 details.topAnchor.constraint(equalTo: filename.bottomAnchor, constant: 0),
                 details.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -8),
                 details.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -12),
-                details.heightAnchor.constraint(equalTo: filename.heightAnchor)
+                
+                actionButton.heightAnchor.constraint(equalToConstant: 0),
+                actionButton.widthAnchor.constraint(equalToConstant: 0),
+                actionButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: 0),
+                actionButton.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: 0)
+            ];
+            
+            audioFileViewConstraints = [
+                iconView.heightAnchor.constraint(equalToConstant: 30),
+                iconView.widthAnchor.constraint(equalTo: iconView.heightAnchor),
+                
+                iconView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 10),
+                iconView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
+                iconView.topAnchor.constraint(greaterThanOrEqualTo: self.topAnchor, constant: 8),
+//                iconView.bottomAnchor.constraint(lessThanOrEqualTo: self.bottomAnchor, constant: -8),
+                
+                filename.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 10),
+                filename.topAnchor.constraint(equalTo: self.topAnchor, constant: 8),
+                filename.trailingAnchor.constraint(equalTo: self.actionButton.leadingAnchor, constant: -10),
+                
+                details.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 10),
+                details.topAnchor.constraint(equalTo: filename.bottomAnchor, constant: 4),
+                details.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -8),
+                // -- this is causing issue with progress indicatior!!
+                details.trailingAnchor.constraint(equalTo: self.actionButton.leadingAnchor, constant: -10),
+                
+                actionButton.heightAnchor.constraint(equalToConstant: 30),
+                actionButton.widthAnchor.constraint(equalTo: actionButton.heightAnchor),
+                actionButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -10),
+                actionButton.centerYAnchor.constraint(equalTo: self.centerYAnchor),
+                actionButton.topAnchor.constraint(greaterThanOrEqualTo: self.topAnchor, constant: 8)
             ];
             
             imagePreviewConstraints = [
@@ -419,12 +477,24 @@ class ChatAttachmentCellView: BaseChatCellView {
                 details.topAnchor.constraint(equalTo: filename.bottomAnchor, constant: 0),
                 details.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -8),
                 details.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -12),
-                details.heightAnchor.constraint(equalTo: filename.heightAnchor)
+                
+                actionButton.heightAnchor.constraint(equalToConstant: 0),
+                actionButton.widthAnchor.constraint(equalToConstant: 0),
+                actionButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: 0),
+                actionButton.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: 0)
             ];
+            
+            actionButton.target = self;
+            actionButton.action = #selector(actionTapped(_:));
         }
         
         required init?(coder: NSCoder) {
             return nil;
+        }
+        
+        override func prepareForReuse() {
+            self.stopPlayingAudio();
+            super.prepareForReuse();
         }
         
         override func mouseDown(with event: NSEvent) {
@@ -448,7 +518,8 @@ class ChatAttachmentCellView: BaseChatCellView {
         }
                 
         func set(item: ConversationEntry, url: String, appendix: ChatAttachmentAppendix) {
-            if let fileUrl = DownloadStore.instance.url(for: "\(item.id)") {
+            self.fileUrl = DownloadStore.instance.url(for: "\(item.id)")
+            if let fileUrl = self.fileUrl {
                 filename.stringValue = fileUrl.lastPathComponent;
                 let fileSize = fileSizeToString(try? FileManager.default.attributesOfItem(atPath: fileUrl.path)[.size] as? UInt64);
                 if let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, fileUrl.pathExtension as CFString, nil)?.takeRetainedValue(), let typeName = UTTypeCopyDescription(uti)?.takeRetainedValue() as String? {
@@ -456,6 +527,24 @@ class ChatAttachmentCellView: BaseChatCellView {
                     if UTTypeConformsTo(uti, kUTTypeImage) {
                         self.viewType = .imagePreview;
                         iconView.image = NSImage(contentsOf: fileUrl);
+                    } else if UTTypeConformsTo(uti, kUTTypeAudio) {
+                        self.viewType = .audioFile;
+                        let asset = AVURLAsset(url: fileUrl);
+                        asset.loadValuesAsynchronously(forKeys: ["duration"], completionHandler: {
+                            DispatchQueue.main.async {
+                                guard self.fileUrl == fileUrl else {
+                                    return;
+                                }
+                                if asset.duration != .invalid && asset.duration != .zero {
+                                    let length = CMTimeGetSeconds(asset.duration);
+                                    if let lengthStr = AttachmentInfoView.timeFormatter.string(from: length) {
+                                        self.details.stringValue = "\(typeName) - \(fileSize) - \(lengthStr)";
+                                    }
+                                }
+                            }
+                        });
+                        print("preview of:" , fileUrl, fileUrl.path);
+                        iconView.image = NSWorkspace.shared.icon(forFile: fileUrl.path);
                     } else {
                         self.viewType = .file;
                         iconView.image = NSWorkspace.shared.icon(forFile: fileUrl.path);
@@ -498,8 +587,47 @@ class ChatAttachmentCellView: BaseChatCellView {
             return formatter.string(fromByteCount: Int64(size));
         }
         
+        private var audioPlayer: AVAudioPlayer?;
+        
+        private func startPlayingAudio() {
+            stopPlayingAudio();
+            guard let fileUrl = self.fileUrl else {
+                return;
+            }
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: fileUrl);
+                audioPlayer?.delegate = self;
+                audioPlayer?.volume = 1.0;
+                audioPlayer?.play();
+                self.actionButton.image = NSImage(named: "stop.circle.fill");
+            } catch {
+                self.stopPlayingAudio();
+            }
+        }
+        
+        private func stopPlayingAudio() {
+            audioPlayer?.stop();
+            audioPlayer = nil;
+            self.actionButton.image = NSImage(named: "play.circle.fill");
+        }
+        
+        @objc func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+            audioPlayer?.stop();
+            audioPlayer = nil;
+            self.actionButton.image = NSImage(named: "play.circle.fill");
+        }
+        
+        @objc func actionTapped(_ sender: Any) {
+            if audioPlayer == nil {
+                self.startPlayingAudio();
+            } else {
+                self.stopPlayingAudio();
+            }
+        }
+        
         enum ViewType {
             case none
+            case audioFile
             case file
             case imagePreview
         }

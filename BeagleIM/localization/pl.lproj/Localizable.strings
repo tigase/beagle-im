@@ -942,3 +942,12 @@
 
 /* settings */
 "Ask to add to roster" = "Pytaj czy dodać do rostera";
+
+/* label to notify user that playing is in progress */
+"Playing" = "Odtwarzanie";
+
+/* label to notify user that we record */
+"Recorded" = "Nagrano";
+
+/* label to notify user that recording is in progress */
+"Recording" = "Nagrywanie";

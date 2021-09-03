@@ -16,13 +16,13 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <scrollView verticalHuggingPriority="249" borderType="none" autohidesScrollers="YES" horizontalLineScroll="27" horizontalPageScroll="10" verticalLineScroll="27" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fFm-Kw-0RT">
-                                <rect key="frame" x="0.0" y="0.0" width="333" height="539"/>
+                                <rect key="frame" x="0.0" y="0.0" width="333" height="575"/>
                                 <clipView key="contentView" copiesOnScroll="NO" id="qKJ-4o-3VI">
-                                    <rect key="frame" x="0.0" y="0.0" width="333" height="539"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="333" height="575"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" tableStyle="fullWidth" selectionHighlightStyle="none" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="27" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" id="n3E-id-LN2" customClass="ChatViewTableView" customModule="BeagleIM" customModuleProvider="target">
-                                            <rect key="frame" x="0.0" y="0.0" width="333" height="539"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="333" height="575"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="backgroundColor" name="chatBackgroundColor"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
@@ -216,25 +216,26 @@
                                                                         <constraint firstAttribute="width" constant="24" id="XQs-DL-OOg"/>
                                                                         <constraint firstAttribute="height" constant="30" id="gqe-RP-hpY"/>
                                                                     </constraints>
-                                                                    <buttonCell key="cell" type="square" title="Button" bezelStyle="shadowlessSquare" image="NSTouchBarDownloadTemplate" imagePosition="only" alignment="center" borderStyle="border" transparent="YES" imageScaling="proportionallyDown" inset="2" id="vAb-nk-RwK">
+                                                                    <buttonCell key="cell" type="square" title="Button" bezelStyle="shadowlessSquare" image="arrow.down.circle" imagePosition="only" alignment="center" imageScaling="proportionallyDown" inset="2" id="vAb-nk-RwK">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                         <font key="font" metaFont="system"/>
                                                                     </buttonCell>
+                                                                    <color key="contentTintColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                     <connections>
                                                                         <action selector="downloadClicked:" target="z6H-0f-uTR" id="sKI-p5-sxO"/>
                                                                     </connections>
                                                                 </button>
                                                                 <popUpButton horizontalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Cdf-dC-7gk">
-                                                                    <rect key="frame" x="280" y="4" width="24" height="30"/>
+                                                                    <rect key="frame" x="275" y="4" width="29" height="30"/>
                                                                     <constraints>
                                                                         <constraint firstAttribute="height" constant="30" id="qiR-pK-n4M"/>
                                                                     </constraints>
-                                                                    <popUpButtonCell key="cell" type="square" title="Item 1" bezelStyle="shadowlessSquare" image="popUpButtonCell:lYn-Io-FsM:image" imagePosition="only" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="border" transparent="YES" imageScaling="proportionallyDown" inset="2" pullsDown="YES" arrowPosition="noArrow" id="lYn-Io-FsM">
+                                                                    <popUpButtonCell key="cell" type="square" title="Item 1" bezelStyle="shadowlessSquare" image="popUpButtonCell:lYn-Io-FsM:image" imagePosition="only" alignment="left" lineBreakMode="truncatingTail" state="on" imageScaling="proportionallyDown" inset="2" pullsDown="YES" arrowPosition="noArrow" selectedItem="GD4-JW-IGJ" id="lYn-Io-FsM">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                         <font key="font" metaFont="menu"/>
                                                                         <menu key="menu" id="4Qn-jU-icf">
                                                                             <items>
-                                                                                <menuItem title="Item 1" state="on" image="NSActionTemplate" hidden="YES" id="GD4-JW-IGJ"/>
+                                                                                <menuItem title="Item 1" state="on" image="ellipsis.circle" hidden="YES" id="GD4-JW-IGJ"/>
                                                                                 <menuItem title="Open" id="Emv-Uo-Cfn">
                                                                                     <connections>
                                                                                         <action selector="openFile:" target="z6H-0f-uTR" id="7RT-w3-yoj"/>
@@ -280,7 +281,7 @@
                                                                             </items>
                                                                         </menu>
                                                                     </popUpButtonCell>
-                                                                    <color key="contentTintColor" name="linkColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="contentTintColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                 </popUpButton>
                                                             </subviews>
                                                             <constraints>
@@ -343,25 +344,26 @@
                                                                         <constraint firstAttribute="width" constant="24" id="PQF-lz-Fh1"/>
                                                                         <constraint firstAttribute="height" constant="30" id="R4H-9l-DBT"/>
                                                                     </constraints>
-                                                                    <buttonCell key="cell" type="square" title="Button" bezelStyle="shadowlessSquare" image="NSTouchBarDownloadTemplate" imagePosition="only" alignment="center" borderStyle="border" transparent="YES" imageScaling="proportionallyDown" inset="2" id="isG-WZ-OoS">
+                                                                    <buttonCell key="cell" type="square" title="Button" bezelStyle="shadowlessSquare" image="arrow.down.circle" imagePosition="only" alignment="center" imageScaling="proportionallyDown" inset="2" id="isG-WZ-OoS">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                         <font key="font" metaFont="system"/>
                                                                     </buttonCell>
+                                                                    <color key="contentTintColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                     <connections>
                                                                         <action selector="downloadClicked:" target="yjF-f0-ChF" id="JxY-BK-eVT"/>
                                                                     </connections>
                                                                 </button>
                                                                 <popUpButton horizontalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="vrb-9V-lbq">
-                                                                    <rect key="frame" x="280" y="4" width="24" height="30"/>
+                                                                    <rect key="frame" x="275" y="4" width="29" height="30"/>
                                                                     <constraints>
                                                                         <constraint firstAttribute="height" constant="30" id="CLw-oN-APd"/>
                                                                     </constraints>
-                                                                    <popUpButtonCell key="cell" type="square" title="Item 1" bezelStyle="shadowlessSquare" image="popUpButtonCell:lYn-Io-FsM:image" imagePosition="only" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="border" transparent="YES" imageScaling="proportionallyDown" inset="2" pullsDown="YES" arrowPosition="noArrow" id="gTh-83-ola">
+                                                                    <popUpButtonCell key="cell" type="square" title="Item 1" bezelStyle="shadowlessSquare" image="popUpButtonCell:lYn-Io-FsM:image" imagePosition="only" alignment="left" lineBreakMode="truncatingTail" state="on" imageScaling="proportionallyDown" inset="2" pullsDown="YES" arrowPosition="noArrow" selectedItem="hPi-hb-VEB" id="gTh-83-ola">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                         <font key="font" metaFont="menu"/>
                                                                         <menu key="menu" id="hQF-1g-o66">
                                                                             <items>
-                                                                                <menuItem title="Item 1" state="on" image="NSActionTemplate" hidden="YES" id="hPi-hb-VEB"/>
+                                                                                <menuItem title="Item 1" state="on" image="ellipsis.circle" hidden="YES" id="hPi-hb-VEB"/>
                                                                                 <menuItem title="Open" id="rC8-ej-mBc">
                                                                                     <connections>
                                                                                         <action selector="openFile:" target="yjF-f0-ChF" id="zPO-FO-5qU"/>
@@ -407,7 +409,7 @@
                                                                             </items>
                                                                         </menu>
                                                                     </popUpButtonCell>
-                                                                    <color key="contentTintColor" name="linkColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="contentTintColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                 </popUpButton>
                                                             </subviews>
                                                             <constraints>
@@ -662,8 +664,8 @@
         </scene>
     </scenes>
     <resources>
-        <image name="NSActionTemplate" width="15" height="15"/>
-        <image name="NSTouchBarDownloadTemplate" width="15" height="15"/>
+        <image name="arrow.down.circle" width="118" height="128"/>
+        <image name="ellipsis.circle" width="118" height="128"/>
         <image name="popUpButtonCell:lYn-Io-FsM:image" width="1" height="1">
             <mutableData key="keyedArchiveRepresentation">
 YnBsaXN0MDDUAQIDBAUGBwpYJHZlcnNpb25ZJGFyY2hpdmVyVCR0b3BYJG9iamVjdHMSAAGGoF8QD05T

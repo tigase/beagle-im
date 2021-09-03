@@ -40,14 +40,6 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
         return RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(), decoderFactory: RTCDefaultVideoDecoderFactory());
     }();
     
-    public static var hasAudioSupport: Bool {
-        return AVCaptureDevice.authorizationStatus(for: .audio) == .authorized;
-    }
-    
-    public static var hasVideoSupport: Bool {
-        return AVCaptureDevice.authorizationStatus(for: .video) == .authorized;
-    }
-    
     public static func open(completionHandler: @escaping (VideoCallController)->Void) {
         DispatchQueue.main.async {
             let windowController = NSStoryboard(name: "VoIP", bundle: nil).instantiateController(withIdentifier: "VideoCallWindowController") as! NSWindowController;

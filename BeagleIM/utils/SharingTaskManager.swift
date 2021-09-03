@@ -95,17 +95,19 @@ class SharingTaskManager {
         private var isSslTrusted = false;
         private var isInvalidHttpResponseAccepted: Bool?;
 
-        init(controller: AbstractChatViewControllerWithSharing, items: [AbstractSharingTaskItem], askForQuality: Bool) {
+        convenience init(controller: AbstractChatViewControllerWithSharing, items: [AbstractSharingTaskItem], askForQuality: Bool) {
+            self.init(controller: controller, items: items, imageQuality: askForQuality ? nil : ImageQuality.current, videoQuality: askForQuality ? nil : VideoQuality.current)
+        }
+        
+        init(controller: AbstractChatViewControllerWithSharing, items: [AbstractSharingTaskItem], imageQuality: ImageQuality?, videoQuality: VideoQuality?) {
             self.chat = controller.conversation;
             self.window = controller.view.window;
             self.items = items;
             for item in items {
                 item.task = self;
             }
-            if !askForQuality {
-                imageQuality = ImageQuality.current;
-                videoQuality = VideoQuality.current;
-            }
+            self.imageQuality = imageQuality;
+            self.videoQuality = videoQuality;
         }
         
         func start() {
@@ -503,8 +505,11 @@ class FileURLSharingTaskItem: AbstractSharingTaskItem {
              
     let url: URL;
     
-    init(chat: Conversation, url: URL) {
+    private let deleteFileOnCompletion: Bool;
+    
+    init(chat: Conversation, url: URL, deleteFileOnCompletion: Bool = false) {
         self.url = url;
+        self.deleteFileOnCompletion = deleteFileOnCompletion;
         super.init(chat: chat);
     }
     
@@ -513,7 +518,11 @@ class FileURLSharingTaskItem: AbstractSharingTaskItem {
     }
     
     func share(url: URL) {
-        self.preprocessAndSendFile(url: url, completionHandler: nil);
+        self.preprocessAndSendFile(url: url, completionHandler: {
+            if self.deleteFileOnCompletion {
+                try? FileManager.default.removeItem(at: url);
+            }
+        });
     }
     
 }

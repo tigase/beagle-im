@@ -194,7 +194,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
             break;
         }
         let options = ConversationEntry.Options(recipient: .none, encryption: messageEncryption, isMarkable: true)
-        DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.unsent), sender: .me(conversation: self), type: .attachment, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: url, appendix: nil, options: options, linkPreviewAction: .none, completionHandler: { msgId in
+        DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.unsent), sender: .me(conversation: self), type: .attachment, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: url, appendix: appendix, options: options, linkPreviewAction: .none, completionHandler: { msgId in
             if let url = originalUrl {
                 _ = DownloadStore.instance.store(url, filename: url.lastPathComponent, with: "\(msgId)");
             }

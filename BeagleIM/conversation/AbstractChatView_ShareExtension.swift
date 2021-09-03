@@ -27,12 +27,21 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
 
     @IBOutlet var sharingProgressBar: NSProgressIndicator!;
     private(set) var sharingButton: NSButton!;
-    
+    private(set) var voiceMessageButton: NSButton!;
+    private var voiceRecordingView: VoiceRecordingView?;
     private var cancellables: Set<AnyCancellable> = [];
     
     override func viewDidLoad() {
         print("AbstractChatViewControllerWithSharing::viewDidLoad() - begin")
         super.viewDidLoad();
+
+        self.voiceMessageButton = NSButton(image: NSImage(named: "mic.circle")!, target: self, action: #selector(startRecordingVoiceMessage(_:)));
+        self.voiceMessageButton.bezelStyle = .regularSquare;
+        self.voiceMessageButton.isBordered = false;
+        NSLayoutConstraint.activate([self.voiceMessageButton.widthAnchor.constraint(equalToConstant: NSFont.systemFontSize * 2), self.voiceMessageButton.widthAnchor.constraint(equalTo: self.voiceMessageButton.heightAnchor)]);
+        bottomView.addView(voiceMessageButton, in: .leading)
+        self.voiceMessageButton.isEnabled = false;
+
         self.sharingButton = NSButton(image: NSImage(named: "plus.circle")!, target: self, action: #selector(attachFile(_:)));
         self.sharingButton.bezelStyle = .regularSquare;
         self.sharingButton.isBordered = false;
@@ -51,6 +60,9 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         print("AbstractChatViewControllerWithSharing::viewWillAppear() - begin")
         super.viewWillAppear();
         createSharingAvailablePublisher()?.receive(on: DispatchQueue.main).assign(to: \.isEnabled, on: self.sharingButton).store(in: &cancellables)
+        createSharingAvailablePublisher()?.combineLatest(CaptureDeviceManager.authorizationStatusPublisher(for: .audio), { sharing, media in
+            return sharing && (media == .authorized || media == .notDetermined);
+        }).receive(on: DispatchQueue.main).assign(to: \.isEnabled, on: self.voiceMessageButton).store(in: &cancellables)
         NotificationCenter.default.addObserver(self, selector: #selector(sharingProgressChanged(_:)), name: SharingTaskManager.PROGRESS_CHANGED, object: conversation);
         self.updateSharingProgress();
         print("AbstractChatViewControllerWithSharing::viewWillAppear() - end")
@@ -179,6 +191,35 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
             }
         }
     }
-            
+         
+    @objc func startRecordingVoiceMessage(_ sender: NSButton) {
+        CaptureDeviceManager.requestAccess(for: .audio, completionHandler: { value in
+            guard value else {
+                return;
+            }
+            DispatchQueue.main.async {
+                self.startRecordingVoiceMessageInt();
+            }
+        })
+    }
+    
+    private func startRecordingVoiceMessageInt() {
+        if voiceRecordingView == nil {
+            voiceRecordingView = VoiceRecordingView();
+            voiceRecordingView?.wantsLayer = true;
+        }
+        if let voiceRecordingView = self.voiceRecordingView {
+            voiceRecordingView.layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor;
+            self.bottomView.addSubview(voiceRecordingView);
+            NSLayoutConstraint.activate([
+                self.bottomView.leadingAnchor.constraint(equalTo: voiceRecordingView.leadingAnchor),
+                self.bottomView.trailingAnchor.constraint(equalTo: voiceRecordingView.trailingAnchor),
+                self.bottomView.bottomAnchor.constraint(equalTo: voiceRecordingView.bottomAnchor),
+                self.bottomView.topAnchor.constraint(equalTo: voiceRecordingView.topAnchor)
+            ])
+            voiceRecordingView.controller = self;
+            voiceRecordingView.startRecording();
+        }
+    }
         
 }

@@ -199,12 +199,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receivedScreensSleepNotification), name: NSWorkspace.screensDidSleepNotification, object: nil);
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receivedScreensWakeNotification), name: NSWorkspace.screensDidWakeNotification, object: nil);
         
-        AVCaptureDevice.requestAccess(for: .audio, completionHandler: { granted in
+        CaptureDeviceManager.requestAccess(for: .audio, completionHandler: { granted in
             print("permission granted: \(granted)");
             if granted {
             }
         })
-        AVCaptureDevice.requestAccess(for: .video, completionHandler: { granted in
+        CaptureDeviceManager.requestAccess(for: .video, completionHandler: { granted in
             print("permission granted: \(granted)");
             if granted {
             }
