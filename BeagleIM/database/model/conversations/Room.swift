@@ -324,14 +324,22 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
                     print("could not encrypt message for", self.roomJid);
                 case .successMessage(let message, let fingerprint):
                     super.send(message: message, completionHandler: nil);
-                    DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: uploadedUrl, options: .init(recipient: .none, encryption: .decrypted(fingerprint: fingerprint), isMarkable: true), linkPreviewAction: .auto, completionHandler: nil);
+                    DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: uploadedUrl, appendix: appendix, options: .init(recipient: .none, encryption: .decrypted(fingerprint: fingerprint), isMarkable: true), linkPreviewAction: .auto, completionHandler: { msgId in
+                        if let url = originalUrl {
+                            _ = DownloadStore.instance.store(url, filename: url.lastPathComponent, with: "\(msgId)");
+                        }
+                    });
                 }
                 completionHandler?();
             });
         } else {
             message.oob = uploadedUrl;
             super.send(message: message, completionHandler: nil);
-            DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: uploadedUrl, options: .init(recipient: .none, encryption: .none, isMarkable: true), linkPreviewAction: .auto, completionHandler: nil);
+            DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: uploadedUrl, appendix: appendix, options: .init(recipient: .none, encryption: .none, isMarkable: true), linkPreviewAction: .auto, completionHandler: { msgId in
+                if let url = originalUrl {
+                    _ = DownloadStore.instance.store(url, filename: url.lastPathComponent, with: "\(msgId)");
+                }
+            });
         }
     }
     
