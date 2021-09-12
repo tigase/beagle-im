@@ -269,7 +269,8 @@ class DBChatHistoryStore {
             return;
         }
 
-        if let originId = stanzaId, let existingMessageId = self.findItemId(for: conversation, originId: originId, sender: sender) {
+        
+        if let originId = stanzaId, message.type == .groupchat || direction == .outgoing, let existingMessageId = self.findItemId(for: conversation, originId: originId, sender: sender) {
             if let stableId = serverMsgId {
                 try! Database.main.writer({ database in
                     try database.update(query: .messageUpdateServerMsgId, params: ["id": existingMessageId, "server_msg_id": stableId]);
