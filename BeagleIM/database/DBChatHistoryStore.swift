@@ -271,6 +271,7 @@ class DBChatHistoryStore {
             self.retractMessageSync(for: conversation, stanzaId: retractedId, sender: sender, retractionStanzaId: originId, retractionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
             return;
         }
+        // is it possible that for the same "correction" processed twice, second call returns false??
         if let originId = stanzaId, let correctedMessageId = message.lastMessageCorrectionId, self.correctMessageSync(for: conversation, stanzaId: correctedMessageId, sender: sender, data: body, correctionStanzaId: originId, correctionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, newState: state) {
             if let chatState = message.chatState {
                 DBChatStore.instance.process(chatState: chatState, for: conversation.account, with: conversation.jid);
@@ -473,7 +474,11 @@ class DBChatHistoryStore {
             }
             return true;
         } else {
-            return false;
+            if let originId = correctionStanzaId {
+                return findItemId(for: conversation, originId: originId, sender: sender) != nil;
+            } else {
+                return false;
+            }
         }
     }
 
