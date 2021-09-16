@@ -266,12 +266,12 @@ class AvatarManager {
                 return;
             }
 
-            AvatarManager.fetchData(photo: photo) { data in
-                guard data != nil else {
+            AvatarManager.fetchData(photo: photo) { result in
+                guard let data = result else {
                     return;
                 }
 
-                let hash = self.storeAvatar(data: data!);
+                let hash = self.storeAvatar(data: data);
                 self.updateAvatar(hash: hash, forType: .vcardTemp, forJid: vcardItem.jid, on: vcardItem.account);
             }
         }
@@ -309,14 +309,14 @@ class AvatarManager {
             if uri.hasPrefix("data:image") && uri.contains(";base64,") {
                 let idx = uri.index(uri.firstIndex(of: ",")!, offsetBy: 1);
                 let data = String(uri[idx...]);
-                print("got avatar:", data);
                 completionHandler(Data(base64Encoded: data, options: Data.Base64DecodingOptions.ignoreUnknownCharacters));
-            } else {
-                let url = URL(string: uri)!;
+            } else if let url = URL(string: uri) {
                 let task = URLSession.shared.dataTask(with: url) { (data, response, err) in
                     completionHandler(data);
                 }
                 task.resume();
+            } else {
+                completionHandler(nil);
             }
         } else {
             completionHandler(nil);
