@@ -289,12 +289,13 @@ open class DBChatStore: ContextLifecycleAware {
                     }
                     let id = cursor.int(for: "id")!;
                     let unread = cursor.int(for: "unread") ?? 0;
-                    guard let jid = cursor.bareJid(for: "jid"), let creationTimestamp = cursor.date(for: "creation_timestamp"), let lastMessageTimestamp = cursor.date(for: "timestamp") else {
+                    guard let jid = cursor.bareJid(for: "jid"), let creationTimestamp = cursor.date(for: "creation_timestamp") else {
                         return nil;
                     }
+                    let lastMessageTimestamp = cursor.date(for: "timestamp");
                     let lastMessageEncryption = MessageEncryption(rawValue: cursor.int(for: "lastEncryption") ?? 0) ?? .none;
-                    let lastActivity = LastChatActivity.from(itemType: ItemType(rawValue: cursor.int(for: "item_type") ?? -1), data: lastMessageEncryption.message() ?? cursor.string(for: "data"), direction: ConversationEntryState.from(code: cursor.int(for: "state") ?? -1, errorMessage: nil).direction, sender: cursor.string(for: "author_nickname"));
-                    let timestamp = creationTimestamp.compare(lastMessageTimestamp) == .orderedAscending ? lastMessageTimestamp : creationTimestamp;
+                    let lastActivity = cursor.int(for: "state") == nil ? nil : LastChatActivity.from(itemType: ItemType(rawValue: cursor.int(for: "item_type") ?? -1), data: lastMessageEncryption.message() ?? cursor.string(for: "data"), direction: ConversationEntryState.from(code: cursor.int(for: "state") ?? -1, errorMessage: nil).direction, sender: cursor.string(for: "author_nickname"));
+                    let timestamp = lastMessageTimestamp == nil ? creationTimestamp : (creationTimestamp.compare(lastMessageTimestamp!) == .orderedAscending ? lastMessageTimestamp! : creationTimestamp);
 
                     switch type {
                     case .chat:
