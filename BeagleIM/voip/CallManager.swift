@@ -383,7 +383,7 @@ class Call: NSObject, JingleSessionActionDelegate {
     
     func initiateWebRTC(completionHandler: @escaping (Result<Void,Error>)->Void) {
         if let module: ExternalServiceDiscoveryModule = XmppService.instance.getClient(for: self.account)?.module(.externalServiceDiscovery), module.isAvailable {
-            module.discover(from: nil, type: nil, completionHandler: { result in
+            module.discover(from: nil, type: nil, completionHandler: { [weak self] result in
                 switch result {
                 case .success(let services):
                     var servers: [RTCIceServer] = [];
@@ -392,9 +392,9 @@ class Call: NSObject, JingleSessionActionDelegate {
                             servers.append(server);
                         }
                     }
-                    self.initiateWebRTC(iceServers: servers, completionHandler: completionHandler);
+                    self?.initiateWebRTC(iceServers: servers, completionHandler: completionHandler);
                 case .failure(_):
-                    self.initiateWebRTC(iceServers: [], completionHandler: completionHandler);
+                    self?.initiateWebRTC(iceServers: [], completionHandler: completionHandler);
                 }
             })
         } else {
