@@ -743,15 +743,12 @@ class GroupchatParticipantCellView: NSTableCellView {
     
 }
 
+
 extension MucOccupant {
         
     var avatar: Avatar? {
         if let room = self.room {
-            if let jid = self.jid?.bareJid {
-                return AvatarManager.instance.avatarPublisher(for: .init(account: room.account, jid: jid, mucNickname: nil));
-            } else {
-                return AvatarManager.instance.avatarPublisher(for: .init(account: room.account, jid: room.jid, mucNickname: nickname));
-            }
+            return AvatarManager.instance.avatarPublisher(for: .init(account: room.account, jid: room.jid, mucNickname: nickname));
         } else {
             return nil;
         }
