@@ -44,7 +44,7 @@ class ConfigureRoomViewController: NSViewController {
     var form: JabberDataElement? {
         didSet {
             if let roomJid = self.roomJid, let account = self.account {
-                avatarView.image = AvatarManager.instance.avatar(for: roomJid, on: account)
+                avatarView.avatar = AvatarManager.instance.avatar(for: roomJid, on: account)
                 roomNameField.stringValue = (form?.getField(named: "muc#roomconfig_roomname") as? TextSingleField)?.value ?? "";
                 subjectField.stringValue = room?.subject ?? "";
             }
@@ -179,9 +179,9 @@ class ConfigureRoomViewController: NSViewController {
         
         let roomJid = self.roomJid!;
         
-        if avatarView.isEnabled && avatarView.image != AvatarManager.instance.avatar(for: roomJid, on: account) {
+        if avatarView.isEnabled && avatarView.avatar != AvatarManager.instance.avatar(for: roomJid, on: account) {
             let vcard = VCard();
-            if let binval = avatarView.image?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
+            if let binval = avatarView.avatar?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
                 vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
             }
             queue.addOperation {
