@@ -200,13 +200,13 @@ class Call: NSObject, JingleSessionActionDelegate {
     
     func reset() {
         DispatchQueue.main.async {
-            self.currentConnection?.close();
-            self.currentConnection = nil;
             if self.localCapturer != nil {
                 self.localCapturer?.stopCapture(completionHandler: {
                     self.localCapturer = nil;
                 })
             }
+            self.currentConnection?.close();
+            self.currentConnection = nil;
             self.localVideoTrack = nil;
             self.localAudioTrack = nil;
             self.localVideoSource = nil;
