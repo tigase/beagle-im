@@ -62,9 +62,6 @@ open class SSLCertificate {
         }
         var commonName: CFString?;
         SecCertificateCopyCommonName(cert, &commonName);
-        if let name = commonName as String? {
-            print("got certificate for: \(name)")
-        }
         var trust: SecTrust?;
         guard SecTrustCreateWithCertificates([cert] as CFArray, SecPolicyCreateBasicX509(), &trust) == errSecSuccess else {
             return nil;

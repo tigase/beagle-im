@@ -122,7 +122,6 @@ class SuggestionsWindowController<Item>: NSWindowController {
         case .bottom:
             location.y = location.y - 2;
         case .top:
-            print("window height:", window.frame.height, "view height:", rangeFrame.height)
             location.y = location.y + 2 + window.frame.height + rangeFrame.height;
         }
         
@@ -144,7 +143,6 @@ class SuggestionsWindowController<Item>: NSWindowController {
         localMouseDownEventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown], handler: { event in
             if event.window != window {
                 if event.window == parentWindow {
-                    print("we have clicked something!");
                     let contentView = parentWindow.contentView
                     let locationTest = contentView?.convert(event.locationInWindow, from: nil)
                     let hitView = contentView?.hitTest(locationTest ?? NSPoint.zero)

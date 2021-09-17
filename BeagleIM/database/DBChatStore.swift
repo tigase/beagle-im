@@ -302,8 +302,6 @@ open class DBChatStore: ContextLifecycleAware {
                         let options: ChatOptions? = cursor.object(for: "options");
                         return Chat(dispatcher: self.conversationDispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options ?? ChatOptions());
                     case .room:
-                        print("loading room:", jid, "with:", timestamp, creationTimestamp, lastMessageTimestamp);
-                        
                         guard let options: RoomOptions = cursor.object(for: "options") else {
                             return nil;
                         }

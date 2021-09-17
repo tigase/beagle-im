@@ -23,6 +23,7 @@ import AppKit
 import TigaseSwift
 import TigaseSwiftOMEMO
 import Combine
+import TigaseLogging
 
 class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLogContextMenuDelegate, NSMenuItemValidation {
 
@@ -49,7 +50,6 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
     }
     
     override func viewDidLoad() {
-        print("ChatViewController::viewDidLoad() - begin")
         super.viewDidLoad();
         
         self.encryptButton = createEncryptButton();
@@ -60,7 +60,6 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         scriptsButton.isHidden = true;
 
         NotificationCenter.default.addObserver(self, selector: #selector(omemoAvailabilityChanged), name: MessageEventHandler.OMEMO_AVAILABILITY_CHANGED, object: nil);
-        print("ChatViewController::viewDidLoad() - end")
     }
 
     func createEncryptButton() -> DropDownButton {
@@ -89,7 +88,6 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
     }
     
     override func viewWillAppear() {
-        print("ChatViewController::viewWillAppear() - begin")
         self.conversationLogController?.contextMenuDelegate = self;
 
         Settings.$messageEncryption.sink(receiveValue: { [weak self] value in
@@ -139,14 +137,11 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         });
 
         refreshEncryptionStatus();
-        print("ChatViewController::viewWillAppear() - end")
     }
     
     override func viewDidDisappear() {
-        print("ChatViewController::viewDidDisappear() - begin")
         super.viewDidDisappear();
         cancellables.removeAll();
-        print("ChatViewController::viewDidDisappear() - end")
     }
     
     @objc func omemoAvailabilityChanged(_ notification: Notification) {
@@ -450,6 +445,8 @@ public enum MessageDirection: Int {
 
 class ChatViewTableView: NSTableView {
 
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ChatViewTableView");
+    
     static let didScrollRowToVisible = Notification.Name("ChatViewTableView::didScrollRowToVisible");
 
     override var acceptsFirstResponder: Bool {
@@ -464,12 +461,12 @@ class ChatViewTableView: NSTableView {
     
     override func reflectScrolledClipView(_ clipView: NSClipView) {
         super.reflectScrolledClipView(clipView);
-        print("reflectScrolledClipView called!");
     }
+    
     override func scrollRowToVisible(_ row: Int) {
         let numberOfRows = self.dataSource?.numberOfRows?(in: self) ?? 0;
         guard numberOfRows > row else {
-            print("cannot scroll to row", row, "as data source has only", numberOfRows, "rows");
+            logger.debug("cannot scroll to row: \(row) as data source has only \(numberOfRows) rows");
             return;
         }
 
@@ -482,12 +479,12 @@ class ChatViewTableView: NSTableView {
         super.scrollRowToVisible(row);
         let visibleRows = self.rows(in: self.visibleRect);
         if !visibleRows.contains(row) {
-            print("visible rows:", visibleRows, "need:", row);
+            logger.debug("visible rows: \(visibleRows), need: \(row)");
             DispatchQueue.main.async {
                 self.scrollRowToVisible(row);
             }
         } else {
-            print("scrollRowToVisible called!");
+            logger.debug("scrollRowToVisible called!");
             NotificationCenter.default.post(name: ChatViewTableView.didScrollRowToVisible, object: self);
         }
     }

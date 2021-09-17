@@ -224,8 +224,6 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
         setRows(rows);
         
         superView?.heightAnchor.constraint(equalToConstant: self.view.fittingSize.height).isActive = true;
-        
-        print("got:", account as Any, "and:", jid as Any);
     }
         
     private func setRows(_ rows: [NSView]) {
@@ -473,7 +471,7 @@ class IdentityView: NSView {
             }
             statusButton.menu?.addItem(item);
         }
-        print("identity:", identity.fingerprint, "trust:", identity.status.trust);
+
         switch identity.status.trust {
         case .trusted:
             statusButton.selectItem(at: 0);
@@ -499,7 +497,7 @@ class IdentityView: NSView {
         default:
             trust = .undecided;
         }
-        print("selected:", sender.indexOfSelectedItem, "trust:", trust);
+
         _ = DBOMEMOStore.instance.setStatus(identity.status.toTrust(trust), forIdentity: identity.address, andAccount: self.account);
         self.fingerprintView.textColor = trust == .compromised ? NSColor.systemRed : NSColor.labelColor;
     }
@@ -1385,7 +1383,6 @@ class ConversationAttachmentView: NSCollectionViewItem {
     }
     
     override func mouseEntered(with event: NSEvent) {
-        print("mouse entered!");
         super.mouseEntered(with: event);
 //        NSAnimationContext.runAnimationGroup { (context) in
 //            context.duration = 5.0;
@@ -1403,7 +1400,6 @@ class ConversationAttachmentView: NSCollectionViewItem {
     }
 
     override func mouseExited(with event: NSEvent) {
-        print("mouse exited!");
         super.mouseExited(with: event);
 //        NSAnimationContext.runAnimationGroup { (context) in
 //            context.duration = 5.0;

@@ -83,7 +83,6 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
         if let delegate = self.delegate, channelsTableView.selectedRow >= 0 {
             let item = self.items[channelsTableView.selectedRow];
             delegate.askForNickname(completionHandler: { nickname in
-                print("joining channel \(item.jid) with nickname: \(nickname)");
                 self.join(channel: item, nickname: nickname, password: nil, completionHandler: completionHandler!);
             })
         } else {
@@ -220,7 +219,6 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
                     return;
                 }
 
-                print("executing query for:", text);
                 var allItems: [DiscoveryModule.Item] = [];
                 let group = DispatchGroup();
                 for component in that.components {
@@ -239,7 +237,6 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
                      });
                 }
                 group.notify(queue: DispatchQueue.main, execute: {
-                    print("got items:", allItems);
                     DispatchQueue.main.async {
                         guard let that = self else {
                             return;

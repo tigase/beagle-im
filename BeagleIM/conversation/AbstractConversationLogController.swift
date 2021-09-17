@@ -41,17 +41,14 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
     var mouseMonitor: Any?;
 
     override func viewDidLoad() {
-        print("AbstractConversationLogController::viewDidLoad() - begin")
         super.viewDidLoad();
         self.dataSource.delegate = self;
         self.tableView.dataSource = self;
         self.tableView.usesAutomaticRowHeights = true;
         self.tableView.enclosingScrollView?.contentView.postsBoundsChangedNotifications = true;
-        print("AbstractConversationLogController::viewDidLoad() - end")
     }
     
     override func viewWillAppear() {
-        print("AbstractConversationLogController::viewWillAppear() - begin")
         if let conversation = self.conversation {
             newestVisibleDateSubject.onlyGreater().throttledSink(for: 0.5, scheduler: DispatchQueue.main, receiveValue: { date in
                 DBChatHistoryStore.instance.markAsRead(for: conversation, before: date);
@@ -66,32 +63,25 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
         NotificationCenter.default.addObserver(self, selector: #selector(scrolledRowToVisible(_:)), name: ChatViewTableView.didScrollRowToVisible, object: self.tableView);
         NotificationCenter.default.addObserver(self, selector: #selector(didBecomeKeyWindow), name: NSWindow.didBecomeKeyNotification, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(boundsChange), name: NSView.boundsDidChangeNotification, object: self.tableView.enclosingScrollView?.contentView);
-        print("AbstractConversationLogController::viewWillAppear() - end")
     }
     
     override func viewDidAppear() {
-        print("AbstractConversationLogController::viewDidAppear() - begin")
         super.viewDidAppear();
         prevBounds = self.tableView.bounds;
-        print("AbstractConversationLogController::viewDidAppear() - end")
     }
     
     override func viewWillDisappear() {
-        print("AbstractConversationLogController::viewWillDisappear() - begin")
         super.viewWillDisappear();
         if let mouseMonitor = self.mouseMonitor {
             self.mouseMonitor = nil;
             NSEvent.removeMonitor(mouseMonitor);
         }
         NotificationCenter.default.removeObserver(self, name: NSWindow.didBecomeKeyNotification, object: nil);
-        print("AbstractConversationLogController::viewWillDisappear() - end")
     }
     
     override func viewDidDisappear() {
-        print("AbstractConversationLogController::viewDidDisappear() - begin")
         newestVisibleDateSubject.send(completion: .finished);
         super.viewDidDisappear();
-        print("AbstractConversationLogController::viewDidDisappear() - end")
     }
     
     func prepareContextMenu(_ menu: NSMenu, forRow row: Int) {

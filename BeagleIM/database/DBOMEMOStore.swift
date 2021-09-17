@@ -139,7 +139,6 @@ class DBOMEMOStore {
                 return true;
             }
             
-            print("inserting identity for account \(account) and address \(identity) with fingerprint \(fingerprint)");
             var params: [String: Any?] = paramsCount;
             params["deviceId"] = identity.deviceId;
             params["key"] = data;
@@ -242,7 +241,6 @@ class DBOMEMOStore {
     }
     
     func store(sessionRecord: Data, forAccount account: BareJID, andAddress address: SignalAddress) -> Bool {
-        print("storing session for account \(account) and address \(address)");
         return try! Database.main.writer({ database in
             try database.insert(query: .omemoSessionRecordInsert, params: ["account": account, "name": address.name, "deviceId": address.deviceId, "key": sessionRecord]);
             return database.changes > 0;
@@ -451,10 +449,8 @@ class OMEMOStoreWrapper: SignalStorage {
             let regId: UInt32 = signalContext.generateRegistrationId();
             AccountSettings.omemoRegistrationId(context!.sessionObject.userBareJid!).set(value: regId);
 
-            print("no identity key pair! generating new one!");
             let keyPair = SignalIdentityKeyPair.generateKeyPair(context: signalContext);
             if !identityKeyStore.save(identity: SignalAddress(name: context!.sessionObject.userBareJid!.stringValue, deviceId: Int32(identityKeyStore.localRegistrationId())), key: keyPair) {
-                print("failed to store identity key pair!");
             }
         }
         return true;
@@ -464,12 +460,10 @@ class OMEMOStoreWrapper: SignalStorage {
 class SignalSenderKeyStore: SignalSenderKeyStoreProtocol {
     
     func storeSenderKey(_ key: Data, address: SignalAddress?, groupId: String?) -> Bool {
-        print("trying to store key for address:", address?.name as Any, " and group id:", groupId as Any);
         return false;
     }
     
     func loadSenderKey(forAddress address: SignalAddress?, groupId: String?) -> Data? {
-        print("trying to load key for address:", address?.name as Any, " and group id:", groupId as Any);
         return nil;
     }
     

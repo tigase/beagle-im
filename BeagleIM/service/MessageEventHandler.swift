@@ -24,6 +24,7 @@ import TigaseSwift
 import TigaseSwiftOMEMO
 import os
 import Combine
+import TigaseLogging
 
 class MessageEventHandler: XmppServiceEventHandler {
 
@@ -32,6 +33,8 @@ class MessageEventHandler: XmppServiceEventHandler {
     public static let OMEMO_AVAILABILITY_CHANGED = Notification.Name(rawValue: "OMEMOAvailabilityChanged");
 
     public static let eventsPublisher = PassthroughSubject<SyncEvent,Never>();
+    
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "MessageEventHandler");
     
     enum SyncEvent {
         case started(account: BareJID, with: BareJID?)
@@ -69,7 +72,7 @@ class MessageEventHandler: XmppServiceEventHandler {
                 fingerprint = keyFingerprint
                 break;
             case .successTransportKey(_, _):
-                print("got transport key with key and iv!");
+                logger.debug("got transport key with key and iv!");
             case .failure(let error):
                 switch error {
                 case .invalidMessage:

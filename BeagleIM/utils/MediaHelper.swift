@@ -145,21 +145,17 @@ class MediaHelper {
             return;
         }
         let video = AVAsset(url: url);
-        print("asset:", video, video.isExportable, video.isPlayable)
         let exportSession = AVAssetExportSession(asset: video, presetName: quality.preset)!;
-        print("export profiles:", AVAssetExportSession.exportPresets(compatibleWith: video));
         exportSession.shouldOptimizeForNetworkUse = true;
         exportSession.outputFileType = .mp4;
         let fileUrl = FileManager.default.temporaryDirectory.appendingPathComponent(filename + ".mp4", isDirectory: false);
         exportSession.outputURL = fileUrl;
-        print("exporting movie from:", url, "to:", fileUrl, FileManager.default.fileExists(atPath: url.path), FileManager.default.fileExists(atPath: fileUrl.path));
         
         let timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true, block: { _ in
             progressCallback(exportSession.progress);
         })
         exportSession.exportAsynchronously {
             timer.invalidate();
-            print("export status:", exportSession.status, String(describing: exportSession.error))
             if deleteSource {
                 try? FileManager.default.removeItem(at: url);
             }

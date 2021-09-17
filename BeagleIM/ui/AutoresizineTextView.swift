@@ -70,7 +70,6 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
     }
     
     override var intrinsicContentSize: NSSize {
-        print("font:", self.font as Any, "size:", self.font?.pointSize as Any, "system:", NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .light), "inset:", self.textContainerInset, "origin:", self.textContainerOrigin);
         self.layoutManager?.typesetterBehavior = .latestBehavior;
         self.layoutManager!.ensureLayout(for: self.textContainer!);
         self.layoutManager!.glyphRange(for: textContainer!);

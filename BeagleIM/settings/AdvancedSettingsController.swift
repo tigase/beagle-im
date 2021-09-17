@@ -168,7 +168,6 @@ class AdvancedSettingsController: NSViewController {
     @objc func sliderChanged(_ sender: NSSlider) {
         switch sender {
         case imagePreviewMaxSize:
-            print("selected value:", sender.integerValue);
             Settings.fileDownloadSizeLimit = sender.integerValue;
             break;
         default:

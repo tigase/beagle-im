@@ -22,6 +22,7 @@
 import Foundation
 import TigaseSwift
 import OpenSSL
+import TigaseLogging
 
 public enum SSLProtocol {
     case TLSv1
@@ -151,11 +152,7 @@ open class SSLProcessor: ConnectorBase.NetworkProcessor, SSLNetworkProcessor {
     
     fileprivate let ssl: OpaquePointer;
     
-    private var state: State = .handshaking {
-        didSet {
-            print("SSL state changed to: \(state)");
-        }
-    }
+    private var state: State = .handshaking;
     private var readBio: OpaquePointer;
     private var writeBio: OpaquePointer;
     
@@ -169,6 +166,8 @@ open class SSLProcessor: ConnectorBase.NetworkProcessor, SSLNetworkProcessor {
     
     public var certificateValidation: SSLCertificateValidation = .default;
     public var certificateValidationFailed: ((SecTrust?)->Void)?;
+    
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "SSLProcessor");
     
     public init?(ssl: OpaquePointer, context: SSLContext) {
         self.ssl = ssl;
@@ -273,7 +272,7 @@ open class SSLProcessor: ConnectorBase.NetworkProcessor, SSLNetworkProcessor {
             if let cert = SecTrustGetCertificateAtIndex(trust, 0 as CFIndex) {
                 var commonName: CFString?;
                 SecCertificateCopyCommonName(cert, &commonName);
-                print("common name: \(String(describing: commonName))")
+                logger.debug("received SSL certificate for common name: \(String(describing: commonName))");
             }
 
             switch certificateValidation {
@@ -283,7 +282,7 @@ open class SSLProcessor: ConnectorBase.NetworkProcessor, SSLNetworkProcessor {
                 SecTrustSetPolicies(trust, policy);
                 _ = SecTrustEvaluateWithError(trust, nil);
                 SecTrustGetTrustResult(trust, &result);
-                print("certificate validation result: \(result.name)")
+                logger.debug("certificate validation result: \(result.name)");
                 guard result == .proceed || result == .unspecified else {
                     self.certificateValidationFailed?(trust);
                     return;
@@ -302,7 +301,7 @@ open class SSLProcessor: ConnectorBase.NetworkProcessor, SSLNetworkProcessor {
             state = .active;
 
             // we need to detect ALPN protocols
-            print("negotiated \(getProtocol().name) ALPN: \(getSelectedAlpnProtocol() ?? "nil")");
+            logger.debug("negotiated \(self.getProtocol().name) ALPN: \(self.getSelectedAlpnProtocol() ?? "nil")");
             
             readDataFromNetwork();
             writeDataToNetwork(completion: .none);

@@ -26,6 +26,7 @@ import UserNotifications
 import AVFoundation
 import AVKit
 import Combine
+import TigaseLogging
 
 extension NSUserInterfaceItemIdentifier {
     
@@ -75,6 +76,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             return rosterWindowController!.window!;
         }
     }
+    
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "AppDelegate");
     
     struct XmppUri {
         
@@ -160,7 +163,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         DBChatStore.instance.$unreadMessagesCount.map({ $0 == 0 ? nil : "\($0)" }).receive(on: DispatchQueue.main).assign(to: \.badgeLabel,                                                                                                                            on: NSApplication.shared.dockTile).store(in: &cancellables);
         
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (result, error) in
-            print("could not get authorization for notifications", result, error as Any);
+            self.logger.debug("could not get authorization for notifications: \(result), \(error as Any)");
         }
         UNUserNotificationCenter.current().delegate = self;
         
@@ -200,14 +203,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(receivedScreensWakeNotification), name: NSWorkspace.screensDidWakeNotification, object: nil);
         
         CaptureDeviceManager.requestAccess(for: .audio, completionHandler: { granted in
-            print("permission granted: \(granted)");
-            if granted {
-            }
+            self.logger.debug("permission for audio granted: \(granted)");
         })
         CaptureDeviceManager.requestAccess(for: .video, completionHandler: { granted in
-            print("permission granted: \(granted)");
-            if granted {
-            }
+            self.logger.debug("permission for video granted: \(granted)");
         })
         
         NSApp.mainMenu?.items.last?.submenu?.delegate = self;
@@ -289,7 +288,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             }
         case .roster:
             DispatchQueue.main.async {
-                print("uri:", uri.jid, "dict:", uri.dict as Any);
                 let rosterWindow = self.rosterWindow;
                 rosterWindow.makeKeyAndOrderFront(self);
                 if let addContact = NSStoryboard(name: "Roster", bundle: nil).instantiateController(withIdentifier: "AddContactController") as? AddContactController {
@@ -299,8 +297,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                     addContact.preauthToken = uri.dict?["preauth"];
                     rosterWindow.contentViewController?.presentAsSheet(addContact);
                     addContact.verify();
-                } else {
-                    print("no add contact controller!");
                 }
             }
         }
@@ -342,14 +338,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     @objc func showXmlConsole(_ sender: NSMenuItem) {
         let accountJid = BareJID(sender.title);
         
-        print("xml console for:", accountJid);
         XMLConsoleViewController.open(for: accountJid);
     }
 
     @objc func showServiceDiscovery(_ sender: NSMenuItem) {
         let accountJid = BareJID(sender.title);
-        
-        print("service discovery for:", accountJid);
         
         guard let windowController = NSStoryboard(name: "ServiceDiscovery", bundle: nil).instantiateController(withIdentifier: "ServiceDiscoveryWindowController") as? NSWindowController else {
             return;
@@ -565,12 +558,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     }
     
     @objc func receivedSleepNotification(_ notification: Notification) {
-        print("####### Going to sleep.....", Date());
+        logger.debug("####### Going to sleep.....");
         XmppService.instance.isAwake = false;
     }
     
     @objc func receivedWakeNotification(_ notification: Notification) {
-        print("####### Waking up from sleep.....", Date());
+        logger.debug("####### Waking up from sleep.....");
         XmppService.instance.isAwake = true;
     }
     

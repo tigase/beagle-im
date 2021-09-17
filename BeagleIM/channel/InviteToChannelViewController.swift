@@ -48,7 +48,6 @@ class InviteToChannelViewControllerController: NSViewController, NSTextFieldDele
                     if val {
                         for jid in jids {
                             mixModule.allowAccess(to: channel.channelJid, for: jid.bareJid, completionHandler: { result in
-                                print("allowed access to", channel.channelJid, "for", jid, "result", result);
                                 let body = "Invitation to channel \(channel.channelJid.stringValue)";
                                 let mixInvitation = MixInvitation(inviter: channel.account, invitee: jid.bareJid, channel: channel.channelJid, token: nil);
                                 let message = mixModule.createInvitation(mixInvitation, message: body);

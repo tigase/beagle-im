@@ -543,7 +543,6 @@ class ChatAttachmentCellView: BaseChatCellView {
                                 }
                             }
                         });
-                        print("preview of:" , fileUrl, fileUrl.path);
                         iconView.image = NSWorkspace.shared.icon(forFile: fileUrl.path);
                     } else {
                         self.viewType = .file;

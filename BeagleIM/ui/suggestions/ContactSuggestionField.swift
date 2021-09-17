@@ -129,8 +129,6 @@ class ContactSuggestionField: NSSearchField, NSSearchFieldDelegate {
         
         self.stringValue = "";
         
-        print("selected item: \(item.jid) in \(item.account?.stringValue ?? "nil")")
-        
         selectionPublisher.send(item);
     }
     

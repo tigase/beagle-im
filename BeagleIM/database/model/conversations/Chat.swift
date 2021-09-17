@@ -148,7 +148,6 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
                         parts.fragment = hash;
                         let shareUrl = parts.url!;
 
-                        print("sending url:", shareUrl.absoluteString);
                         return shareUrl;
                     })));
                 } catch {

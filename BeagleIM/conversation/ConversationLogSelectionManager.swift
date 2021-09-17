@@ -20,6 +20,7 @@
 //
 
 import AppKit
+import TigaseLogging
 
 class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
     
@@ -30,6 +31,8 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
     private var selectedItems: [SelectionItem] = [];
     
     private(set) var inProgress: Bool = false;
+    
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ConversationLogSelectionManager");
     
     var hasSelection: Bool {
         return selectionStart != nil && selectionEnd != nil;
@@ -139,45 +142,6 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         NSPasteboard.general.writeObjects(texts);
     }
     
-//    func sortedSelectedTexts(row: Int) -> [NSMutableAttributedString] {
-//        let texts = sortedSelectionItems(row: row).map { NSMutableAttributedString(attributedString: $0.attributedString) };
-//
-//        for text in texts {
-//            text.removeAttribute(.backgroundColor, range: NSRange(location:0, length: text.length));
-//        }
-//
-//        if let (begin,end) = selectionEnds() {
-//            if let text = texts.last {
-//                if end.location < text.length {
-//                    text.deleteCharacters(in: NSRange(end.location..<text.length));
-//                }
-//            }
-//            if let text = texts.first {
-//                if begin.location > 0 {
-//                    text.deleteCharacters(in: NSRange(0..<begin.location));
-//                }
-//            }
-//        }
-//        return texts;
-//    }
-//
-//    func sortedSelectionItems(row: Int) -> [SelectionItem] {
-//        guard let (begin,end) = selectionEnds() else {
-//            guard row != NSNotFound, let view = self.controller?.tableView.view(atColumn: 0, row: row, makeIfNecessary: true) as? ChatMessageCellView, let item = self.controller?.dataSource.getItem(at: row) as? ConversationEntryWithSender else {
-//                return [];
-//            }
-//            return [SelectionItem(entry: item, attributedString: view.message.attributedString())];
-//        }
-//
-//        let range = begin.timestamp...end.timestamp;
-//        return selectedItems.filter({ range.contains($0.timestamp) }).sorted(by: { (e1, e2) -> Bool in
-//            if e1.timestamp == e2.timestamp {
-//                return e1.entryId < e2.entryId;
-//            }
-//            return e1.timestamp < e2.timestamp;
-//        });
-//    }
-    
     var selection: Selection?;
         
     private func handleLeftMouseDown(event: NSEvent, table: NSTableView, superview: NSView) -> Bool {
@@ -265,7 +229,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
             selection = nil;
             return false;
         }
-        print("selection hitTest():", view, view.hitTest(view.superview!.convert(event.locationInWindow, from: nil)) as Any, (table.enclosingScrollView?.verticalScroller?.testPart(event.locationInWindow) ?? .noPart) == .noPart );
+
         selectionStart = SelectionPoint(entryId: itemId, timestamp: ts, location: idx);
         inProgress = true;
         if !selectedItems.contains(where: { $0.entryId == itemId }) {
@@ -292,7 +256,6 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
                 selectedItems.append(SelectionItem(entry: item, attributedString: messageView.attributedString()));
             }
         }
-        print("selection end:", selectionEnd as Any, itemId, ts, idx);
         
         guard selectionStart.entryId != selectionEnd!.entryId || selectionStart.location != selectionEnd!.location else {
             // find if we clicked on a link!
@@ -302,7 +265,6 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
             self.selectionStart = nil;
             self.selectionEnd = nil;
             self.selectedItems.removeAll();
-            print("not selected anything!")
             self.selection = nil;
             return true;
         }
@@ -322,7 +284,6 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
             return false;
         }
         selectionEnd = SelectionPoint(entryId: itemId, timestamp: ts, location: idx);
-        print("selection end:", selectionEnd as Any, itemId, ts, idx);
         
         guard let (begin, end) = selectionEnds() else {
             return false;
@@ -440,7 +401,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
             return nil;
         }
         let documentPoint = table.enclosingScrollView!.documentView!.convert(event.locationInWindow, from: nil);
-        print("clicked at:", point, " hit in:", row, "document point:", documentPoint, documentPoint.y);
+        logger.debug("clicked at: \(point), hit in: \(row), document point: \(documentPoint), \(documentPoint.y)");
         guard let item = controller?.dataSource.getItem(at: row) else {
             return nil;
         }
@@ -452,7 +413,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
             }
         }
         
-        print("found row view:", rowView as Any, "view:", rowView?.subviews as Any, rowView?.subviews.first as Any);
+        logger.debug("found row view: \(rowView as Any), view: \(rowView?.subviews as Any), \(rowView?.subviews.first as Any)");
         guard let view = rowView?.subviews.first as? ChatMessageCellView else {
             return nil;
         }
@@ -465,7 +426,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         }
         
         let rect = view.message.layoutManager!.boundingRect(forGlyphRange: NSRange(location: glyphIdx, length: 1), in: view.message.textContainer!);
-        print("got item at:", textPoint, "char rect is:", rect);
+        logger.debug("got item at: \(textPoint), char rect is: \(rect)");
         
         var inFirstHalf = true;
         if textPoint.y < rect.origin.y {
@@ -478,7 +439,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         
         if inFirstHalf {
             let charIdx = view.message.layoutManager!.characterIndexForGlyph(at: glyphIdx);
-            print("got item charIdx:", charIdx, "for glyph:", glyphIdx, ", firstHalf = true");
+            logger.debug("got item charIdx: \(charIdx), for glyph: \(glyphIdx), firstHalf = true");
             return (item.id, charIdx, item.timestamp, view.message, view);
         } else {
             var nextIdx = glyphIdx;
@@ -487,11 +448,11 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
                 let nextRect = view.message.layoutManager!.boundingRect(forGlyphRange: NSRange(location: nextIdx, length: 1), in: view.message.textContainer!);
                 if !nextRect.equalTo(rect) {
                     let nextCharIdx = view.message.layoutManager!.characterIndexForGlyph(at: nextIdx);
-                    print("got item next charIdx:", nextCharIdx, "for glyph:", glyphIdx, ", firstHalf = false");
+                    logger.debug("got item next charIdx: \(nextCharIdx), for glyph: \(glyphIdx), firstHalf = false");
                     return (item.id, nextCharIdx, item.timestamp, view.message, view);
                 }
             }
-            print("got item next2 charIdx:", view.message.textStorage!.length, "for glyph:", glyphIdx, ", firstHalf = false");
+            logger.debug("got item next2 charIdx: \(view.message.textStorage!.length), for glyph: \(glyphIdx), firstHalf = false");
             return (item.id, view.message.textStorage!.length, item.timestamp, view.message, view);
         }
     }

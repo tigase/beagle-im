@@ -190,6 +190,8 @@ class Call: NSObject, JingleSessionActionDelegate {
     
     private var cancellables: Set<AnyCancellable> = [];
     
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "Call");
+    
     init(account: BareJID, with jid: BareJID, sid: String, direction: Direction, media: [Media]) {
         self.account = account;
         self.jid = jid;
@@ -417,10 +419,10 @@ class Call: NSObject, JingleSessionActionDelegate {
                 let localVideoCapturer = RTCCameraVideoCapturer(delegate: videoSource);
                 self.localCapturer = localVideoCapturer;
                 if let device = RTCCameraVideoCapturer.captureDevices().first, let format = RTCCameraVideoCapturer.format(for: device, preferredOutputPixelFormat: localVideoCapturer.preferredOutputPixelFormat()) {
-                    print("starting video capture on:", device, " with:", format, " fps:", RTCCameraVideoCapturer.fps(for: format));
+                    self.logger.debug("starting video capture on: \(device), with: \(format), fps: \(RTCCameraVideoCapturer.fps(for: format))");
                     self.localCameraDeviceID = device.uniqueID;
                     localVideoCapturer.startCapture(with: device, format: format, fps: RTCCameraVideoCapturer.fps(for:  format), completionHandler: { error in
-                        print("video capturer started!");
+                        self.logger.debug("video capturer started!");
                     });
                     self.delegate?.call(self, didReceiveLocalVideoTrack: localVideoTrack);
                     self.currentConnection?.add(localVideoTrack, streamIds: ["RTCmS"]);
@@ -500,7 +502,7 @@ class Call: NSObject, JingleSessionActionDelegate {
             self.remoteSessionSemaphore.signal();
             switch result {
             case .failure(let error):
-                print("error setting remote description:", error)
+                self.logger.debug("error setting remote description: \(error.localizedDescription)");
                 self.reset();
             case .success(let localSDP):
                 if let sdp = localSDP {
@@ -539,7 +541,7 @@ class Call: NSObject, JingleSessionActionDelegate {
     }
 
     private func setRemoteDescription(_ remoteDescription: SDP, peerConnection: RTCPeerConnection, completionHandler: @escaping (Result<SDP?,Error>)->Void) {
-        print("setting remote description", remoteDescription.toString(withSid: ""));
+        logger.debug("setting remote description: \(remoteDescription.toString(withSid: ""))");
         peerConnection.setRemoteDescription(RTCSessionDescription(type: self.direction == .incoming ? .offer : .answer, sdp: remoteDescription.toString(withSid: self.webrtcSid!)), completionHandler: { err in
             guard let error = err else {
                 self.remoteSessionDescription = remoteDescription;
@@ -562,7 +564,7 @@ class Call: NSObject, JingleSessionActionDelegate {
     }
     
     private func generateOfferAndSet(peerConnection: RTCPeerConnection, completionHandler: @escaping (Result<SDP,Error>)->Void) {
-        print("generating offer");
+        logger.debug("generating offer");
         peerConnection.offer(for: VideoCallController.defaultCallConstraints, completionHandler: { sdpOffer, err in
             guard let error = err else {
                 self.setLocalDescription(peerConnection: peerConnection, sdp: sdpOffer!, completionHandler: completionHandler);
@@ -573,7 +575,7 @@ class Call: NSObject, JingleSessionActionDelegate {
     };
         
     private func generateAnswerAndSet(peerConnection: RTCPeerConnection, completionHandler: @escaping (Result<SDP,Error>)->Void) {
-        print("generating answer");
+        logger.debug("generating answer");
         peerConnection.answer(for: VideoCallController.defaultCallConstraints, completionHandler: { sdpAnswer, err in
             guard let error = err else {
                 self.setLocalDescription(peerConnection: peerConnection, sdp: sdpAnswer!, completionHandler: completionHandler);
@@ -584,7 +586,7 @@ class Call: NSObject, JingleSessionActionDelegate {
     }
     
     private func setLocalDescription(peerConnection: RTCPeerConnection, sdp localSDP: RTCSessionDescription, completionHandler: @escaping (Result<SDP,Error>)->Void) {
-        print("setting local description:", localSDP.sdp);
+        logger.debug("setting local description: \(localSDP.sdp)");
         peerConnection.setLocalDescription(localSDP, completionHandler: { err in
             guard let error = err else {
                 guard let (sdp, _) = SDP.parse(sdpString: localSDP.sdp, creator: .responder) else {
@@ -630,7 +632,7 @@ protocol CallDelegate: AnyObject {
 extension Call: RTCPeerConnectionDelegate {
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange stateChanged: RTCSignalingState) {
-        print("signaling state:", stateChanged.rawValue);
+        logger.debug("signaling state: \(stateChanged.rawValue)");
     }
         
     func peerConnection(_ peerConnection: RTCPeerConnection, didAdd stream: RTCMediaStream) {
@@ -640,7 +642,7 @@ extension Call: RTCPeerConnectionDelegate {
     }
         
     func peerConnectionShouldNegotiate(_ peerConnection: RTCPeerConnection) {
-        print("negotiation required");
+        logger.debug("negotiation required");
     }
         
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceConnectionState) {
@@ -708,18 +710,18 @@ extension Call: RTCPeerConnectionDelegate {
     }
         
     func peerConnection(_ peerConnection: RTCPeerConnection, didAdd rtpReceiver: RTCRtpReceiver, streams mediaStreams: [RTCMediaStream]) {
-        print("added receiver:", rtpReceiver.receiverId)
+        logger.debug("added receiver: \(rtpReceiver.receiverId)");
         if let track = rtpReceiver.track as? RTCVideoTrack, let stream = mediaStreams.first {
             let mid = peerConnection.transceivers.first(where: { $0.receiver.receiverId == rtpReceiver.receiverId })?.mid;
-            print("added video track:", track, peerConnection.transceivers.map({ "[\($0.mid) - stopped: \($0.isStopped), \($0.receiver.receiverId), \($0.direction.rawValue)]" }).joined(separator: ", "));
+            logger.debug("added video track: \(track), \(peerConnection.transceivers.map({ "[\($0.mid) - stopped: \($0.isStopped), \($0.receiver.receiverId), \($0.direction.rawValue)]" }).joined(separator: ", "))");
             self.delegate?.call(self, didReceiveRemoteVideoTrack: track, forStream: mid ?? stream.streamId, fromReceiver: rtpReceiver.receiverId);
         }
     }
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove rtpReceiver: RTCRtpReceiver) {
-        print("removed receiver:", rtpReceiver.receiverId)
+        logger.debug("removed receiver: \(rtpReceiver.receiverId)")
         if let track = rtpReceiver.track as? RTCVideoTrack {
-            print("removed video track:", track);
+            logger.debug("removed video track: \(track)");
             self.delegate?.call(self, goneRemoteVideoTrack: track, fromReceiver: rtpReceiver.receiverId);
         }
     }
@@ -727,7 +729,7 @@ extension Call: RTCPeerConnectionDelegate {
     func peerConnection(_ peerConnection: RTCPeerConnection, didStartReceivingOn transceiver: RTCRtpTransceiver) {
         if transceiver.direction == .recvOnly || transceiver.direction == .sendRecv {
             if transceiver.mediaType == .video {
-                print("got video transceiver");
+                logger.debug("got video transceiver");
 //                guard let track = transceiver.receiver.track as? RTCVideoTrack else {
 //                    return;
 //                }

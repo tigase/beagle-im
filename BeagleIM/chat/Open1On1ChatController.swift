@@ -122,7 +122,6 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
             return;
         }
         
-        print("changed value of search field", searchField.stringValue);
         self.updateItems();
     }
     

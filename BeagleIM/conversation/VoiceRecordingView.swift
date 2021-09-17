@@ -326,7 +326,6 @@ class VoiceRecordingView: NSView, AVAudioRecorderDelegate, AVAudioPlayerDelegate
     }
     
     func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
-        print("recording finished:", flag);
     }
     
     func audioRecorderEncodeErrorDidOccur(_ recorder: AVAudioRecorder, error: Error?) {

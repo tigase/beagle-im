@@ -54,7 +54,7 @@ class HttpFileUploadModule: TigaseSwift.HttpFileUploadModule, Resetable {
                     case .success(let values):
                         self?.availableComponents = values;
                     case .failure(let error):
-                        print("an error occurred during HTTPFileUpload component discovery!", error);
+                        break;
                     }
                 });
             });

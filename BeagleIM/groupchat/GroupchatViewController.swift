@@ -77,7 +77,6 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     }
     
     override func viewDidLoad() {
-        print("GroupchatViewController::viewDidLoad() - begin")
         if #available(macOS 11.0, *) {
             self.participantsTableView.style = .fullWidth;
         } else {
@@ -95,8 +94,6 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         bottomView.addView(self.encryptButton, in: .trailing)
         
         NotificationCenter.default.addObserver(self, selector: #selector(omemoAvailabilityChanged), name: MessageEventHandler.OMEMO_AVAILABILITY_CHANGED, object: nil);
-        
-        print("GroupchatViewController::viewDidLoad() - end")
     }
     
     
@@ -126,7 +123,6 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     }
     
     override func viewWillAppear() {
-        print("GroupchatViewController::viewWillAppear() - begin")
         pmPopupPositioningView = NSView();
         view.addSubview(pmPopupPositioningView!, positioned: .below, relativeTo: messageFieldScroller);
         super.viewWillAppear();
@@ -154,15 +150,12 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         sidebarWidthConstraint.constant = Settings.showRoomDetailsSidebar ? 200 : 0;
         avatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
         self.participantsContainer?.room = self.room;
-        print("GroupchatViewController::viewWillAppear() - end")
         refreshEncryptionStatus();
     }
     
     override func viewDidDisappear() {
-        print("GroupchatViewController::viewDidDisappear() - begin")
         super.viewDidDisappear();
         cancellables.removeAll();
-        print("GroupchatViewController::viewDidDisappear() - end")
     }
     
     override func createSharingAvailablePublisher() -> AnyPublisher<Bool, Never>? {
@@ -521,7 +514,6 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             return;
         }
         
-        print("selected item: \(item.jid?.stringValue ?? "nil") with nickname: \(item.nickname)")
         // how to know where we should place it? should we store location in message view somehow?
         self.messageField.replaceCharacters(in: range, with: "@\(item.nickname) ");
         suggestionsController?.cancelSuggestions();
@@ -685,7 +677,6 @@ class GroupchatPMPopover: NSPopover {
     }
     
     @objc func sendPM(_ sender: NSButton) {
-        print("sending PM:" + textView.string);
         room.sendPrivateMessage(to: occupant, text: textView.string)
         self.close();
     }
@@ -831,7 +822,6 @@ extension GroupchatParticipantsContainer: NSMenuDelegate {
             switch response {
             case .alertFirstButtonReturn:
                 // we need to ban the user
-                print("We need to ban user with jid: \(jid)");
                 mucModule.setRoomAffiliations(to: room, changedAffiliations: [MucModule.RoomAffiliation(jid: jid.withoutResource, affiliation: .outcast)], completionHandler: { result in
                     switch result {
                     case .success(_):

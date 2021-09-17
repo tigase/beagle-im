@@ -20,6 +20,7 @@
 //
 
 import AppKit
+import TigaseLogging
 
 extension unichar: ExpressibleByUnicodeScalarLiteral {
     public typealias UnicodeScalarLiteralType = UnicodeScalar
@@ -103,6 +104,8 @@ class Markdown {
     
     static let TILDE: unichar = "~";
 
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "Markdown");
+        
     static func isNumber(_ c: unichar) -> Bool {
         return c >= 48 && c <= 57;
     }
@@ -235,7 +238,6 @@ class Markdown {
                             idx = idx + 1;
                         }
                         let codeCount = idx - codeStart;
-                        print("code tag count = ", codeCount);
                         
                         var count = 0;
                         while idx < message.length {
@@ -305,10 +307,10 @@ class Markdown {
                     underlineStart = nil;
                     italicStart = nil
                     if (quoteStart != nil) {
-                        print("quote level:", quoteLevel);
+                        logger.debug("quote level: \(quoteLevel)");
                         if idx < message.length {
                             let range = NSRange(location: quoteStart!, length: idx - quoteStart!);
-                            print("message possibly causing a crash:", message, "range:", range, "length:", message.length);
+                            logger.debug("message possibly causing a crash: \(message), range: \(range), length: \(message.length)");
                             msg.addAttribute(.paragraphStyle, value: Markdown.quoteParagraphStyle, range: range);
                         }
                         quoteStart = nil;
@@ -395,7 +397,7 @@ class Markdown {
         
         let end = Date();
         usedTime = usedTime + Int((end.timeIntervalSince1970 - start.timeIntervalSince1970) * 1000);
-        print("time used for markdown parsing:", usedTime)
+        logger.debug("time used for markdown parsing: \(usedTime)");
     }
     
     static func listParagraphStyle(for message: NSString, startAt: Int?, listMarker: ListMarker?) -> NSParagraphStyle? {

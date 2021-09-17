@@ -127,7 +127,6 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
             self.progressIndicator?.stopAnimation(self);
         }
 
-        print("account registration failed", errorCondition?.rawValue ?? "nil", "with message =", message as Any);
         var msg = message;
 
         if errorCondition == nil {
@@ -156,7 +155,6 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
             alert.icon = NSImage(named: NSImage.cautionName);
             alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
             alert.beginSheetModal(for: self.view.window!) { (response) in
-                print("error dismissed");
                 if errorCondition == ErrorCondition.feature_not_implemented || errorCondition == ErrorCondition.service_unavailable {
                     self.dismissView();
                 }
@@ -193,7 +191,6 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
         self.task = InBandRegistrationModule.AccountRegistrationTask(client: client, domainName: domain, onForm: onForm, sslCertificateValidator: nil, onCertificateValidationError: self.onCertificateError, completionHandler: { result in
             switch result {
             case .success:
-                print("account registered!");
                 let certData: SslCertificateInfo? = self.task?.getAcceptedCertificate();
                 DispatchQueue.main.async {
                     self.saveAccount(acceptedCertificate: certData);

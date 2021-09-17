@@ -55,7 +55,6 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
         accountSelector.menu = NSMenu(title: NSLocalizedString("Select account", comment: "add roster item label"));
         accountSelector.setContentHuggingPriority(.defaultLow, for: .horizontal);
         accountSelector.setContentHuggingPriority(.defaultHigh, for: .vertical);
-        print("hugging:", accountSelector.contentHuggingPriority(for: .horizontal).rawValue);
         AccountManager.getAccounts().filter { account -> Bool in
             return XmppService.instance.getClient(for: account)?.state ?? .disconnected() == .connected()
             }.forEach { account in

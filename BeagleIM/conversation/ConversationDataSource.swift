@@ -23,6 +23,7 @@
 import Foundation
 import Combine
 import TigaseSwift
+import TigaseLogging
 
 protocol ConversationDataSourceDelegate: AnyObject {
     
@@ -83,6 +84,7 @@ class ConversationDataSource {
     }
     
     private var store: [ConversationEntry] = [];
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ConversationDataSource");
     private let queue = DispatchQueue(label: "chat_datasource");
     
     weak var delegate: ConversationDataSourceDelegate? {
@@ -361,7 +363,7 @@ class ConversationDataSource {
             DispatchQueue.main.async {
                 completionHandler?();
             }
-            print("skipped adding rows as no rows were loadad!")
+            logger.debug("skipped adding rows as no rows were loadad!")
             return;
         }
 
@@ -376,7 +378,7 @@ class ConversationDataSource {
 
         // how to calculate where to scroll before main dispatch queue is fired?
         self.updateStore(scrollTo: scrollTo, completionHandler: {
-            print("items added in: \(Date().timeIntervalSince(start))")
+            self.logger.debug("items added in: \(Date().timeIntervalSince(start))")
             completionHandler?();
         });
     }

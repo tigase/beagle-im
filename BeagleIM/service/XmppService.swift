@@ -233,11 +233,7 @@ class XmppService {
         var cancellables: Set<AnyCancellable> = [];
     }
 
-    private var clientCancellables: [BareJID:ClientCancellables] = [:] {
-        didSet {
-            print("updated client cancellables to:", clientCancellables);
-        }
-    }
+    private var clientCancellables: [BareJID:ClientCancellables] = [:];
     
     private func disconnected(client: XMPPClient) {
         let accountName = client.sessionObject.userBareJid!;

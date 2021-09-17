@@ -67,7 +67,6 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     }
     
     override func viewDidLoad() {
-        print("AbstractChatViewController::viewDidLoad() - begin")
         self.messageField = AutoresizingTextView();
         self.messageField.setup();
         self.messageField.isVerticallyResizable = true;
@@ -105,7 +104,6 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
         self.messageField.delegate = self;
         self.messageField.isContinuousSpellCheckingEnabled = Settings.spellchecking;
         self.messageField.isGrammarCheckingEnabled = Settings.spellchecking;
-        print("AbstractChatViewController::viewDidLoad() - end")
     }
     
     @objc func test(_ sender: Any) {
@@ -113,7 +111,6 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     }
     
     override func viewWillAppear() {
-        print("AbstractChatViewController::viewWillAppear() - begin")
         super.viewWillAppear();
         self.messageField?.placeholderAttributedString = account != nil ? NSAttributedString(string: String.localizedStringWithFormat(NSLocalizedString("from %@...", comment: "placehoder of message entry field"), account.stringValue), attributes: [.foregroundColor: NSColor.placeholderTextColor, .font: NSFont.systemFont(ofSize: NSFont.systemFontSize)]) : nil;
         
@@ -129,28 +126,23 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
                 self.updateMessageFieldSize();
             }
         });
-        print("AbstractChatViewController::viewWillAppear() - end")
     }
     
     override func viewWillDisappear() {
-        print("AbstractChatViewController::viewWillDisappear() - begin")
         super.viewWillDisappear();
         if let account = self.account, let jid = self.jid {
             let draft = self.messageField.string;
             DBChatStore.instance.storeMessage(draft: draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : draft, for: account, with: jid);
         }
-        print("AbstractChatViewController::viewWillDisappear() - end")
     }
     
     override func viewDidAppear() {
-        print("AbstractChatViewController::viewDidAppear() - begin")
         super.viewDidAppear();
         //DispatchQueue.main.async {
             if !NSEvent.modifierFlags.contains(.shift) {
                 self.view.window?.makeFirstResponder(self.messageField);
             }
         //}
-        print("AbstractChatViewController::viewDidAppear() - end")
     }
     
     func startMessageCorrection(message: String, originId: String) {

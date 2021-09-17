@@ -22,9 +22,12 @@
 import AppKit
 import Quartz
 import TigaseSwift
+import TigaseLogging
 
 class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDelegate {
 
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "CreateChannelView");
+    
     weak var delegate: OpenChannelViewControllerTabViewDelegate?;
     
     var account: BareJID?;
@@ -182,12 +185,12 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                     });
                     if let avatarData = avatar?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8) {
                         client.module(.pepUserAvatar).publishAvatar(at: channelJid, data: avatarData, mimeType: "image/jpeg", completionHandler: { result in
-                            print("avatar publication result:", result);
+                            self?.logger.debug("avatar publication result: \(result)");
                         });
                     }
                     if priv {
                         mixModule.changeAccessPolicy(of: channelJid, isPrivate: priv, completionHandler: { result in
-                            print("changed channel access policy:", result);
+                            self?.logger.debug("changed channel access policy: \(result)");
                         })
                     }
                 case .failure(let error):

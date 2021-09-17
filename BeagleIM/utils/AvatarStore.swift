@@ -39,7 +39,6 @@ class AvatarStore {
     
     init() {
         cacheDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!.appendingPathComponent(Bundle.main.bundleIdentifier!).appendingPathComponent("avatars");
-        print("found cache directory:", cacheDirectory.path);
         if !FileManager.default.fileExists(atPath: cacheDirectory.path) {
             try! FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true, attributes: nil);
         }

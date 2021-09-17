@@ -95,7 +95,6 @@ class OpenSSL_AES_GCM_Engine: AES_GCM_Engine {
         let ret = EVP_DecryptFinal_ex(ctx, &outbuf, &outbufLen);
         EVP_CIPHER_CTX_free(ctx);
         guard ret >= 0 else {
-            print("authentication of encrypted message failed:", ret);
             return false;
         }
         

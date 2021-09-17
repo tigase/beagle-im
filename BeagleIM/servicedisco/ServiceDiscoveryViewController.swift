@@ -270,7 +270,6 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
             case .failure(let error):
                 DispatchQueue.main.async { [weak self] in
                     self?.view.window?.close();
-                    print("it would be nice to show this error to the user: \(error)")
                 }
             }
         });
@@ -389,7 +388,6 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                         // nothing to do..
                     })
                 }
-                print("error", error);
             }
         });
     }
@@ -465,8 +463,6 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                                         }
                                         group.leave();
                                     });
-                                } else {
-                                    print("jabber:iq:version not supported by \(item.jid)");
                                 }
                                 DispatchQueue.main.async {
                                     guard let idx = parentItem.subitems?.firstIndex(where: { (it) -> Bool in
@@ -508,7 +504,6 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                         // nothing to do..
                     });
                 }
-                print("error", error as Any);
             }
         });
     }

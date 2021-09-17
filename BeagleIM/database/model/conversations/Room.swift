@@ -258,7 +258,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
             omemoModule.encode(message: message, for: members.map({ $0.bareJid }), completionHandler: { result in
                 switch result {
                 case .failure(_):
-                    print("could not encrypt message for", self.roomJid);
+                    break;
                 case .successMessage(let message, let fingerprint):
                     super.send(message: message, completionHandler: nil);
                     DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: text, options: .init(recipient: .none, encryption: .decrypted(fingerprint: fingerprint), isMarkable: true), linkPreviewAction: .auto, completionHandler: nil);
@@ -292,7 +292,6 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
                         parts.fragment = hash;
                         let shareUrl = parts.url!;
 
-                        print("sending url:", shareUrl.absoluteString);
                         return shareUrl;
                     })));
                 } catch {
@@ -321,7 +320,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
             omemoModule.encode(message: message, for: members.map({ $0.bareJid }), completionHandler: { result in
                 switch result {
                 case .failure(_):
-                    print("could not encrypt message for", self.roomJid);
+                    break;
                 case .successMessage(let message, let fingerprint):
                     super.send(message: message, completionHandler: nil);
                     DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.nickname, jid: nil), type: .attachment, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: uploadedUrl, appendix: appendix, options: .init(recipient: .none, encryption: .decrypted(fingerprint: fingerprint), isMarkable: true), linkPreviewAction: .auto, completionHandler: { msgId in

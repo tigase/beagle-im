@@ -22,10 +22,12 @@
 import Foundation
 import TigaseSwift
 import TigaseSQLite3
+import TigaseLogging
 
 public class DatabaseMigrator: DatabaseSchemaMigrator {
     
     public let expectedVersion: Int = 13;
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "DatabaseMigrator");
     
     public func upgrade(database: DatabaseWriter, newVersion version: Int) throws {
         try loadSchema(to: database, fromFile: "/db-schema-\(version).sql");
@@ -92,13 +94,13 @@ DROP TABLE chat_history_sync_old;
     
     private func loadSchema(to database: DatabaseWriter, fromFile fileName: String) throws {
         let resourcePath = Bundle.main.resourcePath! + fileName;
-        print("trying to load SQL from file", resourcePath);
+        logger.debug("trying to load SQL from file \(resourcePath)");
         if let dbSchema = try? String(contentsOfFile: resourcePath, encoding: String.Encoding.utf8) {
-            print("read schema:", dbSchema);
+            logger.debug("read schema: \(dbSchema)");
             try database.executeQueries(dbSchema);
-            print("loaded schema from file", fileName);
+            logger.debug("loaded schema from file \(fileName)");
         } else {
-            print("skipped loading schema from file");
+            logger.debug("skipped loading schema from file");
         }
     }
 

@@ -111,7 +111,6 @@ extension UserDefaults {
     }
     
     func setValue<T: RawRepresentable>(_ value: T?, forKey key: String) {
-        print("called setting raw representable!");
         set(value?.rawValue, forKey: key);
     }
 }

@@ -22,6 +22,7 @@
 import AppKit
 import TigaseSwift
 import Combine
+import TigaseLogging
 
 struct AvatarWeakRef {
     weak var avatar: Avatar?;
@@ -98,6 +99,8 @@ class AvatarManager {
         return NSImage(named: NSImage.userGroupName)!;
     }
 
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "AvatarManager");
+    
     // IDEA 1:
     //
     // Keep in memory all avatar hashes for all contacts
@@ -288,7 +291,7 @@ class AvatarManager {
                 self.store.storeAvatar(data: data, for: hash);
                 self.updateAvatar(hash: hash, forType: .pepUserAvatar, forJid: jid, on: account);
             case .failure(let error):
-                print("could not retrieve avatar, got error: \(error)");
+                self.logger.error("could not retrieve avatar, got error: \(error.description)");
             }
         });
     }

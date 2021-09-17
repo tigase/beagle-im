@@ -161,7 +161,6 @@ class VCardEditorViewController: NSViewController, AccountAware {
                             self.isEnabled = true;
                         }
                     case .failure(let error):
-                        print("got error:", error as Any);
                         self.progressIndicator.stopAnimation(self);
                         self.handleError(title: NSLocalizedString("Could not retrive current version from the server.", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.description));
                     }
@@ -194,7 +193,6 @@ class VCardEditorViewController: NSViewController, AccountAware {
         openFile.resolvesAliases = true;
         
         openFile.begin { (response) in
-            print("got response", response.rawValue);
             if response == .OK, let url = openFile.url {
                 let image = NSImage(contentsOf: url);
                 self.avatarView.image = image ?? NSImage(named: NSImage.userName);
@@ -516,7 +514,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
         avatarModule.publishAvatar(data: avatar, mimeType: "image/png", completionHandler: { result in
             switch result {
             case .success(_):
-                print("avatar data published");
+                break;
             case .failure(let error):
                 self.handleError(title: NSLocalizedString("Publication of avatar failed", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.error.message ?? error.description));
             }

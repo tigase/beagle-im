@@ -81,7 +81,6 @@ class ScriptsManager {
                 event.setDescriptor(function, forKeyword: AEKeyword(keyASSubroutineName));
                 event.setDescriptor(params, forKeyword: AEKeyword(keyDirectObject));
                 task.execute(withAppleEvent: event) { (desc, error) in
-                    print("task", desc as Any, "executed with jid:", jid, "result:", error as Any);
                 }
             }
             

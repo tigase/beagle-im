@@ -55,7 +55,6 @@ class SharingTaskManager {
     func share(task: SharingTask) {
         dispatcher.sync {
             self.tasks.append(task);
-            print("starting task: \(task.id)")
             task.start();
         }
     }
@@ -63,7 +62,6 @@ class SharingTaskManager {
     func ended(task: SharingTask) {
         dispatcher.sync {
             if let idx = self.tasks.firstIndex(of: task) {
-                print("removing task: \(task.id)")
                 self.tasks.remove(at: idx);
             }
         }
@@ -305,7 +303,6 @@ class AbstractSharingTaskItem: NSObject, URLSessionDelegate {
     }
     
     func completed(with result: Result<URL,ShareError>) {
-        print("completed: \(result)");
         DispatchQueue.main.async {
             self.progress = 1.0;
             self.result = result;

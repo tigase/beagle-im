@@ -35,7 +35,6 @@ class AutoresizingTextField: NSTextField {
     override var intrinsicContentSize: NSSize {
         var intrinsicSize = lastIntrinsicSize;
 
-        print("calc:", editing, hasLastIntrinsicSize);
         if editing || !hasLastIntrinsicSize {
             intrinsicSize = super.intrinsicContentSize;
             if let editor = self.window?.fieldEditor(false, for: self) {

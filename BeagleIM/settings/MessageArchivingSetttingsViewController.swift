@@ -84,7 +84,6 @@ class MessageArchivingSettingsViewController: NSViewController, AccountAware {
             case .failure(let error):
                 self.progressIndicator.stopAnimation(self);
                 self.isEnabled = false;
-                print("got an error from the server: \(error), ignoring...");
             }
         });
     }

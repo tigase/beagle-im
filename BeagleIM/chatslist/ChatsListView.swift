@@ -186,12 +186,9 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     }
     
     @IBAction func openNewChatClicked(_ sender: NSButton) {
-        print("open new chat cliecked");
         guard let group = (sender as? OutlineGroupItemButton)?.group else {
             return;
         }
-        
-        print("clicked button for", group.name);
         
         switch group {
         case is ChatsListGroupGroupchat:
@@ -226,7 +223,6 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     }
 
     @objc func closeSelectedChat(_ notification: Notification) {
-        print("closing chats for: \(self.outlineView.selectedRowIndexes)");
         let toClose = self.outlineView.selectedRowIndexes;
         toClose.forEach { (row) in
             guard let item = self.outlineView.item(atRow: row) as? ConversationItem else {
@@ -333,17 +329,12 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         let selected = self.outlineView.selectedRow;
         let item = self.outlineView.selectedRowIndexes.count == 1 ? self.outlineView.item(atRow: selected) : nil;
 
-        print("selected row: \(selected), item: \(String(describing: item)), selectedRowIndexes: \(self.outlineView.selectedRowIndexes.count)");
         if let splitController = self.outlineView.window?.contentViewController as? NSSplitViewController {
             if let conversation = (item as? ConversationItem)?.chat {
-                print("creating controller for: \(conversation)")
                 let controller = self.conversationController(for: conversation);
-                print("created controller \(controller) for: \(conversation)")
                 if let conversationController = controller as? AbstractChatViewController {
                     conversationController.conversation = conversation;
-                    print("creating view")
                     _ = conversationController.view;
-                    print("loading message history for: \(conversation)");
                     if let msgId = self.scrollChatToMessageWithId {
                         conversationController.dataSource.loadItems(.with(id: msgId, overhead: conversationController.dataSource.defaultPageSize));
                     } else {
@@ -354,26 +345,20 @@ extension ChatsListViewController: NSOutlineViewDelegate {
 
                 let item = NSSplitViewItem(viewController: controller);
                 if splitController.splitViewItems.count == 1 {
-                    print("adding controller to split view")
                     splitController.addSplitViewItem(item);
                 } else {
-                    print("replacing controller in split view")
                     splitController.removeSplitViewItem(splitController.splitViewItems[1]);
                     splitController.addSplitViewItem(item);
                 }
-                print("controller added to split view");
             } else {
                 if let invitation = item as? InvitationItem, invitation.type == .presenceSubscription {
-                    print("preparing controller for invitation: \(invitation)");
                     let controller = NSStoryboard(name: "Roster", bundle: nil).instantiateController(withIdentifier: "PresenceAuthorizationRequestView") as! PresenceAuthorizationRequestController;
                     controller.invitation = invitation;
                     if splitController.splitViewItems.count > 1 {
                         splitController.removeSplitViewItem(splitController.splitViewItems[1]);
                     }
                     splitController.addSplitViewItem(NSSplitViewItem(viewController: controller));
-                    print("controller added to split view");
                 } else {
-                    print("preparing empty controller");
                     let controller = self.storyboard!.instantiateController(withIdentifier: "EmptyViewController") as! NSViewController;
                     if splitController.splitViewItems.count > 1 {
                         splitController.removeSplitViewItem(splitController.splitViewItems[1]);
@@ -382,15 +367,12 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                     if let invitation = item as? InvitationItem {
                         InvitationManager.instance.handle(invitation: invitation, window: self.view.window!);
                     }
-                    print("controller added to split view");
                 }
             }
-        } else {
-            print("could not find NSSplitViewController: \(String(describing: self.outlineView.window?.contentView))")
         }
     }
     
-    private func conversationController(for conversation: Any) -> NSViewController {
+    private func conversationController(for conversation: Conversation) -> NSViewController {
         switch conversation {
         case is Chat:
             return self.storyboard!.instantiateController(withIdentifier: "ChatViewController") as! ChatViewController;
@@ -399,8 +381,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         case is Channel:
             return NSStoryboard(name: "MIX", bundle: nil).instantiateController(withIdentifier: "ChannelViewController") as! ChannelViewController;
         default:
-            print("undefined conversation type: \(conversation.self) \(String(describing: conversation))")
-            return self.storyboard!.instantiateController(withIdentifier: "EmptyViewController") as! NSViewController;
+            fatalError("undefined conversation type: \(conversation.self) \(String(describing: conversation))")
         }
     }
 
@@ -508,7 +489,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 }
             })
         default:
-            print("unknown type of chat!");
+            break;
         }
     }
 }
@@ -550,14 +531,12 @@ class ChatsListView: NSOutlineView {
     }
     
     override func mouseEntered(with event: NSEvent) {
-        print("mouse entered");
         mouseInside = true;
         updateMouseOver(from: event);
         super.mouseEntered(with: event);
     }
     
     override func mouseExited(with event: NSEvent) {
-        print("mouse exited");
         mouseInside = false;
         updateMouseOver(from: event);
         super.mouseExited(with: event);
@@ -581,8 +560,6 @@ class ChatsListView: NSOutlineView {
     var selectionDirection: SelectionDirection = .unknown;
     
     override func keyDown(with event: NSEvent) {
-        print("got event: \(event)");
-        
         let sorted = selectedRowIndexes.sorted();
         guard !sorted.isEmpty else {
             super.keyDown(with: event);
@@ -715,13 +692,11 @@ class ChatsListView: NSOutlineView {
                 let endRow = self.row(at: self.convert(event.locationInWindow, from: nil));
                 let range = selectedRow < endRow ? selectedRow...endRow : endRow...selectedRow;
             
-                print("changing selection!");
                 self.updateRowSelection(IndexSet(integersIn: range), byExtendingSelection: false);
                 //NotificationCenter.default.post(name: NSOutlineView.selectionDidChangeNotification, object: nil);
             } else {
                 let row = self.row(at: self.convert(event.locationInWindow, from: nil));
 
-                print("changing selection!");
                 if row != -1 {
                     self.updateRowSelection(IndexSet(integersIn: row...row), byExtendingSelection: false);
                 }
@@ -729,12 +704,7 @@ class ChatsListView: NSOutlineView {
             }
         } else {
             
-            if let isKey = self.window?.isKeyWindow, !isKey {
-                print("mouse down event!", event, self.window as Any, "list", NSApplication.shared.windows, "key:", self.window?.isKeyWindow as Any, "can:", self.window?.canBecomeKey as Any, "main:", self.window?.isMainWindow as Any, "can:", self.window?.canBecomeMain as Any, "isActive:", NSApp.isActive, "isRunning:", NSApp.isRunning, "isHidden:", NSApp.isHidden);
-                NSApplication.shared.windows.forEach { (win) in
-                    print("win:", win, "isMain:", win.isMainWindow, win.canBecomeMain, "isKey:", win.isKeyWindow, win.canBecomeKey, "sheet:", win.isSheet, "visible:", win.isVisible, "title:", win.title, "modal:", NSApp.modalWindow as Any)
-                }
-                
+            if let isKey = self.window?.isKeyWindow, !isKey {                
                 NSApp.activate(ignoringOtherApps: true);
                 self.window?.makeKey();
             }

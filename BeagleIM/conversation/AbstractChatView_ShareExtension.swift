@@ -32,7 +32,6 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
     private var cancellables: Set<AnyCancellable> = [];
     
     override func viewDidLoad() {
-        print("AbstractChatViewControllerWithSharing::viewDidLoad() - begin")
         super.viewDidLoad();
 
         self.voiceMessageButton = NSButton(image: NSImage(named: "mic.circle")!, target: self, action: #selector(startRecordingVoiceMessage(_:)));
@@ -53,11 +52,9 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         self.sharingProgressBar.minValue = 0;
         self.sharingProgressBar.maxValue = 1;
         self.sharingProgressBar.isHidden = true;
-        print("AbstractChatViewControllerWithSharing::viewDidLoad() - end")
     }
     
     override func viewWillAppear() {
-        print("AbstractChatViewControllerWithSharing::viewWillAppear() - begin")
         super.viewWillAppear();
         createSharingAvailablePublisher()?.receive(on: DispatchQueue.main).assign(to: \.isEnabled, on: self.sharingButton).store(in: &cancellables)
         createSharingAvailablePublisher()?.combineLatest(CaptureDeviceManager.authorizationStatusPublisher(for: .audio), { sharing, media in
@@ -65,14 +62,11 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         }).receive(on: DispatchQueue.main).assign(to: \.isEnabled, on: self.voiceMessageButton).store(in: &cancellables)
         NotificationCenter.default.addObserver(self, selector: #selector(sharingProgressChanged(_:)), name: SharingTaskManager.PROGRESS_CHANGED, object: conversation);
         self.updateSharingProgress();
-        print("AbstractChatViewControllerWithSharing::viewWillAppear() - end")
     }
     
     override func viewDidDisappear() {
-        print("AbstractChatViewControllerWithSharing::viewDidDisappear() - begin")
         super.viewDidDisappear()
         self.cancellables.removeAll();
-        print("AbstractChatViewControllerWithSharing::viewDidDisappear() - end")
     }
     
     @objc func sharingProgressChanged(_ notification: Notification) {
@@ -88,7 +82,6 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
     func updateSharingProgress() {
         let progress = SharingTaskManager.instance.progress(for: conversation);
         sharingProgressBar.isIndeterminate = progress != nil;
-        print("setting progress to: \(String(describing: progress))");
         if let value = progress {
             self.sharingProgressBar.doubleValue = value;
             self.sharingProgressBar.isHidden = value == 1;
@@ -102,7 +95,7 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
             guard let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: nil) as? [NSURL], urls.allSatisfy({ $0.isFileURL }) else {
                 return false;
             }
-            print("pasted file urls: \(urls)");
+
             let alert = NSAlert();
             alert.alertStyle = .informational;
             alert.icon = NSImage(named: NSImage.shareTemplateName);
@@ -185,7 +178,6 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         openFile.resolvesAliases = true;
 
         openFile.begin { (response) in
-            print("got response", response.rawValue);
             if response == .OK, !openFile.urls.isEmpty {
                 completionHandler(openFile.urls);
             }

@@ -26,7 +26,6 @@ class MessageTextView: NSTextView, NSLayoutManagerDelegate {
     override var intrinsicContentSize: NSSize {
         get {
             guard let layoutManager = layoutManager, let textContainer = textContainer else {
-                print("textView no layoutManager or textContainer")
                 return .zero
             }
 

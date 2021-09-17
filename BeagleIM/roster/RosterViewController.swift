@@ -243,7 +243,6 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
         
         let item = self.tableView(tableView, objectValueFor: tableColumn, row: row) as! Item;
         let colorId = row % NSColor.controlAlternatingRowBackgroundColors.count;
-        print("for row", row, "got color", colorId, NSColor.controlAlternatingRowBackgroundColors);
         view.backgroundColor = NSColor.controlAlternatingRowBackgroundColors[colorId];
         view.update(with: item);
         

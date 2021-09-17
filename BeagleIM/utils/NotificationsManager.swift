@@ -23,6 +23,7 @@ import Foundation
 import UserNotifications
 import TigaseSwift
 import Combine
+import TigaseLogging
 
 extension ConversationEntry {
     
@@ -80,6 +81,8 @@ public class NotificationManager {
     
     private let dispatcher = QueueDispatcher(label: "NotificationManager");
     private var cancellables: Set<AnyCancellable> = [];
+    
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "NotificationManager");
     
     init() {
         MessageEventHandler.eventsPublisher.receive(on: dispatcher.queue).sink(receiveValue: { [weak self] event in
@@ -159,7 +162,7 @@ public class NotificationManager {
  
         let request = UNNotificationRequest(identifier: "message:\(entry.id):new", content: content, trigger: nil);
         UNUserNotificationCenter.current().add(request) { (error) in
-            print("could not show notification:", error as Any);
+            self.logger.debug("could not show notification: \(error as Any)");
         }
     }
     

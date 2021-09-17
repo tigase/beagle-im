@@ -86,10 +86,8 @@ class ChangePasswordController: NSViewController, NSTextFieldDelegate, AccountAw
                     self.progressIndicator.stopAnimation(self);
                     switch result {
                     case .success(let newPassword):
-                        print("password changed!");
                         self.changePassword(for: account, newPassword: newPassword);
                     case .failure(let err):
-                        print("password change failed: \(err)");
                         let alert = NSAlert();
                         alert.icon = NSImage(named: NSImage.cautionName);
                         alert.messageText = NSLocalizedString("Password change failed", comment: "settings");

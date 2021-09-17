@@ -91,7 +91,6 @@ class MetadataCache {
                         if let metadata = meta {
                             self.store(metadata, for: id);
                         } else {
-                            print("failed to download metadata for:", url);
                             let metadata = LPLinkMetadata();
                             metadata.originalURL = url;
                             self.store(metadata, for: id);

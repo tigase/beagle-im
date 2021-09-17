@@ -117,7 +117,6 @@ class MucEventHandler: XmppServiceExtension {
         guard let error = MucModule.RoomError.from(error: err), let context = room.context else {
             return;
         }
-        print("received error from room:", room, ", error:", error)
         
         DispatchQueue.main.async {
             let alert = Alert();
