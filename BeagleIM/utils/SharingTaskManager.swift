@@ -317,18 +317,18 @@ class AbstractSharingTaskItem: NSObject, URLSessionDelegate {
         completed(with: .failure(.notSupported));
     }
     
-    private func sendAttachmentToConversation(originalUrl: URL, uploadedUrl: URL, filesize: Int64, mimeType: String?, completionHandler: (() -> Void)?) {
+    private func sendAttachmentToConversation(originalUrl: URL, filename: String, uploadedUrl: URL, filesize: Int64, mimeType: String?, completionHandler: (() -> Void)?) {
         var appendix = ChatAttachmentAppendix();
         appendix.state = .downloaded;
-        appendix.filename = originalUrl.lastPathComponent;
+        appendix.filename = filename;
         appendix.filesize = Int(filesize);
         appendix.mimetype = mimeType;
         chat.sendAttachment(url: uploadedUrl.absoluteString, appendix: appendix, originalUrl: originalUrl, completionHandler: completionHandler);
     }
     
-    func downscaleIfRequired(at source: URL, completionHandler: @escaping (Result<(URL,Bool),ShareError>)->Void) {
+    func downscaleIfRequired(at source: URL, fileInfo: ShareFileInfo, completionHandler: @escaping (Result<(URL,ShareFileInfo,Bool),ShareError>)->Void) {
         guard let mimeType = SharingTaskManager.guessContentType(of: source) else {
-            completionHandler(.success((source, false)));
+            completionHandler(.success((source, fileInfo, false)));
             return;
         }
         
@@ -337,10 +337,10 @@ class AbstractSharingTaskItem: NSObject, URLSessionDelegate {
                 task.askForImageQuality(completionHandler: { result in
                     switch result {
                     case .success(let quality):
-                        MediaHelper.compressImage(url: source, filename: UUID().uuidString, quality: quality, deleteSource: false, completionHandler: { result in
+                        MediaHelper.compressImage(url: source, fileInfo: fileInfo, quality: quality, deleteSource: false, completionHandler: { result in
                             switch result {
-                            case .success(let url):
-                                completionHandler(.success((url, quality != .original)));
+                            case .success((let url, let fileInfo)):
+                                completionHandler(.success((url, fileInfo, quality != .original)));
                             case .failure(let error):
                                 completionHandler(.failure(error));
                             }
@@ -350,19 +350,19 @@ class AbstractSharingTaskItem: NSObject, URLSessionDelegate {
                     }
                 })
             } else {
-                completionHandler(.success((source, false)));
+                completionHandler(.success((source, fileInfo, false)));
             }
         } else if mimeType.starts(with: "video/") {
             if let task = self.task {
                 task.askForVideoQuality(completionHandler: { result in
                     switch result {
                     case .success(let quality):
-                        MediaHelper.compressMovie(url: source, filename: UUID().uuidString, quality: quality, deleteSource: false, progressCallback: { progress in
+                        MediaHelper.compressMovie(url: source, fileInfo: fileInfo, quality: quality, deleteSource: false, progressCallback: { progress in
                             // lets ignore it for now..
                         }, completionHandler: { result in
                             switch result {
-                            case .success(let url):
-                                completionHandler(.success((url, quality != .original)));
+                            case .success((let url, let fileInfo)):
+                                completionHandler(.success((url, fileInfo, quality != .original)));
                             case .failure(let error):
                                 completionHandler(.failure(error));
                             }
@@ -372,19 +372,19 @@ class AbstractSharingTaskItem: NSObject, URLSessionDelegate {
                     }
                 })
             } else {
-                completionHandler(.success((source, false)));
+                completionHandler(.success((source, fileInfo, false)));
             }
         } else {
-            completionHandler(.success((source, false)));
+            completionHandler(.success((source, fileInfo, false)));
         }
     }
     
     func preprocessAndSendFile(url: URL, completionHandler: (()->Void)?) {
-        let filename = url.lastPathComponent;
-        downscaleIfRequired(at: url, completionHandler: { result in
+        let fileInfo = ShareFileInfo.from(url: url, defaultSuffix: nil);
+        downscaleIfRequired(at: url, fileInfo: fileInfo, completionHandler: { result in
             switch result {
-            case .success((let newUrl, let isCopy)):
-                self.prepareAndSendFile(url: newUrl, filename: filename, completionHandler: {
+            case .success((let newUrl, let fileInfo, let isCopy)):
+                self.prepareAndSendFile(url: newUrl, fileInfo: fileInfo, completionHandler: {
                     if isCopy {
                         try? FileManager.default.removeItem(at: newUrl);
                     }
@@ -397,11 +397,11 @@ class AbstractSharingTaskItem: NSObject, URLSessionDelegate {
         });
     }
     
-    func prepareAndSendFile(url: URL, filename: String, completionHandler: (()->Void)?) {
+    func prepareAndSendFile(url: URL, fileInfo: ShareFileInfo, completionHandler: (()->Void)?) {
         chat.prepareAttachment(url: url, completionHandler: { result in
             switch result {
             case .success(let (newUrl, isCopy, urlConverter)):
-                self.sendFile(originalUrl: url, url: newUrl, filename: filename, urlConverter: urlConverter, completionHandler: {
+                self.sendFile(originalUrl: url, url: newUrl, fileInfo: fileInfo, urlConverter: urlConverter, completionHandler: {
                     if isCopy {
                         try? FileManager.default.removeItem(at: newUrl);
                     }
@@ -414,25 +414,25 @@ class AbstractSharingTaskItem: NSObject, URLSessionDelegate {
         });
     }
     
-    func sendFile(originalUrl: URL, url: URL, filename: String, urlConverter: ((URL)->URL)?, completionHandler: (()->Void)?) {
+    func sendFile(originalUrl: URL, url: URL, fileInfo: ShareFileInfo, urlConverter: ((URL)->URL)?, completionHandler: (()->Void)?) {
         let mimeType = SharingTaskManager.guessContentType(of: url);
         guard let filesize = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize else {
             self.completed(with: .failure(.noAccessError));
             completionHandler?();
             return;
         }
-        self.uploadFileToHttpServer(url: url, filename: filename, filesize: filesize, mimeType: mimeType, completionHandler: { result in
+        self.uploadFileToHttpServer(url: url, filename: fileInfo.filenameWithSuffix, filesize: filesize, mimeType: mimeType, completionHandler: { result in
             switch result {
             case .success(let uploadedUrl):
                 let urlToSend = urlConverter?(uploadedUrl) ?? uploadedUrl;
-                self.sendAttachmentToConversation(originalUrl: originalUrl, uploadedUrl: urlToSend, filesize: Int64(filesize), mimeType: mimeType, completionHandler: completionHandler);
+                self.sendAttachmentToConversation(originalUrl: originalUrl, filename: fileInfo.filenameWithSuffix, uploadedUrl: urlToSend, filesize: Int64(filesize), mimeType: mimeType, completionHandler: completionHandler);
             case .failure(let error):
                 if let task = self.task {
                     switch error {
                     case .invalidResponseCode(let uploadedUrl):
                         task.askForInvalidHttpResponse(url: uploadedUrl, completionHandler: { result1 in
                             if result1 {
-                                self.sendAttachmentToConversation(originalUrl: originalUrl, uploadedUrl: uploadedUrl, filesize: Int64(filesize), mimeType: mimeType, completionHandler: completionHandler);
+                                self.sendAttachmentToConversation(originalUrl: originalUrl, filename: fileInfo.filenameWithSuffix, uploadedUrl: uploadedUrl, filesize: Int64(filesize), mimeType: mimeType, completionHandler: completionHandler);
                                 self.completed(with: .success(uploadedUrl));
                             } else {
                                 completionHandler?();

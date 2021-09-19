@@ -57,6 +57,55 @@ public enum ShareError: Error {
     }
 }
 
+public struct ShareFileInfo {
+    
+    public let filename: String;
+    public let suffix: String?;
+    
+    public var filenameWithSuffix: String {
+        if let suffix = suffix {
+            return "\(filename).\(suffix)";
+        } else {
+            return filename;
+        }
+    }
+    
+    public init(filename: String, suffix: String?) {
+        self.filename = filename;
+        if suffix?.isEmpty ?? true {
+            self.suffix = nil;
+        } else {
+            self.suffix = suffix;
+        }
+    }
+    
+    public func with(suffix: String?) -> ShareFileInfo {
+        return .init(filename: filename, suffix: suffix);
+    }
+    
+    public func with(filename: String) -> String {
+        if let suffix = self.suffix {
+            return "\(filename).\(suffix)";
+        }
+        return filename;
+    }
+    
+    public static func from(url: URL, defaultSuffix: String?) -> ShareFileInfo {
+        let name = url.lastPathComponent;
+        var startOffset = name.startIndex;
+        if name.hasPrefix("trim.") {
+            startOffset = name.index(startOffset, offsetBy: "trim.".count);
+        }
+        
+        if let idx = name.lastIndex(of: "."), idx > startOffset {
+            return ShareFileInfo(filename: String(name[startOffset..<idx]), suffix: String(name[name.index(after: idx)..<name.endIndex]));
+        } else {
+            return ShareFileInfo(filename: String(name[startOffset..<name.endIndex]), suffix: defaultSuffix);
+        }
+    }
+}
+
+
 class MediaHelper {
     
     static func askImageQuality(window: NSWindow, forceQualityQuestion askQuality: Bool, _ completionHandler: @escaping (Result<ImageQuality,ShareError>)->Void) {
@@ -110,9 +159,9 @@ class MediaHelper {
         }
     }
     
-    static func compressImage(url: URL, filename: String, quality: ImageQuality, deleteSource: Bool, completionHandler: @escaping (Result<URL,ShareError>)->Void) {
+    static func compressImage(url: URL, fileInfo: ShareFileInfo, quality: ImageQuality, deleteSource: Bool, completionHandler: @escaping (Result<(URL,ShareFileInfo),ShareError>)->Void) {
         guard quality != .original else {
-            completionHandler(.success(url));
+            completionHandler(.success((url, fileInfo)));
             return;
         }
         guard let inData = try? Data(contentsOf: url), let image = NSImage(data: inData) else {
@@ -126,29 +175,31 @@ class MediaHelper {
             try? FileManager.default.removeItem(at: url);
         }
         
-        let fileUrl = FileManager.default.temporaryDirectory.appendingPathComponent(filename + ".jpg", isDirectory: false);
+        let newFileInfo = fileInfo.with(suffix: "jpg");
+        let fileUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: false);
         guard let outData = image.scaled(maxWidthOrHeight: quality.size).jpegData(compressionQuality: quality.quality) else {
             return;
         }
         do {
             try outData.write(to: fileUrl);
-            completionHandler(.success(fileUrl));
+            completionHandler(.success((fileUrl, newFileInfo)));
         } catch {
             completionHandler(.failure(.noAccessError));
             return;
         }
     }
     
-    static func compressMovie(url: URL, filename: String, quality: VideoQuality, deleteSource: Bool, progressCallback: @escaping (Float)->Void, completionHandler: @escaping (Result<URL,ShareError>)->Void) {
+    static func compressMovie(url: URL, fileInfo: ShareFileInfo, quality: VideoQuality, deleteSource: Bool, progressCallback: @escaping (Float)->Void, completionHandler: @escaping (Result<(URL,ShareFileInfo),ShareError>)->Void) {
         guard quality != .original else {
-            completionHandler(.success(url));
+            completionHandler(.success((url, fileInfo)));
             return;
         }
         let video = AVAsset(url: url);
         let exportSession = AVAssetExportSession(asset: video, presetName: quality.preset)!;
         exportSession.shouldOptimizeForNetworkUse = true;
         exportSession.outputFileType = .mp4;
-        let fileUrl = FileManager.default.temporaryDirectory.appendingPathComponent(filename + ".mp4", isDirectory: false);
+        let newFileInfo = fileInfo.with(suffix: "mp4");
+        let fileUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: false);
         exportSession.outputURL = fileUrl;
         
         let timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true, block: { _ in
@@ -159,7 +210,7 @@ class MediaHelper {
             if deleteSource {
                 try? FileManager.default.removeItem(at: url);
             }
-            completionHandler(.success(fileUrl));
+            completionHandler(.success((fileUrl, newFileInfo)));
         }
     }
     
