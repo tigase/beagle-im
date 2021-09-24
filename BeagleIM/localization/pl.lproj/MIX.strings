@@ -58,8 +58,8 @@
 /* Class = "NSTextFieldCell"; title = "Name"; ObjectID = "fTU-bT-Php"; */
 "fTU-bT-Php.title" = "Nazwa";
 
-/* Class = "NSButtonCell"; title = "Manage"; ObjectID = "jBk-PJ-rEC"; */
-"jBk-PJ-rEC.title" = "Zarządzaj";
+/* Class = "NSButtonCell"; title = "Blocked"; ObjectID = "jBk-PJ-rEC"; */
+"jBk-PJ-rEC.title" = "Zablokowani";
 
 /* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "jv7-Xc-Zea"; */
 "jv7-Xc-Zea.title" = "Table View Cell";
@@ -105,3 +105,27 @@
 
 /* Class = "NSTabViewItem"; label = "Allowed"; ObjectID = "xig-C3-GKB"; */
 "xig-C3-GKB.label" = "Dopuszczeni";
+
+/* Class = "NSMenuItem"; title = "Start chat"; ObjectID = "VBT-2t-RbR"; */
+"VBT-2t-RbR.title" = "Rozpocznij rozmowę";
+
+/* Class = "NSMenuItem"; title = "Block"; ObjectID = "iNt-1W-IHu"; */
+"iNt-1W-IHu.title" = "Zablokuj";
+
+/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "RI8-Al-mLJ"; */
+"RI8-Al-mLJ.title" = "";
+
+/* Class = "NSViewController"; title = "ChannelManageBlockedSegue"; ObjectID = "Uia-ff-60o"; */
+"Uia-ff-60o.title" = "";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "dEy-Kj-c4o"; */
+"dEy-Kj-c4o.title" = "";
+
+/* Class = "NSTextFieldCell"; title = "Manage blocked"; ObjectID = "hXG-3j-hOy"; */
+"hXG-3j-hOy.title" = "Zablokowni";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "pcA-FT-0T1"; */
+"pcA-FT-0T1.title" = "";
+
+/* Class = "NSButtonCell"; title = "Close"; ObjectID = "uf2-wu-ozZ"; */
+"uf2-wu-ozZ.title" = "Zamknij";

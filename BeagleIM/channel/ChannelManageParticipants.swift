@@ -22,6 +22,8 @@
 import AppKit
 import TigaseSwift
 
+// TODO: Remove this controller. It should not be needed in the future.
+@available(*, unavailable)
 class ChannelManagerParticipants: NSViewController, ChannelAwareProtocol, NSTabViewDelegate, NSTableViewDelegate, NSTableViewDataSource {
     
     @IBOutlet var tabView: NSTabView!;

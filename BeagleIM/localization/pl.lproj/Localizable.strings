@@ -191,7 +191,7 @@
 "Allow access" = "Pozwól na dostęp";
 
 /* alert windiw title */
-"Ban access" = "Zabroń dostępnu";
+"Ban access" = "Zabroń dostępu";
 
 /* alert window message */
 "Enter a JID of user you want to add to the list." = "Wprowadź JID użytkownika którego chcesz dodać do listy.";
@@ -951,3 +951,12 @@
 
 /* label to notify user that recording is in progress */
 "Recording" = "Nagrywanie";
+
+/* action label */
+"Ban" = "Zablokuj";
+
+/* action label */
+"Kick out" = "Wyrzuć";
+
+/* alert window message */
+"Enter a JID of user you want to ban." = "Wprowadź JID użytkownika którego chcesz zablokować.";

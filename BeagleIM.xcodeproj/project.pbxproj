@@ -207,6 +207,7 @@
 		FEC5DC8421553A7500AA3E4F /* AbstractChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC5DC8321553A7500AA3E4F /* AbstractChatViewController.swift */; };
 		FEC5DC8621553F4700AA3E4F /* GroupchatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC5DC8521553F4700AA3E4F /* GroupchatViewController.swift */; };
 		FEC661F821AABFB0004FDE1E /* NSViewWithTextBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC661F721AABFB0004FDE1E /* NSViewWithTextBackground.swift */; };
+		FECFA80826FE2CD0004CDC62 /* ChannelManageBlocked.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECFA80726FE2CD0004CDC62 /* ChannelManageBlocked.swift */; };
 		FED2A95225F00159008828E4 /* DBChatMarkersStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED2A95125F00158008828E4 /* DBChatMarkersStore.swift */; };
 		FED2A95825F0ED03008828E4 /* ChatMarkerCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED2A95725F0ED03008828E4 /* ChatMarkerCellView.swift */; };
 		FED2A963260292B6008828E4 /* ConversationAttachment.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED2A961260292B5008828E4 /* ConversationAttachment.swift */; };
@@ -484,6 +485,7 @@
 		FEC5DC8321553A7500AA3E4F /* AbstractChatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractChatViewController.swift; sourceTree = "<group>"; };
 		FEC5DC8521553F4700AA3E4F /* GroupchatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupchatViewController.swift; sourceTree = "<group>"; };
 		FEC661F721AABFB0004FDE1E /* NSViewWithTextBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSViewWithTextBackground.swift; sourceTree = "<group>"; };
+		FECFA80726FE2CD0004CDC62 /* ChannelManageBlocked.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelManageBlocked.swift; sourceTree = "<group>"; };
 		FED2A95125F00158008828E4 /* DBChatMarkersStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBChatMarkersStore.swift; sourceTree = "<group>"; };
 		FED2A95725F0ED03008828E4 /* ChatMarkerCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMarkerCellView.swift; sourceTree = "<group>"; };
 		FED2A961260292B5008828E4 /* ConversationAttachment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConversationAttachment.swift; sourceTree = "<group>"; };
@@ -832,6 +834,7 @@
 				FEB994B0241418FE00B8E7A7 /* InviteToChannelViewController.swift */,
 				FEB994B224154C1F00B8E7A7 /* ChannelManageParticipants.swift */,
 				FEA2998925BC3C940021865E /* MixParticipant+AvatarPublisher.swift */,
+				FECFA80726FE2CD0004CDC62 /* ChannelManageBlocked.swift */,
 			);
 			path = channel;
 			sourceTree = "<group>";
@@ -1457,6 +1460,7 @@
 				FE5C6B29228B34B9003DAB30 /* SelectAdHocCommandController.swift in Sources */,
 				FE78E316269A1151008131A1 /* CreateMeetingController.swift in Sources */,
 				FE6E6BFB21384D5F003B1696 /* XmppService.swift in Sources */,
+				FECFA80826FE2CD0004CDC62 /* ChannelManageBlocked.swift in Sources */,
 				FE9E069A23A3976500952E9C /* DownloadManager.swift in Sources */,
 				FEA2997E25B9F5930021865E /* ChatsListSuggestionItemView.swift in Sources */,
 				FE6E6BF721384D5F003B1696 /* AutoresizingTextField.swift in Sources */,

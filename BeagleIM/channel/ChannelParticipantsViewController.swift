@@ -22,16 +22,35 @@
 import AppKit
 import TigaseSwift
 import Combine
+import TigaseSQLite3
+import TigaseLogging
 
-class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, NSTableViewDataSource, ChannelAwareProtocol {
+class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, NSTableViewDataSource, ChannelAwareProtocol, NSMenuDelegate {
     
+    @IBOutlet var searchField: NSSearchField!;
     @IBOutlet var participantsTableView: NSTableView!
     
     @IBOutlet var participantsTableViewHeightConstraint: NSLayoutConstraint!;
     
     @IBOutlet var inviteParticipantsButton: NSButton!;
     @IBOutlet var manageParticipantsButton: NSButton!;
+    private var manageParticipantsButtonHeightConstraint: NSLayoutConstraint!;
     
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "MIX");
+        
+    @Published
+    private var query: String = "";
+    private var inviteOnly: Bool = true {
+        didSet {
+            manageParticipantsButton.isEnabled = !inviteOnly;
+            manageParticipantsButton.isHidden = inviteOnly;
+            if inviteOnly {
+                NSLayoutConstraint.activate([manageParticipantsButtonHeightConstraint]);
+            } else {
+                NSLayoutConstraint.deactivate([manageParticipantsButtonHeightConstraint]);
+            }
+        }
+    }
     var channel: Channel!;
     weak var channelViewController: NSViewController?;
     
@@ -58,14 +77,28 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
         if #available(macOS 11.0, *) {
             self.participantsTableView.style = .fullWidth;
         }
+        manageParticipantsButtonHeightConstraint = manageParticipantsButton.heightAnchor.constraint(equalToConstant: 0);
+        inviteOnly = true;
     }
     
     override func viewWillAppear() {
-        self.channel.participantsPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] participants in
+        if let mixModule = channel.context?.module(.mix) {
+            mixModule.checkAccessPolicy(of: channel.jid, completionHandler: { [weak self] result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let inviteOnly):
+                        self?.inviteOnly = inviteOnly;
+                    case .failure(_):
+                        self?.inviteOnly = true;
+                    }
+                }
+            });
+        }
+        self.channel.participantsPublisher.receive(on: DispatchQueue.main).combineLatest($query).sink(receiveValue: { [weak self] (participants, query) in
             guard let that = self else {
                 return;
             }
-            that.participants = participants.sorted(by: that.sortParticipants);
+            that.participants = participants.filter({ query.isEmpty || $0.nickname?.lowercased().contains(query.lowercased()) ?? false }).sorted(by: that.sortParticipants);
         }).store(in: &cancellables);
         
         inviteParticipantsButton.isHidden = !channel.has(permission: .changeConfig);
@@ -76,6 +109,9 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
             self?.manageParticipantsButton.isHidden = !permissions.contains(.changeConfig);
             constraint.isActive = !permissions.contains(.changeConfig);
         }).store(in: &cancellables);
+        
+        NotificationCenter.default.publisher(for: NSControl.textDidChangeNotification, object: searchField).map({ ($0.object as! NSSearchField).stringValue }).sink(receiveValue: { [weak self] query in self?.query = query }).store(in: &cancellables);
+        participantsTableView.selectionHighlightStyle = .none;
     }
         
     func numberOfRows(in tableView: NSTableView) -> Int {
@@ -89,10 +125,10 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
         }
         return nil;
     }
-    
+        
     func sortParticipants(p1: MixParticipant, p2: MixParticipant) -> Bool {
-        let v1 = p1.nickname ?? p1.jid?.stringValue ?? p1.id;
-        let v2 = p2.nickname ?? p2.jid?.stringValue ?? p2.id;
+        let v1 = p1.nickname?.lowercased() ?? p1.jid?.stringValue ?? p1.id;
+        let v2 = p2.nickname?.lowercased() ?? p2.jid?.stringValue ?? p2.id;
         return v1 < v2;
     }
     
@@ -109,9 +145,94 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
     
     @IBAction func showManageParticipantsWindow(_ sender: Any) {
         //self.dismiss(self);
-        channelViewController?.performSegue(withIdentifier: "ShowManagerParticipantsSheet", sender: sender);
+        self.channelViewController?.performSegue(withIdentifier: "ChannelManageBlockedSegue", sender: sender);
     }
+    
+    func numberOfItems(in menu: NSMenu) -> Int {
+        return menu.items.count;
+    }
+    
+    func menu(_ menu: NSMenu, update item: NSMenuItem, at index: Int, shouldCancel: Bool) -> Bool {
+        // hide unwanted items
+        let row = participantsTableView.clickedRow;
+        guard row >= 0 && participants.count > row, let action = item.action else {
+            item.isEnabled = false;
+            item.isHidden = true;
+            return true;
+        }
+        
+        let participant = participants[index];
 
+        switch action {
+        case #selector(startChatClicked(_:)):
+            item.isEnabled = true;
+            item.isHidden = participant.jid == nil;
+        case #selector(banParticipant(_:)):
+            item.title = inviteOnly ? NSLocalizedString("Kick out", comment: "action label") : NSLocalizedString("Ban", comment: "action label");
+            let canBan = self.channel.permissions?.contains(.changeConfig) ?? false;
+            item.isEnabled = canBan;
+            item.isHidden = !canBan;
+        default:
+            item.isEnabled = false;
+            item.isHidden = true;
+        }
+        return true;
+    }
+    
+    @IBAction func startChatClicked(_ sender: Any) {
+        defer {
+            self.dismiss(self);
+        }
+        
+        let row = participantsTableView.clickedRow;
+        guard row >= 0 && participants.count > row else {
+            return;
+        }
+        
+        guard let client = channel.context, let jid = participants[row].jid else {
+            return;
+        }
+        
+        if let chat = client.modulesManager.module(.message).chatManager.createChat(for: client, with: jid) {
+            NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: chat)
+        }
+    }
+    
+    @IBAction func banParticipant(_ sender: Any) {
+        defer {
+            self.dismiss(self);
+        }
+        
+        let row = participantsTableView.clickedRow;
+        guard row >= 0 && participants.count > row else {
+            return;
+        }
+
+        guard let mixModule = channel.context?.module(.mix), let jid = participants[row].jid else {
+            return;
+        }
+
+        let channelJid = channel.jid;
+        if inviteOnly {
+            mixModule.allowAccess(to: channelJid, for: jid, completionHandler: { [weak self] result in
+                switch result {
+                case .success(_):
+                    break;
+                case .failure(let err):
+                    self?.logger.error("blocking access to channel \(channelJid) for user \(jid) failed, error: \(err.description, privacy: .public)");
+                }
+            });
+        } else {
+            mixModule.denyAccess(to: channelJid, for: jid, completionHandler: { [weak self] result in
+                switch result {
+                case .success(_):
+                    break;
+                case .failure(let err):
+                    self?.logger.error("blocking access to channel \(channelJid) for user \(jid) failed, error: \(err.description, privacy: .public)");
+                }
+            })
+        }
+    }
 }
 
 class ChannelParticipantTableCellView: NSTableCellView {
@@ -123,9 +244,9 @@ class ChannelParticipantTableCellView: NSTableCellView {
         let name = participant.nickname ?? participant.jid?.stringValue ?? participant.id;
         self.avatarView.name = name;
         if let jid = participant.jid {
-            self.avatarView.image = AvatarManager.instance.avatar(for: jid, on: channel.account);
+            self.avatarView.avatar = AvatarManager.instance.avatar(for: jid, on: channel.account);
         } else {
-            self.avatarView.image = nil;
+            self.avatarView.avatar = nil;
         }
         self.label.stringValue = name;
     }
