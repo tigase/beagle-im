@@ -54,7 +54,25 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
     var channel: Channel!;
     weak var channelViewController: NSViewController?;
     
-    private var participants: [MixParticipant] = [] {
+    struct ParticipantItem: Hashable {
+        let participant: MixParticipant;
+        let isAdmin: Bool;
+        let isOwner: Bool;
+        
+        var jid: BareJID? {
+            return participant.jid;
+        }
+        
+        var id: String {
+            return participant.id;
+        }
+        
+        var nickname: String? {
+            return participant.nickname;
+        }
+    }
+    
+    private var participants: [ParticipantItem] = [] {
         didSet {
             participantsTableViewHeightConstraint.constant = max(min(CGFloat(participants.count) * (24.0 + 4 + 3), 400.0), 0.0);
             let changes = participants.calculateChanges(from: oldValue);
@@ -72,6 +90,14 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
     private let participantsDispatcher = QueueDispatcher(label: "participantsQueue");
     
     private var cancellables: Set<AnyCancellable> = [];
+    
+    struct Roles {
+        var admins: [BareJID] = [];
+        var owners: [BareJID] = [];
+    }
+    
+    @Published
+    private var roles: Roles = Roles();
     
     override func viewDidLoad() {
         if #available(macOS 11.0, *) {
@@ -93,12 +119,24 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
                     }
                 }
             });
+            if channel.permissions?.contains(.changeConfig) ?? false {
+                mixModule.retrieveConfig(for: channel.jid, completionHandler: { result in
+                    DispatchQueue.main.async {
+                        switch result {
+                        case .success(let config):
+                            self.update(fromConfig: config);
+                        case .failure(_):
+                            self.roles = Roles();
+                        }
+                    }
+                });
+            }
         }
-        self.channel.participantsPublisher.receive(on: DispatchQueue.main).combineLatest($query).sink(receiveValue: { [weak self] (participants, query) in
+        self.channel.participantsPublisher.receive(on: DispatchQueue.main).combineLatest($query, $roles).sink(receiveValue: { [weak self] (participants, query, roles) in
             guard let that = self else {
                 return;
             }
-            that.participants = participants.filter({ query.isEmpty || $0.nickname?.lowercased().contains(query.lowercased()) ?? false }).sorted(by: that.sortParticipants);
+            that.participants = participants.filter({ query.isEmpty || $0.nickname?.lowercased().contains(query.lowercased()) ?? false }).sorted(by: that.sortParticipants).map({ ParticipantItem(participant: $0, isAdmin: $0.jid != nil && roles.admins.contains($0.jid!), isOwner: $0.jid != nil && roles.owners.contains($0.jid!) )});
         }).store(in: &cancellables);
         
         inviteParticipantsButton.isHidden = !channel.has(permission: .changeConfig);
@@ -114,6 +152,17 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
         participantsTableView.selectionHighlightStyle = .none;
     }
         
+    func update(fromConfig config: JabberDataElement) {
+        var roles = Roles();
+        if let ownerField: JidMultiField = config.getField(named: "Owner") {
+            roles.owners = ownerField.value.map({ $0.bareJid });
+        }
+        if let adminField: JidMultiField = config.getField(named: "Administrator") {
+            roles.admins = adminField.value.map({ $0.bareJid });
+        }
+        self.roles = roles;
+    }
+    
     func numberOfRows(in tableView: NSTableView) -> Int {
         return self.participants.count;
     }
@@ -161,17 +210,30 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
             return true;
         }
         
-        let participant = participants[index];
+        let participant = participants[row];
 
+        let canModifyConfig = self.channel.permissions?.contains(.changeConfig) ?? false;
+        
         switch action {
         case #selector(startChatClicked(_:)):
             item.isEnabled = true;
             item.isHidden = participant.jid == nil;
         case #selector(banParticipant(_:)):
             item.title = inviteOnly ? NSLocalizedString("Kick out", comment: "action label") : NSLocalizedString("Ban", comment: "action label");
-            let canBan = self.channel.permissions?.contains(.changeConfig) ?? false;
-            item.isEnabled = canBan;
-            item.isHidden = !canBan;
+            item.isEnabled = canModifyConfig;
+            item.isHidden = !canModifyConfig;
+        case #selector(grantAdminPermissions(_:)):
+            item.isEnabled = canModifyConfig && !participant.isAdmin;
+            item.isHidden = (!canModifyConfig) || participant.isAdmin;
+        case #selector(revokeAdminPermissions(_:)):
+            item.isEnabled = canModifyConfig && participant.isAdmin;
+            item.isHidden = (!canModifyConfig) || !participant.isAdmin;
+        case #selector(grantOwnerPermissions(_:)):
+            item.isEnabled = canModifyConfig && !participant.isOwner;
+            item.isHidden = (!canModifyConfig) || participant.isOwner;
+        case #selector(revokeOwnerPermissions(_:)):
+            item.isEnabled = canModifyConfig && participant.isOwner;
+            item.isHidden = (!canModifyConfig) || !participant.isOwner;
         default:
             item.isEnabled = false;
             item.isHidden = true;
@@ -189,7 +251,7 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
             return;
         }
         
-        guard let client = channel.context, let jid = participants[row].jid else {
+        guard let client = channel.context, let jid = participants[row].participant.jid else {
             return;
         }
         
@@ -208,7 +270,7 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
             return;
         }
 
-        guard let mixModule = channel.context?.module(.mix), let jid = participants[row].jid else {
+        guard let mixModule = channel.context?.module(.mix), let jid = participants[row].participant.jid else {
             return;
         }
 
@@ -233,14 +295,105 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
             })
         }
     }
+    
+    @IBAction func grantAdminPermissions(_ sender: Any) {
+        let row = participantsTableView.clickedRow;
+        guard row >= 0 && participants.count > row, let jid = participants[row].jid else {
+            return;
+        }
+
+        modifyConfig({ config in
+            guard let field: JidMultiField = config.getField(named: "Administrator"), !field.value.contains(JID(jid)) else {
+                return nil;
+            }
+            field.value.append(JID(jid));
+            return config;
+        })
+    }
+    
+    @IBAction func revokeAdminPermissions(_ sender: Any) {
+        let row = participantsTableView.clickedRow;
+        guard row >= 0 && participants.count > row, let jid = participants[row].jid else {
+            return;
+        }
+
+        modifyConfig({ config in
+            guard let field: JidMultiField = config.getField(named: "Administrator"), field.value.contains(JID(jid)) else {
+                return nil;
+            }
+            field.value.removeAll(where: { $0.bareJid == jid });
+            return config;
+        })
+    }
+    
+    @IBAction func grantOwnerPermissions(_ sender: Any) {
+        let row = participantsTableView.clickedRow;
+        guard row >= 0 && participants.count > row, let jid = participants[row].jid else {
+            return;
+        }
+
+        modifyConfig({ config in
+            guard let field: JidMultiField = config.getField(named: "Owner"), !field.value.contains(JID(jid)) else {
+                return nil;
+            }
+            field.value.append(JID(jid));
+            return config;
+        })
+    }
+    
+    @IBAction func revokeOwnerPermissions(_ sender: Any) {
+        let row = participantsTableView.clickedRow;
+        guard row >= 0 && participants.count > row, let jid = participants[row].jid else {
+            return;
+        }
+
+        modifyConfig({ config in
+            guard let field: JidMultiField = config.getField(named: "Owner"), field.value.contains(JID(jid)) else {
+                return nil;
+            }
+            field.value.removeAll(where: { $0.bareJid == jid });
+            guard !field.value.isEmpty else {
+                return nil;
+            }
+            return config;
+        })
+    }
+
+    private func modifyConfig(_ fn: @escaping (JabberDataElement)->JabberDataElement?) {
+        guard let mixModule = channel.context?.module(.mix) else {
+            return;
+        }
+        let channelJid = channel.jid;
+        mixModule.retrieveConfig(for: channelJid, completionHandler: { [weak self] result in
+            switch result {
+            case .success(let config):
+                guard let newConfig = fn(config) else {
+                    return;
+                }
+                mixModule.updateConfig(for: channelJid, config: newConfig, completionHandler: { result in
+                    switch result {
+                    case .success(_):
+                        DispatchQueue.main.async {
+                            self?.update(fromConfig: newConfig);
+                        }
+                    case .failure(_):
+                        break;
+                    }
+                })
+            case .failure(_):
+                break;
+            }
+        })
+    }
 }
 
 class ChannelParticipantTableCellView: NSTableCellView {
     
     @IBOutlet var avatarView: AvatarView!;
     @IBOutlet var label: NSTextField!;
+    @IBOutlet var roleView: NSImageView!;
     
-    func update(participant: MixParticipant, in channel: Channel) {
+    func update(participant: ChannelParticipantsViewController.ParticipantItem, in channel: Channel) {
         let name = participant.nickname ?? participant.jid?.stringValue ?? participant.id;
         self.avatarView.name = name;
         if let jid = participant.jid {
@@ -248,7 +401,15 @@ class ChannelParticipantTableCellView: NSTableCellView {
         } else {
             self.avatarView.avatar = nil;
         }
+        
         self.label.stringValue = name;
+        if participant.isOwner {
+            self.roleView.image = NSImage(named: "star.fill")?.tinted(with: NSColor.systemYellow);
+        } else if participant.isAdmin {
+            self.roleView.image = NSImage(named: "star")?.tinted(with: NSColor.systemGray);
+        } else {
+            self.roleView.image = nil;
+        }
     }
     
 }

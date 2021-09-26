@@ -750,7 +750,7 @@ Gw
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="rxM-gQ-f7g">
-                                                                    <rect key="frame" x="28" y="6" width="207" height="16"/>
+                                                                    <rect key="frame" x="28" y="6" width="96" height="16"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="8VF-Tj-y0v">
                                                                         <font key="font" metaFont="system"/>
                                                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -765,18 +765,30 @@ Gw
                                                                     </constraints>
                                                                     <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyUpOrDown" id="g0S-Ep-xg7"/>
                                                                 </imageView>
+                                                                <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="sVK-ui-9mO">
+                                                                    <rect key="frame" x="213" y="4" width="20" height="20"/>
+                                                                    <constraints>
+                                                                        <constraint firstAttribute="height" constant="20" id="h6y-iQ-Ni5"/>
+                                                                        <constraint firstAttribute="width" secondItem="sVK-ui-9mO" secondAttribute="height" multiplier="1:1" id="mUW-lI-geT"/>
+                                                                    </constraints>
+                                                                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="Y7g-DZ-Ke4"/>
+                                                                </imageView>
                                                             </subviews>
                                                             <constraints>
                                                                 <constraint firstItem="tSH-Ve-6ud" firstAttribute="leading" secondItem="kGz-eY-akr" secondAttribute="leading" constant="2" id="2Kg-LJ-WlV"/>
+                                                                <constraint firstItem="sVK-ui-9mO" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="rxM-gQ-f7g" secondAttribute="trailing" constant="4" id="4S3-3b-YzD"/>
                                                                 <constraint firstItem="rxM-gQ-f7g" firstAttribute="centerY" secondItem="kGz-eY-akr" secondAttribute="centerY" id="DId-8x-5Gv"/>
                                                                 <constraint firstItem="rxM-gQ-f7g" firstAttribute="leading" secondItem="tSH-Ve-6ud" secondAttribute="trailing" constant="4" id="Ira-gG-Ey1"/>
-                                                                <constraint firstAttribute="trailing" secondItem="rxM-gQ-f7g" secondAttribute="trailing" constant="2" id="hiY-6M-opZ"/>
+                                                                <constraint firstItem="sVK-ui-9mO" firstAttribute="centerY" secondItem="kGz-eY-akr" secondAttribute="centerY" id="c7Y-Nb-SqG"/>
+                                                                <constraint firstAttribute="trailing" secondItem="sVK-ui-9mO" secondAttribute="trailing" constant="2" id="cpX-WC-IWC"/>
                                                                 <constraint firstItem="tSH-Ve-6ud" firstAttribute="top" secondItem="kGz-eY-akr" secondAttribute="top" constant="2" id="lbS-pS-Lgl"/>
+                                                                <constraint firstItem="sVK-ui-9mO" firstAttribute="top" relation="greaterThanOrEqual" secondItem="kGz-eY-akr" secondAttribute="top" constant="4" id="pUC-ng-LWr"/>
                                                                 <constraint firstAttribute="bottom" secondItem="tSH-Ve-6ud" secondAttribute="bottom" constant="2" id="qFk-sS-uEF"/>
                                                             </constraints>
                                                             <connections>
                                                                 <outlet property="avatarView" destination="tSH-Ve-6ud" id="08x-t9-sMS"/>
                                                                 <outlet property="label" destination="rxM-gQ-f7g" id="FVa-5s-EAh"/>
+                                                                <outlet property="roleView" destination="sVK-ui-9mO" id="rzE-8N-2qW"/>
                                                                 <outlet property="textField" destination="rxM-gQ-f7g" id="oVe-2o-YUI"/>
                                                             </connections>
                                                         </tableCellView>
@@ -847,6 +859,30 @@ Gw
                             <modifierMask key="keyEquivalentModifierMask"/>
                             <connections>
                                 <action selector="startChatClicked:" target="8HN-y9-jjO" id="DyE-cR-hRz"/>
+                            </connections>
+                        </menuItem>
+                        <menuItem title="Grant admin rights" image="star" catalog="system" id="1Vk-80-bHc">
+                            <modifierMask key="keyEquivalentModifierMask"/>
+                            <connections>
+                                <action selector="grantAdminPermissions:" target="8HN-y9-jjO" id="y2y-dM-j05"/>
+                            </connections>
+                        </menuItem>
+                        <menuItem title="Grant owner rights" image="star.fill" catalog="system" id="Tha-qB-HSO">
+                            <modifierMask key="keyEquivalentModifierMask"/>
+                            <connections>
+                                <action selector="grantOwnerPermissions:" target="8HN-y9-jjO" id="3qc-Fe-hxL"/>
+                            </connections>
+                        </menuItem>
+                        <menuItem title="Revoke admin rights" image="star.slash" catalog="system" id="FRH-GT-63I">
+                            <modifierMask key="keyEquivalentModifierMask"/>
+                            <connections>
+                                <action selector="revokeAdminPermissions:" target="8HN-y9-jjO" id="E87-Jw-TJ0"/>
+                            </connections>
+                        </menuItem>
+                        <menuItem title="Revoke owner rights" image="star.slash.fill" catalog="system" id="apF-E8-nQj">
+                            <modifierMask key="keyEquivalentModifierMask"/>
+                            <connections>
+                                <action selector="revokeOwnerPermissions:" target="8HN-y9-jjO" id="Nur-rr-c9X"/>
                             </connections>
                         </menuItem>
                         <menuItem title="Block" image="xmark.circle" catalog="system" id="iNt-1W-IHu">
@@ -1282,6 +1318,10 @@ Gw
         <image name="hand.raised" width="128" height="128"/>
         <image name="info.circle.fill" catalog="system" width="15" height="15"/>
         <image name="person.fill" catalog="system" width="14" height="14"/>
+        <image name="star" catalog="system" width="17" height="16"/>
+        <image name="star.fill" catalog="system" width="17" height="16"/>
+        <image name="star.slash" catalog="system" width="17" height="16"/>
+        <image name="star.slash.fill" catalog="system" width="17" height="16"/>
         <image name="trash.fill" catalog="system" width="15" height="16"/>
         <image name="xmark.circle" catalog="system" width="15" height="15"/>
         <namedColor name="chatBackgroundColor">

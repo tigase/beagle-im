@@ -45,7 +45,7 @@ class ChatsListSuggestionItemView: SuggestionItemView<ContactSuggestionField.Ite
         didSet {
             cancellables.removeAll();
             if let displayable = item?.displayableId {
-                displayable.avatarPublisher.assign(to: \.avatar, on: self.avatar).store(in: &cancellables);
+                displayable.avatarPublisher.receive(on: DispatchQueue.main).assign(to: \.avatar, on: self.avatar).store(in: &cancellables);
                 displayable.displayNamePublisher.assign(to: \.stringValue, on: self.label).store(in: &cancellables);
                 displayable.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: self.avatar).store(in: &cancellables);
             } else {

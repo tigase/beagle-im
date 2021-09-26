@@ -129,3 +129,15 @@
 
 /* Class = "NSButtonCell"; title = "Close"; ObjectID = "uf2-wu-ozZ"; */
 "uf2-wu-ozZ.title" = "Zamknij";
+
+/* Class = "NSMenuItem"; title = "Grant admin rights"; ObjectID = "1Vk-80-bHc"; */
+"1Vk-80-bHc.title" = "Nadaj prawa administratora";
+
+/* Class = "NSMenuItem"; title = "Revoke admin rights"; ObjectID = "FRH-GT-63I"; */
+"FRH-GT-63I.title" = "Odbierz prawa administratora";
+
+/* Class = "NSMenuItem"; title = "Grant owner rights"; ObjectID = "Tha-qB-HSO"; */
+"Tha-qB-HSO.title" = "Nadaj prawa właściciela";
+
+/* Class = "NSMenuItem"; title = "Revoke owner rights"; ObjectID = "apF-E8-nQj"; */
+"apF-E8-nQj.title" = "Odbierz prawa właściciela";
