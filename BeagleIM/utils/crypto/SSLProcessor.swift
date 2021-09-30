@@ -264,7 +264,7 @@ open class SSLProcessor: ConnectorBase.NetworkProcessor, SSLNetworkProcessor {
             writeDataToNetwork(completion: .none);
         case .complete:
             // we have completed handshake but we need to verify SSL certificate..
-            guard let trust = getPeerCertificate()?.secTrust() else {
+            guard let trust = getPeerTrust() else {
                 self.certificateValidationFailed?(nil);
                 return;
             }
@@ -317,6 +317,37 @@ open class SSLProcessor: ConnectorBase.NetworkProcessor, SSLNetworkProcessor {
             return nil;
         }
         return SSLCertificate(withOwnedReference: ptr);
+    }
+    
+    open func getPeerCertificateChain() -> [SSLCertificate]? {
+        guard let chainPtr = SSL_get_peer_cert_chain(ssl) else {
+            return nil
+        }
+        
+        var chains: [SSLCertificate] = [];
+        var ptr: OpaquePointer?;
+        repeat {
+            ptr = sk_X509_shift(chainPtr)
+            if ptr != nil {
+                chains.append(SSLCertificate(withOwnedReference: ptr!));
+            }
+        } while ptr != nil;
+        
+        return chains;
+    }
+    
+    open func getPeerTrust() -> SecTrust? {
+        guard let chain = getPeerCertificateChain(), let cert = chain.first?.secCertificate() else {
+            return nil;
+        }
+        
+        var commonName: CFString?;
+        SecCertificateCopyCommonName(cert, &commonName);
+        var trust: SecTrust?;
+        guard SecTrustCreateWithCertificates(chain.compactMap({ $0.secCertificate() }) as CFArray, SecPolicyCreateBasicX509(), &trust) == errSecSuccess else {
+            return nil;
+        }
+        return trust;
     }
     
     open func getSelectedAlpnProtocol() -> String? {
