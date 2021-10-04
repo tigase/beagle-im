@@ -116,7 +116,7 @@ class ConversationDataSource {
         NotificationCenter.default.addObserver(self, selector: #selector(messageNew), name: DBChatHistoryStore.MESSAGE_NEW, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(messageUpdated(_:)), name: DBChatHistoryStore.MESSAGE_UPDATED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(messageRemoved(_:)), name: DBChatHistoryStore.MESSAGE_REMOVED, object: nil);
-        Settings.$linkPreviews.dropFirst().sink(receiveValue: { [weak self] _ in
+        Settings.$linkPreviews.dropFirst().receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] _ in
             guard let that = self else {
                 return;
             }
@@ -218,8 +218,8 @@ class ConversationDataSource {
         let oldestEntry = newStore.last(where: { $0.sender != .none });
         
         let changes = newStore.calculateChanges(from: oldStore);
-        let initial = self.state != .loaded;
         DispatchQueue.main.sync {
+            let initial = self.state != .loaded;
             self.store = newStore;
             self.entriesCount = entriesCount;
             self.oldestEntry = oldestEntry;

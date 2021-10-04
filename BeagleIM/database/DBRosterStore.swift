@@ -34,7 +34,7 @@ class AccountRoster {
     
     private var roster = [JID: RosterItem]();
     
-    private let queue = DispatchQueue(label: "accountRoster", attributes: .concurrent);
+    private let queue = DispatchQueue(label: "accountRoster");
     
     init(items: [RosterItem]) {
         for item in items {
@@ -44,7 +44,7 @@ class AccountRoster {
     
     public var items: [RosterItem] {
         return queue.sync {
-            return Array(self.roster.values);
+            return self.roster.values.map({ $0 });
         }
     }
     
@@ -74,19 +74,19 @@ open class DBRosterStore: RosterStore {
     
     static let instance: DBRosterStore = DBRosterStore.init();
     
-    public let dispatcher: QueueDispatcher;
+    public let queue: DispatchQueue;
     
     private var accountRosters = [BareJID: AccountRoster]();
   
     @Published
     public private(set) var items: Set<RosterItem> = [];
     
-    public init() {
-        self.dispatcher = QueueDispatcher(label: "db_roster_store");
+    private init() {
+        self.queue = DispatchQueue(label: "db_roster_store");
     }
     
     public func clear(for account: BareJID) {
-        dispatcher.sync {
+        queue.sync {
             let items = Set(self.items(for: account));
             self.items = self.items.filter({ !items.contains($0) });
             for item in items {
@@ -100,7 +100,7 @@ open class DBRosterStore: RosterStore {
     }
     
     func items(for account: BareJID) -> [RosterItem] {
-        return dispatcher.sync {
+        return queue.sync {
             return self.accountRosters[account];
         }?.items ?? [];
     }
@@ -110,7 +110,7 @@ open class DBRosterStore: RosterStore {
     }
     
     func item(for account: BareJID, jid: JID) -> RosterItem? {
-        return dispatcher.sync {
+        return queue.sync {
             return self.accountRosters[account];
         }?.item(for: jid);
     }
@@ -123,8 +123,8 @@ open class DBRosterStore: RosterStore {
         let account = context.userBareJid;
         
         let data = DBRosterData(groups: groups, annotations: annotations);
-        dispatcher.sync {
-            guard let item = item(for: account, jid: jid) else {
+        queue.sync {
+            guard let item = self.accountRosters[account]?.item(for: jid) else {
                 let params: [String: Any?] = ["account": account, "jid": jid, "name": name, "subscription": subscription.rawValue, "timestamp": Date(), "ask": ask, "data": data];
                 
                 let id = try! Database.main.writer({ database -> Int? in
@@ -154,19 +154,23 @@ open class DBRosterStore: RosterStore {
     }
         
     func remove(for account: BareJID, jid: JID) {
-        guard let accountRoster = dispatcher.sync(execute: {
-            return self.accountRosters[account];
-        }) else {
+        queue.sync {
+            _remove(for: account, jid: jid);
+        }
+    }
+    
+    private func _remove(for account: BareJID, jid: JID) {
+        guard let accountRoster = self.accountRosters[account] else {
             return;
         }
+
         if let item = accountRoster.item(for: jid) {
             accountRoster.remove(for: jid);
-            dispatcher.sync {
-                try! Database.main.writer({ database in
-                    try database.delete(query: .rosterDeleteItem, params: ["id": item.id]);
-                })
-                self.items.remove(item);
-            }
+
+            try! Database.main.writer({ database in
+                try database.delete(query: .rosterDeleteItem, params: ["id": item.id]);
+            })
+            self.items.remove(item);
         }
     }
     
@@ -189,7 +193,7 @@ open class DBRosterStore: RosterStore {
     }
     
     public func initialize(context: Context) {
-        return dispatcher.async {
+        return queue.async {
             guard self.accountRosters[context.userBareJid] == nil else {
                 return;
             }
@@ -204,7 +208,7 @@ open class DBRosterStore: RosterStore {
     }
     
     public func deinitialize(context: Context) {
-        dispatcher.async {
+        queue.async {
             guard let roster = self.accountRosters[context.userBareJid] else {
                 return;
             }
