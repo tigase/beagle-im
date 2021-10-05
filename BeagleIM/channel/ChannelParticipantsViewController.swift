@@ -103,6 +103,8 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
         if #available(macOS 11.0, *) {
             self.participantsTableView.style = .fullWidth;
         }
+        participantsTableView.target = self;
+        participantsTableView.action = #selector(itemClicked);
         manageParticipantsButtonHeightConstraint = manageParticipantsButton.heightAnchor.constraint(equalToConstant: 0);
         inviteOnly = true;
     }
@@ -161,6 +163,13 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
             roles.admins = adminField.value.map({ $0.bareJid });
         }
         self.roles = roles;
+    }
+    
+    @objc func itemClicked() {
+        guard let menu = participantsTableView.menu, let event = NSApp.currentEvent else {
+            return;
+        }
+        NSMenu.popUpContextMenu(menu, with: event, for: participantsTableView);
     }
     
     func numberOfRows(in tableView: NSTableView) -> Int {
@@ -223,20 +232,28 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
             item.isEnabled = canModifyConfig;
             item.isHidden = !canModifyConfig;
         case #selector(grantAdminPermissions(_:)):
+            item.image = item.image?.tinted(with: NSColor.systemGray);
             item.isEnabled = canModifyConfig && !participant.isAdmin;
             item.isHidden = (!canModifyConfig) || participant.isAdmin;
         case #selector(revokeAdminPermissions(_:)):
+            item.image = item.image?.tinted(with: NSColor.systemGray);
             item.isEnabled = canModifyConfig && participant.isAdmin;
             item.isHidden = (!canModifyConfig) || !participant.isAdmin;
         case #selector(grantOwnerPermissions(_:)):
+            item.image = item.image?.tinted(with: NSColor.systemYellow);
             item.isEnabled = canModifyConfig && !participant.isOwner;
             item.isHidden = (!canModifyConfig) || participant.isOwner;
         case #selector(revokeOwnerPermissions(_:)):
+            item.image = item.image?.tinted(with: NSColor.systemYellow);
             item.isEnabled = canModifyConfig && participant.isOwner;
             item.isHidden = (!canModifyConfig) || !participant.isOwner;
         default:
             item.isEnabled = false;
             item.isHidden = true;
+        }
+        if #available(macOS 11.0, *) {
+        } else {
+            item.image = item.image?.scaled(maxWidthOrHeight: 16)
         }
         return true;
     }
@@ -404,7 +421,11 @@ class ChannelParticipantTableCellView: NSTableCellView {
         
         self.label.stringValue = name;
         if participant.isOwner {
-            self.roleView.image = NSImage(named: "star.fill")?.tinted(with: NSColor.systemYellow);
+            if #available(macOS 11.0, *) {
+                self.roleView.image = NSImage(named: "star.fill")?.tinted(with: NSColor.systemYellow);
+            } else {
+                self.roleView.image = NSImage(named: "starFill")?.tinted(with: NSColor.systemYellow);
+            }
         } else if participant.isAdmin {
             self.roleView.image = NSImage(named: "star")?.tinted(with: NSColor.systemGray);
         } else {

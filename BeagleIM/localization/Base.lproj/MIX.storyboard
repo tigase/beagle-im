@@ -3,6 +3,7 @@
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="19162"/>
+        <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -295,7 +296,7 @@ AAAAAAEGA
                                                                         <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                                         <prototypeCellViews>
                                                                             <tableCellView identifier="ManageBannedParticipantsTableCellView" id="hDy-9o-uLm">
-                                                                                <rect key="frame" x="1" y="1" width="287" height="17"/>
+                                                                                <rect key="frame" x="11" y="1" width="287" height="17"/>
                                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                                 <subviews>
                                                                                     <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="FRj-we-OID">
@@ -559,7 +560,7 @@ Gw
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView identifier="BlockedJidColumn" id="IZQ-oZ-fqL">
-                                                            <rect key="frame" x="8" y="0.0" width="244" height="32"/>
+                                                            <rect key="frame" x="18" y="0.0" width="244" height="32"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Aat-59-Gs9">
@@ -591,7 +592,7 @@ Gw
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView identifier="BlockedDeleteColumn" misplaced="YES" id="xaM-Df-kyx">
-                                                            <rect key="frame" x="269" y="0.0" width="21" height="32"/>
+                                                            <rect key="frame" x="279" y="0.0" width="21" height="32"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <button translatesAutoresizingMaskIntoConstraints="NO" id="xDS-ne-blB">
@@ -861,25 +862,29 @@ Gw
                                 <action selector="startChatClicked:" target="8HN-y9-jjO" id="DyE-cR-hRz"/>
                             </connections>
                         </menuItem>
-                        <menuItem title="Grant admin rights" image="star" catalog="system" id="1Vk-80-bHc">
+                        <menuItem title="Grant admin rights" id="1Vk-80-bHc">
+                            <imageReference key="image" image="star" catalog="system" symbolScale="default" renderingMode="original"/>
                             <modifierMask key="keyEquivalentModifierMask"/>
                             <connections>
                                 <action selector="grantAdminPermissions:" target="8HN-y9-jjO" id="y2y-dM-j05"/>
                             </connections>
                         </menuItem>
-                        <menuItem title="Grant owner rights" image="star.fill" catalog="system" id="Tha-qB-HSO">
+                        <menuItem title="Grant owner rights" id="Tha-qB-HSO">
+                            <imageReference key="image" image="star.fill" catalog="system" symbolScale="default" renderingMode="original"/>
                             <modifierMask key="keyEquivalentModifierMask"/>
                             <connections>
                                 <action selector="grantOwnerPermissions:" target="8HN-y9-jjO" id="3qc-Fe-hxL"/>
                             </connections>
                         </menuItem>
-                        <menuItem title="Revoke admin rights" image="star.slash" catalog="system" id="FRH-GT-63I">
+                        <menuItem title="Revoke admin rights" id="FRH-GT-63I">
+                            <imageReference key="image" image="star.slash" catalog="system" symbolScale="default" renderingMode="original"/>
                             <modifierMask key="keyEquivalentModifierMask"/>
                             <connections>
                                 <action selector="revokeAdminPermissions:" target="8HN-y9-jjO" id="E87-Jw-TJ0"/>
                             </connections>
                         </menuItem>
-                        <menuItem title="Revoke owner rights" image="star.slash.fill" catalog="system" id="apF-E8-nQj">
+                        <menuItem title="Revoke owner rights" id="apF-E8-nQj">
+                            <imageReference key="image" image="star.slash.fill" catalog="system" symbolScale="default" renderingMode="original"/>
                             <modifierMask key="keyEquivalentModifierMask"/>
                             <connections>
                                 <action selector="revokeOwnerPermissions:" target="8HN-y9-jjO" id="Nur-rr-c9X"/>
