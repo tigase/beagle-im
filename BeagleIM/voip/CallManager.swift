@@ -405,6 +405,8 @@ class Call: NSObject, JingleSessionActionDelegate {
     }
     
     private func initiateWebRTC(iceServers: [RTCIceServer], completionHandler: @escaping (Result<Void,Error>)->Void) {
+        // moved initialization to main queue to sync with a call to reset()
+        DispatchQueue.main.async {
         self.currentConnection = VideoCallController.initiatePeerConnection(iceServers: iceServers, withDelegate: self);
         if self.currentConnection != nil {
             self.localAudioTrack = VideoCallController.peerConnectionFactory.audioTrack(withTrackId: "audio-" + UUID().uuidString);
@@ -435,6 +437,7 @@ class Call: NSObject, JingleSessionActionDelegate {
             }
         } else {
             completionHandler(.failure(ErrorCondition.internal_server_error));
+        }
         }
     }
 
