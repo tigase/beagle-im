@@ -187,7 +187,11 @@
 		FEA2F53522E46A2E009F2E88 /* ShowRosterWindowSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2F53422E46A2E009F2E88 /* ShowRosterWindowSegue.swift */; };
 		FEA2F53722E5F6A2009F2E88 /* AdvancedSettingsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA2F53622E5F6A2009F2E88 /* AdvancedSettingsController.swift */; };
 		FEA3D128233D0A10000BD20A /* TasksQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA3D127233D0A10000BD20A /* TasksQueue.swift */; };
+		FEA6DCAE2711DB7C0079DBEC /* VideoCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA6DCAD2711DB7C0079DBEC /* VideoCapturer.swift */; };
+		FEA6DCB02711DB940079DBEC /* VideoCaptureDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA6DCAF2711DB940079DBEC /* VideoCaptureDevice.swift */; };
+		FEA6DCB22711DBC10079DBEC /* CameraVideoCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA6DCB12711DBC10079DBEC /* CameraVideoCapture.swift */; };
 		FEA8941F2156625E004C3B51 /* ConfigureRoomViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8941E2156625E004C3B51 /* ConfigureRoomViewController.swift */; };
+		FEB3BBD4270CBAD600C93D87 /* DesktopVideoCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB3BBD3270CBAD600C93D87 /* DesktopVideoCapturer.swift */; };
 		FEB4EAFC2162A3DC00F8A9E2 /* AutoresizineTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB4EAFB2162A3DC00F8A9E2 /* AutoresizineTextView.swift */; };
 		FEB4EAFE2163714300F8A9E2 /* RoundedScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB4EAFD2163714300F8A9E2 /* RoundedScrollView.swift */; };
 		FEB5B4E1235DB57F00DE6AAD /* NSWindowCloseOnEsc.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB5B4E0235DB57F00DE6AAD /* NSWindowCloseOnEsc.swift */; };
@@ -208,6 +212,7 @@
 		FEC5DC8621553F4700AA3E4F /* GroupchatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC5DC8521553F4700AA3E4F /* GroupchatViewController.swift */; };
 		FEC661F821AABFB0004FDE1E /* NSViewWithTextBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC661F721AABFB0004FDE1E /* NSViewWithTextBackground.swift */; };
 		FECFA80826FE2CD0004CDC62 /* ChannelManageBlocked.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECFA80726FE2CD0004CDC62 /* ChannelManageBlocked.swift */; };
+		FECFA80A27022E49004CDC62 /* RTCDesktopVideoCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECFA80927022E49004CDC62 /* RTCDesktopVideoCapturer.swift */; };
 		FED2A95225F00159008828E4 /* DBChatMarkersStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED2A95125F00158008828E4 /* DBChatMarkersStore.swift */; };
 		FED2A95825F0ED03008828E4 /* ChatMarkerCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED2A95725F0ED03008828E4 /* ChatMarkerCellView.swift */; };
 		FED2A963260292B6008828E4 /* ConversationAttachment.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED2A961260292B5008828E4 /* ConversationAttachment.swift */; };
@@ -466,7 +471,11 @@
 		FEA2F53422E46A2E009F2E88 /* ShowRosterWindowSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowRosterWindowSegue.swift; sourceTree = "<group>"; };
 		FEA2F53622E5F6A2009F2E88 /* AdvancedSettingsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedSettingsController.swift; sourceTree = "<group>"; };
 		FEA3D127233D0A10000BD20A /* TasksQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasksQueue.swift; sourceTree = "<group>"; };
+		FEA6DCAD2711DB7C0079DBEC /* VideoCapturer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCapturer.swift; sourceTree = "<group>"; };
+		FEA6DCAF2711DB940079DBEC /* VideoCaptureDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCaptureDevice.swift; sourceTree = "<group>"; };
+		FEA6DCB12711DBC10079DBEC /* CameraVideoCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraVideoCapture.swift; sourceTree = "<group>"; };
 		FEA8941E2156625E004C3B51 /* ConfigureRoomViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigureRoomViewController.swift; sourceTree = "<group>"; };
+		FEB3BBD3270CBAD600C93D87 /* DesktopVideoCapturer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesktopVideoCapturer.swift; sourceTree = "<group>"; };
 		FEB4EAFB2162A3DC00F8A9E2 /* AutoresizineTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoresizineTextView.swift; sourceTree = "<group>"; };
 		FEB4EAFD2163714300F8A9E2 /* RoundedScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundedScrollView.swift; sourceTree = "<group>"; };
 		FEB5B4E0235DB57F00DE6AAD /* NSWindowCloseOnEsc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSWindowCloseOnEsc.swift; sourceTree = "<group>"; };
@@ -486,6 +495,7 @@
 		FEC5DC8521553F4700AA3E4F /* GroupchatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupchatViewController.swift; sourceTree = "<group>"; };
 		FEC661F721AABFB0004FDE1E /* NSViewWithTextBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSViewWithTextBackground.swift; sourceTree = "<group>"; };
 		FECFA80726FE2CD0004CDC62 /* ChannelManageBlocked.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelManageBlocked.swift; sourceTree = "<group>"; };
+		FECFA80927022E49004CDC62 /* RTCDesktopVideoCapturer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTCDesktopVideoCapturer.swift; sourceTree = "<group>"; };
 		FED2A95125F00158008828E4 /* DBChatMarkersStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBChatMarkersStore.swift; sourceTree = "<group>"; };
 		FED2A95725F0ED03008828E4 /* ChatMarkerCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMarkerCellView.swift; sourceTree = "<group>"; };
 		FED2A961260292B5008828E4 /* ConversationAttachment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConversationAttachment.swift; sourceTree = "<group>"; };
@@ -593,6 +603,7 @@
 		FE1A8BA421CA880100604141 /* voip */ = {
 			isa = PBXGroup;
 			children = (
+				FEA6DCAC2711DB640079DBEC /* capture */,
 				FE83E362217A3809001DEF09 /* JingleManager.swift */,
 				FE4073A821BACC50009CE335 /* VideoCallController.swift */,
 				FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */,
@@ -890,6 +901,18 @@
 				FE78E3132699ACE0008131A1 /* MultiContactSelectionView.swift */,
 			);
 			path = suggestions;
+			sourceTree = "<group>";
+		};
+		FEA6DCAC2711DB640079DBEC /* capture */ = {
+			isa = PBXGroup;
+			children = (
+				FEA6DCAD2711DB7C0079DBEC /* VideoCapturer.swift */,
+				FEA6DCAF2711DB940079DBEC /* VideoCaptureDevice.swift */,
+				FEA6DCB12711DBC10079DBEC /* CameraVideoCapture.swift */,
+				FEB3BBD3270CBAD600C93D87 /* DesktopVideoCapturer.swift */,
+				FECFA80927022E49004CDC62 /* RTCDesktopVideoCapturer.swift */,
+			);
+			path = capture;
 			sourceTree = "<group>";
 		};
 		FEC135E7261254CF00054666 /* combine */ = {
@@ -1416,7 +1439,9 @@
 				FE68418C25DA9B0F0042392E /* HttpFileUploadModule.swift in Sources */,
 				FE65A283230314D9001E68EF /* SettingsTabViewController.swift in Sources */,
 				FEC336F3240A785400EC1A0D /* ChannelAwareProtocol.swift in Sources */,
+				FEA6DCAE2711DB7C0079DBEC /* VideoCapturer.swift in Sources */,
 				FEF9EC49242F8D620090C913 /* BaseChatCellView.swift in Sources */,
+				FEA6DCB02711DB940079DBEC /* VideoCaptureDevice.swift in Sources */,
 				FE9CDF0D2269E282001039C3 /* MessageEncryption.swift in Sources */,
 				FE6E6C0821384DF1003B1696 /* ChatCellView.swift in Sources */,
 				FE41FB3D215CD82500AD86D3 /* PresenceRosterEventHandler.swift in Sources */,
@@ -1431,6 +1456,7 @@
 				FEF8BED2216A6761001DA755 /* InviteToGroupchatController.swift in Sources */,
 				FEA2997625B9EE280021865E /* SuggestionsHighlightingView.swift in Sources */,
 				FE6E6BFD21384D5F003B1696 /* Open1On1ChatController.swift in Sources */,
+				FECFA80A27022E49004CDC62 /* RTCDesktopVideoCapturer.swift in Sources */,
 				FE2ACA8223546C8E004623BC /* NSMutableAttributedString_extensions.swift in Sources */,
 				FE14044325601BB000BE77E8 /* Chat.swift in Sources */,
 				FED2ECF42066B01C00F506A5 /* AppDelegate.swift in Sources */,
@@ -1451,6 +1477,7 @@
 				FE2ACA842355B967004623BC /* EditKeywordsController.swift in Sources */,
 				FEC336F5240A78AB00EC1A0D /* ChannelEditInfoViewController.swift in Sources */,
 				FEB4EAFE2163714300F8A9E2 /* RoundedScrollView.swift in Sources */,
+				FEB3BBD4270CBAD600C93D87 /* DesktopVideoCapturer.swift in Sources */,
 				FE89341B25DD3C07004E38B0 /* SSLContext.swift in Sources */,
 				FED2A95825F0ED03008828E4 /* ChatMarkerCellView.swift in Sources */,
 				FEB994B1241418FE00B8E7A7 /* InviteToChannelViewController.swift in Sources */,
@@ -1460,6 +1487,7 @@
 				FE5C6B29228B34B9003DAB30 /* SelectAdHocCommandController.swift in Sources */,
 				FE78E316269A1151008131A1 /* CreateMeetingController.swift in Sources */,
 				FE6E6BFB21384D5F003B1696 /* XmppService.swift in Sources */,
+				FEA6DCB22711DBC10079DBEC /* CameraVideoCapture.swift in Sources */,
 				FECFA80826FE2CD0004CDC62 /* ChannelManageBlocked.swift in Sources */,
 				FE9E069A23A3976500952E9C /* DownloadManager.swift in Sources */,
 				FEA2997E25B9F5930021865E /* ChatsListSuggestionItemView.swift in Sources */,

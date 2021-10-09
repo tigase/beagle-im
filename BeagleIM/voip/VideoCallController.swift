@@ -25,13 +25,44 @@ import TigaseSwift
 import Metal
 import UserNotifications
 import os
+import MetalKit
 
 class RTCVideoView: RTCMTLNSVideoView {
+    
+    var scaling: RTCVideoViewScaling {
+        get {
+            guard let view = subviews.compactMap({ $0 as? MTKView }).first else {
+                return .fit;
+            }
+            switch view.layerContentsPlacement {
+            case .scaleProportionallyToFill:
+                return .fill;
+            default:
+                return .fit;
+            }
+        }
+        set {
+            guard let view = subviews.compactMap({ $0 as? MTKView }).first else {
+                return;
+            }
+            switch newValue {
+            case .fit:
+                view.layerContentsPlacement = .scaleProportionallyToFit;
+            case .fill:
+                view.layerContentsPlacement = .scaleProportionallyToFill;
+            }
+        }
+    }
     
     override func renderFrame(_ frame: RTCVideoFrame?) {
         super.renderFrame(frame);
     }
 
+}
+
+enum RTCVideoViewScaling {
+    case fit
+    case fill
 }
 
 class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate {
@@ -108,12 +139,12 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
         
     }
     
-    @IBOutlet var remoteVideoView: RTCMTLNSVideoView!
-    @IBOutlet var localVideoView: RTCMTLNSVideoView!;
+    @IBOutlet var remoteVideoView: RTCVideoView!
+    @IBOutlet var localVideoView: RTCVideoView!;
     
     @IBOutlet var remoteAvatarView: AvatarView!;
     
-    var remoteVideoViewAspect: NSLayoutConstraint?
+//    var remoteVideoViewAspect: NSLayoutConstraint?
     var localVideoViewAspect: NSLayoutConstraint?
                 
     fileprivate var localVideoTrack: RTCVideoTrack? {
@@ -142,16 +173,22 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
     }
     
     @IBOutlet var stateLabel: NSTextField!;
+    @IBOutlet var moreButton: RoundButton!;
     
     override func viewDidLoad() {
         super.viewDidLoad();
 
+        remoteVideoView.wantsLayer = true;
+        remoteVideoView.scaling = .fill;
         localVideoViewAspect = localVideoView.widthAnchor.constraint(equalTo: localVideoView.heightAnchor, multiplier: 1.0);
         localVideoViewAspect?.isActive = true;
         
-        remoteVideoViewAspect = remoteVideoView.widthAnchor.constraint(equalTo: remoteVideoView.heightAnchor, multiplier: 1.0);
-        remoteVideoViewAspect?.isActive = true;
+//        remoteVideoViewAspect = remoteVideoView.widthAnchor.constraint(equalTo: remoteVideoView.heightAnchor, multiplier: 1.0);
+//        remoteVideoViewAspect?.isActive = true;
         
+        localVideoView.wantsLayer = true;
+        localVideoView.layer?.cornerRadius = 5;
+        localVideoView.layer?.backgroundColor = NSColor.black.cgColor;
         localVideoView.delegate = self;
         remoteVideoView.delegate = self;
     }
@@ -197,16 +234,16 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
                 self.localVideoViewAspect = self.localVideoView.widthAnchor.constraint(equalTo: self.localVideoView.heightAnchor, multiplier: size.width / size.height);
                 self.localVideoViewAspect?.isActive = true;
             } else if videoView === self.remoteVideoView! {
-                let currSize = self.remoteVideoView.frame.size;
-                
-                let newHeight = sqrt((currSize.width * currSize.height)/(size.width/size.height));
-                let newWidth = newHeight * (size.width/size.height);
-                
-                self.remoteVideoViewAspect?.isActive = false;
-                self.remoteVideoView.removeConstraint(self.remoteVideoViewAspect!);
-                self.view.window?.setContentSize(NSSize(width: newWidth, height: newHeight));
-                self.remoteVideoViewAspect = self.remoteVideoView.widthAnchor.constraint(equalTo: self.remoteVideoView.heightAnchor, multiplier: size.width / size.height);
-                self.remoteVideoViewAspect?.isActive = true;
+//                let currSize = self.remoteVideoView.frame.size;
+//
+//                let newHeight = sqrt((currSize.width * currSize.height)/(size.width/size.height));
+//                let newWidth = newHeight * (size.width/size.height);
+//
+//                self.remoteVideoViewAspect?.isActive = false;
+//                self.remoteVideoView.removeConstraint(self.remoteVideoViewAspect!);
+//                //self.view.window?.setContentSize(NSSize(width: newWidth, height: newHeight));
+//                self.remoteVideoViewAspect = self.remoteVideoView.widthAnchor.constraint(equalTo: self.remoteVideoView.heightAnchor, multiplier: size.width / size.height);
+//                self.remoteVideoViewAspect?.isActive = true;
             }
         }
     }
@@ -219,6 +256,8 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
             self.remoteAvatarView?.avatar = nil;
             self.remoteAvatarView?.name = nil;
         }
+        self.localVideoView.isHidden = !(call?.media.contains(.video) ?? false);
+        self.moreButton.isHidden = !(call?.media.contains(.video) ?? false);
     }
     
     private func updateStateLabel() {
@@ -299,7 +338,69 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
         
         self.call?.muted(value: muted);
     }
+    
+    @IBAction func moreClicked(_ sender: RoundButton) {
+        guard self.call?.media.contains(.video) ?? false else {
+            return;
+        }
+        
+        if let event = NSApp.currentEvent {
+            let menu = NSMenu(title: "");
+            menu.addItem(withTitle: NSLocalizedString("Fill frame", comment: "video call menu action"), action: #selector(fillFrame), keyEquivalent: "").state = remoteVideoView.scaling == .fill ? .on : .off;
+            menu.addItem(withTitle: NSLocalizedString("Fit to frame", comment: "video call menu action"), action: #selector(fitFrame), keyEquivalent: "").state = remoteVideoView.scaling == .fit ? .on : .off;
+            menu.addItem(.separator());
+            let selectCamera = menu.addItem(withTitle: NSLocalizedString("Video source", comment: "video call menu action"), action: nil, keyEquivalent: "");
+            let camerasMenu = NSMenu(title: NSLocalizedString("Video source", comment: "video call menu action"));
+            let currentDevice = call?.currentCapturerDevice;
+            for device in VideoCaptureDevice.allDevices {
+                let item = camerasMenu.addItem(withTitle: device.label, action: #selector(changeVideoSource(_:)), keyEquivalent: "");
+                item.representedObject = device;
+                item.state = device == currentDevice ? .on : .off;
+            }
+            selectCamera.submenu = camerasMenu;
+            for item in (menu.items + camerasMenu.items) {
+                item.target = self;
+            }
+            NSMenu.popUpContextMenu(menu, with: event, for: sender);
+        }
+    }
+    
+    @objc func fillFrame() {
+        self.remoteVideoView.scaling = .fill;
+    }
+        
+    @objc func fitFrame() {
+        self.remoteVideoView.scaling = .fit;
+    }
+    
+    @objc func changeVideoSource(_ item: NSMenuItem) {
+        guard let device = item.representedObject as? VideoCaptureDevice else {
+            return;
+        }
+     
+        if #available(macOS 11.0, *), case .display(_) = device {
+            var hasAccess = CGPreflightScreenCaptureAccess();
+            if !hasAccess {
+                hasAccess = CGRequestScreenCaptureAccess();
+            }
             
+            guard hasAccess else {
+                let alert = NSAlert();
+                alert.messageText = NSLocalizedString("Access denied", comment: "error window title");
+                alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("You didn't grant permission to record screen from %@.", comment: "error window message - no access to the screen"), device.label);
+                alert.addButton(withTitle: NSLocalizedString("OK", comment: "button label"));
+                guard let window = self.view.window else {
+                    return;
+                }
+                alert.beginSheetModal(for: window, completionHandler: nil);
+                return;
+            }
+        }
+        self.call?.startVideoCapturer(device: device, completionHandler: { result in
+            os_log(OSLogType.debug, log: .jingle, "switched video source");
+        })
+    }
+    
     static let defaultCallConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement": "true"]);
     
     static let publicStunServers: [RTCIceServer] = [ RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:stun2.l.google.com:19302","stun:stun3.l.google.com:19302","stun:stun4.l.google.com:19302"]), RTCIceServer(urlStrings: ["stun:stunserver.org:3478" ]) ];

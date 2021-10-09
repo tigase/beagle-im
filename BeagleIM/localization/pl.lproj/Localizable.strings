@@ -960,3 +960,18 @@
 
 /* alert window message */
 "Enter a JID of user you want to ban." = "Wprowadź JID użytkownika którego chcesz zablokować.";
+
+/* error window title */
+"Access denied" = "Brak dostępu";
+
+/* video call menu action */
+"Fill frame" = "Wypełnij ramkę";
+
+/* video call menu action */
+"Fit to frame" = "Dopasuj do ramki";
+
+/* video call menu action */
+"Video source" = "Źródło wideo";
+
+/* error window message - no access to the screen */
+"You didn't grant permission to record screen from %@." = "Nie nadałeś uprawnień do nagrywania ekranu %@.";

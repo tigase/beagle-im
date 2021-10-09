@@ -185,12 +185,15 @@ class Call: NSObject, JingleSessionActionDelegate {
     private(set) var localVideoSource: RTCVideoSource?;
     private(set) var localVideoTrack: RTCVideoTrack?;
     private(set) var localAudioTrack: RTCAudioTrack?;
-    private(set) var localCapturer: RTCCameraVideoCapturer?;
-    private(set) var localCameraDeviceID: String?;
+    private(set) var localCapturer: VideoCapturer?;
     
     private var cancellables: Set<AnyCancellable> = [];
     
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "Call");
+    
+    var currentCapturerDevice: VideoCaptureDevice? {
+        return localCapturer?.currentDevice;
+    }
     
     init(account: BareJID, with jid: BareJID, sid: String, direction: Direction, media: [Media]) {
         self.account = account;
@@ -406,7 +409,7 @@ class Call: NSObject, JingleSessionActionDelegate {
     
     private func initiateWebRTC(iceServers: [RTCIceServer], completionHandler: @escaping (Result<Void,Error>)->Void) {
         // moved initialization to main queue to sync with a call to reset()
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [self] in
         self.currentConnection = VideoCallController.initiatePeerConnection(iceServers: iceServers, withDelegate: self);
         if self.currentConnection != nil {
             self.localAudioTrack = VideoCallController.peerConnectionFactory.audioTrack(withTrackId: "audio-" + UUID().uuidString);
@@ -418,14 +421,11 @@ class Call: NSObject, JingleSessionActionDelegate {
                 self.localVideoSource = videoSource;
                 let localVideoTrack = VideoCallController.peerConnectionFactory.videoTrack(with: videoSource, trackId: "video-" + UUID().uuidString);
                 self.localVideoTrack = localVideoTrack;
-                let localVideoCapturer = RTCCameraVideoCapturer(delegate: videoSource);
-                self.localCapturer = localVideoCapturer;
-                if let device = RTCCameraVideoCapturer.captureDevices().first, let format = RTCCameraVideoCapturer.format(for: device, preferredOutputPixelFormat: localVideoCapturer.preferredOutputPixelFormat()) {
-                    self.logger.debug("starting video capture on: \(device), with: \(format), fps: \(RTCCameraVideoCapturer.fps(for: format))");
-                    self.localCameraDeviceID = device.uniqueID;
-                    localVideoCapturer.startCapture(with: device, format: format, fps: RTCCameraVideoCapturer.fps(for:  format), completionHandler: { error in
-                        self.logger.debug("video capturer started!");
-                    });
+                
+                if let device = VideoCaptureDevice.default {
+                    self.startVideoCapturer(device: device, completionHandler: { _ in
+                        print("video capture started!");
+                    })
                     self.delegate?.call(self, didReceiveLocalVideoTrack: localVideoTrack);
                     self.currentConnection?.add(localVideoTrack, streamIds: ["RTCmS"]);
                     completionHandler(.success(Void()));
@@ -439,6 +439,21 @@ class Call: NSObject, JingleSessionActionDelegate {
             completionHandler(.failure(ErrorCondition.internal_server_error));
         }
         }
+    }
+    
+    func startVideoCapturer(device: VideoCaptureDevice, completionHandler: @escaping (Result<Void,Error>)->Void) {
+        guard let localVideoSource = localVideoSource else {
+            return
+        }
+ 
+        if let prevCapturer = localCapturer {
+            prevCapturer.stopCapture {
+                print("old capturer stopped!");
+            }
+        }
+        
+        localCapturer = device.capturer(for: localVideoSource);
+        localCapturer?.startCapture(completionHandler: completionHandler);
     }
 
     func accept() {
