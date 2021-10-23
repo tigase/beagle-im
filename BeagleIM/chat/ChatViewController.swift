@@ -24,7 +24,6 @@ import TigaseSwift
 import TigaseSwiftOMEMO
 import Combine
 import TigaseLogging
-import MapKit
 
 class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLogContextMenuDelegate, NSMenuItemValidation {
 
@@ -207,17 +206,26 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
                     let resend = menu.addItem(withTitle: NSLocalizedString("Resend message", comment: "context menu item"), action: #selector(resendMessage), keyEquivalent: "");
                     resend.target = self;
                     resend.tag = item.id;
+                    if #available(macOS 11.0, *) {
+                        resend.image = NSImage(systemSymbolName: "repeat", accessibilityDescription: "resend")
+                    }
                 } else {
                     if item.isMessage(), !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0.isMessage() }, in: 0..<row) {
                         let correct = menu.addItem(withTitle: NSLocalizedString("Correct message", comment: "context menu item"), action: #selector(correctMessage), keyEquivalent: "");
                         correct.target = self;
                         correct.tag = item.id;
+                        if #available(macOS 11.0, *) {
+                            correct.image = NSImage(systemSymbolName: "pencil.circle", accessibilityDescription: "correct")
+                        }
                     }
                     
                     if XmppService.instance.getClient(for: item.conversation.account)?.isConnected ?? false {
                         let retract = menu.addItem(withTitle: NSLocalizedString("Retract message", comment: "context menu item"), action: #selector(retractMessage), keyEquivalent: "");
                         retract.target = self;
                         retract.tag = item.id;
+                        if #available(macOS 11.0, *) {
+                            retract.image = NSImage(systemSymbolName: "trash", accessibilityDescription: "retract")
+                        }
                     }
                 }
             case .location(_):
@@ -225,15 +233,23 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
                     let resend = menu.addItem(withTitle: NSLocalizedString("Resend message", comment: "context menu item"), action: #selector(resendMessage), keyEquivalent: "");
                     resend.target = self;
                     resend.tag = item.id;
+                    if #available(macOS 11.0, *) {
+                        resend.image = NSImage(systemSymbolName: "repeat", accessibilityDescription: "resend")
+                    }
                 } else {
                     let showMap = menu.insertItem(withTitle: NSLocalizedString("Show map", comment: "context menu item"), action: #selector(showMap), keyEquivalent: "", at: 0);
                     showMap.target = self;
                     showMap.tag = item.id;
-                    
+                    if #available(macOS 11.0, *) {
+                        showMap.image = NSImage(systemSymbolName: "map", accessibilityDescription: "show map")
+                    }
                     if XmppService.instance.getClient(for: item.conversation.account)?.isConnected ?? false {
                         let retract = menu.addItem(withTitle: NSLocalizedString("Retract message", comment: "context menu item"), action: #selector(retractMessage), keyEquivalent: "");
                         retract.target = self;
                         retract.tag = item.id;
+                        if #available(macOS 11.0, *) {
+                            retract.image = NSImage(systemSymbolName: "trash", accessibilityDescription: "retract")
+                        }
                     }
                 }
             default:
@@ -324,28 +340,6 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
                 break;
             }
         })
-    }
-    
-    @objc func showMap(_ sender: NSMenuItem) {
-        let tag = sender.tag;
-        guard tag >= 0 else {
-            return
-        }
-        
-        guard let item = dataSource.getItem(withId: tag) else {
-            return;
-        }
-        
-        guard case let .location(coordinate) = item.payload else {
-            return;
-        }
-        let placemark = MKPlacemark(coordinate: coordinate);
-        let region = MKCoordinateRegion(center: coordinate, latitudinalMeters: 2000, longitudinalMeters: 2000);
-        let mapItem = MKMapItem(placemark: placemark);
-        mapItem.openInMaps(launchOptions: [
-            MKLaunchOptionsMapCenterKey: NSValue(mkCoordinate: region.center),
-            MKLaunchOptionsMapSpanKey: NSValue(mkCoordinateSpan: region.span)
-        ])
     }
         
     override func send(message: String, correctedMessageOriginId: String?) -> Bool {

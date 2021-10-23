@@ -81,19 +81,48 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     override func prepareConversationLogContextMenu(dataSource: ConversationDataSource, menu: NSMenu, forRow row: Int) {
         super.prepareConversationLogContextMenu(dataSource: dataSource, menu: menu, forRow: row);
         if let item = dataSource.getItem(at: row), item.state.direction == .outgoing {
-            if item.state.isError {
-            } else {
-                if item.isMessage() && !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0.isMessage() }, in: 0..<row) {
-                    let correct = menu.addItem(withTitle: NSLocalizedString("Correct message", comment: "context menu item"), action: #selector(correctMessage), keyEquivalent: "");
-                    correct.target = self;
-                    correct.tag = item.id;
+            switch item.payload {
+            case .message(_, _), .attachment(_, _):
+                if item.state.isError {
+                } else {
+                    if item.isMessage() && !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0.isMessage() }, in: 0..<row) {
+                        let correct = menu.addItem(withTitle: NSLocalizedString("Correct message", comment: "context menu item"), action: #selector(correctMessage), keyEquivalent: "");
+                        correct.target = self;
+                        correct.tag = item.id;
+                        if #available(macOS 11.0, *) {
+                            correct.image = NSImage(systemSymbolName: "pencil.circle", accessibilityDescription: "correct")
+                        }
+                    }
+                    if self.channel.state == .joined && (XmppService.instance.getClient(for: item.conversation.account)?.isConnected ?? false) {
+                        let retract = menu.addItem(withTitle: NSLocalizedString("Retract message", comment: "context menu item")
+                                                   , action: #selector(retractMessage), keyEquivalent: "");
+                        retract.target = self;
+                        retract.tag = item.id;
+                        if #available(macOS 11.0, *) {
+                            retract.image = NSImage(systemSymbolName: "trash", accessibilityDescription: "retract")
+                        }
+                    }
                 }
-                if self.channel.state == .joined && (XmppService.instance.getClient(for: item.conversation.account)?.isConnected ?? false) {
-                    let retract = menu.addItem(withTitle: NSLocalizedString("Retract message", comment: "context menu item")
-                                               , action: #selector(retractMessage), keyEquivalent: "");
-                    retract.target = self;
-                    retract.tag = item.id;
+            case .location(_):
+                if item.state.isError {
+                } else {
+                    let showMap = menu.insertItem(withTitle: NSLocalizedString("Show map", comment: "context menu item"), action: #selector(showMap), keyEquivalent: "", at: 0);
+                    showMap.target = self;
+                    showMap.tag = item.id;
+                    if #available(macOS 11.0, *) {
+                        showMap.image = NSImage(systemSymbolName: "map", accessibilityDescription: "show map")
+                    }
+                    if self.channel.state == .joined && XmppService.instance.getClient(for: item.conversation.account)?.isConnected ?? false {
+                        let retract = menu.addItem(withTitle: NSLocalizedString("Retract message", comment: "context menu item"), action: #selector(retractMessage), keyEquivalent: "");
+                        retract.target = self;
+                        retract.tag = item.id;
+                        if #available(macOS 11.0, *) {
+                            retract.image = NSImage(systemSymbolName: "trash", accessibilityDescription: "retract")
+                        }
+                    }
                 }
+            default:
+                break;
             }
         }
     }

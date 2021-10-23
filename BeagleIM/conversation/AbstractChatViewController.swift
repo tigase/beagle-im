@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import MapKit
 
 class AbstractChatViewController: NSViewController, NSTextViewDelegate {
 
@@ -205,6 +206,9 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
             let reply = menu.addItem(withTitle: NSLocalizedString("Reply", comment: "context menu item"), action: #selector(replySelectedMessages), keyEquivalent: "");
             reply.target = self
             reply.tag = row;
+            if #available(macOS 11.0, *) {
+                reply.image = NSImage(systemSymbolName: "arrowshape.turn.up.left", accessibilityDescription: "reply")
+            }
         }
     }
     
@@ -228,6 +232,28 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
                 return "> \($0)"
             }
         }.joined(separator: "\n");
+    }
+    
+    @objc func showMap(_ sender: NSMenuItem) {
+        let tag = sender.tag;
+        guard tag >= 0 else {
+            return
+        }
+        
+        guard let item = dataSource.getItem(withId: tag) else {
+            return;
+        }
+        
+        guard case let .location(coordinate) = item.payload else {
+            return;
+        }
+        let placemark = MKPlacemark(coordinate: coordinate);
+        let region = MKCoordinateRegion(center: coordinate, latitudinalMeters: 2000, longitudinalMeters: 2000);
+        let mapItem = MKMapItem(placemark: placemark);
+        mapItem.openInMaps(launchOptions: [
+            MKLaunchOptionsMapCenterKey: NSValue(mkCoordinate: region.center),
+            MKLaunchOptionsMapSpanKey: NSValue(mkCoordinateSpan: region.span)
+        ])
     }
 }
 

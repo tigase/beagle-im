@@ -309,6 +309,9 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             let reply = menu.addItem(withTitle: NSLocalizedString("Reply with PM", comment: "context menu item"), action: #selector(replySelectedMessagesViaPM), keyEquivalent: "");
             reply.target = self
             reply.tag = row;
+            if #available(macOS 11.0, *) {
+                reply.image = NSImage(systemSymbolName: "arrowshape.turn.up.left.circle", accessibilityDescription: "reply with PM");
+            }
         }
         if let item = dataSource.getItem(at: row), item.state.direction == .outgoing {
             switch item.payload {
@@ -319,12 +322,36 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                         let correct = menu.addItem(withTitle: NSLocalizedString("Correct message", comment: "context menu item"), action: #selector(correctMessage), keyEquivalent: "");
                         correct.target = self;
                         correct.tag = item.id;
+                        if #available(macOS 11.0, *) {
+                            correct.image = NSImage(systemSymbolName: "pencil.circle", accessibilityDescription: "correct")
+                        }
                     }
                 
                     if room.state == .joined {
                         let retract = menu.addItem(withTitle: NSLocalizedString("Retract message", comment: "context menu item"), action: #selector(retractMessage), keyEquivalent: "");
                         retract.target = self;
                         retract.tag = item.id;
+                        if #available(macOS 11.0, *) {
+                            retract.image = NSImage(systemSymbolName: "trash", accessibilityDescription: "retract")
+                        }
+                    }
+                }
+            case .location(_):
+                if item.state.isError {
+                } else {
+                    let showMap = menu.insertItem(withTitle: NSLocalizedString("Show map", comment: "context menu item"), action: #selector(showMap), keyEquivalent: "", at: 0);
+                    showMap.target = self;
+                    showMap.tag = item.id;
+                    if #available(macOS 11.0, *) {
+                        showMap.image = NSImage(systemSymbolName: "map", accessibilityDescription: "show map")
+                    }
+                    if room.state == .joined {
+                        let retract = menu.addItem(withTitle: NSLocalizedString("Retract message", comment: "context menu item"), action: #selector(retractMessage), keyEquivalent: "");
+                        retract.target = self;
+                        retract.tag = item.id;
+                        if #available(macOS 11.0, *) {
+                            retract.image = NSImage(systemSymbolName: "trash", accessibilityDescription: "retract")
+                        }
                     }
                 }
             default:

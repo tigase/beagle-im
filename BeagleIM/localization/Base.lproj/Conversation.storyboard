@@ -237,23 +237,23 @@
                                                                         <menu key="menu" id="4Qn-jU-icf">
                                                                             <items>
                                                                                 <menuItem title="Item 1" state="on" image="ellipsis.circle" hidden="YES" id="GD4-JW-IGJ"/>
-                                                                                <menuItem title="Open" id="Emv-Uo-Cfn">
+                                                                                <menuItem title="Open" image="eye" catalog="system" id="Emv-Uo-Cfn">
                                                                                     <connections>
                                                                                         <action selector="openFile:" target="z6H-0f-uTR" id="7RT-w3-yoj"/>
                                                                                     </connections>
                                                                                 </menuItem>
-                                                                                <menuItem title="Copy" id="5gx-w0-i1S">
+                                                                                <menuItem title="Copy" image="doc.on.doc" catalog="system" id="5gx-w0-i1S">
                                                                                     <modifierMask key="keyEquivalentModifierMask"/>
                                                                                     <connections>
                                                                                         <action selector="copyFile:" target="z6H-0f-uTR" id="JdM-dL-91D"/>
                                                                                     </connections>
                                                                                 </menuItem>
-                                                                                <menuItem title="Save" id="oDV-Qj-YF8">
+                                                                                <menuItem title="Save" image="square.and.arrow.down" catalog="system" id="oDV-Qj-YF8">
                                                                                     <connections>
                                                                                         <action selector="saveFile:" target="z6H-0f-uTR" id="xuE-LD-881"/>
                                                                                     </connections>
                                                                                 </menuItem>
-                                                                                <menuItem title="Share" id="dqA-Id-kiX">
+                                                                                <menuItem title="Share" image="square.and.arrow.up" catalog="system" id="dqA-Id-kiX">
                                                                                     <modifierMask key="keyEquivalentModifierMask"/>
                                                                                     <menu key="submenu" title="Share" id="Fag-bM-rfw">
                                                                                         <items>
@@ -264,7 +264,7 @@
                                                                                     </menu>
                                                                                 </menuItem>
                                                                                 <menuItem isSeparatorItem="YES" id="FqP-6t-HPF"/>
-                                                                                <menuItem title="Delete" id="upd-Ua-LkW">
+                                                                                <menuItem title="Delete" image="trash" catalog="system" id="upd-Ua-LkW">
                                                                                     <attributedString key="attributedTitle">
                                                                                         <fragment content="Delete">
                                                                                             <attributes>
@@ -365,23 +365,23 @@
                                                                         <menu key="menu" id="hQF-1g-o66">
                                                                             <items>
                                                                                 <menuItem title="Item 1" state="on" image="ellipsis.circle" hidden="YES" id="hPi-hb-VEB"/>
-                                                                                <menuItem title="Open" id="rC8-ej-mBc">
+                                                                                <menuItem title="Open" image="eye" catalog="system" id="rC8-ej-mBc">
                                                                                     <connections>
                                                                                         <action selector="openFile:" target="yjF-f0-ChF" id="zPO-FO-5qU"/>
                                                                                     </connections>
                                                                                 </menuItem>
-                                                                                <menuItem title="Copy" id="PQ3-ki-Xrm">
+                                                                                <menuItem title="Copy" image="doc.on.doc" catalog="system" id="PQ3-ki-Xrm">
                                                                                     <modifierMask key="keyEquivalentModifierMask"/>
                                                                                     <connections>
                                                                                         <action selector="copyFile:" target="yjF-f0-ChF" id="3VM-tN-pF2"/>
                                                                                     </connections>
                                                                                 </menuItem>
-                                                                                <menuItem title="Save" id="sjT-Dg-qd2">
+                                                                                <menuItem title="Save" image="square.and.arrow.down" catalog="system" id="sjT-Dg-qd2">
                                                                                     <connections>
                                                                                         <action selector="saveFile:" target="yjF-f0-ChF" id="dgF-w2-ZAG"/>
                                                                                     </connections>
                                                                                 </menuItem>
-                                                                                <menuItem title="Share" id="19V-oi-bxb">
+                                                                                <menuItem title="Share" image="square.and.arrow.up" catalog="system" id="19V-oi-bxb">
                                                                                     <modifierMask key="keyEquivalentModifierMask"/>
                                                                                     <menu key="submenu" title="Share" id="uWP-Ey-amX">
                                                                                         <items>
@@ -392,7 +392,7 @@
                                                                                     </menu>
                                                                                 </menuItem>
                                                                                 <menuItem isSeparatorItem="YES" id="cET-MM-zuk"/>
-                                                                                <menuItem title="Delete" id="HWT-hF-b3o">
+                                                                                <menuItem title="Delete" image="trash" catalog="system" id="HWT-hF-b3o">
                                                                                     <attributedString key="attributedTitle">
                                                                                         <fragment content="Delete">
                                                                                             <attributes>
@@ -739,7 +739,9 @@
     </scenes>
     <resources>
         <image name="arrow.down.circle" width="118" height="128"/>
+        <image name="doc.on.doc" catalog="system" width="16" height="18"/>
         <image name="ellipsis.circle" width="118" height="128"/>
+        <image name="eye" catalog="system" width="21" height="13"/>
         <image name="popUpButtonCell:lYn-Io-FsM:image" width="1" height="1">
             <mutableData key="keyedArchiveRepresentation">
 YnBsaXN0MDDUAQIDBAUGBwpYJHZlcnNpb25ZJGFyY2hpdmVyVCR0b3BYJG9iamVjdHMSAAGGoF8QD05T
@@ -1005,6 +1007,9 @@ HDwcPhxAHEIcSRxLHE0pwynIKdcp2ynmKe4p+yoIKh0qIiomKigqKiosKjUqOipAKkgqSipMKk4qUDvw
 O/U8AjwFPBI8FzwfPCI8JzwvAAAAAAAAAgEAAAAAAAAAaAAAAAAAAAAAAAAAAAAAPDI
 </mutableData>
         </image>
+        <image name="square.and.arrow.down" catalog="system" width="15" height="16"/>
+        <image name="square.and.arrow.up" catalog="system" width="15" height="17"/>
+        <image name="trash" catalog="system" width="15" height="17"/>
         <namedColor name="chatBackgroundColor">
             <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

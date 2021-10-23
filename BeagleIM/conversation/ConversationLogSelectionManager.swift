@@ -364,15 +364,24 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
             var copy = menu.addItem(withTitle: NSLocalizedString("Copy text", comment: "context menu item"), action: #selector(copySelectedText), keyEquivalent: "");
             copy.target = self;
             copy.tag = row;
+            if #available(macOS 11.0, *) {
+                copy.image = NSImage(systemSymbolName: "doc.on.doc", accessibilityDescription: "copy text")
+            }
             copy = menu.addItem(withTitle: NSLocalizedString("Copy messages", comment: "context menu item"), action: #selector(copySelectedMessages), keyEquivalent: "");
             copy.target = self;
             copy.tag = row;
+            if #available(macOS 11.0, *) {
+                copy.image = NSImage(systemSymbolName: "doc.on.doc.fill", accessibilityDescription: "copy message")
+            }
         }
         if let (_,idx,_,messageView,_) = self.estimateSelectionPoint(event: event, table: table, superview: superview) {
             if messageView.textStorage?.length ?? 0 > idx, let link = messageView.textStorage?.attribute(.link, at: idx, effectiveRange: nil) as? URL {
                 let copy = menu.addItem(withTitle: NSLocalizedString("Copy link", comment: "context menu item"), action: #selector(copySelectedText), keyEquivalent: "");
                 copy.target = self;
                 copy.representedObject = link;
+                if #available(macOS 11.0, *) {
+                    copy.image = NSImage(systemSymbolName: "link", accessibilityDescription: "copy link")
+                }
             }
         }
         if row != NSNotFound {

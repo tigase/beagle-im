@@ -199,6 +199,11 @@ class ChatAttachmentCellView: BaseChatCellView {
             return;
         }
         
+        if #available(macOS 11.0, *) {
+        } else {
+            btn.menu?.items.dropFirst().forEach({ $0.image = nil });
+        }
+        
         guard let menu = btn.menu?.item(withTitle: NSLocalizedString("Share", comment: "Share menu title"))?.submenu else {
             return;
         }
