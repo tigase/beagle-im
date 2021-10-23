@@ -21,6 +21,7 @@
 
 import AppKit
 import TigaseSwift
+import CoreLocation
 
 public enum ConversationEntryPayload: Hashable {
     case message(message: String, correctionTimestamp: Date?)
@@ -31,6 +32,7 @@ public enum ConversationEntryPayload: Hashable {
     case deleted
     case unreadMessages
     case marker(type: ChatMarker.MarkerType, senders: [ConversationEntrySender])
+    case location(location: CLLocationCoordinate2D)
     
 }
 

@@ -36,30 +36,39 @@ extension ConversationEntry {
             return false;
         }
         
-        guard case .message(let message, _) = payload else {
-            return false;
-        }
-
-        switch conversation.notifications {
-        case .none:
-            return false;
-        case .mention:
-            if let nickname = (conversation as? Room)?.nickname ?? (conversation as? Channel)?.nickname {
-                if !message.contains(nickname) {
-                    let keywords = Settings.markKeywords;
-                    if !keywords.isEmpty {
-                        if  keywords.first(where: { message.contains($0) }) == nil {
+        switch payload {
+        case .message(let message, _):
+            switch conversation.notifications {
+            case .none:
+                return false;
+            case .mention:
+                if let nickname = (conversation as? Room)?.nickname ?? (conversation as? Channel)?.nickname {
+                    if !message.contains(nickname) {
+                        let keywords = Settings.markKeywords;
+                        if !keywords.isEmpty {
+                            if  keywords.first(where: { message.contains($0) }) == nil {
+                                return false;
+                            }
+                        } else {
                             return false;
                         }
-                    } else {
-                        return false;
                     }
+                } else {
+                    return false;
                 }
-            } else {
+            default:
+                break;
+            }
+        case .location(_):
+            guard conversation.notifications == .always else {
                 return false;
             }
-        default:
-            break;
+        case .attachment(_, _):
+            guard conversation.notifications == .always else {
+                 return false;
+             }
+         default:
+            return false;
         }
         
         if conversation is Chat {
@@ -71,6 +80,21 @@ extension ConversationEntry {
         return true;
     }
     
+    var notificationContent: String? {
+        switch self.payload {
+        case .message(let message, _):
+            return message;
+        case .invitation(_, _):
+            return "📨 \(NSLocalizedString("Invitation", comment: "invitation label for chats list"))"
+        case .location(_):
+            return "📍 \(NSLocalizedString("Location", comment: "attachemt label for conversations list"))";
+        case .attachment(_, _):
+            return "📎 \(NSLocalizedString("Attachment", comment: "attachemt label for conversations list"))";
+        default:
+            return nil;
+        }
+    }
+
 }
 
 public class NotificationManager {
@@ -147,7 +171,7 @@ public class NotificationManager {
             return;
         }
         
-        guard case .message(let message, _) = entry.payload else {
+        guard let body = entry.notificationContent else {
             return;
         }
         
@@ -156,7 +180,7 @@ public class NotificationManager {
         if conversation is Room || conversation is Channel {
             content.subtitle = entry.sender.nickname ?? "";
         }
-        content.body = (message.contains("`") || !Settings.enableMarkdownFormatting || !Settings.showEmoticons) ? message : message.emojify();
+        content.body = (body.contains("`") || !Settings.enableMarkdownFormatting || !Settings.showEmoticons) ? body : body.emojify();
         content.sound = UNNotificationSound.default
         content.userInfo = ["account": conversation.account.stringValue, "jid": conversation.jid.stringValue, "id": "message-new"];
  

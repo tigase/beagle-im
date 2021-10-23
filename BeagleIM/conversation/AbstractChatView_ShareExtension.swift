@@ -27,6 +27,7 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
 
     @IBOutlet var sharingProgressBar: NSProgressIndicator!;
     private(set) var sharingButton: NSButton!;
+    private(set) var locationButton: NSButton!;
     private(set) var voiceMessageButton: NSButton!;
     private var voiceRecordingView: VoiceRecordingView?;
     private var cancellables: Set<AnyCancellable> = [];
@@ -40,6 +41,13 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         NSLayoutConstraint.activate([self.voiceMessageButton.widthAnchor.constraint(equalToConstant: NSFont.systemFontSize * 2), self.voiceMessageButton.widthAnchor.constraint(equalTo: self.voiceMessageButton.heightAnchor)]);
         bottomView.addView(voiceMessageButton, in: .leading)
         self.voiceMessageButton.isEnabled = false;
+
+        self.locationButton = NSButton(image: NSImage(named: "location.circle")!, target: self, action: #selector(attachLocation(_:)));
+        self.locationButton.bezelStyle = .regularSquare;
+        self.locationButton.isBordered = false;
+        NSLayoutConstraint.activate([self.locationButton.widthAnchor.constraint(equalToConstant: NSFont.systemFontSize * 2), self.locationButton.widthAnchor.constraint(equalTo: self.locationButton.heightAnchor)]);
+        bottomView.addView(locationButton, in: .leading)
+        self.locationButton.isEnabled = true;
 
         self.sharingButton = NSButton(image: NSImage(named: "plus.circle")!, target: self, action: #selector(attachFile(_:)));
         self.sharingButton.bezelStyle = .regularSquare;
@@ -156,6 +164,12 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
             SharingTaskManager.instance.share(task: SharingTaskManager.SharingTask(controller: self, items: tasks, askForQuality: askForQuality));
         }
         return true;
+    }
+    
+    @objc func attachLocation(_ sender: NSButton) {
+        let controller = NSStoryboard(name: "Location", bundle: nil).instantiateController(withIdentifier: "ShareLocationWindowController") as! NSWindowController;
+        (controller.contentViewController as? ShareLocationController)?.conversation = conversation;
+        controller.showWindow(self);
     }
     
     @IBAction func attachFile(_ sender: NSButton) {

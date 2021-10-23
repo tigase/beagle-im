@@ -41,15 +41,20 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         // FIXME: THIS IS NO LONGER TRUE
         let item = self.items[row];
-        guard let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMessageCellView"), owner: self) as? ChatMessageCellView, case .message(let message, let correctionTimestamp) = item.payload else {
+        guard let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatMessageCellView"), owner: self) as? ChatMessageCellView else {
             return nil;
         }
+        
         view.id = item.id;
         
-//        view.set(avatar: item.avatar);
-//        view.set(senderName: item.nickname);
-        
-        view.set(item: item, message: message, correctionTimestamp: correctionTimestamp);
+        switch item.payload {
+        case .message(let message, let correctionTimestamp):
+            view.set(item: item, message: message, correctionTimestamp: correctionTimestamp);
+        case .location(let location):
+            view.set(item: ConversationEntry(id: item.id, conversation: item.conversation, timestamp: item.timestamp, state: item.state, sender: item.sender, payload: .message(message: location.geoUri, correctionTimestamp: nil), options: item.options), message: location.geoUri, correctionTimestamp: nil);
+        default:
+            return nil;
+        }
 
         view.message.isSelectable = false;
         view.message.isEditable = false;
@@ -74,6 +79,9 @@ class SearchHistoryController: NSViewController, NSTableViewDataSource, NSTableV
             DispatchQueue.main.async {
                 self.items = items.filter({ it -> Bool in
                     if case .message(_,_) = it.payload {
+                        return true;
+                    }
+                    if case .location(_) = it.payload {
                         return true;
                     }
                     return false;

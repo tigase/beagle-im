@@ -975,3 +975,13 @@
 
 /* error window message - no access to the screen */
 "You didn't grant permission to record screen from %@." = "Nie nadałeś uprawnień do nagrywania ekranu %@.";
+
+/* search location pin label */
+"Your location" = "Twoje położenie";
+
+/* attachemt label for conversations list
+   location name in chats list */
+"Location" = "Położenie";
+
+/* context menu item */
+"Show map" = "Pokaż mapę";

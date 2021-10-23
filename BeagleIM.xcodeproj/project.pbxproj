@@ -163,6 +163,8 @@
 		FE89341B25DD3C07004E38B0 /* SSLContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE89341825DD3C07004E38B0 /* SSLContext.swift */; };
 		FE8C9F5421B3F6BD00BE8332 /* container-migration.plist in Resources */ = {isa = PBXBuildFile; fileRef = FE8C9F5321B3F6BD00BE8332 /* container-migration.plist */; };
 		FE8C9F5621B40F9000BE8332 /* RegisterAccountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8C9F5521B40F9000BE8332 /* RegisterAccountController.swift */; };
+		FE8DC2422721DAAE007E6D05 /* ChatLocationCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8DC2412721DAAE007E6D05 /* ChatLocationCellView.swift */; };
+		FE8DC24327241979007E6D05 /* Location.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE8DC24527241979007E6D05 /* Location.storyboard */; };
 		FE8F7CE82562F8A60076C13E /* ConversationEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8F7CE72562F8A60076C13E /* ConversationEntry.swift */; };
 		FE8F7CEC2562F8BD0076C13E /* ConversationKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8F7CEB2562F8BD0076C13E /* ConversationKey.swift */; };
 		FE8F7CF0256452E90076C13E /* ConversationEntrySender.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8F7CEF256452E90076C13E /* ConversationEntrySender.swift */; };
@@ -190,6 +192,7 @@
 		FEA6DCAE2711DB7C0079DBEC /* VideoCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA6DCAD2711DB7C0079DBEC /* VideoCapturer.swift */; };
 		FEA6DCB02711DB940079DBEC /* VideoCaptureDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA6DCAF2711DB940079DBEC /* VideoCaptureDevice.swift */; };
 		FEA6DCB22711DBC10079DBEC /* CameraVideoCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA6DCB12711DBC10079DBEC /* CameraVideoCapture.swift */; };
+		FEA6DCBE27207ED40079DBEC /* ShareLocationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA6DCBD27207ED40079DBEC /* ShareLocationController.swift */; };
 		FEA8941F2156625E004C3B51 /* ConfigureRoomViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA8941E2156625E004C3B51 /* ConfigureRoomViewController.swift */; };
 		FEB3BBD4270CBAD600C93D87 /* DesktopVideoCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB3BBD3270CBAD600C93D87 /* DesktopVideoCapturer.swift */; };
 		FEB4EAFC2162A3DC00F8A9E2 /* AutoresizineTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB4EAFB2162A3DC00F8A9E2 /* AutoresizineTextView.swift */; };
@@ -446,6 +449,9 @@
 		FE89341825DD3C07004E38B0 /* SSLContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SSLContext.swift; sourceTree = "<group>"; };
 		FE8C9F5321B3F6BD00BE8332 /* container-migration.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "container-migration.plist"; sourceTree = "<group>"; };
 		FE8C9F5521B40F9000BE8332 /* RegisterAccountController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterAccountController.swift; sourceTree = "<group>"; };
+		FE8DC2412721DAAE007E6D05 /* ChatLocationCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatLocationCellView.swift; sourceTree = "<group>"; };
+		FE8DC24427241979007E6D05 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = localization/Base.lproj/Location.storyboard; sourceTree = "<group>"; };
+		FE8DC2472724197B007E6D05 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = localization/pl.lproj/Location.strings; sourceTree = "<group>"; };
 		FE8F7CE72562F8A60076C13E /* ConversationEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationEntry.swift; sourceTree = "<group>"; };
 		FE8F7CEB2562F8BD0076C13E /* ConversationKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationKey.swift; sourceTree = "<group>"; };
 		FE8F7CEF256452E90076C13E /* ConversationEntrySender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationEntrySender.swift; sourceTree = "<group>"; };
@@ -474,6 +480,7 @@
 		FEA6DCAD2711DB7C0079DBEC /* VideoCapturer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCapturer.swift; sourceTree = "<group>"; };
 		FEA6DCAF2711DB940079DBEC /* VideoCaptureDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCaptureDevice.swift; sourceTree = "<group>"; };
 		FEA6DCB12711DBC10079DBEC /* CameraVideoCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraVideoCapture.swift; sourceTree = "<group>"; };
+		FEA6DCBD27207ED40079DBEC /* ShareLocationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareLocationController.swift; sourceTree = "<group>"; };
 		FEA8941E2156625E004C3B51 /* ConfigureRoomViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigureRoomViewController.swift; sourceTree = "<group>"; };
 		FEB3BBD3270CBAD600C93D87 /* DesktopVideoCapturer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesktopVideoCapturer.swift; sourceTree = "<group>"; };
 		FEB4EAFB2162A3DC00F8A9E2 /* AutoresizineTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoresizineTextView.swift; sourceTree = "<group>"; };
@@ -818,6 +825,8 @@
 				FE30309B244612A8003B9D76 /* ConversationLogSelectionManager.swift */,
 				FED2A95725F0ED03008828E4 /* ChatMarkerCellView.swift */,
 				FEA153B926DE8441009D8140 /* VoiceRecordingView.swift */,
+				FEA6DCBD27207ED40079DBEC /* ShareLocationController.swift */,
+				FE8DC2412721DAAE007E6D05 /* ChatLocationCellView.swift */,
 			);
 			path = conversation;
 			sourceTree = "<group>";
@@ -999,6 +1008,7 @@
 				FE68418A25DA9AD50042392E /* xmpp */,
 				FE0AE0DD26B051C10010D2E2 /* MIX.storyboard */,
 				FE0AE0E226B056170010D2E2 /* Roster.storyboard */,
+				FE8DC24527241979007E6D05 /* Location.storyboard */,
 			);
 			path = BeagleIM;
 			sourceTree = "<group>";
@@ -1217,6 +1227,7 @@
 				FE10BCF123FC495700E214F3 /* db-schema-8.sql in Resources */,
 				FE02DD11225B8D1100FA08EB /* db-schema-3.sql in Resources */,
 				FE149D8722A51AD900EE4E03 /* db-schema-4.sql in Resources */,
+				FE8DC24327241979007E6D05 /* Location.storyboard in Resources */,
 				FE421B4921C92FBF0022DF77 /* LICENSE in Resources */,
 				FE17870624DECE3400C4012C /* outgoingCall.mp3 in Resources */,
 				FE32A94724702D5B00E40BB1 /* db-schema-10.sql in Resources */,
@@ -1301,6 +1312,7 @@
 				FE8F7CE82562F8A60076C13E /* ConversationEntry.swift in Sources */,
 				FE89341A25DD3C07004E38B0 /* SSLProcessor.swift in Sources */,
 				FED7AEC321415CB8001E164B /* AvatarManager.swift in Sources */,
+				FE8DC2422721DAAE007E6D05 /* ChatLocationCellView.swift in Sources */,
 				FE83E363217A3809001DEF09 /* JingleManager.swift in Sources */,
 				FE30309C244612A8003B9D76 /* ConversationLogSelectionManager.swift in Sources */,
 				FE10BCED23FAA86900E214F3 /* InvitationCellView.swift in Sources */,
@@ -1327,6 +1339,7 @@
 				FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */,
 				FE1A3482258923EE0058B86A /* Array+IndexChanges.swift in Sources */,
 				FE41FB3F215CD95D00AD86D3 /* AvatarEventHandler.swift in Sources */,
+				FEA6DCBE27207ED40079DBEC /* ShareLocationController.swift in Sources */,
 				FE30D8B7214D4BCD00670BEC /* Settings.swift in Sources */,
 				FE2D4820245452DC00C13CE5 /* RTCCameraVideoCapturer_Format.swift in Sources */,
 				FEDE6AF32142DC590019170A /* AvatarViewWithStatus.swift in Sources */,
@@ -1616,6 +1629,15 @@
 				FE0AE13226B08AD20010D2E2 /* pl */,
 			);
 			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		FE8DC24527241979007E6D05 /* Location.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FE8DC24427241979007E6D05 /* Base */,
+				FE8DC2472724197B007E6D05 /* pl */,
+			);
+			name = Location.storyboard;
 			sourceTree = "<group>";
 		};
 		FED2ECF92066B01C00F506A5 /* Main.storyboard */ = {

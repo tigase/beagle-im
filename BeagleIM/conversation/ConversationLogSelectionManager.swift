@@ -318,6 +318,10 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
                         selectedItems.append(SelectionItem(entry: item, attributedString: view.message.attributedString()));
                     }
                 }
+            } else  if let view = rowView.subviews.first as? ChatLocationCellView, let item = self.controller?.dataSource.getItem(withId: view.id) {
+                if !selectedItems.contains(where: { $0.entryId == view.id }) {
+                    selectedItems.append(SelectionItem(entry: item, attributedString: NSAttributedString(string: view.annotation.geoUri)));
+                }
             }
         });
         selectedItems.removeAll(where: {
@@ -339,8 +343,17 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         let row = table.row(at: superview.convert(event.locationInWindow, from: nil));
        
         if selection == nil {
-            if row != NSNotFound, let view = table.view(atColumn: 0, row: row, makeIfNecessary: false) as? ChatMessageCellView, let item = controller?.dataSource.getItem(at: row) {
-                selection = Selection(items: [SelectionItem(entry: item, attributedString: view.message.attributedString())], ends: nil);
+            if row != NSNotFound, let item = controller?.dataSource.getItem(at: row) {
+                if let v = table.view(atColumn: 0, row: row, makeIfNecessary: false) {
+                    switch v {
+                    case let view as ChatMessageCellView:
+                        selection = Selection(items: [SelectionItem(entry: item, attributedString: view.message.attributedString())], ends: nil);
+                    case let view as ChatLocationCellView:
+                        selection = Selection(items: [SelectionItem(entry: item, attributedString: NSAttributedString(string: view.annotation.geoUri))], ends: nil);
+                    default:
+                        break;
+                    }
+                }
             }
         }
 

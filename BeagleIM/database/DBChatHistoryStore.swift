@@ -24,6 +24,7 @@ import TigaseSwift
 import TigaseSQLite3
 import Combine
 import TigaseLogging
+import CoreLocation
 
 extension Query {
     static let messagesLastTimestampForAccount = Query("SELECT max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.state <> \(ConversationEntryState.outgoing(.unsent).rawValue)");
@@ -39,9 +40,9 @@ extension Query {
     static let messageDelete = Query("DELETE FROM chat_history WHERE id = :id");
     static let messageFindMessageOriginId = Query("select stanza_id from chat_history where id = :id");
     static let messagesFindUnsent = Query("SELECT ch.account as account, ch.jid as jid, ch.item_type as item_type, ch.data as data, ch.stanza_id as stanza_id, ch.encryption as encryption, ch.markable FROM chat_history ch WHERE ch.account = :account AND ch.state = \(ConversationEntryState.outgoing(.unsent).rawValue) ORDER BY timestamp ASC");
-    static let messagesFindForChat = Query("SELECT id, author_nickname, author_jid, recipient_nickname, participant_id, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, correction_timestamp, markable FROM chat_history WHERE account = :account AND jid = :jid AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.messageRetracted.rawValue), \(ItemType.attachment.rawValue), \(ItemType.invitation.rawValue))) ORDER BY timestamp DESC LIMIT :limit OFFSET :offset");
-    static let messageFindPositionInChat = Query("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND id <> :msgId AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue), \(ItemType.invitation.rawValue))) AND timestamp > (SELECT timestamp FROM chat_history WHERE id = :msgId)");
-    static let messageSearchHistory = Query("SELECT chat_history.id as id, chat_history.account as account, chat_history.jid as jid, author_nickname, author_jid, participant_id,  chat_history.timestamp as timestamp, item_type, chat_history.data as data, state, preview, chat_history.encryption as encryption, fingerprint, markable FROM chat_history INNER JOIN chat_history_fts_index ON chat_history.id = chat_history_fts_index.rowid LEFT JOIN chats ON chats.account = chat_history.account AND chats.jid = chat_history.jid WHERE (chats.id IS NOT NULL OR chat_history.author_nickname is NULL) AND chat_history_fts_index MATCH :query AND (:account IS NULL OR chat_history.account = :account) AND (:jid IS NULL OR chat_history.jid = :jid) AND item_type = \(ItemType.message.rawValue) ORDER BY chat_history.timestamp DESC");
+    static let messagesFindForChat = Query("SELECT id, author_nickname, author_jid, recipient_nickname, participant_id, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, correction_timestamp, markable FROM chat_history WHERE account = :account AND jid = :jid AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.messageRetracted.rawValue), \(ItemType.attachment.rawValue), \(ItemType.invitation.rawValue),\(ItemType.location.rawValue))) ORDER BY timestamp DESC LIMIT :limit OFFSET :offset");
+    static let messageFindPositionInChat = Query("SELECT count(id) FROM chat_history WHERE account = :account AND jid = :jid AND id <> :msgId AND (:showLinkPreviews OR item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue), \(ItemType.invitation.rawValue),\(ItemType.location.rawValue))) AND timestamp > (SELECT timestamp FROM chat_history WHERE id = :msgId)");
+    static let messageSearchHistory = Query("SELECT chat_history.id as id, chat_history.account as account, chat_history.jid as jid, author_nickname, author_jid, participant_id,  chat_history.timestamp as timestamp, item_type, chat_history.data as data, state, preview, chat_history.encryption as encryption, fingerprint, markable FROM chat_history INNER JOIN chat_history_fts_index ON chat_history.id = chat_history_fts_index.rowid LEFT JOIN chats ON chats.account = chat_history.account AND chats.jid = chat_history.jid WHERE (chats.id IS NOT NULL OR chat_history.author_nickname is NULL) AND chat_history_fts_index MATCH :query AND (:account IS NULL OR chat_history.account = :account) AND (:jid IS NULL OR chat_history.jid = :jid) AND item_type IN (\(ItemType.message.rawValue),\(ItemType.location.rawValue)) ORDER BY chat_history.timestamp DESC");
     static let messagesDeleteChatHistory = Query("DELETE FROM chat_history WHERE account = :account AND (:jid IS NULL OR jid = :jid)");
     static let messagesFindChatAttachments = Query("SELECT id, author_nickname, author_jid, recipient_nickname, participant_id, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, correction_timestamp, markable FROM chat_history WHERE account = :account AND jid = :jid AND item_type = \(ItemType.attachment.rawValue) ORDER BY timestamp DESC");
     
@@ -369,9 +370,35 @@ class DBChatHistoryStore {
 //        })
 //    }
 
-    private func appendItemSync(for conversation: ConversationKey, state: ConversationEntryState, sender: ConversationEntrySender, type: ItemType, timestamp: Date, stanzaId: String?, serverMsgId: String?, remoteMsgId: String?, data: String, chatState: ChatState?,  appendix: AppendixProtocol?, options: ConversationEntry.Options, linkPreviewAction: LinkPreviewAction, masterId: Int? = nil, completionHandler: ((Int) -> Void)?) {
+    private func appendItemSync(for conversation: ConversationKey, state: ConversationEntryState, sender: ConversationEntrySender, type inType: ItemType, timestamp: Date, stanzaId: String?, serverMsgId: String?, remoteMsgId: String?, data: String, chatState: ChatState?,  appendix: AppendixProtocol?, options: ConversationEntry.Options, linkPreviewAction: LinkPreviewAction, masterId: Int? = nil, completionHandler: ((Int) -> Void)?) {
         var item: ConversationEntry?;
+        var type = inType;
         if linkPreviewAction != .only {
+            var payload: ConversationEntryPayload?;
+            
+            switch type {
+            case .message:
+                if let location = CLLocationCoordinate2D(geoUri: data) {
+                    payload = .location(location: location);
+                    type = .location;
+                } else {
+                    payload = .message(message: data, correctionTimestamp: nil);
+                }
+            case .location:
+                payload = .location(location: CLLocationCoordinate2D(geoUri: data)!);
+            case .invitation:
+                payload = .invitation(message: data, appendix: appendix as! ChatInvitationAppendix);
+            case .attachment:
+                payload = .attachment(url: data, appendix: (appendix as? ChatAttachmentAppendix) ?? ChatAttachmentAppendix());
+            case .linkPreview:
+                if Settings.linkPreviews {
+                    payload = .linkPreview(url: data)
+                }
+            case .messageRetracted, .attachmentRetracted:
+                // nothing to do, as we do not want notifications for that (at least for now and no item of that type would be created in here!
+                break;
+            }
+            
             var params: [String:Any?] = ["account": conversation.account, "jid": conversation.jid, "timestamp": timestamp, "data": data, "item_type": type.rawValue, "state": state.code, "stanza_id": stanzaId, "author_nickname": nil, "author_jid": nil, "recipient_nickname": options.recipient.nickname, "participant_id": nil, "encryption": options.encryption.value.rawValue, "fingerprint": options.encryption.fingerprint, "error": state.errorMessage, "appendix": appendix, "server_msg_id": serverMsgId, "remote_msg_id": remoteMsgId, "master_id": masterId, "markable": options.isMarkable];
 
             switch sender {
@@ -393,24 +420,6 @@ class DBChatHistoryStore {
                 return;
             }
             completionHandler?(id);
-
-            var payload: ConversationEntryPayload?;
-            
-            switch type {
-            case .message:
-                payload = .message(message: data, correctionTimestamp: nil);
-            case .invitation:
-                payload = .invitation(message: data, appendix: appendix as! ChatInvitationAppendix);
-            case .attachment:
-                payload = .attachment(url: data, appendix: (appendix as? ChatAttachmentAppendix) ?? ChatAttachmentAppendix());
-            case .linkPreview:
-                if Settings.linkPreviews {
-                    payload = .linkPreview(url: data)
-                }
-            case .messageRetracted, .attachmentRetracted:
-                // nothing to do, as we do not want notifications for that (at least for now and no item of that type would be created in here!
-                break;
-            }
             
             if let payload = payload {
                 let entry = ConversationEntry(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, payload: payload, options: options);
@@ -860,6 +869,11 @@ class DBChatHistoryStore {
     
     private func payloadFrom(cursor: Cursor, entryType: ItemType, correctionTimestamp: Date?) -> ConversationEntryPayload? {
         switch entryType {
+        case .location:
+            guard let data: String = cursor["data"], let location = CLLocationCoordinate2D(geoUri: data) else {
+                return nil;
+            }
+            return .location(location: location);
         case .message:
             guard let message: String = cursor["data"] else {
                 return nil;
@@ -968,6 +982,7 @@ public enum ItemType: Int {
     case invitation = 3
     case messageRetracted = 4
     case attachmentRetracted = 5;
+    case location = 6
 }
 
 class UnsentMessage {

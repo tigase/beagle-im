@@ -98,6 +98,12 @@ class ConversationLogController: AbstractConversationLogController, NSTableViewD
                 }
                 return nil;
             }
+        case .location(let location):
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatLocationCellView"), owner: nil) as? ChatLocationCellView {
+                cell.set(item: item, location: location);
+                return cell;
+            }
+            return nil;
         case .linkPreview(let url):
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ChatLinkPreviewCellView"), owner: nil) as? ChatLinkPreviewCellView {
                 cell.set(item: item, url: url);

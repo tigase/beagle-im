@@ -66,6 +66,7 @@ class SuggestionsWindowController<Item>: NSWindowController {
     }
     
     private var shouldAdjustWidth = true;
+    var yOffset: CGFloat = 0;
     
     init(viewProvider: SuggestionItemView<Item>.Type, edge: Edge) {
         self.viewProvider = viewProvider;
@@ -99,7 +100,7 @@ class SuggestionsWindowController<Item>: NSWindowController {
         location = parentWindow.convertPoint(toScreen: location);
         switch edge {
         case .bottom:
-            location.y = location.y - 2;
+            location.y = (location.y - 2) + yOffset;
         case .top:
             location.y = (location.y + 2 + window.frame.height + textField.frame.height);
         }

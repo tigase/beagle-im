@@ -104,6 +104,26 @@ class ChatCellView: NSTableCellView {
                                 lastMessageField.attributedStringValue = msg;
                             }
                         }
+                    case .location(_, _, let sender):
+                        if let fieldfont = lastMessageField.font {
+                            let msg = NSAttributedString(string: "📍 " + NSLocalizedString("Location", comment: "location name in chats list"), attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask, .boldFontMask]), .foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
+
+                            if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                                prefix.append(msg);
+                                lastMessageField.attributedStringValue = prefix;
+                            } else {
+                                lastMessageField.attributedStringValue = msg;
+                            }
+                        } else {
+                            let msg = NSAttributedString(string: "📍 " + NSLocalizedString("Location", comment: "location name in chats list"), attributes: [.foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
+                        
+                            if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                                prefix.append(msg);
+                                lastMessageField.attributedStringValue = prefix;
+                            } else {
+                                lastMessageField.attributedStringValue = msg;
+                            }
+                        }
                     case .invitation(_, _, let sender):
                         if let fieldfont = lastMessageField.font {
                             let msg = NSAttributedString(string: "📨 " + NSLocalizedString("Invitation", comment: "invitation name in chats list"), attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask, .boldFontMask]), .foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);

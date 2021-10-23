@@ -23,10 +23,11 @@ import Foundation
 import TigaseSwift
 import TigaseSQLite3
 import TigaseLogging
+import CoreLocation
 
 public class DatabaseMigrator: DatabaseSchemaMigrator {
     
-    public let expectedVersion: Int = 13;
+    public let expectedVersion: Int = 14;
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "DatabaseMigrator");
     
     public func upgrade(database: DatabaseWriter, newVersion version: Int) throws {
@@ -87,6 +88,17 @@ SELECT id, account, component, from_timestamp, from_id, to_timestamp
 FROM chat_history_sync_old;
 DROP TABLE chat_history_sync_old;
 """);
+        case 14:
+            let itemsToUpdate = try database.select("select id, data from chat_history where item_type = \(ItemType.message.rawValue) and data like 'geo:%,%' ", cached: false, params: [:]).mapAll({ ($0.int(for: "id"), $0.string(for: "data")) }).compactMap({ item -> Int? in
+                guard let data = item.1, CLLocationCoordinate2D(geoUri: data) != nil else {
+                    return nil;
+                }
+                return item.0;
+            });
+            
+            for id in itemsToUpdate {
+                try database.update("update chat_history set item_type = \(ItemType.location.rawValue) where id = :id", cached: false, params: ["id": id]);
+            }
         default:
             break;
         }

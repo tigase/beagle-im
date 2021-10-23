@@ -24,6 +24,7 @@ import TigaseSwift
 import TigaseSwiftOMEMO
 import Combine
 import TigaseLogging
+import MapKit
 
 class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLogContextMenuDelegate, NSMenuItemValidation {
 
@@ -219,6 +220,22 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
                         retract.tag = item.id;
                     }
                 }
+            case .location(_):
+                if item.state.isError {
+                    let resend = menu.addItem(withTitle: NSLocalizedString("Resend message", comment: "context menu item"), action: #selector(resendMessage), keyEquivalent: "");
+                    resend.target = self;
+                    resend.tag = item.id;
+                } else {
+                    let showMap = menu.insertItem(withTitle: NSLocalizedString("Show map", comment: "context menu item"), action: #selector(showMap), keyEquivalent: "", at: 0);
+                    showMap.target = self;
+                    showMap.tag = item.id;
+                    
+                    if XmppService.instance.getClient(for: item.conversation.account)?.isConnected ?? false {
+                        let retract = menu.addItem(withTitle: NSLocalizedString("Retract message", comment: "context menu item"), action: #selector(retractMessage), keyEquivalent: "");
+                        retract.target = self;
+                        retract.tag = item.id;
+                    }
+                }
             default:
                 break;
             }
@@ -307,6 +324,28 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
                 break;
             }
         })
+    }
+    
+    @objc func showMap(_ sender: NSMenuItem) {
+        let tag = sender.tag;
+        guard tag >= 0 else {
+            return
+        }
+        
+        guard let item = dataSource.getItem(withId: tag) else {
+            return;
+        }
+        
+        guard case let .location(coordinate) = item.payload else {
+            return;
+        }
+        let placemark = MKPlacemark(coordinate: coordinate);
+        let region = MKCoordinateRegion(center: coordinate, latitudinalMeters: 2000, longitudinalMeters: 2000);
+        let mapItem = MKMapItem(placemark: placemark);
+        mapItem.openInMaps(launchOptions: [
+            MKLaunchOptionsMapCenterKey: NSValue(mkCoordinate: region.center),
+            MKLaunchOptionsMapSpanKey: NSValue(mkCoordinateSpan: region.span)
+        ])
     }
         
     override func send(message: String, correctedMessageOriginId: String?) -> Bool {

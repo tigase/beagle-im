@@ -92,6 +92,7 @@ public enum LastChatActivity {
     case message(String, direction: MessageDirection, sender: String?)
     case attachment(String, direction: MessageDirection, sender: String?)
     case invitation(String, direction: MessageDirection, sender: String?)
+    case location(String, direction: MessageDirection, sender: String?)
     
     static func from(itemType: ItemType?, data: String?, direction: MessageDirection, sender: String?) -> LastChatActivity? {
         guard itemType != nil else {
@@ -100,6 +101,8 @@ public enum LastChatActivity {
         switch itemType! {
         case .message:
             return data == nil ? nil : .message(data!, direction: direction, sender: sender);
+        case .location:
+            return data == nil ? nil : .location(data!, direction: direction, sender: sender);
         case .invitation:
             return data == nil ? nil : .invitation(data!, direction: direction, sender: sender);
         case .attachment:
