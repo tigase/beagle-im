@@ -312,12 +312,12 @@ Gw
                                         </connections>
                                     </button>
                                     <button translatesAutoresizingMaskIntoConstraints="NO" id="waf-rz-EsU" customClass="RoundButton" customModule="BeagleIM" customModuleProvider="target">
-                                        <rect key="frame" x="180" y="32.5" width="40" height="36"/>
+                                        <rect key="frame" x="180" y="30" width="40" height="40"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="40" id="B2D-Fa-uW1"/>
                                             <constraint firstAttribute="width" constant="40" id="h14-UY-oo8"/>
                                         </constraints>
-                                        <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="ellipsis" catalog="system" imagePosition="only" alignment="center" transparent="YES" imageScaling="proportionallyDown" inset="2" id="Em1-iu-msV">
+                                        <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="ellipsis" imagePosition="only" alignment="center" transparent="YES" imageScaling="proportionallyDown" inset="2" id="Em1-iu-msV">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
                                         </buttonCell>
@@ -394,7 +394,7 @@ Gw
     </scenes>
     <resources>
         <image name="NSEveryone" width="32" height="32"/>
-        <image name="ellipsis" catalog="system" width="14" height="5"/>
+        <image name="ellipsis" width="118" height="128"/>
         <image name="endCall" width="30" height="30"/>
         <image name="muteMicrophone" width="30" height="30"/>
     </resources>
