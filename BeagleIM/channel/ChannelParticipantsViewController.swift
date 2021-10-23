@@ -253,7 +253,7 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
         }
         if #available(macOS 11.0, *) {
         } else {
-            item.image = item.image?.scaled(maxWidthOrHeight: 16)
+            item.image = nil;//item.image?.scaled(maxWidthOrHeight: 16)
         }
         return true;
     }

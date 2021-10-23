@@ -862,13 +862,6 @@ Gw
                                 <action selector="startChatClicked:" target="8HN-y9-jjO" id="DyE-cR-hRz"/>
                             </connections>
                         </menuItem>
-                        <menuItem title="Grant admin rights" id="1Vk-80-bHc">
-                            <imageReference key="image" image="star" catalog="system" symbolScale="default" renderingMode="original"/>
-                            <modifierMask key="keyEquivalentModifierMask"/>
-                            <connections>
-                                <action selector="grantAdminPermissions:" target="8HN-y9-jjO" id="y2y-dM-j05"/>
-                            </connections>
-                        </menuItem>
                         <menuItem title="Grant owner rights" id="Tha-qB-HSO">
                             <imageReference key="image" image="star.fill" catalog="system" symbolScale="default" renderingMode="original"/>
                             <modifierMask key="keyEquivalentModifierMask"/>
@@ -876,18 +869,25 @@ Gw
                                 <action selector="grantOwnerPermissions:" target="8HN-y9-jjO" id="3qc-Fe-hxL"/>
                             </connections>
                         </menuItem>
-                        <menuItem title="Revoke admin rights" id="FRH-GT-63I">
-                            <imageReference key="image" image="star.slash" catalog="system" symbolScale="default" renderingMode="original"/>
-                            <modifierMask key="keyEquivalentModifierMask"/>
-                            <connections>
-                                <action selector="revokeAdminPermissions:" target="8HN-y9-jjO" id="E87-Jw-TJ0"/>
-                            </connections>
-                        </menuItem>
                         <menuItem title="Revoke owner rights" id="apF-E8-nQj">
                             <imageReference key="image" image="star.slash.fill" catalog="system" symbolScale="default" renderingMode="original"/>
                             <modifierMask key="keyEquivalentModifierMask"/>
                             <connections>
                                 <action selector="revokeOwnerPermissions:" target="8HN-y9-jjO" id="Nur-rr-c9X"/>
+                            </connections>
+                        </menuItem>
+                        <menuItem title="Grant admin rights" id="1Vk-80-bHc">
+                            <imageReference key="image" image="star" catalog="system" symbolScale="default" renderingMode="original"/>
+                            <modifierMask key="keyEquivalentModifierMask"/>
+                            <connections>
+                                <action selector="grantAdminPermissions:" target="8HN-y9-jjO" id="y2y-dM-j05"/>
+                            </connections>
+                        </menuItem>
+                        <menuItem title="Revoke admin rights" id="FRH-GT-63I">
+                            <imageReference key="image" image="star.slash" catalog="system" symbolScale="default" renderingMode="original"/>
+                            <modifierMask key="keyEquivalentModifierMask"/>
+                            <connections>
+                                <action selector="revokeAdminPermissions:" target="8HN-y9-jjO" id="E87-Jw-TJ0"/>
                             </connections>
                         </menuItem>
                         <menuItem title="Block" image="xmark.circle" catalog="system" id="iNt-1W-IHu">
