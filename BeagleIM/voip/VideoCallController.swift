@@ -108,6 +108,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
             }
             DispatchQueue.main.async {
                 self.avplayer = nil;
+                NSSound(named: "Blow")?.play();
             }
             self.showAlert(title: title, buttons: [NSLocalizedString("OK", comment: "Button")], completionHandler: { response in
                 DispatchQueue.main.async {
@@ -276,6 +277,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
                 self.stateLabel.stringValue = "";
                 self.remoteAvatarView?.isHidden = self.remoteVideoTrack != nil;
                 self.avplayer = nil;
+                NSSound(named: "Glass")?.play();
             case .ended:
                 self.stateLabel.stringValue = NSLocalizedString("Call ended", comment: "video call conroller");
                 self.avplayer = nil;
