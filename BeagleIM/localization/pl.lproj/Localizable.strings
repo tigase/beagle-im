@@ -985,3 +985,12 @@
 
 /* context menu item */
 "Show map" = "Pokaż mapę";
+
+/* error message text */
+"Can't show your location" = "";
+
+/* error message details */
+"To show current location, enable Wi-Fi network." = "";
+
+/* error message details */
+"You've denied access to your location for this app. You need to allow it in System Preferences." = "";

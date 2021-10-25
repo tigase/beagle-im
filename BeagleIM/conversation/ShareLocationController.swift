@@ -39,6 +39,10 @@ class ShareLocationController: NSViewController, CLLocationManagerDelegate, MKMa
             requestLocationItem?.target = self;
             requestLocationItem?.action = #selector(requestCurrentLocation(_:));
             requestLocationItem?.isEnabled = true;
+            if #available(macOS 11.0, *) {
+            } else {
+                requestLocationItem?.image = NSImage(named: "location")
+            }
         }
     }
     private var searchField: LocationSuggestionField?;
@@ -48,6 +52,9 @@ class ShareLocationController: NSViewController, CLLocationManagerDelegate, MKMa
     override func viewDidLoad() {
         super.viewDidLoad();
         locationManager.delegate = self;
+        
+        let clickGesture = NSPressGestureRecognizer(target: self, action: #selector(handleClick(_:)));
+        self.mapView.addGestureRecognizer(clickGesture);
     }
     
     override func viewWillAppear() {
@@ -65,9 +72,9 @@ class ShareLocationController: NSViewController, CLLocationManagerDelegate, MKMa
     @objc func requestCurrentLocation(_ sender: Any) {
         guard CLLocationManager.locationServicesEnabled() else {
             let alert = NSAlert();
-            alert.messageText = "Can't show your location";
-            alert.informativeText = "To show current location, enable Wi-Fi network."
-            alert.addButton(withTitle: "OK")
+            alert.messageText = NSLocalizedString("Can't show your location", comment: "error message text");
+            alert.informativeText = NSLocalizedString("To show current location, enable Wi-Fi network.", comment: "error message details");
+            alert.addButton(withTitle: NSLocalizedString("OK", comment: "button label"));
             alert.beginSheetModal(for: self.view.window!, completionHandler: { response in
                 
             });
@@ -81,9 +88,9 @@ class ShareLocationController: NSViewController, CLLocationManagerDelegate, MKMa
             locationManager.requestWhenInUseAuthorization();
         case .denied, .restricted:
             let alert = NSAlert();
-            alert.messageText = "Can't show your location";
-            alert.informativeText = "You've denied access to your location for this app. You need to allow it in System Preferences."
-            alert.addButton(withTitle: "OK")
+            alert.messageText = NSLocalizedString("Can't show your location", comment: "error message text");
+            alert.informativeText = NSLocalizedString("You've denied access to your location for this app. You need to allow it in System Preferences.", comment: "error message details");
+            alert.addButton(withTitle: NSLocalizedString("OK", comment: "button label"));
             alert.beginSheetModal(for: self.view.window!, completionHandler: { response in
                 
             });
@@ -103,6 +110,15 @@ class ShareLocationController: NSViewController, CLLocationManagerDelegate, MKMa
         locationManager.requestLocation();
     }
     
+    @objc func handleClick(_ sender: NSPressGestureRecognizer) {
+        guard sender.state == .ended else {
+            return;
+        }
+        
+        let coordinate = self.mapView.convert(sender.location(in: self.mapView), toCoordinateFrom: self.mapView);
+        setCurrentLocation(CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude), zoomIn: false);
+    }
+    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         print("received locations:", locations);
         guard let location = locations.first, inProgress else {
@@ -114,9 +130,9 @@ class ShareLocationController: NSViewController, CLLocationManagerDelegate, MKMa
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         let alert = NSAlert();
-        alert.messageText = "Can't show your location";
+        alert.messageText = NSLocalizedString("Can't show your location", comment: "error message text");
         alert.informativeText = error.localizedDescription;
-        alert.addButton(withTitle: "OK")
+        alert.addButton(withTitle: NSLocalizedString("OK", comment: "button label"));
         alert.beginSheetModal(for: self.view.window!, completionHandler: { response in
             
         });
@@ -130,6 +146,7 @@ class ShareLocationController: NSViewController, CLLocationManagerDelegate, MKMa
         
         let accessory = NSButton(image: NSImage(named: "location.fill")!, target: self, action: #selector(shareSelectedLocation));
         accessory.isBordered = false;
+        accessory.isTransparent = false;
         accessory.frame = CGRect(origin: .zero, size: CGSize(width: 20, height: 20));
         view.rightCalloutAccessoryView = accessory;
         return view;
