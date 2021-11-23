@@ -27,7 +27,7 @@ import CoreLocation
 
 public class DatabaseMigrator: DatabaseSchemaMigrator {
     
-    public let expectedVersion: Int = 14;
+    public let expectedVersion: Int = 15;
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "DatabaseMigrator");
     
     public func upgrade(database: DatabaseWriter, newVersion version: Int) throws {
@@ -98,6 +98,11 @@ DROP TABLE chat_history_sync_old;
             
             for id in itemsToUpdate {
                 try database.update("update chat_history set item_type = \(ItemType.location.rawValue) where id = :id", cached: false, params: ["id": id]);
+            }
+        case 15:
+            let idsToRemove = try database.select("select c1.id from chats c1 join (select account, jid, max(timestamp) as timestamp, count(id) from chats group by account, jid having count(id) > 1) c2 on c1.account = c2.account and c1.jid = c2.jid and c1.timestamp < c2.timestamp", cached: false).mapAll({ $0.int(for: "id") });
+            for id in idsToRemove {
+                try database.delete("delete from chats where id = :id", cached: false, params: ["id": id]);
             }
         default:
             break;

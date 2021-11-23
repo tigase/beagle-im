@@ -35,6 +35,7 @@ extension DBChatStore: RoomStore {
     }
     
     public func createRoom(for context: Context, with jid: BareJID, nickname: String, password: String?) -> ConversationCreateResult<Room> {
+        self.conversationsLifecycleQueue.sync {
         if let room = room(for: context, with: jid) {
             return .found(room);
         }
@@ -55,6 +56,7 @@ extension DBChatStore: RoomStore {
             return .none;
         }
         return .created(room);
+        }
     }
     
     public func close(room: Room) -> Bool {
