@@ -54,6 +54,8 @@
 	<string>Uses microphone for VoIP calls</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSLocationUsageDescription</key>
+	<string>Uses location for sharing your current location on your request</string>
 	<key>NSServices</key>
 	<array>
 		<dict/>

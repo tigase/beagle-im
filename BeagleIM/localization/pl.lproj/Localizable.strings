@@ -987,10 +987,10 @@
 "Show map" = "Pokaż mapę";
 
 /* error message text */
-"Can't show your location" = "";
+"Can't show your location" = "Nie można pokazać położenia";
 
 /* error message details */
-"To show current location, enable Wi-Fi network." = "";
+"To show current location, enable Wi-Fi network." = "Aby pokazać bieżące położenie, włącz Wi-Fi.";
 
 /* error message details */
-"You've denied access to your location for this app. You need to allow it in System Preferences." = "";
+"You've denied access to your location for this app. You need to allow it in System Preferences." = "Zabroniłeś aplikacji dostępu do lokalizacji. ";
