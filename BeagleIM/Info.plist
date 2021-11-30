@@ -48,14 +48,14 @@
 	<string>Uses camera for VoIP calls</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2018 Tigase, Inc. All rights reserved.</string>
+	<key>NSLocationUsageDescription</key>
+	<string>Uses location for sharing your current location on your request</string>
 	<key>NSMainStoryboardFile</key>
 	<string>Main</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Uses microphone for VoIP calls</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
-	<key>NSLocationUsageDescription</key>
-	<string>Uses location for sharing your current location on your request</string>
 	<key>NSServices</key>
 	<array>
 		<dict/>
