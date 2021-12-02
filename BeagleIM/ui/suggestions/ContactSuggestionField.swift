@@ -25,7 +25,7 @@ import TigaseSwift
 
 class ContactSuggestionField: NSSearchField, NSSearchFieldDelegate {
     
-    private var suggestionsController: SuggestionsWindowController<Item>?;
+    private var suggestionsController: SuggestionsWindowController?;
     
     let selectionPublisher = PassthroughSubject<Item,Never>();
     
@@ -53,7 +53,7 @@ class ContactSuggestionField: NSSearchField, NSSearchFieldDelegate {
     
     func controlTextDidBeginEditing(_ obj: Notification) {
         if suggestionsController == nil {
-            suggestionsController = SuggestionsWindowController(viewProvider: ChatsListSuggestionItemView.self, edge: .bottom);
+            suggestionsController = SuggestionsWindowController(viewProviders: [ChatsListSuggestionItemView.Provider()], edge: .bottom);
             if let color = suggestionsWindowBackground {
                 suggestionsController?.backgroundColor = color;
             }
@@ -123,7 +123,7 @@ class ContactSuggestionField: NSSearchField, NSSearchFieldDelegate {
     }
     
     @objc func suggestionItemSelected(sender: Any) {
-        guard let item = (sender as? SuggestionsWindowController<Item>)?.selected else {
+        guard let item = (sender as? SuggestionsWindowController)?.selected as? Item else {
             return;
         }
         

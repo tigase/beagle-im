@@ -22,7 +22,18 @@
 import AppKit
 import Combine
 
-class ChatsListSuggestionItemView: SuggestionItemView<ContactSuggestionField.Item> {
+class ChatsListSuggestionItemView: SuggestionItemViewBase<ContactSuggestionField.Item> {
+    
+    struct Provider: SuggestionItemViewProvider {
+        
+        func view(for item: Any) -> SuggestionItemView? {
+            guard item is ContactSuggestionField.Item else {
+                return nil;
+            }
+            return ChatsListSuggestionItemView();
+        }
+        
+    }
     
     let avatar: AvatarView;
     let label: NSTextField;

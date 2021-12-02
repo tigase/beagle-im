@@ -21,7 +21,7 @@
 
 import AppKit
 
-class SuggestionsWindowController<Item>: NSWindowController {
+class SuggestionsWindowController: NSWindowController {
     
     enum Edge {
         case top
@@ -46,30 +46,28 @@ class SuggestionsWindowController<Item>: NSWindowController {
     private var textField: NSText?;
     
     private var trackingAreas: [NSTrackingArea] = [];
-    private var selectedView: SuggestionItemView<Item>? {
+    private var selectedView: SuggestionItemView? {
         didSet {
-            if selectedView != oldValue {
-                selectedView?.isHighlighted = true;
-            }
             oldValue?.isHighlighted = false;
+            selectedView?.isHighlighted = true;
         }
     }
     
     private let edge: Edge;
-    private let viewProvider: SuggestionItemView<Item>.Type;
-    private var views: [SuggestionItemView<Item>] = [];
+    private let viewProviders: [SuggestionItemViewProvider];
+    private var views: [SuggestionItemView] = [];
     
-    private var suggestions: [Item] = [];
+    private var suggestions: [Any] = [];
     
-    public var selected: Item? {
-        return selectedView?.item;
+    public var selected: Any? {
+        return selectedView?.suggestion;
     }
     
     private var shouldAdjustWidth = true;
     var yOffset: CGFloat = 0;
     
-    init(viewProvider: SuggestionItemView<Item>.Type, edge: Edge) {
-        self.viewProvider = viewProvider;
+    init(viewProviders: [SuggestionItemViewProvider], edge: Edge) {
+        self.viewProviders = viewProviders;
         self.edge = edge;
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 20, height: 20), styleMask: [.borderless], backing: .buffered, defer: true);
     
@@ -170,7 +168,7 @@ class SuggestionsWindowController<Item>: NSWindowController {
         return area;
     }
         
-    func update(suggestions: [Item]) {
+    func update(suggestions: [Any]) {
         self.suggestions = suggestions;
         layoutSuggestions();
     }
@@ -181,12 +179,14 @@ class SuggestionsWindowController<Item>: NSWindowController {
         }
         trackingAreas.removeAll()
         
-        let entries = suggestions.map({ contact -> SuggestionItemView<Item> in
-            let view = viewProvider.init();
+        let entries = suggestions.compactMap({ item -> SuggestionItemView? in
+            guard let view = self.viewProviders.compactMap({ $0.view(for: item) }).first else {
+                return nil;
+            }
             if (self.backgroundColor != NSColor.windowBackgroundColor && self.backgroundColor != NSColor.textBackgroundColor) {
                 view.appearance = NSAppearance(named: .darkAqua);
             }
-            view.item = contact;
+            view.suggestion = item;
             return view;
         });
         
@@ -194,9 +194,10 @@ class SuggestionsWindowController<Item>: NSWindowController {
             subview.removeFromSuperview();
         }
         
+        let views = entries.map({ $0.view });
         let itemHeight = entries.first?.itemHeight ?? 0;
         
-        let list = NSStackView(views: entries);
+        let list = NSStackView(views: views);
         list.orientation = .vertical;
         list.alignment = .leading;
         list.distribution = .fillEqually;
@@ -204,7 +205,7 @@ class SuggestionsWindowController<Item>: NSWindowController {
         
         
         self.window!.contentView!.addSubview(list);
-        NSLayoutConstraint.activate(entries.map({ list.widthAnchor.constraint(equalTo: $0.widthAnchor, multiplier: 1.0) }) + [self.window!.contentView!.widthAnchor.constraint(equalTo: list.widthAnchor)]);
+        NSLayoutConstraint.activate(views.map({ list.widthAnchor.constraint(equalTo: $0.widthAnchor, multiplier: 1.0) }) + [self.window!.contentView!.widthAnchor.constraint(equalTo: list.widthAnchor)]);
 
         let height = CGFloat(itemHeight * entries.count);
         let y = edge == .bottom ? NSMaxY(window!.frame) - height : NSMinY(window!.frame);
@@ -213,7 +214,7 @@ class SuggestionsWindowController<Item>: NSWindowController {
         var newX = self.window!.frame.origin.x;
         if shouldAdjustWidth {
             if let maxX = self.textField?.window?.frame.maxX {
-                newWidth = (entries.map({ $0.fittingSize.width }).max() ?? list.fittingSize.width) + 20;
+                newWidth = (views.map({ $0.fittingSize.width }).max() ?? list.fittingSize.width) + 20;
                 if newX + newWidth > maxX {
                     newX = maxX - newWidth;
                 }
@@ -227,7 +228,7 @@ class SuggestionsWindowController<Item>: NSWindowController {
         
         list.layoutSubtreeIfNeeded();
         
-        for view in entries {
+        for view in views {
             if let area = trackingArea(for: view) {
                 trackingAreas.append(area);
                 window?.contentView?.addTrackingArea(area);
@@ -268,7 +269,7 @@ class SuggestionsWindowController<Item>: NSWindowController {
     }
     
     override func mouseEntered(with event: NSEvent) {
-        if let view = event.trackingArea?.userInfo?["view"] as? SuggestionItemView<Item> {
+        if let view = event.trackingArea?.userInfo?["view"] as? SuggestionItemView {
             self.selectedView = view;
         }
     }
@@ -288,9 +289,9 @@ class SuggestionsWindowController<Item>: NSWindowController {
     
     override func moveUp(_ sender: Any?) {
         let selectedView = self.selectedView
-        var previousView: SuggestionItemView<Item>? = nil
+        var previousView: SuggestionItemView? = nil
         for view in views {
-            if view == selectedView {
+            if view === selectedView {
                 break;
             }
             previousView = view;
@@ -303,9 +304,9 @@ class SuggestionsWindowController<Item>: NSWindowController {
     
     override func moveDown(_ sender: Any?) {
         let selectedView = self.selectedView
-        var previousView: SuggestionItemView<Item>? = nil
+        var previousView: SuggestionItemView? = nil
         for view in views.reversed() {
-            if view == selectedView {
+            if view === selectedView {
                 break;
             }
             previousView = view;

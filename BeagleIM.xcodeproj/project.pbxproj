@@ -78,6 +78,8 @@
 		FE336EAE2570150F0088DA83 /* ConversationBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE336EAD2570150F0088DA83 /* ConversationBase.swift */; };
 		FE34BBD12157901100775B07 /* JabberDataFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE34BBD02157901100775B07 /* JabberDataFormView.swift */; };
 		FE34BBD52157DDF200775B07 /* MucModule_RoomError_extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE34BBD42157DDF200775B07 /* MucModule_RoomError_extension.swift */; };
+		FE368DA027553FC300788CB5 /* EmojiShortcodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE368D9F27553FC300788CB5 /* EmojiShortcodes.swift */; };
+		FE368DA22758057100788CB5 /* EmojiFaces.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE368DA12758057100788CB5 /* EmojiFaces.swift */; };
 		FE380ADA21B15720008717FA /* DownloadStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE380AD921B15720008717FA /* DownloadStore.swift */; };
 		FE3AA0C92154062F001667A9 /* ChatsListGroupProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0C82154062F001667A9 /* ChatsListGroupProtocol.swift */; };
 		FE3AA0CD2154069D001667A9 /* ChatsListGroupGroupchat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0CC2154069D001667A9 /* ChatsListGroupGroupchat.swift */; };
@@ -364,6 +366,8 @@
 		FE336EAD2570150F0088DA83 /* ConversationBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationBase.swift; sourceTree = "<group>"; };
 		FE34BBD02157901100775B07 /* JabberDataFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JabberDataFormView.swift; sourceTree = "<group>"; };
 		FE34BBD42157DDF200775B07 /* MucModule_RoomError_extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MucModule_RoomError_extension.swift; sourceTree = "<group>"; };
+		FE368D9F27553FC300788CB5 /* EmojiShortcodes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiShortcodes.swift; sourceTree = "<group>"; };
+		FE368DA12758057100788CB5 /* EmojiFaces.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiFaces.swift; sourceTree = "<group>"; };
 		FE380AD921B15720008717FA /* DownloadStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadStore.swift; sourceTree = "<group>"; };
 		FE3AA0C82154062F001667A9 /* ChatsListGroupProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListGroupProtocol.swift; sourceTree = "<group>"; };
 		FE3AA0CC2154069D001667A9 /* ChatsListGroupGroupchat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListGroupGroupchat.swift; sourceTree = "<group>"; };
@@ -740,6 +744,8 @@
 				FE67E1C225A8E120005D034C /* NotificationsManager.swift */,
 				FE82A72C268E5E550049C844 /* Collection+calculateChanges.swift */,
 				FEA153BB26E299C5009D8140 /* CaptureDeviceManager.swift */,
+				FE368D9F27553FC300788CB5 /* EmojiShortcodes.swift */,
+				FE368DA12758057100788CB5 /* EmojiFaces.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -1324,6 +1330,7 @@
 				FE2D481E24544A7900C13CE5 /* CallManager.swift in Sources */,
 				FED7AEC721418B83001E164B /* VCardManager.swift in Sources */,
 				FE6E6C0321384D5F003B1696 /* DBRosterStore.swift in Sources */,
+				FE368DA22758057100788CB5 /* EmojiFaces.swift in Sources */,
 				FEC135E9261254E200054666 /* Publisher+OnlyGetter.swift in Sources */,
 				FE9E1C41244B34C4003751AA /* SearchHistoryTableView.swift in Sources */,
 				FE988C19232C0A0C002D85AF /* ChangePasswordController.swift in Sources */,
@@ -1434,6 +1441,7 @@
 				FE14044D25601FE600BE77E8 /* Room.swift in Sources */,
 				FE61D6E9246C0D9500FB59F8 /* ChatsListGroupCommon.swift in Sources */,
 				FE834882268A1C08000C171A /* DropDownButton.swift in Sources */,
+				FE368DA027553FC300788CB5 /* EmojiShortcodes.swift in Sources */,
 				FE5C6B2B228C119A003DAB30 /* ExecuteAdHocCommandController.swift in Sources */,
 				FE41FB3B215CD7F300AD86D3 /* XmppServiceEventHandler.swift in Sources */,
 				FEC336FD240FA36800EC1A0D /* JoinChannelView.swift in Sources */,

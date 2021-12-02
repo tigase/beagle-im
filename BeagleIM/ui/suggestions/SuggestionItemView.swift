@@ -21,7 +21,40 @@
 
 import AppKit
 
-class SuggestionItemView<Item>: SuggestionsHighlightingView {
+protocol SuggestionItemViewProvider {
+    func view(for: Any) -> SuggestionItemView?;
+}
+
+protocol SuggestionItemView: AnyObject {
+    
+    var appearance: NSAppearance? { get set };
+    
+    var suggestion: Any? { get set }
+
+    var isHighlighted: Bool { get set }
+    
+    var itemHeight: Int { get }
+    
+}
+
+extension SuggestionItemView {
+    
+    var view: NSView {
+        return self as! NSView;
+    }
+    
+}
+
+class SuggestionItemViewBase<Item>: SuggestionsHighlightingView, SuggestionItemView {
+    
+    var suggestion: Any? {
+        get {
+            return item;
+        }
+        set {
+            item = newValue as? Item;
+        }
+    }
     
     var item: Item?;
     

@@ -232,7 +232,7 @@ import Combine
 
 class LocationSuggestionField: NSSearchField, NSSearchFieldDelegate {
     
-    private var suggestionsController: SuggestionsWindowController<MKPlacemark>?;
+    private var suggestionsController: SuggestionsWindowController?;
     
     var mapViewRegion: MKCoordinateRegion = MKCoordinateRegion();
     let selectionPublisher = PassthroughSubject<MKPlacemark,Never>();
@@ -260,7 +260,7 @@ class LocationSuggestionField: NSSearchField, NSSearchFieldDelegate {
     
     func controlTextDidBeginEditing(_ obj: Notification) {
         if suggestionsController == nil {
-            suggestionsController = SuggestionsWindowController(viewProvider: LocationSuggestionItemView.self, edge: .bottom);
+            suggestionsController = SuggestionsWindowController(viewProviders: [LocationSuggestionItemView.Provider()], edge: .bottom);
             suggestionsController?.target = self;
             suggestionsController?.action = #selector(self.suggestionItemSelected(sender:))
             suggestionsController?.yOffset = self.frame.height * -1;
@@ -325,7 +325,7 @@ class LocationSuggestionField: NSSearchField, NSSearchFieldDelegate {
     }
     
     @objc func suggestionItemSelected(sender: Any) {
-        guard let item = (sender as? SuggestionsWindowController<MKPlacemark>)?.selected else {
+        guard let item = (sender as? SuggestionsWindowController)?.selected as? MKPlacemark else {
             return;
         }
         
@@ -336,7 +336,18 @@ class LocationSuggestionField: NSSearchField, NSSearchFieldDelegate {
     
 }
 
-class LocationSuggestionItemView: SuggestionItemView<MKPlacemark> {
+class LocationSuggestionItemView: SuggestionItemViewBase<MKPlacemark> {
+    
+    struct Provider: SuggestionItemViewProvider {
+        
+        func view(for item: Any) -> SuggestionItemView? {
+            guard item is MKPlacemark else {
+                return nil;
+            }
+            return LocationSuggestionItemView();
+        }
+        
+    }
     
     private let image: NSImageView;
     private let title: NSTextField;

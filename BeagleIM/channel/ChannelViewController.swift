@@ -50,6 +50,8 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             NSLayoutConstraint.activate([self.actionsButton.widthAnchor.constraint(equalToConstant: 40)]);
             actionsButtonLeadConstraint.constant = 0;
         }
+        
+        suggestionProviders.append(MixParticipantSuggestionItemView.Provider());
     }
     
     override func viewWillAppear() {
@@ -274,104 +276,49 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             }
         });
     }
-
-    override func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
-        switch commandSelector {
-        case #selector(NSResponder.moveUp(_:)):
-            if suggestionsController?.window?.isVisible ?? false {
-                suggestionsController?.moveUp(textView);
-                return true
-            } else {
-                return super.textView(textView, doCommandBy: commandSelector);
-            }
-        case #selector(NSResponder.moveDown(_:)):
-            if suggestionsController?.window?.isVisible ?? false {
-                suggestionsController?.moveDown(textView);
-                return true
-            } else {
-                return super.textView(textView, doCommandBy: commandSelector);
-            }
-        case #selector(NSResponder.cancelOperation(_:)):
-            if suggestionsController?.window?.isVisible ?? false {
-                suggestionsController?.cancelSuggestions();
-                return true;
-            } else {
-                return false;
-            }
-        case #selector(NSResponder.insertNewline(_:)):
-            if let controller = suggestionsController, controller.window?.isVisible ?? false {
-                suggestionItemSelected(sender: controller);
-                return true;
-            } else {
-                return super.textView(textView, doCommandBy: commandSelector);
-            }
-        case #selector(NSResponder.deleteForward(_:)), #selector(NSResponder.deleteBackward(_:)):
-            return super.textView(textView, doCommandBy: commandSelector);
-        default:
-            return super.textView(textView, doCommandBy: commandSelector);
-        }
-    }
-        
+ 
     override func textDidChange(_ obj: Notification) {
         super.textDidChange(obj);
-        self.messageField.complete(nil);
     }
     
-    var suggestionsController: SuggestionsWindowController<MixParticipant>?;
-    
-    func textView(_ textView: NSTextView, completions words: [String], forPartialWordRange charRange: NSRange, indexOfSelectedItem index: UnsafeMutablePointer<Int>?) -> [String] {
-        guard charRange.length != 0 && charRange.location != NSNotFound else {
-            suggestionsController?.cancelSuggestions();
-            return [];
-        }
-
-        let tmp = textView.string;
-        let utf16 = tmp.utf16;
-        let start = utf16.index(utf16.startIndex, offsetBy: charRange.lowerBound);
-        let end = utf16.index(utf16.startIndex, offsetBy: charRange.upperBound);
-        guard let query = String(utf16[start..<end])?.uppercased() else {
-            suggestionsController?.cancelSuggestions();
-            return [];
-        }
-
-        let suggestions: [MixParticipant] = self.channel.participants.filter({ $0.nickname?.uppercased().starts(with: query) ?? false }).sorted(by: { p1, p2 -> Bool in (p1.nickname ?? "") < (p2.nickname ?? "") });
-
-        index?.initialize(to: -1);//suggestions.isEmpty ? -1 : 0);
-
-        if suggestions.isEmpty {
-            suggestionsController?.cancelSuggestions();
-        } else {
-            if suggestionsController == nil {
-                suggestionsController = SuggestionsWindowController(viewProvider: MixParticipantSuggestionItemView.self, edge: .top);
-                suggestionsController?.backgroundColor = NSColor.textBackgroundColor;
-                suggestionsController?.target = self;
-                suggestionsController?.action = #selector(self.suggestionItemSelected(sender:))
-            }
-            let range = NSRange(location: charRange.location - 1, length: charRange.length + 1)
-            DispatchQueue.main.async {
-                self.suggestionsController?.beginFor(textView: textView, range: range);
-                self.suggestionsController?.update(suggestions: suggestions);
-            }
+    override func prepareCompletions(for query: String) -> [Any] {
+        guard query.first == "@" else {
+            return super.prepareCompletions(for: query);
         }
         
-        return [];
+        let prefix = query.dropFirst().uppercased();
+        guard !prefix.isEmpty else {
+            return [];
+        }
+        return self.channel.participants.filter({ $0.nickname?.uppercased().starts(with: prefix) ?? false }).sorted(by: { p1, p2 -> Bool in (p1.nickname ?? "") < (p2.nickname ?? "") });
+    }
+        
+    override func suggestionSelected(item: Any, range: NSRange) {
+        switch item {
+        case let participant as MixParticipant:
+            if let nickname = participant.nickname {
+                // how to know where we should place it? should we store location in message view somehow?
+                self.messageField.replaceCharacters(in: range, with: "@\(nickname) ");
+            }
+        default:
+            super.suggestionSelected(item: item, range: range);
+        }
     }
     
-    @objc func suggestionItemSelected(sender: Any) {
-        guard let item = (sender as? SuggestionsWindowController<MixParticipant>)?.selected, let range = (sender as? SuggestionsWindowController<MixParticipant>)?.range else {
-            return;
-        }
-        
-        if let nickname = item.nickname {
-            // how to know where we should place it? should we store location in message view somehow?
-            self.messageField.replaceCharacters(in: range, with: "@\(nickname) ");
-        }
-        suggestionsController?.cancelSuggestions();
-
-    }
 }
 
-class MixParticipantSuggestionItemView: SuggestionItemView<MixParticipant> {
+class MixParticipantSuggestionItemView: SuggestionItemViewBase<MixParticipant> {
+    
+    struct Provider: SuggestionItemViewProvider {
+        
+        func view(for item: Any) -> SuggestionItemView? {
+            guard item is MixParticipant else {
+                return nil;
+            }
+            return MixParticipantSuggestionItemView();
+        }
+        
+    }
     
     let avatar: AvatarView;
     let label: NSTextField;
