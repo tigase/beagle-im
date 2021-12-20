@@ -332,6 +332,9 @@ class SignalPreKeyStore: SignalPreKeyStoreProtocol, ContextAware {
 //        }
 //    }
 
+    private let queue = DispatchQueue(label: "SignalPreKeyRemovalQueue");
+    private var preKeysMarkedForRemoval: [UInt32] = [];
+    
     func currentPreKeyId() -> UInt32 {
         return DBOMEMOStore.instance.currentPreKeyId(forAccount: context!.sessionObject.userBareJid!);
     }
@@ -353,7 +356,21 @@ class SignalPreKeyStore: SignalPreKeyStoreProtocol, ContextAware {
     }
     
     func deletePreKey(withId: UInt32) -> Bool {
-        return DBOMEMOStore.instance.deletePreKey(forAccount: context!.sessionObject.userBareJid!, withId: withId);
+        queue.async {
+            print("queueing prekey with id \(withId) for removal..");
+            self.preKeysMarkedForRemoval.append(withId);
+        }
+        return true;
+    }
+    
+    func flushDeletedPreKeys() -> Bool {
+        return queue.sync(execute: { () -> [UInt32] in
+            defer {
+                preKeysMarkedForRemoval.removeAll();
+            }
+            print("removing queued prekeys: \(preKeysMarkedForRemoval)");
+            return preKeysMarkedForRemoval.filter({ id in DBOMEMOStore.instance.deletePreKey(forAccount: context!.sessionObject.userBareJid!, withId: id) });
+        }).count > 0;
     }
 }
 

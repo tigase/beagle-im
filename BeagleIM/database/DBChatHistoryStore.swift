@@ -197,7 +197,6 @@ class DBChatHistoryStore {
 
         let jid = jidFull.withoutResource;
 
-        let (decryptedBody, encryption, fingerprint) = MessageEventHandler.prepareBody(message: message, forAccount: conversation.account);
         let mixInvitation = message.mixInvitation;
 
         var itemType = MessageEventHandler.itemType(fromMessage: message);
@@ -244,12 +243,31 @@ class DBChatHistoryStore {
 
         let timestamp = Date(timeIntervalSince1970: Double(Int64((inTimestamp ?? Date()).timeIntervalSince1970 * 1000)) / 1000);
 
-        guard let body = decryptedBody ?? (mixInvitation != nil ? "Invitation" : nil) else {
-            if let retractedId = message.messageRetractionId, let originId = stanzaId {
-                self.retractMessageSync(for: conversation, stanzaId: retractedId, sender: sender, retractionStanzaId: originId, retractionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
-                return;
+        if let stableId = serverMsgId, self.findItemId(for: conversation.account, serverMsgId: stableId) != nil {
+            return;
+        }
+        
+        if let originId = stanzaId, message.type == .groupchat || direction == .outgoing, let existingMessageId = self.findItemId(for: conversation, originId: originId, sender: sender) {
+            if let stableId = serverMsgId {
+                try! Database.main.writer({ database in
+                    try database.update(query: .messageUpdateServerMsgId, params: ["id": existingMessageId, "server_msg_id": stableId]);
+                })
             }
-            // only if carbon!!
+            return;
+        }
+        
+        guard !state.isError || stanzaId == nil || !self.processOutgoingError(for: conversation, stanzaId: stanzaId!, errorCondition: message.errorCondition, errorMessage: message.errorText) else {
+            return;
+        }
+
+        if let retractedId = message.messageRetractionId, let originId = stanzaId {
+            self.retractMessageSync(for: conversation, stanzaId: retractedId, sender: sender, retractionStanzaId: originId, retractionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
+            return;
+        }
+
+        let (decryptedBody, encryption, fingerprint) = MessageEventHandler.prepareBody(message: message, forAccount: conversation.account, serverMsgId: serverMsgId);
+        
+        guard let body = decryptedBody ?? (mixInvitation != nil ? "Invitation" : nil) else {
             switch source {
             case .carbons(let action):
                 if action == .received {
@@ -266,14 +284,6 @@ class DBChatHistoryStore {
             return;
         }
 
-        guard !state.isError || stanzaId == nil || !self.processOutgoingError(for: conversation, stanzaId: stanzaId!, errorCondition: message.errorCondition, errorMessage: message.errorText) else {
-            return;
-        }
-
-        if let retractedId = message.messageRetractionId, let originId = stanzaId {
-            self.retractMessageSync(for: conversation, stanzaId: retractedId, sender: sender, retractionStanzaId: originId, retractionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
-            return;
-        }
         // is it possible that for the same "correction" processed twice, second call returns false??
         if let originId = stanzaId, let correctedMessageId = message.lastMessageCorrectionId, self.correctMessageSync(for: conversation, stanzaId: correctedMessageId, sender: sender, data: body, correctionStanzaId: originId, correctionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, newState: state) {
             if let chatState = message.chatState {
@@ -281,21 +291,7 @@ class DBChatHistoryStore {
             }
             return;
         }
-
-        if let stableId = serverMsgId, self.findItemId(for: conversation.account, serverMsgId: stableId) != nil {
-            return;
-        }
-
-        
-        if let originId = stanzaId, message.type == .groupchat || direction == .outgoing, let existingMessageId = self.findItemId(for: conversation, originId: originId, sender: sender) {
-            if let stableId = serverMsgId {
-                try! Database.main.writer({ database in
-                    try database.update(query: .messageUpdateServerMsgId, params: ["id": existingMessageId, "server_msg_id": stableId]);
-                })
-            }
-            return;
-        }
-        
+                
         let options = ConversationEntry.Options(recipient: recipient, encryption: .from(messageEncryption: encryption, fingerprint: fingerprint), isMarkable: message.isMarkable)
 
         self.appendItemSync(for: conversation, state: state, sender: sender, type: itemType, timestamp: timestamp, stanzaId: stanzaId, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, data: body, chatState: message.chatState, appendix: appendix, options: options, linkPreviewAction: .auto, masterId: nil, completionHandler: nil);

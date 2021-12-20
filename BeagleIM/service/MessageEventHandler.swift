@@ -41,7 +41,7 @@ class MessageEventHandler: XmppServiceEventHandler {
         case finished(account: BareJID, with: BareJID?)
     }
     
-    static func prepareBody(message: Message, forAccount account: BareJID) -> (String?, MessageEncryption, String?) {
+    static func prepareBody(message: Message, forAccount account: BareJID, serverMsgId: String?) -> (String?, MessageEncryption, String?) {
         var encryption: MessageEncryption = .none;
         var fingerprint: String? = nil;
 
@@ -66,7 +66,8 @@ class MessageEventHandler: XmppServiceEventHandler {
             if message.type == .groupchat, let nickname = message.from?.resource, let occupantJid = DBChatStore.instance.room(for: context, with: from)?.occupant(nickname: nickname)?.jid {
                 from = occupantJid.bareJid;
             }
-            switch context.module(.omemo).decode(message: message, from: from) {
+            
+            switch context.module(.omemo).decode(message: message, from: from, serverMsgId: serverMsgId) {
             case .successMessage(_, let keyFingerprint):
                 encryption = .decrypted;
                 fingerprint = keyFingerprint
@@ -221,7 +222,7 @@ class MessageEventHandler: XmppServiceEventHandler {
         DBChatStore.instance.conversation(for: marked.account, with: marked.jid)?.sendChatMarker(.displayed(id: stanzaId), andDeliveryReceipt: false);
     }
     
-    private struct ReadMarkersKey: Hashable {
+    private struct ReadMarkersKey: Hashable, Equatable {
         let account: BareJID;
         let jid: BareJID?;
     }
@@ -289,9 +290,11 @@ class MessageEventHandler: XmppServiceEventHandler {
     private func syncStateChanged(_ event: SyncEvent) {
         switch event {
         case .started(let account, let jid):
+            XmppService.instance.getClient(for: account)?.module(.omemo).mamSyncStarted(for: jid);
             readMarkersToSendQueue[.init(account: account, jid: jid)] = ReadMarkersQueue();
         case .finished(let account, let jid):
             readMarkersToSendQueue.removeValue(forKey: .init(account: account, jid: jid))?.sendQueued();
+            XmppService.instance.getClient(for: account)?.module(.omemo).mamSyncFinished(for: jid);
         }
     }
     
