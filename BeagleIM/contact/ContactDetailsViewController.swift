@@ -413,12 +413,17 @@ class IdentityView: NSView {
     let identity: Identity;
     let account: BareJID;
     
+    let deviceIdView: NSTextField;
     let fingerprintView: NSTextField;
     let statusButton: NSPopUpButton;
     
     init(identity: Identity, account: BareJID) {
         self.account = account;
         self.identity = identity;
+        deviceIdView = NSTextField(labelWithString: "\(NSLocalizedString("Device", comment: "device")): \(identity.address.deviceId)");
+        deviceIdView.translatesAutoresizingMaskIntoConstraints = false;
+        deviceIdView.font = NSFont.systemFont(ofSize: NSFont.smallSystemFontSize, weight: .semibold);
+        deviceIdView.textColor = NSColor.secondaryLabelColor;
         fingerprintView = NSTextField(wrappingLabelWithString: IdentityView.prettify(fingerprint: String(identity.fingerprint.dropFirst(2))));
         fingerprintView.translatesAutoresizingMaskIntoConstraints = false;
         fingerprintView.setContentHuggingPriority(.required, for: .horizontal);
@@ -434,16 +439,21 @@ class IdentityView: NSView {
         self.autoresizingMask = [.width, .height];
         self.autoresizesSubviews = true;
         //                self.translatesAutoresizingMaskIntoConstraints = false;
+        self.addSubview(deviceIdView);
         self.addSubview(fingerprintView);
         self.addSubview(statusButton);
-        self.topAnchor.constraint(equalTo: fingerprintView.topAnchor).isActive = true;
-        self.leftAnchor.constraint(equalTo: fingerprintView.leftAnchor).isActive = true;
-        self.bottomAnchor.constraint(equalTo: fingerprintView.bottomAnchor).isActive = true;
-        //                self.topAnchor.constraint(equalTo:statusButton.topAnchor).isActive = true;
-        //                self.bottomAnchor.constraint(equalTo:statusButton.bottomAnchor).isActive = true;
-        statusButton.centerYAnchor.constraint(equalTo: fingerprintView.centerYAnchor).isActive = true;
-        statusButton.leftAnchor.constraint(equalTo: fingerprintView.rightAnchor, constant: 2.0).isActive = true;
-        self.rightAnchor.constraint(equalTo: statusButton.rightAnchor).isActive = true;
+        
+        NSLayoutConstraint.activate([
+            self.topAnchor.constraint(equalTo: deviceIdView.topAnchor),
+            self.leftAnchor.constraint(equalTo: deviceIdView.leftAnchor),
+            deviceIdView.rightAnchor.constraint(lessThanOrEqualTo: fingerprintView.rightAnchor),
+            deviceIdView.bottomAnchor.constraint(equalTo: fingerprintView.topAnchor, constant: -2.0),
+            self.leftAnchor.constraint(equalTo: fingerprintView.leftAnchor),
+            self.bottomAnchor.constraint(equalTo: fingerprintView.bottomAnchor),
+            statusButton.centerYAnchor.constraint(equalTo: fingerprintView.centerYAnchor),
+            statusButton.leftAnchor.constraint(equalTo: fingerprintView.rightAnchor, constant: 2.0),
+            self.rightAnchor.constraint(equalTo: statusButton.rightAnchor)
+        ])
         
         let arr: [Trust] = [.trusted, .verified, .compromised, .undecided];
         arr.forEach { (trust) in

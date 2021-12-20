@@ -994,3 +994,6 @@
 
 /* error message details */
 "You've denied access to your location for this app. You need to allow it in System Preferences." = "Zabroniłeś aplikacji dostępu do lokalizacji. ";
+
+/* device */
+"Device" = "Urządzenie";

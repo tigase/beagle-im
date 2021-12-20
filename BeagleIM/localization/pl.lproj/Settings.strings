@@ -306,3 +306,6 @@
 
 /* Class = "NSButtonCell"; title = "Save"; ObjectID = "zFR-Jm-1za"; */
 "zFR-Jm-1za.title" = "Zapisz";
+
+/* Class = "NSTextFieldCell"; title = "Device 1111"; ObjectID = "ygN-kQ-GdS"; */
+"ygN-kQ-GdS.title" = "Urządzenie 111";

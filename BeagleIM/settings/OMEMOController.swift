@@ -31,6 +31,7 @@ open class OMEMOContoller: NSViewController, AccountAware, NSTableViewDataSource
         }
     }
 
+    @IBOutlet var deviceId: NSTextField!;
     @IBOutlet var localFingerprint: NSTextField!
     @IBOutlet var remoteIdentitiesTableView: OMEMOIdentitiesTableView!
     @IBOutlet var remoteIdentitiesActionButton: NSPopUpButton!;
@@ -75,6 +76,8 @@ open class OMEMOContoller: NSViewController, AccountAware, NSTableViewDataSource
             fingerprint = self.remoteIdentitiesTableView.prettify(fingerprint: fingerprint!);
         }
         
+        deviceId.stringValue = "\(NSLocalizedString("Device", comment: "device")): \(AccountSettings.omemoRegistrationId(account).uint32() ?? 0)";
+        
         localFingerprint.stringValue = fingerprint ?? NSLocalizedString("Key not generated!", comment: "OMEMO settings");
         localFingerprint.textColor = (omemoModule?.isReady ?? false) ?  NSColor.labelColor : NSColor.secondaryLabelColor;
         
@@ -95,9 +98,15 @@ open class OMEMOContoller: NSViewController, AccountAware, NSTableViewDataSource
         }
         
         let identity = self.remoteIdentitiesTableView.identities[row];
-        view.textField?.stringValue = self.remoteIdentitiesTableView.prettify(fingerprint: String(identity.fingerprint.dropFirst(2)));
-        view.textField?.textColor = identity.status.trust == .compromised ? NSColor.systemRed : (identity.status.isActive ? NSColor.labelColor : NSColor.secondaryLabelColor);
-
+        var fingerprint = self.remoteIdentitiesTableView.prettify(fingerprint: String(identity.fingerprint.dropFirst(2)));
+        
+        let parts = fingerprint.split(separator: " ");
+        fingerprint = parts[0..<4].joined(separator: " ") + "\n" + parts[4..<parts.count].joined(separator: " ");
+        
+        let textColor = identity.status.trust == .compromised ? NSColor.systemRed : (identity.status.isActive ? NSColor.labelColor : NSColor.secondaryLabelColor);
+        let value = NSMutableAttributedString(string: "\(NSLocalizedString("Device", comment: "device")): \(identity.address.deviceId)" + "\n", attributes: [.font:NSFont.systemFont(ofSize: NSFont.smallSystemFontSize, weight: .medium), .foregroundColor: NSColor.secondaryLabelColor]);
+        value.append(NSAttributedString(string: fingerprint, attributes: [.foregroundColor: textColor]));
+        view.textField?.attributedStringValue = value;
         
         return view;
     }
