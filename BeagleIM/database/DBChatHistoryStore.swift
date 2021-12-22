@@ -199,7 +199,6 @@ class DBChatHistoryStore {
 
         let mixInvitation = message.mixInvitation;
 
-        var itemType = MessageEventHandler.itemType(fromMessage: message);
         let stanzaId = message.originId ?? message.id;
         var stableIds = message.stanzaId;
         var fromArchive = false;
@@ -234,12 +233,6 @@ class DBChatHistoryStore {
         }
 
         let state = MessageEventHandler.calculateState(direction: MessageEventHandler.calculateDirection(for: conversation, direction: direction, sender: sender), message: message, isFromArchive: fromArchive, isMuc: message.type == .groupchat && message.mix == nil);
-
-        var appendix: AppendixProtocol? = nil;
-        if itemType == .message, let mixInivation = mixInvitation {
-            itemType = .invitation;
-            appendix = ChatInvitationAppendix(mixInvitation: mixInivation);
-        }
 
         let timestamp = Date(timeIntervalSince1970: Double(Int64((inTimestamp ?? Date()).timeIntervalSince1970 * 1000)) / 1000);
 
@@ -284,6 +277,15 @@ class DBChatHistoryStore {
             return;
         }
 
+        var appendix: AppendixProtocol? = nil;
+
+        var itemType = MessageEventHandler.itemType(fromMessage: message);
+        if itemType == .message, let mixInivation = mixInvitation {
+            itemType = .invitation;
+            appendix = ChatInvitationAppendix(mixInvitation: mixInivation);
+        }
+
+        
         // is it possible that for the same "correction" processed twice, second call returns false??
         if let originId = stanzaId, let correctedMessageId = message.lastMessageCorrectionId, self.correctMessageSync(for: conversation, stanzaId: correctedMessageId, sender: sender, data: body, correctionStanzaId: originId, correctionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, newState: state) {
             if let chatState = message.chatState {
