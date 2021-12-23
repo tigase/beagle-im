@@ -171,6 +171,7 @@ class SuggestionsWindowController: NSWindowController {
     func update(suggestions: [Any]) {
         self.suggestions = suggestions;
         layoutSuggestions();
+        selectedView = views.first;
     }
     
     func layoutSuggestions() {
