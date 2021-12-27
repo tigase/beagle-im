@@ -597,3 +597,27 @@
 
 /* Class = "NSViewController"; title = "Create"; ObjectID = "zKN-wb-Mfs"; */
 "zKN-wb-Mfs.title" = "Utwórz";
+
+/* Class = "NSMenuItem"; title = "XMPP Channel"; ObjectID = "2Ku-7R-cVQ"; */
+"2Ku-7R-cVQ.title" = "Kanał XMPP";
+
+/* Class = "NSMenu"; title = "Help"; ObjectID = "6li-QY-me7"; */
+"6li-QY-me7.title" = "Pomoc";
+
+/* Class = "NSMenuItem"; title = "GitHub"; ObjectID = "AFz-Tq-Bxw"; */
+"AFz-Tq-Bxw.title" = "GitHub";
+
+/* Class = "NSMenuItem"; title = "Help"; ObjectID = "DGd-S4-N6a"; */
+"DGd-S4-N6a.title" = "Pomoc";
+
+/* Class = "NSMenuItem"; title = "Website"; ObjectID = "zdx-RQ-LZP"; */
+"zdx-RQ-LZP.title" = "Strona WWW";
+
+/* Class = "NSMenuItem"; title = "Mastodon"; ObjectID = "C9d-Ed-8CP"; */
+"C9d-Ed-8CP.title" = "Mastodon";
+
+/* Class = "NSMenuItem"; title = "Twitter"; ObjectID = "fUw-k9-Jmg"; */
+"fUw-k9-Jmg.title" = "Twitter";
+
+/* Class = "NSMenuItem"; title = "About us"; ObjectID = "yFa-EE-Aqj"; */
+"yFa-EE-Aqj.title" = "O nas";

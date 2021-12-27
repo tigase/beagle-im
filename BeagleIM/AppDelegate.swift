@@ -117,6 +117,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             }
         }
         
+        init(jid: JID, action: Action? = nil, dict: [String: String]? = nil) {
+            self.jid = jid;
+            self.action = action;
+            self.dict = dict;
+        }
+        
         enum Action: String {
             case message
             case join
@@ -209,8 +215,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             self.logger.debug("permission for video granted: \(granted)");
         })
         
-        NSApp.mainMenu?.items.last?.submenu?.delegate = self;
-        NSApp.mainMenu?.items[1].submenu?.delegate = self;
+        if let items = NSApp.mainMenu?.items {
+            items[items.count - 2].submenu?.delegate = self;
+            items[1].submenu?.delegate = self;
+        }
         
         for windowName in UserDefaults.standard.stringArray(forKey: "openedWindows") ?? ["chats"] {
             switch windowName {
@@ -366,6 +374,37 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             }
             self.mainWindowController?.window?.beginSheet(windowController.window!, completionHandler: nil);
         }
+    }
+    
+    @IBAction func openAppWebsite(_ sender: NSMenuItem) {
+        NSWorkspace.shared.open(URL(string: "https://beagle.im")!);
+    }
+    
+    @IBAction func openGitHub(_ sender: NSMenuItem) {
+        NSWorkspace.shared.open(URL(string: "https://github.com/tigase/beagle-im")!);
+    }
+
+    @IBAction func joinTigaseXmppChannel(_ sender: NSMenuItem) {
+        makeMainWindowKey();
+        let jid = JID("tigase@muc.tigase.org")!;
+        guard let conversation = DBChatStore.instance.conversations.first(where: { $0.jid == jid.bareJid }) else {
+            handle(action: .join, uri: XmppUri(jid: jid, action: .join, dict: nil));
+            return;
+        }
+        
+        NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: conversation);
+    }
+    
+    @IBAction func openAboutUs(_ sender: NSMenuItem) {
+        NSWorkspace.shared.open(URL(string: "https://tigase.net")!);
+    }
+
+    @IBAction func openTwitter(_ sender: NSMenuItem) {
+        NSWorkspace.shared.open(URL(string: "https://twitter.com/tigase")!);
+    }
+
+    @IBAction func openMastodon(_ sender: NSMenuItem) {
+        NSWorkspace.shared.open(URL(string: "https://mastodon.technology/@tigase")!);
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
