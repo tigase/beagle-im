@@ -351,7 +351,7 @@ class DBChatHistoryStore {
         case .participant(let id, _, _):
             params["participant_id"] = id;
         }
-        return try! Database.main.reader({ database -> Int? in
+        return try! Database.main.writer({ database -> Int? in
             return try database.select(query: .messageFindIdByOriginId, params: params).mapFirst({ $0.int(for: "id") });
         })
     }
