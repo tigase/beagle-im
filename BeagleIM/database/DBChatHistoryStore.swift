@@ -351,7 +351,7 @@ class DBChatHistoryStore {
         case .participant(let id, _, _):
             params["participant_id"] = id;
         }
-        return try! Database.main.writer({ database -> Int? in
+        return try! Database.main.reader({ database -> Int? in
             return try database.select(query: .messageFindIdByOriginId, params: params).mapFirst({ $0.int(for: "id") });
         })
     }
@@ -412,6 +412,18 @@ class DBChatHistoryStore {
             }
             
             guard let id = try! Database.main.writer({ database -> Int? in
+                switch sender {
+                case .occupant(_, _):
+                    if let originId = stanzaId, let existingMessageId = self.findItemId(for: conversation, originId: originId, sender: sender) {
+                        if let stableId = serverMsgId {
+                            try database.update(query: .messageUpdateServerMsgId, params: ["id": existingMessageId, "server_msg_id": stableId]);
+                        }
+                        return nil;
+                    }
+                default:
+                    break;
+                }
+
                 try database.insert(query: .messageInsert, params: params);
                 return database.lastInsertedRowId;
             }) else {
