@@ -668,11 +668,11 @@ Gw
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView id="4gy-8X-MPm">
-                                                            <rect key="frame" x="11" y="1" width="127" height="17"/>
+                                                            <rect key="frame" x="11" y="1" width="126" height="17"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="aDA-dV-s9y">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="127" height="17"/>
+                                                                    <rect key="frame" x="0.0" y="0.0" width="126" height="17"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="aCn-9L-UCN">
                                                                         <font key="font" metaFont="system"/>
@@ -700,11 +700,11 @@ Gw
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView id="qVs-xk-iFE">
-                                                            <rect key="frame" x="141" y="1" width="287" height="17"/>
+                                                            <rect key="frame" x="140" y="1" width="288" height="17"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Lsv-sW-9j0">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="287" height="17"/>
+                                                                    <rect key="frame" x="0.0" y="0.0" width="288" height="17"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="QXK-Ly-VO0">
                                                                         <font key="font" metaFont="system"/>
@@ -827,12 +827,11 @@ Gw
                             </button>
                             <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ika-g1-Zxi">
                                 <rect key="frame" x="127" y="46" width="207" height="25"/>
-                                <popUpButtonCell key="cell" type="push" title="Item 1" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="2WQ-Cg-LTD" id="Q2h-7e-wdO">
+                                <popUpButtonCell key="cell" type="push" title="Last 12 hours" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" tag="12" imageScaling="proportionallyDown" inset="2" selectedItem="o17-R1-mNs" id="Q2h-7e-wdO">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="menu"/>
                                     <menu key="menu" id="a0f-gh-hqZ">
                                         <items>
-                                            <menuItem title="Item 1" state="on" id="2WQ-Cg-LTD"/>
                                             <menuItem title="Last 12 hours" tag="12" id="o17-R1-mNs"/>
                                             <menuItem title="Last 24 hours" tag="24" id="AEy-jM-GUg"/>
                                             <menuItem title="Last 3 days" tag="72" id="OZF-au-eLa">
@@ -1461,7 +1460,7 @@ Gw
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             <color key="gridColor" red="1" green="1" blue="1" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                             <tableColumns>
-                                                <tableColumn width="309" minWidth="40" maxWidth="1000" id="LKO-ex-icT">
+                                                <tableColumn width="277" minWidth="40" maxWidth="1000" id="LKO-ex-icT">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -1474,11 +1473,11 @@ Gw
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView identifier="OMEMOIdentityTableCellView" id="fn3-lk-7hd">
-                                                            <rect key="frame" x="0.0" y="1" width="321" height="19"/>
+                                                            <rect key="frame" x="10" y="1" width="289" height="19"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="500" translatesAutoresizingMaskIntoConstraints="NO" id="35p-cS-j3T">
-                                                                    <rect key="frame" x="0.0" y="2" width="321" height="15"/>
+                                                                    <rect key="frame" x="0.0" y="2" width="289" height="15"/>
                                                                     <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Table View Cell" id="gkW-Rw-hvh">
                                                                         <font key="font" size="13" name="CourierNewPS-BoldMT"/>
                                                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>

@@ -621,3 +621,6 @@
 
 /* Class = "NSMenuItem"; title = "About us"; ObjectID = "yFa-EE-Aqj"; */
 "yFa-EE-Aqj.title" = "O nas";
+
+/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "HUr-nw-nKs"; */
+"HUr-nw-nKs.title" = "";

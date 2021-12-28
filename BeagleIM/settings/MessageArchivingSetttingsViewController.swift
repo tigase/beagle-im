@@ -63,7 +63,7 @@ class MessageArchivingSettingsViewController: NSViewController, AccountAware {
         let idx = synchronizationPeriod.itemArray.lastIndex { (item) -> Bool in
             return item.tag <= syncPeriod
             } ?? 0;
-        synchronizationPeriod.selectItem(at: idx == 0 ? 1 : idx);
+        synchronizationPeriod.selectItem(at: idx);
         synchronizationPeriod.title = synchronizationPeriod.titleOfSelectedItem ?? "";
         
         progressIndicator.startAnimation(self);

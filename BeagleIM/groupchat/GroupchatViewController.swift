@@ -24,7 +24,7 @@ import TigaseSwift
 import TigaseSwiftOMEMO
 import Combine
 
-class GroupchatParticipantsTableView: NSTableView {
+class GroupchatParticipantsTableView: NSOutlineView {
     
     override func prepareContent(in rect: NSRect) {
         super.prepareContent(in: self.visibleRect);
@@ -46,7 +46,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     @IBOutlet var settingsButtinLeadingConstraint : NSLayoutConstraint!;
     
     @IBOutlet var sidebarWidthConstraint: NSLayoutConstraint!;
-    @IBOutlet var participantsTableView: NSTableView!;
+    @IBOutlet var participantsTableView: NSOutlineView!;
     
     fileprivate var participantsContainer: GroupchatParticipantsContainer?;
     
@@ -84,9 +84,10 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             settingsButtinLeadingConstraint.constant = 0;
         }
         self.participantsContainer = GroupchatParticipantsContainer(delegate: self);
-        self.participantsContainer?.tableView = self.participantsTableView;
+        self.participantsContainer?.outlineView = self.participantsTableView;
         self.participantsTableView.delegate = participantsContainer;
         self.participantsTableView.dataSource = participantsContainer;
+        self.participantsContainer?.expandAll();
 
         super.viewDidLoad();
 
@@ -483,33 +484,93 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
 
 }
 
-class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableViewDataSource {
+class GroupchatParticipantsContainer: NSObject, NSOutlineViewDelegate, NSOutlineViewDataSource {
 
+    private class ParticipantsGroup: Equatable, Hashable {
+        static func == (lhs: ParticipantsGroup, rhs: ParticipantsGroup) -> Bool {
+            return lhs.role == rhs.role;
+        }
+        
+        let role: MucRole;
+        var participants: [MucOccupant];
+        
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(role);
+        }
+        
+        @available(macOS 11.0, *)
+        var image: NSImage? {
+            switch role {
+            case .moderator:
+                return NSImage(systemSymbolName: "rosette", accessibilityDescription: nil);
+            case .participant:
+                return NSImage(systemSymbolName: "person.3", accessibilityDescription: nil);
+            case .visitor:
+                return NSImage(systemSymbolName: "theatermasks", accessibilityDescription: nil);
+            case .none:
+                return nil;
+            }
+        }
+        
+        var label: String {
+            switch role {
+            case .moderator:
+                return NSLocalizedString("Moderators", comment: "list of users with this role");
+            case .participant:
+                return NSLocalizedString("Participans", comment: "list of users with this role");
+            case .visitor:
+                return NSLocalizedString("Visitors", comment: "list of users with this role");
+            case .none:
+                return NSLocalizedString("None", comment: "list of users with this role");
+            }
+        }
+        
+        var labelAttributedString: NSAttributedString {
+            if #available(macOS 11.0, *) {
+                let text = NSMutableAttributedString(string: "");
+                if let image = self.image {
+                    let att = NSTextAttachment();
+                    att.image = image;
+                    text.append(NSAttributedString(attachment: att));
+                }
+                text.append(NSAttributedString(string: self.label.uppercased()));
+                return text;
+            } else {
+                return NSAttributedString(string: self.label);
+            }
+        }
+        
+        init(role: MucRole, participants: [MucOccupant] = []) {
+            self.role = role;
+            self.participants = participants;
+        }
+    }
+    
     private var cancellables: Set<AnyCancellable> = [];
     
-    weak var tableView: NSTableView? {
+    weak var outlineView: NSOutlineView? {
         didSet {
-            tableView?.usesAutomaticRowHeights = false;
-            tableView?.rowHeight = 28;
-            tableView?.menu = self.prepareContextMenu();
-            tableView?.menu?.delegate = self;
+            outlineView?.menu = self.prepareContextMenu();
+            outlineView?.menu?.delegate = self;
         }
     }
     var room: Room? {
         didSet {
             cancellables.removeAll();
-            self.tableView?.isHidden = true;
-//            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-//                self.room?.occupantsPublisher.receive(on: self.dispatcher.queue).sink(receiveValue:{ [weak self] value in
-//                    self?.update(participants: value);
-//                }).store(in: &self.cancellables);
-//            }
-            room?.occupantsPublisher.receive(on: self.dispatcher.queue).sink(receiveValue:{ [weak self] value in
+            self.outlineView?.isHidden = true;
+            room?.occupantsPublisher.throttle(for: 0.1, scheduler: self.dispatcher.queue, latest: true).sink(receiveValue:{ [weak self] value in
                     self?.update(participants: value);
             }).store(in: &cancellables);
         }
     }
-    private var participants: [MucOccupant] = [];
+
+    private let allGroups: [MucRole: ParticipantsGroup] = [
+        .moderator: ParticipantsGroup(role: .moderator),
+        .participant: ParticipantsGroup(role: .participant),
+        .visitor: ParticipantsGroup(role: .visitor)
+    ];
+    private var groups: [ParticipantsGroup] = [
+    ];
     
     weak var delegate: GroupchatViewController?;
     
@@ -520,37 +581,121 @@ class GroupchatParticipantsContainer: NSObject, NSTableViewDelegate, NSTableView
         super.init();
     }
     
+    private let allRoles: [MucRole] = [.moderator, .participant, .visitor];
+    
+    private enum GroupChanges {
+        case groupAdded(role: MucRole)
+        case groupRemoved(role: MucRole)
+        case groupModified(role: MucRole, changes: Array<MucOccupant>.IndexSetChanges)
+    }
+    
     private func update(participants: [MucOccupant]) {
-        let oldParticipants = self.participants;
-        let newParticipants = participants.sorted(by: { (i1,i2) -> Bool in i1.nickname.lowercased() < i2.nickname.lowercased() });
-        let changes = newParticipants.calculateChanges(from: oldParticipants);
-            
-        let initialReload = oldParticipants.isEmpty;
+        let oldGroups = self.groups;
+        let newGroups = allRoles.map({ role in ParticipantsGroup(role: role, participants: participants.filter({ $0.role == role }).sorted(by: { (i1,i2) -> Bool in i1.nickname.lowercased() < i2.nickname.lowercased() })) }).filter({ !$0.participants.isEmpty });
+
+        let allChanges = newGroups.calculateChanges(from: oldGroups);
+//
+        let allChanges2 = newGroups.compactMap({ newGroup -> (ParticipantsGroup,ParticipantsGroup)? in
+            guard let oldGroup = oldGroups.first(where: { $0.role == newGroup.role }) else {
+                return nil;
+            }
+            return (oldGroup, newGroup);
+        }).map({ (old, new) in
+            return (old, new.participants.calculateChanges(from: old.participants));
+        })
+        
         DispatchQueue.main.sync {
-            self.participants = newParticipants;
-            self.tableView?.beginUpdates();
-            self.tableView?.removeRows(at: changes.removed, withAnimation: initialReload ? [] : .effectFade);
-            self.tableView?.insertRows(at: changes.inserted, withAnimation: initialReload ? [] : .effectFade);
-            self.tableView?.endUpdates();
-            self.tableView?.isHidden = false;
+            //self.groups = newGroups;
+
+            self.groups = newGroups.map({ newGroup in
+                let group = allGroups[newGroup.role]!;
+                group.participants = newGroup.participants;
+                return group;
+            })
+            
+            self.outlineView?.beginUpdates();
+
+            if !allChanges.removed.isEmpty {
+                outlineView?.removeItems(at: allChanges.removed, inParent: nil, withAnimation: .effectFade);
+            }
+            if !allChanges.inserted.isEmpty {
+                outlineView?.insertItems(at: allChanges.inserted, inParent: nil, withAnimation: .effectFade);
+                for idx in allChanges.inserted {
+                    outlineView?.expandItem(groups[idx], expandChildren: true);
+                }
+            }
+            
+            for (group, changes) in allChanges2 {
+                self.outlineView?.removeItems(at: changes.removed, inParent: group, withAnimation: .effectFade);
+                self.outlineView?.insertItems(at: changes.inserted, inParent: group, withAnimation: .effectFade);
+            }
+            self.outlineView?.endUpdates();
+            self.outlineView?.isHidden = false;
         }
     }
     
-    func numberOfRows(in tableView: NSTableView) -> Int {
-        return participants.count;
+    func expandAll() {
+        for group in groups {
+            self.outlineView?.expandItem(group, expandChildren: true);
+        }
     }
     
-    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        let participant = participants[row];
-        if let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("GroupchatParticipantCellView"), owner: nil) as? GroupchatParticipantCellView {
+    func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
+        return item is ParticipantsGroup;
+    }
+
+    func outlineView(_ outlineView: NSOutlineView, shouldExpandItem item: Any) -> Bool {
+        return item is ParticipantsGroup;
+    }
+    
+    func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
+        if let group = item as? ParticipantsGroup {
+            return group.participants[index];
+        } else {
+            return groups[index];
+        }
+    }
+    
+    func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
+        if let group = item as? ParticipantsGroup {
+            return group.participants.count;
+        } else {
+            return groups.count;
+        }
+    }
+    
+    func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
+        switch item {
+        case let participant as MucOccupant:
+            guard let view = outlineView.makeView(withIdentifier:NSUserInterfaceItemIdentifier("GroupchatParticipantCellView"), owner: nil) as? GroupchatParticipantCellView else{
+                return nil;
+            }
             
             view.set(occupant: participant, in: room!);
             view.identifier = NSUserInterfaceItemIdentifier("GroupchatParticipantCellView")
                     
             return view;
+        case let group as ParticipantsGroup:
+            guard let view = outlineView.makeView(withIdentifier:NSUserInterfaceItemIdentifier("GroupchatGroupCellView"), owner: nil) as? GroupchatGroupCellView else{
+                return nil;
+            }
+            view.label.attributedStringValue = group.labelAttributedString;
+//            view.image.image = group.image;
+            return view;
+        default:
+            return nil;
         }
-        return nil;
     }
+    
+    func outlineView(_ outlineView: NSOutlineView, shouldShowOutlineCellForItem item: Any) -> Bool {
+        return false;
+    }
+}
+
+class GroupchatGroupCellView: NSTableCellView {
+ 
+    @IBOutlet var label: NSTextField!;
+ //   @IBOutlet var image: NSImageView!;
     
 }
 
@@ -656,27 +801,14 @@ class GroupchatParticipantCellView: NSTableCellView {
    
     private var cancellables: Set<AnyCancellable> = [];
     
-    public static func roleToEmoji(_ role: MucRole) -> String {
-        switch role {
-        case .none, .visitor:
-            return "";
-        case .participant:
-            return "⭐";
-        case .moderator:
-            return "🌟";
-        }
-    }
-    
     private var occupant: MucOccupant? {
         didSet {
             cancellables.removeAll();
 
             if let occupant = occupant {
-                let nickname = occupant.nickname;
                 label.stringValue = occupant.nickname;
                 
                 occupant.$presence.map({ $0.show }).receive(on: DispatchQueue.main).assign(to: \.status, on: avatar).store(in: &cancellables);
-                occupant.$presence.map(XMucUserElement.extract(from: )).map({ $0?.role ?? .none }).map({ "\(nickname) \(GroupchatParticipantCellView.roleToEmoji($0))" }).receive(on: DispatchQueue.main).assign(to: \.stringValue, on: label).store(in: &cancellables);
             }
         }
     }
@@ -736,12 +868,11 @@ extension GroupchatParticipantsContainer: NSMenuDelegate {
     }
  
     func menu(_ menu: NSMenu, update item: NSMenuItem, at index: Int, shouldCancel: Bool) -> Bool {
-        guard let clickedRow = self.tableView?.clickedRow, clickedRow >= 0 && clickedRow < self.participants.count, let nickname = self.room?.nickname else {
+        guard let clickedRow = self.outlineView?.clickedRow, clickedRow > 0, let participant = self.outlineView?.item(atRow: clickedRow) as? MucOccupant, let nickname = self.room?.nickname else {
             item.isHidden = true;
             return true;
         }
                 
-        let participant = self.participants[clickedRow];
         switch item.action {
         case #selector(privateMessage(_:)):
             break;
@@ -771,7 +902,7 @@ extension GroupchatParticipantsContainer: NSMenuDelegate {
             return;
         }
         
-        guard let window = self.tableView?.window else {
+        guard let window = self.outlineView?.window else {
             return;
         }
         

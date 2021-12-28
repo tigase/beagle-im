@@ -10,9 +10,6 @@
 /* Class = "NSTextFieldCell"; placeholderString = "Organization"; ObjectID = "16s-u5-pAg"; */
 "16s-u5-pAg.placeholderString" = "Organizacja";
 
-/* Class = "NSMenuItem"; title = "Item 1"; ObjectID = "2WQ-Cg-LTD"; */
-"2WQ-Cg-LTD.title" = "Item 1";
-
 /* Class = "NSTextFieldCell"; title = "Nickname"; ObjectID = "30A-Yq-8df"; */
 "30A-Yq-8df.title" = "Nick";
 
