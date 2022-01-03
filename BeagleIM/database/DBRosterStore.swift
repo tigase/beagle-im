@@ -87,10 +87,10 @@ open class DBRosterStore: RosterStore {
     
     public func clear(for account: BareJID) {
         queue.sync {
-            let items = Set(self.items(for: account));
+            let items = Set(self.accountRosters[account]?.items ?? []);
             self.items = self.items.filter({ !items.contains($0) });
             for item in items {
-                remove(for: account, jid: item.jid);
+                _remove(for: account, jid: item.jid);
             }
         }
     }
