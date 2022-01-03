@@ -125,7 +125,7 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
         }
         let res = handler(sender);
         if res == .generic {
-            return super.draggingUpdated(sender);
+            return super.draggingEntered(sender);
         } else {
             return res;
         }

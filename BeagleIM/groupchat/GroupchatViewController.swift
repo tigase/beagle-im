@@ -89,6 +89,8 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         self.participantsTableView.dataSource = participantsContainer;
         self.participantsContainer?.expandAll();
 
+        self.participantsTableView.registerForDraggedTypes([.fileURL] + NSFilePromiseReceiver.readableDraggedTypes.map { NSPasteboard.PasteboardType($0) });
+        
         super.viewDidLoad();
 
         self.encryptButton = createEncryptButton();

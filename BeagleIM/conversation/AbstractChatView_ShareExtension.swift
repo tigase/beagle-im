@@ -23,6 +23,55 @@ import AppKit
 import TigaseSwift
 import Combine
 
+class NSViewWithTextBackgroundAndDragHandler: NSViewWithTextBackground {
+    
+    weak var dragHandler: (NSDraggingDestination & PastingDelegate)? = nil;
+    
+    override func draggingEnded(_ sender: NSDraggingInfo) {
+        guard let handler = self.dragHandler?.draggingEnded else {
+            super.draggingEnded(sender);
+            return;
+        }
+        handler(sender);
+    }
+    
+    override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+        guard let handler = self.dragHandler?.draggingEntered else {
+            return super.draggingEntered(sender);
+        }
+        let res = handler(sender);
+        if res == .generic {
+            return super.draggingEntered(sender);
+        } else {
+            return res;
+        }
+    }
+    
+    override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+        guard let handler = self.dragHandler?.draggingUpdated else {
+            return super.draggingUpdated(sender);
+        }
+        let res = handler(sender);
+        if res == .generic {
+            return super.draggingUpdated(sender);
+        } else {
+            return res;
+        }
+    }
+    
+    override func draggingExited(_ sender: NSDraggingInfo?) {
+        guard let handler = self.dragHandler?.draggingExited else {
+            super.draggingExited(sender);
+            return;
+        }
+        handler(sender);
+    }
+    
+    override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        return (dragHandler?.performDragOperation?(sender) ?? false) || super.performDragOperation(sender);
+    }
+}
+
 class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSessionTaskDelegate, NSDraggingDestination, PastingDelegate {
 
     @IBOutlet var sharingProgressBar: NSProgressIndicator!;
@@ -60,6 +109,9 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         self.sharingProgressBar.minValue = 0;
         self.sharingProgressBar.maxValue = 1;
         self.sharingProgressBar.isHidden = true;
+        
+        (self.view as! NSViewWithTextBackgroundAndDragHandler).dragHandler = self;
+        self.view.registerForDraggedTypes([.fileURL] + NSFilePromiseReceiver.readableDraggedTypes.map { NSPasteboard.PasteboardType($0) });
     }
     
     override func viewWillAppear() {
