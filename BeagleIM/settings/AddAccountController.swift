@@ -59,7 +59,12 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
             repeat {
                 idx = idx + 1;
                 if idx >= self.stackView.views.count {
-                    idx = 0;
+                    if logInButton.isEnabled && commandSelector == #selector(NSResponder.insertNewline(_:)), let action = logInButton.action, let target = logInButton.target {
+                        _ = target.perform(action, with: logInButton);
+                        return true;
+                    } else {
+                        idx = 0;
+                    }
                 }
                 responder = self.stackView.views[idx].subviews[1];
                 if !(responder?.acceptsFirstResponder ?? false) {

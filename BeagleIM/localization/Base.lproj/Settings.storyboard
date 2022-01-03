@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="19455"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="19529"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -827,12 +827,12 @@ Gw
                             </button>
                             <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ika-g1-Zxi">
                                 <rect key="frame" x="127" y="46" width="207" height="25"/>
-                                <popUpButtonCell key="cell" type="push" title="Last 12 hours" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" tag="12" imageScaling="proportionallyDown" inset="2" selectedItem="o17-R1-mNs" id="Q2h-7e-wdO">
+                                <popUpButtonCell key="cell" type="push" title="Last 12 hours" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" tag="12" imageScaling="proportionallyDown" inset="2" selectedItem="o17-R1-mNs" id="Q2h-7e-wdO">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="menu"/>
                                     <menu key="menu" id="a0f-gh-hqZ">
                                         <items>
-                                            <menuItem title="Last 12 hours" tag="12" id="o17-R1-mNs"/>
+                                            <menuItem title="Last 12 hours" state="on" tag="12" id="o17-R1-mNs"/>
                                             <menuItem title="Last 24 hours" tag="24" id="AEy-jM-GUg"/>
                                             <menuItem title="Last 3 days" tag="72" id="OZF-au-eLa">
                                                 <modifierMask key="keyEquivalentModifierMask"/>
