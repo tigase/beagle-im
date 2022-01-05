@@ -97,9 +97,13 @@ class SharingTaskManager {
             self.init(controller: controller, items: items, imageQuality: askForQuality ? nil : ImageQuality.current, videoQuality: askForQuality ? nil : VideoQuality.current)
         }
         
-        init(controller: AbstractChatViewControllerWithSharing, items: [AbstractSharingTaskItem], imageQuality: ImageQuality?, videoQuality: VideoQuality?) {
-            self.chat = controller.conversation;
-            self.window = controller.view.window;
+        convenience init(controller: AbstractChatViewControllerWithSharing, items: [AbstractSharingTaskItem], imageQuality: ImageQuality?, videoQuality: VideoQuality?) {
+            self.init(window: controller.view.window, conversation: controller.conversation, items: items, imageQuality: imageQuality, videoQuality: videoQuality);
+        }
+        
+        init(window: NSWindow?, conversation: Conversation, items: [AbstractSharingTaskItem], imageQuality: ImageQuality?, videoQuality: VideoQuality?) {
+            self.chat = conversation;
+            self.window = window;
             self.items = items;
             for item in items {
                 item.task = self;

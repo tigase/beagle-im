@@ -58,8 +58,6 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         audioCall.isHidden = false;
         videoCall.isHidden = false;
         scriptsButton.isHidden = true;
-
-        NotificationCenter.default.addObserver(self, selector: #selector(omemoAvailabilityChanged), name: MessageEventHandler.OMEMO_AVAILABILITY_CHANGED, object: nil);
     }
 
     func createEncryptButton() -> DropDownButton {
@@ -83,18 +81,14 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         NSLayoutConstraint.activate([encryptButton.widthAnchor.constraint(equalToConstant: buttonSize), encryptButton.widthAnchor.constraint(equalTo: encryptButton.heightAnchor)]);
         
         encryptButton.isBordered = false;
+        encryptButton.isEnabled = false;
+        encryptButton.isBordered = false;
 
         return encryptButton;
     }
     
     override func viewWillAppear() {
         self.conversationLogController?.contextMenuDelegate = self;
-
-        Settings.$messageEncryption.sink(receiveValue: { [weak self] value in
-            DispatchQueue.main.async {
-                self?.refreshEncryptionStatus();
-            }
-        }).store(in: &cancellables);
 
         conversation.displayNamePublisher.assign(to: \.title, on: buddyNameLabel).store(in: &cancellables);
         conversation.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: buddyAvatarView).store(in: &cancellables);
@@ -136,22 +130,14 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
             }
         });
 
-        refreshEncryptionStatus();
+        chat.$features.combineLatest(Settings.$messageEncryption).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (features, defEncryption) in
+            self?.refreshEncryptionStatus(features: features, defEncryption: defEncryption);
+        }).store(in: &cancellables);
     }
     
     override func viewDidDisappear() {
         super.viewDidDisappear();
         cancellables.removeAll();
-    }
-    
-    @objc func omemoAvailabilityChanged(_ notification: Notification) {
-        guard let event = notification.object as? OMEMOModule.AvailabilityChangedEvent else {
-            return;
-        }
-        guard event.account == self.account && self.jid == event.jid else {
-            return;
-        }
-        refreshEncryptionStatus();
     }
 
     @objc func scriptActivated(sender: NSMenuItem) {
@@ -180,22 +166,6 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         lastTextChange = Date();
         self.change(chatState: .composing);
     }
-
-//    @objc func contactPresenceChanged(_ notification: Notification) {
-//        guard let e = notification.object as? PresenceModule.ContactPresenceChanged else {
-//            return;
-//        }
-//
-//        guard let account = e.sessionObject.userBareJid, let jid = e.presence.from?.bareJid else {
-//            return;
-//        }
-//
-//        guard account == self.account && jid == self.jid else {
-//            return;
-//        }
-//
-//        self.updateCapabilities();
-//    }
 
     override func prepareConversationLogContextMenu(dataSource: ConversationDataSource, menu: NSMenu, forRow row: Int) {
         super.prepareConversationLogContextMenu(dataSource: dataSource, menu: menu, forRow: row);
@@ -413,24 +383,18 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
             options.encryption = encryption;
         });
         DispatchQueue.main.async {
-            self.refreshEncryptionStatus();
+            self.refreshEncryptionStatus(features: self.chat.features, defEncryption: Settings.messageEncryption);
         }
     }
 
-    fileprivate func refreshEncryptionStatus() {
-        DispatchQueue.main.async {
-            guard let account = self.account, let jid = self.jid else {
-                return;
-            }
-            let omemoModule = XmppService.instance.getClient(for: account)?.module(.omemo);
-            self.encryptButton.isEnabled = omemoModule?.isAvailable(for: jid) ?? false//!DBOMEMOStore.instance.allDevices(forAccount: account!, andName: jid!.stringValue, activeAndTrusted: false).isEmpty;
-            if !self.encryptButton.isEnabled {
-                self.encryptButton.image = NSImage(named: "lock.open.fill");
-            } else {
-                let encryption = self.chat.options.encryption ?? Settings.messageEncryption;
-                let locked = encryption == ChatEncryption.omemo;
-                self.encryptButton.image = NSImage(named: locked ? "lock.fill" : "lock.open.fill");
-            }
+    private func refreshEncryptionStatus(features: [ConversationFeature], defEncryption: ConversationEncryption) {
+        self.encryptButton.isEnabled = features.contains(.omemo); 
+        if !self.encryptButton.isEnabled {
+            self.encryptButton.image = NSImage(named: "lock.open.fill");
+        } else {
+            let encryption = self.chat.options.encryption ?? defEncryption;
+            let locked = encryption == ChatEncryption.omemo;
+            self.encryptButton.image = NSImage(named: locked ? "lock.fill" : "lock.open.fill");
         }
     }
 

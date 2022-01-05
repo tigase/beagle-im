@@ -40,7 +40,7 @@ class NSViewWithTextBackgroundAndDragHandler: NSViewWithTextBackground {
             return super.draggingEntered(sender);
         }
         let res = handler(sender);
-        if res == .generic {
+        if res == [] {
             return super.draggingEntered(sender);
         } else {
             return res;
@@ -52,7 +52,7 @@ class NSViewWithTextBackgroundAndDragHandler: NSViewWithTextBackground {
             return super.draggingUpdated(sender);
         }
         let res = handler(sender);
-        if res == .generic {
+        if res == [] {
             return super.draggingUpdated(sender);
         } else {
             return res;
@@ -116,9 +116,9 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
     
     override func viewWillAppear() {
         super.viewWillAppear();
-        createSharingAvailablePublisher()?.receive(on: DispatchQueue.main).assign(to: \.isEnabled, on: self.sharingButton).store(in: &cancellables)
-        createSharingAvailablePublisher()?.combineLatest(CaptureDeviceManager.authorizationStatusPublisher(for: .audio), { sharing, media in
-            return sharing && (media == .authorized || media == .notDetermined);
+        conversation.featuresPublisher.receive(on: DispatchQueue.main).map({ $0.contains(.httpFileUpload) }).assign(to: \.isEnabled, on: self.sharingButton).store(in: &cancellables)
+        conversation.featuresPublisher.combineLatest(CaptureDeviceManager.authorizationStatusPublisher(for: .audio), { features, media in
+            return features.contains(.httpFileUpload) && (media == .authorized || media == .notDetermined);
         }).receive(on: DispatchQueue.main).assign(to: \.isEnabled, on: self.voiceMessageButton).store(in: &cancellables)
         NotificationCenter.default.addObserver(self, selector: #selector(sharingProgressChanged(_:)), name: SharingTaskManager.PROGRESS_CHANGED, object: conversation);
         self.updateSharingProgress();
@@ -133,10 +133,6 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         DispatchQueue.main.async {
             self.updateSharingProgress();
         }
-    }
-    
-    func createSharingAvailablePublisher() -> AnyPublisher<Bool,Never>? {
-        return (self.conversation?.context?.module(.httpFileUpload) as? HttpFileUploadModule)?.isAvailablePublisher;
     }
     
     func updateSharingProgress() {
@@ -181,11 +177,11 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
     }
     
     func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
-        return sender.draggingSourceOperationMask.contains(.copy) && sender.draggingPasteboard.canReadObject(forClasses: [NSURL.self, NSFilePromiseReceiver.self], options: nil) ? .copy : .generic;
+        return sender.draggingSourceOperationMask.contains(.copy) && sender.draggingPasteboard.canReadObject(forClasses: [NSURL.self, NSFilePromiseReceiver.self], options: nil) ? .copy : [];
     }
     
     func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
-        return sender.draggingSourceOperationMask.contains(.copy) && sender.draggingPasteboard.canReadObject(forClasses: [NSURL.self, NSFilePromiseReceiver.self], options: nil) ? .copy : .generic;
+        return sender.draggingSourceOperationMask.contains(.copy) && sender.draggingPasteboard.canReadObject(forClasses: [NSURL.self, NSFilePromiseReceiver.self], options: nil) ? .copy : [];
     }
     
     func draggingExited(_ sender: NSDraggingInfo?) {

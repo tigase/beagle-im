@@ -47,9 +47,7 @@ class XmppService {
     
     static let instance = XmppService();
  
-    fileprivate let eventHandlers: [XmppServiceEventHandler] = [MessageEventHandler.instance];
-    
-    let extensions: [XmppServiceExtension] = [BlockedEventHandler.instance, PresenceRosterEventHandler.instance, AvatarEventHandler.instance, MixEventHandler.instance, MucEventHandler.instance, MeetEventHandler.instance];
+    let extensions: [XmppServiceExtension] = [MessageEventHandler.instance, BlockedEventHandler.instance, PresenceRosterEventHandler.instance, AvatarEventHandler.instance, MixEventHandler.instance, MucEventHandler.instance, MeetEventHandler.instance];
     
     var clients: [BareJID: XMPPClient] {
         get {
@@ -273,9 +271,6 @@ class XmppService {
 
             self.clientCancellables.removeValue(forKey: accountName);
             
-            self.eventHandlers.forEach { handler in
-                client.eventBus.unregister(handler: handler, for: handler.events);
-            }
             dispatcher.async {
                 if removed {
                     DBRosterStore.instance.clear(for: client)
@@ -365,17 +360,12 @@ class XmppService {
             client.$state.subscribe(account.state).store(in: &clientCancellables.cancellables);
             client.$state.dropFirst().sink(receiveValue: { state in self.changedState(state, for: client) }).store(in: &clientCancellables.cancellables);
             
-            MessageEventHandler.instance.register(for: client, cancellables: &clientCancellables.cancellables);
             MucEventHandler.instance.register(for: client, cancellables: &clientCancellables.cancellables);
             
             for ext in extensions {
                 ext.register(for: client, cancellables: &clientCancellables.cancellables);
             }
             
-            eventHandlers.forEach { handler in
-                client.eventBus.register(handler: handler, for: handler.events);
-            }
-        
             self._clients[account.name] = client;
             return client;
         }

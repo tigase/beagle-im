@@ -84,6 +84,12 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
         return $markers.map({ Array($0.values) }).eraseToAnyPublisher();
     }
     
+    @Published
+    public private(set) var features: [ConversationFeature] = [];
+    public var featuresPublisher: AnyPublisher<[ConversationFeature],Never> {
+        return $features.eraseToAnyPublisher();
+    }
+    
     public init(dispatcher: QueueDispatcher, context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, displayableId: DisplayableIdProtocol) {
         self.id = id;
         self.timestamp = timestamp;
@@ -160,6 +166,10 @@ public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hasha
     
     public func isLocal(sender: ConversationEntrySender) -> Bool {
         return false;
+    }
+    
+    public func update(features: [ConversationFeature]) {
+        self.features = features;
     }
 }
 

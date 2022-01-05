@@ -26,7 +26,7 @@ import AppKit
 import Combine
 
 public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conversation {
-        
+
     open override var defaultMessageType: StanzaType {
         return .groupchat;
     }
@@ -102,10 +102,9 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     }
     
     @Published
-    public var features: Set<Feature> = [] {
+    public var roomFeatures: Set<Feature> = [] {
         didSet {
-            if self.features.contains(.membersOnly) && self.features.contains(.nonAnonymous) {
-                self.isOMEMOSupported = true;
+            if self.roomFeatures.contains(.membersOnly) && self.roomFeatures.contains(.nonAnonymous) {
                 if let mucModule = context?.module(.muc) {
                     var members: [JID] = [];
                     let group = DispatchGroup();
@@ -127,23 +126,32 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
                         }
                     })
                 }
-            } else {
-                self.isOMEMOSupported = false;
             }
         }
     }
-    
-    @Published
-    public var isOMEMOSupported: Bool = false;
-    
+        
     public enum Feature: String {
         case membersOnly = "muc_membersonly"
         case nonAnonymous = "muc_nonanonymous"
     }
+        
+    private var cancellables: Set<AnyCancellable> = [];
     
     init(dispatcher: QueueDispatcher,context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: RoomOptions) {
         self.displayable = RoomDisplayableId(displayName: options.name ?? jid.stringValue, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: jid, mucNickname: nil)), description: nil);
         super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
+        (context.module(.httpFileUpload) as! HttpFileUploadModule).isAvailablePublisher.combineLatest(self.statePublisher, self.$roomFeatures, { isAvailable, state, roomFeatures -> [ConversationFeature] in
+            var features: [ConversationFeature] = [];
+            if state == .joined {
+                if isAvailable {
+                    features.append(.httpFileUpload);
+                }
+                if roomFeatures.contains(.membersOnly) && roomFeatures.contains(.nonAnonymous) {
+                    features.append(.omemo);
+                }
+            }
+            return features;
+        }).sink(receiveValue: { [weak self] value in self?.update(features: value); }).store(in: &cancellables);
     }
 
     public override func isLocal(sender: ConversationEntrySender) -> Bool {
@@ -246,7 +254,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     }
     
     public func sendMessage(text: String, correctedMessageOriginId: String?) {
-        let encryption = self.isOMEMOSupported ? self.options.encryption ?? Settings.messageEncryption : .none;
+        let encryption = self.features.contains(.omemo) ? self.options.encryption ?? Settings.messageEncryption : .none;
         
         let message = self.createMessage(text: text);
         message.lastMessageCorrectionId = correctedMessageOriginId;
@@ -275,7 +283,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     }
     
     public func prepareAttachment(url originalURL: URL, completionHandler: @escaping (Result<(URL, Bool, ((URL) -> URL)?), ShareError>) -> Void) {
-        let encryption = self.isOMEMOSupported ? self.options.encryption ?? Settings.messageEncryption : .none;
+        let encryption = self.features.contains(.omemo) ? self.options.encryption ?? Settings.messageEncryption : .none;
         switch encryption {
         case .none:
             completionHandler(.success((originalURL, false, nil)));
@@ -313,7 +321,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
             return;
         }
         
-        let encryption = self.isOMEMOSupported ? self.options.encryption ?? Settings.messageEncryption : .none;
+        let encryption = self.features.contains(.omemo) ? self.options.encryption ?? Settings.messageEncryption : .none;
         
         let message = self.createMessage(text: uploadedUrl);
         if encryption == .omemo, let omemoModule = context?.modulesManager.module(.omemo) {
@@ -354,7 +362,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     }
     
     public func canSendChatMarker() -> Bool {
-        return self.features.contains(.membersOnly) && self.features.contains(.nonAnonymous);
+        return self.roomFeatures.contains(.membersOnly) && self.roomFeatures.contains(.nonAnonymous);
     }
     
     public func sendChatMarker(_ marker: Message.ChatMarkers, andDeliveryReceipt receipt: Bool) {

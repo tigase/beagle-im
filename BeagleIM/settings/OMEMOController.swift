@@ -22,6 +22,7 @@
 import AppKit
 import TigaseSwift
 import TigaseSwiftOMEMO
+import Combine
 
 open class OMEMOContoller: NSViewController, AccountAware, NSTableViewDataSource, NSTableViewDelegate {
 
@@ -36,27 +37,21 @@ open class OMEMOContoller: NSViewController, AccountAware, NSTableViewDataSource
     @IBOutlet var remoteIdentitiesTableView: OMEMOIdentitiesTableView!
     @IBOutlet var remoteIdentitiesActionButton: NSPopUpButton!;
     
+    private var cancellables: Set<AnyCancellable> = [];
+    
     open override func viewDidLoad() {
         super.viewDidLoad();
         self.remoteIdentitiesTableView.delegate = self;
-        NotificationCenter.default.addObserver(self, selector: #selector(omemoAvailabilityChanged), name: MessageEventHandler.OMEMO_AVAILABILITY_CHANGED, object: nil);
     }
     
     open override func viewWillAppear() {
         super.viewWillAppear();
+        if let account = account, let omemoModule = XmppService.instance.getClient(for: account)?.module(.omemo) {
+            omemoModule.activeDevicesPublisher.filter({ $0.jid == account }).receive(on: DispatchQueue.main).sink(receiveValue: { _ in
+                self.refresh();
+            }).store(in: &cancellables);
+        }
         refresh();
-    }
-    
-    @objc func omemoAvailabilityChanged(_ notification: Notification) {
-        guard let event = notification.object as? OMEMOModule.AvailabilityChangedEvent else {
-            return;
-        }
-        DispatchQueue.main.async {
-            guard self.account == event.account && self.account == event.jid else {
-                return;
-            }
-            self.refresh();
-        }
     }
     
     func refresh() {

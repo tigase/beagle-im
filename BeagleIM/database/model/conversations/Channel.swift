@@ -151,6 +151,15 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         context.$state.sink(receiveValue: { [weak self] state in
             self?.connectionState = state;
         }).store(in: &cancellables);
+        (context.module(.httpFileUpload) as! HttpFileUploadModule).isAvailablePublisher.combineLatest(context.$state, { isAvailable, state -> [ConversationFeature] in
+            if case .connected(_) = state {
+                return isAvailable ? [.httpFileUpload] : [];
+            } else {
+                return [];
+            }
+        }).sink(receiveValue: { [weak self] value in
+            self?.update(features: value);
+        }).store(in: &cancellables);
     }
         
     public override func isLocal(sender: ConversationEntrySender) -> Bool {

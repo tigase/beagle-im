@@ -115,6 +115,8 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         NotificationCenter.default.addObserver(self, selector: #selector(chatSelected), name: ChatsListViewController.CHAT_SELECTED, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(closeSelectedChat), name: ChatsListViewController.CLOSE_SELECTED_CHAT, object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(invitationClicked(_:)), name: InvitationManager.INVITATION_CLICKED, object: nil);
+        
+        outlineView.registerForDraggedTypes([.fileURL] + NSFilePromiseReceiver.readableDraggedTypes.map { NSPasteboard.PasteboardType($0) });
     }
     
     override func viewWillAppear() {
@@ -183,6 +185,40 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
             groups.remove(at: 0);
             outlineView.removeItems(at: IndexSet(integer: 0), inParent: nil)
         }
+    }
+    
+    
+    func outlineView(_ outlineView: NSOutlineView, validateDrop info: NSDraggingInfo, proposedItem item: Any?, proposedChildIndex index: Int) -> NSDragOperation {
+        if let conv = (item as? ConversationItem)?.chat, conv.features.contains(.httpFileUpload) && info.draggingSourceOperationMask.contains(.copy) && info.draggingPasteboard.canReadObject(forClasses: [NSURL.self, NSFilePromiseReceiver.self], options: nil)  {
+            return .copy;
+        }
+        return [];
+    }
+    
+    func outlineView(_ outlineView: NSOutlineView, acceptDrop info: NSDraggingInfo, item: Any?, childIndex index: Int) -> Bool {
+        guard let conv = (item as? ConversationItem)?.chat, conv.features.contains(.httpFileUpload) else {
+            return false;
+        }
+        
+        var tasks: [AbstractSharingTaskItem] = [];
+        info.enumerateDraggingItems(options: [], for: nil, classes: [NSFilePromiseReceiver.self, NSURL.self], searchOptions: [.urlReadingFileURLsOnly: true]) { (item, _, _) in
+            switch item.item {
+            case let filePromiseReceived as NSFilePromiseReceiver:
+                tasks.append(FilePromiseReceiverTaskItem(chat: conv, filePromiseReceiver: filePromiseReceived));
+            case let fileUrl as URL:
+                guard fileUrl.isFileURL else {
+                    return;
+                }
+                tasks.append(FileURLSharingTaskItem(chat: conv, url: fileUrl));
+            default:
+                break;
+            }
+        }
+        if !tasks.isEmpty {
+            let askForQuality = NSEvent.modifierFlags.contains(.option);
+            SharingTaskManager.instance.share(task: SharingTaskManager.SharingTask(window: self.view.window, conversation: conv, items: tasks, imageQuality: askForQuality ? nil : ImageQuality.current, videoQuality: askForQuality ? nil : VideoQuality.current));
+        }
+        return true;
     }
     
     @IBAction func openNewChatClicked(_ sender: NSButton) {

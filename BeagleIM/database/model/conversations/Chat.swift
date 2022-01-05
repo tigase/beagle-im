@@ -39,6 +39,8 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         return DBRosterStore.instance.item(for: account, jid: JID(jid)) != nil;
     }
     
+    private var cancellables: Set<AnyCancellable> = [];
+    
     public var debugDescription: String {
         return "Chat(account: \(account), jid: \(jid))";
     }
@@ -46,6 +48,15 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
     init(dispatcher: QueueDispatcher, context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastConversationActivity?, unread: Int, options: ChatOptions) {
         let contact = ContactManager.instance.contact(for: .init(account: context.userBareJid, jid: jid, type: .buddy));
         super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options, displayableId: contact);
+        (context.module(.httpFileUpload) as! HttpFileUploadModule).isAvailablePublisher.combineLatest(context.$state, { isAvailable, state -> [ConversationFeature] in
+            if case .connected(_) = state {
+                return isAvailable ? [.httpFileUpload, .omemo] : [.omemo];
+            } else {
+                return [.omemo];
+            }
+        }).sink(receiveValue: { [weak self] value in
+            self?.update(features: value);
+        }).store(in: &cancellables);
     }
     
     public func isLocalParticipant(jid: JID) -> Bool {

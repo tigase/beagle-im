@@ -26,12 +26,10 @@ import os
 import Combine
 import TigaseLogging
 
-class MessageEventHandler: XmppServiceEventHandler {
+class MessageEventHandler: XmppServiceExtension {
 
     public static let instance = MessageEventHandler();
     
-    public static let OMEMO_AVAILABILITY_CHANGED = Notification.Name(rawValue: "OMEMOAvailabilityChanged");
-
     public static let eventsPublisher = PassthroughSubject<SyncEvent,Never>();
     
     private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "MessageEventHandler");
@@ -97,8 +95,6 @@ class MessageEventHandler: XmppServiceEventHandler {
         }
         return (body, encryption, fingerprint);
     }
-
-    let events: [Event] = [OMEMOModule.AvailabilityChangedEvent.TYPE];
 
     private var cancellables: Set<AnyCancellable> = [];
     
@@ -202,15 +198,6 @@ class MessageEventHandler: XmppServiceEventHandler {
         client.module(.messageCarbons).$isAvailable.filter({ $0 }).sink(receiveValue: { [weak client] _ in
             client?.module(.messageCarbons).enable();
         }).store(in: &cancellables);
-    }
-
-    func handle(event: Event) {
-        switch event {
-        case let e as OMEMOModule.AvailabilityChangedEvent:
-            NotificationCenter.default.post(name: MessageEventHandler.OMEMO_AVAILABILITY_CHANGED, object: e);
-        default:
-            break;
-        }
     }
     
     func sendDisplayed(_ marked: DBChatHistoryStore.MarkedAsRead) {

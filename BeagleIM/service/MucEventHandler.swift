@@ -41,7 +41,7 @@ class MucEventHandler: XmppServiceExtension {
                     switch result {
                     case .success(let info):
                         mamVersions = info.features.compactMap({ MessageArchiveManagementModule.Version(rawValue: $0) });
-                        (room as! Room).features = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
+                        (room as! Room).roomFeatures = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
                     default:
                         break;
                     }

@@ -324,7 +324,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                         case .success(let roomResult):
                             switch roomResult {
                             case .created(let room), .joined(let room):
-                                (room as! Room).features = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
+                                (room as! Room).roomFeatures = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
                             }
                         case .failure(_):
                             break;
@@ -355,7 +355,7 @@ class OpenGroupchatController: NSViewController, NSTextFieldDelegate, NSTableVie
                                     case .success(let roomResult):
                                         switch roomResult {
                                         case .created(let room), .joined(let room):
-                                            (room as! Room).features = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
+                                            (room as! Room).roomFeatures = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
                                         }
                                     case .failure(_):
                                         break;
