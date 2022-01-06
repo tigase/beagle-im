@@ -479,7 +479,7 @@ class DBChatHistoryStore {
                 return database.changes;
             })
             if updated > 0 {
-                markedAsRead.send(MarkedAsRead(account: conversation.account, jid: conversation.jid, messages: [.init(id: oldItem.id, markableId: nil)]));
+                markedAsRead.send(MarkedAsRead(account: conversation.account, jid: conversation.jid, messages: [.init(id: oldItem.id, markableId: nil)], onlyLocally: true));
 
                 let newMessageState: ConversationEntryState = (oldItem.state.direction == .incoming) ? (oldItem.state.isUnread ? .incoming(.displayed) : .incoming(newState.isUnread ? .received : .displayed)) : (.outgoing(.sent));
                 DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: oldItem.timestamp, itemType: .message, message: data, state: newMessageState, completionHandler: {
@@ -487,6 +487,8 @@ class DBChatHistoryStore {
 
                 self.itemUpdated(withId: itemId, for: conversation);
                 
+                NotificationManager.instance.newMessage(ConversationEntry(id: itemId, conversation: oldItem.conversation, timestamp: oldItem.timestamp, state: oldItem.state, sender: sender, payload: .message(message: data, correctionTimestamp: correctionTimestamp), options: oldItem.options));
+
                 if case .outgoing(let state) = newState, state == .unsent {
                 } else {
                     self.generatePreviews(forItem: itemId, conversation: conversation, state: newState, action: .update);
@@ -519,7 +521,7 @@ class DBChatHistoryStore {
                 return database.changes;
             })
             if updated > 0 {
-                markedAsRead.send(MarkedAsRead(account: conversation.account, jid: conversation.jid, messages: [.init(id: oldItem.id, markableId: nil)]));
+                markedAsRead.send(MarkedAsRead(account: conversation.account, jid: conversation.jid, messages: [.init(id: oldItem.id, markableId: nil)], onlyLocally: true));
 
                 // what should be sent to "newMessage" how to reatract message from there??
                 let activity: LastChatActivity = DBChatStore.instance.lastActivity(for: conversation.account, jid: conversation.jid) ?? .message("", direction: .incoming, sender: nil);
@@ -632,6 +634,8 @@ class DBChatHistoryStore {
         let jid: BareJID;
         let messages: [Message];
         
+        let onlyLocally: Bool;
+
         struct Message {
             let id: Int;
             let markableId: String?;
@@ -649,7 +653,7 @@ class DBChatHistoryStore {
         
         if !updatedRecords.isEmpty {
             DBChatStore.instance.markAsRead(for: account, with: jid, count: updatedRecords.count);
-            markedAsRead.send(MarkedAsRead(account: account, jid: jid, messages: updatedRecords));
+            markedAsRead.send(MarkedAsRead(account: account, jid: jid, messages: updatedRecords, onlyLocally: false));
             DispatchQueue.main.async {
                 NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGES_MARKED_AS_READ, object: self, userInfo: ["account": account, "jid": jid]);
             }

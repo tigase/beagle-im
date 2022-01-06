@@ -99,7 +99,7 @@ class MessageEventHandler: XmppServiceExtension {
     private var cancellables: Set<AnyCancellable> = [];
     
     private init() {
-        DBChatHistoryStore.instance.markedAsRead.sink(receiveValue: { [weak self] marked in
+        DBChatHistoryStore.instance.markedAsRead.filter({ !$0.onlyLocally }).sink(receiveValue: { [weak self] marked in
             self?.sendDisplayed(marked);
         }).store(in: &cancellables);
         MessageEventHandler.eventsPublisher.receive(on: MessageEventHandler.syncSinceQueue).sink(receiveValue: { [weak self] event in
