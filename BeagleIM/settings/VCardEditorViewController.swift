@@ -193,30 +193,42 @@ class VCardEditorViewController: NSViewController, AccountAware {
         openFile.resolvesAliases = true;
         
         openFile.begin { (response) in
-            if response == .OK, let url = openFile.url {
-                let image = NSImage(contentsOf: url);
-                self.avatarView.image = image ?? NSImage(named: NSImage.userName);
-                let data = image?.scaled(maxWidthOrHeight: 512).jpegData(compressionQuality: 0.8);
-                self.vcard.photos = data == nil ? [] : [ VCard.Photo(uri: nil, type: "image/jpeg", binval: data!.base64EncodedString(options: []), types: [.home]) ];
-                
-                if data != nil && !self.isPrivate {
-                    guard let account = self.account, let avatarModule = XmppService.instance.getClient(for: account)?.module(.pepUserAvatar), avatarModule.isPepAvailable else {
-                        return;
+            guard response == .OK, let url = openFile.url, let image = NSImage(contentsOf: url) else {
+                return;
+            }
+
+            let pngImage = image.scaled(maxWidthOrHeight: 48);
+            guard let pngData = pngImage.pngData() else {
+                return;
+            }
+            
+            var avatar: [PEPUserAvatarModule.Avatar] = [.init(data: pngData, mimeType: "image/png", width: Int(pngImage.size.width), height: Int(pngImage.size.height))];
+            
+            let jpegImage = image.scaled(maxWidthOrHeight: 256);
+            if let jpegData = jpegImage.jpegData(compressionQuality: 0.8) {
+                avatar = [.init(data: jpegData, mimeType: "image/jpeg", width: Int(jpegImage.size.width), height: Int(jpegImage.size.height))] + avatar;
+            }
+            
+            self.avatarView.image = jpegImage;
+            if let data = avatar.first?.data {
+                self.vcard.photos = [ VCard.Photo(uri: nil, type: "image/jpeg", binval: data.base64EncodedString(options: []), types: [.home]) ];
+            }
+            
+            guard let account = self.account, let avatarModule = XmppService.instance.getClient(for: account)?.module(.pepUserAvatar), avatarModule.isPepAvailable else {
+                return;
+            }
+
+            DispatchQueue.main.async {
+                let alert = NSAlert();
+                alert.messageText = NSLocalizedString("Should avatar be updated?", comment: "vcard editor - alert window title");
+                alert.addButton(withTitle: NSLocalizedString("Yes", comment: "button"));
+                alert.addButton(withTitle: NSLocalizedString("No", comment: "button"));
+                alert.icon = NSImage(named: NSImage.userName);
+                alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
+                    if response == NSApplication.ModalResponse.alertFirstButtonReturn {
+                        self.publish(avatar: avatar);
                     }
-                    
-                    DispatchQueue.main.async {
-                        let alert = NSAlert();
-                        alert.messageText = NSLocalizedString("Should avatar be updated?", comment: "vcard editor - alert window title");
-                        alert.addButton(withTitle: NSLocalizedString("Yes", comment: "button"));
-                        alert.addButton(withTitle: NSLocalizedString("No", comment: "button"));
-                        alert.icon = NSImage(named: NSImage.userName);
-                        alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
-                            if response == NSApplication.ModalResponse.alertFirstButtonReturn {
-                                self.publish(avatar: data!);
-                            }
-                        })
-                    }
-                }
+                })
             }
         }
     }
@@ -506,12 +518,12 @@ class VCardEditorViewController: NSViewController, AccountAware {
         return typeButton;
     }
     
-    fileprivate func publish(avatar: Data) {
+    private func publish(avatar: [PEPUserAvatarModule.Avatar]) {
         guard let account = self.account, let avatarModule = XmppService.instance.getClient(for: account)?.module(.pepUserAvatar) else {
             handleError(title: NSLocalizedString("Publication of avatar failed", comment: "vcard editor"), message: NSLocalizedString("Account is not connected", comment: "vcard editor"));
             return;
         }
-        avatarModule.publishAvatar(data: avatar, mimeType: "image/png", completionHandler: { result in
+        avatarModule.publishAvatar(avatar: avatar, completionHandler: { result in
             switch result {
             case .success(_):
                 break;

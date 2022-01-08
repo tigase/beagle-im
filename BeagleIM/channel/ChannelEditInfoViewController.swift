@@ -149,9 +149,17 @@ class ChannelEditInfoViewController: NSViewController, ChannelAwareProtocol {
             }
         })
         
-        if avatarButton.isEnabled && avatarButton.image != AvatarManager.instance.avatar(for: channel.channelJid, on: channel.account) {
-            if let binval = self.avatarButton.image?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8) {
-                client.module(.pepUserAvatar).publishAvatar(at: channel.channelJid, data: binval, mimeType: "image/jpeg", width: nil, height: nil, completionHandler: { result in
+        if avatarButton.isEnabled && avatarButton.image != AvatarManager.instance.avatar(for: channel.channelJid, on: channel.account), let image = self.avatarButton.image {
+            let pngImage = image.scaled(maxWidthOrHeight: 48);
+            if let pngData = pngImage.pngData() {
+                var avatar: [PEPUserAvatarModule.Avatar] = [.init(data: pngData, mimeType: "image/png", width: Int(pngImage.size.width), height: Int(pngImage.size.height))];
+                
+                let jpegImage = image.scaled(maxWidthOrHeight: 256);
+                if let jpegData = jpegImage.jpegData(compressionQuality: 0.8) {
+                    avatar = [.init(data: jpegData, mimeType: "image/jpeg", width: Int(jpegImage.size.width), height: Int(jpegImage.size.height))] + avatar;
+                }
+                
+                client.module(.pepUserAvatar).publishAvatar(at: channel.channelJid, avatar: avatar, completionHandler: { result in
                     switch result {
                     case .success(_):
                         // new avatar published
