@@ -276,7 +276,7 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
                     let alert = NSAlert();
                     alert.icon = NSImage(named: NSImage.cautionName);
                     alert.messageText = NSLocalizedString("Error occurred", comment: "alert window title");
-                    alert.informativeText = (error == .forbidden()) ? NSLocalizedString("You are not allowed to modify list of affiliations for this room.", comment: "alert window message") : String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert window message"), error.message ?? error.description);
+                    alert.informativeText = (error == .forbidden()) ? NSLocalizedString("You are not allowed to modify list of affiliations for this room.", comment: "alert window message") : String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert window message"), error.localizedDescription);
                     alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                     alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
                 }

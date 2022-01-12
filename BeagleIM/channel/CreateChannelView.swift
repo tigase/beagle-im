@@ -161,7 +161,7 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                                 let alert = NSAlert();
                                 alert.messageText = NSLocalizedString("Error occurred", comment: "alert window title");
                                 alert.icon = NSImage(named: NSImage.cautionName);
-                                alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Could not join newly created channel '%@' on the server. Got following error: %@", comment: "alert window message"), channelJid.description, error.message ?? error.description);
+                                alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Could not join newly created channel '%@' on the server. Got following error: %@", comment: "alert window message"), channelJid.description, error.localizedDescription);
                                 alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                                 alert.beginSheetModal(for: window, completionHandler: { result in
                                     self?.delegate?.operationFinished();
@@ -202,7 +202,7 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                         let alert = NSAlert();
                         alert.messageText = NSLocalizedString("Error occurred", comment: "alert window title");
                         alert.icon = NSImage(named: NSImage.cautionName);
-                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Could not create channel on the server. Got following error: %@", comment: "alert window message"), error.message ?? error.description);
+                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Could not create channel on the server. Got following error: %@", comment: "alert window message"), error.localizedDescription);
                         alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                         alert.beginSheetModal(for: window, completionHandler: { result in
                             self?.delegate?.operationFinished();
@@ -270,7 +270,7 @@ class CreateChannelView: NSView, OpenChannelViewControllerTabView, NSTextFieldDe
                         let alert = NSAlert();
                         alert.messageText = NSLocalizedString("Error occurred", comment: "alert window title");
                         alert.icon = NSImage(named: NSImage.cautionName);
-                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Could not apply room configuration on the server. Got following error: %@", comment: "alert window message"), error.message ?? error.description);
+                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Could not apply room configuration on the server. Got following error: %@", comment: "alert window message"), error.localizedDescription);
                         alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                         alert.beginSheetModal(for: window, completionHandler: { result in
                             self?.delegate?.operationFinished();

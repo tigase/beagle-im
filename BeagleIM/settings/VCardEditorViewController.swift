@@ -162,7 +162,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
                         }
                     case .failure(let error):
                         self.progressIndicator.stopAnimation(self);
-                        self.handleError(title: NSLocalizedString("Could not retrive current version from the server.", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.description));
+                        self.handleError(title: NSLocalizedString("Could not retrive current version from the server.", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.localizedDescription));
                     }
                 })
             }
@@ -270,7 +270,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
                         case .success(_):
                             self.dismiss(self);
                         case .failure(let error):
-                            self.handleError(title: NSLocalizedString("Publication of new version of private VCard failed", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.error.message ?? error.description));
+                            self.handleError(title: NSLocalizedString("Publication of new version of private VCard failed", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.localizedDescription));
                         }
                     }
                 })
@@ -295,7 +295,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
                     DispatchQueue.main.async {
                         self.progressIndicator.stopAnimation(self);
                         self.isEnabled = true;
-                        self.handleError(title: NSLocalizedString("Publication of new version of VCard failed", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.description));
+                        self.handleError(title: NSLocalizedString("Publication of new version of VCard failed", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.localizedDescription));
                     }
                 }
             });
@@ -528,7 +528,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
             case .success(_):
                 break;
             case .failure(let error):
-                self.handleError(title: NSLocalizedString("Publication of avatar failed", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.error.message ?? error.description));
+                self.handleError(title: NSLocalizedString("Publication of avatar failed", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.localizedDescription));
             }
         });
     }

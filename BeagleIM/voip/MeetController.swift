@@ -300,7 +300,7 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
                     let alert = NSAlert();
                     alert.alertStyle = .informational;
                     alert.messageText = NSLocalizedString("Failed to kick out", comment: "meet controlller");
-                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to kick out %@. Server returned an error: %@", comment: "meet controller"), jid.stringValue, error.description);
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to kick out %@. Server returned an error: %@", comment: "meet controller"), jid.stringValue, error.localizedDescription);
                     alert.beginSheetModal(for: window, completionHandler: nil);
                 }
             }

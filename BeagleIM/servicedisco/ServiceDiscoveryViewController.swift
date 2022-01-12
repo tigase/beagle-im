@@ -382,7 +382,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                     let alert = Alert();
                     alert.icon = NSImage(named: NSImage.cautionName);
                     alert.messageText = NSLocalizedString("Service Discovery Failure!", comment: "alert window title");
-                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to retrieve disco#info details from %@\\%@: %@", comment: "alert window message"), jid.stringValue, node, error.message ?? error.description);
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to retrieve disco#info details from %@\\%@: %@", comment: "alert window message"), jid.stringValue, node, error.localizedDescription);
                     alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                     alert.run(completionHandler: { (response) in
                         // nothing to do..
@@ -498,7 +498,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                     let alert = Alert();
                     alert.icon = NSImage(named: NSImage.cautionName);
                     alert.messageText = NSLocalizedString("Service Discovery Failure!", comment: "alert window title");
-                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to retrieve disco#items details from %@\\%@: %@", comment: "alert window message"), parentItem.jid.stringValue, node, error.message ?? error.description);
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to retrieve disco#items details from %@\\%@: %@", comment: "alert window message"), parentItem.jid.stringValue, node, error.localizedDescription);
                     alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                     alert.run(completionHandler: { (response) in
                         // nothing to do..

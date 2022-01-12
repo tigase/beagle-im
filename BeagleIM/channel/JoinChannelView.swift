@@ -152,7 +152,7 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
                         }
                         let alert = NSAlert();
                         alert.messageText = NSLocalizedString("Could not join", comment: "alert window title");
-                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to join a room. The server returned an error: %@", comment: "alert window message"), error.message ?? error.description);
+                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to join a room. The server returned an error: %@", comment: "alert window message"), error.localizedDescription);
                         alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                         alert.beginSheetModal(for: window, completionHandler: { (response) in
                             completionHandler(false);
@@ -184,7 +184,7 @@ class JoinChannelView: NSView, OpenChannelViewControllerTabView, NSTableViewDele
                     DispatchQueue.main.async {
                         let alert = NSAlert();
                         alert.messageText = NSLocalizedString("Could not join", comment: "alert window title");
-                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to join a channel. The server returned an error: %@", comment: "alert window title"), error.message ?? error.description);
+                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to join a channel. The server returned an error: %@", comment: "alert window title"), error.localizedDescription);
                         alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                         alert.beginSheetModal(for: self.window!, completionHandler: { (response) in
                             completionHandler(false);

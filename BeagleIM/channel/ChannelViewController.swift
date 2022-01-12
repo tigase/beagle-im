@@ -267,7 +267,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
                             alert.alertStyle = .warning;
                             alert.icon = NSImage(named: NSImage.cautionName);
                             alert.messageText = NSLocalizedString("Channel destruction failed!", comment: "alert window title");
-                            alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert window message"), channel.name ?? channel.channelJid.stringValue, error.message ?? error.description);
+                            alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert window message"), channel.name ?? channel.channelJid.stringValue, error.localizedDescription);
                             alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                             alert.beginSheetModal(for: window, completionHandler: nil);
                         }

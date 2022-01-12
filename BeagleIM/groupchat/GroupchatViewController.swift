@@ -897,7 +897,7 @@ extension GroupchatParticipantsContainer: NSMenuDelegate {
                             let alert = NSAlert();
                             alert.icon = NSImage(named: NSImage.cautionName);
                             alert.messageText = String.localizedStringWithFormat(NSLocalizedString("Banning user %@ failed", comment: "alert window title"), participant.nickname);
-                            alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert window message"), error.message ?? error.description);
+                            alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert window message"), error.localizedDescription);
                             alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                             alert.beginSheetModal(for: window, completionHandler: { response in
                                 //we do not care about the response

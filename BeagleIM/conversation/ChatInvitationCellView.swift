@@ -95,7 +95,7 @@ class ChatInvitationCellView: BaseChatCellView {
                     DispatchQueue.main.async {
                         let alert = NSAlert();
                         alert.messageText = NSLocalizedString("Could not join", comment: "Title informing that client failed to join");
-                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to join a channel. The server returned an error: %@", comment: "Message informing that client failed to join a channel"), error.message ?? error.description);
+                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to join a channel. The server returned an error: %@", comment: "Message informing that client failed to join a channel"), error.localizedDescription);
                         alert.addButton(withTitle: NSLocalizedString("OK", comment: "OK"));
                         alert.beginSheetModal(for: window, completionHandler: nil);
                     }

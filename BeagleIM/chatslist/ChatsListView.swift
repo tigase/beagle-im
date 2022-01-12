@@ -519,6 +519,20 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 return false;
             }
             
+            if 1==1 {
+                let errors: [Error] = [
+                    XMPPError.feature_not_implemented,
+                    XMPPError.bad_request("Invalid request!"),
+                    PubSubError.remote_server_timeout,
+                    PubSubError(error: .feature_not_implemented, pubsubErrorCondition: PubSubErrorCondition.unsupported),
+                    PubSubError(error: .forbidden("You have no permission to access this resource!"), pubsubErrorCondition: PubSubErrorCondition.not_subscribed)
+                ];
+                for error in errors {
+                    print("error : \(error.localizedDescription)");
+                }
+                return false;
+            }
+            
             let leaveFn: ()->Void = {
                 mixModule.leave(channel: c, completionHandler: { result in
                     switch result {
@@ -563,7 +577,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                                                 alert.alertStyle = .warning;
                                                 alert.icon = NSImage(named: NSImage.cautionName);
                                                 alert.messageText = NSLocalizedString("Channel destruction failed!", comment: "alert window title");
-                                                alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert window message"), c.name ?? c.channelJid.stringValue, error.message ?? error.description);
+                                                alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert window message"), c.name ?? c.channelJid.stringValue, error.localizedDescription);
                                                 alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                                                 alert.beginSheetModal(for: window, completionHandler: nil);
                                             }

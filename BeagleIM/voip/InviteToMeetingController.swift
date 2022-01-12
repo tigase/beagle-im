@@ -57,7 +57,7 @@ class InviteToMeetingController: NSViewController {
                     let alert = NSAlert();
                     alert.alertStyle = .warning;
                     alert.messageText = NSLocalizedString("Allowing access to meeting failed", comment: "invite to meeting controller");
-                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to grant selected users access to the meeting. Received an error: %@", comment: "invite to meeting controller"), error.description);
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to grant selected users access to the meeting. Received an error: %@", comment: "invite to meeting controller"), error.localizedDescription);
                     alert.beginSheetModal(for: self.view.window!, completionHandler: { response in
                         // nothing to do except closing..
                         self.close();

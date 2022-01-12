@@ -72,7 +72,7 @@ class ChannelEditInfoViewController: NSViewController, ChannelAwareProtocol {
                     let alert = NSAlert();
                     alert.alertStyle = .warning;
                     alert.messageText = NSLocalizedString("Could not retrieve details", comment: "alert window title")
-                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to retrieve channel details: %@", comment: "alert window message"), errorCondition.description);
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to retrieve channel details: %@", comment: "alert window message"), errorCondition.localizedDescription);
                     alert.beginSheetModal(for: that.view.window!, completionHandler: { response in
                         that.dismiss(that);
                     })
@@ -141,7 +141,7 @@ class ChannelEditInfoViewController: NSViewController, ChannelAwareProtocol {
                     let alert = NSAlert();
                     alert.alertStyle = .warning;
                     alert.messageText = NSLocalizedString("Could not publish details", comment: "alert window title");
-                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to publish channel details: %@", comment: "alert window message"), errorCondition.description);
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to publish channel details: %@", comment: "alert window message"), errorCondition.localizedDescription);
                     alert.beginSheetModal(for: that.view.window!, completionHandler: { response in
                         //self.dismiss(self);
                     })

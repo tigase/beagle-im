@@ -91,7 +91,7 @@ class ChangePasswordController: NSViewController, NSTextFieldDelegate, AccountAw
                         let alert = NSAlert();
                         alert.icon = NSImage(named: NSImage.cautionName);
                         alert.messageText = NSLocalizedString("Password change failed", comment: "settings");
-                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Server returned following error: %$", comment: "settings"), err.message ?? err.description);
+                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Server returned following error: %$", comment: "settings"), err.localizedDescription);
                         alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"))
                         alert.beginSheetModal(for: self.view.window!, completionHandler: { (modalResp) in
                             self.close();
