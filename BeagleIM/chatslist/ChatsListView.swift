@@ -265,7 +265,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
                 return;
             }
             
-            self.close(chat: item);
+            _ = self.close(chat: item);
         }
     }
     
@@ -462,7 +462,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
             view?.update(from: chat);
 //            view?.lastMessage.preferredMaxLayoutWidth = self.outlineView.outlineTableColumn!.width - 66;
             view?.closeFunction = { [weak self] in
-                self?.close(chat: chat);
+                return self?.close(chat: chat) ?? false;
             }
             view?.setMouseHovers(false);
             return view;
@@ -478,13 +478,13 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         return nil;
     }
         
-    func close(chat: ConversationItem) {
+    func close(chat: ConversationItem) -> Bool {
         switch chat.chat {
         case let c as Chat:
             _ = DBChatStore.instance.close(chat: c);
         case let r as Room:
             guard let mucModule = r.context?.module(.muc) else {
-                return;
+                return false;
             }
             
             if r.occupant(nickname: r.nickname)?.affiliation == .owner {
@@ -508,25 +508,98 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                         break;
                     }
                 };
+                return false;
             } else {
                 mucModule.leave(room: r);
                 PEPBookmarksModule.remove(from: r.account, bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: JID(r.jid), autojoin: false));
+                return true;
             }
         case let c as Channel:
-            guard let mixModule = c.context?.module(.mix) else {
-                return;
+            guard let mixModule = c.context?.module(.mix), let userJid = c.context?.userBareJid else {
+                return false;
             }
-            mixModule.leave(channel: c, completionHandler: { result in
+            
+            let leaveFn: ()->Void = {
+                mixModule.leave(channel: c, completionHandler: { result in
+                    switch result {
+                    case .success(_):
+                        _ = DBChatStore.instance.close(channel: c);
+                    case .failure(_):
+                        break;
+                    }
+                })
+            }
+            
+            mixModule.retrieveConfig(for: c.channelJid, completionHandler: { result in
                 switch result {
-                case .success(_):
-                    _ = DBChatStore.instance.close(channel: c);
-                case .failure(_):
-                    break;
+                case .success(let data):
+                    if let adminsField: JidMultiField = data.getField(named: "Owner"), adminsField.value.contains(JID(userJid)) && adminsField.value.count == 1 {
+                        // you need to pass the permission or delete channel..
+                        DispatchQueue.main.async {
+                            let alert = Alert();
+                            alert.icon = NSImage(named: NSImage.cautionName);
+                            alert.messageText = NSLocalizedString("Leaving channel", comment: "leaving channel title");
+                            alert.informativeText = NSLocalizedString("You are the last person with ownership of this channel. Please decide what to do with the channel.", comment: "leaving channel text");
+                            alert.addButton(withTitle: NSLocalizedString("Destroy", comment: "button label"));
+                            let passBtn = alert.addButton(withTitle: NSLocalizedString("Pass ownership", comment: "button label"));
+                            let otherParticipants = c.participants.filter({ $0.jid != nil && $0.jid != userJid });
+                            passBtn.isEnabled = !otherParticipants.isEmpty;
+                            alert.addButton(withTitle: NSLocalizedString("Leave", comment: "button label"));
+                            alert.addSpacing();
+                            alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "button label"));
+                            alert.run(completionHandler: { response in
+                                switch response {
+                                case .alertFirstButtonReturn:
+                                    mixModule.destroy(channel: c.channelJid, completionHandler: { result in
+                                        DispatchQueue.main.async {
+                                            guard let window = self.view.window else {
+                                                return;
+                                            }
+                                            switch result {
+                                            case .success(_):
+                                                break;
+                                            case .failure(let error):
+                                                let alert = NSAlert();
+                                                alert.alertStyle = .warning;
+                                                alert.icon = NSImage(named: NSImage.cautionName);
+                                                alert.messageText = NSLocalizedString("Channel destruction failed!", comment: "alert window title");
+                                                alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert window message"), c.name ?? c.channelJid.stringValue, error.message ?? error.description);
+                                                alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
+                                                alert.beginSheetModal(for: window, completionHandler: nil);
+                                            }
+                                        }
+                                    })
+                                case .alertSecondButtonReturn:
+                                    if let controller = NSStoryboard(name: "MIX", bundle: nil).instantiateController(withIdentifier: "SelectNewOwnerViewController") as? ChannelSelectNewOwnerViewController {
+                                        controller.participants = otherParticipants;
+                                        controller.successHandler = { newAdmin in
+                                            adminsField.value = adminsField.value.filter({ $0.bareJid != userJid }) + [JID(newAdmin)];
+                                            mixModule.updateConfig(for: c.channelJid, config: data, completionHandler: { _ in
+                                                leaveFn();
+                                            })
+                                        };
+                                        self.presentAsModalWindow(controller);
+                                    }
+                                    break;
+                                case .alertThirdButtonReturn:
+                                    leaveFn();
+                                default:
+                                    break;
+                                }
+                            })
+                        }
+                    } else {
+                        leaveFn();
+                    }
+                case .failure(let error):
+                    leaveFn();
                 }
             })
+            return false;
         default:
-            break;
+            return false;
         }
+        return false;
     }
 }
 

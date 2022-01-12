@@ -1,8 +1,8 @@
 //
-// ContactSuggestionField.swift
+// ChannelSelectNewOwnerViewController.swift
 //
 // BeagleIM
-// Copyright (C) 2021 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2022 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,14 +23,48 @@ import AppKit
 import Combine
 import TigaseSwift
 
-class ContactSuggestionField: NSSearchField, NSSearchFieldDelegate {
+class ChannelSelectNewOwnerViewController: NSViewController {
+ 
+    @IBOutlet var newOwnerSelector: SingleParticipantSelectionView!;
+    @IBOutlet var changeButton: NSButton!;
+    
+    private var cancellables: Set<AnyCancellable> = [];
+    
+    var participants: [MixParticipant] = [];
+    var successHandler: ((BareJID)->Void)?;
+    
+    var selected: MixParticipant? {
+        didSet {
+            changeButton.isEnabled = selected != nil;
+        }
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad();
+        newOwnerSelector.selectionPublisher.sink(receiveValue: { [weak self] newAdmin in
+            self?.selected = newAdmin;
+        }).store(in: &cancellables);
+        newOwnerSelector.participants = self.participants;
+    }
+    
+    @IBAction func changeClicked(_ sender: NSButton) {
+        guard let jid = selected?.jid else {
+            return;
+        }
+        self.dismiss(self);
+        successHandler?(jid);
+    }
+}
+
+class SingleParticipantSelectionView: NSSearchField, NSSearchFieldDelegate {
     
     private var suggestionsController: SuggestionsWindowController?;
-    
-    let selectionPublisher = PassthroughSubject<Item,Never>();
-    
-    var closedSuggestionsList: Bool = true;
+
+    let selectionPublisher = PassthroughSubject<MixParticipant?,Never>();
+
     var suggestionsWindowBackground: NSColor?;
+
+    var participants: [MixParticipant] = [];
     
     required init?(coder: NSCoder) {
         super.init(coder: coder);
@@ -53,48 +87,33 @@ class ContactSuggestionField: NSSearchField, NSSearchFieldDelegate {
     
     func controlTextDidBeginEditing(_ obj: Notification) {
         if suggestionsController == nil {
-            suggestionsController = SuggestionsWindowController(viewProviders: [ChatsListSuggestionItemView.Provider()], edge: .bottom);
+            suggestionsController = SuggestionsWindowController(viewProviders: [MixParticipantSuggestionItemView.Provider()], edge: .bottom);
             if let color = suggestionsWindowBackground {
                 suggestionsController?.backgroundColor = color;
             }
             suggestionsController?.target = self;
             suggestionsController?.action = #selector(self.suggestionItemSelected(sender:))
         }
-//        suggestionsController?.beginFor(textField: self.searchField!);
     }
     
     func controlTextDidChange(_ obj: Notification) {
-        if self.stringValue.count < 2 {
-            suggestionsController?.cancelSuggestions();
-        } else {
-            let query = self.stringValue.lowercased();
+        self.selectionPublisher.send(nil);
+        let query = self.stringValue.lowercased();
             
-            let conversations: [DisplayableIdWithKeyProtocol] = DBChatStore.instance.conversations.filter({ $0.displayName.lowercased().contains(query) || $0.jid.localPart?.lowercased().contains(query) ?? false || $0.jid.domain.lowercased().contains(query) });
-
-            let keys = Set(conversations.map({ Contact.Key(account: $0.account, jid: $0.jid, type: .buddy) }));
-            
-            let contacts: [DisplayableIdWithKeyProtocol] = DBRosterStore.instance.items.filter({ $0.name?.lowercased().contains(query) ?? false || $0.jid.localPart?.lowercased().contains(query) ?? false || $0.jid.domain.lowercased().contains(query) }).compactMap({ item -> Contact? in
-                guard let account = item.context?.userBareJid, !keys.contains(.init(account: account, jid: item.jid.bareJid, type: .buddy)) else {
-                    return nil;
-                }
-                return ContactManager.instance.contact(for: .init(account: account, jid: item.jid.bareJid, type: .buddy))
-            });
-            
-            
-            var items: [Item] = (contacts + conversations).sorted(by: { c1, c2 -> Bool in c1.displayName < c2.displayName }).map({ Item(jid: $0.jid, account: $0.account, displayableId: $0) });
-            
-            if !closedSuggestionsList {
-                items.append(Item(jid: BareJID(query), account: nil, displayableId: nil));
+        var items = participants.filter({ $0.nickname?.lowercased().contains(query) ?? false || $0.jid?.stringValue.lowercased().contains(query) ?? false }).sorted(by: { p1, p2 -> Bool in
+            return (p1.nickname ?? p1.jid?.stringValue ?? p1.id) < (p2.nickname ?? p2.jid?.stringValue ?? p2.id);
+        });
+                        
+        if !items.isEmpty {
+            if items.count > 5 {
+                items = Array(items.prefix(5));
             }
-            
-            if !items.isEmpty {
-                if !(suggestionsController?.window?.isVisible ?? false) {
-                    suggestionsController?.beginFor(textField: self);
-                }
+            if !(suggestionsController?.window?.isVisible ?? false) {
+                suggestionsController?.beginFor(textField: self);
             }
-            
-            suggestionsController?.update(suggestions: items);
         }
+            
+        suggestionsController?.update(suggestions: items);
     }
     
     func controlTextDidEndEditing(_ obj: Notification) {
@@ -123,19 +142,12 @@ class ContactSuggestionField: NSSearchField, NSSearchFieldDelegate {
     }
     
     @objc func suggestionItemSelected(sender: Any) {
-        guard let item = (sender as? SuggestionsWindowController)?.selected as? Item else {
+        guard let item = (sender as? SuggestionsWindowController)?.selected as? MixParticipant else {
             return;
         }
-        
-        self.stringValue = "";
-        
+     
+        self.stringValue = item.nickname ?? item.jid?.stringValue ?? item.id;
         selectionPublisher.send(item);
     }
     
-    struct Item {
-        let jid: BareJID;
-        let account: BareJID?;
-        let displayableId: DisplayableIdProtocol?;
-    }
-
 }

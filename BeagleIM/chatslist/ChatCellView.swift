@@ -65,16 +65,15 @@ class ChatCellView: NSTableCellView {
     
     var lastMessageHeightConstraint: NSLayoutConstraint?;
     
-    var closeFunction: (()->Void)?;
+    var closeFunction: (()->Bool)?;
     
     fileprivate var chatState: ChatState = .active;
     
     @IBAction func closeClicked(_ sender: ChatsCellViewCloseButton) {
-        guard let fn = closeFunction else {
+        guard let fn = closeFunction, fn() else {
             return;
         }
         closeFunction = nil;
-        fn();
     }
 
     func set(lastActivity: LastChatActivity?, chatState: ChatState, account: BareJID) {

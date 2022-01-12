@@ -141,3 +141,18 @@
 
 /* Class = "NSMenuItem"; title = "Revoke owner rights"; ObjectID = "apF-E8-nQj"; */
 "apF-E8-nQj.title" = "Odbierz prawa właściciela";
+
+/* Class = "NSButtonCell"; title = "Change ownership"; ObjectID = "9UW-ub-NiL"; */
+"9UW-ub-NiL.title" = "Zmień właściciela";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "Z0t-WH-5Nn"; */
+"Z0t-WH-5Nn.title" = "Anuluj";
+
+/* Class = "NSTextFieldCell"; title = "Select new owner"; ObjectID = "apJ-Vw-0LB"; */
+"apJ-Vw-0LB.title" = "Wybierz nowego właściciela";
+
+/* Class = "NSSearchFieldCell"; placeholderString = "Participant to become channel owner"; ObjectID = "vRh-f6-Xga"; */
+"vRh-f6-Xga.placeholderString" = "Uczestnik który ma zostać właścicielem";
+
+/* Class = "NSViewController"; title = "Change owner"; ObjectID = "cvB-3P-CBU"; */
+"cvB-3P-CBU.title" = "Zmień właściciela";

@@ -45,6 +45,7 @@
 		FE1A34DC2592144A0058B86A /* PresenceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A34DB2592144A0058B86A /* PresenceStore.swift */; };
 		FE1A8BA321C96C1B00604141 /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA221C96C1B00604141 /* RoundButton.swift */; };
 		FE1A8BA621CA88E300604141 /* JingleManager_Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */; };
+		FE1EE9D4278EFE66000FA599 /* ChannelSelectNewOwnerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1EE9D3278EFE66000FA599 /* ChannelSelectNewOwnerViewController.swift */; };
 		FE222CFB2561763700C186A9 /* DBChatStore+ChatStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE222CFA2561763700C186A9 /* DBChatStore+ChatStore.swift */; };
 		FE222D032561879700C186A9 /* DBChatStore+RoomStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE222D022561879700C186A9 /* DBChatStore+RoomStore.swift */; };
 		FE222D0725618A2C00C186A9 /* DBChatStore+ChannelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE222D0625618A2C00C186A9 /* DBChatStore+ChannelStore.swift */; };
@@ -333,6 +334,7 @@
 		FE1A34DB2592144A0058B86A /* PresenceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceStore.swift; sourceTree = "<group>"; };
 		FE1A8BA221C96C1B00604141 /* RoundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
 		FE1A8BA521CA88E300604141 /* JingleManager_Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JingleManager_Session.swift; sourceTree = "<group>"; };
+		FE1EE9D3278EFE66000FA599 /* ChannelSelectNewOwnerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelSelectNewOwnerViewController.swift; sourceTree = "<group>"; };
 		FE222CFA2561763700C186A9 /* DBChatStore+ChatStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DBChatStore+ChatStore.swift"; sourceTree = "<group>"; };
 		FE222D022561879700C186A9 /* DBChatStore+RoomStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DBChatStore+RoomStore.swift"; sourceTree = "<group>"; };
 		FE222D0625618A2C00C186A9 /* DBChatStore+ChannelStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DBChatStore+ChannelStore.swift"; sourceTree = "<group>"; };
@@ -861,6 +863,7 @@
 				FEB994B224154C1F00B8E7A7 /* ChannelManageParticipants.swift */,
 				FEA2998925BC3C940021865E /* MixParticipant+AvatarPublisher.swift */,
 				FECFA80726FE2CD0004CDC62 /* ChannelManageBlocked.swift */,
+				FE1EE9D3278EFE66000FA599 /* ChannelSelectNewOwnerViewController.swift */,
 			);
 			path = channel;
 			sourceTree = "<group>";
@@ -1408,6 +1411,7 @@
 				FED7AEC521417328001E164B /* AvatarStore.swift in Sources */,
 				FE75CD6C2546FC820064A733 /* HTTPFileUploadHelper.swift in Sources */,
 				FE6E6BFA21384D5F003B1696 /* AccountManager.swift in Sources */,
+				FE1EE9D4278EFE66000FA599 /* ChannelSelectNewOwnerViewController.swift in Sources */,
 				FEEF25322264A80500202B28 /* OMEMOController.swift in Sources */,
 				FEC5DC8621553F4700AA3E4F /* GroupchatViewController.swift in Sources */,
 				FE380ADA21B15720008717FA /* DownloadStore.swift in Sources */,

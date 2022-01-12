@@ -1313,6 +1313,87 @@ Gw
             </objects>
             <point key="canvasLocation" x="978" y="738"/>
         </scene>
+        <!--Change owner-->
+        <scene sceneID="Ylc-Vp-pzH">
+            <objects>
+                <viewController title="Change owner" storyboardIdentifier="SelectNewOwnerViewController" id="cvB-3P-CBU" customClass="ChannelSelectNewOwnerViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="cFY-hV-Pqz">
+                        <rect key="frame" x="0.0" y="0.0" width="374" height="150"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="LeT-XK-sjv">
+                                <rect key="frame" x="20" y="90" width="40" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="40" id="MMo-Gf-CpO"/>
+                                    <constraint firstAttribute="height" constant="40" id="az7-cp-LOY"/>
+                                </constraints>
+                                <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSEveryone" id="4OO-qX-xtY"/>
+                            </imageView>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="qGi-xe-h29">
+                                <rect key="frame" x="66" y="101" width="131" height="19"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Select new owner" id="apJ-Vw-0LB">
+                                    <font key="font" metaFont="systemSemibold" size="15"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="qyt-1g-ZKx">
+                                <rect key="frame" x="214" y="13" width="147" height="32"/>
+                                <buttonCell key="cell" type="push" title="Change ownership" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="9UW-ub-NiL">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="changeClicked:" target="cvB-3P-CBU" id="vFM-Vt-mMs"/>
+                                </connections>
+                            </button>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="He4-yY-gtH">
+                                <rect key="frame" x="141" y="13" width="76" height="32"/>
+                                <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Z0t-WH-5Nn">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="dismissController:" target="cvB-3P-CBU" id="tn8-8C-9jB"/>
+                                </connections>
+                            </button>
+                            <searchField wantsLayer="YES" verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zsi-Dx-IYj" customClass="SingleParticipantSelectionView" customModule="BeagleIM" customModuleProvider="target">
+                                <rect key="frame" x="20" y="60" width="334" height="22"/>
+                                <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" placeholderString="Participant to become channel owner" usesSingleLineMode="YES" bezelStyle="round" id="vRh-f6-Xga">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </searchFieldCell>
+                            </searchField>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="He4-yY-gtH" firstAttribute="centerY" secondItem="qyt-1g-ZKx" secondAttribute="centerY" id="3Vn-mX-M6M"/>
+                            <constraint firstAttribute="trailing" secondItem="zsi-Dx-IYj" secondAttribute="trailing" constant="20" symbolic="YES" id="7iB-6X-CoT"/>
+                            <constraint firstItem="LeT-XK-sjv" firstAttribute="top" secondItem="cFY-hV-Pqz" secondAttribute="top" constant="20" id="8gn-kJ-Nq9"/>
+                            <constraint firstItem="zsi-Dx-IYj" firstAttribute="top" secondItem="LeT-XK-sjv" secondAttribute="bottom" constant="8" id="Gn9-fp-Iwd"/>
+                            <constraint firstItem="zsi-Dx-IYj" firstAttribute="leading" secondItem="cFY-hV-Pqz" secondAttribute="leading" constant="20" symbolic="YES" id="HUK-LZ-ezI"/>
+                            <constraint firstItem="qGi-xe-h29" firstAttribute="leading" secondItem="LeT-XK-sjv" secondAttribute="trailing" constant="8" id="Mee-aF-UVc"/>
+                            <constraint firstItem="qyt-1g-ZKx" firstAttribute="top" secondItem="zsi-Dx-IYj" secondAttribute="bottom" constant="20" symbolic="YES" id="R6m-Vn-iMe"/>
+                            <constraint firstItem="qGi-xe-h29" firstAttribute="centerY" secondItem="LeT-XK-sjv" secondAttribute="centerY" id="UY5-Zi-eQ1"/>
+                            <constraint firstItem="LeT-XK-sjv" firstAttribute="leading" secondItem="cFY-hV-Pqz" secondAttribute="leading" constant="20" id="aDe-CC-p7A"/>
+                            <constraint firstAttribute="bottom" secondItem="qyt-1g-ZKx" secondAttribute="bottom" constant="20" id="d4r-bc-ukn"/>
+                            <constraint firstAttribute="trailing" secondItem="qyt-1g-ZKx" secondAttribute="trailing" constant="20" id="mqD-Kl-BDb"/>
+                            <constraint firstItem="He4-yY-gtH" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="cFY-hV-Pqz" secondAttribute="leading" constant="20" id="xFC-eR-Uvd"/>
+                            <constraint firstItem="qyt-1g-ZKx" firstAttribute="leading" secondItem="He4-yY-gtH" secondAttribute="trailing" constant="11" id="ygf-RB-KHQ"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="changeButton" destination="qyt-1g-ZKx" id="b8m-Jc-HzR"/>
+                        <outlet property="newOwnerSelector" destination="zsi-Dx-IYj" id="SNs-mK-uh7"/>
+                    </connections>
+                </viewController>
+                <customObject id="gSZ-dN-ffx" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="532" y="313"/>
+        </scene>
     </scenes>
     <resources>
         <image name="NSAddTemplate" width="14" height="13"/>

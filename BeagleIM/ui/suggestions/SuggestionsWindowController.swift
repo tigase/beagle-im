@@ -283,7 +283,9 @@ class SuggestionsWindowController: NSWindowController {
 //        textField?.validateEditing()
 //        textField?.abortEditing();
         if let action = self.action {
-            NSApp.sendAction(action, to: target, from: self);
+            print("sending action!", action, target);
+            target?.perform(action, with: self);
+//            NSApp.sendAction(action, to: target, from: self);
         }
         cancelSuggestions();
     }

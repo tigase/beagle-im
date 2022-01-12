@@ -40,17 +40,8 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
         
     @Published
     private var query: String = "";
-    private var inviteOnly: Bool = true {
-        didSet {
-            manageParticipantsButton.isEnabled = !inviteOnly;
-            manageParticipantsButton.isHidden = inviteOnly;
-            if inviteOnly {
-                NSLayoutConstraint.activate([manageParticipantsButtonHeightConstraint]);
-            } else {
-                NSLayoutConstraint.deactivate([manageParticipantsButtonHeightConstraint]);
-            }
-        }
-    }
+    @Published
+    private var inviteOnly: Bool = true;
     var channel: Channel!;
     weak var channelViewController: NSViewController?;
     
@@ -106,10 +97,10 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
         participantsTableView.target = self;
         participantsTableView.action = #selector(itemClicked);
         manageParticipantsButtonHeightConstraint = manageParticipantsButton.heightAnchor.constraint(equalToConstant: 0);
-        inviteOnly = true;
     }
     
     override func viewWillAppear() {
+        super.viewWillAppear()
         if let mixModule = channel.context?.module(.mix) {
             mixModule.checkAccessPolicy(of: channel.jid, completionHandler: { [weak self] result in
                 DispatchQueue.main.async {
@@ -145,9 +136,19 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
 
         let constraint = participantsTableView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -10);
         constraint.priority = .required;
-        self.channel.permissionsPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] permissions in
-            self?.manageParticipantsButton.isHidden = !permissions.contains(.changeConfig);
-            constraint.isActive = !permissions.contains(.changeConfig);
+        self.channel.permissionsPublisher.combineLatest($inviteOnly).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] permissions, inviteOnly in
+            let canManage = (!inviteOnly) && permissions.contains(.changeConfig);
+            self?.manageParticipantsButton.isEnabled = canManage;
+            self?.manageParticipantsButton.isHidden = !canManage;
+            var constraints = [constraint];
+            if let const = self?.manageParticipantsButtonHeightConstraint {
+                constraints.append(const);
+            }
+            if canManage {
+                NSLayoutConstraint.deactivate(constraints);
+            } else {
+                NSLayoutConstraint.activate(constraints);
+            }
         }).store(in: &cancellables);
         
         NotificationCenter.default.publisher(for: NSControl.textDidChangeNotification, object: searchField).map({ ($0.object as! NSSearchField).stringValue }).sink(receiveValue: { [weak self] query in self?.query = query }).store(in: &cancellables);
