@@ -88,8 +88,9 @@ AAAAAAEGA
                                             </connections>
                                         </button>
                                         <button horizontalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="3nN-eU-fLZ">
-                                            <rect key="frame" x="262" y="34" width="32" height="20"/>
+                                            <rect key="frame" x="274" y="34" width="20" height="20"/>
                                             <constraints>
+                                                <constraint firstAttribute="width" constant="20" id="8SY-A5-wPY"/>
                                                 <constraint firstAttribute="height" constant="20" id="d7z-qE-0ng"/>
                                             </constraints>
                                             <buttonCell key="cell" type="square" title="12" bezelStyle="shadowlessSquare" image="person.fill" catalog="system" imagePosition="right" alignment="right" imageScaling="proportionallyUpOrDown" inset="2" id="kmZ-Jc-EdG">
@@ -217,7 +218,7 @@ AAAAAAEGA
                     </connections>
                 </viewController>
             </objects>
-            <point key="canvasLocation" x="-66" y="1444"/>
+            <point key="canvasLocation" x="-66.5" y="1443.5"/>
         </scene>
         <!--Channel Manager Participants-->
         <scene sceneID="Z8A-KW-ctb">

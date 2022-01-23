@@ -624,3 +624,6 @@
 
 /* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "HUr-nw-nKs"; */
 "HUr-nw-nKs.title" = "";
+
+/* Class = "NSButtonCell"; title = "12"; ObjectID = "uDh-Jo-uoa"; */
+"uDh-Jo-uoa.title" = "";
