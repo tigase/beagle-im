@@ -218,7 +218,8 @@ class DBChatHistoryStore {
             if message.type == .groupchat {
                 fromArchive = false; //source != account;
             } else {
-                fromArchive = true;
+                // we should not mark messages only from MAM as READ unless they are marked with chat marker
+                fromArchive = false;
             }
         default:
             inTimestamp = message.delay?.stamp;
