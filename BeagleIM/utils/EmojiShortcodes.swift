@@ -1893,12 +1893,12 @@ class EmojiShortcodes {
     static func search(contains query: String, limit: Int = 5) -> [String] {
         var results = dict.keys.filter({ $0.starts(with: query) }).sorted();
         if results.count < limit {
-            let parts = query.split(separator: "_");
+            let parts = query.split(separator: "_").map({String($0)});
             if parts.count > 1 {
                 results.append(contentsOf: dict.keys.filter({key in (!results.contains(key)) && key.starts(with: parts[0]) && parts[1..<parts.count].allSatisfy({ key.contains($0) })}).sorted());
             }
             if results.count < limit {
-                results.append(contentsOf: dict.keys.filter({ key in (!results.contains(key)) && parts.allSatisfy({ key.contains($0) })}).sorted());
+                results.append(contentsOf: dict.keys.filter({ key in (!results.contains(key)) && parts.allSatisfy({ key.starts(with: $0) || key.contains("_\($0)") })}).sorted());
             }
         }
         if results.count > limit {

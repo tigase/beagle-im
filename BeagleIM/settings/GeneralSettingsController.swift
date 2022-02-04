@@ -33,6 +33,7 @@ class GeneralSettingsController: NSViewController {
     
     fileprivate var markdownFormatting: NSButton!;
     fileprivate var showEmoticons: NSButton!;
+    private var suggestEmoticons: NSButton!;
     fileprivate var spellchecking: NSButton!;
     
     fileprivate var encryptionButton: NSPopUpButton!;
@@ -75,6 +76,7 @@ class GeneralSettingsController: NSViewController {
         
         markdownFormatting = formView.addRow(label: NSLocalizedString("Message formatting", comment: "setting") + ":", field: NSButton(checkboxWithTitle: NSLocalizedString("Markdown", comment: "setting"), target: self, action: #selector(checkboxChanged(_:))));
         showEmoticons = formView.addRow(label: "", field: NSButton(checkboxWithTitle: NSLocalizedString("Show emoticons", comment: "setting"), target: self, action: #selector(checkboxChanged(_:))))
+        suggestEmoticons = formView.addRow(label: "", field: NSButton(checkboxWithTitle: NSLocalizedString("Suggest emoticons", comment: "setting"), target: self, action: #selector(checkboxChanged(_:))))
         Settings.$enableMarkdownFormatting.assign(to: \.isEnabled, on: showEmoticons).store(in: &cancellables)
         spellchecking = formView.addRow(label: "", field: NSButton(checkboxWithTitle: NSLocalizedString("Spellchecking", comment: "setting"), target: self, action: #selector(checkboxChanged(_:))));
         enableLinkPreviews = formView.addRow(label: "", field: NSButton(checkboxWithTitle: NSLocalizedString("Enable link previews", comment: "setting"), target: self, action: #selector(checkboxChanged(_:))));
@@ -121,6 +123,7 @@ class GeneralSettingsController: NSViewController {
         notificationsFromUnknownSenders.state = Settings.notificationsFromUnknownSenders ? .on : .off;
         markdownFormatting.state = Settings.enableMarkdownFormatting ? .on : .off;
         showEmoticons.state = Settings.showEmoticons ? .on : .off;
+        suggestEmoticons.state = Settings.suggestEmoticons ? .on : .off;
         systemMenuIcon.state = Settings.systemMenuIcon ? .on : .off;
         spellchecking.state = Settings.spellchecking ? .on : .off;
         
@@ -154,6 +157,8 @@ class GeneralSettingsController: NSViewController {
             Settings.spellchecking = sender.state == .on;
         case showEmoticons:
             Settings.showEmoticons = sender.state == .on;
+        case suggestEmoticons:
+            Settings.suggestEmoticons = sender.state == .on;
         case encryptionButton:
             let encryption: ChatEncryption = encryptionButton.indexOfSelectedItem == 1 ? .omemo : .none;
             Settings.messageEncryption = encryption;

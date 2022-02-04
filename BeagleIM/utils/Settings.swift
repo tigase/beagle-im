@@ -128,6 +128,8 @@ class SettingsStore {
     var enableMarkdownFormatting: Bool;
     @UserDefaultsSetting(key: "showEmoticons", defaultValue: true)
     var showEmoticons: Bool;
+    @UserDefaultsSetting(key: "suggestEmoticons", defaultValue: true)
+    var suggestEmoticons: Bool;
     @UserDefaultsRawSetting(key: "messageEncryption", defaultValue: ConversationEncryption.none)
     var messageEncryption: ConversationEncryption
     @UserDefaultsSetting(key: "notificationsFromUnknownSenders", defaultValue: false)

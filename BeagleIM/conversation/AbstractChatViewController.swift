@@ -321,7 +321,7 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     }
     
     func prepareCompletions(for query: String) -> [Any] {
-        if let face = EmojiFaces.search(contains: query) {
+        if Settings.suggestEmoticons, let face = EmojiFaces.search(contains: query) {
             return [face];
         }
 
@@ -329,7 +329,7 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
             return [];
         }
         
-        let q = String(query.dropFirst().lowercased());
+        let q = String(query.dropFirst());
         guard !q.isEmpty else {
             return [];
         }
