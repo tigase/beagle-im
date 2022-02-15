@@ -31,7 +31,7 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
     @IBOutlet var cancelButton: NSButton?;
     @IBOutlet var submitButton: NSButton?;
     
-    fileprivate var trustedServers = ["sure.im", "tigase.im", "jabber.me"];
+    fileprivate var trustedServers = ["sure.im", "tigase.im", "jabber.today"];
     
     fileprivate var domainFieldHeightConstraint: NSLayoutConstraint?;
     fileprivate var formHeightConstraint: NSLayoutConstraint?;
