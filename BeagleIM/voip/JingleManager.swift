@@ -25,7 +25,7 @@ import WebRTC
 import Combine
 
 class JingleManager: JingleSessionManager {
-
+    
     static let instance = JingleManager();
     
 //    let events: [Event] = [PresenceModule.ContactPresenceChanged.TYPE];
@@ -257,7 +257,15 @@ class JingleManager: JingleSessionManager {
         
         session.contentModified(action: action, contents: contents, bundle: bundle);
     }
-    
+ 
+    func sessionInfo(for context: Context, with jid: JID, sid: String, info: [Jingle.SessionInfo]) throws {
+        guard let session = self.session(for: context, with: jid, sid: sid) else {
+            throw XMPPError.item_not_found;
+        }
+        
+        session.sessionInfoReceived(info: info);
+    }
+
 }
 
 extension JingleManager {

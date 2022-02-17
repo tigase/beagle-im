@@ -555,6 +555,11 @@ class Call: NSObject, JingleSessionActionDelegate {
             }
         case .transportAdd(_, _):
             return nil;
+        case .sessionInfo(let infos):
+            for info in infos {
+                logger.debug("received session-info: \(String(describing: info))")
+            }
+            return nil;
         }
     }
 
@@ -626,6 +631,11 @@ class Call: NSObject, JingleSessionActionDelegate {
 
     func muted(value: Bool) {
         self.localAudioTrack?.isEnabled = !value;
+        self.localVideoTrack?.isEnabled = !value;
+        let infos: [Jingle.SessionInfo] = self.localSessionDescription?.contents.filter({ $0.description?.media == "audio" || $0.description?.media == "video" }).map({ $0.name }).map({ value ? .mute(contentName: $0) : .unmute(contentName: $0) }) ?? [];
+        if !infos.isEmpty {
+            session?.sessionInfo(infos);
+        }
     }
     
 }
