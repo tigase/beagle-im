@@ -310,7 +310,7 @@ class Call: NSObject, JingleSessionActionDelegate {
                         completionHandler(.failure(ErrorCondition.internal_server_error));
                         return;
                     }
-                    self.generateOfferAndSet(peerConnection: peerConnection, completionHandler: { result in
+                    self.generateOfferAndSet(peerConnection: peerConnection, creatorProvider: { _ in Jingle.Content.Creator.initiator }, localRole: .initiator, completionHandler: { result in
                         switch result {
                         case .failure(_):
                             self.reset();
@@ -365,7 +365,7 @@ class Call: NSObject, JingleSessionActionDelegate {
             return;
         }
         changeState(.connecting);
-        generateOfferAndSet(peerConnection: peerConnection, completionHandler: { result in
+        generateOfferAndSet(peerConnection: peerConnection, creatorProvider: session.contentCreator(of:), localRole: session.role, completionHandler: { result in
             switch result {
             case .success(let sdp):
                 guard let session = self.session else {
@@ -516,7 +516,7 @@ class Call: NSObject, JingleSessionActionDelegate {
         }
         
         let prevLocalSDP = self.localSessionDescription;
-        setRemoteDescription(newSDP, peerConnection: peerConnection, completionHandler: { result in
+        setRemoteDescription(newSDP, peerConnection: peerConnection, session: session, completionHandler: { result in
             self.remoteSessionSemaphore.signal();
             switch result {
             case .failure(let error):
@@ -563,13 +563,13 @@ class Call: NSObject, JingleSessionActionDelegate {
         }
     }
 
-    private func setRemoteDescription(_ remoteDescription: SDP, peerConnection: RTCPeerConnection, completionHandler: @escaping (Result<SDP?,Error>)->Void) {
-        logger.debug("setting remote description: \(remoteDescription.toString(withSid: ""))");
-        peerConnection.setRemoteDescription(RTCSessionDescription(type: self.direction == .incoming ? .offer : .answer, sdp: remoteDescription.toString(withSid: self.webrtcSid!)), completionHandler: { err in
+    private func setRemoteDescription(_ remoteDescription: SDP, peerConnection: RTCPeerConnection, session: JingleSession, completionHandler: @escaping (Result<SDP?,Error>)->Void) {
+        logger.debug("setting remote description: \(remoteDescription.toString(withSid: "", localRole: session.role, direction: .incoming))");
+        peerConnection.setRemoteDescription(RTCSessionDescription(type: self.direction == .incoming ? .offer : .answer, sdp: remoteDescription.toString(withSid: self.webrtcSid!, localRole: session.role, direction: .incoming)), completionHandler: { err in
             guard let error = err else {
                 self.remoteSessionDescription = remoteDescription;
                 if peerConnection.signalingState == .haveRemoteOffer {
-                    self.generateAnswerAndSet(peerConnection: peerConnection, completionHandler: { result in
+                    self.generateAnswerAndSet(peerConnection: peerConnection, creatorProvider: session.contentCreator(of:), localRole: session.role, completionHandler: { result in
                         switch result {
                         case .success(let localSDP):
                             completionHandler(.success(localSDP));
@@ -586,33 +586,33 @@ class Call: NSObject, JingleSessionActionDelegate {
         });
     }
     
-    private func generateOfferAndSet(peerConnection: RTCPeerConnection, completionHandler: @escaping (Result<SDP,Error>)->Void) {
+    private func generateOfferAndSet(peerConnection: RTCPeerConnection, creatorProvider: @escaping (String)->Jingle.Content.Creator, localRole: Jingle.Content.Creator, completionHandler: @escaping (Result<SDP,Error>)->Void) {
         logger.debug("generating offer");
         peerConnection.offer(for: VideoCallController.defaultCallConstraints, completionHandler: { sdpOffer, err in
             guard let error = err else {
-                self.setLocalDescription(peerConnection: peerConnection, sdp: sdpOffer!, completionHandler: completionHandler);
+                self.setLocalDescription(peerConnection: peerConnection, sdp: sdpOffer!, creatorProvider: creatorProvider, localRole: localRole, completionHandler: completionHandler);
                 return;
             }
             completionHandler(.failure(error));
         });
     };
         
-    private func generateAnswerAndSet(peerConnection: RTCPeerConnection, completionHandler: @escaping (Result<SDP,Error>)->Void) {
+    private func generateAnswerAndSet(peerConnection: RTCPeerConnection, creatorProvider: @escaping (String)->Jingle.Content.Creator, localRole: Jingle.Content.Creator, completionHandler: @escaping (Result<SDP,Error>)->Void) {
         logger.debug("generating answer");
         peerConnection.answer(for: VideoCallController.defaultCallConstraints, completionHandler: { sdpAnswer, err in
             guard let error = err else {
-                self.setLocalDescription(peerConnection: peerConnection, sdp: sdpAnswer!, completionHandler: completionHandler);
+                self.setLocalDescription(peerConnection: peerConnection, sdp: sdpAnswer!, creatorProvider: creatorProvider, localRole: localRole, completionHandler: completionHandler);
                 return;
             }
             completionHandler(.failure(error));
         });
     }
     
-    private func setLocalDescription(peerConnection: RTCPeerConnection, sdp localSDP: RTCSessionDescription, completionHandler: @escaping (Result<SDP,Error>)->Void) {
+    private func setLocalDescription(peerConnection: RTCPeerConnection, sdp localSDP: RTCSessionDescription, creatorProvider: @escaping (String)->Jingle.Content.Creator, localRole: Jingle.Content.Creator, completionHandler: @escaping (Result<SDP,Error>)->Void) {
         logger.debug("setting local description: \(localSDP.sdp)");
         peerConnection.setLocalDescription(localSDP, completionHandler: { err in
             guard let error = err else {
-                guard let (sdp, _) = SDP.parse(sdpString: localSDP.sdp, creator: .responder) else {
+                guard let (sdp, _) = SDP.parse(sdpString: localSDP.sdp, creatorProvider: creatorProvider, localRole: localRole) else {
                     completionHandler(.failure(ErrorCondition.not_acceptable));
                     return;
                 }
@@ -726,7 +726,7 @@ extension Call: RTCPeerConnectionDelegate {
             return;
         }
         
-        _ = session.transportInfo(contentName: mid, creator: session.role, transport: Jingle.Transport.ICEUDPTransport(pwd: transport.pwd, ufrag: transport.ufrag, candidates: [jingleCandidate]));
+        _ = session.transportInfo(contentName: mid, transport: Jingle.Transport.ICEUDPTransport(pwd: transport.pwd, ufrag: transport.ufrag, candidates: [jingleCandidate]));
     }
         
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove candidates: [RTCIceCandidate]) {
