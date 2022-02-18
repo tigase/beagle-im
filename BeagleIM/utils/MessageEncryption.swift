@@ -26,15 +26,4 @@ public enum MessageEncryption: Int {
     case decrypted = 1
     case decryptionFailed = 2
     case notForThisDevice = 3
-    
-    func message() -> String? {
-        switch self {
-        case .none, .decrypted:
-            return nil;
-        case .decryptionFailed:
-            return "Message decryption failed!";
-        case .notForThisDevice:
-            return "Message was not encrypted for this devices";
-        }
-    }
 }

@@ -341,7 +341,7 @@
 "It was not possible to send encrypted message due to encryption error" = "Nie udało się wysłać zaszyfrowanej wiadomości z uwagi na błąd";
 
 /* OMEMO decryption error */
-"Message decryption failed!" = "Dekodowanie wiadomości nie powiodło się!";
+"Message decryption failed! Error code: %d" = "Dekodowanie wiadomości nie powiodło się! Kod błędu: %d";
 
 /* OMEMO decryption error */
 "Message was not encrypted for this devices" = "Wiadomość nie jest zaszyfrowana dla tego urządzenia";

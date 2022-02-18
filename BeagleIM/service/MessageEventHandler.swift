@@ -39,9 +39,8 @@ class MessageEventHandler: XmppServiceExtension {
         case finished(account: BareJID, with: BareJID?)
     }
     
-    static func prepareBody(message: Message, forAccount account: BareJID, serverMsgId: String?) -> (String?, MessageEncryption, String?) {
-        var encryption: MessageEncryption = .none;
-        var fingerprint: String? = nil;
+    static func prepareBody(message: Message, forAccount account: BareJID, serverMsgId: String?) -> (String?, ConversationEntryEncryption) {
+        var encryption: ConversationEntryEncryption = .none;
 
         guard (message.type ?? .chat) != .error else {
             guard let body = message.body else {
@@ -49,14 +48,14 @@ class MessageEventHandler: XmppServiceExtension {
                     switch delivery {
                     case .received(_):
                         // if our message delivery confirmation is not delivered just drop this info
-                        return (nil, encryption, nil);
+                        return (nil, encryption);
                     default:
                         break;
                     }
                 }
-                return (message.to?.resource == nil ? nil : "", encryption, nil);
+                return (message.to?.resource == nil ? nil : "", encryption);
             }
-            return (body, encryption, nil);
+            return (body, encryption);
         }
 
         var encryptionErrorBody: String?;
@@ -67,8 +66,7 @@ class MessageEventHandler: XmppServiceExtension {
             
             switch context.module(.omemo).decode(message: message, from: from, serverMsgId: serverMsgId) {
             case .successMessage(_, let keyFingerprint):
-                encryption = .decrypted;
-                fingerprint = keyFingerprint
+                encryption = .decrypted(fingerprint: keyFingerprint);
                 break;
             case .successTransportKey(_, _):
                 logger.debug("got transport key with key and iv!");
@@ -79,21 +77,21 @@ class MessageEventHandler: XmppServiceExtension {
                     encryption = .notForThisDevice;
                 case .duplicateMessage:
                     // message is a duplicate and was processed before
-                    return (nil, .none, nil);
+                    return (nil, .none);
                 case .notEncrypted:
                     encryption = .none;
                 default:
-                    encryptionErrorBody = "Message decryption failed!";
-                    encryption = .decryptionFailed;
+                    encryptionErrorBody = "Message decryption failed! Error code: \(error.rawValue)";
+                    encryption = .decryptionFailed(errorCode: error.rawValue);
                 }
                 break;
             }
         }
 
         guard let body = message.body ?? message.oob ?? encryptionErrorBody else {
-            return (nil, encryption, nil);
+            return (nil, encryption);
         }
-        return (body, encryption, fingerprint);
+        return (body, encryption);
     }
 
     private var cancellables: Set<AnyCancellable> = [];

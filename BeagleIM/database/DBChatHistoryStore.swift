@@ -259,7 +259,7 @@ class DBChatHistoryStore {
             return;
         }
 
-        let (decryptedBody, encryption, fingerprint) = MessageEventHandler.prepareBody(message: message, forAccount: conversation.account, serverMsgId: serverMsgId);
+        let (decryptedBody, encryption) = MessageEventHandler.prepareBody(message: message, forAccount: conversation.account, serverMsgId: serverMsgId);
         
         guard let body = decryptedBody ?? (mixInvitation != nil ? "Invitation" : nil) else {
             switch source {
@@ -295,7 +295,7 @@ class DBChatHistoryStore {
             return;
         }
                 
-        let options = ConversationEntry.Options(recipient: recipient, encryption: .from(messageEncryption: encryption, fingerprint: fingerprint), isMarkable: message.isMarkable)
+        let options = ConversationEntry.Options(recipient: recipient, encryption: encryption, isMarkable: message.isMarkable)
 
         self.appendItemSync(for: conversation, state: state, sender: sender, type: itemType, timestamp: timestamp, stanzaId: stanzaId, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, data: body, chatState: message.chatState, appendix: appendix, options: options, linkPreviewAction: .auto, masterId: nil, completionHandler: nil);
 
@@ -398,7 +398,7 @@ class DBChatHistoryStore {
                 break;
             }
             
-            var params: [String:Any?] = ["account": conversation.account, "jid": conversation.jid, "timestamp": timestamp, "data": data, "item_type": type.rawValue, "state": state.code, "stanza_id": stanzaId, "author_nickname": nil, "author_jid": nil, "recipient_nickname": options.recipient.nickname, "participant_id": nil, "encryption": options.encryption.value.rawValue, "fingerprint": options.encryption.fingerprint, "error": state.errorMessage, "appendix": appendix, "server_msg_id": serverMsgId, "remote_msg_id": remoteMsgId, "master_id": masterId, "markable": options.isMarkable];
+            var params: [String:Any?] = ["account": conversation.account, "jid": conversation.jid, "timestamp": timestamp, "data": data, "item_type": type.rawValue, "state": state.code, "stanza_id": stanzaId, "author_nickname": nil, "author_jid": nil, "recipient_nickname": options.recipient.nickname, "participant_id": nil, "encryption": options.encryption.value.rawValue, "fingerprint": options.encryption.fingerprint ?? (options.encryption.errorCode != nil ? "\(options.encryption.errorCode!)" : nil), "error": state.errorMessage, "appendix": appendix, "server_msg_id": serverMsgId, "remote_msg_id": remoteMsgId, "master_id": masterId, "markable": options.isMarkable];
 
             switch sender {
             case .none, .me(_), .buddy(_):
@@ -872,7 +872,7 @@ class DBChatHistoryStore {
             return nil;
         }
         
-        let options = ConversationEntry.Options(recipient: recipientFrom(cursor: cursor), encryption: encryptionFrom(cursor: cursor), isMarkable: cursor.bool(for: "markable"));
+        let options = ConversationEntry.Options(recipient: recipientFrom(cursor: cursor), encryption: DBChatHistoryStore.encryptionFrom(cursor: cursor), isMarkable: cursor.bool(for: "markable"));
         
         
         guard let payload = payloadFrom(cursor: cursor, entryType: entryType, correctionTimestamp: correctionTimestamp) else {
@@ -962,17 +962,18 @@ class DBChatHistoryStore {
             }
         }
     }
-    
-    private func encryptionFrom(cursor: Cursor) -> ConversationEntryEncryption {
-        switch MessageEncryption(rawValue: cursor["encryption"] ?? 0) ?? .none {
+
+    public static func encryptionFrom(cursor: Cursor, encryptionKey: String = "encryption", fingerprintKey: String = "fingerprint") -> ConversationEntryEncryption {
+        switch MessageEncryption(rawValue: cursor[encryptionKey] ?? 0) ?? .none {
         case .none:
             return .none;
         case .decryptionFailed:
-            return .decryptionFailed;
+            let code = Int(cursor.string(for: fingerprintKey) ?? "") ?? 0;
+            return .decryptionFailed(errorCode: code);
         case .notForThisDevice:
             return .notForThisDevice;
         case .decrypted:
-            return .decrypted(fingerprint: cursor["fingerprint"]);
+            return .decrypted(fingerprint: cursor[fingerprintKey]);
         }
     }
 
