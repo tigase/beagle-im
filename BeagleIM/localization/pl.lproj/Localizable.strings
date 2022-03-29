@@ -1002,7 +1002,7 @@
 "Moderators" = "Moderatorzy";
 
 /* list of users with this role */
-"Participans" = "Uczestnicy";
+"Participants" = "Uczestnicy";
 
 /* list of users with this role */
 "Visitors" = "Goście";

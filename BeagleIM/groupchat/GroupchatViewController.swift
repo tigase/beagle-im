@@ -490,7 +490,7 @@ class GroupchatParticipantsContainer: NSObject, NSOutlineViewDelegate, NSOutline
             case .moderator:
                 return NSLocalizedString("Moderators", comment: "list of users with this role");
             case .participant:
-                return NSLocalizedString("Participans", comment: "list of users with this role");
+                return NSLocalizedString("Participants", comment: "list of users with this role");
             case .visitor:
                 return NSLocalizedString("Visitors", comment: "list of users with this role");
             case .none:
