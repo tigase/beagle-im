@@ -57,7 +57,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         self.dispatcher = dispatcher;
         self.canOpenChat = canOpenChat;
 
-        DBChatStore.instance.$conversations.throttle(for: 0.1, scheduler: self.dispatcher.queue, latest: true).sink(receiveValue: { [weak self] items in
+        DBChatStore.instance.$conversations.throttleFixed(for: 0.1, scheduler: self.dispatcher.queue, latest: true).sink(receiveValue: { [weak self] items in
             self?.update(items: items);
         }).store(in: &cancellables);
     }

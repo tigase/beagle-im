@@ -25,6 +25,8 @@ import Combine
 
 class ChatCellView: NSTableCellView {
     
+    private static let throttlingQueue = DispatchQueue(label: "ChatCellViewThrottlingQueue");
+    
     fileprivate static let todaysFormatter = ({()-> DateFormatter in
         var f = DateFormatter();
         f.dateStyle = .none;
@@ -229,17 +231,17 @@ class ChatCellView: NSTableCellView {
             cancellables.removeAll();
             conversation?.displayNamePublisher.assign(to: \.stringValue, on: label).store(in: &cancellables);
             avatar.displayableId = conversation;
-            conversation?.unreadPublisher.sink(receiveValue: { [weak self] value in
+            conversation?.unreadPublisher.throttleFixed(for: 0.1, scheduler: ChatCellView.throttlingQueue, latest: true).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
                 self?.set(unread: value);
             }).store(in: &cancellables);
-            conversation?.timestampPublisher.combineLatest(CurrentTimePublisher.publisher).map({ (value, now) in ChatCellView.formatTimestamp(value,now)}).assign(to: \.stringValue, on: lastMessageTs).store(in: &cancellables);
+            conversation?.timestampPublisher.combineLatest(CurrentTimePublisher.publisher).throttleFixed(for: 0.1, scheduler: ChatCellView.throttlingQueue, latest: true).map({ (value, now) in ChatCellView.formatTimestamp(value,now)}).receive(on: DispatchQueue.main).assign(to: \.stringValue, on: lastMessageTs).store(in: &cancellables);
             if let account = conversation?.account {
                 if let chat = conversation as? Chat {
-                    conversation?.lastActivityPublisher.combineLatest(chat.$remoteChatState.replaceNil(with: ChatState.active)).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (activity, chatState) in
+                    conversation?.lastActivityPublisher.throttleFixed(for: 0.1, scheduler: ChatCellView.throttlingQueue, latest: true).combineLatest(chat.$remoteChatState.replaceNil(with: ChatState.active)).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (activity, chatState) in
                         self?.set(lastActivity: activity, chatState: chatState, account: account);
                     }).store(in: &cancellables);
                 } else {
-                    conversation?.lastActivityPublisher.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
+                    conversation?.lastActivityPublisher.throttleFixed(for: 0.1, scheduler: ChatCellView.throttlingQueue, latest: true).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] value in
                         self?.set(lastActivity: value, chatState: .active, account: account);
                     }).store(in: &cancellables);
                 }

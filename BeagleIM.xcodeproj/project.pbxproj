@@ -56,6 +56,7 @@
 		FE2809852169FB75002F5BD0 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2809842169FB74002F5BD0 /* Alert.swift */; };
 		FE29D35823C208840028D306 /* MetadataCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE29D35723C208840028D306 /* MetadataCache.swift */; };
 		FE2A00A127F863B800AF0152 /* .bartycrouch.toml in Resources */ = {isa = PBXBuildFile; fileRef = FE2A00A027F863B800AF0152 /* .bartycrouch.toml */; };
+		FE2A00B927F88FEE00AF0152 /* Publisher+ThrottleFixed.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2A00B827F88FEE00AF0152 /* Publisher+ThrottleFixed.swift */; };
 		FE2ACA8023546C4B004623BC /* NSString_extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA7F23546C4B004623BC /* NSString_extensions.swift */; };
 		FE2ACA8223546C8E004623BC /* NSMutableAttributedString_extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA8123546C8E004623BC /* NSMutableAttributedString_extensions.swift */; };
 		FE2ACA842355B967004623BC /* EditKeywordsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA832355B967004623BC /* EditKeywordsController.swift */; };
@@ -357,6 +358,7 @@
 		FE2A00B327F8677A00AF0152 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = localization/en.lproj/MIX.strings; sourceTree = "<group>"; };
 		FE2A00B527F8678100AF0152 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = localization/en.lproj/Location.strings; sourceTree = "<group>"; };
 		FE2A00B727F8678400AF0152 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = localization/en.lproj/Roster.strings; sourceTree = "<group>"; };
+		FE2A00B827F88FEE00AF0152 /* Publisher+ThrottleFixed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publisher+ThrottleFixed.swift"; sourceTree = "<group>"; };
 		FE2ACA7F23546C4B004623BC /* NSString_extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSString_extensions.swift; sourceTree = "<group>"; };
 		FE2ACA8123546C8E004623BC /* NSMutableAttributedString_extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSMutableAttributedString_extensions.swift; sourceTree = "<group>"; };
 		FE2ACA832355B967004623BC /* EditKeywordsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditKeywordsController.swift; sourceTree = "<group>"; };
@@ -952,6 +954,7 @@
 			children = (
 				FEC135E8261254E200054666 /* Publisher+OnlyGetter.swift */,
 				FEC135EC2612550000054666 /* Publisher+ThrottledSink.swift */,
+				FE2A00B827F88FEE00AF0152 /* Publisher+ThrottleFixed.swift */,
 			);
 			path = combine;
 			sourceTree = "<group>";
@@ -1507,6 +1510,7 @@
 				FE5C6B2D22916C47003DAB30 /* JoinGroupchatViewController.swift in Sources */,
 				FE222CFB2561763700C186A9 /* DBChatStore+ChatStore.swift in Sources */,
 				FE3F2AF2228813E200737D51 /* EmptyViewController.swift in Sources */,
+				FE2A00B927F88FEE00AF0152 /* Publisher+ThrottleFixed.swift in Sources */,
 				FEDE6AF921440AEF0019170A /* StatusHelper.swift in Sources */,
 				FE41FB45215E426400AD86D3 /* MessageArchivingSetttingsViewController.swift in Sources */,
 				FE6E6C0021384D5F003B1696 /* ChatsListView.swift in Sources */,
