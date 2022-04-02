@@ -1,0 +1,17 @@
+/* Class = "NSSearchToolbarItem"; label = "Search"; ObjectID = "A0f-O0-RLN"; */
+"A0f-O0-RLN.label" = "Search";
+
+/* Class = "NSSearchToolbarItem"; paletteLabel = "Search"; ObjectID = "A0f-O0-RLN"; */
+"A0f-O0-RLN.paletteLabel" = "Search";
+
+/* Class = "NSSearchFieldCell"; placeholderString = "Search location"; ObjectID = "hRs-ex-HYe"; */
+"hRs-ex-HYe.placeholderString" = "Search location";
+
+/* Class = "NSToolbarItem"; label = "Toolbar Item"; ObjectID = "j5s-07-X5S"; */
+"j5s-07-X5S.label" = "Toolbar Item";
+
+/* Class = "NSToolbarItem"; paletteLabel = "Toolbar Item"; ObjectID = "j5s-07-X5S"; */
+"j5s-07-X5S.paletteLabel" = "Toolbar Item";
+
+/* Class = "NSToolbarItem"; toolTip = "Retrieves current location"; ObjectID = "j5s-07-X5S"; */
+"j5s-07-X5S.toolTip" = "Retrieves current location";

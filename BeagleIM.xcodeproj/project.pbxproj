@@ -55,6 +55,7 @@
 		FE28097F2166892D002F5BD0 /* AccountDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */; };
 		FE2809852169FB75002F5BD0 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2809842169FB74002F5BD0 /* Alert.swift */; };
 		FE29D35823C208840028D306 /* MetadataCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE29D35723C208840028D306 /* MetadataCache.swift */; };
+		FE2A00A127F863B800AF0152 /* .bartycrouch.toml in Resources */ = {isa = PBXBuildFile; fileRef = FE2A00A027F863B800AF0152 /* .bartycrouch.toml */; };
 		FE2ACA8023546C4B004623BC /* NSString_extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA7F23546C4B004623BC /* NSString_extensions.swift */; };
 		FE2ACA8223546C8E004623BC /* NSMutableAttributedString_extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA8123546C8E004623BC /* NSMutableAttributedString_extensions.swift */; };
 		FE2ACA842355B967004623BC /* EditKeywordsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2ACA832355B967004623BC /* EditKeywordsController.swift */; };
@@ -344,6 +345,18 @@
 		FE28097E2166892D002F5BD0 /* AccountDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDetailsViewController.swift; sourceTree = "<group>"; };
 		FE2809842169FB74002F5BD0 /* Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
 		FE29D35723C208840028D306 /* MetadataCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataCache.swift; sourceTree = "<group>"; };
+		FE2A00A027F863B800AF0152 /* .bartycrouch.toml */ = {isa = PBXFileReference; lastKnownFileType = text; path = .bartycrouch.toml; sourceTree = "<group>"; };
+		FE2A00A327F8671200AF0152 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = localization/en.lproj/Conversation.strings; sourceTree = "<group>"; };
+		FE2A00A527F8672300AF0152 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = localization/en.lproj/ConversationDetails.strings; sourceTree = "<group>"; };
+		FE2A00A727F8673200AF0152 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = localization/en.lproj/SearchHistory.strings; sourceTree = "<group>"; };
+		FE2A00A927F8673C00AF0152 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = localization/en.lproj/ServiceDiscovery.strings; sourceTree = "<group>"; };
+		FE2A00AB27F8674800AF0152 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = localization/en.lproj/Settings.strings; sourceTree = "<group>"; };
+		FE2A00AD27F8675300AF0152 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = localization/en.lproj/VoIP.strings; sourceTree = "<group>"; };
+		FE2A00AF27F8675B00AF0152 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = localization/en.lproj/XMLConsole.strings; sourceTree = "<group>"; };
+		FE2A00B127F8676500AF0152 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = localization/en.lproj/Main.strings; sourceTree = "<group>"; };
+		FE2A00B327F8677A00AF0152 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = localization/en.lproj/MIX.strings; sourceTree = "<group>"; };
+		FE2A00B527F8678100AF0152 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = localization/en.lproj/Location.strings; sourceTree = "<group>"; };
+		FE2A00B727F8678400AF0152 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = localization/en.lproj/Roster.strings; sourceTree = "<group>"; };
 		FE2ACA7F23546C4B004623BC /* NSString_extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSString_extensions.swift; sourceTree = "<group>"; };
 		FE2ACA8123546C8E004623BC /* NSMutableAttributedString_extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSMutableAttributedString_extensions.swift; sourceTree = "<group>"; };
 		FE2ACA832355B967004623BC /* EditKeywordsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditKeywordsController.swift; sourceTree = "<group>"; };
@@ -458,6 +471,7 @@
 		FE8DC2412721DAAE007E6D05 /* ChatLocationCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatLocationCellView.swift; sourceTree = "<group>"; };
 		FE8DC24427241979007E6D05 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = localization/Base.lproj/Location.storyboard; sourceTree = "<group>"; };
 		FE8DC2472724197B007E6D05 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = localization/pl.lproj/Location.strings; sourceTree = "<group>"; };
+		FE8F2C4527F860E500580F44 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = localization/en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FE8F7CE72562F8A60076C13E /* ConversationEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationEntry.swift; sourceTree = "<group>"; };
 		FE8F7CEB2562F8BD0076C13E /* ConversationKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationKey.swift; sourceTree = "<group>"; };
 		FE8F7CEF256452E90076C13E /* ConversationEntrySender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationEntrySender.swift; sourceTree = "<group>"; };
@@ -945,6 +959,7 @@
 		FED2ECE72066B01C00F506A5 = {
 			isa = PBXGroup;
 			children = (
+				FE2A00A027F863B800AF0152 /* .bartycrouch.toml */,
 				FE1A34B2258D2BC40058B86A /* Frameworks */,
 				FE421B4821C92FBF0022DF77 /* LICENSE */,
 				FED2ECF22066B01C00F506A5 /* BeagleIM */,
@@ -1244,6 +1259,7 @@
 				FE890D30240020DE00107437 /* db-schema-9.sql in Resources */,
 				FE0AE0C726B0388B0010D2E2 /* ServiceDiscovery.storyboard in Resources */,
 				FE0AE0D626B051870010D2E2 /* XMLConsole.storyboard in Resources */,
+				FE2A00A127F863B800AF0152 /* .bartycrouch.toml in Resources */,
 				FE0AE13326B08AD20010D2E2 /* Localizable.strings in Resources */,
 				FE421B4721C928B00022DF77 /* Credits.rtf in Resources */,
 				FE31409624952DD0007C5CBC /* db-schema-11.sql in Resources */,
@@ -1559,6 +1575,7 @@
 			children = (
 				FE0AE0B926B0379F0010D2E2 /* Base */,
 				FE0AE0BC26B037AA0010D2E2 /* pl */,
+				FE2A00A327F8671200AF0152 /* en */,
 			);
 			name = Conversation.storyboard;
 			sourceTree = "<group>";
@@ -1568,6 +1585,7 @@
 			children = (
 				FE0AE0BE26B038340010D2E2 /* Base */,
 				FE0AE0C126B038390010D2E2 /* pl */,
+				FE2A00A527F8672300AF0152 /* en */,
 			);
 			name = ConversationDetails.storyboard;
 			sourceTree = "<group>";
@@ -1577,6 +1595,7 @@
 			children = (
 				FE0AE0C826B0388B0010D2E2 /* Base */,
 				FE0AE0CB26B0388F0010D2E2 /* pl */,
+				FE2A00A927F8673C00AF0152 /* en */,
 			);
 			name = ServiceDiscovery.storyboard;
 			sourceTree = "<group>";
@@ -1586,6 +1605,7 @@
 			children = (
 				FE0AE0CD26B040900010D2E2 /* Base */,
 				FE0AE0D026B040960010D2E2 /* pl */,
+				FE2A00AB27F8674800AF0152 /* en */,
 			);
 			name = Settings.storyboard;
 			sourceTree = "<group>";
@@ -1595,6 +1615,7 @@
 			children = (
 				FE0AE0D226B0513D0010D2E2 /* Base */,
 				FE0AE0D526B051410010D2E2 /* pl */,
+				FE2A00AD27F8675300AF0152 /* en */,
 			);
 			name = VoIP.storyboard;
 			sourceTree = "<group>";
@@ -1604,6 +1625,7 @@
 			children = (
 				FE0AE0D726B051870010D2E2 /* Base */,
 				FE0AE0DA26B0518C0010D2E2 /* pl */,
+				FE2A00AF27F8675B00AF0152 /* en */,
 			);
 			name = XMLConsole.storyboard;
 			sourceTree = "<group>";
@@ -1613,6 +1635,7 @@
 			children = (
 				FE0AE0DC26B051C10010D2E2 /* Base */,
 				FE0AE0DF26B051C60010D2E2 /* pl */,
+				FE2A00B327F8677A00AF0152 /* en */,
 			);
 			name = MIX.storyboard;
 			sourceTree = "<group>";
@@ -1622,6 +1645,7 @@
 			children = (
 				FE0AE0E126B056170010D2E2 /* Base */,
 				FE0AE0E426B0561A0010D2E2 /* pl */,
+				FE2A00B727F8678400AF0152 /* en */,
 			);
 			name = Roster.storyboard;
 			sourceTree = "<group>";
@@ -1631,6 +1655,7 @@
 			children = (
 				FE0AE12D26B0828A0010D2E2 /* Base */,
 				FE0AE12F26B082970010D2E2 /* pl */,
+				FE2A00A727F8673200AF0152 /* en */,
 			);
 			name = SearchHistory.storyboard;
 			sourceTree = "<group>";
@@ -1639,6 +1664,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				FE0AE13226B08AD20010D2E2 /* pl */,
+				FE8F2C4527F860E500580F44 /* en */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -1648,6 +1674,7 @@
 			children = (
 				FE8DC24427241979007E6D05 /* Base */,
 				FE8DC2472724197B007E6D05 /* pl */,
+				FE2A00B527F8678100AF0152 /* en */,
 			);
 			name = Location.storyboard;
 			sourceTree = "<group>";
@@ -1657,6 +1684,7 @@
 			children = (
 				FED2ECFA2066B01C00F506A5 /* Base */,
 				FE0AE0B726AFEDC30010D2E2 /* pl */,
+				FE2A00B127F8676500AF0152 /* en */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";

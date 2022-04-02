@@ -2,16 +2,19 @@
 "0wH-YL-WDw.title" = "📯";
 
 /* Class = "NSMenuItem"; title = "Share"; ObjectID = "19V-oi-bxb"; */
-"19V-oi-bxb.title" = "Udostępnij";
+"19V-oi-bxb.title" = "Share";
 
 /* Class = "NSTextFieldCell"; title = "📯"; ObjectID = "4dD-Ba-toW"; */
 "4dD-Ba-toW.title" = "📯";
 
+/* Class = "NSTextFieldCell"; title = "20:31:03"; ObjectID = "5d8-jm-olo"; */
+"5d8-jm-olo.title" = "20:31:03";
+
 /* Class = "NSMenuItem"; title = "Copy"; ObjectID = "5gx-w0-i1S"; */
-"5gx-w0-i1S.title" = "Kopiuj";
+"5gx-w0-i1S.title" = "Copy";
 
 /* Class = "NSButtonCell"; title = "Accept"; ObjectID = "aMd-4L-YTa"; */
-"aMd-4L-YTa.title" = "Akceptuj";
+"aMd-4L-YTa.title" = "Accept";
 
 /* Class = "NSTextFieldCell"; placeholderString = "Testing"; ObjectID = "axe-dt-dii"; */
 "axe-dt-dii.placeholderString" = "Testing";
@@ -26,13 +29,13 @@
 "D3S-Fu-GzK.title" = "20:31:03";
 
 /* Class = "NSMenuItem"; title = "Share"; ObjectID = "dqA-Id-kiX"; */
-"dqA-Id-kiX.title" = "Udostępnij";
+"dqA-Id-kiX.title" = "Share";
 
 /* Class = "NSMenuItem"; title = "Open"; ObjectID = "Emv-Uo-Cfn"; */
-"Emv-Uo-Cfn.title" = "Otwórz";
+"Emv-Uo-Cfn.title" = "Open";
 
 /* Class = "NSMenu"; title = "Share"; ObjectID = "Fag-bM-rfw"; */
-"Fag-bM-rfw.title" = "Udostępnij";
+"Fag-bM-rfw.title" = "Share";
 
 /* Class = "NSTextFieldCell"; title = "📯"; ObjectID = "fhA-iN-Rtr"; */
 "fhA-iN-Rtr.title" = "📯";
@@ -53,7 +56,7 @@
 "hR4-5U-Pda.title" = "📯";
 
 /* Class = "NSMenuItem"; title = "Delete"; ObjectID = "HWT-hF-b3o"; */
-"HWT-hF-b3o.title" = "Usuń";
+"HWT-hF-b3o.title" = "Delete";
 
 /* Class = "NSButtonCell"; title = "Button"; ObjectID = "isG-WZ-OoS"; */
 "isG-WZ-OoS.title" = "Button";
@@ -61,35 +64,44 @@
 /* Class = "NSTextFieldCell"; title = "20:31:03"; ObjectID = "lAv-Fw-zDs"; */
 "lAv-Fw-zDs.title" = "20:31:03";
 
+/* Class = "NSTextFieldCell"; title = "📯"; ObjectID = "LTY-id-NWX"; */
+"LTY-id-NWX.title" = "📯";
+
 /* Class = "NSMenuItem"; title = "Item"; ObjectID = "MOm-LD-A4E"; */
 "MOm-LD-A4E.title" = "Item";
 
 /* Class = "NSMenuItem"; title = "Save"; ObjectID = "oDV-Qj-YF8"; */
-"oDV-Qj-YF8.title" = "Zapisz";
+"oDV-Qj-YF8.title" = "Save";
 
 /* Class = "NSTextFieldCell"; title = "20:31:03"; ObjectID = "oFx-wq-xLb"; */
 "oFx-wq-xLb.title" = "20:31:03";
 
 /* Class = "NSMenuItem"; title = "Copy"; ObjectID = "PQ3-ki-Xrm"; */
-"PQ3-ki-Xrm.title" = "Kopiuj";
+"PQ3-ki-Xrm.title" = "Copy";
+
+/* Class = "NSTextFieldCell"; placeholderString = "Testing"; ObjectID = "Pyy-u4-P2n"; */
+"Pyy-u4-P2n.placeholderString" = "Testing";
+
+/* Class = "NSTextFieldCell"; title = "John Doe"; ObjectID = "Pyy-u4-P2n"; */
+"Pyy-u4-P2n.title" = "John Doe";
 
 /* Class = "NSMenuItem"; title = "Open"; ObjectID = "rC8-ej-mBc"; */
-"rC8-ej-mBc.title" = "Otwórz";
+"rC8-ej-mBc.title" = "Open";
 
 /* Class = "NSMenuItem"; title = "Save"; ObjectID = "sjT-Dg-qd2"; */
-"sjT-Dg-qd2.title" = "Zapisz";
+"sjT-Dg-qd2.title" = "Save";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "Tzd-gW-Ac3"; */
 "Tzd-gW-Ac3.title" = "Text Cell";
 
 /* Class = "NSTextFieldCell"; title = "Displayed"; ObjectID = "Uix-mm-G9h"; */
-"Uix-mm-G9h.title" = "Wyświetlona";
+"Uix-mm-G9h.title" = "Displayed";
 
 /* Class = "NSMenuItem"; title = "Delete"; ObjectID = "upd-Ua-LkW"; */
-"upd-Ua-LkW.title" = "Usuń";
+"upd-Ua-LkW.title" = "Delete";
 
 /* Class = "NSMenu"; title = "Share"; ObjectID = "uWP-Ey-amX"; */
-"uWP-Ey-amX.title" = "Udostępnij";
+"uWP-Ey-amX.title" = "Share";
 
 /* Class = "NSMenuItem"; title = "Item"; ObjectID = "vaA-rx-ep2"; */
 "vaA-rx-ep2.title" = "Item";
@@ -102,15 +114,3 @@
 
 /* Class = "NSTextFieldCell"; title = "John Doe"; ObjectID = "wCw-o5-xho"; */
 "wCw-o5-xho.title" = "John Doe";
-
-/* Class = "NSTextFieldCell"; title = "20:31:03"; ObjectID = "5d8-jm-olo"; */
-"5d8-jm-olo.title" = "";
-
-/* Class = "NSTextFieldCell"; title = "📯"; ObjectID = "LTY-id-NWX"; */
-"LTY-id-NWX.title" = "";
-
-/* Class = "NSTextFieldCell"; placeholderString = "Testing"; ObjectID = "Pyy-u4-P2n"; */
-"Pyy-u4-P2n.placeholderString" = "";
-
-/* Class = "NSTextFieldCell"; title = "John Doe"; ObjectID = "Pyy-u4-P2n"; */
-"Pyy-u4-P2n.title" = "";

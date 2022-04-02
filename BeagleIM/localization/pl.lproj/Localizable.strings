@@ -1,479 +1,26 @@
-/* No account added to BeagleIM */
-"No account" = "Brak kont";
+/* alert window message part */
+" and node %@" = " i węzła";
 
-/* Not now, we will ask later */
-"Not now" = "Nie teraz";
-
-/* Should we add one now? */
-"To use BeagleIM you need to have the XMPP account configured. Would you like to add one now?" = "Aby używać BeagleIM musisz mieć konto skonfigurowane konto XMPP. Czy chcesz dodać je teraz?";
-
-/* Yes, we should add account */
-"Yes" = "Tak";
+/* alert window message */
+"%@ requests authorization to access information about you presence" = "%@ prosi o dostęp do informacji o twojej dostępności";
 
 /* private message mark */
 "(private message)" = "(wiadomość prywatna)";
 
-/* sender of PM */
-"From %@" = "Od %@";
-
-/* recipient of PM */
-"To %@" = "Do %@";
-
-/* Mark of unsent message */
-"Unsent" = "Niewysłana";
-
-/* placehoder of message entry field */
-"from %@..." = "z %@...";
-
-/* Deny sending files */
-"No" = "Nie";
-
-/* Title of alert to confirm sending files */
-"Sending files" = "Wysyłanie plików";
-
-/* Alert confirm sending files message */
-"You have pasted %d file(s). Do you wish to send them?" = "Wkleiłeś %d plik(ów). Czy chcesz je wysłać?";
-
-/* Select files to share */
-"Select files to share" = "Wybierz pliki do udostępnienia";
-
 /* replaces removed messages */
 "(this message has been removed)" = "(wiadomość została usunięta)";
 
-/* mark's message that was edited */
-"edited at %@" = "edytowano %@";
-
-/* Share menu title */
-"Share" = "Udostępnij";
-
-/* Unknown file */
-"Unknown file" = "Nieznany plik";
-
-/* context menu item */
-"Copy link" = "Kopiuj link";
-
-/* context menu item */
-"Copy messages" = "Kopiuj widomości";
-
-/* context menu item */
-"Copy text" = "Kopiuj tekst";
-
-/* Title informing that client failed to join */
-"Could not join" = "Nie udało się dołączyć";
-
-/* displayed in the chat log */
-"Displayed" = "Wyświetlona";
-
-/* Invitation to channel message */
-"Invitation to channel %@" = "Zaproszenie do kanału %@";
-
-/* Message informing that client failed to join a channel */
-"It was not possible to join a channel. The server returned an error: %@" = "Nie udało się dołączyć do kanału. Serwer zwrócił błąd: %@";
-
-/* OK */
-"OK" = "OK";
-
-/* displayed in the chat log */
-"Received" = "Odebrana";
-
-/* Label of unread messages */
-"Unread messages" = "Nieprzeczytane wiadomości";
-
-/* alert window message */
-"Are you sure that you want to leave and destroy channel %@?" = "Czy jesteś pewien że chcesz opuścić i usunąć kanał %@?";
-
-/* alert window */
-"Are you sure you want to retract that message?" = "Czy jesteś pewien że chcesz wycofać tą wiadomość?";
-
 /* Button */
-"Cancel" = "Anuluj";
+"Accept" = "Zaakceptuj";
 
-/* alert window title */
-"Channel destruction failed!" = "Nie udało się usunąć kanału!";
-
-/* context menu item */
-"Correct message" = "Popraw wiadomość";
-
-/* alert window title */
-"Could not publish details" = "Nie udało się opublikować szczegółów";
-
-/* alert window title */
-"Could not retrieve details" = "Nie udało się pobrać szczegółów";
-
-/* alert window title */
-"Destroy channel?" = "Usunąć kanał?";
-
-/* displayed in the tooltip */
-"Displayed by %@" = "Wyświetlono przez %@";
-
-/* alert window message */
-"Enter a nickname which you want to use in this channel." = "Wprowadź nick którego chcesz używać w tym kanale.";
-
-/* alert window message */
-"It was not possible to destroy channel %@. Server returned an error: %@" = "Nie udało się usunąc kanału. Serwer zwrócił błąd: %@";
-
-/* alert window message */
-"It was not possible to publish channel details: %@" = "Nie udało się opublikować szczegółów kanału: %@";
-
-/* alert window message */
-"It was not possible to retrieve channel details: %@" = "Nie udało się pobrać szczegółów kanału: %@";
-
-/* alert window title */
-"Nickname" = "Nick";
-
-/* displayed in the tooltip */
-"Received by %@" = "Otrzymano przez %@";
-
-/* context menu item */
-"Reply" = "Odpowiedz";
-
-/* Button */
-"Retract" = "Wycofaj";
-
-/* context menu item */
-"Retract message" = "Wycofaj wiadomość";
-
-/* Button */
-"Submit" = "Zatwierdź";
-
-/* alert window */
-"That message will be removed immediately and it's receives will be asked to remove it as well." = "Ta wiadmość zostanie usunięta natychmiast a jej odbiorcy zostaną poproszeni o jej usunięcie.";
-
-/* create channel view hine */
-"Anyone will be able to join." = "Każdy będzie mógł dołączyć.";
-
-/* alert window title */
-"Configuration change failed" = "Nie udało się zmienić konfiguracji";
-
-/* alert window message */
-"Could not apply room configuration on the server. Got following error: %@" = "Nie udało się zmienić konfiguracji pokoju. Wystąpił błąd: %@";
-
-/* alert window message */
-"Could not create channel on the server. Got following error: %@" = "Nie udało się utworzyć kanału. Wystąpił błąd: %@";
-
-/* alert window message */
-"Could not invite to channel on the server. Got following error: %@" = "Nie udało się zaprosić do kanału. Wystąpił błąd: %@";
-
-/* alert window message */
-"Could not join newly created channel '%@' on the server. Got following error: %@" = "Nie udało się dołączyć do nowoutworzonego kanału. Wystąpił błąd: %@";
-
-/* alert window title */
-"Could not retrieve config" = "Nie udało się pobrać konfiguracji";
-
-/* alert window title */
-"Enter password for room" = "Wprowadź hasło dla pokoju";
-
-/* alert window title */
-"Error occurred" = "Wystąpił błąd";
-
-/* alert window message */
-"It was not possible to change channel configuration: %@" = "Nie udalo się zmienić konfiguracji kanału: %@";
-
-/* alert window message */
-"It was not possible to join a room. The server returned an error: %@" = "Nie udało się dołączyć do pokoju. Serwer zwrócił błąd: %@";
-
-/* alert window message */
-"It was not possible to retrieve channel configuration: %@" = "Nie udało się pobrać konfiguracji kanału: %@";
-
-/* create channel view hine */
-"Only people with valid invitations will be able to join." = "Tylko osoby mające zaproszenia będą mogły dołączyć.";
-
-/* alert window message */
-"This room is password protected. You need to provide correct password to join this room." = "Ten pokój jest chroniony hasłem. Musisz podać poprawne hasło aby do niego dołączyć.";
-
-/* create channel view hine */
-"UNKNOWN" = "NIEZNANY";
-
-/* Button */
-"Add" = "Dodaj";
-
-/* alert window title */
-"Allow access" = "Pozwól na dostęp";
-
-/* alert windiw title */
-"Ban access" = "Zabroń dostępu";
-
-/* alert window message */
-"Enter a JID of user you want to add to the list." = "Wprowadź JID użytkownika którego chcesz dodać do listy.";
-
-/* alert window title */
-"Call failed" = "Połączenie nieudane.";
-
-/* encryption option */
-"Default" = "Domyślne";
-
-/* alert window message */
-"It was not possible to access camera or microphone. Please check permissions in the system settings" = "Nie udało się uzyskać dostępu do kamery lub mikrofonu. Proszę sprawdzić uprawnienia aplikacji w preferencjach systemowych";
-
-/* alert window message */
-"It was not possible to establish call" = "Nie udało się nawiązać połączenia";
-
-/* encryption option */
-"OMEMO" = "OMEMO";
-
-/* context menu item */
-"Resend message" = "Wyślij ponownie wiadomość";
-
-/* encryption option */
-"Unencrypted" = "Nieszyfrowane";
-
-/* marks used account */
-"using %@" = "używając %@";
-
-/* popup button label */
-"Add to contacts" = "Dodaj do kontaktów";
-
-/* contact details popup label */
-"Addresses" = "Adresy";
-
-/* attachment name in chats list */
-"Attachment" = "Załącznik";
-
-/* popup checkbox label */
-"Block contact" = "Zablokuj kontakt";
-
-/* Chats list group name */
-"Channels" = "Kanały";
-
-/* omemo key status */
-"Compromised" = "Skompromitowany";
-
-/* popup button label */
-"Confirm messages" = "Potwierdź doręczenie/przeczytanie";
-
-/* Chats list group name */
-"Conversations" = "Rozmowy";
-
-/* context menu item */
-"Delete" = "Usuń";
-
-/* Button */
-"Delete chat" = "Usuń rozmowę";
-
-/* alert window title */
-"Delete group chat?" = "Usunąć rozmowę grupową?";
-
-/* Chats list group name */
-"Direct messages" = "Bezpośrednie wiadomości";
-
-/* popup button label tooltip */
-"Disabling will disable syncing information about read messages between your devices!" = "Wyłączenie spowoduje wyłącznie synchronizacji informacji i przeczytanych wiadomościach pomiędzy twoimi urządzeniami!";
-
-/* contact details popup label */
-"Emails" = "Emaile";
-
-/* Chats list group name */
-"From unknown" = "Od nieznajomych";
-
-/* contact details popup label */
-"Home" = "Dom";
-
-/* invitation name in chats list */
-"Invitation" = "Zaproszenie";
-
-/* Chats list group name */
-"Invitations" = "Zaproszenia";
-
-/* Button */
-"Leave chat" = "Opóść rozmowę";
-
-/* /me replacement if no nickname found */
-"Me" = "Ja";
-
-/* popup checkbox label */
-"Mute notifications" = "Wycisz powiadomienia";
-
-/* attachments view  - no data */
-"No attachments" = "Brak załączników";
-
-/* context menu item */
-"Open" = "Otwórz";
-
-/* context menu item */
-"Open channel" = "Otwórz kanał";
-
-/* context menu item */
-"Open chat" = "Otwórz rozmowę";
-
-/* Chats list invitation type */
-"Presence subscription" = "Subskrypcja dostępności";
-
-/* context menu item */
-"Save" = "Zapisz";
-
-/* contact details popup label */
-"Telephone" = "Telefon";
-
-/* omemo key status */
-"Trusted" = "Zaufany";
-
-/* omemo key status */
-"Undecided" = "Nieorekślony";
-
-/* omemo key status */
-"Verified" = "Zweryfikowany";
-
-/* contact details popup label */
-"Work" = "Praca";
-
-/* alert window message */
-"You are leaving the group chat %@" = "Opuszczasz rozmowę grupową %@";
-
-/* Chats list invitation type */
-"Groupchat invitation" = "Zaproszenie do rozmowy grupowej";
-
-/* context menu item */
-"Ban user" = "Zablokuj użytkownika";
-
-/* alert window title */
-"Banning user %@ failed" = "Zablokowanie użytkownika %@ nie udało się";
-
-/* alert window title */
-"Could not create" = "Nie udało się utworzyć";
-
-/* alert window title */
-"Do you wish to ban user %@?" = "Czy chcesz zablokować użytkownika %@?";
-
-/* alert window message */
-"It was not possible to create a channel. The server returned an error: %@" = "Nie udało się utworzyć kanału. Serwer zwrócił błąd: %@";
-
-/* omemo encryption error */
-"It was not possible to send encrypted message due to encryption error" = "Nie udało się wysłać zaszyfrowanej wiadomości z uwagi na błąd";
-
-/* OMEMO decryption error */
-"Message decryption failed! Error code: %d" = "Dekodowanie wiadomości nie powiodło się! Kod błędu: %d";
-
-/* OMEMO decryption error */
-"Message was not encrypted for this devices" = "Wiadomość nie jest zaszyfrowana dla tego urządzenia";
-
-/* context menu item */
-"Private message" = "Wiadomość prywatna";
-
-/* context menu item */
-"Reply with PM" = "Odpowiedz w wiadomości prywatnej";
-
-/* context menu item */
-"Send" = "Wyślij";
-
-/* context menu item */
-"Send private message to %@" = "Wyślij wiadomość prywatną do %@";
-
-/* alert window message */
-"Server returned an error: %@" = "Serwer zwrócił błąd: %@";
-
-/* alert window message */
-"The channel %@ was created but it was not possible to join it. The server returned an error: %@" = "Kanał %@ został utworzony ale ie było możliwe dołączenie do niego. Serwer zwrócił błąd: %@";
-
-/* omemo encryption error */
-"There is no trusted device to send message to" = "Nie ma zaufanego urządzenia do wysłania wiadomości";
-
-/* alert window title */
-"Add member" = "Dodaj członka";
-
-/* popup item */
-"Admin" = "Admin";
-
-/* add member view field label */
-"Affiliation" = "Afiliacja";
-
-/* alert window title */
-"Authorization error" = "Błąd autoryzacji";
-
-/* alert window message */
-"Could not retrieve room configuration from the server. Got following error: %@" = "Nie udało się pobrać konfiguracji pokoju. Wystąpił błąd: %@";
-
-/* add member entry field placeholder */
-"Enter JID" = "Wprowadź JID";
-
-/* popup item */
-"Member" = "Członek";
-
-/* popup item */
-"Outcast" = "Wygnaniec";
-
-/* popup item */
-"Owner" = "Właściciel";
-
-/* alert window message */
-"Please provide user JID and affiliation to this room." = "Proszę wprowadzić JID użytkownika i jego afiliacje względem pokoju.";
-
-/* alert window message */
-"You are not allowed to modify list of affiliations for this room." = "Nie możesz modyfikować listy członków w tym pokoju.";
-
-/* alert window message */
-"You are not authorized to view memeber list of this room." = "Nie możesz przeglądać listy członków tego pokoju.";
-
-/* alert window message part */
-" and node %@" = " i węzła";
+/* error window title */
+"Access denied" = "Brak dostępu";
 
 /* alert window title */
 "Account is disabled" = "Konto jest wyłączone";
 
-/* add roster item label */
-"Add to" = "Dodaj do";
-
-/* add roster item label */
-"Allow presence subscription" = "Pozwól na subskrypcję obecności";
-
-/* join groupchat part */
-"and password" = "i hasło";
-
-/* connection status */
-"Connected" = "Połączony";
-
-/* add roster item label */
-"Contact name" = "Nazwa kontaktu";
-
-/* alert window message */
-"Could not execute command: %@" = "Nie udało się wykonać komendy: %@";
-
-/* alert window message */
-"Could not join room. Reason:\n%@" = "Nie udało się dołączyć do pokoju. Powód:\n%@";
-
-/* connection status */
-"Disconnected" = "Rozłączony";
-
-/* alert window title */
-"Enter new name" = "Wprowadź nową nazwę";
-
-/* connection status */
-"Inactive" = "Nieaktywny";
-
-/* alert window message */
-"It is not possible to open a chat when the account related to the chat is disabled!" = "Nie można otworzyć okna rozmowy gdy konto z którym jest powiązana jest wyłączone.";
-
-/* alert window title */
-"It was not possible to block %@" = "Nie udało się zablokować $@";
-
-/* alert window message */
-"It was not possible to retrieve disco#info details from %@\\%@: %@" = "Nie udało się pobrać szczegółów disco#info dla %@\\%@: %@";
-
-/* alert window message */
-"It was not possible to retrieve disco#items details from %@\\%@: %@" = "Nie udało się pobrać szczegółów disco#items dla %@\\%@: %@";
-
-/* service disco column name */
-"Name" = "Nazwa";
-
-/* service disco column name */
-"Node" = "Węzeł";
-
-/* join groupchat info label */
-"Please enter nickname %@ to enter to join groupchat at %@." = "Wprowadź nick %@ aby dołączyć do pokoju %@.";
-
-/* add roster item label */
-"Request presence subscription" = "Poproś o subskrypcję obecności";
-
-/* alert window title */
-"Room %@" = "Pokój %@";
-
-/* add roster item label */
-"Select account" = "Wybierz konto";
-
-/* alert window title */
-"Service Discovery Failure!" = "Wykrywanie usług zawiodło!";
-
-/* add roster item label */
-"XMPP JID" = "XMPP JID";
+/* vcard editor */
+"Account is not connected" = "Konto nie jest połączone";
 
 /* alert window message */
 "Account needs to be active and connected to remove the acocunt from the server" = "Konto musi być aktywne i połączone aby móć je usunąć z serwera";
@@ -484,107 +31,194 @@
 /* alert window title */
 "Account removal failure" = "Nie udało się usunęć konta";
 
+/* Button */
+"Add" = "Dodaj";
+
+/* alert window title */
+"Add member" = "Dodaj członka";
+
+/* add roster item label */
+"Add to" = "Dodaj do";
+
+/* popup button label */
+"Add to contacts" = "Dodaj do kontaktów";
+
+/* contact details popup label */
+"Addresses" = "Adresy";
+
+/* popup item */
+"Admin" = "Admin";
+
+/* add member view field label */
+"Affiliation" = "Afiliacja";
+
+/* alert window title */
+"Allow access" = "Pozwól na dostęp";
+
+/* add roster item label */
+"Allow presence subscription" = "Pozwól na subskrypcję obecności";
+
+/* invite to meeting controller */
+"Allowing access to meeting failed" = "Nie udało się pozwolić na dostęp do spotkania";
+
+/* settings */
+"Alternate colors for incoming/outgoing messages" = "Różne kolory dla przychodzących/wychodzących wiadomości";
+
+/* settings */
+"Always" = "Zawsze";
+
+/* join groupchat part */
+"and password" = "i hasło";
+
+/* create channel view hine */
+"Anyone will be able to join." = "Każdy będzie mógł dołączyć.";
+
 /* setting */
 "Appearance" = "Wygląd";
+
+/* alert window message */
+"Are you sure that you want to leave and destroy channel %@?" = "Czy jesteś pewien że chcesz opuścić i usunąć kanał %@?";
+
+/* alert window */
+"Are you sure you want to retract that message?" = "Czy jesteś pewien że chcesz wycofać tą wiadomość?";
+
+/* settings */
+"Ask to add to roster" = "Pytaj czy dodać do rostera";
+
+/* attachment name in chats list */
+"Attachment" = "Załącznik";
 
 /* alert window title */
 "Authentication failed" = "Autoryzacja nie powiodła się";
 
+/* alert window title */
+"Authorization error" = "Błąd autoryzacji";
+
+/* alert window title */
+"Authorization request" = "Autoryzacja nie powiodła się";
+
 /* setting */
 "Automatic" = "Automatyczny";
+
+/* settings */
+"Automatic attachments download" = "Automatyczne pobieranie załączników";
+
+/* action label */
+"Ban" = "Zablokuj";
+
+/* alert windiw title */
+"Ban access" = "Zabroń dostępu";
+
+/* context menu item */
+"Ban user" = "Zablokuj użytkownika";
+
+/* alert window title */
+"Banning user %@ failed" = "Zablokowanie użytkownika %@ nie udało się";
+
+/* popup checkbox label */
+"Block contact" = "Zablokuj kontakt";
+
+/* video call conroller */
+"Call declined" = "Połączenie odrzucone";
+
+/* video call conroller */
+"Call ended" = "Połaczenie zakończone";
+
+/* alert window title */
+"Call failed" = "Połączenie nieudane.";
+
+/* error message text */
+"Can't show your location" = "Nie można pokazać położenia";
+
+/* Button */
+"Cancel" = "Anuluj";
+
+/* alert window title */
+"Channel destruction failed!" = "Nie udało się usunąć kanału!";
+
+/* Chats list group name */
+"Channels" = "Kanały";
 
 /* setting */
 "Chats list style" = "Styl listy rozmów";
 
-/* setting */
-"Dark" = "Ciemny";
-
-/* setting */
-"Default encryption" = "Domyślne szyfrowanie";
-
-/* setting */
-"Enable link previews" = "Włącz podgląd linków";
-
-/* alert window message */
-"It was not possible to contact XMPP server and sign in." = "Nie udało się połączyć z serwerem XMPP i zalogować";
-
-/* setting */
-"Large" = "Duży";
-
-/* setting */
-"Light" = "Jasny";
-
-/* alert window message */
-"Login and password do not match." = "Login i hasło nie pasują";
-
-/* setting */
-"Markdown" = "Markdown";
-
-/* setting */
-"Message formatting" = "Formatowanie wiadomości";
-
-/* setting */
-"Minimal" = "Minimalny";
-
-/* setting */
-"None" = "Brak";
-
-/* setting */
-"Notifications" = "Powiadomienia";
-
-/* account view */
-"Password" = "Hasło";
-
-/* Button */
-"Remove from application" = "Usuń z aplikacji";
-
-/* Button */
-"Remove from server" = "Usuń z serwera";
-
-/* account view placeholder */
-"Required" = "Wymagane";
-
-/* setting */
-"Sent images quality" = "Jakość wysyłanych zdjęć";
-
-/* setting */
-"Sent videos quality" = "Jakość wysyłanych fimów";
-
-/* setting */
-"Set as default app" = "Ustaw jako domyślną aplikację";
-
-/* alert window message */
-"Should the account %@ be removed from the server as well?" = "Czy usunąć konto %@ również z serwera?";
-
-/* setting */
-"Show channels and chats in merged list" = "Pokaż kanały i rozmowy w jednej liście";
-
-/* setting */
-"Show emoticons" = "Pokaż emotikony";
-
-/* setting */
-"Show for messages from unknown senders" = "Pokaż dla nieznajomych";
-
-/* setting */
-"Show system menu icon" = "Pokaż ikonę w menu systemowym";
-
-/* setting */
-"Small" = "Mały";
-
-/* setting */
-"Spellchecking" = "Sprawdzanie pisowni";
-
-/* account view */
-"Username" = "Nazwa użytkownika";
-
-/* setting */
-"XMPP URI" = "XMPP URI";
-
-/* vcard editor */
-"Account is not connected" = "Konto nie jest połączone";
-
 /* vcard editor */
 "Code" = "Kod pocztowy";
+
+/* omemo key status */
+"Compromised" = "Skompromitowany";
+
+/* alert window title */
+"Configuration change failed" = "Nie udało się zmienić konfiguracji";
+
+/* popup button label */
+"Confirm messages" = "Potwierdź doręczenie/przeczytanie";
+
+/* connection status */
+"Connected" = "Połączony";
+
+/* video call conroller */
+"Connecting..." = "Łączenie";
+
+/* add roster item label */
+"Contact name" = "Nazwa kontaktu";
+
+/* Chats list group name */
+"Conversations" = "Rozmowy";
+
+/* context menu item */
+"Copy link" = "Kopiuj link";
+
+/* context menu item */
+"Copy messages" = "Kopiuj widomości";
+
+/* context menu item */
+"Copy text" = "Kopiuj tekst";
+
+/* context menu item */
+"Correct message" = "Popraw wiadomość";
+
+/* alert window message */
+"Could not apply room configuration on the server. Got following error: %@" = "Nie udało się zmienić konfiguracji pokoju. Wystąpił błąd: %@";
+
+/* alert window title */
+"Could not create" = "Nie udało się utworzyć";
+
+/* alert window message */
+"Could not create channel on the server. Got following error: %@" = "Nie udało się utworzyć kanału. Wystąpił błąd: %@";
+
+/* media helper sharing error */
+"Could not detect MIME type of a file." = "Nie udało się rozpozna typu MIIME pliku";
+
+/* alert window message */
+"Could not execute command: %@" = "Nie udało się wykonać komendy: %@";
+
+/* alert window message */
+"Could not invite to channel on the server. Got following error: %@" = "Nie udało się zaprosić do kanału. Wystąpił błąd: %@";
+
+/* Title informing that client failed to join */
+"Could not join" = "Nie udało się dołączyć";
+
+/* alert window message */
+"Could not join newly created channel '%@' on the server. Got following error: %@" = "Nie udało się dołączyć do nowoutworzonego kanału. Wystąpił błąd: %@";
+
+/* alert window message */
+"Could not join room. Reason:\n%@" = "Nie udało się dołączyć do pokoju. Powód:\n%@";
+
+/* alert window title */
+"Could not publish details" = "Nie udało się opublikować szczegółów";
+
+/* alert window title */
+"Could not retrieve config" = "Nie udało się pobrać konfiguracji";
+
+/* alert window title */
+"Could not retrieve details" = "Nie udało się pobrać szczegółów";
+
+/* media helper sharing error */
+"Could not retrieve file size." = "Nie udało się określić wielkości pliku";
+
+/* alert window message */
+"Could not retrieve room configuration from the server. Got following error: %@" = "Nie udało się pobrać konfiguracji pokoju. Wystąpił błąd: %@";
 
 /* vcard editor */
 "Could not retrive current version from the server." = "Nie udało się pobrać bieżącej wersji z serwera.";
@@ -595,53 +229,53 @@
 /* vcard editor */
 "Country" = "Kraj";
 
-/* vcard editor */
-"Enter email address" = "Wprowadź adres email";
+/* setting */
+"Dark" = "Ciemny";
 
-/* vcard editor */
-"Enter phone number" = "Wprowadź numer telefonu";
+/* Button */
+"Decline" = "Odrzuć";
+
+/* encryption option */
+"Default" = "Domyślne";
 
 /* setting */
-"From %@ until %@" = "Od %@ do %@";
+"Default encryption" = "Domyślne szyfrowanie";
 
-/* setting */
-"It is not possible to automatically verify server certificate for %@. Please review certificate details:" = "Nie udało się automatycznie zweryfikować certyfikatu serwera %@. Proszę sprawdzić szczegóły certyfikatu:";
+/* context menu item */
+"Delete" = "Usuń";
 
-/* vcard editor */
-"Locality" = "Miejscowość";
+/* Button */
+"Delete chat" = "Usuń rozmowę";
 
-/* vcard editor */
-"Publication of avatar failed" = "Publikacja avatara nie udała się";
+/* alert window title */
+"Delete group chat?" = "Usunąć rozmowę grupową?";
 
-/* vcard editor */
-"Publication of new version of private VCard failed" = "Publikacja nowej wersji prywatnej wizytówki nie powiodło się";
+/* button label */
+"Destroy" = "Zniszcz";
 
-/* vcard editor */
-"Publication of new version of VCard failed" = "Publikacja nowej wersji wizytówki nie powiodło się";
+/* alert window title */
+"Destroy channel?" = "Usunąć kanał?";
 
-/* setting */
-"Self-Signed" = "Samopodpisany";
+/* device */
+"Device" = "Urządzenie";
 
-/* vcard editor - alert window title */
-"Should avatar be updated?" = "Czy zaktualizować awatar?";
+/* Chats list group name */
+"Direct messages" = "Bezpośrednie wiadomości";
 
-/* setting */
-"SSL certificate of %@ could not be verified" = "Certyfikat SSL nie mógł być zweryfikowany";
+/* popup button label tooltip */
+"Disabling will disable syncing information about read messages between your devices!" = "Wyłączenie spowoduje wyłącznie synchronizacji informacji i przeczytanych wiadomościach pomiędzy twoimi urządzeniami!";
 
-/* vcard editor */
-"Street" = "Ulica";
+/* connection status */
+"Disconnected" = "Rozłączony";
 
-/* setting */
-"Unknown" = "Nieznany";
+/* displayed in the chat log */
+"Displayed" = "Wyświetlona";
 
-/* settings */
-"Alternate colors for incoming/outgoing messages" = "Różne kolory dla przychodzących/wychodzących wiadomości";
+/* displayed in the tooltip */
+"Displayed by %@" = "Wyświetlono przez %@";
 
-/* settings */
-"Always" = "Zawsze";
-
-/* settings */
-"Automatic download size limit" = "Limit rozmiaru pliku do automatycznego pobierania";
+/* video call controller */
+"Do you want to accept this call?" = "Czy chcesz odebrać to połączenie?";
 
 /* OMEMO settings */
 "Do you want to deactivate and remove selected identities?" = "Czy chcesz dezaktywować i usunąć wybrane tożsamości?";
@@ -652,149 +286,65 @@
 /* OMEMO settings */
 "Do you want to mark selected identities as trusted?" = "Czy chcesz oznaczyć wskazane tożsamości jako zaufane?";
 
+/* alert window title */
+"Do you wish to ban user %@?" = "Czy chcesz zablokować użytkownika %@?";
+
 /* settings */
 "Edit keywords" = "Edytuj słowa kluczowe";
+
+/* mark's message that was edited */
+"edited at %@" = "edytowano %@";
+
+/* contact details popup label */
+"Emails" = "Emaile";
 
 /* settings */
 "Enable groupchat bookmarks sync" = "Włącz synchronizację zakładej rozmów grupowych";
 
+/* setting */
+"Enable link previews" = "Włącz podgląd linków";
+
 /* settings */
 "Enabled" = "Włączone";
 
-/* settings */
-"Experimental" = "Eksperymentalne";
+/* alert window message */
+"Enter a JID of user you want to add to the list." = "Wprowadź JID użytkownika którego chcesz dodać do listy.";
 
-/* settings */
-"Ignore VoIP support check" = "Ignoruj sprawdzanie wsparcia dla VoIP";
+/* alert window message */
+"Enter a JID of user you want to ban." = "Wprowadź JID użytkownika którego chcesz zablokować.";
 
-/* OMEMO settings */
-"Key not generated!" = "Klucz nie został wygenerowany!";
+/* alert window message */
+"Enter a nickname which you want to use in this channel." = "Wprowadź nick którego chcesz używać w tym kanale.";
 
-/* settings */
-"Keywords" = "Słowa kluczowe";
+/* contact selector placeholder */
+"Enter contact name or jid" = "Wprowadź nazwę kontaktu lub jid";
 
-/* settings */
-"Let your contacts know when you have received and read their messages. Disabling will disable syncing information about read messages between your devices!" = "Pozwól twoim kontaktom wiedzieć że odebrałeś i odczytałeś ich wiadomosci. Wyłączenie tej opcji wyłączy synchronizację informacji o przeczytaniu wiadomosci pomiędzy twoimi urządzeniami!";
+/* vcard editor */
+"Enter email address" = "Wprowadź adres email";
 
-/* settings */
-"Make them bold" = "Pogrub je";
+/* add member entry field placeholder */
+"Enter JID" = "Wprowadź JID";
 
-/* settings */
-"Message grouping" = "Grupowanie wiadomości";
+/* alert window title */
+"Enter new name" = "Wprowadź nową nazwę";
 
-/* settings */
-"Never" = "Nigdy";
+/* alert window title */
+"Enter password for room" = "Wprowadź hasło dla pokoju";
 
-/* settings */
-"Open logs directory" = "Otwórz katalog z logami";
+/* vcard editor */
+"Enter phone number" = "Wprowadź numer telefonu";
 
-/* register account error */
-"Provided values are not acceptable" = "Podane wartosci są nieakceptowalne";
-
-/* register account error */
-"Registration failed!" = "Rejestracja nie powiodła się!";
-
-/* register account error */
-"Registration is not supported by this server" = "Rejestracja nie jest wspierana przez ten serwer";
-
-/* register account error */
-"Server did not respond on registration request" = "Serwer nie odpowiedział na prośbę o rejestrację konta";
-
-/* register account error */
-"Server returned error: %@" = "Serwer zwrócił błąd: %@";
-
-/* register account error */
-"Service is not available at this time." = "Usługa nie jest obecnie dostępna.";
-
-/* settings */
-"Show advanced XMPP features" = "Pokaż zaawansowane opcje XMPP";
-
-/* settings */
-"Smart" = "Inteligentnie";
-
-/* settings */
-"Use public STUN servers" = "Używaj publicznych serwerów STUN";
-
-/* register account error */
-"User with provided username already exists" = "Użytkownik o podanej nazwie już istnieje";
-
-/* settings */
-"Password change failed" = "Nie udało się zmienić hasła";
-
-/* settings */
-"Password changed" = "Hasło zostało zmienione";
-
-/* settings */
-"Server returned following error: %$" = "Serwer zwrócił następujący błąd: %@";
-
-/* settings */
-"To change password for account %$ please fill out this form:" = "Any zmienić hasło dla konta %@, proszę wypełnić ten formularz:";
+/* xml entry controller */
+"Error" = "Błąd";
 
 /* account manager error */
 "Error code" = "Kod błędu";
 
-/* account manager error */
-"It was not possible to modify account." = "Nie udało się zmodyfikować konta";
-
-/* account manager error */
-"Try again. If removal failed, try accessing Keychain to update account credentials manually." = "Proszę spróbować ponownie. Jeśli usuwanie sie niepowiedzie, proszę użyć Dostęp do pęku kluczy aby zaktualizować hasło ręcznie.";
-
-/* muc module - room error */
-"Invalid password" = "Nieprawidłowe hasło";
-
-/* muc module - room error */
-"Maximum number of users exceeded" = "Maksymalna liczba uczestników przekroczona";
-
-/* muc module - room error */
-"Membership is required to access the room" = "Członkowstwo jet wymagane by dołączyć do pokoju";
-
-/* muc module - room error */
-"Nickname already in use" = "Nick jest już zajęty";
-
-/* muc module - room error */
-"Nickname is locked down" = "Nick jest zablokowany";
-
-/* muc module - room error */
-"Room is locked" = "Pokój jest zablokowany";
-
-/* muc module - room error */
-"User is banned" = "Użytkownik jest zablokowany";
-
-/* alert window message */
-"%@ requests authorization to access information about you presence" = "%@ prosi o dostęp do informacji o twojej dostępności";
-
-/* Button */
-"Accept" = "Zaakceptuj";
-
-/* invite to meeting controller */
-"Allowing access to meeting failed" = "Nie udało się pozwolić na dostęp do spotkania";
-
 /* alert window title */
-"Authorization request" = "Autoryzacja nie powiodła się";
+"Error occurred" = "Wystąpił błąd";
 
-/* video call conroller */
-"Call declined" = "Połączenie odrzucone";
-
-/* video call conroller */
-"Call ended" = "Połaczenie zakończone";
-
-/* video call conroller */
-"Connecting..." = "Łączenie";
-
-/* media helper sharing error */
-"Could not detect MIME type of a file." = "Nie udało się rozpozna typu MIIME pliku";
-
-/* media helper sharing error */
-"Could not retrieve file size." = "Nie udało się określić wielkości pliku";
-
-/* Button */
-"Decline" = "Odrzuć";
-
-/* video call controller */
-"Do you want to accept this call?" = "Czy chcesz odebrać to połączenie?";
-
-/* xml entry controller */
-"Error" = "Błąd";
+/* settings */
+"Experimental" = "Eksperymentalne";
 
 /* jingle manager */
 "Failed to initialize RTC SSL for WebRTC!" = "Nie udało się zainicjować RTC SSL dla WebRTC!";
@@ -811,6 +361,30 @@
 /* alert window message */
 "File upload completed but it was not confirmed correctly by your server. Do you wish to proceed anyway?" = "Plik został przesłany ale serwer nie potwierdził poprawności jego przesłania. Czy chcesz kontynuować?";
 
+/* settings */
+"Filesize limit" = "Limit rozmiaru pliku";
+
+/* video call menu action */
+"Fill frame" = "Wypełnij ramkę";
+
+/* video call menu action */
+"Fit to frame" = "Dopasuj do ramki";
+
+/* sender of PM */
+"From %@" = "Od %@";
+
+/* setting */
+"From %@ until %@" = "Od %@ do %@";
+
+/* placehoder of message entry field */
+"from %@..." = "z %@...";
+
+/* Chats list group name */
+"From unknown" = "Od nieznajomych";
+
+/* Chats list invitation type */
+"Groupchat invitation" = "Zaproszenie do rozmowy grupowej";
+
 /* image quality
    video quality */
 "High" = "Wysoka";
@@ -818,11 +392,20 @@
 /* image quality */
 "Highest" = "Najwyższa";
 
+/* contact details popup label */
+"Home" = "Dom";
+
 /* alert window message - part 1 */
 "HTTP File Upload server presented invalid SSL certificate for %@.\nReceived certificate %@ (%@) is issued by %@.\n\nWould you like to connect to the server anyway?" = "Server HTTP przedstawił nieprawidłowy certyfikat SSL dla %@.\nOtrzymany certyfikat %@(%@) został wydany przez %@.\n\nCzy chcesz kontynuować?";
 
 /* alert window message - part 1 */
 "HTTP File Upload server presented invalid SSL certificate for %@.\nReceived certificate %@ (%@) is self-signed!\n\nWould you like to connect to the server anyway?" = "Server HTTP przedstawił nieprawidłowy certyfikat SSL dla %@.\nOtrzymany certyfikat %@(%@) jest samopodpisany.\n\nCzy chcesz kontynuować?";
+
+/* settings */
+"Ignore VoIP support check" = "Ignoruj sprawdzanie wsparcia dla VoIP";
+
+/* connection status */
+"Inactive" = "Nieaktywny";
 
 /* video call controller */
 "Incoming audio call from %@" = "Przychodzące połączenia audio od %@";
@@ -830,31 +413,146 @@
 /* video call controller */
 "Incoming video call from %@" = "Przychodzące połączenie wideo od %@";
 
+/* muc module - room error */
+"Invalid password" = "Nieprawidłowe hasło";
+
 /* alert window title */
 "Invalid SSL certificate" = "Nieprawidłowy certyfikat SSL";
+
+/* invitation name in chats list */
+"Invitation" = "Zaproszenie";
+
+/* Invitation to channel message */
+"Invitation to channel %@" = "Zaproszenie do kanału %@";
 
 /* alert window title
    invitation alert - title */
 "Invitation to groupchat" = "Zaproszenie do rozmowy grupowej";
 
+/* Chats list group name */
+"Invitations" = "Zaproszenia";
+
+/* setting */
+"It is not possible to automatically verify server certificate for %@. Please review certificate details:" = "Nie udało się automatycznie zweryfikować certyfikatu serwera %@. Proszę sprawdzić szczegóły certyfikatu:";
+
+/* alert window message */
+"It is not possible to open a chat when the account related to the chat is disabled!" = "Nie można otworzyć okna rozmowy gdy konto z którym jest powiązana jest wyłączone.";
+
+/* alert window message */
+"It was not possible to access camera or microphone. Please check permissions in the system settings" = "Nie udało się uzyskać dostępu do kamery lub mikrofonu. Proszę sprawdzić uprawnienia aplikacji w preferencjach systemowych";
+
 /* media helper sharing error */
 "It was not possible to access the file." = "Nie udało się użyskać dostępu do pliku";
+
+/* alert window title */
+"It was not possible to block %@" = "Nie udało się zablokować $@";
+
+/* alert window message */
+"It was not possible to change channel configuration: %@" = "Nie udalo się zmienić konfiguracji kanału: %@";
+
+/* alert window message */
+"It was not possible to contact XMPP server and sign in." = "Nie udało się połączyć z serwerem XMPP i zalogować";
+
+/* alert window message */
+"It was not possible to create a channel. The server returned an error: %@" = "Nie udało się utworzyć kanału. Serwer zwrócił błąd: %@";
 
 /* create meet controller */
 "It was not possible to create a meeting. Received an error: %@" = "Nie udało się utworzyć spotkania. Wystąpił błąd %@";
 
+/* alert window message */
+"It was not possible to destroy channel %@. Server returned an error: %@" = "Nie udało się usunąc kanału. Serwer zwrócił błąd: %@";
+
+/* alert window message */
+"It was not possible to establish call" = "Nie udało się nawiązać połączenia";
+
 /* invite to meeting controller */
 "It was not possible to grant selected users access to the meeting. Received an error: %@" = "Nie udało się nadać prawa dostępu do spotkania. Wystąpił błąd: %@";
+
+/* Message informing that client failed to join a channel */
+"It was not possible to join a channel. The server returned an error: %@" = "Nie udało się dołączyć do kanału. Serwer zwrócił błąd: %@";
+
+/* alert window message */
+"It was not possible to join a room. The server returned an error: %@" = "Nie udało się dołączyć do pokoju. Serwer zwrócił błąd: %@";
 
 /* meet controller */
 "It was not possible to kick out %@. Server returned an error: %@" = "Nie udało się wyrzucic %@ ze spotkania. Serwer zwrócił błąd: %@";
 
+/* account manager error */
+"It was not possible to modify account." = "Nie udało się zmodyfikować konta";
+
+/* alert window message */
+"It was not possible to publish channel details: %@" = "Nie udało się opublikować szczegółów kanału: %@";
+
+/* alert window message */
+"It was not possible to retrieve channel configuration: %@" = "Nie udało się pobrać konfiguracji kanału: %@";
+
+/* alert window message */
+"It was not possible to retrieve channel details: %@" = "Nie udało się pobrać szczegółów kanału: %@";
+
+/* alert window message */
+"It was not possible to retrieve disco#info details from %@\\%@: %@" = "Nie udało się pobrać szczegółów disco#info dla %@\\%@: %@";
+
+/* alert window message */
+"It was not possible to retrieve disco#items details from %@\\%@: %@" = "Nie udało się pobrać szczegółów disco#items dla %@\\%@: %@";
+
+/* omemo encryption error */
+"It was not possible to send encrypted message due to encryption error" = "Nie udało się wysłać zaszyfrowanej wiadomości z uwagi na błąd";
+
 /* alert window message */
 "It was not possible to share %d item(s) due to following errors:\n %@" = "Nie udało się udostępnić %d rzeczy z uwagi na błędy: %@";
+
+/* OMEMO settings */
+"Key not generated!" = "Klucz nie został wygenerowany!";
+
+/* settings */
+"Keywords" = "Słowa kluczowe";
+
+/* action label */
+"Kick out" = "Wyrzuć";
+
+/* setting */
+"Large" = "Duży";
+
+/* button label */
+"Leave" = "Opuść";
+
+/* Button */
+"Leave chat" = "Opóść rozmowę";
+
+/* leaving channel title */
+"Leaving channel" = "Opuszczanie kanału";
+
+/* settings */
+"Let your contacts know when you have received and read their messages. Disabling will disable syncing information about read messages between your devices!" = "Pozwól twoim kontaktom wiedzieć że odebrałeś i odczytałeś ich wiadomosci. Wyłączenie tej opcji wyłączy synchronizację informacji o przeczytaniu wiadomosci pomiędzy twoimi urządzeniami!";
+
+/* setting */
+"Light" = "Jasny";
+
+/* vcard editor */
+"Locality" = "Miejscowość";
+
+/* attachemt label for conversations list
+   location name in chats list */
+"Location" = "Położenie";
+
+/* alert window message */
+"Login and password do not match." = "Login i hasło nie pasują";
 
 /* image quality
    video quality */
 "Low" = "Niska";
+
+/* settings */
+"Make them bold" = "Pogrub je";
+
+/* setting */
+"Markdown" = "Markdown";
+
+/* muc module - room error */
+"Maximum number of users exceeded" = "Maksymalna liczba uczestników przekroczona";
+
+/* /me replacement if no nickname found */
+"Me" = "Ja";
 
 /* image quality
    video quality */
@@ -869,21 +567,216 @@
 /* meet controller */
 "Meeting has ended" = "Spotkanie skończyło się";
 
+/* popup item */
+"Member" = "Członek";
+
+/* muc module - room error */
+"Membership is required to access the room" = "Członkowstwo jet wymagane by dołączyć do pokoju";
+
+/* OMEMO decryption error */
+"Message decryption failed! Error code: %d" = "Dekodowanie wiadomości nie powiodło się! Kod błędu: %d";
+
+/* setting */
+"Message formatting" = "Formatowanie wiadomości";
+
+/* settings */
+"Message grouping" = "Grupowanie wiadomości";
+
+/* OMEMO decryption error */
+"Message was not encrypted for this devices" = "Wiadomość nie jest zaszyfrowana dla tego urządzenia";
+
+/* setting */
+"Minimal" = "Minimalny";
+
+/* list of users with this role */
+"Moderators" = "Moderatorzy";
+
+/* popup checkbox label */
+"Mute notifications" = "Wycisz powiadomienia";
+
+/* service disco column name */
+"Name" = "Nazwa";
+
+/* settings */
+"Never" = "Nigdy";
+
 /* video call conroller */
 "New call" = "Nowe połączenie";
+
+/* alert window title */
+"Nickname" = "Nick";
+
+/* muc module - room error */
+"Nickname already in use" = "Nick jest już zajęty";
+
+/* muc module - room error */
+"Nickname is locked down" = "Nick jest zablokowany";
+
+/* Deny sending files */
+"No" = "Nie";
+
+/* No account added to BeagleIM */
+"No account" = "Brak kont";
+
+/* attachments view  - no data */
+"No attachments" = "Brak załączników";
+
+/* service disco column name */
+"Node" = "Węzeł";
+
+/* setting */
+"None" = "Brak";
+
+/* Not now, we will ask later */
+"Not now" = "Nie teraz";
+
+/* setting */
+"Notifications" = "Powiadomienia";
+
+/* OK */
+"OK" = "OK";
+
+/* encryption option */
+"OMEMO" = "OMEMO";
+
+/* create channel view hine */
+"Only people with valid invitations will be able to join." = "Tylko osoby mające zaproszenia będą mogły dołączyć.";
+
+/* context menu item */
+"Open" = "Otwórz";
+
+/* context menu item */
+"Open channel" = "Otwórz kanał";
+
+/* context menu item */
+"Open chat" = "Otwórz rozmowę";
+
+/* settings */
+"Open logs directory" = "Otwórz katalog z logami";
+
+/* setting */
+"Opening chat with JID" = "Otwieranie rozmowy z JID";
 
 /* image quality
    video quality */
 "Original" = "Oryginalna";
 
+/* popup item */
+"Outcast" = "Wygnaniec";
+
+/* popup item */
+"Owner" = "Właściciel";
+
+/* list of users with this role */
+"Participants" = "Uczestnicy";
+
+/* button label */
+"Pass ownership" = "Zmień właściciela";
+
+/* account view */
+"Password" = "Hasło";
+
+/* settings */
+"Password change failed" = "Nie udało się zmienić hasła";
+
+/* settings */
+"Password changed" = "Hasło zostało zmienione";
+
+/* label to notify user that playing is in progress */
+"Playing" = "Odtwarzanie";
+
+/* join groupchat info label */
+"Please enter nickname %@ to enter to join groupchat at %@." = "Wprowadź nick %@ aby dołączyć do pokoju %@.";
+
+/* alert window message */
+"Please provide user JID and affiliation to this room." = "Proszę wprowadzić JID użytkownika i jego afiliacje względem pokoju.";
+
 /* media helper sharing error */
 "Please try again later." = "Spróbuj ponownie później";
+
+/* Chats list invitation type */
+"Presence subscription" = "Subskrypcja dostępności";
+
+/* context menu item */
+"Private message" = "Wiadomość prywatna";
+
+/* register account error */
+"Provided values are not acceptable" = "Podane wartosci są nieakceptowalne";
+
+/* vcard editor */
+"Publication of avatar failed" = "Publikacja avatara nie udała się";
+
+/* vcard editor */
+"Publication of new version of private VCard failed" = "Publikacja nowej wersji prywatnej wizytówki nie powiodło się";
+
+/* vcard editor */
+"Publication of new version of VCard failed" = "Publikacja nowej wersji wizytówki nie powiodło się";
+
+/* displayed in the chat log */
+"Received" = "Odebrana";
+
+/* displayed in the tooltip */
+"Received by %@" = "Otrzymano przez %@";
+
+/* label to notify user that we record */
+"Recorded" = "Nagrano";
+
+/* label to notify user that recording is in progress */
+"Recording" = "Nagrywanie";
+
+/* register account error */
+"Registration failed!" = "Rejestracja nie powiodła się!";
+
+/* register account error */
+"Registration is not supported by this server" = "Rejestracja nie jest wspierana przez ten serwer";
 
 /* Button */
 "Reject" = "Odrzuć";
 
+/* Button */
+"Remove from application" = "Usuń z aplikacji";
+
+/* Button */
+"Remove from server" = "Usuń z serwera";
+
+/* context menu item */
+"Reply" = "Odpowiedz";
+
+/* context menu item */
+"Reply with PM" = "Odpowiedz w wiadomości prywatnej";
+
+/* add roster item label */
+"Request presence subscription" = "Poproś o subskrypcję obecności";
+
+/* account view placeholder */
+"Required" = "Wymagane";
+
+/* context menu item */
+"Resend message" = "Wyślij ponownie wiadomość";
+
+/* Button */
+"Retract" = "Wycofaj";
+
+/* context menu item */
+"Retract message" = "Wycofaj wiadomość";
+
 /* video call conroller */
 "Ringing..." = "Dzwoni...";
+
+/* alert window title */
+"Room %@" = "Pokój %@";
+
+/* muc module - room error */
+"Room is locked" = "Pokój jest zablokowany";
+
+/* context menu item */
+"Save" = "Zapisz";
+
+/* add roster item label */
+"Select account" = "Wybierz konto";
+
+/* Select files to share */
+"Select files to share" = "Wybierz pliki do udostępnienia";
 
 /* media helper question */
 "Select quality" = "Wybierz jakość";
@@ -897,20 +790,185 @@
 /* create meet controller */
 "Selected account does not support creating a meeting. Please select a different account." = "Wybierane konto nie wspiera spotkań. Proszę wybrać inne konto.";
 
+/* setting */
+"Self-Signed" = "Samopodpisany";
+
+/* context menu item */
+"Send" = "Wyślij";
+
+/* context menu item */
+"Send private message to %@" = "Wyślij wiadomość prywatną do %@";
+
+/* Title of alert to confirm sending files */
+"Sending files" = "Wysyłanie plików";
+
+/* setting */
+"Sent images quality" = "Jakość wysyłanych zdjęć";
+
+/* setting */
+"Sent videos quality" = "Jakość wysyłanych fimów";
+
 /* media helper sharing error */
 "Server did not confirm file upload correctly." = "Serwer nie potwierdził poprawnego odebrania pliku.";
+
+/* register account error */
+"Server did not respond on registration request" = "Serwer nie odpowiedział na prośbę o rejestrację konta";
+
+/* alert window message */
+"Server returned an error: %@" = "Serwer zwrócił błąd: %@";
+
+/* register account error */
+"Server returned error: %@" = "Serwer zwrócił błąd: %@";
+
+/* settings */
+"Server returned following error: %$" = "Serwer zwrócił następujący błąd: %@";
+
+/* alert window title */
+"Service Discovery Failure!" = "Wykrywanie usług zawiodło!";
+
+/* register account error */
+"Service is not available at this time." = "Usługa nie jest obecnie dostępna.";
+
+/* setting */
+"Set as default app" = "Ustaw jako domyślną aplikację";
+
+/* Share menu title */
+"Share" = "Udostępnij";
 
 /* alert window title */
 "Sharing error" = "Błąd udostępniania";
 
+/* vcard editor - alert window title */
+"Should avatar be updated?" = "Czy zaktualizować awatar?";
+
+/* alert window message */
+"Should the account %@ be removed from the server as well?" = "Czy usunąć konto %@ również z serwera?";
+
+/* settings */
+"Show advanced XMPP features" = "Pokaż zaawansowane opcje XMPP";
+
+/* setting */
+"Show channels and chats in merged list" = "Pokaż kanały i rozmowy w jednej liście";
+
+/* setting */
+"Show emoticons" = "Pokaż emotikony";
+
+/* setting */
+"Show for messages from unknown senders" = "Pokaż dla nieznajomych";
+
+/* context menu item */
+"Show map" = "Pokaż mapę";
+
+/* setting */
+"Show system menu icon" = "Pokaż ikonę w menu systemowym";
+
+/* setting */
+"Small" = "Mały";
+
+/* settings */
+"Smart" = "Inteligentnie";
+
+/* setting */
+"Spellchecking" = "Sprawdzanie pisowni";
+
+/* setting */
+"SSL certificate of %@ could not be verified" = "Certyfikat SSL nie mógł być zweryfikowany";
+
+/* vcard editor */
+"Street" = "Ulica";
+
+/* Button */
+"Submit" = "Zatwierdź";
+
+/* setting */
+"Suggest emoticons" = "Sugeruj emotikony";
+
+/* contact details popup label */
+"Telephone" = "Telefon";
+
+/* alert window */
+"That message will be removed immediately and it's receives will be asked to remove it as well." = "Ta wiadmość zostanie usunięta natychmiast a jej odbiorcy zostaną poproszeni o jej usunięcie.";
+
+/* alert window message */
+"The channel %@ was created but it was not possible to join it. The server returned an error: %@" = "Kanał %@ został utworzony ale ie było możliwe dołączenie do niego. Serwer zwrócił błąd: %@";
+
+/* omemo encryption error */
+"There is no trusted device to send message to" = "Nie ma zaufanego urządzenia do wysłania wiadomości";
+
+/* alert window message */
+"This room is password protected. You need to provide correct password to join this room." = "Ten pokój jest chroniony hasłem. Musisz podać poprawne hasło aby do niego dołączyć.";
+
+/* recipient of PM */
+"To %@" = "Do %@";
+
+/* settings */
+"To change password for account %$ please fill out this form:" = "Any zmienić hasło dla konta %@, proszę wypełnić ten formularz:";
+
+/* error message details */
+"To show current location, enable Wi-Fi network." = "Aby pokazać bieżące położenie, włącz Wi-Fi.";
+
+/* Should we add one now? */
+"To use BeagleIM you need to have the XMPP account configured. Would you like to add one now?" = "Aby używać BeagleIM musisz mieć konto skonfigurowane konto XMPP. Czy chcesz dodać je teraz?";
+
+/* omemo key status */
+"Trusted" = "Zaufany";
+
+/* account manager error */
+"Try again. If removal failed, try accessing Keychain to update account credentials manually." = "Proszę spróbować ponownie. Jeśli usuwanie sie niepowiedzie, proszę użyć Dostęp do pęku kluczy aby zaktualizować hasło ręcznie.";
+
 /* create meet controller */
 "Unable to create a meet" = "Nie udało się stworzyć spotkania";
+
+/* omemo key status */
+"Undecided" = "Nieorekślony";
+
+/* encryption option */
+"Unencrypted" = "Nieszyfrowane";
+
+/* create channel view hine */
+"UNKNOWN" = "NIEZNANY";
+
+/* setting */
+"Unknown" = "Nieznany";
+
+/* Unknown file */
+"Unknown file" = "Nieznany plik";
+
+/* Label of unread messages */
+"Unread messages" = "Nieprzeczytane wiadomości";
+
+/* Mark of unsent message */
+"Unsent" = "Niewysłana";
 
 /* media helper sharing error */
 "Upload to HTTP server failed." = "Przesył pliku do serwera HTTP nie powiódł się";
 
+/* settings */
+"Use public STUN servers" = "Używaj publicznych serwerów STUN";
+
 /* invitation alert - message */
 "User %@ invited you (%@) to the groupchat %@" = "Użytkownik %@ zaprosił cię (%@) do rozmowy grupowej %@";
+
+/* muc module - room error */
+"User is banned" = "Użytkownik jest zablokowany";
+
+/* register account error */
+"User with provided username already exists" = "Użytkownik o podanej nazwie już istnieje";
+
+/* account view */
+"Username" = "Nazwa użytkownika";
+
+/* marks used account */
+"using %@" = "używając %@";
+
+/* omemo key status */
+"Verified" = "Zweryfikowany";
+
+/* video call menu action */
+"Video source" = "Źródło wideo";
+
+/* list of users with this role */
+"Visitors" = "Goście";
 
 /* alert window title */
 "Warning" = "Ostrzeżenie";
@@ -918,109 +976,48 @@
 /* create meet controller */
 "While checking for support XMPP server returned an error: %@. Please select a different account or try again later." = "Podczas sprawdzania wsparcia na serwerze XMPP wystąpił błąd: %@. Proszę wybrać inne konto lub spróbować ponownie później.";
 
+/* contact details popup label */
+"Work" = "Praca";
+
 /* xml console title */
 "XML Console: %@" = "Konsola XML: %@";
+
+/* add roster item label */
+"XMPP JID" = "XMPP JID";
+
+/* setting */
+"XMPP URI" = "XMPP URI";
+
+/* Yes, we should add account */
+"Yes" = "Tak";
 
 /* alert window message
    invitation alert - message */
 "You (%@) were invited to the groupchat %@" = "Zostałeś (%@) zaproszony do rozmowy grupowej %@";
 
-/* xml entry controller */
-"You have entered invalid XML. It is impossible to send invalid XML as it violates XMPP protocol specification!" = "Wprowadziłeś niepoprawny XML. Nie można go wysłać ponieważ jest to zabronione przez specyfikację protokołu XMPP!";
-
-/* contact selector placeholder */
-"Enter contact name or jid" = "Wprowadź nazwę kontaktu lub jid";
-
-/* settings */
-"Automatic attachments download" = "Automatyczne pobieranie załączników";
-
-/* settings */
-"Filesize limit" = "Limit rozmiaru pliku";
-
-/* setting */
-"Opening chat with JID" = "Otwieranie rozmowy z JID";
-
-/* settings */
-"Ask to add to roster" = "Pytaj czy dodać do rostera";
-
-/* label to notify user that playing is in progress */
-"Playing" = "Odtwarzanie";
-
-/* label to notify user that we record */
-"Recorded" = "Nagrano";
-
-/* label to notify user that recording is in progress */
-"Recording" = "Nagrywanie";
-
-/* action label */
-"Ban" = "Zablokuj";
-
-/* action label */
-"Kick out" = "Wyrzuć";
+/* alert window message */
+"You are leaving the group chat %@" = "Opuszczasz rozmowę grupową %@";
 
 /* alert window message */
-"Enter a JID of user you want to ban." = "Wprowadź JID użytkownika którego chcesz zablokować.";
+"You are not allowed to modify list of affiliations for this room." = "Nie możesz modyfikować listy członków w tym pokoju.";
 
-/* error window title */
-"Access denied" = "Brak dostępu";
-
-/* video call menu action */
-"Fill frame" = "Wypełnij ramkę";
-
-/* video call menu action */
-"Fit to frame" = "Dopasuj do ramki";
-
-/* video call menu action */
-"Video source" = "Źródło wideo";
-
-/* error window message - no access to the screen */
-"You didn't grant permission to record screen from %@." = "Nie nadałeś uprawnień do nagrywania ekranu %@.";
-
-/* search location pin label */
-"Your location" = "Twoje położenie";
-
-/* attachemt label for conversations list
-   location name in chats list */
-"Location" = "Położenie";
-
-/* context menu item */
-"Show map" = "Pokaż mapę";
-
-/* error message text */
-"Can't show your location" = "Nie można pokazać położenia";
-
-/* error message details */
-"To show current location, enable Wi-Fi network." = "Aby pokazać bieżące położenie, włącz Wi-Fi.";
-
-/* error message details */
-"You've denied access to your location for this app. You need to allow it in System Preferences." = "Zabroniłeś aplikacji dostępu do lokalizacji. ";
-
-/* device */
-"Device" = "Urządzenie";
-
-/* list of users with this role */
-"Moderators" = "Moderatorzy";
-
-/* list of users with this role */
-"Participants" = "Uczestnicy";
-
-/* list of users with this role */
-"Visitors" = "Goście";
-
-/* button label */
-"Destroy" = "Zniszcz";
-
-/* button label */
-"Leave" = "Opuść";
-
-/* leaving channel title */
-"Leaving channel" = "Opuszczanie kanału";
-
-/* button label */
-"Pass ownership" = "Zmień właściciela";
+/* alert window message */
+"You are not authorized to view memeber list of this room." = "Nie możesz przeglądać listy członków tego pokoju.";
 
 /* leaving channel text */
 "You are the last person with ownership of this channel. Please decide what to do with the channel." = "Jesteś ostatnią osobą będącą właścicielem tego kanału. Zdecyduj co zrobić z kanałem.";
 
-/* setting */
-"Suggest emoticons" = "Sugeruj emotikony";
+/* error window message - no access to the screen */
+"You didn't grant permission to record screen from %@." = "Nie nadałeś uprawnień do nagrywania ekranu %@.";
+
+/* xml entry controller */
+"You have entered invalid XML. It is impossible to send invalid XML as it violates XMPP protocol specification!" = "Wprowadziłeś niepoprawny XML. Nie można go wysłać ponieważ jest to zabronione przez specyfikację protokołu XMPP!";
+
+/* Alert confirm sending files message */
+"You have pasted %d file(s). Do you wish to send them?" = "Wkleiłeś %d plik(ów). Czy chcesz je wysłać?";
+
+/* error message details */
+"You've denied access to your location for this app. You need to allow it in System Preferences." = "Zabroniłeś aplikacji dostępu do lokalizacji. ";
+
+/* search location pin label */
+"Your location" = "Twoje położenie";

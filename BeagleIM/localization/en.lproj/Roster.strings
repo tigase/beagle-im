@@ -1,56 +1,56 @@
 /* Class = "NSSegmentedCell"; 1pg-1c-DIl.ibShadowedLabels[0] = "All"; ObjectID = "1pg-1c-DIl"; */
-"1pg-1c-DIl.ibShadowedLabels[0]" = "Wszystkie";
+"1pg-1c-DIl.ibShadowedLabels[0]" = "All";
 
 /* Class = "NSSegmentedCell"; 1pg-1c-DIl.ibShadowedLabels[1] = "Available"; ObjectID = "1pg-1c-DIl"; */
-"1pg-1c-DIl.ibShadowedLabels[1]" = "Dostępne";
+"1pg-1c-DIl.ibShadowedLabels[1]" = "Available";
 
 /* Class = "NSButtonCell"; title = "Deny"; ObjectID = "3gC-dl-e1E"; */
-"3gC-dl-e1E.title" = "Zabroń";
+"3gC-dl-e1E.title" = "Deny";
 
 /* Class = "NSMenuItem"; title = "Remove from"; ObjectID = "3pc-Q5-1rr"; */
-"3pc-Q5-1rr.title" = "Usuń z";
+"3pc-Q5-1rr.title" = "Remove from";
 
 /* Class = "NSTextFieldCell"; placeholderString = "Disconnected"; ObjectID = "4yU-vD-lVF"; */
-"4yU-vD-lVF.placeholderString" = "Rozłączony";
+"4yU-vD-lVF.placeholderString" = "Disconnected";
 
 /* Class = "NSMenu"; title = "Authorization"; ObjectID = "6AO-Gu-oqM"; */
-"6AO-Gu-oqM.title" = "Autoryzacja";
+"6AO-Gu-oqM.title" = "Authorization";
 
 /* Class = "NSMenuItem"; title = "Free for chat"; ObjectID = "6lh-Nd-PuS"; */
-"6lh-Nd-PuS.title" = "Chętny do rozmowy";
+"6lh-Nd-PuS.title" = "Free for chat";
 
 /* Class = "NSTextFieldCell"; title = "Do you wish to allow access to your presence information?"; ObjectID = "7xC-1v-L0Z"; */
-"7xC-1v-L0Z.title" = "Czy chcesz dać dostęp do informacji o twojej dostępności?";
+"7xC-1v-L0Z.title" = "Do you wish to allow access to your presence information?";
 
 /* Class = "NSMenuItem"; title = "Authorization"; ObjectID = "bBW-O0-JVI"; */
-"bBW-O0-JVI.title" = "Autoryzacja";
+"bBW-O0-JVI.title" = "Authorization";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "BEp-mJ-d65"; */
 "BEp-mJ-d65.title" = "Text Cell";
 
 /* Class = "NSMenuItem"; title = "Request from"; ObjectID = "blU-JM-LfG"; */
-"blU-JM-LfG.title" = "Poproś";
+"blU-JM-LfG.title" = "Request from";
 
 /* Class = "NSBox"; title = "Box"; ObjectID = "bpz-Q8-eSz"; */
 "bpz-Q8-eSz.title" = "Box";
 
 /* Class = "NSMenuItem"; title = "Away"; ObjectID = "c1O-3v-Ijv"; */
-"c1O-3v-Ijv.title" = "Zaraz wracam";
+"c1O-3v-Ijv.title" = "Away";
 
 /* Class = "NSWindow"; title = "Contacts"; ObjectID = "cDT-Yv-76r"; */
-"cDT-Yv-76r.title" = "Kontakty";
+"cDT-Yv-76r.title" = "Contacts";
 
 /* Class = "NSMenuItem"; title = "Rename"; ObjectID = "CFH-qA-9Hp"; */
-"CFH-qA-9Hp.title" = "Zmień nazwę";
+"CFH-qA-9Hp.title" = "Rename";
 
 /* Class = "NSMenuItem"; title = "Custom message..."; ObjectID = "cxw-5j-Eea"; */
-"cxw-5j-Eea.title" = "Własna wiadomość...";
+"cxw-5j-Eea.title" = "Custom message...";
 
 /* Class = "NSButtonCell"; title = "Allow"; ObjectID = "e5r-E2-xIh"; */
-"e5r-E2-xIh.title" = "Zezwól";
+"e5r-E2-xIh.title" = "Allow";
 
 /* Class = "NSMenuItem"; title = "Do not disturb"; ObjectID = "eQc-jV-WWQ"; */
-"eQc-jV-WWQ.title" = "Nie przeszkadzać";
+"eQc-jV-WWQ.title" = "Do not disturb";
 
 /* Class = "NSBox"; title = "Box"; ObjectID = "ez8-gs-ctM"; */
 "ez8-gs-ctM.title" = "Box";
@@ -65,28 +65,28 @@
 "gMr-bF-VHh.title" = "Box";
 
 /* Class = "NSTextFieldCell"; title = "Authorization request"; ObjectID = "gry-dE-a9e"; */
-"gry-dE-a9e.title" = "Prośba o autoryzację";
+"gry-dE-a9e.title" = "Authorization request";
 
 /* Class = "NSButtonCell"; title = "Add"; ObjectID = "Iff-qi-fa6"; */
-"Iff-qi-fa6.title" = "Dodaj";
+"Iff-qi-fa6.title" = "Add";
 
 /* Class = "NSMenuItem"; title = "Item"; ObjectID = "JeU-f0-XZh"; */
 "JeU-f0-XZh.title" = "Item";
 
 /* Class = "NSButtonCell"; title = "Block"; ObjectID = "kra-zY-CBr"; */
-"kra-zY-CBr.title" = "Blokuj";
+"kra-zY-CBr.title" = "Block";
 
 /* Class = "NSMenuItem"; title = "Modify status..."; ObjectID = "KTg-sQ-XFj"; */
-"KTg-sQ-XFj.title" = "Zmień status...";
+"KTg-sQ-XFj.title" = "Modify status...";
 
 /* Class = "NSMenuItem"; title = "Available"; ObjectID = "lQF-nR-YHS"; */
-"lQF-nR-YHS.title" = "Dostępny";
+"lQF-nR-YHS.title" = "Available";
 
 /* Class = "NSMenuItem"; title = "Custom message..."; ObjectID = "M0g-vT-p2M"; */
-"M0g-vT-p2M.title" = "Własna wiadomość...";
+"M0g-vT-p2M.title" = "Custom message...";
 
 /* Class = "NSMenuItem"; title = "Remove"; ObjectID = "m7W-Qk-Lkh"; */
-"m7W-Qk-Lkh.title" = "Usuń";
+"m7W-Qk-Lkh.title" = "Remove";
 
 /* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "mIr-Fn-sH6"; */
 "mIr-Fn-sH6.title" = "Label";
@@ -95,37 +95,37 @@
 "mTm-Oz-LEh.title" = "Romeo Monteki";
 
 /* Class = "NSTextFieldCell"; title = "Enter contact details:"; ObjectID = "n57-KC-z4m"; */
-"n57-KC-z4m.title" = "Wprowadź dane kontaktu:";
+"n57-KC-z4m.title" = "Enter contact details:";
 
 /* Class = "NSButtonCell"; title = "Do not ask again"; ObjectID = "NJ4-NC-GJS"; */
-"NJ4-NC-GJS.title" = "Nie pytaj ponownie";
+"NJ4-NC-GJS.title" = "Do not ask again";
 
 /* Class = "NSMenuItem"; title = "Resend to"; ObjectID = "P3p-LK-Sid"; */
-"P3p-LK-Sid.title" = "Wyślij do";
+"P3p-LK-Sid.title" = "Resend to";
 
 /* Class = "NSMenuItem"; title = "Details"; ObjectID = "plW-86-Jbe"; */
-"plW-86-Jbe.title" = "Szczegóły";
+"plW-86-Jbe.title" = "Details";
 
 /* Class = "NSMenuItem"; title = "Custom message..."; ObjectID = "QL2-0I-pq6"; */
-"QL2-0I-pq6.title" = "Własna wiadomość...";
+"QL2-0I-pq6.title" = "Custom message...";
 
 /* Class = "NSMenu"; title = "Invite to"; ObjectID = "qla-uv-CyW"; */
-"qla-uv-CyW.title" = "Zaproś do";
+"qla-uv-CyW.title" = "Invite to";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "qnx-gv-kFT"; */
-"qnx-gv-kFT.title" = "Anuluj";
+"qnx-gv-kFT.title" = "Cancel";
 
 /* Class = "NSTextFieldCell"; title = "Multiline Label"; ObjectID = "uYr-MW-SR9"; */
 "uYr-MW-SR9.title" = "Multiline Label";
 
 /* Class = "NSMenuItem"; title = "XA"; ObjectID = "WvP-bI-78d"; */
-"WvP-bI-78d.title" = "Nieobecny";
+"WvP-bI-78d.title" = "XA";
 
 /* Class = "NSMenuItem"; title = "INVALID"; ObjectID = "xND-xD-Nce"; */
-"xND-xD-Nce.title" = "BŁĘDNY";
+"xND-xD-Nce.title" = "INVALID";
 
 /* Class = "NSMenuItem"; title = "Invite to"; ObjectID = "yII-ac-kjp"; */
-"yII-ac-kjp.title" = "Zaproś do";
+"yII-ac-kjp.title" = "Invite to";
 
 /* Class = "NSTextFieldCell"; title = "Add contact"; ObjectID = "zjm-mS-Mle"; */
-"zjm-mS-Mle.title" = "Dodaj kontakt";
+"zjm-mS-Mle.title" = "Add contact";

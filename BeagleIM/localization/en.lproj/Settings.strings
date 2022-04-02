@@ -1,152 +1,152 @@
 /* Class = "NSButtonCell"; title = "Save"; ObjectID = "076-ju-5vz"; */
-"076-ju-5vz.title" = "Zapisz";
+"076-ju-5vz.title" = "Save";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "0BD-3A-Amk"; */
-"0BD-3A-Amk.title" = "Anuluj";
+"0BD-3A-Amk.title" = "Cancel";
 
 /* Class = "NSTextFieldCell"; title = "Role"; ObjectID = "0La-DC-clx"; */
-"0La-DC-clx.title" = "Rola";
+"0La-DC-clx.title" = "Role";
 
 /* Class = "NSTextFieldCell"; placeholderString = "Organization"; ObjectID = "16s-u5-pAg"; */
-"16s-u5-pAg.placeholderString" = "Organizacja";
+"16s-u5-pAg.placeholderString" = "Organization";
 
 /* Class = "NSTextFieldCell"; title = "Nickname"; ObjectID = "30A-Yq-8df"; */
-"30A-Yq-8df.title" = "Nick";
+"30A-Yq-8df.title" = "Nickname";
 
 /* Class = "NSTextFieldCell"; title = "Emails"; ObjectID = "3j4-yz-tIN"; */
-"3j4-yz-tIN.title" = "Adresy email";
+"3j4-yz-tIN.title" = "Emails";
 
 /* Class = "NSSecureTextFieldCell"; placeholderString = "Confirm new password"; ObjectID = "4sE-4A-CWK"; */
-"4sE-4A-CWK.placeholderString" = "Potwierdź nowe hasło";
+"4sE-4A-CWK.placeholderString" = "Confirm new password";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "5Q0-jV-KeQ"; */
-"5Q0-jV-KeQ.title" = "Anuluj";
+"5Q0-jV-KeQ.title" = "Cancel";
 
 /* Class = "NSMenuItem"; title = "Delete"; ObjectID = "5Zp-z6-6CG"; */
-"5Zp-z6-6CG.title" = "Usuń";
+"5Zp-z6-6CG.title" = "Delete";
 
 /* Class = "NSTextFieldCell"; title = "OMEMO fingerprint"; ObjectID = "60I-2k-aa8"; */
-"60I-2k-aa8.title" = "Odcisk OMEMO";
+"60I-2k-aa8.title" = "OMEMO fingerprint";
 
 /* Class = "NSTextFieldCell"; placeholderString = "Enter domain name..."; ObjectID = "6dU-W8-3jO"; */
-"6dU-W8-3jO.placeholderString" = "Wprowadź domene...";
+"6dU-W8-3jO.placeholderString" = "Enter domain name...";
 
 /* Class = "NSTextFieldCell"; title = "Password"; ObjectID = "6tF-He-veF"; */
-"6tF-He-veF.title" = "Hasło";
+"6tF-He-veF.title" = "Password";
 
 /* Class = "NSTextFieldCell"; title = "Please fill following fields:"; ObjectID = "8Cm-XV-mfb"; */
-"8Cm-XV-mfb.title" = "Proszę wypełnić następujące pola:";
+"8Cm-XV-mfb.title" = "Please fill following fields:";
 
 /* Class = "NSTextFieldCell"; title = "XMPP ID"; ObjectID = "8pC-eX-DvY"; */
 "8pC-eX-DvY.title" = "XMPP ID";
 
 /* Class = "NSMenuItem"; title = "Archiving settings"; ObjectID = "8Yp-ys-b1g"; */
-"8Yp-ys-b1g.title" = "Ustawienia archiwizacji";
+"8Yp-ys-b1g.title" = "Archiving settings";
 
 /* Class = "NSTabViewItem"; label = "General"; ObjectID = "9pN-Un-W2y"; */
-"9pN-Un-W2y.label" = "Ogólne";
+"9pN-Un-W2y.label" = "General";
 
 /* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "aCn-9L-UCN"; */
 "aCn-9L-UCN.title" = "Table View Cell";
 
 /* Class = "NSMenuItem"; title = "Last 24 hours"; ObjectID = "AEy-jM-GUg"; */
-"AEy-jM-GUg.title" = "Ostatnie 24 godziny";
+"AEy-jM-GUg.title" = "Last 24 hours";
 
 /* Class = "NSMenuItem"; title = "Last 2 weeks"; ObjectID = "AJs-pn-Nb0"; */
-"AJs-pn-Nb0.title" = "Ostatnie 2 tygodnie";
+"AJs-pn-Nb0.title" = "Last 2 weeks";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "aMC-en-eZF"; */
-"aMC-en-eZF.title" = "Anuluj";
+"aMC-en-eZF.title" = "Cancel";
 
 /* Class = "NSMenuItem"; title = "Last week"; ObjectID = "B9q-jf-nOC"; */
-"B9q-jf-nOC.title" = "Ostatni tydzień";
+"B9q-jf-nOC.title" = "Last week";
 
 /* Class = "NSTextFieldCell"; placeholderString = "user@domain.com"; ObjectID = "bat-cW-RaG"; */
 "bat-cW-RaG.placeholderString" = "user@domain.com";
 
 /* Class = "NSSearchFieldCell"; placeholderString = "Enter jid to search for..."; ObjectID = "bOO-bj-tli"; */
-"bOO-bj-tli.placeholderString" = "Wprowadź jid aby wyszukać...";
+"bOO-bj-tli.placeholderString" = "Enter jid to search for...";
 
 /* Class = "NSTabViewItem"; label = "Advanced"; ObjectID = "cle-7R-i1Y"; */
-"cle-7R-i1Y.label" = "Zaawansowane";
+"cle-7R-i1Y.label" = "Advanced";
 
 /* Class = "NSButtonCell"; title = "Change password on the XMPP server"; ObjectID = "CYD-Lw-pFj"; */
-"CYD-Lw-pFj.title" = "Zmień hasło na serwerze XMPP";
+"CYD-Lw-pFj.title" = "Change password on the XMPP server";
 
 /* Class = "NSMenu"; title = "Profile"; ObjectID = "D43-U2-QEj"; */
-"D43-U2-QEj.title" = "Profil";
+"D43-U2-QEj.title" = "Profile";
 
 /* Class = "NSTextFieldCell"; placeholderString = "Role in organization"; ObjectID = "daY-Ca-bT4"; */
-"daY-Ca-bT4.placeholderString" = "Rola w organizacji";
+"daY-Ca-bT4.placeholderString" = "Role in organization";
 
 /* Class = "NSTextFieldCell"; title = "Birthday"; ObjectID = "dK7-Pu-WEv"; */
-"dK7-Pu-WEv.title" = "Urodziny";
+"dK7-Pu-WEv.title" = "Birthday";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "doO-h6-kYi"; */
 "doO-h6-kYi.title" = "Text Cell";
 
 /* Class = "NSButtonCell"; title = "Close"; ObjectID = "eaA-q3-VEz"; */
-"eaA-q3-VEz.title" = "Zamknij";
+"eaA-q3-VEz.title" = "Close";
 
 /* Class = "NSButtonCell"; title = "Set default"; ObjectID = "emC-4v-Xgy"; */
-"emC-4v-Xgy.title" = "Ustaw domyślne";
+"emC-4v-Xgy.title" = "Set default";
 
 /* Class = "NSMenuItem"; title = "Hostname"; ObjectID = "fi3-ad-8sY"; */
-"fi3-ad-8sY.title" = "Nazwa komputera";
+"fi3-ad-8sY.title" = "Hostname";
 
 /* Class = "NSTabViewItem"; label = "Blocked"; ObjectID = "fLi-zS-4IS"; */
-"fLi-zS-4IS.label" = "Zablokowani";
+"fLi-zS-4IS.label" = "Blocked";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "flx-ok-Egy"; */
-"flx-ok-Egy.title" = "Anuluj";
+"flx-ok-Egy.title" = "Cancel";
 
 /* Class = "NSButtonCell"; title = "Submit"; ObjectID = "FT1-jM-wdc"; */
-"FT1-jM-wdc.title" = "Zatwierdź";
+"FT1-jM-wdc.title" = "Submit";
 
 /* Class = "NSTextFieldCell"; title = "Organization"; ObjectID = "FW2-1s-Rkm"; */
-"FW2-1s-Rkm.title" = "Organizacja";
+"FW2-1s-Rkm.title" = "Organization";
 
 /* Class = "NSButtonCell"; title = "Submit"; ObjectID = "fYG-1W-E0t"; */
-"fYG-1W-E0t.title" = "Zatwierdź";
+"fYG-1W-E0t.title" = "Submit";
 
 /* Class = "NSTextFieldCell"; placeholderString = "Full name"; ObjectID = "gcb-gy-dOu"; */
-"gcb-gy-dOu.placeholderString" = "Pełna nazwa";
+"gcb-gy-dOu.placeholderString" = "Full name";
 
 /* Class = "NSMenuItem"; title = "Public"; ObjectID = "Gd2-gR-KvM"; */
-"Gd2-gR-KvM.title" = "Publiczny";
+"Gd2-gR-KvM.title" = "Public";
 
 /* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "gkW-Rw-hvh"; */
 "gkW-Rw-hvh.title" = "Table View Cell";
 
 /* Class = "NSButtonCell"; title = "Change"; ObjectID = "Goh-hy-ucc"; */
-"Goh-hy-ucc.title" = "Zmień";
+"Goh-hy-ucc.title" = "Change";
 
 /* Class = "NSButtonCell"; title = "Enabled"; ObjectID = "gpR-aC-82b"; */
-"gpR-aC-82b.title" = "Włączone";
+"gpR-aC-82b.title" = "Enabled";
 
 /* Class = "NSButtonCell"; title = "Change"; ObjectID = "GTN-Ge-Agc"; */
-"GTN-Ge-Agc.title" = "Zmień";
+"GTN-Ge-Agc.title" = "Change";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "hDR-8s-WrJ"; */
 "hDR-8s-WrJ.title" = "Text Cell";
 
 /* Class = "NSButtonCell"; title = "Register"; ObjectID = "heh-y3-2kR"; */
-"heh-y3-2kR.title" = "Zarejestruj";
+"heh-y3-2kR.title" = "Register";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "hR3-qS-JXb"; */
-"hR3-qS-JXb.title" = "Anuluj";
+"hR3-qS-JXb.title" = "Cancel";
 
 /* Class = "NSTextFieldCell"; title = "Change password"; ObjectID = "iIE-7s-Mvt"; */
-"iIE-7s-Mvt.title" = "Zmień hasło";
+"iIE-7s-Mvt.title" = "Change password";
 
 /* Class = "NSMenuItem"; title = "Custom"; ObjectID = "iJW-tt-3CA"; */
-"iJW-tt-3CA.title" = "Własny";
+"iJW-tt-3CA.title" = "Custom";
 
 /* Class = "NSTextFieldCell"; title = "Account"; ObjectID = "iUf-Hj-X2m"; */
-"iUf-Hj-X2m.title" = "Konto";
+"iUf-Hj-X2m.title" = "Account";
 
 /* Class = "NSTextFieldCell"; title = "Register XMPP account"; ObjectID = "j5C-9D-w4O"; */
-"j5C-9D-w4O.title" = "Zarejestruj konto XMPP";
+"j5C-9D-w4O.title" = "Register XMPP account";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "jIp-76-DIM"; */
 "jIp-76-DIM.title" = "Text Cell";
@@ -155,154 +155,154 @@
 "JOz-pb-uha.placeholderString" = "user@domain.com";
 
 /* Class = "NSTextFieldCell"; title = "OMEMO fingerprint"; ObjectID = "jpP-ca-ca9"; */
-"jpP-ca-ca9.title" = "Odcisk OMEMO";
+"jpP-ca-ca9.title" = "OMEMO fingerprint";
 
 /* Class = "NSTextFieldCell"; placeholderString = "Given name"; ObjectID = "K3W-1P-41T"; */
-"K3W-1P-41T.placeholderString" = "Imię";
+"K3W-1P-41T.placeholderString" = "Given name";
 
 /* Class = "NSMenuItem"; title = "Connection details"; ObjectID = "KIw-n0-YMj"; */
-"KIw-n0-YMj.title" = "Szczegóły połączenia";
+"KIw-n0-YMj.title" = "Connection details";
 
 /* Class = "NSTextFieldCell"; title = "Edit this list of keywords to match the list of keywords which you want to highlight"; ObjectID = "Kn7-EM-cWs"; */
-"Kn7-EM-cWs.title" = "Edytuj listę słów kluczowych które mają być podświetlane";
+"Kn7-EM-cWs.title" = "Edit this list of keywords to match the list of keywords which you want to highlight";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "liH-Iu-jfG"; */
-"liH-Iu-jfG.title" = "Anuluj";
+"liH-Iu-jfG.title" = "Cancel";
 
 /* Class = "NSButtonCell"; title = "Log in"; ObjectID = "ll6-WL-0VX"; */
-"ll6-WL-0VX.title" = "Zaloguj";
+"ll6-WL-0VX.title" = "Log in";
 
 /* Class = "NSMenuItem"; title = "Compromised"; ObjectID = "mcn-t7-ySr"; */
-"mcn-t7-ySr.title" = "Skompromitowany";
+"mcn-t7-ySr.title" = "Compromised";
 
 /* Class = "NSMenuItem"; title = "Change password"; ObjectID = "MFc-eO-0vV"; */
-"MFc-eO-0vV.title" = "Zmień hasło";
+"MFc-eO-0vV.title" = "Change password";
 
 /* Class = "NSTextFieldCell"; title = "Phones"; ObjectID = "NtX-vm-yQi"; */
-"NtX-vm-yQi.title" = "Telefony";
+"NtX-vm-yQi.title" = "Phones";
 
 /* Class = "NSMenuItem"; title = "Friends only"; ObjectID = "nuP-5J-MAa"; */
-"nuP-5J-MAa.title" = "Tylko dla znajomych";
+"nuP-5J-MAa.title" = "Friends only";
 
 /* Class = "NSTextFieldCell"; title = "Addresses"; ObjectID = "nV4-fl-h2q"; */
-"nV4-fl-h2q.title" = "Adresy";
+"nV4-fl-h2q.title" = "Addresses";
 
 /* Class = "NSMenuItem"; title = "Last 12 hours"; ObjectID = "o17-R1-mNs"; */
-"o17-R1-mNs.title" = "Ostatnie 12 godzin";
+"o17-R1-mNs.title" = "Last 12 hours";
 
 /* Class = "NSMenuItem"; title = "Public profile"; ObjectID = "o1y-e5-rTj"; */
-"o1y-e5-rTj.title" = "Profi publiczny";
+"o1y-e5-rTj.title" = "Public profile";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "O5u-YP-qec"; */
 "O5u-YP-qec.title" = "Text Cell";
 
 /* Class = "NSButtonCell"; title = "Active"; ObjectID = "OgR-me-fU4"; */
-"OgR-me-fU4.title" = "Aktywne";
+"OgR-me-fU4.title" = "Active";
 
 /* Class = "NSSecureTextFieldCell"; placeholderString = "New password"; ObjectID = "oHc-ds-Avi"; */
-"oHc-ds-Avi.placeholderString" = "Nowe hasło";
+"oHc-ds-Avi.placeholderString" = "New password";
 
 /* Class = "NSTextFieldCell"; placeholderString = "Enter resource to use..."; ObjectID = "ohL-vr-Yel"; */
-"ohL-vr-Yel.placeholderString" = "Wprowadź nazwę zasóbu...";
+"ohL-vr-Yel.placeholderString" = "Enter resource to use...";
 
 /* Class = "NSMenuItem"; title = "Last 3 days"; ObjectID = "OZF-au-eLa"; */
-"OZF-au-eLa.title" = "Ostatnie 3 dni";
+"OZF-au-eLa.title" = "Last 3 days";
 
 /* Class = "NSTextFieldCell"; title = "Default"; ObjectID = "PLb-9s-193"; */
-"PLb-9s-193.title" = "Domyślne";
+"PLb-9s-193.title" = "Default";
 
 /* Class = "NSMenuItem"; title = "Profile"; ObjectID = "Pqf-I0-C3I"; */
-"Pqf-I0-C3I.title" = "Profil";
+"Pqf-I0-C3I.title" = "Profile";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "pxp-aJ-tEx"; */
 "pxp-aJ-tEx.title" = "Text Cell";
 
 /* Class = "NSMenuItem"; title = "Trusted"; ObjectID = "Q9Z-hT-nTM"; */
-"Q9Z-hT-nTM.title" = "Zaufany";
+"Q9Z-hT-nTM.title" = "Trusted";
 
 /* Class = "NSTextFieldCell"; title = "Resource"; ObjectID = "QbC-PO-xuW"; */
-"QbC-PO-xuW.title" = "Zasób";
+"QbC-PO-xuW.title" = "Resource";
 
 /* Class = "NSMenuItem"; title = "Last month"; ObjectID = "qSg-kc-7nQ"; */
-"qSg-kc-7nQ.title" = "Ostatni miesiąc";
+"qSg-kc-7nQ.title" = "Last month";
 
 /* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "QXK-Ly-VO0"; */
 "QXK-Ly-VO0.title" = "Table View Cell";
 
 /* Class = "NSViewController"; title = "Personal"; ObjectID = "R8r-Nj-xQa"; */
-"R8r-Nj-xQa.title" = "Osobisty";
+"R8r-Nj-xQa.title" = "Personal";
 
 /* Class = "NSButtonCell"; title = "Unblock"; ObjectID = "r8z-XW-GYd"; */
-"r8z-XW-GYd.title" = "Odblokuj";
+"r8z-XW-GYd.title" = "Unblock";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "rlA-RE-9yO"; */
 "rlA-RE-9yO.title" = "Text Cell";
 
 /* Class = "NSMenuItem"; title = "Edit.."; ObjectID = "s1h-tU-07y"; */
-"s1h-tU-07y.title" = "Edytuj..";
+"s1h-tU-07y.title" = "Edit..";
 
 /* Class = "NSTextFieldCell"; placeholderString = "2000-01-01"; ObjectID = "SG5-LG-hMb"; */
 "SG5-LG-hMb.placeholderString" = "2000-01-01";
 
 /* Class = "NSTextFieldCell"; title = "To change password for account test@example.com please fill out this form:"; ObjectID = "TBZ-At-Pzk"; */
-"TBZ-At-Pzk.title" = "Aby zmienić hasło dla konta test@example.com proszę wypełnić ten formularz:";
+"TBZ-At-Pzk.title" = "To change password for account test@example.com please fill out this form:";
 
 /* Class = "NSTabViewItem"; label = "Accounts"; ObjectID = "Txt-RJ-fg8"; */
-"Txt-RJ-fg8.label" = "Konta";
+"Txt-RJ-fg8.label" = "Accounts";
 
 /* Class = "NSButtonCell"; title = "Remove.."; ObjectID = "UkZ-D3-IC8"; */
-"UkZ-D3-IC8.title" = "Usuń..";
+"UkZ-D3-IC8.title" = "Remove..";
 
 /* Class = "NSMenuItem"; title = "OMEMO settings"; ObjectID = "uOu-4t-LCA"; */
-"uOu-4t-LCA.title" = "Ustawienia OMEMO";
+"uOu-4t-LCA.title" = "OMEMO settings";
 
 /* Class = "NSTextFieldCell"; title = "user@example.com"; ObjectID = "uTv-fi-QY3"; */
 "uTv-fi-QY3.title" = "user@example.com";
 
 /* Class = "NSTextFieldCell"; title = "Other devices with OMEMO"; ObjectID = "Vum-Tn-nHu"; */
-"Vum-Tn-nHu.title" = "Inne urządzenia z OMEMO";
+"Vum-Tn-nHu.title" = "Other devices with OMEMO";
 
 /* Class = "NSWindow"; title = "Preferences"; ObjectID = "WjX-Y5-Uyc"; */
-"WjX-Y5-Uyc.title" = "Preferencje";
+"WjX-Y5-Uyc.title" = "Preferences";
 
 /* Class = "NSButtonCell"; title = "Add.."; ObjectID = "wPe-Pq-RQD"; */
-"wPe-Pq-RQD.title" = "Dodaj..";
+"wPe-Pq-RQD.title" = "Add..";
 
 /* Class = "NSTextFieldCell"; placeholderString = "Family name"; ObjectID = "WQV-Ou-sJZ"; */
-"WQV-Ou-sJZ.placeholderString" = "Nazwisko";
+"WQV-Ou-sJZ.placeholderString" = "Family name";
 
 /* Class = "NSButtonCell"; title = "Automatic synchronization"; ObjectID = "wtP-ot-Zbs"; */
-"wtP-ot-Zbs.title" = "Automatyczna synchronizacja";
+"wtP-ot-Zbs.title" = "Automatic synchronization";
 
 /* Class = "NSTextFieldCell"; title = "Period"; ObjectID = "WUO-07-wXQ"; */
-"WUO-07-wXQ.title" = "Okres";
+"WUO-07-wXQ.title" = "Period";
 
 /* Class = "NSButtonCell"; title = "Save"; ObjectID = "Wyy-jS-048"; */
-"Wyy-jS-048.title" = "Zapisz";
+"Wyy-jS-048.title" = "Save";
 
 /* Class = "NSTextFieldCell"; title = "Add XMPP account"; ObjectID = "Xaj-EB-kzr"; */
-"Xaj-EB-kzr.title" = "Dodaj konto XMPP";
+"Xaj-EB-kzr.title" = "Add XMPP account";
 
 /* Class = "NSMenuItem"; title = "Item"; ObjectID = "xNG-jT-iku"; */
 "xNG-jT-iku.title" = "Item";
 
 /* Class = "NSMenuItem"; title = "Automatic"; ObjectID = "xRa-Ah-yOh"; */
-"xRa-Ah-yOh.title" = "Automatyczny";
+"xRa-Ah-yOh.title" = "Automatic";
 
 /* Class = "NSTextFieldCell"; title = "Device 1111"; ObjectID = "ygN-kQ-GdS"; */
-"ygN-kQ-GdS.title" = "Urządzenie 111";
+"ygN-kQ-GdS.title" = "Device 1111";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "yk0-1q-zhc"; */
-"yk0-1q-zhc.title" = "Anuluj";
+"yk0-1q-zhc.title" = "Cancel";
 
 /* Class = "NSViewController"; title = "OMEMO"; ObjectID = "ytu-J9-3un"; */
 "ytu-J9-3un.title" = "OMEMO";
 
 /* Class = "NSViewController"; title = "Accounts"; ObjectID = "Yzz-sO-CKA"; */
-"Yzz-sO-CKA.title" = "Konta";
+"Yzz-sO-CKA.title" = "Accounts";
 
 /* Class = "NSViewController"; title = "General"; ObjectID = "Z0Q-Gs-cLx"; */
-"Z0Q-Gs-cLx.title" = "Ogólne";
+"Z0Q-Gs-cLx.title" = "General";
 
 /* Class = "NSButtonCell"; title = "Save"; ObjectID = "zFR-Jm-1za"; */
-"zFR-Jm-1za.title" = "Zapisz";
+"zFR-Jm-1za.title" = "Save";

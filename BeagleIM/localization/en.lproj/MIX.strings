@@ -1,38 +1,41 @@
 /* Class = "NSMenuItem"; title = "Grant admin rights"; ObjectID = "1Vk-80-bHc"; */
-"1Vk-80-bHc.title" = "Nadaj prawa administratora";
+"1Vk-80-bHc.title" = "Grant admin rights";
 
 /* Class = "NSButtonCell"; title = "Apply"; ObjectID = "4en-st-Tqe"; */
-"4en-st-Tqe.title" = "Zastosuj";
+"4en-st-Tqe.title" = "Apply";
 
 /* Class = "NSTabViewItem"; label = "Banned"; ObjectID = "5pJ-rv-ewh"; */
-"5pJ-rv-ewh.label" = "Zablokowani";
+"5pJ-rv-ewh.label" = "Banned";
 
 /* Class = "NSTextFieldCell"; title = "Invite to channel"; ObjectID = "6zK-gN-sNF"; */
-"6zK-gN-sNF.title" = "Zaproś do kanału";
+"6zK-gN-sNF.title" = "Invite to channel";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "7yP-wX-sXK"; */
 "7yP-wX-sXK.title" = "Text Cell";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "8HP-UV-1E7"; */
-"8HP-UV-1E7.title" = "Anuluj";
+"8HP-UV-1E7.title" = "Cancel";
 
 /* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "8VF-Tj-y0v"; */
 "8VF-Tj-y0v.title" = "Table View Cell";
 
 /* Class = "NSTextFieldCell"; title = "Edit channel details"; ObjectID = "9Pi-qU-Tf4"; */
-"9Pi-qU-Tf4.title" = "Edytuj szczegóły kanału";
+"9Pi-qU-Tf4.title" = "Edit channel details";
 
 /* Class = "NSButtonCell"; title = "Change ownership"; ObjectID = "9UW-ub-NiL"; */
-"9UW-ub-NiL.title" = "Zmień właściciela";
+"9UW-ub-NiL.title" = "Change ownership";
 
 /* Class = "NSMenuItem"; title = "Revoke owner rights"; ObjectID = "apF-E8-nQj"; */
-"apF-E8-nQj.title" = "Odbierz prawa właściciela";
+"apF-E8-nQj.title" = "Revoke owner rights";
 
 /* Class = "NSTextFieldCell"; title = "Select new owner"; ObjectID = "apJ-Vw-0LB"; */
-"apJ-Vw-0LB.title" = "Wybierz nowego właściciela";
+"apJ-Vw-0LB.title" = "Select new owner";
 
 /* Class = "NSViewController"; title = "Change owner"; ObjectID = "cvB-3P-CBU"; */
-"cvB-3P-CBU.title" = "Zmień właściciela";
+"cvB-3P-CBU.title" = "Change owner";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "dEy-Kj-c4o"; */
+"dEy-Kj-c4o.title" = "Text Cell";
 
 /* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "DJU-VY-F7n"; */
 "DJU-VY-F7n.title" = "Table View Cell";
@@ -41,31 +44,31 @@
 "dRH-Ov-ia9.title" = "Box";
 
 /* Class = "NSTextFieldCell"; title = "Edit channel details"; ObjectID = "Eeg-Qz-lKK"; */
-"Eeg-Qz-lKK.title" = "Edytuj szczegóły kanału";
+"Eeg-Qz-lKK.title" = "Edit channel details";
 
 /* Class = "NSTextFieldCell"; title = "Change"; ObjectID = "ezr-pv-ZxF"; */
-"ezr-pv-ZxF.title" = "Zmień";
+"ezr-pv-ZxF.title" = "Change";
 
 /* Class = "NSMenuItem"; title = "Revoke admin rights"; ObjectID = "FRH-GT-63I"; */
-"FRH-GT-63I.title" = "Odbierz prawa administratora";
+"FRH-GT-63I.title" = "Revoke admin rights";
 
 /* Class = "NSTextFieldCell"; title = "Name"; ObjectID = "fTU-bT-Php"; */
-"fTU-bT-Php.title" = "Nazwa";
+"fTU-bT-Php.title" = "Name";
 
 /* Class = "NSMenuItem"; title = "Edit configuration"; ObjectID = "GGr-kd-jLp"; */
-"GGr-kd-jLp.title" = "Zmień konfigurację";
+"GGr-kd-jLp.title" = "Edit configuration";
 
 /* Class = "NSTextFieldCell"; title = "Manage blocked"; ObjectID = "hXG-3j-hOy"; */
-"hXG-3j-hOy.title" = "Zablokowni";
+"hXG-3j-hOy.title" = "Manage blocked";
 
 /* Class = "NSMenuItem"; title = "Block"; ObjectID = "iNt-1W-IHu"; */
-"iNt-1W-IHu.title" = "Zablokuj";
+"iNt-1W-IHu.title" = "Block";
 
 /* Class = "NSButtonCell"; title = "Blocked"; ObjectID = "jBk-PJ-rEC"; */
-"jBk-PJ-rEC.title" = "Zablokowani";
+"jBk-PJ-rEC.title" = "Blocked";
 
 /* Class = "NSMenuItem"; title = "Edit header"; ObjectID = "JjU-H7-MTN"; */
-"JjU-H7-MTN.title" = "Edit nagłówek";
+"JjU-H7-MTN.title" = "Edit header";
 
 /* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "jv7-Xc-Zea"; */
 "jv7-Xc-Zea.title" = "Table View Cell";
@@ -77,19 +80,22 @@
 "kmZ-Jc-EdG.title" = "12";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "LXk-pR-XYD"; */
-"LXk-pR-XYD.title" = "Anuluj";
+"LXk-pR-XYD.title" = "Cancel";
 
 /* Class = "NSTextFieldCell"; title = "Manage participants"; ObjectID = "mp2-T7-9tb"; */
-"mp2-T7-9tb.title" = "Zarządzaj uczestnikami";
+"mp2-T7-9tb.title" = "Manage participants";
 
 /* Class = "NSTextFieldCell"; title = "Participants"; ObjectID = "n18-yk-3yp"; */
-"n18-yk-3yp.title" = "Uczestnicy";
+"n18-yk-3yp.title" = "Participants";
 
 /* Class = "NSMenuItem"; title = "Destroy"; ObjectID = "n6u-Cr-SSU"; */
-"n6u-Cr-SSU.title" = "Zniszcz";
+"n6u-Cr-SSU.title" = "Destroy";
 
 /* Class = "NSButtonCell"; title = "Submit"; ObjectID = "P78-AN-JAR"; */
-"P78-AN-JAR.title" = "Zatwierdź";
+"P78-AN-JAR.title" = "Submit";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "pcA-FT-0T1"; */
+"pcA-FT-0T1.title" = "Text Cell";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "Ptd-Sx-zgF"; */
 "Ptd-Sx-zgF.title" = "Text Cell";
@@ -97,17 +103,23 @@
 /* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "qwE-mK-HCR"; */
 "qwE-mK-HCR.title" = "Label";
 
+/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "RI8-Al-mLJ"; */
+"RI8-Al-mLJ.title" = "Table View Cell";
+
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "shR-NW-0IT"; */
 "shR-NW-0IT.title" = "Text Cell";
 
 /* Class = "NSMenuItem"; title = "Grant owner rights"; ObjectID = "Tha-qB-HSO"; */
-"Tha-qB-HSO.title" = "Nadaj prawa właściciela";
+"Tha-qB-HSO.title" = "Grant owner rights";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "u6o-Cz-LHu"; */
-"u6o-Cz-LHu.title" = "Anuluj";
+"u6o-Cz-LHu.title" = "Cancel";
 
 /* Class = "NSButtonCell"; title = "Close"; ObjectID = "uf2-wu-ozZ"; */
-"uf2-wu-ozZ.title" = "Zamknij";
+"uf2-wu-ozZ.title" = "Close";
+
+/* Class = "NSViewController"; title = "ChannelManageBlockedSegue"; ObjectID = "Uia-ff-60o"; */
+"Uia-ff-60o.title" = "ChannelManageBlockedSegue";
 
 /* Class = "NSTextFieldCell"; title = "user@domain.com"; ObjectID = "Uwz-yJ-FRm"; */
 "Uwz-yJ-FRm.title" = "user@domain.com";
@@ -116,7 +128,7 @@
 "v3A-pb-RRk.title" = "John Doe";
 
 /* Class = "NSMenuItem"; title = "Start chat"; ObjectID = "VBT-2t-RbR"; */
-"VBT-2t-RbR.title" = "Rozpocznij rozmowę";
+"VBT-2t-RbR.title" = "Start chat";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "vD9-VJ-8eu"; */
 "vD9-VJ-8eu.title" = "Text Cell";
@@ -125,34 +137,22 @@
 "VdV-jZ-iZL.title" = "Table View Cell";
 
 /* Class = "NSTextFieldCell"; title = "Description"; ObjectID = "vOA-U1-PZm"; */
-"vOA-U1-PZm.title" = "Opis";
+"vOA-U1-PZm.title" = "Description";
 
 /* Class = "NSSearchFieldCell"; placeholderString = "Participant to become channel owner"; ObjectID = "vRh-f6-Xga"; */
-"vRh-f6-Xga.placeholderString" = "Uczestnik który ma zostać właścicielem";
+"vRh-f6-Xga.placeholderString" = "Participant to become channel owner";
 
 /* Class = "NSButtonCell"; title = "Invite"; ObjectID = "vu1-c0-Fqt"; */
-"vu1-c0-Fqt.title" = "Zaproś";
+"vu1-c0-Fqt.title" = "Invite";
 
 /* Class = "NSButtonCell"; title = "Close"; ObjectID = "vUZ-TL-Ojf"; */
-"vUZ-TL-Ojf.title" = "Zamknij";
+"vUZ-TL-Ojf.title" = "Close";
 
 /* Class = "NSTabViewItem"; label = "Allowed"; ObjectID = "xig-C3-GKB"; */
-"xig-C3-GKB.label" = "Dopuszczeni";
+"xig-C3-GKB.label" = "Allowed";
 
 /* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "YbX-Q8-gSE"; */
 "YbX-Q8-gSE.title" = "Table View Cell";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "Z0t-WH-5Nn"; */
-"Z0t-WH-5Nn.title" = "Anuluj";
-
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "dEy-Kj-c4o"; */
-"dEy-Kj-c4o.title" = "";
-
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "pcA-FT-0T1"; */
-"pcA-FT-0T1.title" = "";
-
-/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "RI8-Al-mLJ"; */
-"RI8-Al-mLJ.title" = "";
-
-/* Class = "NSViewController"; title = "ChannelManageBlockedSegue"; ObjectID = "Uia-ff-60o"; */
-"Uia-ff-60o.title" = "";
+"Z0t-WH-5Nn.title" = "Cancel";

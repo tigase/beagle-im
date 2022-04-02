@@ -1,20 +1,20 @@
 /* Class = "NSButtonCell"; title = "Enter XML..."; ObjectID = "bdi-zF-Bjp"; */
-"bdi-zF-Bjp.title" = "Wprowadź XML...";
+"bdi-zF-Bjp.title" = "Enter XML...";
 
 /* Class = "NSButtonCell"; title = "Clear"; ObjectID = "hhi-Ul-ftv"; */
-"hhi-Ul-ftv.title" = "Wyczyść";
+"hhi-Ul-ftv.title" = "Clear";
 
 /* Class = "NSWindow"; title = "XML Console"; ObjectID = "I7L-fd-N8C"; */
-"I7L-fd-N8C.title" = "Konsola XML";
+"I7L-fd-N8C.title" = "XML Console";
 
 /* Class = "NSWindow"; title = "Enter XML..."; ObjectID = "PAp-D9-BWb"; */
-"PAp-D9-BWb.title" = "Wprowadź XML...";
+"PAp-D9-BWb.title" = "Enter XML...";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "uXL-c3-PVk"; */
-"uXL-c3-PVk.title" = "Anuluj";
+"uXL-c3-PVk.title" = "Cancel";
 
 /* Class = "NSButtonCell"; title = "Send"; ObjectID = "YGt-mc-RGn"; */
-"YGt-mc-RGn.title" = "Wyślij";
+"YGt-mc-RGn.title" = "Send";
 
 /* Class = "NSButtonCell"; title = "Close"; ObjectID = "Ylg-td-QUG"; */
-"Ylg-td-QUG.title" = "Zamknij";
+"Ylg-td-QUG.title" = "Close";

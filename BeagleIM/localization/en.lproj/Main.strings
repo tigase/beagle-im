@@ -1,89 +1,89 @@
 /* Class = "NSButtonCell"; title = "Create"; ObjectID = "01B-32-N8J"; */
-"01B-32-N8J.title" = "Utwórz";
+"01B-32-N8J.title" = "Create";
 
 /* Class = "NSTextFieldCell"; title = "Issued by:"; ObjectID = "0BK-38-f0S"; */
-"0BK-38-f0S.title" = "Wydany przez:";
+"0BK-38-f0S.title" = "Issued by:";
 
 /* Class = "NSSearchFieldCell"; placeholderString = "Chat with.."; ObjectID = "0LB-vL-6OK"; */
-"0LB-vL-6OK.placeholderString" = "Rozmowa z..";
+"0LB-vL-6OK.placeholderString" = "Chat with..";
 
 /* Class = "NSBox"; title = "Box"; ObjectID = "0O6-Pu-tW4"; */
 "0O6-Pu-tW4.title" = "Box";
 
 /* Class = "NSTextFieldCell"; title = "Room name"; ObjectID = "0tf-Md-wBw"; */
-"0tf-Md-wBw.title" = "Nazwa pokoju";
+"0tf-Md-wBw.title" = "Room name";
 
 /* Class = "NSMenu"; title = "Find"; ObjectID = "1b7-l0-nxx"; */
-"1b7-l0-nxx.title" = "Znajdź";
+"1b7-l0-nxx.title" = "Find";
 
 /* Class = "NSTextFieldCell"; placeholderString = "Enter jid"; ObjectID = "1lw-tL-tyK"; */
-"1lw-tL-tyK.placeholderString" = "Wprowadź JID";
+"1lw-tL-tyK.placeholderString" = "Enter jid";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "1On-27-CLW"; */
 "1On-27-CLW.title" = "Text Cell";
 
 /* Class = "NSMenuItem"; title = "Contacts"; ObjectID = "1rU-qU-qAY"; */
-"1rU-qU-qAY.title" = "Kontakty";
+"1rU-qU-qAY.title" = "Contacts";
 
 /* Class = "NSMenuItem"; title = "Customize Toolbar…"; ObjectID = "1UK-8n-QPP"; */
-"1UK-8n-QPP.title" = "Dostosuj pasek narzędzi…";
+"1UK-8n-QPP.title" = "Customize Toolbar…";
 
 /* Class = "NSMenuItem"; title = "BeagleIM"; ObjectID = "1Xt-HY-uBw"; */
 "1Xt-HY-uBw.title" = "BeagleIM";
 
 /* Class = "NSMenuItem"; title = "XMPP Channel"; ObjectID = "2Ku-7R-cVQ"; */
-"2Ku-7R-cVQ.title" = "Kanał XMPP";
+"2Ku-7R-cVQ.title" = "XMPP Channel";
 
 /* Class = "NSMenuItem"; title = "Transformations"; ObjectID = "2oI-Rn-ZJC"; */
-"2oI-Rn-ZJC.title" = "Przekształcenia";
+"2oI-Rn-ZJC.title" = "Transformations";
 
 /* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "30Y-0J-enL"; */
 "30Y-0J-enL.title" = "Table View Cell";
 
 /* Class = "NSTextFieldCell"; title = "Subject"; ObjectID = "3dY-pc-BG8"; */
-"3dY-pc-BG8.title" = "Temat";
+"3dY-pc-BG8.title" = "Subject";
 
 /* Class = "NSMenu"; title = "Spelling"; ObjectID = "3IN-sU-3Bg"; */
 "3IN-sU-3Bg.title" = "Spelling";
 
 /* Class = "NSMenu"; title = "Speech"; ObjectID = "3rS-ZA-NoH"; */
-"3rS-ZA-NoH.title" = "Mowa";
+"3rS-ZA-NoH.title" = "Speech";
 
 /* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "3Ys-tL-bW2"; */
 "3Ys-tL-bW2.title" = "Table View Cell";
 
 /* Class = "NSButtonCell"; title = "Reject"; ObjectID = "4bC-Ca-NCQ"; */
-"4bC-Ca-NCQ.title" = "Odrzuć";
+"4bC-Ca-NCQ.title" = "Reject";
 
 /* Class = "NSMenuItem"; title = "Find"; ObjectID = "4EN-yA-p0u"; */
-"4EN-yA-p0u.title" = "Szukaj";
+"4EN-yA-p0u.title" = "Find";
 
 /* Class = "NSMenuItem"; title = "Enter Full Screen"; ObjectID = "4J7-dP-txa"; */
-"4J7-dP-txa.title" = "Tryb pełnoekranowy";
+"4J7-dP-txa.title" = "Enter Full Screen";
 
 /* Class = "NSMenuItem"; title = "Quit BeagleIM"; ObjectID = "4sb-4s-VLi"; */
-"4sb-4s-VLi.title" = "Zakończ BeagleIM";
+"4sb-4s-VLi.title" = "Quit BeagleIM";
 
 /* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "5cb-bY-3Nb"; */
 "5cb-bY-3Nb.title" = "Label";
 
 /* Class = "NSMenuItem"; title = "About BeagleIM"; ObjectID = "5kV-Vb-QxS"; */
-"5kV-Vb-QxS.title" = "O BeagleIM";
+"5kV-Vb-QxS.title" = "About BeagleIM";
 
 /* Class = "NSMenuItem"; title = "Edit"; ObjectID = "5QF-Oa-p0T"; */
-"5QF-Oa-p0T.title" = "Edytuj";
+"5QF-Oa-p0T.title" = "Edit";
 
 /* Class = "NSTextFieldCell"; title = "Multiline Label"; ObjectID = "6AN-tH-MVB"; */
 "6AN-tH-MVB.title" = "Multiline Label";
 
 /* Class = "NSMenuItem"; title = "Redo"; ObjectID = "6dh-zS-Vam"; */
-"6dh-zS-Vam.title" = "Ponów";
+"6dh-zS-Vam.title" = "Redo";
 
 /* Class = "NSMenu"; title = "Help"; ObjectID = "6li-QY-me7"; */
-"6li-QY-me7.title" = "Pomoc";
+"6li-QY-me7.title" = "Help";
 
 /* Class = "NSMenuItem"; title = "Correct Spelling Automatically"; ObjectID = "78Y-hA-62v"; */
-"78Y-hA-62v.title" = "Poprawiaj pisownię automatycznie";
+"78Y-hA-62v.title" = "Correct Spelling Automatically";
 
 /* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "9cl-cN-VXM"; */
 "9cl-cN-VXM.title" = "Label";
@@ -92,19 +92,19 @@
 "9Ev-UC-SMM.title" = "room@muc.example.com";
 
 /* Class = "NSMenuItem"; title = "Substitutions"; ObjectID = "9ic-FL-obx"; */
-"9ic-FL-obx.title" = "Zastąpienia";
+"9ic-FL-obx.title" = "Substitutions";
 
 /* Class = "NSMenuItem"; title = "Smart Copy/Paste"; ObjectID = "9yt-4B-nSM"; */
-"9yt-4B-nSM.title" = "Kopiowanie/wkejanie inteligentne";
+"9yt-4B-nSM.title" = "Smart Copy/Paste";
 
 /* Class = "NSMenuItem"; title = "Undecided"; ObjectID = "a5M-f6-VZy"; */
-"a5M-f6-VZy.title" = "Nieokreślony";
+"a5M-f6-VZy.title" = "Undecided";
 
 /* Class = "NSTextFieldCell"; title = "Open groupchat"; ObjectID = "A8X-bI-x0h"; */
-"A8X-bI-x0h.title" = "Otwórz rozmowę grupową";
+"A8X-bI-x0h.title" = "Open groupchat";
 
 /* Class = "NSTextFieldCell"; title = "Change"; ObjectID = "aBO-fR-yTC"; */
-"aBO-fR-yTC.title" = "Zmień";
+"aBO-fR-yTC.title" = "Change";
 
 /* Class = "NSMenuItem"; title = "GitHub"; ObjectID = "AFz-Tq-Bxw"; */
 "AFz-Tq-Bxw.title" = "GitHub";
@@ -113,31 +113,31 @@
 "Am7-bY-Ipw.title" = "Label";
 
 /* Class = "NSTextFieldCell"; title = "Addresses"; ObjectID = "aoE-kL-UeZ"; */
-"aoE-kL-UeZ.title" = "Adresy";
+"aoE-kL-UeZ.title" = "Addresses";
 
 /* Class = "NSTextFieldCell"; title = "Change"; ObjectID = "aR2-ZZ-lUX"; */
-"aR2-ZZ-lUX.title" = "Zmień";
+"aR2-ZZ-lUX.title" = "Change";
 
 /* Class = "NSMenuItem"; title = "Window"; ObjectID = "aUF-d1-5bR"; */
-"aUF-d1-5bR.title" = "Okno";
+"aUF-d1-5bR.title" = "Window";
 
 /* Class = "NSMenu"; title = "Main Menu"; ObjectID = "AYu-sK-qS6"; */
-"AYu-sK-qS6.title" = "Głowne menu";
+"AYu-sK-qS6.title" = "Main Menu";
 
 /* Class = "NSTextFieldCell"; title = "OMEMO fingerprints"; ObjectID = "Aza-ey-eM2"; */
-"Aza-ey-eM2.title" = "Odciski OMEMO";
+"Aza-ey-eM2.title" = "OMEMO fingerprints";
 
 /* Class = "NSTextFieldCell"; title = "SSL certificate of test.com could not be verified"; ObjectID = "azs-oZ-e2C"; */
-"azs-oZ-e2C.title" = "Certyfikat SSL dla test.com nie mógł być zweryfikowany";
+"azs-oZ-e2C.title" = "SSL certificate of test.com could not be verified";
 
 /* Class = "NSButtonCell"; title = "Accept"; ObjectID = "b1a-jM-Vaa"; */
-"b1a-jM-Vaa.title" = "Akceptuj";
+"b1a-jM-Vaa.title" = "Accept";
 
 /* Class = "NSSegmentedCell"; b2w-Oc-jBN.ibShadowedLabels[0] = "Open"; ObjectID = "b2w-Oc-jBN"; */
-"b2w-Oc-jBN.ibShadowedLabels[0]" = "Otwórz";
+"b2w-Oc-jBN.ibShadowedLabels[0]" = "Open";
 
 /* Class = "NSSegmentedCell"; b2w-Oc-jBN.ibShadowedLabels[1] = "Invitations only"; ObjectID = "b2w-Oc-jBN"; */
-"b2w-Oc-jBN.ibShadowedLabels[1]" = "Tylko zaproszenia";
+"b2w-Oc-jBN.ibShadowedLabels[1]" = "Invitations only";
 
 /* Class = "NSButtonCell"; title = "0"; ObjectID = "bFh-r9-Osm"; */
 "bFh-r9-Osm.title" = "0";
@@ -146,10 +146,10 @@
 "bgM-PY-KWL.title" = "Label";
 
 /* Class = "NSMenu"; title = "File"; ObjectID = "bib-Uj-vzu"; */
-"bib-Uj-vzu.title" = "Plik";
+"bib-Uj-vzu.title" = "File";
 
 /* Class = "NSMenuItem"; title = "Preferences…"; ObjectID = "BOF-NM-1cW"; */
-"BOF-NM-1cW.title" = "Preferencje…";
+"BOF-NM-1cW.title" = "Preferences…";
 
 /* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "BoY-8I-sGR"; */
 "BoY-8I-sGR.title" = "Label";
@@ -158,82 +158,82 @@
 "bsB-nZ-eKy.title" = "Text Cell";
 
 /* Class = "NSMenuItem"; title = "Use Selection for Find"; ObjectID = "buJ-ug-pKt"; */
-"buJ-ug-pKt.title" = "Szukaj zaznaczonego tekstu";
+"buJ-ug-pKt.title" = "Use Selection for Find";
 
 /* Class = "NSMenu"; title = "Transformations"; ObjectID = "c8a-y6-VQd"; */
-"c8a-y6-VQd.title" = "Przekształcenia";
+"c8a-y6-VQd.title" = "Transformations";
 
 /* Class = "NSMenuItem"; title = "Mastodon"; ObjectID = "C9d-Ed-8CP"; */
 "C9d-Ed-8CP.title" = "Mastodon";
 
 /* Class = "NSTextFieldCell"; title = "Manage affiliations"; ObjectID = "CAT-yl-a3u"; */
-"CAT-yl-a3u.title" = "Zarządzaj powiązaniami";
+"CAT-yl-a3u.title" = "Manage affiliations";
 
 /* Class = "NSButtonCell"; title = "0"; ObjectID = "CcW-Wx-dEg"; */
 "CcW-Wx-dEg.title" = "0";
 
 /* Class = "NSViewController"; title = "Join"; ObjectID = "CLU-sX-g5V"; */
-"CLU-sX-g5V.title" = "Dołącz";
+"CLU-sX-g5V.title" = "Join";
 
 /* Class = "NSMenuItem"; title = "Service Discovery"; ObjectID = "CO1-FX-RDv"; */
-"CO1-FX-RDv.title" = "Wykrywanie usług";
+"CO1-FX-RDv.title" = "Service Discovery";
 
 /* Class = "NSMenuItem"; title = "Item 1"; ObjectID = "cUO-st-zNA"; */
 "cUO-st-zNA.title" = "Item 1";
 
 /* Class = "NSMenuItem"; title = "Smart Links"; ObjectID = "cwL-P1-jid"; */
-"cwL-P1-jid.title" = "Łącza inteligentne";
+"cwL-P1-jid.title" = "Smart Links";
 
 /* Class = "NSTextFieldCell"; title = "Invite to the groupchat"; ObjectID = "cxt-am-P6A"; */
-"cxt-am-P6A.title" = "Zaproś do rozmowy grupowej";
+"cxt-am-P6A.title" = "Invite to the groupchat";
 
 /* Class = "NSMenuItem"; title = "Make Lower Case"; ObjectID = "d9M-CD-aMd"; */
-"d9M-CD-aMd.title" = "Zamień na małe litery";
+"d9M-CD-aMd.title" = "Make Lower Case";
 
 /* Class = "NSMenuItem"; title = "Help"; ObjectID = "DGd-S4-N6a"; */
-"DGd-S4-N6a.title" = "Pomoc";
+"DGd-S4-N6a.title" = "Help";
 
 /* Class = "NSMenuItem"; title = "File"; ObjectID = "dMs-cI-mzQ"; */
-"dMs-cI-mzQ.title" = "Plik";
+"dMs-cI-mzQ.title" = "File";
 
 /* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "Dmx-hJ-hXv"; */
 "Dmx-hJ-hXv.title" = "Label";
 
 /* Class = "NSMenuItem"; title = "Undo"; ObjectID = "dRJ-4n-Yzg"; */
-"dRJ-4n-Yzg.title" = "Cofnij";
+"dRJ-4n-Yzg.title" = "Undo";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "dSs-C1-Lea"; */
 "dSs-C1-Lea.title" = "Text Cell";
 
 /* Class = "NSMenuItem"; title = "Spelling and Grammar"; ObjectID = "Dv1-io-Yv7"; */
-"Dv1-io-Yv7.title" = "Pisownia i gramatyka";
+"Dv1-io-Yv7.title" = "Spelling and Grammar";
 
 /* Class = "NSMenuItem"; title = "Close window"; ObjectID = "DVo-aG-piG"; */
-"DVo-aG-piG.title" = "Zakmnij okno";
+"DVo-aG-piG.title" = "Close window";
 
 /* Class = "NSMenuItem"; title = "Correct last message"; ObjectID = "exM-f4-hXS"; */
-"exM-f4-hXS.title" = "Popraw ostatnią wiadomość";
+"exM-f4-hXS.title" = "Correct last message";
 
 /* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "faK-Zj-UW7"; */
 "faK-Zj-UW7.title" = "Table View Cell";
 
 /* Class = "NSMenuItem"; title = "Chat with..."; ObjectID = "fe7-ax-qfm"; */
-"fe7-ax-qfm.title" = "Rozmowa z...";
+"fe7-ax-qfm.title" = "Chat with...";
 
 /* Class = "NSTextFieldCell"; placeholderString = "Find contact or enter JID"; ObjectID = "FEa-jd-en4"; */
-"FEa-jd-en4.placeholderString" = "Znajdź kontakt lub wprowadź JID";
+"FEa-jd-en4.placeholderString" = "Find contact or enter JID";
 
 /* Class = "NSMenu"; title = "Substitutions"; ObjectID = "FeM-D8-WVr"; */
-"FeM-D8-WVr.title" = "Zastąpienia";
+"FeM-D8-WVr.title" = "Substitutions";
 
 /* Class = "NSTextFieldCell"; title = "Configure groupchat"; ObjectID = "fgC-Hs-ibQ"; */
-"fgC-Hs-ibQ.title" = "Konfiguruj rozmowę grupową";
+"fgC-Hs-ibQ.title" = "Configure groupchat";
 
 /* Class = "NSTextFieldCell"; title = "Room name"; ObjectID = "Fma-gL-AKS"; */
-"Fma-gL-AKS.title" = "Nazwa pokoju";
+"Fma-gL-AKS.title" = "Room name";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "fNx-dk-teJ"; */
-"fNx-dk-teJ.title" = "Anuluj";
+"fNx-dk-teJ.title" = "Cancel";
 
 /* Class = "NSBox"; title = "Box"; ObjectID = "FRG-k1-QUa"; */
 "FRG-k1-QUa.title" = "Box";
@@ -242,7 +242,7 @@
 "fUw-k9-Jmg.title" = "Twitter";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "g1A-Rm-diD"; */
-"g1A-Rm-diD.title" = "Anuluj";
+"g1A-Rm-diD.title" = "Cancel";
 
 /* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "gBl-eb-iIv"; */
 "gBl-eb-iIv.title" = "Label";
@@ -251,22 +251,22 @@
 "gde-5T-n8j.title" = "contact@jid";
 
 /* Class = "NSTextFieldCell"; title = "Timestamp"; ObjectID = "Gr8-JG-Zcj"; */
-"Gr8-JG-Zcj.title" = "Znacznik czasu";
+"Gr8-JG-Zcj.title" = "Timestamp";
 
 /* Class = "NSMenuItem"; title = "Paste"; ObjectID = "gVA-U4-sdL"; */
-"gVA-U4-sdL.title" = "Wklej";
+"gVA-U4-sdL.title" = "Paste";
 
 /* Class = "NSTextFieldCell"; title = "Jonh Doe"; ObjectID = "h3R-C3-JJr"; */
-"h3R-C3-JJr.title" = "John Doe";
+"h3R-C3-JJr.title" = "Jonh Doe";
 
 /* Class = "NSMenuItem"; title = "View"; ObjectID = "H8h-7b-M4v"; */
-"H8h-7b-M4v.title" = "Widok";
+"H8h-7b-M4v.title" = "View";
 
 /* Class = "NSTextFieldCell"; title = "Room name"; ObjectID = "HA1-Nd-qoL"; */
-"HA1-Nd-qoL.title" = "Nazwa pokoju";
+"HA1-Nd-qoL.title" = "Room name";
 
 /* Class = "NSTextFieldCell"; title = "Channel name"; ObjectID = "hcO-5H-Zzy"; */
-"hcO-5H-Zzy.title" = "Nazwa kanału";
+"hcO-5H-Zzy.title" = "Channel name";
 
 /* Class = "NSMenuItem"; title = "Show Spelling and Grammar"; ObjectID = "HFo-cy-zxI"; */
 "HFo-cy-zxI.title" = "Show Spelling and Grammar";
@@ -275,76 +275,79 @@
 "HFQ-gK-NFA.title" = "Text Replacement";
 
 /* Class = "NSWindow"; title = "Window"; ObjectID = "hie-V2-FU3"; */
-"hie-V2-FU3.title" = "Okno";
+"hie-V2-FU3.title" = "Window";
 
 /* Class = "NSMenuItem"; title = "Smart Quotes"; ObjectID = "hQb-2v-fYv"; */
-"hQb-2v-fYv.title" = "Cudzysłowy inteligentne";
+"hQb-2v-fYv.title" = "Smart Quotes";
+
+/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "HUr-nw-nKs"; */
+"HUr-nw-nKs.title" = "Table View Cell";
 
 /* Class = "NSMenu"; title = "View"; ObjectID = "HyV-fh-RgO"; */
-"HyV-fh-RgO.title" = "Widok";
+"HyV-fh-RgO.title" = "View";
 
 /* Class = "NSMenuItem"; title = "Check Document Now"; ObjectID = "hz2-CU-CR7"; */
-"hz2-CU-CR7.title" = "Sprawdź dokument teraz";
+"hz2-CU-CR7.title" = "Check Document Now";
 
 /* Class = "NSMenu"; title = "Services"; ObjectID = "hz9-B4-Xy5"; */
-"hz9-B4-Xy5.title" = "Usługi";
+"hz9-B4-Xy5.title" = "Services";
 
 /* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "Iby-FV-qPb"; */
 "Iby-FV-qPb.title" = "Label";
 
 /* Class = "NSButtonCell"; title = "Invite"; ObjectID = "ige-W9-roq"; */
-"ige-W9-roq.title" = "Zaproś";
+"ige-W9-roq.title" = "Invite";
 
 /* Class = "NSTextFieldCell"; title = "Username"; ObjectID = "Ikd-Py-8pj"; */
-"Ikd-Py-8pj.title" = "Nazwa użytkownika";
+"Ikd-Py-8pj.title" = "Username";
 
 /* Class = "NSMenuItem"; title = "Trusted"; ObjectID = "IOZ-Lh-LPg"; */
-"IOZ-Lh-LPg.title" = "Zaufany";
+"IOZ-Lh-LPg.title" = "Trusted";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "Ip2-2F-LNN"; */
-"Ip2-2F-LNN.title" = "Anuluj";
+"Ip2-2F-LNN.title" = "Cancel";
 
 /* Class = "NSWindow"; title = "Chats"; ObjectID = "IQv-IB-iLA"; */
-"IQv-IB-iLA.title" = "Rozmowy";
+"IQv-IB-iLA.title" = "Chats";
 
 /* Class = "NSTextFieldCell"; title = "Component domain"; ObjectID = "itW-43-Xdv"; */
-"itW-43-Xdv.title" = "Domena komponentu";
+"itW-43-Xdv.title" = "Component domain";
 
 /* Class = "NSTextFieldCell"; title = "When channel is private, it can only be joined by invitation."; ObjectID = "IV5-mJ-oPS"; */
-"IV5-mJ-oPS.title" = "Gdy kanał jest prywatny, można do niego dołączyć tylko poprzez zaproszenie.";
+"IV5-mJ-oPS.title" = "When channel is private, it can only be joined by invitation.";
 
 /* Class = "NSMenuItem"; title = "Join channel..."; ObjectID = "iwt-iK-Ete"; */
-"iwt-iK-Ete.title" = "Dołącz do kanału...";
+"iwt-iK-Ete.title" = "Join channel...";
 
 /* Class = "NSMenuItem"; title = "Compromised"; ObjectID = "j3D-ai-GaY"; */
-"j3D-ai-GaY.title" = "Skompromitowany";
+"j3D-ai-GaY.title" = "Compromised";
 
 /* Class = "NSTextFieldCell"; title = "Open channel"; ObjectID = "jgg-RX-FUz"; */
-"jgg-RX-FUz.title" = "Otwórz kanał";
+"jgg-RX-FUz.title" = "Open channel";
 
 /* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "joV-vV-bpx"; */
 "joV-vV-bpx.title" = "Label";
 
 /* Class = "NSMenuItem"; title = "Search History"; ObjectID = "jPh-XA-Ma6"; */
-"jPh-XA-Ma6.title" = "Szukaj w historii";
+"jPh-XA-Ma6.title" = "Search History";
 
 /* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "jTO-BC-Tlr"; */
 "jTO-BC-Tlr.title" = "Label";
 
 /* Class = "NSMenuItem"; title = "Close chat"; ObjectID = "KaW-ft-85H"; */
-"KaW-ft-85H.title" = "Zamknij rozmowę";
+"KaW-ft-85H.title" = "Close chat";
 
 /* Class = "NSButtonCell"; title = "Use MIX"; ObjectID = "kbU-VN-7d8"; */
-"kbU-VN-7d8.title" = "Użyj MIX";
+"kbU-VN-7d8.title" = "Use MIX";
 
 /* Class = "NSMenuItem"; title = "Show All"; ObjectID = "Kd2-mp-pUS"; */
-"Kd2-mp-pUS.title" = "Pokaż wszystko";
+"Kd2-mp-pUS.title" = "Show All";
 
 /* Class = "NSTextFieldCell"; title = "Channel ID"; ObjectID = "KgA-WZ-yRM"; */
-"KgA-WZ-yRM.title" = "ID kanału";
+"KgA-WZ-yRM.title" = "Channel ID";
 
 /* Class = "NSMenuItem"; title = "Show Sidebar"; ObjectID = "kIP-vf-haE"; */
-"kIP-vf-haE.title" = "Pokaż pasek narzędzi";
+"kIP-vf-haE.title" = "Show Sidebar";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "kNf-RO-xoF"; */
 "kNf-RO-xoF.title" = "Text Cell";
@@ -353,16 +356,16 @@
 "KoE-gC-vJV.title" = "Table View Cell";
 
 /* Class = "NSTabViewItem"; label = "Join"; ObjectID = "lb0-Pe-QRe"; */
-"lb0-Pe-QRe.label" = "Dołącz";
+"lb0-Pe-QRe.label" = "Join";
 
 /* Class = "NSMenuItem"; title = "Bring All to Front"; ObjectID = "LE2-aR-0XJ"; */
-"LE2-aR-0XJ.title" = "Umieść wszystko na wierzchu";
+"LE2-aR-0XJ.title" = "Bring All to Front";
 
 /* Class = "NSButtonCell"; title = "Join"; ObjectID = "Lhm-KA-rbR"; */
-"Lhm-KA-rbR.title" = "Dołącz";
+"Lhm-KA-rbR.title" = "Join";
 
 /* Class = "NSMenuItem"; title = "Manage members"; ObjectID = "m5D-rc-7bN"; */
-"m5D-rc-7bN.title" = "Zarządzaj członkami";
+"m5D-rc-7bN.title" = "Manage members";
 
 /* Class = "NSMenuItem"; title = "Check Grammar With Spelling"; ObjectID = "mK6-2p-4JG"; */
 "mK6-2p-4JG.title" = "Check Grammar With Spelling";
@@ -371,37 +374,37 @@
 "mV8-6S-7vH.title" = "Text Cell";
 
 /* Class = "NSTextFieldCell"; title = "Timestamp"; ObjectID = "nD8-L0-6Xz"; */
-"nD8-L0-6Xz.title" = "Znacznik czasu";
+"nD8-L0-6Xz.title" = "Timestamp";
 
 /* Class = "NSButtonCell"; title = "Save"; ObjectID = "nL3-BQ-FCm"; */
-"nL3-BQ-FCm.title" = "Zapisz";
+"nL3-BQ-FCm.title" = "Save";
 
 /* Class = "NSMenuItem"; title = "Services"; ObjectID = "NMo-om-nkz"; */
-"NMo-om-nkz.title" = "Usługi";
+"NMo-om-nkz.title" = "Services";
 
 /* Class = "NSTextFieldCell"; placeholderString = "Find channel"; ObjectID = "NsI-tB-naV"; */
-"NsI-tB-naV.placeholderString" = "Znajdź kanał";
+"NsI-tB-naV.placeholderString" = "Find channel";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "ODq-pM-Ylf"; */
-"ODq-pM-Ylf.title" = "Anuluj";
+"ODq-pM-Ylf.title" = "Cancel";
 
 /* Class = "NSMenuItem"; title = "Hide BeagleIM"; ObjectID = "Olw-nP-bQN"; */
-"Olw-nP-bQN.title" = "Ukryj BeagleIM";
+"Olw-nP-bQN.title" = "Hide BeagleIM";
 
 /* Class = "NSMenuItem"; title = "Find Previous"; ObjectID = "OwM-mh-QMV"; */
-"OwM-mh-QMV.title" = "Znajdź poprzedni";
+"OwM-mh-QMV.title" = "Find Previous";
 
 /* Class = "NSMenuItem"; title = "Minimize"; ObjectID = "OY7-WF-poV"; */
-"OY7-WF-poV.title" = "Minimalizuj";
+"OY7-WF-poV.title" = "Minimize";
 
 /* Class = "NSMenuItem"; title = "Stop Speaking"; ObjectID = "Oyz-dy-DGm"; */
-"Oyz-dy-DGm.title" = "Zakończ mówienie";
+"Oyz-dy-DGm.title" = "Stop Speaking";
 
 /* Class = "NSMenuItem"; title = "Delete"; ObjectID = "pa3-QI-u2k"; */
-"pa3-QI-u2k.title" = "Usuń";
+"pa3-QI-u2k.title" = "Delete";
 
 /* Class = "NSTextFieldCell"; placeholderString = "Automatic"; ObjectID = "Pdj-Fp-6MW"; */
-"Pdj-Fp-6MW.placeholderString" = "Automatyczny";
+"Pdj-Fp-6MW.placeholderString" = "Automatic";
 
 /* Class = "NSMenuItem"; title = "Find Next"; ObjectID = "q09-fT-Sye"; */
 "q09-fT-Sye.title" = "Find Next";
@@ -431,16 +434,16 @@
 "rgM-f4-ycn.title" = "Smart Dashes";
 
 /* Class = "NSTextFieldCell"; placeholderString = "Automatic"; ObjectID = "rGz-Of-bfr"; */
-"rGz-Of-bfr.placeholderString" = "Automatycznie";
+"rGz-Of-bfr.placeholderString" = "Automatic";
 
 /* Class = "NSTextFieldCell"; title = "using account"; ObjectID = "ROY-5k-SBe"; */
-"ROY-5k-SBe.title" = "używając konta";
+"ROY-5k-SBe.title" = "using account";
 
 /* Class = "NSMenuItem"; title = "Select All"; ObjectID = "Ruw-6m-B2m"; */
-"Ruw-6m-B2m.title" = "Zaznacz wszystko";
+"Ruw-6m-B2m.title" = "Select All";
 
 /* Class = "NSMenuItem"; title = "Jump to Selection"; ObjectID = "S0p-oC-mLd"; */
-"S0p-oC-mLd.title" = "Przejdź do zaznaczenia";
+"S0p-oC-mLd.title" = "Jump to Selection";
 
 /* Class = "NSTextFieldCell"; title = "Description"; ObjectID = "sB0-hv-QFi"; */
 "sB0-hv-QFi.title" = "Description";
@@ -452,22 +455,22 @@
 "slb-17-IhS.title" = "Label";
 
 /* Class = "NSMenuItem"; title = "Show Toolbar"; ObjectID = "snW-S8-Cw5"; */
-"snW-S8-Cw5.title" = "Pokaż pasek narzędzi";
+"snW-S8-Cw5.title" = "Show Toolbar";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "so1-nz-A4R"; */
-"so1-nz-A4R.title" = "Anuluj";
+"so1-nz-A4R.title" = "Cancel";
 
 /* Class = "NSButtonCell"; title = "Accept"; ObjectID = "stQ-l9-ygV"; */
-"stQ-l9-ygV.title" = "Akceptuj";
+"stQ-l9-ygV.title" = "Accept";
 
 /* Class = "NSWindow"; title = "Server certificate"; ObjectID = "sxL-FK-b83"; */
-"sxL-FK-b83.title" = "Certyfikat serwera";
+"sxL-FK-b83.title" = "Server certificate";
 
 /* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "TcJ-j5-9sd"; */
 "TcJ-j5-9sd.title" = "Table View Cell";
 
 /* Class = "NSMenu"; title = "Window"; ObjectID = "Td7-aD-5lo"; */
-"Td7-aD-5lo.title" = "Okno";
+"Td7-aD-5lo.title" = "Window";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "ThR-i5-BbQ"; */
 "ThR-i5-BbQ.title" = "Text Cell";
@@ -479,10 +482,10 @@
 "tRr-pd-1PS.title" = "Data Detectors";
 
 /* Class = "NSWindow"; title = "Open chat"; ObjectID = "tTn-0M-1Qa"; */
-"tTn-0M-1Qa.title" = "Otwórz rozmowę";
+"tTn-0M-1Qa.title" = "Open chat";
 
 /* Class = "NSTextFieldCell"; placeholderString = "Find room or enter new name to create room"; ObjectID = "TWr-Qh-l4X"; */
-"TWr-Qh-l4X.placeholderString" = "Znajdź pokój lub prowadź nową nazwę any utworzyć";
+"TWr-Qh-l4X.placeholderString" = "Find room or enter new name to create room";
 
 /* Class = "NSTextFieldCell"; title = "user@domain.com"; ObjectID = "txK-sv-wuj"; */
 "txK-sv-wuj.title" = "user@domain.com";
@@ -490,11 +493,14 @@
 /* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "tys-Rk-VSO"; */
 "tys-Rk-VSO.title" = "Table View Cell";
 
+/* Class = "NSButtonCell"; title = "12"; ObjectID = "uDh-Jo-uoa"; */
+"uDh-Jo-uoa.title" = "12";
+
 /* Class = "NSButtonCell"; title = "0"; ObjectID = "UeY-XO-CZa"; */
 "UeY-XO-CZa.title" = "0";
 
 /* Class = "NSMenuItem"; title = "Capitalize"; ObjectID = "UEZ-Bs-lqG"; */
-"UEZ-Bs-lqG.title" = "Od wielkiej litery";
+"UEZ-Bs-lqG.title" = "Capitalize";
 
 /* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "UGU-nw-IC0"; */
 "UGU-nw-IC0.title" = "Table View Cell";
@@ -503,28 +509,28 @@
 "uIX-uL-LSO.title" = "Timestamp";
 
 /* Class = "NSMenuItem"; title = "XML Console"; ObjectID = "UNA-Ak-Afx"; */
-"UNA-Ak-Afx.title" = "Konsola XML";
+"UNA-Ak-Afx.title" = "XML Console";
 
 /* Class = "NSMenuItem"; title = "Configure"; ObjectID = "UOM-RU-Qv2"; */
-"UOM-RU-Qv2.title" = "Konfiguruj";
+"UOM-RU-Qv2.title" = "Configure";
 
 /* Class = "NSMenu"; title = "BeagleIM"; ObjectID = "uQy-DD-JDr"; */
 "uQy-DD-JDr.title" = "BeagleIM";
 
 /* Class = "NSMenuItem"; title = "Cut"; ObjectID = "uRl-iY-unG"; */
-"uRl-iY-unG.title" = "Wytnij";
+"uRl-iY-unG.title" = "Cut";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "v8k-lO-Qpx"; */
-"v8k-lO-Qpx.title" = "Anuluj";
+"v8k-lO-Qpx.title" = "Cancel";
 
 /* Class = "NSTabViewItem"; label = "Create"; ObjectID = "VAr-gZ-ZFi"; */
-"VAr-gZ-ZFi.label" = "Utwótrz";
+"VAr-gZ-ZFi.label" = "Create";
 
 /* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "Vdr-fp-XzO"; */
-"Vdr-fp-XzO.title" = "Ukryj pozostałe";
+"Vdr-fp-XzO.title" = "Hide Others";
 
 /* Class = "NSTextFieldCell"; title = "Valid period:"; ObjectID = "VFO-Qh-k6S"; */
-"VFO-Qh-k6S.title" = "Okres ważności:";
+"VFO-Qh-k6S.title" = "Valid period:";
 
 /* Class = "NSTextFieldCell"; title = "user@domain.com"; ObjectID = "VGT-gv-U2i"; */
 "VGT-gv-U2i.title" = "user@domain.com";
@@ -533,97 +539,91 @@
 "vi6-c1-4ua.title" = "Text Cell";
 
 /* Class = "NSMenuItem"; title = "Make Upper Case"; ObjectID = "vmV-6d-7jI"; */
-"vmV-6d-7jI.title" = "Zamień na wielkie litery";
+"vmV-6d-7jI.title" = "Make Upper Case";
 
 /* Class = "NSTextFieldCell"; placeholderString = "Enter JID of conference component"; ObjectID = "vnL-pc-fd7"; */
-"vnL-pc-fd7.placeholderString" = "Wprowadź JID lub wybierz component konferencji";
+"vnL-pc-fd7.placeholderString" = "Enter JID of conference component";
 
 /* Class = "NSTextFieldCell"; title = "Certificate name:"; ObjectID = "vQs-EJ-86s"; */
-"vQs-EJ-86s.title" = "Nazwa certyfikatu:";
+"vQs-EJ-86s.title" = "Certificate name:";
 
 /* Class = "NSMenu"; title = "Edit"; ObjectID = "W48-6f-4Dl"; */
-"W48-6f-4Dl.title" = "Edytuj";
+"W48-6f-4Dl.title" = "Edit";
 
 /* Class = "NSMenuItem"; title = "Paste and Match Style"; ObjectID = "WeT-3V-zwk"; */
-"WeT-3V-zwk.title" = "Wkej i dostosuj styl";
+"WeT-3V-zwk.title" = "Paste and Match Style";
 
 /* Class = "NSButtonCell"; title = "Open"; ObjectID = "wGw-8v-4XS"; */
-"wGw-8v-4XS.title" = "Otwórz";
+"wGw-8v-4XS.title" = "Open";
 
 /* Class = "NSTextFieldCell"; title = "Fingerprint:"; ObjectID = "wmG-Ai-yUK"; */
-"wmG-Ai-yUK.title" = "Odcisk:";
+"wmG-Ai-yUK.title" = "Fingerprint:";
 
 /* Class = "NSTextFieldCell"; title = "It is not possible to automatically verify server certificate for test.com. Please review following certiciate details."; ObjectID = "Wxz-bh-twp"; */
-"Wxz-bh-twp.title" = "Nie udało się automatycznie zveryfikować certyfikatu dla test.com. Oto szczegóły certyfikatu.";
+"Wxz-bh-twp.title" = "It is not possible to automatically verify server certificate for test.com. Please review following certiciate details.";
 
 /* Class = "NSMenuItem"; title = "Copy"; ObjectID = "x3v-GG-iWU"; */
-"x3v-GG-iWU.title" = "Kopiuj";
+"x3v-GG-iWU.title" = "Copy";
 
 /* Class = "NSTextFieldCell"; title = "room@muc.example.com"; ObjectID = "Xf2-T6-e7X"; */
 "Xf2-T6-e7X.title" = "room@muc.example.com";
 
 /* Class = "NSMenuItem"; title = "Speech"; ObjectID = "xrE-MZ-jX0"; */
-"xrE-MZ-jX0.title" = "Mowa";
+"xrE-MZ-jX0.title" = "Speech";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "xt3-ut-r99"; */
 "xt3-ut-r99.title" = "Text Cell";
 
 /* Class = "NSTextFieldCell"; placeholderString = "Nickname (required)"; ObjectID = "xYL-dD-FdP"; */
-"xYL-dD-FdP.placeholderString" = "Nick (required)";
+"xYL-dD-FdP.placeholderString" = "Nickname (required)";
 
 /* Class = "NSMenuItem"; title = "Find…"; ObjectID = "Xz5-n4-O0W"; */
-"Xz5-n4-O0W.title" = "Znajdź…";
+"Xz5-n4-O0W.title" = "Find…";
 
 /* Class = "NSTextFieldCell"; title = "Access"; ObjectID = "y2D-po-2u0"; */
-"y2D-po-2u0.title" = "Dostęp";
+"y2D-po-2u0.title" = "Access";
 
 /* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "yE1-5x-RKG"; */
 "yE1-5x-RKG.title" = "Label";
 
 /* Class = "NSMenuItem"; title = "Find and Replace…"; ObjectID = "YEy-JH-Tfz"; */
-"YEy-JH-Tfz.title" = "Znajdź i zamień…";
+"YEy-JH-Tfz.title" = "Find and Replace…";
 
 /* Class = "NSMenuItem"; title = "About us"; ObjectID = "yFa-EE-Aqj"; */
-"yFa-EE-Aqj.title" = "O nas";
+"yFa-EE-Aqj.title" = "About us";
 
 /* Class = "NSMenuItem"; title = "Create meeting..."; ObjectID = "YIK-58-5aR"; */
-"YIK-58-5aR.title" = "Utwórz spotkanie...";
+"YIK-58-5aR.title" = "Create meeting...";
 
 /* Class = "NSMenuItem"; title = "Start Speaking"; ObjectID = "Ynk-f8-cLZ"; */
-"Ynk-f8-cLZ.title" = "Rozpocznij mówienie";
+"Ynk-f8-cLZ.title" = "Start Speaking";
 
 /* Class = "NSMenuItem"; title = "Scripts"; ObjectID = "yUL-qX-nrr"; */
-"yUL-qX-nrr.title" = "Skrypty";
+"yUL-qX-nrr.title" = "Scripts";
 
 /* Class = "NSTextFieldCell"; title = "Contact name"; ObjectID = "yXg-0b-XTX"; */
-"yXg-0b-XTX.title" = "Nazwa kontaktu";
+"yXg-0b-XTX.title" = "Contact name";
 
 /* Class = "NSMenuItem"; title = "Verified"; ObjectID = "YZV-OS-dZY"; */
-"YZV-OS-dZY.title" = "Zweryfikowany";
+"YZV-OS-dZY.title" = "Verified";
 
 /* Class = "NSMenuItem"; title = "Show Substitutions"; ObjectID = "z6F-FW-3nz"; */
-"z6F-FW-3nz.title" = "Pokaż zastąpienia";
+"z6F-FW-3nz.title" = "Show Substitutions";
 
 /* Class = "NSMenuItem"; title = "Website"; ObjectID = "zdx-RQ-LZP"; */
-"zdx-RQ-LZP.title" = "Strona WWW";
+"zdx-RQ-LZP.title" = "Website";
 
 /* Class = "NSMenuItem"; title = "Chats"; ObjectID = "ZfF-gv-Ucr"; */
-"ZfF-gv-Ucr.title" = "Rozmowy";
+"ZfF-gv-Ucr.title" = "Chats";
 
 /* Class = "NSTextFieldCell"; title = "Open chat"; ObjectID = "zIX-7q-w1b"; */
-"zIX-7q-w1b.title" = "Otwórz rozmowę";
+"zIX-7q-w1b.title" = "Open chat";
 
 /* Class = "NSViewController"; title = "Create"; ObjectID = "zKN-wb-Mfs"; */
-"zKN-wb-Mfs.title" = "Utwórz";
+"zKN-wb-Mfs.title" = "Create";
 
 /* Class = "NSTextFieldCell"; title = "Fingerprint:"; ObjectID = "ZLa-eK-ZZz"; */
-"ZLa-eK-ZZz.title" = "Odcisk:";
+"ZLa-eK-ZZz.title" = "Fingerprint:";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "ZXY-c5-nbo"; */
 "ZXY-c5-nbo.title" = "Text Cell";
-
-/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "HUr-nw-nKs"; */
-"HUr-nw-nKs.title" = "";
-
-/* Class = "NSButtonCell"; title = "12"; ObjectID = "uDh-Jo-uoa"; */
-"uDh-Jo-uoa.title" = "";

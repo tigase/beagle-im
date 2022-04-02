@@ -1,5 +1,5 @@
 /* Class = "NSViewController"; title = "Info"; ObjectID = "59p-X5-xhU"; */
-"59p-X5-xhU.title" = "Informacje";
+"59p-X5-xhU.title" = "Info";
 
 /* Class = "NSTextFieldCell"; title = "Test User"; ObjectID = "7b7-bx-vsU"; */
 "7b7-bx-vsU.title" = "Test User";
@@ -17,7 +17,7 @@
 "Lkw-eP-Rzq.title" = "Jid";
 
 /* Class = "NSViewController"; title = "Details"; ObjectID = "vuF-Zx-mrT"; */
-"vuF-Zx-mrT.title" = "Szcegóły";
+"vuF-Zx-mrT.title" = "Details";
 
 /* Class = "NSViewController"; title = "ConversationDetailsViewController"; ObjectID = "yDC-N1-fGo"; */
 "yDC-N1-fGo.title" = "ConversationDetailsViewController";
