@@ -24,26 +24,23 @@ import AppKit
 import TigaseSwift
 import TigaseSwiftOMEMO
 
-class DownloadManager {
+class DownloadManager: NSObject {
 
     static let instance = DownloadManager();
 
     private let dispatcher = QueueDispatcher(label: "download_manager_queue");
 
-    private var inProgress: [URL: Item] = [:];
-
     private var itemDownloadInProgress: [Int] = [];
 
-    func downloadInProgress(for url: URL, completionHandler: @escaping (Result<String,DownloadError>)->Void) -> Bool {
-        return dispatcher.sync {
-            if let item = self.inProgress[url] {
-                item.onCompletion(completionHandler);
-                return true;
-            }
-            return false;
-        }
+    private var downloadSession: URLSession!;
+    
+    private var inProgress: [URLSessionDownloadTask: Item] = [:];
+    
+    private override init() {
+        super.init();
+        downloadSession = URLSession(configuration: URLSession.shared.configuration, delegate: self, delegateQueue: nil);
     }
-
+    
     func downloadInProgress(for item: ConversationEntry) -> Bool {
         return dispatcher.sync {
             return self.itemDownloadInProgress.contains(item.id);
@@ -75,9 +72,7 @@ class DownloadManager {
                 }
             }
             
-            let sessionConfig = URLSessionConfiguration.default;
-            let session = URLSession(configuration: sessionConfig);
-            DownloadManager.retrieveHeaders(session: session, url: url, completionHandler: { headersResult in
+            retrieveHeaders(session: self.downloadSession, url: url, completionHandler: { headersResult in
                 switch headersResult {
                 case .success(let suggestedFilename, let expectedSize, let mimeType):
                     let isTooBig = expectedSize > maxSize;
@@ -100,7 +95,7 @@ class DownloadManager {
                         return;
                     }
 
-                    DownloadManager.download(session: session, url: url, completionHandler: { result in
+                    self.download(session: self.downloadSession, url: url, expectedSize: expectedSize, completionHandler: { result in
                         switch result {
                         case .success((let localUrl, let filename)):
                             if let encryptionKey = encryptionKey, let omemoModule = XmppService.instance.getClient(for: item.conversation.account)?.module(.omemo) {
@@ -126,6 +121,8 @@ class DownloadManager {
                             switch err {
                             case .responseError(let code):
                                 statusCode = code;
+                            case .fileSizeMismatch:
+                                statusCode = 404;
                             default:
                                 break;
                             }
@@ -155,76 +152,10 @@ class DownloadManager {
         }
     }
 
-    func downloadFile(destination: DownloadStore, as id: String, url: URL, maxSize: Int64, excludedMimetypes: [String], completionHandler: @escaping (Result<String,DownloadError>)->Void) {
-
-        dispatcher.async {
-            if let item = self.inProgress[url] {
-                item.onCompletion(completionHandler);
-            } else {
-                let item = Item();
-                item.onCompletion(completionHandler);
-                self.inProgress[url] = item;
-
-                self.downloadFile(url: url, maxSize: maxSize, excludedMimetypes: excludedMimetypes) { (result) in
-                    self.dispatcher.async {
-                        switch result {
-                        case .success((let localUrl, let filename)):
-                            //let id = UUID().uuidString;
-                            _ = destination.store(localUrl, filename: filename, with: id);
-                            item.completed(with: .success(id))
-                        case .failure(let err):
-                            item.completed(with: .failure(err));
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    func downloadFile(url: URL, maxSize: Int64, excludedMimetypes: [String], completionHandler: @escaping (Result<(URL,String),DownloadError>)->Void) {
-        let sessionConfig = URLSessionConfiguration.default;
-        let session = URLSession(configuration: sessionConfig);
-
-        DownloadManager.retrieveHeaders(session: session, url: url, completionHandler: { headersResult in
-            switch headersResult {
-            case .success(_, _, let mimeType):
-                if let type = mimeType {
-                    guard !excludedMimetypes.contains(type) else {
-                        completionHandler(.failure(.badMimeType(mimeType: type)));
-                        return;
-                    }
-                }
-
-                DownloadManager.download(session: session, url: url, completionHandler: completionHandler);
-                break;
-            case .failure(let statusCode):
-                completionHandler(.failure(.responseError(statusCode: statusCode)));
-            }
-        })
-    }
-
-    static func download(session: URLSession, url: URL, completionHandler: @escaping (Result<(URL,String), DownloadError>)->Void) {
+    func download(session: URLSession, url: URL, expectedSize: Int64, completionHandler: @escaping (Result<(URL,String), DownloadError>)->Void) {
         let request = URLRequest(url: url);
-        let task = session.downloadTask(with: request) { (tempLocalUrl, response, error) in
-            if let tempLocalUrl = tempLocalUrl, error == nil {
-                if let filename = response?.suggestedFilename {
-                    completionHandler(.success((tempLocalUrl, filename)));
-                } else if let mimeType = response?.mimeType, let filenameExt =  DownloadManager.mimeTypeToExtension(mimeType: mimeType) {
-                    completionHandler(.success((tempLocalUrl, "file.\(filenameExt)")));
-                } else if let uti = try? NSWorkspace.shared.type(ofFile: tempLocalUrl.path), let mimeType = UTTypeCopyPreferredTagWithClass(uti as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as String?, let filenameExt =  DownloadManager.mimeTypeToExtension(mimeType: mimeType) {
-                    completionHandler(.success((tempLocalUrl, "file.\(filenameExt)")));
-                } else {
-                    completionHandler(.success((tempLocalUrl, tempLocalUrl.lastPathComponent)));
-                }
-            } else {
-                guard error == nil else {
-                    completionHandler(.failure(.networkError(error: error!)));
-                    return;
-                }
-
-                completionHandler(.failure(.responseError(statusCode: (response as? HTTPURLResponse)?.statusCode ?? 500)));
-            }
-        }
+        let task = session.downloadTask(with: request);
+        inProgress[task] = Item(maxSize: expectedSize, completionHandler: completionHandler);
         task.resume();
     }
 
@@ -237,7 +168,7 @@ class DownloadManager {
         return extensionString
     }
 
-    static func retrieveHeaders(session: URLSession, url: URL, completionHandler: @escaping (HeadersResult)->Void) {
+    func retrieveHeaders(session: URLSession, url: URL, completionHandler: @escaping (HeadersResult)->Void) {
         var request = URLRequest(url: url);
         request.httpMethod = "HEAD";
         session.dataTask(with: request) { (data, resp, error) in
@@ -256,22 +187,27 @@ class DownloadManager {
     }
 
     class Item {
-        let operationQueue = OperationQueue();
-        var result: Result<String,DownloadError>? = nil;
-
-        init() {
-            self.operationQueue.isSuspended = true;
+        let maxSize: Int64;
+        let completionHandler: (Result<(URL,String), DownloadError>)->Void;
+        init(maxSize: Int64, completionHandler: @escaping (Result<(URL,String), DownloadError>)->Void) {
+            self.completionHandler = completionHandler;
+            self.maxSize = maxSize;
         }
 
-        func onCompletion(_ completionHandler: @escaping (Result<String,DownloadError>)->Void) {
-            operationQueue.addOperation {
-                completionHandler(self.result ?? .failure(DownloadError.responseError(statusCode: 500)));
+        func completed(location: URL, filename: String) {
+            completionHandler(.success((location, filename)));
+        }
+
+        func completed(withError error: Error?) {
+            guard let err = error else {
+                completionHandler(.failure(.responseError(statusCode: 500)));
+                return;
             }
-        }
-
-        func completed(with result: Result<String,DownloadError>?) {
-            self.result = result;
-            operationQueue.isSuspended = false;
+            if (err as NSError).domain == "NSURLErrorDomain" && (err as NSError).code == NSURLErrorCancelled {
+                completionHandler(.failure(.fileSizeMismatch));
+            } else {
+                completionHandler(.failure(.networkError(error: err)));
+            }
         }
     }
 
@@ -285,5 +221,50 @@ class DownloadManager {
         case responseError(statusCode: Int)
         case tooBig(size: Int64, mimeType: String?, filename: String?)
         case badMimeType(mimeType: String?)
+        case fileSizeMismatch
+    }
+    
+}
+
+extension DownloadManager: URLSessionDownloadDelegate {
+    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
+        guard let item = dispatcher.sync(execute: {
+            return self.inProgress.removeValue(forKey: downloadTask);
+        }) else {
+            return;
+        }
+        
+        if let filename = downloadTask.response?.suggestedFilename {
+            item.completed(location: location, filename: filename);
+        } else if let mimeType = downloadTask.response?.mimeType, let filenameExt = DownloadManager.mimeTypeToExtension(mimeType: mimeType) {
+            item.completed(location: location, filename: "file.\(filenameExt)");
+        } else if let uti = try? location.resourceValues(forKeys: [.typeIdentifierKey]).typeIdentifier, let filenameExt = UTTypeCopyPreferredTagWithClass(uti as CFString, kUTTagClassFilenameExtension)?.takeRetainedValue() as String? {
+            item.completed(location: location, filename: "file.\(filenameExt)");
+        } else {
+            item.completed(location: location, filename: location.lastPathComponent);
+        }
+    }
+    
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        guard let downloadTask = task as? URLSessionDownloadTask, let item = dispatcher.sync(execute: {
+            return self.inProgress.removeValue(forKey: downloadTask);
+        }) else {
+            return;
+        }
+        item.completed(withError: error);
+    }
+    
+    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
+        guard let sizeLimit = dispatcher.sync(execute: {
+            return self.inProgress[downloadTask]?.maxSize;
+        }) else {
+            return;
+        }
+
+        if (sizeLimit != NSURLSessionTransferSizeUnknown) {
+            if ((totalBytesExpectedToWrite != NSURLSessionTransferSizeUnknown && totalBytesExpectedToWrite > sizeLimit + 32) || sizeLimit + 32 < totalBytesWritten) {
+                downloadTask.cancel();
+            }
+        }
     }
 }
