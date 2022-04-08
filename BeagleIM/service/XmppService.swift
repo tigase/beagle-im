@@ -23,6 +23,7 @@ import AppKit
 import TigaseSwift
 import TigaseSwiftOMEMO
 import Combine
+import TigaseLogging
 
 extension Presence.Show: Codable {
     
@@ -47,6 +48,8 @@ class XmppService {
     
     static let instance = XmppService();
  
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: XmppService.self));
+    
     let extensions: [XmppServiceExtension] = [MessageEventHandler.instance, BlockedEventHandler.instance, PresenceRosterEventHandler.instance, AvatarEventHandler.instance, MixEventHandler.instance, MucEventHandler.instance, MeetEventHandler.instance];
     
     var clients: [BareJID: XMPPClient] {
@@ -88,8 +91,10 @@ class XmppService {
                             return status.show != nil
         }).removeDuplicates().sink(receiveValue: { [weak self] available in
             if available {
+                self?.logger.debug("connecting all clients..")
                 self?.connectClients(ignoreCheck: true);
             } else {
+                self?.logger.debug("disconnecting all clients..")
                 self?.disconnectClients(force: !NetworkMonitor.shared.isNetworkAvailable);
             }
         }).store(in: &cancellables);
@@ -192,7 +197,7 @@ class XmppService {
     
     private func reconnect(client: XMPPClient, ignoreCheck: Bool = false) {
         self.dispatcher.sync {
-            guard client.state == .disconnected(), let account = AccountManager.getAccount(for: client.userBareJid), account.active, ignoreCheck || ( NetworkMonitor.shared.isNetworkAvailable && self.status.show != nil)  else {
+            guard client.state == .disconnected(), let account = AccountManager.getAccount(for: client.userBareJid), account.active, ignoreCheck || (self.expectedStatus.value.show != nil)  else {
                 return;
             }
             
@@ -246,7 +251,7 @@ class XmppService {
         }
         
         
-        guard self.status.show != nil || !NetworkMonitor.shared.isNetworkAvailable else {
+        guard self.expectedStatus.value.show != nil else {
             return;
         }
         let retry = client.retryNo;
@@ -286,8 +291,9 @@ class XmppService {
         let jid = account.name;
         let client = XMPPClient();
         client.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
-            options.dnsResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(), cache: self.dnsCache);
+            options.dnsResolver = DNSSrvResolverWithCache(resolver: XMPPDNSSrvResolver(directTlsEnabled: true), cache: self.dnsCache);
             options.networkProcessorProviders.append(SSLProcessorProvider());
+            options.connectionTimeout = 15.0;
         })
         client.connectionConfiguration.userJid = jid;
         
