@@ -91,6 +91,12 @@
 /* alert window title */
 "Authentication failed" = "Autoryzacja nie powiodła się";
 
+/* authorization failure title */
+"Authentication failure for %@" = "Uwierzytelnianie dla konta %@ się nie powiodło";
+
+/* auth mechanism too weak */
+"Authentication mechanism is too weak for authentication" = "Mechanizm uwierzytelniający jest za słaby";
+
 /* alert window title */
 "Authorization error" = "Błąd autoryzacji";
 
@@ -346,11 +352,17 @@
 /* settings */
 "Experimental" = "Eksperymentalne";
 
+/* message archiving settings set failed */
+"Failed to apply changes to the archiving configuration" = "Nie udało się zapisać zmodyfikowanej konfiguracji archiwizacji";
+
 /* jingle manager */
 "Failed to initialize RTC SSL for WebRTC!" = "Nie udało się zainicjować RTC SSL dla WebRTC!";
 
 /* meet controlller */
 "Failed to kick out" = "Nie udalo się wyrzucić z rozmowy";
+
+/* message archiving settings retrieval failed */
+"Failed to retrieve archiving configuration from the server" = "Nie udało się pobrać konfiguracji archiwizacji z serwera";
 
 /* media helper sharing error */
 "Feature not supported by XMPP server" = "Funkcja nie jest obługiwana przez serwer XMPP";
@@ -415,6 +427,9 @@
 
 /* muc module - room error */
 "Invalid password" = "Nieprawidłowe hasło";
+
+/* invalid password */
+"Invalid password for account" = "Nieprawidłowe hasło dla konta";
 
 /* alert window title */
 "Invalid SSL certificate" = "Nieprawidłowy certyfikat SSL";
@@ -500,6 +515,9 @@
 
 /* alert window message */
 "It was not possible to share %d item(s) due to following errors:\n %@" = "Nie udało się udostępnić %d rzeczy z uwagi na błędy: %@";
+
+/* server not trusted */
+"It was not possible to verify that server is trusted" = "Nie udało się zweryfikować, że serwer jest zaufany";
 
 /* OMEMO settings */
 "Key not generated!" = "Klucz nie został wygenerowany!";
@@ -750,6 +768,9 @@
 
 /* account view placeholder */
 "Required" = "Wymagane";
+
+/* invalid auth mechanism */
+"Required authentication mechanism not supported" = "Wymagany mechanizm uwierzytelnianie nie jest obsługiwany";
 
 /* context menu item */
 "Resend message" = "Wyślij ponownie wiadomość";

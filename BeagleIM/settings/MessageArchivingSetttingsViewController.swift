@@ -22,6 +22,23 @@
 import AppKit
 import TigaseSwift
 
+extension NSViewController {
+    
+    func showError(message: String, error: Error) {
+        guard let window = self.view.window else {
+            return;
+        }
+        let alert = NSAlert();
+        alert.alertStyle = .warning;
+        alert.messageText = message;
+        alert.informativeText = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription;
+        alert.icon = NSImage(named: NSImage.cautionName);
+        alert.addButton(withTitle: "OK");
+        alert.beginSheetModal(for: window);
+    }
+    
+}
+
 class MessageArchivingSettingsViewController: NSViewController, AccountAware {
     
     var account: BareJID?;
@@ -82,8 +99,11 @@ class MessageArchivingSettingsViewController: NSViewController, AccountAware {
                     self.isEnabled = true;
                 }
             case .failure(let error):
-                self.progressIndicator.stopAnimation(self);
-                self.isEnabled = false;
+                DispatchQueue.main.async {
+                    self.progressIndicator.stopAnimation(self);
+                    self.isEnabled = false;
+                    self.showError(message: NSLocalizedString("Failed to retrieve archiving configuration from the server", comment: "message archiving settings retrieval failed"), error: error);
+                }
             }
         });
     }
@@ -113,15 +133,17 @@ class MessageArchivingSettingsViewController: NSViewController, AccountAware {
                             AccountSettings.messageSyncPeriod(self.account!).set(value: value);
                             self.progressIndicator.stopAnimation(self);
                             self.dismiss(self);
-                        case .failure(_):
+                        case .failure(let error):
                             self.progressIndicator.stopAnimation(self);
+                            self.showError(message: NSLocalizedString("Failed to apply changes to the archiving configuration", comment: "message archiving settings set failed"), error: error);
                         }
                     }
                 });
-            case .failure(_):
+            case .failure(let error):
                 DispatchQueue.main.async {
                     self.isEnabled = true;
                     self.progressIndicator.stopAnimation(self);
+                    self.showError(message: NSLocalizedString("Failed to retrieve archiving configuration from the server", comment: "message archiving settings retrieval failed"), error: error);
                 }
             }
         });

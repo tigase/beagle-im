@@ -47,10 +47,10 @@ class Alert {
         items.append(.spacing);
     }
     
-    func run(completionHandler handler: @escaping (NSApplication.ModalResponse)->Void) {
+    func run(completionHandler handler: ((NSApplication.ModalResponse)->Void)?) {
         run(completionHandler: { controller, result, completionHandler in
             completionHandler();
-            handler(result);
+            handler?(result);
         });
     }
     

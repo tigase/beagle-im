@@ -93,6 +93,12 @@
 /* alert window title */
 "Authentication failed" = "Authentication failed";
 
+/* authorization failure title */
+"Authentication failure for %@" = "Authentication failure for %@";
+
+/* auth mechanism too weak */
+"Authentication mechanism is too weak for authentication" = "Authentication mechanism is too weak for authentication";
+
 /* alert window title */
 "Authorization error" = "Authorization error";
 
@@ -354,11 +360,17 @@
 /* settings */
 "Experimental" = "Experimental";
 
+/* message archiving settings set failed */
+"Failed to apply changes to the archiving configuration" = "Failed to apply changes to the archiving configuration";
+
 /* jingle manager */
 "Failed to initialize RTC SSL for WebRTC!" = "Failed to initialize RTC SSL for WebRTC!";
 
 /* meet controlller */
 "Failed to kick out" = "Failed to kick out";
+
+/* message archiving settings retrieval failed */
+"Failed to retrieve archiving configuration from the server" = "Failed to retrieve archiving configuration from the server";
 
 /* media helper sharing error */
 "Feature not supported by XMPP server" = "Feature not supported by XMPP server";
@@ -424,6 +436,9 @@
 
 /* muc module - room error */
 "Invalid password" = "Invalid password";
+
+/* invalid password */
+"Invalid password for account" = "Invalid password for account";
 
 /* alert window title */
 "Invalid SSL certificate" = "Invalid SSL certificate";
@@ -512,6 +527,9 @@
 
 /* alert window message */
 "It was not possible to share %d item(s) due to following errors:\n %@" = "It was not possible to share %1$d item(s) due to following errors:\n %2$@";
+
+/* server not trusted */
+"It was not possible to verify that server is trusted" = "It was not possible to verify that server is trusted";
 
 /* OMEMO settings */
 "Key not generated!" = "Key not generated!";
@@ -768,6 +786,9 @@
 
 /* account view placeholder */
 "Required" = "Required";
+
+/* invalid auth mechanism */
+"Required authentication mechanism not supported" = "Required authentication mechanism not supported";
 
 /* context menu item */
 "Resend message" = "Resend message";

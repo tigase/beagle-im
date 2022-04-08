@@ -569,23 +569,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
      
         DispatchQueue.main.async {
             let alert = Alert();
-            alert.messageText = "Authentication failure for \(accountName.stringValue)";
+            alert.messageText = String.localizedStringWithFormat(NSLocalizedString("Authentication failure for %@", comment: "authorization failure title"), accountName.stringValue);
             switch error {
             case .aborted, .temporary_auth_failure:
                 // those are temporary errors and we will retry, so there is no point in notifying user...
                 return;
             case .invalid_mechanism:
-                alert.informativeText = "Required authentication mechanism not supported";
+                alert.informativeText = NSLocalizedString("Required authentication mechanism not supported", comment: "invalid auth mechanism");
             case .mechanism_too_weak:
-                alert.informativeText = "Authentication mechanism is too weak for authentication";
+                alert.informativeText = NSLocalizedString("Authentication mechanism is too weak for authentication", comment: "auth mechanism too weak");
             case .incorrect_encoding, .invalid_authzid, .not_authorized:
-                alert.informativeText = "Invalid password for account";
+                alert.informativeText = NSLocalizedString("Invalid password for account", comment: "invalid password");
             case .server_not_trusted:
-                alert.informativeText = "It was not possible to verify that server is trusted";
+                alert.informativeText = NSLocalizedString("It was not possible to verify that server is trusted", comment: "server not trusted");
             }
             
             alert.icon = NSImage(named: NSImage.cautionName);
-            alert.addButton(withTitle: "OK");
+            alert.addButton(withTitle: NSLocalizedString("OK", comment: "button label"));
             alert.run(completionHandler: { response in
                 guard let windowController = (NSApplication.shared.delegate as? AppDelegate)?.preferencesWindowController else {
                     return;
