@@ -1,11 +1,5 @@
-/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "06O-31-S6M"; */
-"06O-31-S6M.title" = "Table View Cell";
-
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "0pT-69-Z2v"; */
 "0pT-69-Z2v.title" = "Cancel";
-
-/* Class = "NSTextFieldCell"; title = "Please enter nickname to enter to join groupchat at room@muc.example.com."; ObjectID = "7g4-5J-1ra"; */
-"7g4-5J-1ra.title" = "Please enter nickname to enter to join groupchat at room@muc.example.com.";
 
 /* Class = "NSTextFieldCell"; title = "Instructions"; ObjectID = "936-gG-hyt"; */
 "936-gG-hyt.title" = "Instructions";
@@ -19,20 +13,11 @@
 /* Class = "NSTextFieldCell"; title = "Title"; ObjectID = "adu-FV-A6U"; */
 "adu-FV-A6U.title" = "Title";
 
-/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "AsC-g8-k9h"; */
-"AsC-g8-k9h.title" = "Label";
-
 /* Class = "NSButtonCell"; title = "Close"; ObjectID = "bAv-4n-Bcy"; */
 "bAv-4n-Bcy.title" = "Close";
 
-/* Class = "NSMenuItem"; title = "Item 3"; ObjectID = "bcF-cn-kJ6"; */
-"bcF-cn-kJ6.title" = "Item 3";
-
 /* Class = "NSWindow"; title = "Service Discovery"; ObjectID = "bim-SA-o1h"; */
 "bim-SA-o1h.title" = "Service Discovery";
-
-/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "Dc3-8B-v6D"; */
-"Dc3-8B-v6D.title" = "Label";
 
 /* Class = "NSWindow"; title = "Window"; ObjectID = "EMq-DP-tjf"; */
 "EMq-DP-tjf.title" = "Window";
@@ -45,9 +30,6 @@
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "IOU-HQ-7yz"; */
 "IOU-HQ-7yz.title" = "Text Cell";
-
-/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "L7V-PC-vhY"; */
-"L7V-PC-vhY.title" = "Table View Cell";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "mQh-5I-YmH"; */
 "mQh-5I-YmH.title" = "Text Cell";
@@ -82,17 +64,8 @@
 /* Class = "NSWindow"; title = "Window"; ObjectID = "uzQ-me-Xn9"; */
 "uzQ-me-Xn9.title" = "Window";
 
-/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "VDA-jm-umk"; */
-"VDA-jm-umk.title" = "Table View Cell";
-
-/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "vyF-oI-SgR"; */
-"vyF-oI-SgR.title" = "Table View Cell";
-
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "WaH-Jc-fcj"; */
 "WaH-Jc-fcj.title" = "Text Cell";
-
-/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "WHh-uH-Hvc"; */
-"WHh-uH-Hvc.title" = "Table View Cell";
 
 /* Class = "NSButtonCell"; title = "Execute"; ObjectID = "wX5-ZE-aMC"; */
 "wX5-ZE-aMC.title" = "Execute";
@@ -105,12 +78,6 @@
 
 /* Class = "NSTextFieldCell"; title = "Command to execute"; ObjectID = "x5V-we-asQ"; */
 "x5V-we-asQ.title" = "Command to execute";
-
-/* Class = "NSMenuItem"; title = "Item 1"; ObjectID = "YNT-0e-3Ah"; */
-"YNT-0e-3Ah.title" = "Item 1";
-
-/* Class = "NSMenuItem"; title = "Item 2"; ObjectID = "YPq-yR-sXn"; */
-"YPq-yR-sXn.title" = "Item 2";
 
 /* Class = "NSWindow"; title = "Window"; ObjectID = "ZiJ-VN-l98"; */
 "ZiJ-VN-l98.title" = "Window";

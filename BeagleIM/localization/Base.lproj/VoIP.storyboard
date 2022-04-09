@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="19162" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="19162"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="20037"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -59,9 +59,21 @@
                                     <font key="font" metaFont="menu"/>
                                     <menu key="menu" id="5Uf-63-kJ8">
                                         <items>
-                                            <menuItem title="Item 1" state="on" id="LMW-MV-OBc"/>
-                                            <menuItem title="Item 2" id="J7s-o7-Ev2"/>
-                                            <menuItem title="Item 3" id="opj-fc-VjT"/>
+                                            <menuItem title="Item 1" state="on" id="LMW-MV-OBc">
+                                                <attributedString key="userComments">
+                                                    <fragment content="#bc-ignore!"/>
+                                                </attributedString>
+                                            </menuItem>
+                                            <menuItem title="Item 2" id="J7s-o7-Ev2">
+                                                <attributedString key="userComments">
+                                                    <fragment content="#bc-ignore!"/>
+                                                </attributedString>
+                                            </menuItem>
+                                            <menuItem title="Item 3" id="opj-fc-VjT">
+                                                <attributedString key="userComments">
+                                                    <fragment content="#bc-ignore!"/>
+                                                </attributedString>
+                                            </menuItem>
                                         </items>
                                     </menu>
                                 </popUpButtonCell>

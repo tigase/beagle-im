@@ -13,15 +13,6 @@
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "G3n-aI-UbD"; */
 "G3n-aI-UbD.title" = "Cancel";
 
-/* Class = "NSMenuItem"; title = "Item 2"; ObjectID = "J7s-o7-Ev2"; */
-"J7s-o7-Ev2.title" = "Item 2";
-
-/* Class = "NSMenuItem"; title = "Item 1"; ObjectID = "LMW-MV-OBc"; */
-"LMW-MV-OBc.title" = "Item 1";
-
-/* Class = "NSMenuItem"; title = "Item 3"; ObjectID = "opj-fc-VjT"; */
-"opj-fc-VjT.title" = "Item 3";
-
 /* Class = "NSTextFieldCell"; title = "Connecting..."; ObjectID = "pEi-f7-PFa"; */
 "pEi-f7-PFa.title" = "Connecting...";
 

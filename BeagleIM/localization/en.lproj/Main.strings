@@ -37,9 +37,6 @@
 /* Class = "NSMenuItem"; title = "Transformations"; ObjectID = "2oI-Rn-ZJC"; */
 "2oI-Rn-ZJC.title" = "Transformations";
 
-/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "30Y-0J-enL"; */
-"30Y-0J-enL.title" = "Table View Cell";
-
 /* Class = "NSTextFieldCell"; title = "Subject"; ObjectID = "3dY-pc-BG8"; */
 "3dY-pc-BG8.title" = "Subject";
 
@@ -48,9 +45,6 @@
 
 /* Class = "NSMenu"; title = "Speech"; ObjectID = "3rS-ZA-NoH"; */
 "3rS-ZA-NoH.title" = "Speech";
-
-/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "3Ys-tL-bW2"; */
-"3Ys-tL-bW2.title" = "Table View Cell";
 
 /* Class = "NSButtonCell"; title = "Reject"; ObjectID = "4bC-Ca-NCQ"; */
 "4bC-Ca-NCQ.title" = "Reject";
@@ -64,17 +58,11 @@
 /* Class = "NSMenuItem"; title = "Quit BeagleIM"; ObjectID = "4sb-4s-VLi"; */
 "4sb-4s-VLi.title" = "Quit BeagleIM";
 
-/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "5cb-bY-3Nb"; */
-"5cb-bY-3Nb.title" = "Label";
-
 /* Class = "NSMenuItem"; title = "About BeagleIM"; ObjectID = "5kV-Vb-QxS"; */
 "5kV-Vb-QxS.title" = "About BeagleIM";
 
 /* Class = "NSMenuItem"; title = "Edit"; ObjectID = "5QF-Oa-p0T"; */
 "5QF-Oa-p0T.title" = "Edit";
-
-/* Class = "NSTextFieldCell"; title = "Multiline Label"; ObjectID = "6AN-tH-MVB"; */
-"6AN-tH-MVB.title" = "Multiline Label";
 
 /* Class = "NSMenuItem"; title = "Redo"; ObjectID = "6dh-zS-Vam"; */
 "6dh-zS-Vam.title" = "Redo";
@@ -84,12 +72,6 @@
 
 /* Class = "NSMenuItem"; title = "Correct Spelling Automatically"; ObjectID = "78Y-hA-62v"; */
 "78Y-hA-62v.title" = "Correct Spelling Automatically";
-
-/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "9cl-cN-VXM"; */
-"9cl-cN-VXM.title" = "Label";
-
-/* Class = "NSTextFieldCell"; title = "room@muc.example.com"; ObjectID = "9Ev-UC-SMM"; */
-"9Ev-UC-SMM.title" = "room@muc.example.com";
 
 /* Class = "NSMenuItem"; title = "Substitutions"; ObjectID = "9ic-FL-obx"; */
 "9ic-FL-obx.title" = "Substitutions";
@@ -108,9 +90,6 @@
 
 /* Class = "NSMenuItem"; title = "GitHub"; ObjectID = "AFz-Tq-Bxw"; */
 "AFz-Tq-Bxw.title" = "GitHub";
-
-/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "Am7-bY-Ipw"; */
-"Am7-bY-Ipw.title" = "Label";
 
 /* Class = "NSTextFieldCell"; title = "Addresses"; ObjectID = "aoE-kL-UeZ"; */
 "aoE-kL-UeZ.title" = "Addresses";
@@ -139,20 +118,11 @@
 /* Class = "NSSegmentedCell"; b2w-Oc-jBN.ibShadowedLabels[1] = "Invitations only"; ObjectID = "b2w-Oc-jBN"; */
 "b2w-Oc-jBN.ibShadowedLabels[1]" = "Invitations only";
 
-/* Class = "NSButtonCell"; title = "0"; ObjectID = "bFh-r9-Osm"; */
-"bFh-r9-Osm.title" = "0";
-
-/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "bgM-PY-KWL"; */
-"bgM-PY-KWL.title" = "Label";
-
 /* Class = "NSMenu"; title = "File"; ObjectID = "bib-Uj-vzu"; */
 "bib-Uj-vzu.title" = "File";
 
 /* Class = "NSMenuItem"; title = "Preferences…"; ObjectID = "BOF-NM-1cW"; */
 "BOF-NM-1cW.title" = "Preferences…";
-
-/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "BoY-8I-sGR"; */
-"BoY-8I-sGR.title" = "Label";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "bsB-nZ-eKy"; */
 "bsB-nZ-eKy.title" = "Text Cell";
@@ -169,17 +139,11 @@
 /* Class = "NSTextFieldCell"; title = "Manage affiliations"; ObjectID = "CAT-yl-a3u"; */
 "CAT-yl-a3u.title" = "Manage affiliations";
 
-/* Class = "NSButtonCell"; title = "0"; ObjectID = "CcW-Wx-dEg"; */
-"CcW-Wx-dEg.title" = "0";
-
 /* Class = "NSViewController"; title = "Join"; ObjectID = "CLU-sX-g5V"; */
 "CLU-sX-g5V.title" = "Join";
 
 /* Class = "NSMenuItem"; title = "Service Discovery"; ObjectID = "CO1-FX-RDv"; */
 "CO1-FX-RDv.title" = "Service Discovery";
-
-/* Class = "NSMenuItem"; title = "Item 1"; ObjectID = "cUO-st-zNA"; */
-"cUO-st-zNA.title" = "Item 1";
 
 /* Class = "NSMenuItem"; title = "Smart Links"; ObjectID = "cwL-P1-jid"; */
 "cwL-P1-jid.title" = "Smart Links";
@@ -196,9 +160,6 @@
 /* Class = "NSMenuItem"; title = "File"; ObjectID = "dMs-cI-mzQ"; */
 "dMs-cI-mzQ.title" = "File";
 
-/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "Dmx-hJ-hXv"; */
-"Dmx-hJ-hXv.title" = "Label";
-
 /* Class = "NSMenuItem"; title = "Undo"; ObjectID = "dRJ-4n-Yzg"; */
 "dRJ-4n-Yzg.title" = "Undo";
 
@@ -214,9 +175,6 @@
 /* Class = "NSMenuItem"; title = "Correct last message"; ObjectID = "exM-f4-hXS"; */
 "exM-f4-hXS.title" = "Correct last message";
 
-/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "faK-Zj-UW7"; */
-"faK-Zj-UW7.title" = "Table View Cell";
-
 /* Class = "NSMenuItem"; title = "Chat with..."; ObjectID = "fe7-ax-qfm"; */
 "fe7-ax-qfm.title" = "Chat with...";
 
@@ -228,9 +186,6 @@
 
 /* Class = "NSTextFieldCell"; title = "Configure groupchat"; ObjectID = "fgC-Hs-ibQ"; */
 "fgC-Hs-ibQ.title" = "Configure groupchat";
-
-/* Class = "NSTextFieldCell"; title = "Room name"; ObjectID = "Fma-gL-AKS"; */
-"Fma-gL-AKS.title" = "Room name";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "fNx-dk-teJ"; */
 "fNx-dk-teJ.title" = "Cancel";
@@ -244,26 +199,11 @@
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "g1A-Rm-diD"; */
 "g1A-Rm-diD.title" = "Cancel";
 
-/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "gBl-eb-iIv"; */
-"gBl-eb-iIv.title" = "Label";
-
-/* Class = "NSTextFieldCell"; title = "contact@jid"; ObjectID = "gde-5T-n8j"; */
-"gde-5T-n8j.title" = "contact@jid";
-
-/* Class = "NSTextFieldCell"; title = "Timestamp"; ObjectID = "Gr8-JG-Zcj"; */
-"Gr8-JG-Zcj.title" = "Timestamp";
-
 /* Class = "NSMenuItem"; title = "Paste"; ObjectID = "gVA-U4-sdL"; */
 "gVA-U4-sdL.title" = "Paste";
 
-/* Class = "NSTextFieldCell"; title = "Jonh Doe"; ObjectID = "h3R-C3-JJr"; */
-"h3R-C3-JJr.title" = "Jonh Doe";
-
 /* Class = "NSMenuItem"; title = "View"; ObjectID = "H8h-7b-M4v"; */
 "H8h-7b-M4v.title" = "View";
-
-/* Class = "NSTextFieldCell"; title = "Room name"; ObjectID = "HA1-Nd-qoL"; */
-"HA1-Nd-qoL.title" = "Room name";
 
 /* Class = "NSTextFieldCell"; title = "Channel name"; ObjectID = "hcO-5H-Zzy"; */
 "hcO-5H-Zzy.title" = "Channel name";
@@ -280,9 +220,6 @@
 /* Class = "NSMenuItem"; title = "Smart Quotes"; ObjectID = "hQb-2v-fYv"; */
 "hQb-2v-fYv.title" = "Smart Quotes";
 
-/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "HUr-nw-nKs"; */
-"HUr-nw-nKs.title" = "Table View Cell";
-
 /* Class = "NSMenu"; title = "View"; ObjectID = "HyV-fh-RgO"; */
 "HyV-fh-RgO.title" = "View";
 
@@ -292,14 +229,8 @@
 /* Class = "NSMenu"; title = "Services"; ObjectID = "hz9-B4-Xy5"; */
 "hz9-B4-Xy5.title" = "Services";
 
-/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "Iby-FV-qPb"; */
-"Iby-FV-qPb.title" = "Label";
-
 /* Class = "NSButtonCell"; title = "Invite"; ObjectID = "ige-W9-roq"; */
 "ige-W9-roq.title" = "Invite";
-
-/* Class = "NSTextFieldCell"; title = "Username"; ObjectID = "Ikd-Py-8pj"; */
-"Ikd-Py-8pj.title" = "Username";
 
 /* Class = "NSMenuItem"; title = "Trusted"; ObjectID = "IOZ-Lh-LPg"; */
 "IOZ-Lh-LPg.title" = "Trusted";
@@ -325,14 +256,8 @@
 /* Class = "NSTextFieldCell"; title = "Open channel"; ObjectID = "jgg-RX-FUz"; */
 "jgg-RX-FUz.title" = "Open channel";
 
-/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "joV-vV-bpx"; */
-"joV-vV-bpx.title" = "Label";
-
 /* Class = "NSMenuItem"; title = "Search History"; ObjectID = "jPh-XA-Ma6"; */
 "jPh-XA-Ma6.title" = "Search History";
-
-/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "jTO-BC-Tlr"; */
-"jTO-BC-Tlr.title" = "Label";
 
 /* Class = "NSMenuItem"; title = "Close chat"; ObjectID = "KaW-ft-85H"; */
 "KaW-ft-85H.title" = "Close chat";
@@ -352,9 +277,6 @@
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "kNf-RO-xoF"; */
 "kNf-RO-xoF.title" = "Text Cell";
 
-/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "KoE-gC-vJV"; */
-"KoE-gC-vJV.title" = "Table View Cell";
-
 /* Class = "NSTabViewItem"; label = "Join"; ObjectID = "lb0-Pe-QRe"; */
 "lb0-Pe-QRe.label" = "Join";
 
@@ -369,12 +291,6 @@
 
 /* Class = "NSMenuItem"; title = "Check Grammar With Spelling"; ObjectID = "mK6-2p-4JG"; */
 "mK6-2p-4JG.title" = "Check Grammar With Spelling";
-
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "mV8-6S-7vH"; */
-"mV8-6S-7vH.title" = "Text Cell";
-
-/* Class = "NSTextFieldCell"; title = "Timestamp"; ObjectID = "nD8-L0-6Xz"; */
-"nD8-L0-6Xz.title" = "Timestamp";
 
 /* Class = "NSButtonCell"; title = "Save"; ObjectID = "nL3-BQ-FCm"; */
 "nL3-BQ-FCm.title" = "Save";
@@ -412,12 +328,6 @@
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "q5z-4J-7be"; */
 "q5z-4J-7be.title" = "Text Cell";
 
-/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "QEG-js-YBk"; */
-"QEG-js-YBk.title" = "Table View Cell";
-
-/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "QUP-bc-yrx"; */
-"QUP-bc-yrx.title" = "Table View Cell";
-
 /* Class = "NSMenuItem"; title = "Zoom"; ObjectID = "R4o-n2-Eq4"; */
 "R4o-n2-Eq4.title" = "Zoom";
 
@@ -436,9 +346,6 @@
 /* Class = "NSTextFieldCell"; placeholderString = "Automatic"; ObjectID = "rGz-Of-bfr"; */
 "rGz-Of-bfr.placeholderString" = "Automatic";
 
-/* Class = "NSTextFieldCell"; title = "using account"; ObjectID = "ROY-5k-SBe"; */
-"ROY-5k-SBe.title" = "using account";
-
 /* Class = "NSMenuItem"; title = "Select All"; ObjectID = "Ruw-6m-B2m"; */
 "Ruw-6m-B2m.title" = "Select All";
 
@@ -447,12 +354,6 @@
 
 /* Class = "NSTextFieldCell"; title = "Description"; ObjectID = "sB0-hv-QFi"; */
 "sB0-hv-QFi.title" = "Description";
-
-/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "sfI-Td-iUq"; */
-"sfI-Td-iUq.title" = "Label";
-
-/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "slb-17-IhS"; */
-"slb-17-IhS.title" = "Label";
 
 /* Class = "NSMenuItem"; title = "Show Toolbar"; ObjectID = "snW-S8-Cw5"; */
 "snW-S8-Cw5.title" = "Show Toolbar";
@@ -466,17 +367,11 @@
 /* Class = "NSWindow"; title = "Server certificate"; ObjectID = "sxL-FK-b83"; */
 "sxL-FK-b83.title" = "Server certificate";
 
-/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "TcJ-j5-9sd"; */
-"TcJ-j5-9sd.title" = "Table View Cell";
-
 /* Class = "NSMenu"; title = "Window"; ObjectID = "Td7-aD-5lo"; */
 "Td7-aD-5lo.title" = "Window";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "ThR-i5-BbQ"; */
 "ThR-i5-BbQ.title" = "Text Cell";
-
-/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "Toq-W6-Bi6"; */
-"Toq-W6-Bi6.title" = "Label";
 
 /* Class = "NSMenuItem"; title = "Data Detectors"; ObjectID = "tRr-pd-1PS"; */
 "tRr-pd-1PS.title" = "Data Detectors";
@@ -487,26 +382,11 @@
 /* Class = "NSTextFieldCell"; placeholderString = "Find room or enter new name to create room"; ObjectID = "TWr-Qh-l4X"; */
 "TWr-Qh-l4X.placeholderString" = "Find room or enter new name to create room";
 
-/* Class = "NSTextFieldCell"; title = "user@domain.com"; ObjectID = "txK-sv-wuj"; */
-"txK-sv-wuj.title" = "user@domain.com";
-
-/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "tys-Rk-VSO"; */
-"tys-Rk-VSO.title" = "Table View Cell";
-
 /* Class = "NSButtonCell"; title = "12"; ObjectID = "uDh-Jo-uoa"; */
 "uDh-Jo-uoa.title" = "12";
 
-/* Class = "NSButtonCell"; title = "0"; ObjectID = "UeY-XO-CZa"; */
-"UeY-XO-CZa.title" = "0";
-
 /* Class = "NSMenuItem"; title = "Capitalize"; ObjectID = "UEZ-Bs-lqG"; */
 "UEZ-Bs-lqG.title" = "Capitalize";
-
-/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "UGU-nw-IC0"; */
-"UGU-nw-IC0.title" = "Table View Cell";
-
-/* Class = "NSTextFieldCell"; title = "Timestamp"; ObjectID = "uIX-uL-LSO"; */
-"uIX-uL-LSO.title" = "Timestamp";
 
 /* Class = "NSMenuItem"; title = "XML Console"; ObjectID = "UNA-Ak-Afx"; */
 "UNA-Ak-Afx.title" = "XML Console";
@@ -531,9 +411,6 @@
 
 /* Class = "NSTextFieldCell"; title = "Valid period:"; ObjectID = "VFO-Qh-k6S"; */
 "VFO-Qh-k6S.title" = "Valid period:";
-
-/* Class = "NSTextFieldCell"; title = "user@domain.com"; ObjectID = "VGT-gv-U2i"; */
-"VGT-gv-U2i.title" = "user@domain.com";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "vi6-c1-4ua"; */
 "vi6-c1-4ua.title" = "Text Cell";
@@ -565,9 +442,6 @@
 /* Class = "NSMenuItem"; title = "Copy"; ObjectID = "x3v-GG-iWU"; */
 "x3v-GG-iWU.title" = "Copy";
 
-/* Class = "NSTextFieldCell"; title = "room@muc.example.com"; ObjectID = "Xf2-T6-e7X"; */
-"Xf2-T6-e7X.title" = "room@muc.example.com";
-
 /* Class = "NSMenuItem"; title = "Speech"; ObjectID = "xrE-MZ-jX0"; */
 "xrE-MZ-jX0.title" = "Speech";
 
@@ -583,9 +457,6 @@
 /* Class = "NSTextFieldCell"; title = "Access"; ObjectID = "y2D-po-2u0"; */
 "y2D-po-2u0.title" = "Access";
 
-/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "yE1-5x-RKG"; */
-"yE1-5x-RKG.title" = "Label";
-
 /* Class = "NSMenuItem"; title = "Find and Replace…"; ObjectID = "YEy-JH-Tfz"; */
 "YEy-JH-Tfz.title" = "Find and Replace…";
 
@@ -600,9 +471,6 @@
 
 /* Class = "NSMenuItem"; title = "Scripts"; ObjectID = "yUL-qX-nrr"; */
 "yUL-qX-nrr.title" = "Scripts";
-
-/* Class = "NSTextFieldCell"; title = "Contact name"; ObjectID = "yXg-0b-XTX"; */
-"yXg-0b-XTX.title" = "Contact name";
 
 /* Class = "NSMenuItem"; title = "Verified"; ObjectID = "YZV-OS-dZY"; */
 "YZV-OS-dZY.title" = "Verified";

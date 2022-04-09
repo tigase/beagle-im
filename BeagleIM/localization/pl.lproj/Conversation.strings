@@ -1,26 +1,11 @@
-/* Class = "NSTextFieldCell"; title = "📯"; ObjectID = "0wH-YL-WDw"; */
-"0wH-YL-WDw.title" = "📯";
-
 /* Class = "NSMenuItem"; title = "Share"; ObjectID = "19V-oi-bxb"; */
 "19V-oi-bxb.title" = "Udostępnij";
-
-/* Class = "NSTextFieldCell"; title = "📯"; ObjectID = "4dD-Ba-toW"; */
-"4dD-Ba-toW.title" = "📯";
 
 /* Class = "NSMenuItem"; title = "Copy"; ObjectID = "5gx-w0-i1S"; */
 "5gx-w0-i1S.title" = "Kopiuj";
 
 /* Class = "NSButtonCell"; title = "Accept"; ObjectID = "aMd-4L-YTa"; */
 "aMd-4L-YTa.title" = "Akceptuj";
-
-/* Class = "NSTextFieldCell"; placeholderString = "Testing"; ObjectID = "axe-dt-dii"; */
-"axe-dt-dii.placeholderString" = "Testing";
-
-/* Class = "NSTextFieldCell"; title = "John Doe"; ObjectID = "axe-dt-dii"; */
-"axe-dt-dii.title" = "John Doe";
-
-/* Class = "NSTextFieldCell"; title = "📯"; ObjectID = "buZ-sE-xEt"; */
-"buZ-sE-xEt.title" = "📯";
 
 /* Class = "NSTextFieldCell"; title = "20:31:03"; ObjectID = "D3S-Fu-GzK"; */
 "D3S-Fu-GzK.title" = "20:31:03";
@@ -34,23 +19,11 @@
 /* Class = "NSMenu"; title = "Share"; ObjectID = "Fag-bM-rfw"; */
 "Fag-bM-rfw.title" = "Udostępnij";
 
-/* Class = "NSTextFieldCell"; title = "📯"; ObjectID = "fhA-iN-Rtr"; */
-"fhA-iN-Rtr.title" = "📯";
-
 /* Class = "NSMenuItem"; title = "Item 1"; ObjectID = "GD4-JW-IGJ"; */
 "GD4-JW-IGJ.title" = "Item 1";
 
-/* Class = "NSTextFieldCell"; placeholderString = "Testing"; ObjectID = "hN1-fw-WxL"; */
-"hN1-fw-WxL.placeholderString" = "Testing";
-
-/* Class = "NSTextFieldCell"; title = "John Doe"; ObjectID = "hN1-fw-WxL"; */
-"hN1-fw-WxL.title" = "John Doe";
-
 /* Class = "NSMenuItem"; title = "Item 1"; ObjectID = "hPi-hb-VEB"; */
 "hPi-hb-VEB.title" = "Item 1";
-
-/* Class = "NSTextFieldCell"; title = "📯"; ObjectID = "hR4-5U-Pda"; */
-"hR4-5U-Pda.title" = "📯";
 
 /* Class = "NSMenuItem"; title = "Delete"; ObjectID = "HWT-hF-b3o"; */
 "HWT-hF-b3o.title" = "Usuń";
@@ -82,9 +55,6 @@
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "Tzd-gW-Ac3"; */
 "Tzd-gW-Ac3.title" = "Text Cell";
 
-/* Class = "NSTextFieldCell"; title = "Displayed"; ObjectID = "Uix-mm-G9h"; */
-"Uix-mm-G9h.title" = "Wyświetlona";
-
 /* Class = "NSMenuItem"; title = "Delete"; ObjectID = "upd-Ua-LkW"; */
 "upd-Ua-LkW.title" = "Usuń";
 
@@ -97,20 +67,5 @@
 /* Class = "NSButtonCell"; title = "Button"; ObjectID = "vAb-nk-RwK"; */
 "vAb-nk-RwK.title" = "Button";
 
-/* Class = "NSTextFieldCell"; placeholderString = "Testing"; ObjectID = "wCw-o5-xho"; */
-"wCw-o5-xho.placeholderString" = "Testing";
-
-/* Class = "NSTextFieldCell"; title = "John Doe"; ObjectID = "wCw-o5-xho"; */
-"wCw-o5-xho.title" = "John Doe";
-
 /* Class = "NSTextFieldCell"; title = "20:31:03"; ObjectID = "5d8-jm-olo"; */
 "5d8-jm-olo.title" = "";
-
-/* Class = "NSTextFieldCell"; title = "📯"; ObjectID = "LTY-id-NWX"; */
-"LTY-id-NWX.title" = "";
-
-/* Class = "NSTextFieldCell"; placeholderString = "Testing"; ObjectID = "Pyy-u4-P2n"; */
-"Pyy-u4-P2n.placeholderString" = "";
-
-/* Class = "NSTextFieldCell"; title = "John Doe"; ObjectID = "Pyy-u4-P2n"; */
-"Pyy-u4-P2n.title" = "";

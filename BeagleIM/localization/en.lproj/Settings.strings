@@ -25,9 +25,6 @@
 /* Class = "NSMenuItem"; title = "Delete"; ObjectID = "5Zp-z6-6CG"; */
 "5Zp-z6-6CG.title" = "Delete";
 
-/* Class = "NSTextFieldCell"; title = "OMEMO fingerprint"; ObjectID = "60I-2k-aa8"; */
-"60I-2k-aa8.title" = "OMEMO fingerprint";
-
 /* Class = "NSTextFieldCell"; placeholderString = "Enter domain name..."; ObjectID = "6dU-W8-3jO"; */
 "6dU-W8-3jO.placeholderString" = "Enter domain name...";
 
@@ -60,9 +57,6 @@
 
 /* Class = "NSMenuItem"; title = "Last week"; ObjectID = "B9q-jf-nOC"; */
 "B9q-jf-nOC.title" = "Last week";
-
-/* Class = "NSTextFieldCell"; placeholderString = "user@domain.com"; ObjectID = "bat-cW-RaG"; */
-"bat-cW-RaG.placeholderString" = "user@domain.com";
 
 /* Class = "NSSearchFieldCell"; placeholderString = "Enter jid to search for..."; ObjectID = "bOO-bj-tli"; */
 "bOO-bj-tli.placeholderString" = "Enter jid to search for...";
@@ -141,9 +135,6 @@
 
 /* Class = "NSMenuItem"; title = "Custom"; ObjectID = "iJW-tt-3CA"; */
 "iJW-tt-3CA.title" = "Custom";
-
-/* Class = "NSTextFieldCell"; title = "Account"; ObjectID = "iUf-Hj-X2m"; */
-"iUf-Hj-X2m.title" = "Account";
 
 /* Class = "NSTextFieldCell"; title = "Register XMPP account"; ObjectID = "j5C-9D-w4O"; */
 "j5C-9D-w4O.title" = "Register XMPP account";
@@ -244,9 +235,6 @@
 /* Class = "NSTextFieldCell"; placeholderString = "2000-01-01"; ObjectID = "SG5-LG-hMb"; */
 "SG5-LG-hMb.placeholderString" = "2000-01-01";
 
-/* Class = "NSTextFieldCell"; title = "To change password for account test@example.com please fill out this form:"; ObjectID = "TBZ-At-Pzk"; */
-"TBZ-At-Pzk.title" = "To change password for account test@example.com please fill out this form:";
-
 /* Class = "NSTabViewItem"; label = "Accounts"; ObjectID = "Txt-RJ-fg8"; */
 "Txt-RJ-fg8.label" = "Accounts";
 
@@ -255,9 +243,6 @@
 
 /* Class = "NSMenuItem"; title = "OMEMO settings"; ObjectID = "uOu-4t-LCA"; */
 "uOu-4t-LCA.title" = "OMEMO settings";
-
-/* Class = "NSTextFieldCell"; title = "user@example.com"; ObjectID = "uTv-fi-QY3"; */
-"uTv-fi-QY3.title" = "user@example.com";
 
 /* Class = "NSTextFieldCell"; title = "Other devices with OMEMO"; ObjectID = "Vum-Tn-nHu"; */
 "Vum-Tn-nHu.title" = "Other devices with OMEMO";
@@ -288,9 +273,6 @@
 
 /* Class = "NSMenuItem"; title = "Automatic"; ObjectID = "xRa-Ah-yOh"; */
 "xRa-Ah-yOh.title" = "Automatic";
-
-/* Class = "NSTextFieldCell"; title = "Device 1111"; ObjectID = "ygN-kQ-GdS"; */
-"ygN-kQ-GdS.title" = "Device 1111";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "yk0-1q-zhc"; */
 "yk0-1q-zhc.title" = "Cancel";

@@ -10,9 +10,6 @@
 /* Class = "NSMenuItem"; title = "Remove from"; ObjectID = "3pc-Q5-1rr"; */
 "3pc-Q5-1rr.title" = "Usuń z";
 
-/* Class = "NSTextFieldCell"; placeholderString = "Disconnected"; ObjectID = "4yU-vD-lVF"; */
-"4yU-vD-lVF.placeholderString" = "Rozłączony";
-
 /* Class = "NSMenu"; title = "Authorization"; ObjectID = "6AO-Gu-oqM"; */
 "6AO-Gu-oqM.title" = "Autoryzacja";
 
@@ -88,12 +85,6 @@
 /* Class = "NSMenuItem"; title = "Remove"; ObjectID = "m7W-Qk-Lkh"; */
 "m7W-Qk-Lkh.title" = "Usuń";
 
-/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "mIr-Fn-sH6"; */
-"mIr-Fn-sH6.title" = "Label";
-
-/* Class = "NSTextFieldCell"; title = "Romeo Monteki"; ObjectID = "mTm-Oz-LEh"; */
-"mTm-Oz-LEh.title" = "Romeo Monteki";
-
 /* Class = "NSTextFieldCell"; title = "Enter contact details:"; ObjectID = "n57-KC-z4m"; */
 "n57-KC-z4m.title" = "Wprowadź dane kontaktu:";
 
@@ -115,14 +106,8 @@
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "qnx-gv-kFT"; */
 "qnx-gv-kFT.title" = "Anuluj";
 
-/* Class = "NSTextFieldCell"; title = "Multiline Label"; ObjectID = "uYr-MW-SR9"; */
-"uYr-MW-SR9.title" = "Multiline Label";
-
 /* Class = "NSMenuItem"; title = "XA"; ObjectID = "WvP-bI-78d"; */
 "WvP-bI-78d.title" = "Nieobecny";
-
-/* Class = "NSMenuItem"; title = "INVALID"; ObjectID = "xND-xD-Nce"; */
-"xND-xD-Nce.title" = "BŁĘDNY";
 
 /* Class = "NSMenuItem"; title = "Invite to"; ObjectID = "yII-ac-kjp"; */
 "yII-ac-kjp.title" = "Zaproś do";

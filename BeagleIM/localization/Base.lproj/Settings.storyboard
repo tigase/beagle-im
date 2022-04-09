@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="19529"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="20037"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -130,7 +130,7 @@
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView identifier="AccountCellView" id="V2I-7y-t2t" customClass="AccountCellView" customModule="BeagleIM" customModuleProvider="target">
-                                                            <rect key="frame" x="11" y="1" width="461" height="53"/>
+                                                            <rect key="frame" x="1" y="1" width="461" height="53"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <button horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="s9T-bX-baE">
@@ -157,6 +157,9 @@
                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
+                                                                    <attributedString key="userComments">
+                                                                        <fragment content="#bc-ignore!"/>
+                                                                    </attributedString>
                                                                 </textField>
                                                                 <textField horizontalHuggingPriority="252" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="rz2-dO-hdy">
                                                                     <rect key="frame" x="402" y="11" width="49" height="16"/>
@@ -232,7 +235,7 @@
                                 </connections>
                             </button>
                             <popUpButton verticalHuggingPriority="750" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Edj-zL-brP">
-                                <rect key="frame" x="80" y="7" width="80" height="25"/>
+                                <rect key="frame" x="80" y="3" width="80" height="32"/>
                                 <popUpButtonCell key="cell" type="push" title="Edit.." bezelStyle="rounded" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" pullsDown="YES" arrowPosition="noArrow" autoenablesItems="NO" id="zfc-yn-yNd">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="menu"/>
@@ -388,7 +391,7 @@
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView identifier="KeywordTableViewCell" id="0vU-Zc-511">
-                                                            <rect key="frame" x="11" y="1" width="186" height="16"/>
+                                                            <rect key="frame" x="1" y="1" width="186" height="16"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jhO-Q8-eAv">
@@ -649,7 +652,7 @@ Gw
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" selectionHighlightStyle="none" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" floatsGroupRows="NO" id="Sdl-DS-wTx" customClass="JabberDataFormView" customModule="BeagleIM" customModuleProvider="target">
-                                            <rect key="frame" x="0.0" y="0.0" width="440" height="0.0"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="440" height="19"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <size key="intercellSpacing" width="3" height="2"/>
                                             <color key="backgroundColor" name="windowBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -700,7 +703,7 @@ Gw
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView id="qVs-xk-iFE">
-                                                            <rect key="frame" x="141" y="1" width="288" height="17"/>
+                                                            <rect key="frame" x="140" y="1" width="288" height="17"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Lsv-sW-9j0">
@@ -731,7 +734,7 @@ Gw
                                     <rect key="frame" x="-100" y="-100" width="440" height="16"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
-                                <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="Q2J-a9-6oJ">
+                                <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="Q2J-a9-6oJ">
                                     <rect key="frame" x="424" y="0.0" width="16" height="0.0"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
@@ -1422,6 +1425,9 @@ Gw
                                     <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
+                                <attributedString key="userComments">
+                                    <fragment content="#bc-ignore!"/>
+                                </attributedString>
                             </textField>
                             <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="PNZ-2A-Khk">
                                 <rect key="frame" x="18" y="400" width="323" height="15"/>
@@ -1438,6 +1444,9 @@ Gw
                                     <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
+                                <attributedString key="userComments">
+                                    <fragment content="#bc-ignore!"/>
+                                </attributedString>
                             </textField>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="nKV-Y8-TFY">
                                 <rect key="frame" x="18" y="362" width="175" height="16"/>
@@ -1473,7 +1482,7 @@ Gw
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView identifier="OMEMOIdentityTableCellView" id="fn3-lk-7hd">
-                                                            <rect key="frame" x="10" y="1" width="289" height="19"/>
+                                                            <rect key="frame" x="0.0" y="1" width="289" height="19"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="500" translatesAutoresizingMaskIntoConstraints="NO" id="35p-cS-j3T">
@@ -1491,6 +1500,9 @@ Gw
                                                                 <constraint firstAttribute="bottom" secondItem="35p-cS-j3T" secondAttribute="bottom" constant="2" id="rmA-o0-cfz"/>
                                                                 <constraint firstAttribute="trailing" secondItem="35p-cS-j3T" secondAttribute="trailing" constant="2" id="ujF-nY-MIr"/>
                                                             </constraints>
+                                                            <attributedString key="userComments">
+                                                                <fragment content="#bc-ignore!"/>
+                                                            </attributedString>
                                                             <accessibility identifier="OMEMOIdentityTableCellView"/>
                                                             <connections>
                                                                 <outlet property="textField" destination="35p-cS-j3T" id="m5t-7T-dur"/>
@@ -1512,7 +1524,7 @@ Gw
                                 </scroller>
                             </scrollView>
                             <popUpButton verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="Tis-TU-I2w">
-                                <rect key="frame" x="299" y="356" width="44" height="27"/>
+                                <rect key="frame" x="294" y="356" width="49" height="27"/>
                                 <popUpButtonCell key="cell" type="bevel" bezelStyle="regularSquare" imagePosition="only" lineBreakMode="truncatingTail" state="on" borderStyle="border" inset="2" pullsDown="YES" id="6kp-p5-ju9">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="menu"/>
@@ -1662,6 +1674,9 @@ Gw
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
+                                <attributedString key="userComments">
+                                    <fragment content="#bc-ignore!"/>
+                                </attributedString>
                             </textField>
                             <secureTextField verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="UlO-DQ-cjS">
                                 <rect key="frame" x="20" y="98" width="325" height="22"/>
@@ -1806,7 +1821,7 @@ Gw
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView identifier="BlockedTableCellView" id="vPe-GF-syY" customClass="BlockedTableCellView" customModule="BeagleIM" customModuleProvider="target">
-                                                            <rect key="frame" x="10" y="0.0" width="446" height="35"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="446" height="35"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="aqx-If-awg">
@@ -1816,6 +1831,9 @@ Gw
                                                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
+                                                                    <attributedString key="userComments">
+                                                                        <fragment content="#bc-ignore!"/>
+                                                                    </attributedString>
                                                                 </textField>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="pMu-kR-z9C">
                                                                     <rect key="frame" x="8" y="2" width="430" height="14"/>
@@ -1824,6 +1842,9 @@ Gw
                                                                         <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
+                                                                    <attributedString key="userComments">
+                                                                        <fragment content="#bc-ignore!"/>
+                                                                    </attributedString>
                                                                 </textField>
                                                             </subviews>
                                                             <constraints>

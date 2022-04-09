@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="19529"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="20037"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -37,6 +37,9 @@
                                                 <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
+                                            <attributedString key="userComments">
+                                                <fragment content="#bc-ignore!"/>
+                                            </attributedString>
                                         </textField>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="450" verticalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ri7-Rr-BHY" customClass="ChatViewStatusView" customModule="BeagleIM" customModuleProvider="target">
                                             <rect key="frame" x="64" y="4" width="291" height="30"/>
@@ -61,6 +64,9 @@ AAAAAAEGA
                                                 <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
+                                            <attributedString key="userComments">
+                                                <fragment content="#bc-ignore!"/>
+                                            </attributedString>
                                         </textField>
                                         <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="9K3-Ch-01q">
                                             <rect key="frame" x="0.0" y="-2" width="361" height="5"/>
@@ -72,6 +78,9 @@ AAAAAAEGA
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
+                                            <attributedString key="userComments">
+                                                <fragment content="#bc-ignore!"/>
+                                            </attributedString>
                                         </textField>
                                         <button translatesAutoresizingMaskIntoConstraints="NO" id="t9e-Jm-NRo">
                                             <rect key="frame" x="298" y="31" width="20" height="26"/>
@@ -297,7 +306,7 @@ AAAAAAEGA
                                                                         <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                                         <prototypeCellViews>
                                                                             <tableCellView identifier="ManageBannedParticipantsTableCellView" id="hDy-9o-uLm">
-                                                                                <rect key="frame" x="11" y="1" width="287" height="17"/>
+                                                                                <rect key="frame" x="1" y="1" width="287" height="17"/>
                                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                                 <subviews>
                                                                                     <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="FRj-we-OID">
@@ -308,6 +317,9 @@ AAAAAAEGA
                                                                                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                         </textFieldCell>
+                                                                                        <attributedString key="userComments">
+                                                                                            <fragment content="#bc-ignore!"/>
+                                                                                        </attributedString>
                                                                                     </textField>
                                                                                 </subviews>
                                                                                 <connections>
@@ -357,7 +369,7 @@ AAAAAAEGA
                                                     <rect key="frame" x="6" y="29" width="321" height="443"/>
                                                     <clipView key="contentView" ambiguous="YES" id="sDp-qK-scp">
                                                         <rect key="frame" x="1" y="1" width="319" height="441"/>
-                                                        <autoresizingMask key="autoresizingMask"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                         <subviews>
                                                             <tableView verticalHuggingPriority="750" ambiguous="YES" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" viewBased="YES" id="6gw-Rr-4Ke">
                                                                 <rect key="frame" x="0.0" y="0.0" width="319" height="441"/>
@@ -379,7 +391,7 @@ AAAAAAEGA
                                                                         <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                                         <prototypeCellViews>
                                                                             <tableCellView identifier="ManageBannedParticipantsTableCellView" id="BY3-2y-iXV">
-                                                                                <rect key="frame" x="11" y="1" width="287" height="17"/>
+                                                                                <rect key="frame" x="1" y="1" width="287" height="17"/>
                                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                                 <subviews>
                                                                                     <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="blk-sC-itu">
@@ -390,6 +402,9 @@ AAAAAAEGA
                                                                                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                         </textFieldCell>
+                                                                                        <attributedString key="userComments">
+                                                                                            <fragment content="#bc-ignore!"/>
+                                                                                        </attributedString>
                                                                                     </textField>
                                                                                 </subviews>
                                                                                 <connections>
@@ -561,7 +576,7 @@ Gw
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView identifier="BlockedJidColumn" id="IZQ-oZ-fqL">
-                                                            <rect key="frame" x="18" y="0.0" width="244" height="32"/>
+                                                            <rect key="frame" x="8" y="0.0" width="244" height="32"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Aat-59-Gs9">
@@ -572,6 +587,9 @@ Gw
                                                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
+                                                                    <attributedString key="userComments">
+                                                                        <fragment content="#bc-ignore!"/>
+                                                                    </attributedString>
                                                                 </textField>
                                                             </subviews>
                                                             <connections>
@@ -593,7 +611,7 @@ Gw
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView identifier="BlockedDeleteColumn" misplaced="YES" id="xaM-Df-kyx">
-                                                            <rect key="frame" x="279" y="0.0" width="21" height="32"/>
+                                                            <rect key="frame" x="269" y="0.0" width="21" height="32"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <button translatesAutoresizingMaskIntoConstraints="NO" id="xDS-ne-blB">
@@ -758,6 +776,9 @@ Gw
                                                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
+                                                                    <attributedString key="userComments">
+                                                                        <fragment content="#bc-ignore!"/>
+                                                                    </attributedString>
                                                                 </textField>
                                                                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="tSH-Ve-6ud" customClass="AvatarView" customModule="BeagleIM" customModuleProvider="target">
                                                                     <rect key="frame" x="2" y="2" width="24" height="24"/>
@@ -983,6 +1004,9 @@ Gw
                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
+                                                                    <attributedString key="userComments">
+                                                                        <fragment content="#bc-ignore!"/>
+                                                                    </attributedString>
                                                                 </textField>
                                                             </subviews>
                                                             <constraints>
@@ -1021,6 +1045,9 @@ Gw
                                                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
+                                                                    <attributedString key="userComments">
+                                                                        <fragment content="#bc-ignore!"/>
+                                                                    </attributedString>
                                                                 </textField>
                                                             </subviews>
                                                             <connections>
@@ -1136,6 +1163,9 @@ Gw
                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
+                                            <attributedString key="userComments">
+                                                <fragment content="#bc-ignore!"/>
+                                            </attributedString>
                                         </textField>
                                     </gridCell>
                                     <gridCell row="COV-BX-3bn" column="y9c-Id-P2C" id="R5c-0p-F1j">
@@ -1156,6 +1186,9 @@ Gw
                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
+                                            <attributedString key="userComments">
+                                                <fragment content="#bc-ignore!"/>
+                                            </attributedString>
                                         </textField>
                                     </gridCell>
                                 </gridCells>

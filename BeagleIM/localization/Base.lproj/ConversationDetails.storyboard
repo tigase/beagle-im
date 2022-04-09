@@ -22,6 +22,9 @@
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
+                                <attributedString key="userComments">
+                                    <fragment content="#bc-ignore!"/>
+                                </attributedString>
                             </textField>
                             <containerView horizontalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="7e6-TW-Wy5">
                                 <rect key="frame" x="10" y="4" width="313" height="0.0"/>
@@ -50,6 +53,9 @@
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
+                                <attributedString key="userComments">
+                                    <fragment content="#bc-ignore!"/>
+                                </attributedString>
                             </textField>
                         </subviews>
                         <constraints>
@@ -196,6 +202,9 @@
                                     <color key="textColor" red="0.96070605519999996" green="0.95685130360000004" blue="0.95685487989999995" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
+                                <attributedString key="userComments">
+                                    <fragment content="#bc-ignore!"/>
+                                </attributedString>
                             </textField>
                         </subviews>
                     </view>
