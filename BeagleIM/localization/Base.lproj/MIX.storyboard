@@ -109,6 +109,9 @@ AAAAAAEGA
                                                     <fragment content="#bc-ignore!"/>
                                                 </attributedString>
                                             </buttonCell>
+                                            <attributedString key="userComments">
+                                                <fragment content="#bc-ignore!"/>
+                                            </attributedString>
                                             <connections>
                                                 <segue destination="8HN-y9-jjO" kind="popover" popoverAnchorView="3nN-eU-fLZ" popoverBehavior="t" preferredEdge="maxY" id="eal-RS-54K"/>
                                             </connections>

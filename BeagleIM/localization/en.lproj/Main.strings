@@ -358,9 +358,6 @@
 /* Class = "NSTextFieldCell"; placeholderString = "Find room or enter new name to create room"; ObjectID = "TWr-Qh-l4X"; */
 "TWr-Qh-l4X.placeholderString" = "Find room or enter new name to create room";
 
-/* Class = "NSButtonCell"; title = "12"; ObjectID = "uDh-Jo-uoa"; */
-"uDh-Jo-uoa.title" = "12";
-
 /* Class = "NSMenuItem"; title = "Capitalize"; ObjectID = "UEZ-Bs-lqG"; */
 "UEZ-Bs-lqG.title" = "Capitalize";
 
