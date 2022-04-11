@@ -1,14 +1,8 @@
 /* Class = "NSViewController"; title = "Info"; ObjectID = "59p-X5-xhU"; */
 "59p-X5-xhU.title" = "Info";
 
-/* Class = "NSViewController"; title = "ContactDetailsViewController"; ObjectID = "CNf-2E-dQ8"; */
-"CNf-2E-dQ8.title" = "ContactDetailsViewController";
-
 /* Class = "NSViewController"; title = "OMEMO"; ObjectID = "jqZ-a2-E6t"; */
 "jqZ-a2-E6t.title" = "OMEMO";
 
 /* Class = "NSViewController"; title = "Details"; ObjectID = "vuF-Zx-mrT"; */
 "vuF-Zx-mrT.title" = "Details";
-
-/* Class = "NSViewController"; title = "ConversationDetailsViewController"; ObjectID = "yDC-N1-fGo"; */
-"yDC-N1-fGo.title" = "ConversationDetailsViewController";

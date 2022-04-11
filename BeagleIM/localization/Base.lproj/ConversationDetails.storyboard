@@ -76,6 +76,9 @@
                             <constraint firstItem="gRv-VO-gEp" firstAttribute="top" secondItem="xq8-f6-pmw" secondAttribute="top" constant="8" id="yzp-1a-ccD"/>
                         </constraints>
                     </view>
+                    <attributedString key="userComments">
+                        <fragment content="#bc-ignore!"/>
+                    </attributedString>
                     <connections>
                         <outlet property="avatarView" destination="gRv-VO-gEp" id="bvw-yU-oyq"/>
                         <outlet property="jidField" destination="8Ku-3C-CwA" id="yd2-Kq-qiC"/>
@@ -319,6 +322,9 @@
                             <constraint firstAttribute="trailing" secondItem="0p2-j5-Wy0" secondAttribute="trailing" constant="10" id="xZb-o1-sa3"/>
                         </constraints>
                     </view>
+                    <attributedString key="userComments">
+                        <fragment content="#bc-ignore!"/>
+                    </attributedString>
                     <connections>
                         <outlet property="basicContainerView" destination="Stc-L0-u64" id="xKM-dF-Fif"/>
                         <outlet property="tabs" destination="ysX-T7-iCF" id="ES4-WK-3Ue"/>

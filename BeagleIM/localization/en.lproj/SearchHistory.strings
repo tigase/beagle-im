@@ -1,9 +1,6 @@
 /* Class = "NSWindow"; title = "Window"; ObjectID = "BV6-uX-z8i"; */
 "BV6-uX-z8i.title" = "Window";
 
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "kok-R8-2if"; */
-"kok-R8-2if.title" = "Text Cell";
-
 /* Class = "NSButtonCell"; title = "Close"; ObjectID = "Omc-pD-3mY"; */
 "Omc-pD-3mY.title" = "Close";
 

@@ -22,9 +22,6 @@
 /* Class = "NSMenuItem"; title = "Authorization"; ObjectID = "bBW-O0-JVI"; */
 "bBW-O0-JVI.title" = "Authorization";
 
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "BEp-mJ-d65"; */
-"BEp-mJ-d65.title" = "Text Cell";
-
 /* Class = "NSMenuItem"; title = "Request from"; ObjectID = "blU-JM-LfG"; */
 "blU-JM-LfG.title" = "Request from";
 
@@ -54,9 +51,6 @@
 
 /* Class = "NSMenuItem"; title = "Offline"; ObjectID = "Fb9-mr-ga9"; */
 "Fb9-mr-ga9.title" = "Offline";
-
-/* Class = "NSButtonCell"; title = "Button"; ObjectID = "Fdp-2M-NKi"; */
-"Fdp-2M-NKi.title" = "Button";
 
 /* Class = "NSBox"; title = "Box"; ObjectID = "gMr-bF-VHh"; */
 "gMr-bF-VHh.title" = "Box";

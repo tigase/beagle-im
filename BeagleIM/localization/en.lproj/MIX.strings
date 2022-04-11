@@ -10,9 +10,6 @@
 /* Class = "NSTextFieldCell"; title = "Invite to channel"; ObjectID = "6zK-gN-sNF"; */
 "6zK-gN-sNF.title" = "Invite to channel";
 
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "7yP-wX-sXK"; */
-"7yP-wX-sXK.title" = "Text Cell";
-
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "8HP-UV-1E7"; */
 "8HP-UV-1E7.title" = "Cancel";
 
@@ -30,9 +27,6 @@
 
 /* Class = "NSViewController"; title = "Change owner"; ObjectID = "cvB-3P-CBU"; */
 "cvB-3P-CBU.title" = "Change owner";
-
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "dEy-Kj-c4o"; */
-"dEy-Kj-c4o.title" = "Text Cell";
 
 /* Class = "NSBox"; title = "Box"; ObjectID = "dRH-Ov-ia9"; */
 "dRH-Ov-ia9.title" = "Box";
@@ -64,9 +58,6 @@
 /* Class = "NSMenuItem"; title = "Edit header"; ObjectID = "JjU-H7-MTN"; */
 "JjU-H7-MTN.title" = "Edit header";
 
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "kcv-Hu-fqu"; */
-"kcv-Hu-fqu.title" = "Text Cell";
-
 /* Class = "NSButtonCell"; title = "12"; ObjectID = "kmZ-Jc-EdG"; */
 "kmZ-Jc-EdG.title" = "12";
 
@@ -85,15 +76,6 @@
 /* Class = "NSButtonCell"; title = "Submit"; ObjectID = "P78-AN-JAR"; */
 "P78-AN-JAR.title" = "Submit";
 
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "pcA-FT-0T1"; */
-"pcA-FT-0T1.title" = "Text Cell";
-
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "Ptd-Sx-zgF"; */
-"Ptd-Sx-zgF.title" = "Text Cell";
-
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "shR-NW-0IT"; */
-"shR-NW-0IT.title" = "Text Cell";
-
 /* Class = "NSMenuItem"; title = "Grant owner rights"; ObjectID = "Tha-qB-HSO"; */
 "Tha-qB-HSO.title" = "Grant owner rights";
 
@@ -108,9 +90,6 @@
 
 /* Class = "NSMenuItem"; title = "Start chat"; ObjectID = "VBT-2t-RbR"; */
 "VBT-2t-RbR.title" = "Start chat";
-
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "vD9-VJ-8eu"; */
-"vD9-VJ-8eu.title" = "Text Cell";
 
 /* Class = "NSTextFieldCell"; title = "Description"; ObjectID = "vOA-U1-PZm"; */
 "vOA-U1-PZm.title" = "Description";

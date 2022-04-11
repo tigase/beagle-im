@@ -17,13 +17,13 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <scrollView verticalHuggingPriority="249" borderType="none" autohidesScrollers="YES" horizontalLineScroll="27" horizontalPageScroll="10" verticalLineScroll="27" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fFm-Kw-0RT">
-                                <rect key="frame" x="0.0" y="0.0" width="333" height="629"/>
+                                <rect key="frame" x="0.0" y="0.0" width="333" height="647"/>
                                 <clipView key="contentView" copiesOnScroll="NO" id="qKJ-4o-3VI">
-                                    <rect key="frame" x="0.0" y="0.0" width="333" height="629"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="333" height="647"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" tableStyle="fullWidth" selectionHighlightStyle="none" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="27" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" id="n3E-id-LN2" customClass="ChatViewTableView" customModule="BeagleIM" customModuleProvider="target">
-                                            <rect key="frame" x="0.0" y="0.0" width="333" height="629"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="333" height="647"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="backgroundColor" name="chatBackgroundColor"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
@@ -37,6 +37,9 @@
                                                         <font key="font" metaFont="system"/>
                                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="chatBackgroundColor"/>
+                                                        <attributedString key="userComments">
+                                                            <fragment content="#bc-ignore!"/>
+                                                        </attributedString>
                                                     </textFieldCell>
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
                                                     <prototypeCellViews>
@@ -98,7 +101,13 @@
                                                                         <font key="font" metaFont="systemLight" size="11"/>
                                                                         <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                                        <attributedString key="userComments">
+                                                                            <fragment content="#bc-ignore!"/>
+                                                                        </attributedString>
                                                                     </textFieldCell>
+                                                                    <attributedString key="userComments">
+                                                                        <fragment content="#bc-ignore!"/>
+                                                                    </attributedString>
                                                                 </textField>
                                                             </subviews>
                                                             <constraints>
@@ -222,6 +231,9 @@
                                                                         <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
+                                                                    <attributedString key="userComments">
+                                                                        <fragment content="#bc-ignore!"/>
+                                                                    </attributedString>
                                                                 </textField>
                                                                 <customView horizontalCompressionResistancePriority="250" placeholderIntrinsicWidth="263" placeholderIntrinsicHeight="30" translatesAutoresizingMaskIntoConstraints="NO" id="Tji-5e-CLC">
                                                                     <rect key="frame" x="40" y="4" width="235" height="30"/>
@@ -237,6 +249,9 @@
                                                                         <font key="font" metaFont="system"/>
                                                                     </buttonCell>
                                                                     <color key="contentTintColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <attributedString key="userComments">
+                                                                        <fragment content="#bc-ignore!"/>
+                                                                    </attributedString>
                                                                     <connections>
                                                                         <action selector="downloadClicked:" target="z6H-0f-uTR" id="sKI-p5-sxO"/>
                                                                     </connections>
@@ -251,7 +266,11 @@
                                                                         <font key="font" metaFont="menu"/>
                                                                         <menu key="menu" id="4Qn-jU-icf">
                                                                             <items>
-                                                                                <menuItem title="Item 1" state="on" image="ellipsis.circle" hidden="YES" id="GD4-JW-IGJ"/>
+                                                                                <menuItem title="Item 1" state="on" image="ellipsis.circle" hidden="YES" id="GD4-JW-IGJ">
+                                                                                    <attributedString key="userComments">
+                                                                                        <fragment content="#bc-ignore!"/>
+                                                                                    </attributedString>
+                                                                                </menuItem>
                                                                                 <menuItem title="Open" image="eye" catalog="system" id="Emv-Uo-Cfn">
                                                                                     <connections>
                                                                                         <action selector="openFile:" target="z6H-0f-uTR" id="7RT-w3-yoj"/>
@@ -274,6 +293,9 @@
                                                                                         <items>
                                                                                             <menuItem title="Item" id="vaA-rx-ep2">
                                                                                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                                                                                <attributedString key="userComments">
+                                                                                                    <fragment content="#bc-ignore!"/>
+                                                                                                </attributedString>
                                                                                             </menuItem>
                                                                                         </items>
                                                                                     </menu>
@@ -368,6 +390,9 @@
                                                                         <font key="font" metaFont="system"/>
                                                                     </buttonCell>
                                                                     <color key="contentTintColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <attributedString key="userComments">
+                                                                        <fragment content="#bc-ignore!"/>
+                                                                    </attributedString>
                                                                     <connections>
                                                                         <action selector="downloadClicked:" target="yjF-f0-ChF" id="JxY-BK-eVT"/>
                                                                     </connections>
@@ -382,7 +407,11 @@
                                                                         <font key="font" metaFont="menu"/>
                                                                         <menu key="menu" id="hQF-1g-o66">
                                                                             <items>
-                                                                                <menuItem title="Item 1" state="on" image="ellipsis.circle" hidden="YES" id="hPi-hb-VEB"/>
+                                                                                <menuItem title="Item 1" state="on" image="ellipsis.circle" hidden="YES" id="hPi-hb-VEB">
+                                                                                    <attributedString key="userComments">
+                                                                                        <fragment content="#bc-ignore!"/>
+                                                                                    </attributedString>
+                                                                                </menuItem>
                                                                                 <menuItem title="Open" image="eye" catalog="system" id="rC8-ej-mBc">
                                                                                     <connections>
                                                                                         <action selector="openFile:" target="yjF-f0-ChF" id="zPO-FO-5qU"/>
@@ -405,6 +434,9 @@
                                                                                         <items>
                                                                                             <menuItem title="Item" id="MOm-LD-A4E">
                                                                                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                                                                                <attributedString key="userComments">
+                                                                                                    <fragment content="#bc-ignore!"/>
+                                                                                                </attributedString>
                                                                                             </menuItem>
                                                                                         </items>
                                                                                     </menu>
@@ -625,6 +657,9 @@
                                                                         <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
+                                                                    <attributedString key="userComments">
+                                                                        <fragment content="#bc-ignore!"/>
+                                                                    </attributedString>
                                                                 </textField>
                                                                 <button verticalHuggingPriority="750" placeholderIntrinsicWidth="56" placeholderIntrinsicHeight="19" translatesAutoresizingMaskIntoConstraints="NO" id="RkT-Fh-9kV">
                                                                     <rect key="frame" x="139" y="4" width="56" height="19"/>
@@ -711,6 +746,9 @@
                                                                         <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                     </textFieldCell>
+                                                                    <attributedString key="userComments">
+                                                                        <fragment content="#bc-ignore!"/>
+                                                                    </attributedString>
                                                                 </textField>
                                                                 <mapView mapType="standard" zoomEnabled="NO" scrollEnabled="NO" rotateEnabled="NO" pitchEnabled="NO" showsBuildings="NO" showsPointsOfInterest="NO" showsCompass="NO" showsZoomControls="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UKD-Qa-h09" customClass="CustomMapView" customModule="BeagleIM" customModuleProvider="target">
                                                                     <rect key="frame" x="42" y="4" width="375" height="250"/>

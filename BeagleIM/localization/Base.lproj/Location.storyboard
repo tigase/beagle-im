@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="19162" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="19162"/>
-        <plugIn identifier="com.apple.MapKitIBPlugin" version="19162"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="20037"/>
+        <plugIn identifier="com.apple.MapKitIBPlugin" version="20037"/>
         <capability name="Search Toolbar Item" minToolsVersion="12.0" minSystemVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -23,8 +23,12 @@
                         </view>
                         <toolbar key="toolbar" implicitIdentifier="99631D2A-2E5D-447E-8D0D-FCC2A54D12E4" autosavesConfiguration="NO" displayMode="iconOnly" sizeMode="regular" id="wC5-5S-nAE" customClass="ShareLocationWindowToolbar" customModule="BeagleIM" customModuleProvider="target">
                             <allowedToolbarItems>
-                                <toolbarItem implicitItemIdentifier="NSToolbarFlexibleSpaceItem" id="i1d-Dl-BSl"/>
-                                <toolbarItem implicitItemIdentifier="5D282247-4CC0-48B4-A7C6-FCED1333281A" explicitItemIdentifier="RequestCurrentLocation" label="Toolbar Item" paletteLabel="Toolbar Item" toolTip="Retrieves current location" tag="-1" image="location" catalog="system" bordered="YES" sizingBehavior="auto" id="j5s-07-X5S"/>
+                                <toolbarItem implicitItemIdentifier="NSToolbarFlexibleSpaceItem" id="i1d-Dl-BSl">
+                                    <attributedString key="userComments">
+                                        <fragment content="#bc-ignore!"/>
+                                    </attributedString>
+                                </toolbarItem>
+                                <toolbarItem implicitItemIdentifier="5D282247-4CC0-48B4-A7C6-FCED1333281A" explicitItemIdentifier="RequestCurrentLocation" label="Current location" paletteLabel="Location" toolTip="Retrieves current location" tag="-1" image="location" catalog="system" bordered="YES" sizingBehavior="auto" id="j5s-07-X5S"/>
                                 <searchToolbarItem implicitItemIdentifier="119E08B2-1609-4358-B74E-4C9F8CB88AC8" label="Search" paletteLabel="Search" visibilityPriority="1001" id="A0f-O0-RLN">
                                     <nil key="toolTip"/>
                                     <searchField key="view" verticalHuggingPriority="750" textCompletion="NO" id="DIA-hk-hvG" customClass="LocationSuggestionField" customModule="BeagleIM" customModuleProvider="target">
@@ -43,6 +47,9 @@
                                 <toolbarItem reference="j5s-07-X5S"/>
                                 <searchToolbarItem reference="A0f-O0-RLN"/>
                             </defaultToolbarItems>
+                            <attributedString key="userComments">
+                                <fragment content="#bc-ignore!"/>
+                            </attributedString>
                             <connections>
                                 <outlet property="searchField" destination="DIA-hk-hvG" id="yN1-N4-Wo3"/>
                             </connections>

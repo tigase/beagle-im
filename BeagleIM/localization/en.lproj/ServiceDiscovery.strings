@@ -4,14 +4,8 @@
 /* Class = "NSTextFieldCell"; title = "Instructions"; ObjectID = "936-gG-hyt"; */
 "936-gG-hyt.title" = "Instructions";
 
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "9cT-U3-bQ6"; */
-"9cT-U3-bQ6.title" = "Text Cell";
-
 /* Class = "NSButtonCell"; title = "Execute"; ObjectID = "a3A-f8-U1Y"; */
 "a3A-f8-U1Y.title" = "Execute";
-
-/* Class = "NSTextFieldCell"; title = "Title"; ObjectID = "adu-FV-A6U"; */
-"adu-FV-A6U.title" = "Title";
 
 /* Class = "NSButtonCell"; title = "Close"; ObjectID = "bAv-4n-Bcy"; */
 "bAv-4n-Bcy.title" = "Close";
@@ -28,20 +22,8 @@
 /* Class = "NSTextFieldCell"; title = "Join groupchat"; ObjectID = "hKh-sl-KSb"; */
 "hKh-sl-KSb.title" = "Join groupchat";
 
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "IOU-HQ-7yz"; */
-"IOU-HQ-7yz.title" = "Text Cell";
-
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "mQh-5I-YmH"; */
-"mQh-5I-YmH.title" = "Text Cell";
-
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "NNC-Vl-6GD"; */
-"NNC-Vl-6GD.title" = "Text Cell";
-
 /* Class = "NSTextFieldCell"; placeholderString = "Nickname"; ObjectID = "NUh-n4-HPa"; */
 "NUh-n4-HPa.placeholderString" = "Nickname";
-
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "OlH-O3-Xr2"; */
-"OlH-O3-Xr2.title" = "Text Cell";
 
 /* Class = "NSTableColumn"; headerCell.title = "Name"; ObjectID = "OVH-3d-VQ7"; */
 "OVH-3d-VQ7.headerCell.title" = "Name";
@@ -63,9 +45,6 @@
 
 /* Class = "NSWindow"; title = "Window"; ObjectID = "uzQ-me-Xn9"; */
 "uzQ-me-Xn9.title" = "Window";
-
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "WaH-Jc-fcj"; */
-"WaH-Jc-fcj.title" = "Text Cell";
 
 /* Class = "NSButtonCell"; title = "Execute"; ObjectID = "wX5-ZE-aMC"; */
 "wX5-ZE-aMC.title" = "Execute";

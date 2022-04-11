@@ -43,9 +43,6 @@
 /* Class = "NSTabViewItem"; label = "General"; ObjectID = "9pN-Un-W2y"; */
 "9pN-Un-W2y.label" = "Ogólne";
 
-/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "aCn-9L-UCN"; */
-"aCn-9L-UCN.title" = "Table View Cell";
-
 /* Class = "NSMenuItem"; title = "Last 24 hours"; ObjectID = "AEy-jM-GUg"; */
 "AEy-jM-GUg.title" = "Ostatnie 24 godziny";
 
@@ -75,9 +72,6 @@
 
 /* Class = "NSTextFieldCell"; title = "Birthday"; ObjectID = "dK7-Pu-WEv"; */
 "dK7-Pu-WEv.title" = "Urodziny";
-
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "doO-h6-kYi"; */
-"doO-h6-kYi.title" = "Text Cell";
 
 /* Class = "NSButtonCell"; title = "Close"; ObjectID = "eaA-q3-VEz"; */
 "eaA-q3-VEz.title" = "Zamknij";
@@ -109,9 +103,6 @@
 /* Class = "NSMenuItem"; title = "Public"; ObjectID = "Gd2-gR-KvM"; */
 "Gd2-gR-KvM.title" = "Publiczny";
 
-/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "gkW-Rw-hvh"; */
-"gkW-Rw-hvh.title" = "Table View Cell";
-
 /* Class = "NSButtonCell"; title = "Change"; ObjectID = "Goh-hy-ucc"; */
 "Goh-hy-ucc.title" = "Zmień";
 
@@ -120,9 +111,6 @@
 
 /* Class = "NSButtonCell"; title = "Change"; ObjectID = "GTN-Ge-Agc"; */
 "GTN-Ge-Agc.title" = "Zmień";
-
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "hDR-8s-WrJ"; */
-"hDR-8s-WrJ.title" = "Text Cell";
 
 /* Class = "NSButtonCell"; title = "Register"; ObjectID = "heh-y3-2kR"; */
 "heh-y3-2kR.title" = "Zarejestruj";
@@ -184,9 +172,6 @@
 /* Class = "NSMenuItem"; title = "Public profile"; ObjectID = "o1y-e5-rTj"; */
 "o1y-e5-rTj.title" = "Profi publiczny";
 
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "O5u-YP-qec"; */
-"O5u-YP-qec.title" = "Text Cell";
-
 /* Class = "NSButtonCell"; title = "Active"; ObjectID = "OgR-me-fU4"; */
 "OgR-me-fU4.title" = "Aktywne";
 
@@ -205,9 +190,6 @@
 /* Class = "NSMenuItem"; title = "Profile"; ObjectID = "Pqf-I0-C3I"; */
 "Pqf-I0-C3I.title" = "Profil";
 
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "pxp-aJ-tEx"; */
-"pxp-aJ-tEx.title" = "Text Cell";
-
 /* Class = "NSMenuItem"; title = "Trusted"; ObjectID = "Q9Z-hT-nTM"; */
 "Q9Z-hT-nTM.title" = "Zaufany";
 
@@ -216,9 +198,6 @@
 
 /* Class = "NSMenuItem"; title = "Last month"; ObjectID = "qSg-kc-7nQ"; */
 "qSg-kc-7nQ.title" = "Ostatni miesiąc";
-
-/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "QXK-Ly-VO0"; */
-"QXK-Ly-VO0.title" = "Table View Cell";
 
 /* Class = "NSViewController"; title = "Personal"; ObjectID = "R8r-Nj-xQa"; */
 "R8r-Nj-xQa.title" = "Osobisty";

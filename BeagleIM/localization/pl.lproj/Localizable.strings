@@ -131,7 +131,7 @@
 "Call ended" = "Połaczenie zakończone";
 
 /* alert window title */
-"Call failed" = "Połączenie nieudane.";
+"Call failed" = "Połączenie nieudane";
 
 /* error message text */
 "Can't show your location" = "Nie można pokazać położenia";

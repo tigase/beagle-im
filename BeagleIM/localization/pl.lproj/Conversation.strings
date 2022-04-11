@@ -7,9 +7,6 @@
 /* Class = "NSButtonCell"; title = "Accept"; ObjectID = "aMd-4L-YTa"; */
 "aMd-4L-YTa.title" = "Akceptuj";
 
-/* Class = "NSTextFieldCell"; title = "20:31:03"; ObjectID = "D3S-Fu-GzK"; */
-"D3S-Fu-GzK.title" = "20:31:03";
-
 /* Class = "NSMenuItem"; title = "Share"; ObjectID = "dqA-Id-kiX"; */
 "dqA-Id-kiX.title" = "Udostępnij";
 
@@ -19,29 +16,11 @@
 /* Class = "NSMenu"; title = "Share"; ObjectID = "Fag-bM-rfw"; */
 "Fag-bM-rfw.title" = "Udostępnij";
 
-/* Class = "NSMenuItem"; title = "Item 1"; ObjectID = "GD4-JW-IGJ"; */
-"GD4-JW-IGJ.title" = "Item 1";
-
-/* Class = "NSMenuItem"; title = "Item 1"; ObjectID = "hPi-hb-VEB"; */
-"hPi-hb-VEB.title" = "Item 1";
-
 /* Class = "NSMenuItem"; title = "Delete"; ObjectID = "HWT-hF-b3o"; */
 "HWT-hF-b3o.title" = "Usuń";
 
-/* Class = "NSButtonCell"; title = "Button"; ObjectID = "isG-WZ-OoS"; */
-"isG-WZ-OoS.title" = "Button";
-
-/* Class = "NSTextFieldCell"; title = "20:31:03"; ObjectID = "lAv-Fw-zDs"; */
-"lAv-Fw-zDs.title" = "20:31:03";
-
-/* Class = "NSMenuItem"; title = "Item"; ObjectID = "MOm-LD-A4E"; */
-"MOm-LD-A4E.title" = "Item";
-
 /* Class = "NSMenuItem"; title = "Save"; ObjectID = "oDV-Qj-YF8"; */
 "oDV-Qj-YF8.title" = "Zapisz";
-
-/* Class = "NSTextFieldCell"; title = "20:31:03"; ObjectID = "oFx-wq-xLb"; */
-"oFx-wq-xLb.title" = "20:31:03";
 
 /* Class = "NSMenuItem"; title = "Copy"; ObjectID = "PQ3-ki-Xrm"; */
 "PQ3-ki-Xrm.title" = "Kopiuj";
@@ -52,20 +31,8 @@
 /* Class = "NSMenuItem"; title = "Save"; ObjectID = "sjT-Dg-qd2"; */
 "sjT-Dg-qd2.title" = "Zapisz";
 
-/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "Tzd-gW-Ac3"; */
-"Tzd-gW-Ac3.title" = "Text Cell";
-
 /* Class = "NSMenuItem"; title = "Delete"; ObjectID = "upd-Ua-LkW"; */
 "upd-Ua-LkW.title" = "Usuń";
 
 /* Class = "NSMenu"; title = "Share"; ObjectID = "uWP-Ey-amX"; */
 "uWP-Ey-amX.title" = "Udostępnij";
-
-/* Class = "NSMenuItem"; title = "Item"; ObjectID = "vaA-rx-ep2"; */
-"vaA-rx-ep2.title" = "Item";
-
-/* Class = "NSButtonCell"; title = "Button"; ObjectID = "vAb-nk-RwK"; */
-"vAb-nk-RwK.title" = "Button";
-
-/* Class = "NSTextFieldCell"; title = "20:31:03"; ObjectID = "5d8-jm-olo"; */
-"5d8-jm-olo.title" = "";
