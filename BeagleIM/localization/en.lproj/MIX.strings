@@ -58,9 +58,6 @@
 /* Class = "NSMenuItem"; title = "Edit header"; ObjectID = "JjU-H7-MTN"; */
 "JjU-H7-MTN.title" = "Edit header";
 
-/* Class = "NSButtonCell"; title = "12"; ObjectID = "kmZ-Jc-EdG"; */
-"kmZ-Jc-EdG.title" = "12";
-
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "LXk-pR-XYD"; */
 "LXk-pR-XYD.title" = "Cancel";
 
@@ -84,9 +81,6 @@
 
 /* Class = "NSButtonCell"; title = "Close"; ObjectID = "uf2-wu-ozZ"; */
 "uf2-wu-ozZ.title" = "Close";
-
-/* Class = "NSViewController"; title = "ChannelManageBlockedSegue"; ObjectID = "Uia-ff-60o"; */
-"Uia-ff-60o.title" = "ChannelManageBlockedSegue";
 
 /* Class = "NSMenuItem"; title = "Start chat"; ObjectID = "VBT-2t-RbR"; */
 "VBT-2t-RbR.title" = "Start chat";

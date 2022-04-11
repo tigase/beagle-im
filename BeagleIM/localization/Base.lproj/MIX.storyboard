@@ -105,6 +105,9 @@ AAAAAAEGA
                                             <buttonCell key="cell" type="square" title="12" bezelStyle="shadowlessSquare" image="person.fill" catalog="system" imagePosition="right" alignment="right" imageScaling="proportionallyUpOrDown" inset="2" id="kmZ-Jc-EdG">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
+                                                <attributedString key="userComments">
+                                                    <fragment content="#bc-ignore!"/>
+                                                </attributedString>
                                             </buttonCell>
                                             <connections>
                                                 <segue destination="8HN-y9-jjO" kind="popover" popoverAnchorView="3nN-eU-fLZ" popoverBehavior="t" preferredEdge="maxY" id="eal-RS-54K"/>
@@ -208,6 +211,9 @@ AAAAAAEGA
                             </userDefinedRuntimeAttribute>
                         </userDefinedRuntimeAttributes>
                     </view>
+                    <attributedString key="userComments">
+                        <fragment content="#bc-ignore!"/>
+                    </attributedString>
                     <connections>
                         <outlet property="actionsButton" destination="d4m-nZ-ark" id="w2n-i1-rLU"/>
                         <outlet property="actionsButtonLeadConstraint" destination="SYm-bT-Q8K" id="pEp-bN-sPD"/>
