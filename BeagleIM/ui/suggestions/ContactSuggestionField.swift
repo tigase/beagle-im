@@ -71,7 +71,7 @@ class ContactSuggestionField: NSSearchField, NSSearchFieldDelegate {
             
             let conversations: [DisplayableIdWithKeyProtocol] = DBChatStore.instance.conversations.filter({ $0.displayName.lowercased().contains(query) || $0.jid.localPart?.lowercased().contains(query) ?? false || $0.jid.domain.lowercased().contains(query) });
 
-            let keys = Set(conversations.map({ Contact.Key(account: $0.account, jid: $0.jid, type: .buddy) }));
+            var keys = Set(conversations.map({ Contact.Key(account: $0.account, jid: $0.jid, type: .buddy) }));
             
             let contacts: [DisplayableIdWithKeyProtocol] = DBRosterStore.instance.items.filter({ $0.name?.lowercased().contains(query) ?? false || $0.jid.localPart?.lowercased().contains(query) ?? false || $0.jid.domain.lowercased().contains(query) }).compactMap({ item -> Contact? in
                 guard let account = item.context?.userBareJid, !keys.contains(.init(account: account, jid: item.jid.bareJid, type: .buddy)) else {
@@ -80,11 +80,15 @@ class ContactSuggestionField: NSSearchField, NSSearchFieldDelegate {
                 return ContactManager.instance.contact(for: .init(account: account, jid: item.jid.bareJid, type: .buddy))
             });
             
+            keys = Set(keys + contacts.map({ Contact.Key(account: $0.account, jid: $0.jid, type: .buddy) }));
             
-            var items: [Item] = (contacts + conversations).sorted(by: { c1, c2 -> Bool in c1.displayName < c2.displayName }).map({ Item(jid: $0.jid, account: $0.account, displayableId: $0) });
+            let bookmarks = XmppService.instance.clients.values.flatMap({ client in client.module(.pepBookmarks).currentBookmarks.items.compactMap({ $0 as? Bookmarks.Conference }).filter({ $0.name?.lowercased().contains(query) ?? false || $0.jid.localPart?.lowercased().contains(query) ?? false || $0.jid.domain.lowercased().contains(query) }).filter({ !keys.contains(.init(account: client.userBareJid, jid: $0.jid.bareJid, type: .buddy)) }).map({ Item(jid: $0.jid.bareJid, account: client.userBareJid, name: String.localizedStringWithFormat(NSLocalizedString("Join %@", comment: "action join bookmark item"), $0.name ?? $0.jid.stringValue), displayableId: nil) }) });
+            
+            
+            var items: [Item] = ((contacts + conversations).map({ Item(jid: $0.jid, account: $0.account, name: $0.displayName, displayableId: $0) }) + bookmarks).sorted(by: { c1, c2 -> Bool in c1.name < c2.name })
             
             if !closedSuggestionsList {
-                items.append(Item(jid: BareJID(query), account: nil, displayableId: nil));
+                items.append(Item(jid: BareJID(query), account: nil, name: query, displayableId: nil));
             }
             
             if !items.isEmpty {
@@ -135,6 +139,7 @@ class ContactSuggestionField: NSSearchField, NSSearchFieldDelegate {
     struct Item {
         let jid: BareJID;
         let account: BareJID?;
+        let name: String;
         let displayableId: DisplayableIdProtocol?;
     }
 

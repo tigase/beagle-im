@@ -119,24 +119,32 @@ class InvitationManager {
                 alert.addButton(withTitle: NSLocalizedString("Decline", comment: "Button"));
                 alert.beginSheetModal(for: window, completionHandler: { response in
                     if response == NSApplication.ModalResponse.alertFirstButtonReturn {
-                        let roomName = mucInvitation.roomJid.localPart!;
-                        let nickname = AccountManager.getAccount(for: invitation.account)?.nickname ?? invitation.account.localPart!;
-                        mucModule.join(roomName: roomName, mucServer: mucInvitation.roomJid.domain, nickname: nickname, password: mucInvitation.password).handle({ result in
+                        guard let controller = NSStoryboard(name: "MIX", bundle: nil).instantiateController(withIdentifier: "EnterChannelViewController") as? EnterChannelViewController else {
+                            return;
+                        }
+                        
+                        _ = controller.view;
+                        controller.suggestedNickname = nil;
+                        controller.account = invitation.account;
+                        controller.channelJid = mucInvitation.roomJid;
+                        controller.channelName = nil;
+                        controller.componentType = .muc;
+                        controller.password = mucInvitation.password;
+                        controller.isPasswordVisible = mucInvitation.password == nil;
+                        
+                        let windowController = NSWindowController(window: NSWindow(contentViewController: controller));
+                        window.beginSheet(windowController.window!, completionHandler: { result in
                             switch result {
-                            case .failure(let error):
-                                guard let context = mucModule.context, let room = DBChatStore.instance.room(for: context, with: mucInvitation.roomJid) else {
-                                    return;
-                                }
-                                MucEventHandler.showJoinError(error, for: room);
-                            case .success(_):
-                                PEPBookmarksModule.updateOrAdd(for: invitation.account, bookmark: Bookmarks.Conference(name: roomName, jid: JID(BareJID(localPart: roomName, domain: mucInvitation.roomJid.domain)), autojoin: true, nick: nickname, password: mucInvitation.password));
+                            case .OK:
+                                self.remove(invitation: invitation);
+                            default:
+                                break;
                             }
-                            self.remove(invitation: invitation);
                         });
                     } else {
                         mucModule.decline(invitation: mucInvitation, reason: nil);
+                        self.remove(invitation: invitation);
                     }
-                    self.remove(invitation: invitation);
                 })
             case .presenceSubscription:
                 NotificationCenter.default.post(name: InvitationManager.INVITATION_CLICKED, object: invitation);

@@ -83,6 +83,23 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
                 if let chat = client.modulesManager.module(.message).chatManager.createChat(for: client, with: contact.jid) {
                     NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: chat)
                 }
+            } else if let conference = XmppService.instance.getClient(for: account)?.module(.pepBookmarks).currentBookmarks.conference(for: JID(item.jid)) {
+                guard let controller = NSStoryboard(name: "MIX", bundle: nil).instantiateController(withIdentifier: "EnterChannelViewController") as? EnterChannelViewController else {
+                    return;
+                }
+                
+                _ = controller.view;
+                controller.account = item.account;
+                controller.channelJid = item.jid;
+                controller.channelName = item.name;
+                controller.componentType = .muc;
+                controller.suggestedNickname = conference.nick;
+                controller.password = conference.password;
+                controller.isPasswordVisible = true;
+                controller.isBookmarkVisible = false;
+                
+                let windowController = NSWindowController(window: NSWindow(contentViewController: controller));
+                self.view.window?.beginSheet(windowController.window!, completionHandler: nil);
             }
         }).store(in: &cancellables);
         Settings.$commonChatsList.sink(receiveValue: { [weak self] value in
@@ -228,13 +245,20 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         
         switch group {
         case is ChatsListGroupGroupchat:
-            self.openChannel(self);
+            let menu = NSMenu(title: "");
+            menu.addItem(withTitle: NSLocalizedString("Create channel", comment: "context menu item"), action: #selector(self.createChannel(_:)), keyEquivalent: "").image = NSImage(named: NSImage.userGroupName)?.square(20);
+            menu.addItem(withTitle: NSLocalizedString("Join channel", comment: "context menu item"), action: #selector(self.joinChannel(_:)), keyEquivalent: "").image = NSImage(named: NSImage.userGroupName)?.square(20);
+            for item in menu.items {
+                item.target = self;
+            }
+            menu.popUp(positioning: nil, at: NSPoint(x: 0, y: sender.frame.height), in: sender);
         case is ChatsListGroupChat:
             self.openChat(self);
         case is ChatsListGroupCommon:
             let menu = NSMenu(title: "");
             menu.addItem(withTitle: NSLocalizedString("Open chat", comment: "context menu item"), action: #selector(self.openChat(_:)), keyEquivalent: "").image = NSImage(named: NSImage.userName)?.square(20);
-            menu.addItem(withTitle: NSLocalizedString("Open channel", comment: "context menu item"), action: #selector(self.openChannel(_:)), keyEquivalent: "").image = NSImage(named: NSImage.userGroupName)?.square(20);
+            menu.addItem(withTitle: NSLocalizedString("Create channel", comment: "context menu item"), action: #selector(self.createChannel(_:)), keyEquivalent: "").image = NSImage(named: NSImage.userGroupName)?.square(20);
+            menu.addItem(withTitle: NSLocalizedString("Join channel", comment: "context menu item"), action: #selector(self.joinChannel(_:)), keyEquivalent: "").image = NSImage(named: NSImage.userGroupName)?.square(20);
             for item in menu.items {
                 item.target = self;
             }
@@ -251,8 +275,15 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         view.window?.beginSheet(windowController.window!, completionHandler: nil);
     }
 
-    @objc func openChannel(_ sender: Any) {
-        guard let windowController = storyboard?.instantiateController(withIdentifier:"OpenChannelWindowController") as? NSWindowController else {
+    @objc func createChannel(_ sender: Any) {
+        guard let windowController = NSStoryboard(name: "MIX", bundle: nil).instantiateController(withIdentifier:"CreateChannelWindowController") as? NSWindowController else {
+            return;
+        }
+        view.window?.beginSheet(windowController.window!, completionHandler: nil);
+    }
+
+    @objc func joinChannel(_ sender: Any) {
+        guard let windowController = NSStoryboard(name: "MIX", bundle: nil).instantiateController(withIdentifier:"JoinChannelWindowController") as? NSWindowController else {
             return;
         }
         view.window?.beginSheet(windowController.window!, completionHandler: nil);
@@ -499,10 +530,10 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                     switch response {
                     case .alertFirstButtonReturn:
                         mucModule.destroy(room: r);
-                        PEPBookmarksModule.remove(from: r.account, bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: JID(r.jid), autojoin: false));
+                        r.context?.module(.pepBookmarks).remove(bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: JID(r.jid), autojoin: false));
                     case .alertSecondButtonReturn:
                         mucModule.leave(room: r);
-                        PEPBookmarksModule.remove(from: r.account, bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: JID(r.jid), autojoin: false));
+                        r.context?.module(.pepBookmarks).setConferenceAutojoin(false, for: JID(r.jid));
                     default:
                         // cancel, nothing to do..
                         break;
@@ -511,7 +542,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 return false;
             } else {
                 mucModule.leave(room: r);
-                PEPBookmarksModule.remove(from: r.account, bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: JID(r.jid), autojoin: false));
+                r.context?.module(.pepBookmarks).setConferenceAutojoin(false, for: JID(r.jid));
                 return true;
             }
         case let c as Channel:

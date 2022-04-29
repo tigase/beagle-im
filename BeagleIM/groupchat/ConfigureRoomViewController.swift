@@ -165,7 +165,7 @@ class ConfigureRoomViewController: NSViewController {
         let name = roomNameField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines);
         (form?.getField(named: "muc#roomconfig_roomname") as? TextSingleField)?.value = name.isEmpty ? nil : name;
         
-        guard let client = room?.context else {
+        guard let client = room?.context, room?.state == .joined else {
             return;
         }
         
@@ -205,25 +205,13 @@ class ConfigureRoomViewController: NSViewController {
         setRoomConfiguration(mucModule: mucModule, configuration: form!) { [weak self] (result) in
             switch result {
             case .success(_):
-                if room?.state == RoomState.joined {
-                    queue.isSuspended = false;
-                } else if nickname != nil {
-                    mucModule.join(roomName: roomJid.localPart!, mucServer: roomJid.domain, nickname: nickname!, password: password).handle({ result in
-                        switch result {
-                        case .success(let r):
-                            switch r {
-                            case .created(_), .joined(_):
-                                queue.isSuspended = false;
-                            }
-                        case .failure(let error):
-                            guard let room = DBChatStore.instance.room(for: client, with: room!.roomJid) else {
-                                return;
-                            }
-                            MucEventHandler.showJoinError(error, for: room);
-                        }
-                    });
-                    PEPBookmarksModule.updateOrAdd(for: account, bookmark: Bookmarks.Conference(name: roomJid.localPart!, jid: JID(roomJid), autojoin: true, nick: nickname!, password: password));
+                room?.updateOptions({ options in
+                    options.password = password;
+                })
+                if let bookmark = client.module(.pepBookmarks).currentBookmarks.conference(for: JID(roomJid)) {
+                    client.module(.pepBookmarks).addOrUpdate(bookmark: bookmark.with(password: password));
                 }
+                queue.isSuspended = false;
                 dispatchGroup.leave();
                 break;
             case .failure(let error):

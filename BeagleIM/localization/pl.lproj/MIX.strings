@@ -1,11 +1,17 @@
 /* Class = "NSMenuItem"; title = "Grant admin rights"; ObjectID = "1Vk-80-bHc"; */
 "1Vk-80-bHc.title" = "Nadaj prawa administratora";
 
+/* Class = "NSTextFieldCell"; title = "Join channel"; ObjectID = "1W6-WR-uft"; */
+"1W6-WR-uft.title" = "Dołącz do kanału";
+
 /* Class = "NSButtonCell"; title = "Apply"; ObjectID = "4en-st-Tqe"; */
 "4en-st-Tqe.title" = "Zastosuj";
 
 /* Class = "NSTabViewItem"; label = "Banned"; ObjectID = "5pJ-rv-ewh"; */
 "5pJ-rv-ewh.label" = "Zablokowani";
+
+/* Class = "NSButtonCell"; title = "Join"; ObjectID = "67k-3L-gqb"; */
+"67k-3L-gqb.title" = "Dołącz";
 
 /* Class = "NSTextFieldCell"; title = "Invite to channel"; ObjectID = "6zK-gN-sNF"; */
 "6zK-gN-sNF.title" = "Zaproś do kanału";
@@ -25,6 +31,12 @@
 /* Class = "NSTextFieldCell"; title = "Select new owner"; ObjectID = "apJ-Vw-0LB"; */
 "apJ-Vw-0LB.title" = "Wybierz nowego właściciela";
 
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "bGA-DJ-98o"; */
+"bGA-DJ-98o.title" = "Anuluj";
+
+/* Class = "NSTextFieldCell"; title = "Channel name"; ObjectID = "boO-pY-0Da"; */
+"boO-pY-0Da.title" = "Nazwa kanału";
+
 /* Class = "NSViewController"; title = "Change owner"; ObjectID = "cvB-3P-CBU"; */
 "cvB-3P-CBU.title" = "Zmień właściciela";
 
@@ -33,6 +45,12 @@
 
 /* Class = "NSTextFieldCell"; title = "Edit channel details"; ObjectID = "Eeg-Qz-lKK"; */
 "Eeg-Qz-lKK.title" = "Edytuj szczegóły kanału";
+
+/* Class = "NSButtonCell"; title = "Join"; ObjectID = "eKM-EM-lNy"; */
+"eKM-EM-lNy.title" = "Dołącz";
+
+/* Class = "NSTextFieldCell"; placeholderString = "Find channel"; ObjectID = "eoM-0K-2zb"; */
+"eoM-0K-2zb.placeholderString" = "Znajdź kanał";
 
 /* Class = "NSTextFieldCell"; title = "Change"; ObjectID = "ezr-pv-ZxF"; */
 "ezr-pv-ZxF.title" = "Zmień";
@@ -49,6 +67,12 @@
 /* Class = "NSTextFieldCell"; title = "Manage blocked"; ObjectID = "hXG-3j-hOy"; */
 "hXG-3j-hOy.title" = "Zablokowni";
 
+/* Class = "NSButtonCell"; title = "Create bookmark"; ObjectID = "Hya-hP-RtE"; */
+"Hya-hP-RtE.title" = "Utwórz zakładkę";
+
+/* Class = "NSButtonCell"; title = "Use MIX"; ObjectID = "Ija-yF-FUM"; */
+"Ija-yF-FUM.title" = "Użyj MIX";
+
 /* Class = "NSMenuItem"; title = "Block"; ObjectID = "iNt-1W-IHu"; */
 "iNt-1W-IHu.title" = "Zablokuj";
 
@@ -58,8 +82,20 @@
 /* Class = "NSMenuItem"; title = "Edit header"; ObjectID = "JjU-H7-MTN"; */
 "JjU-H7-MTN.title" = "Edit nagłówek";
 
+/* Class = "NSTextFieldCell"; placeholderString = "Automatic"; ObjectID = "lgJ-Wf-sEe"; */
+"lgJ-Wf-sEe.placeholderString" = "Automatycznie";
+
+/* Class = "NSTextFieldCell"; title = "Channel ID"; ObjectID = "lT0-Pi-chQ"; */
+"lT0-Pi-chQ.title" = "ID kanału";
+
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "LXk-pR-XYD"; */
 "LXk-pR-XYD.title" = "Anuluj";
+
+/* Class = "NSSegmentedCell"; mKd-zh-XMg.ibShadowedLabels[0] = "Open"; ObjectID = "mKd-zh-XMg"; */
+"mKd-zh-XMg.ibShadowedLabels[0]" = "Otwarty";
+
+/* Class = "NSSegmentedCell"; mKd-zh-XMg.ibShadowedLabels[1] = "Invitations only"; ObjectID = "mKd-zh-XMg"; */
+"mKd-zh-XMg.ibShadowedLabels[1]" = "Tylko zaproszeni";
 
 /* Class = "NSTextFieldCell"; title = "Manage participants"; ObjectID = "mp2-T7-9tb"; */
 "mp2-T7-9tb.title" = "Zarządzaj uczestnikami";
@@ -70,14 +106,35 @@
 /* Class = "NSMenuItem"; title = "Destroy"; ObjectID = "n6u-Cr-SSU"; */
 "n6u-Cr-SSU.title" = "Zniszcz";
 
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "NuL-JV-VYV"; */
+"NuL-JV-VYV.title" = "Anuluj";
+
 /* Class = "NSButtonCell"; title = "Submit"; ObjectID = "P78-AN-JAR"; */
 "P78-AN-JAR.title" = "Zatwierdź";
+
+/* Class = "NSTextFieldCell"; title = "Enter nickname to use in channel "; ObjectID = "Px5-a5-3yE"; */
+"Px5-a5-3yE.title" = "Enter nickname to use in channel ";
+
+/* Class = "NSTextFieldCell"; title = "Description"; ObjectID = "QIl-hB-SDy"; */
+"QIl-hB-SDy.title" = "Opis";
+
+/* Class = "NSTextFieldCell"; title = "Create channel"; ObjectID = "r8h-aW-KOm"; */
+"r8h-aW-KOm.title" = "Utwórz kanał";
+
+/* Class = "NSTextFieldCell"; title = "Component domain"; ObjectID = "Sbx-pa-uQT"; */
+"Sbx-pa-uQT.title" = "Domena komponentu";
 
 /* Class = "NSMenuItem"; title = "Grant owner rights"; ObjectID = "Tha-qB-HSO"; */
 "Tha-qB-HSO.title" = "Nadaj prawa właściciela";
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "u6o-Cz-LHu"; */
 "u6o-Cz-LHu.title" = "Anuluj";
+
+/* Class = "NSTextFieldCell"; title = "Access"; ObjectID = "U9q-WB-qcP"; */
+"U9q-WB-qcP.title" = "Dostęp";
+
+/* Class = "NSTextFieldCell"; title = "When channel is private, it can only be joined by invitation."; ObjectID = "uEz-JI-68G"; */
+"uEz-JI-68G.title" = "Gdy kanał jest prywatny, można do niego dołączyć tylko poprzez zaproszenie.";
 
 /* Class = "NSButtonCell"; title = "Close"; ObjectID = "uf2-wu-ozZ"; */
 "uf2-wu-ozZ.title" = "Zamknij";
@@ -94,11 +151,35 @@
 /* Class = "NSButtonCell"; title = "Invite"; ObjectID = "vu1-c0-Fqt"; */
 "vu1-c0-Fqt.title" = "Zaproś";
 
+/* Class = "NSTextFieldCell"; placeholderString = "Automatic"; ObjectID = "vUw-WR-0JW"; */
+"vUw-WR-0JW.placeholderString" = "Automatycznie";
+
 /* Class = "NSButtonCell"; title = "Close"; ObjectID = "vUZ-TL-Ojf"; */
 "vUZ-TL-Ojf.title" = "Zamknij";
+
+/* Class = "NSButtonCell"; title = "Autojoin on other clients"; ObjectID = "WGK-f8-nLn"; */
+"WGK-f8-nLn.title" = "Dołącz automatycznie na innych klientach";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "Wrw-Hd-gn1"; */
+"Wrw-Hd-gn1.title" = "Anuluj";
 
 /* Class = "NSTabViewItem"; label = "Allowed"; ObjectID = "xig-C3-GKB"; */
 "xig-C3-GKB.label" = "Dopuszczeni";
 
+/* Class = "NSTextFieldCell"; title = "Component domain"; ObjectID = "XJi-Oe-7lI"; */
+"XJi-Oe-7lI.title" = "Domena komponentu";
+
+/* Class = "NSTextFieldCell"; title = "Change"; ObjectID = "yJs-ue-KJm"; */
+"yJs-ue-KJm.title" = "Zmień";
+
+/* Class = "NSTextFieldCell"; placeholderString = "Automatic"; ObjectID = "YYs-ZT-MWP"; */
+"YYs-ZT-MWP.placeholderString" = "Automatycznie";
+
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "Z0t-WH-5Nn"; */
 "Z0t-WH-5Nn.title" = "Anuluj";
+
+/* Class = "NSButtonCell"; title = "Create"; ObjectID = "z4D-a2-oA9"; */
+"z4D-a2-oA9.title" = "Utwórz";
+
+/* Class = "NSTextFieldCell"; title = "Enter password"; ObjectID = "ZxB-dK-rQX"; */
+"ZxB-dK-rQX.title" = "Wprowadź hasło";

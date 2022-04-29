@@ -82,25 +82,21 @@ class ChatInvitationCellView: BaseChatCellView {
     }
     
     @IBAction func acceptClicked(_ sender: Any) {
-        guard let account = self.account, let mixInvitation = appendix?.mixInvitation(), let window = self.window, let mixModule = XmppService.instance.getClient(for: account)?.module(.mix) else {
+        guard let account = self.account, let mixInvitation = appendix?.mixInvitation(), let window = self.window else {
             return;
         }
 
-        OpenChannelViewController.askForNickname(for: account, window: window, completionHandler: { nickname in
-            mixModule.join(channel: mixInvitation.channel, withNick: nickname, completionHandler: { result in
-                switch result {
-                case .success(_):
-                    break;
-                case .failure(let error):
-                    DispatchQueue.main.async {
-                        let alert = NSAlert();
-                        alert.messageText = NSLocalizedString("Could not join", comment: "Title informing that client failed to join");
-                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to join a channel. The server returned an error: %@", comment: "Message informing that client failed to join a channel"), error.localizedDescription);
-                        alert.addButton(withTitle: NSLocalizedString("OK", comment: "OK"));
-                        alert.beginSheetModal(for: window, completionHandler: nil);
-                    }
-                }
-            })
-        });
+        guard let controller = NSStoryboard(name: "MIX", bundle: nil).instantiateController(withIdentifier: "EnterChannelViewController") as? EnterChannelViewController else {
+            return;
+        }
+        
+        _ = controller.view;
+        controller.suggestedNickname = nil;
+        controller.account = account;
+        controller.channelJid = mixInvitation.channel;
+        controller.componentType = .mix
+        
+        let windowController = NSWindowController(window: NSWindow(contentViewController: controller));
+        window.beginSheet(windowController.window!, completionHandler: nil);
     }
 }

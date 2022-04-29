@@ -40,12 +40,23 @@ class ChatWithWindowSegue: NSStoryboardSegue {
     
 }
 
+class CreateChannelWindowSegue: NSStoryboardSegue {
+
+    override func perform() {
+        if let mainWindow = (NSApplication.shared.delegate as? AppDelegate)?.mainWindowController {
+            mainWindow.showWindow(self);
+            ((mainWindow.contentViewController as? NSSplitViewController)?.splitViewItems.first?.viewController as? ChatsListViewController)?.createChannel(self);
+        }
+    }
+
+}
+
 class JoinChannelWindowSegue: NSStoryboardSegue {
 
     override func perform() {
         if let mainWindow = (NSApplication.shared.delegate as? AppDelegate)?.mainWindowController {
             mainWindow.showWindow(self);
-            ((mainWindow.contentViewController as? NSSplitViewController)?.splitViewItems.first?.viewController as? ChatsListViewController)?.openChannel(self);
+            ((mainWindow.contentViewController as? NSSplitViewController)?.splitViewItems.first?.viewController as? ChatsListViewController)?.joinChannel(self);
         }
     }
 

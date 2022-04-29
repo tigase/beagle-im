@@ -97,15 +97,15 @@ class MucEventHandler: XmppServiceExtension {
             
             InvitationManager.instance.addMucInvitation(for: client.userBareJid, roomJid: invitation.roomJid, invitation: invitation);
         }).store(in: &cancellables);
-        client.module(.pepBookmarks).$currentBookmarks.sink(receiveValue: { [weak client] bookmarks in
+        client.module(.pepBookmarks).$currentBookmarks.drop(while: { it in !Settings.enableBookmarksSync }).sink(receiveValue: { [weak client] bookmarks in
             guard let client = client else {
                 return;
             }
             let mucModule = client.module(.muc);
-            bookmarks.items.compactMap({ $0 as? Bookmarks.Conference }).filter { bookmark in
-                return mucModule.roomManager.room(for: client, with: bookmark.jid.bareJid) == nil;
+            bookmarks.items.compactMap({ $0 as? Bookmarks.Conference }).filter({ $0.autojoin }).filter { bookmark in
+                return DBChatStore.instance.conversation(for: client.userBareJid, with: bookmark.jid.bareJid) == nil;
                 }.forEach({ (bookmark) in
-                    guard let nick = bookmark.nick, bookmark.autojoin else {
+                    guard let nick = bookmark.nick else {
                         return;
                     }
                     _ = mucModule.join(roomName: bookmark.jid.localPart!, mucServer: bookmark.jid.domain, nickname: nick, password: bookmark.password);
@@ -127,17 +127,17 @@ class MucEventHandler: XmppServiceExtension {
             alert.run(completionHandler: { response in
                 if error != .banned && error != .registrationRequired {
                     let storyboard = NSStoryboard(name: "Main", bundle: nil);
-                    guard let windowController = storyboard.instantiateController(withIdentifier: "OpenGroupchatController") as? NSWindowController else {
+                    guard let windowController = storyboard.instantiateController(withIdentifier: "JoinChannelWindowController") as? NSWindowController else {
                         return;
                     }
-                    guard let openRoomController = windowController.contentViewController as? OpenGroupchatController else {
+                    guard let openRoomController = windowController.contentViewController as? JoinChannelViewController else {
                         return;
                     }
                     let roomJid = room.jid;
-                    openRoomController.searchField.stringValue = roomJid.stringValue;
-                    openRoomController.componentJids = [BareJID(roomJid.domain)];
+                    openRoomController.channelNameField.stringValue = roomJid.localPart ?? "";
+                    openRoomController.componentDomainField.stringValue = roomJid.domain;
                     openRoomController.account = context.userBareJid;
-                    openRoomController.nicknameField.stringValue = room.nickname;
+                    openRoomController.nickname = room.nickname;
                     guard let window = (NSApplication.shared.delegate as? AppDelegate)?.mainWindowController?.window else {
                         return;
                     }

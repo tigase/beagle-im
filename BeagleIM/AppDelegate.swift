@@ -277,13 +277,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         switch action {
         case .join:
             DispatchQueue.main.async {
-                guard let windowController = self.mainWindowController?.storyboard?.instantiateController(withIdentifier: "OpenGroupchatController") as? NSWindowController else {
+                guard let windowController = NSStoryboard(name: "MIX", bundle: nil).instantiateController(withIdentifier: "JoinChannelWindowController") as? NSWindowController else {
                     return;
                 }
-                (windowController.contentViewController as? OpenGroupchatController)?.componentJidField.stringValue = uri.jid.domain;
-                (windowController.contentViewController as? OpenGroupchatController)?.componentJid = BareJID(uri.jid.domain);
-                (windowController.contentViewController as? OpenGroupchatController)?.searchField.stringValue = uri.jid.localPart ?? "";
-                (windowController.contentViewController as? OpenGroupchatController)?.password = uri.dict?["password"];
+                (windowController.contentViewController as? JoinChannelViewController)?.componentDomainField.stringValue = uri.jid.domain;
+                (windowController.contentViewController as? JoinChannelViewController)?.channelNameField.stringValue = uri.jid.localPart ?? "";
+                (windowController.contentViewController as? JoinChannelViewController)?.password = uri.dict?["password"];
                 self.mainWindowController?.window?.beginSheet(windowController.window!, completionHandler: nil);
             }
         case .message:
@@ -507,17 +506,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                 break;
             }
             let storyboard = NSStoryboard(name: "Main", bundle: nil);
-            guard let windowController = storyboard.instantiateController(withIdentifier: "OpenGroupchatController") as? NSWindowController else {
+            guard let windowController = storyboard.instantiateController(withIdentifier: "JoinChannelWindowController") as? NSWindowController else {
                 break;
             }
-            guard let openRoomController = windowController.contentViewController as? OpenGroupchatController else {
+            guard let openRoomController = windowController.contentViewController as? JoinChannelViewController else {
                 break;
             }
             let roomJid = BareJID(roomJidStr);
-            openRoomController.searchField.stringValue = roomJidStr;
-            openRoomController.componentJids = [BareJID(roomJid.domain)];
+            openRoomController.channelNameField.stringValue = roomJid.domain;
+            openRoomController.channelNameField.stringValue = roomJid.localPart ?? "";
             openRoomController.account = BareJID(accountStr);
-            openRoomController.nicknameField.stringValue = nickname;
+            openRoomController.nickname = nickname;
             guard let window = self.mainWindowController?.window else {
                 break;
             }

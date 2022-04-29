@@ -55,14 +55,24 @@ class ChatsListSuggestionItemView: SuggestionItemViewBase<ContactSuggestionField
     override var item: ContactSuggestionField.Item? {
         didSet {
             cancellables.removeAll();
-            if let displayable = item?.displayableId {
-                displayable.avatarPublisher.receive(on: DispatchQueue.main).assign(to: \.avatar, on: self.avatar).store(in: &cancellables);
-                displayable.displayNamePublisher.assign(to: \.stringValue, on: self.label).store(in: &cancellables);
-                displayable.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: self.avatar).store(in: &cancellables);
+            if let item = item {
+                if let displayable = item.displayableId {
+                    displayable.avatarPublisher.receive(on: DispatchQueue.main).assign(to: \.avatar, on: self.avatar).store(in: &cancellables);
+                    displayable.displayNamePublisher.assign(to: \.stringValue, on: self.label).store(in: &cancellables);
+                    displayable.displayNamePublisher.map({ $0 as String? }).assign(to: \.name, on: self.avatar).store(in: &cancellables);
+                } else {
+                    if let account = item.account {
+                        self.avatar.avatar = AvatarManager.instance.avatar(for: item.jid, on: account);
+                    } else {
+                        self.avatar.avatar = AvatarManager.instance.defaultAvatar;
+                    }
+                    self.avatar.name = item.name;
+                    self.label.stringValue = item.name;
+                }
             } else {
                 self.avatar.avatar = nil;
-                self.avatar.name = item?.jid.stringValue;
-                self.label.stringValue = item?.jid.stringValue ?? "";
+                self.avatar.name = "";
+                self.label.stringValue = "";
             }
         }
     }

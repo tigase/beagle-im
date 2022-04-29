@@ -120,7 +120,7 @@ class SettingsStore {
     var showRoomDetailsSidebar: Bool;
     @UserDefaultsSetting(key: "defaultAccount")
     var defaultAccount: String?
-    @UserDefaultsSetting(key: "enableBookmarksSync", defaultValue: false)
+    @UserDefaultsSetting(key: "enableBookmarksSync", defaultValue: true)
     var enableBookmarksSync: Bool;
     @UserDefaultsSetting(key: "fileDownloadSizeLimit", defaultValue: Int(10*1024*1024))
     var fileDownloadSizeLimit: Int;

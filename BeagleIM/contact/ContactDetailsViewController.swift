@@ -59,6 +59,7 @@ open class ContactDetailsViewController: NSViewController, ContactDetailsAccount
         basicViewController?.account = self.account;
         basicViewController?.jid = self.jid;
         basicViewController?.showSettings = self.showSettings;
+        basicViewController?.viewType = self.viewType;
         
         self.tabs.segmentCount = self.tabsView.tabViewItems.count;
         var i = 0;
@@ -95,6 +96,7 @@ open class ConversationDetailsViewController: NSViewController, ContactDetailsAc
     
     var account: BareJID?;
     var jid: BareJID?;
+    var viewType: ContactDetailsViewController.ViewType = .contact;
     
     @IBOutlet var nameField: NSTextField!;
     @IBOutlet var jidField: NSTextField!;
@@ -117,11 +119,9 @@ open class ConversationDetailsViewController: NSViewController, ContactDetailsAc
         //nameField.focusRingType = .none;
         jidField.stringValue = jid?.stringValue ?? "";
         if let jid = self.jid, let account = self.account {
-            avatarView.image = AvatarManager.instance.avatar(for: jid, on: account);
-            if let channel = DBChatStore.instance.conversation(for: account, with: jid) as? Channel {
-                if let name = channel.name {
-                    nameField.stringValue = name;
-                }
+            avatarView.avatar = AvatarManager.instance.avatar(for: jid, on: account);
+            if self.viewType == .groupchat {
+                nameField.stringValue = DBChatStore.instance.conversation(for: account, with: jid)?.displayName ?? jid.stringValue;
             } else {
             DBVCardStore.instance.vcard(for: jid) { (vcard) in
                 DispatchQueue.main.async {
@@ -170,6 +170,7 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
     weak var superView: NSView?;
     
     var muteNotifications: NSButton?;
+    var bookmark: NSButton?;
     var blockContact: NSButton?;
     var confirmMessages: NSButton?;
     
@@ -186,6 +187,11 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
             switch chat {
             case let r as Room:
                 muteNotifications?.state = r.options.notifications == .none ? .on : .off;
+                if let context = r.context, context.module(.pepBookmarks).isPepAvailable {
+                    bookmark = NSButton(checkboxWithTitle: NSLocalizedString("Bookmark", comment: "popup checkbox label"), target: self, action: #selector(bookmarkChanged(_:)));
+                    bookmark?.state = r.context?.module(.pepBookmarks).currentBookmarks.conference(for: JID(r.jid)) != nil ? .on : .off;
+                    rows.append(bookmark!);
+                }
             case let c as Chat:
                 muteNotifications?.state = c.options.notifications == .none ? .on : .off;
                 if let client = chat.context {
@@ -353,6 +359,18 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
                     parent.beginSheet(window, completionHandler: nil);
                 }
             }
+        }
+    }
+    
+    @objc func bookmarkChanged(_ sender: Any) {
+        guard let room = chat as? Room, let context = room.context else {
+            return;
+        }
+        
+        if bookmark?.state == .on {
+            context.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: room.name ?? room.jid.localPart ?? room.jid.stringValue, jid: JID(room.jid), autojoin: false, nick: room.nickname, password: room.password));
+        } else {
+            context.module(.pepBookmarks).remove(bookmark: Bookmarks.Conference(name: room.name ?? room.jid.stringValue, jid: JID(room.jid), autojoin: false));
         }
     }
     

@@ -127,6 +127,9 @@
 /* popup checkbox label */
 "Block contact" = "Block contact";
 
+/* popup checkbox label */
+"Bookmark" = "Bookmark";
+
 /* video call conroller */
 "Call declined" = "Call declined";
 
@@ -243,6 +246,9 @@
 /* vcard editor */
 "Country" = "Country";
 
+/* context menu item */
+"Create channel" = "Utwórz kanał";
+
 /* setting */
 "Dark" = "Dark";
 
@@ -275,6 +281,9 @@
 
 /* Chats list group name */
 "Direct messages" = "Direct messages";
+
+/* menu item label */
+"Disable autojoin" = "Disable autojoin";
 
 /* popup button label tooltip */
 "Disabling will disable syncing information about read messages between your devices!" = "Disabling will disable syncing information about read messages between your devices!";
@@ -311,6 +320,9 @@
 
 /* contact details popup label */
 "Emails" = "Emails";
+
+/* menu item label */
+"Enable autojoin" = "Enable autojoin";
 
 /* settings */
 "Enable groupchat bookmarks sync" = "Enable groupchat bookmarks sync";
@@ -530,6 +542,15 @@
 
 /* server not trusted */
 "It was not possible to verify that server is trusted" = "It was not possible to verify that server is trusted";
+
+/* action join bookmark item */
+"Join %@" = "Dołącz do %@";
+
+/* context menu item */
+"Join channel" = "Dołącz do kanału";
+
+/* window title */
+"Joining channel %@" = "Joining channel %@";
 
 /* OMEMO settings */
 "Key not generated!" = "Key not generated!";
