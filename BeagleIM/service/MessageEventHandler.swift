@@ -249,6 +249,7 @@ class MessageEventHandler: XmppServiceExtension {
         case chatMarker
     }
     
+    // FIXME: maybe this could be done on a separate thread?
     func sendReceived(for conversation: ConversationKey, timestamp: Date, stanzaId: String, receipts: [ReceiptType]) {
         guard !receipts.isEmpty, let conv = (conversation as? Conversation) ?? DBChatStore.instance.conversation(for: conversation.account,    with: conversation.jid) else {
             return;
