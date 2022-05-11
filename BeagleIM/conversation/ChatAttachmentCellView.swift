@@ -64,8 +64,6 @@ class ChatAttachmentCellView: BaseChatCellView {
     fileprivate var direction: MessageDirection? = nil;
     fileprivate var item: ConversationEntry?;
 
-    var customTrackingArea: NSTrackingArea?;
-    
     deinit {
         if #available(macOS 10.15, *) {
             for item in self.customView.subviews.filter({ $0 is LPLinkView}) {
@@ -113,6 +111,8 @@ class ChatAttachmentCellView: BaseChatCellView {
                 metadata = LPLinkMetadata();
                 metadata!.originalURL = localUrl;
                 isNew = true;
+            } else if let meta = metadata, meta.originalURL == nil {
+                metadata?.originalURL = localUrl;
             }
                 
             let linkView = LPLinkViewPool.instance.acquire(url: localUrl);
