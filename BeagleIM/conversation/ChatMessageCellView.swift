@@ -99,8 +99,8 @@ class ChatMessageCellView: BaseChatCellView {
                         if let url = match.url {
                             textStorage.addAttribute(.link, value: url, range: match.range);
                         }
-                        if let phoneNumber = match.phoneNumber {
-                            textStorage.addAttribute(.link, value: URL(string: "tel:\(phoneNumber.replacingOccurrences(of: " ", with: "-"))")!, range: match.range);
+                        if let phoneNumber = match.phoneNumber, let url = URL(string: "tel:\(phoneNumber.replacingOccurrences(of: " ", with: "-"))") {
+                            textStorage.addAttribute(.link, value: url, range: match.range);
                         }
                         if let address = match.components {
                             let query = address.values.joined(separator: ",").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed);
