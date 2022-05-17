@@ -140,6 +140,7 @@ class ChatAttachmentCellView: BaseChatCellView {
                         guard let linkView = linkView, linkView.metadata.originalURL == localUrl else {
                             return;
                         }
+                        meta.originalURL = localUrl;
                         linkView.metadata = meta;
                     }
                 })
