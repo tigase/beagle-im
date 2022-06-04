@@ -22,7 +22,7 @@
 import AppKit
 import TigaseSwift
 
-class AccountDetailsViewController: NSViewController, AccountAware {
+class AccountDetailsViewController: NSViewController, AccountAware, NSTextFieldDelegate {
     
     var account: BareJID?;
     
@@ -32,10 +32,53 @@ class AccountDetailsViewController: NSViewController, AccountAware {
     @IBOutlet weak var active: NSButton!;
     @IBOutlet weak var resourceType: NSPopUpButton!;
     @IBOutlet weak var resourceName: NSTextField!;
+    @IBOutlet var host: NSTextField!;
+    @IBOutlet var port: NSTextField!;
+    @IBOutlet var useDirectTLS: NSButton!;
+    @IBOutlet var disableTLS13: NSButton!;
+    
+    @IBOutlet var advGrid: NSGridView!;
+    @IBOutlet var disclosureButton: NSButton!;
+    @IBOutlet var showDisclosure: NSLayoutConstraint!;
+    
+    @IBOutlet var saveButton: NSButton!;
     
     override func viewDidLoad() {
         super.viewDidLoad();
         self.refresh();
+        
+        port.formatter = PortValueFormatter();
+    }
+    
+    override func viewWillAppear() {
+        super.viewWillAppear();
+        showDisclosure(false);
+        refreshControlStates();
+    }
+    
+    func controlTextDidChange(_ obj: Notification) {
+        refreshControlStates();
+    }
+    
+    func refreshControlStates() {
+        let hasCredentials = !username.stringValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty;
+        let canConnect = host.stringValue.isEmpty == port.stringValue.isEmpty;
+        saveButton.isEnabled = hasCredentials && canConnect;
+        useDirectTLS.isEnabled = !(port.stringValue.isEmpty || host.stringValue.isEmpty);
+    }
+    
+    @IBAction func switchDisclosure(_ sender: Any) {
+        showDisclosure(disclosureButton.state == .on);
+    }
+    
+    func showDisclosure(_ value: Bool) {
+        disclosureButton.state = value ? .on : .off;
+        advGrid.isHidden = !value;
+        if value {
+            NSLayoutConstraint.activate([showDisclosure]);
+        } else {
+            NSLayoutConstraint.deactivate([showDisclosure]);
+        }
     }
     
     func refresh() {
@@ -65,6 +108,15 @@ class AccountDetailsViewController: NSViewController, AccountAware {
         changePasswordButton.isEnabled = account != nil;
         nickname.isEnabled = account != nil;
         resourceName.isEnabled = resourceType.indexOfSelectedItem == 3;
+        
+        host.stringValue = acc?.endpoint?.host ?? "";
+        if let portInt = acc?.endpoint?.port {
+            port.stringValue = String(portInt);
+        } else {
+            port.stringValue = "";
+        }
+        useDirectTLS.state = (acc?.endpoint?.proto == .XMPPS) ? .on : .off;
+        disableTLS13.state = (acc?.disableTLS13 ?? false) ? .on : .off;
     }
         
     @IBAction func resourceTypeChanged(_ sender: NSPopUpButton) {
@@ -91,6 +143,11 @@ class AccountDetailsViewController: NSViewController, AccountAware {
         let idx = resourceType.indexOfSelectedItem;
         account.resourceType = idx == 1 ? .automatic : (idx == 2 ? .hostname : .custom);
         account.resourceName = resourceName.stringValue;
+        
+        if !(host.stringValue.isEmpty || port.stringValue.isEmpty), let portInt = Int(port.stringValue) {
+            account.endpoint = .init(proto: useDirectTLS.state == .on ? .XMPPS : .XMPP, host: host.stringValue, port: portInt)
+        }
+        account.disableTLS13 = disableTLS13.state == .on;
         
         do {
             try AccountManager.save(account: account);

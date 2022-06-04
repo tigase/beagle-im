@@ -24,13 +24,34 @@ import TigaseSwift
 import OpenSSL
 import TigaseLogging
 
-public enum SSLProtocol {
+public enum TLSVersion: Comparable, CaseIterable {
     case TLSv1
     case TLSv1_1
     case TLSv1_2
     case TLSv1_3
     case unknown
 }
+
+extension TLSVersion {
+    
+    var ssl_op_no: UInt32 {
+        switch self {
+        case .TLSv1:
+            return SSL_OP_NO_TLSv1;
+        case .TLSv1_1:
+            return SSL_OP_NO_TLSv1_1;
+        case .TLSv1_2:
+            return SSL_OP_NO_TLSv1_2;
+        case .TLSv1_3:
+            return SSL_OP_NO_TLSv1_3;
+        case .unknown:
+            return 0;
+        }
+    }
+    
+}
+
+public typealias SSLProtocol = TLSVersion;
 
 extension SSLProtocol {
     static func from(protocolId: Int32) -> SSLProtocol {
@@ -431,12 +452,14 @@ open class SSLProcessor: ConnectorBase.NetworkProcessor, SSLNetworkProcessor {
 public struct SSLProcessorProvider: NetworkProcessorProvider {
     
     public let providedFeatures: [ConnectorFeature] = [.TLS];
+    public let supportedTlsVersions: ClosedRange<TLSVersion>;
         
-    public init() {
+    public init(supportedTlsVersions: ClosedRange<TLSVersion> = TLSVersion.TLSv1_2...TLSVersion.TLSv1_3) {
+        self.supportedTlsVersions = supportedTlsVersions;
     }
     
     public func supply() -> SocketConnector.NetworkProcessor {
-        let context = SSLContext()!;
+        let context = SSLContext(supportedTlsVersions: supportedTlsVersions)!;
         return context.createConnection()!;
     }
     

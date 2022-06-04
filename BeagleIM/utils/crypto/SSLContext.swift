@@ -27,7 +27,7 @@ open class SSLContext {
     
     private let sslContext: OpaquePointer;
     
-    public init?(alpnProtocols: [String] = []) {
+    public init?(alpnProtocols: [String] = [], supportedTlsVersions: ClosedRange<SSLProtocol> = SSLProtocol.TLSv1_2...SSLProtocol.TLSv1_3) {
         guard let context = SSL_CTX_new(TLS_client_method()) else {
             return nil;
         }
@@ -36,6 +36,16 @@ open class SSLContext {
             var bytes = alpnProtocols.map { SSLContext.protocolToBytes($0) }.reduce(into: [UInt8](repeating: 0, count: 0), { result, value in result.append(contentsOf: value) });
             SSL_CTX_set_alpn_protos(context, &bytes, UInt32(bytes.count));
         }
+        
+        var options = UInt(0) | UInt(SSL_OP_NO_SSLv2) | UInt(SSL_OP_NO_SSLv3) | UInt(SSL_OP_NO_COMPRESSION);
+        for version in SSLProtocol.allCases {
+            if !supportedTlsVersions.contains(version) {
+                options = options | UInt(version.ssl_op_no);
+            }
+        }
+
+        SSL_CTX_set_options(context, options)
+        
         SSL_CTX_ctrl(context, SSL_CTRL_SET_SESS_CACHE_MODE, Int(SSL_SESS_CACHE_CLIENT | SSL_SESS_CACHE_NO_INTERNAL_STORE), nil);
     }
     

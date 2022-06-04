@@ -944,7 +944,7 @@
 "To %@" = "Do %@";
 
 /* settings */
-"To change password for account %$ please fill out this form:" = "Any zmienić hasło dla konta %@, proszę wypełnić ten formularz:";
+"To change password for account %$ please fill out this form:" = "Aby zmienić hasło dla konta %@, proszę wypełnić ten formularz:";
 
 /* error message details */
 "To show current location, enable Wi-Fi network." = "Aby pokazać bieżące położenie, włącz Wi-Fi.";

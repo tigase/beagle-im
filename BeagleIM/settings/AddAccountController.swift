@@ -23,64 +23,105 @@ import AppKit
 import TigaseSwift
 import Combine
 
+class PortValueFormatter: NumberFormatter {
+    
+    override func isPartialStringValid(_ partialString: String, newEditingString newString: AutoreleasingUnsafeMutablePointer<NSString?>?, errorDescription error: AutoreleasingUnsafeMutablePointer<NSString?>?) -> Bool {
+        if partialString.isEmpty {
+            return true;
+        }
+        
+        guard let value = UInt(partialString) else {
+            return false;
+        }
+        return value < 65536;
+    }
+    
+}
+
 class AddAccountController: NSViewController, NSTextFieldDelegate {
     
     @IBOutlet var logInButton: NSButton!;
-    @IBOutlet var stackView: NSStackView!
     @IBOutlet var registerButton: NSButton!;
     @IBOutlet var progressIndicator: NSProgressIndicator!;
     
-    var usernameField: NSTextField!;
-    var passwordField: NSSecureTextField!;
+    @IBOutlet var usernameField: NSTextField!;
+    @IBOutlet var passwordField: NSSecureTextField!;
+    
+    @IBOutlet var hostField: NSTextField!;
+    @IBOutlet var portField: NSTextField!;
+    @IBOutlet var useDirectTLSCheck: NSButton!;
+    @IBOutlet var disableTLS13Check: NSButton!;
+    
+    @IBOutlet var disclosureButton: NSButton!;
+    @IBOutlet var showAdvConstraint: NSLayoutConstraint!;
+    @IBOutlet var hideAdvConstraint: NSLayoutConstraint!;
+    @IBOutlet var advGrid: NSGridView!;
     
     var accountValidatorTask: AccountValidatorTask?;
     
     override func viewWillAppear() {
         super.viewWillAppear();
-        usernameField = addRow(label: NSLocalizedString("Username", comment: "account view"), field: NSTextField(string: ""));
-        usernameField.placeholderString = "user@domain.com";
-        usernameField.delegate = self;
-        passwordField = addRow(label: NSLocalizedString("Password", comment: "account view"), field: NSSecureTextField(string: ""));
-        passwordField.placeholderString = NSLocalizedString("Required", comment: "account view placeholder");
-        passwordField.delegate = self;
+        portField.formatter = PortValueFormatter();
+        disclosureButton.refusesFirstResponder = false;
+        showDisclosure(false);
+        view.window?.recalculateKeyViewLoop();
+    }
+    
+    @IBAction func disclosureChanged(_ sender: Any?) {
+        showDisclosure(disclosureButton.state == .on);
+    }
+    
+    func showDisclosure(_ value: Bool) {
+        disclosureButton.state = value ? .on : .off;
+        advGrid.isHidden = !value;
+        if value {
+            NSLayoutConstraint.activate([showAdvConstraint]);
+        } else {
+            NSLayoutConstraint.deactivate([showAdvConstraint]);
+        }
+        view.window?.recalculateKeyViewLoop();
     }
     
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+        guard disclosureButton.state == .off else {
+            return false;
+        }
+        
         if commandSelector == #selector(NSResponder.insertNewline(_:)) || commandSelector == #selector(NSResponder.insertTab(_:)) {
             control.resignFirstResponder();
-            
-            guard var idx = self.stackView.views.firstIndex(where: { (view) -> Bool in
-                view.subviews[1] == control;
-            }) else {
+
+            var responder: NSResponder = usernameField;
+            switch textView {
+            case usernameField.currentEditor():
+                responder = passwordField;
+            case passwordField.currentEditor():
+                responder = logInButton;
+            default:
                 return false;
             }
-            
-            var responder: NSResponder? = nil;
-            repeat {
-                idx = idx + 1;
-                if idx >= self.stackView.views.count {
-                    if logInButton.isEnabled && commandSelector == #selector(NSResponder.insertNewline(_:)), let action = logInButton.action, let target = logInButton.target {
+
+            if responder == logInButton {
+                if logInButton.isEnabled {
+                    if commandSelector == #selector(NSResponder.insertNewline(_:)), let action = logInButton.action, let target = logInButton.target {
                         _ = target.perform(action, with: logInButton);
                         return true;
-                    } else {
-                        idx = 0;
                     }
+                } else {
+                    responder = disclosureButton;
                 }
-                responder = self.stackView.views[idx].subviews[1];
-                if !(responder?.acceptsFirstResponder ?? false) {
-                    responder = nil;
-                }
-            } while responder == nil;
-            
+            }
+
             self.view.window?.makeFirstResponder(responder);
-            
             return true;
         }
         return false;
     }
     
     func controlTextDidChange(_ obj: Notification) {
-        logInButton.isEnabled = !(usernameField.stringValue.isEmpty || passwordField.stringValue.isEmpty);
+        let hasCredentials = !(usernameField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || passwordField.stringValue.isEmpty);
+        let canConnect = hostField.stringValue.isEmpty == portField.stringValue.isEmpty;
+        logInButton.isEnabled = hasCredentials && canConnect;
+        useDirectTLSCheck.isEnabled = !(portField.stringValue.isEmpty || hostField.stringValue.isEmpty);
     }
     
     @IBAction func cancelClicked(_ button: NSButton) {
@@ -93,7 +134,13 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
         account.password = passwordField.stringValue;
         self.showProgressIndicator();
         self.accountValidatorTask = AccountValidatorTask(controller: self);
-        self.accountValidatorTask?.check(account: account.name, password: account.password!, callback: { result in
+        var endpoint: SocketConnectorNetwork.Endpoint?;
+        if !(hostField.stringValue.isEmpty || portField.stringValue.isEmpty), let port = Int(portField.stringValue) {
+            endpoint = .init(proto: useDirectTLSCheck.state == .on ? .XMPPS : .XMPP, host: hostField.stringValue, port: port);
+        }
+        account.endpoint = endpoint;
+        account.disableTLS13 = disableTLS13Check.state == .on;
+        self.accountValidatorTask?.check(account: account.name, password: account.password!, endpoint: endpoint, disableTLS13: disableTLS13Check.state == .on, callback: { result in
             let certificateInfo = self.accountValidatorTask?.acceptedCertificate;
             DispatchQueue.main.async {
                 self.accountValidatorTask?.finish();
@@ -154,26 +201,6 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
             self.view.window?.sheetParent?.endSheet(self.view.window!);
         })
     }
-    
-    func addRow<T: NSView>(label text: String, field: T) -> T {
-        let label = createLabel(text: text);
-        let row = RowView(views: [label, field]);
-        self.stackView.addView(row, in: .bottom);
-        return field;
-    }
-    
-    func createLabel(text: String) -> NSTextField {
-        let label = NSTextField(string: text);
-        label.isEditable = false;
-        label.isBordered = false;
-        label.drawsBackground = false;
-        label.widthAnchor.constraint(equalToConstant: 120).isActive = true;
-        label.alignment = .right;
-        return label;
-    }
-    
-    class RowView: NSStackView {
-    }
 
     class AccountValidatorTask: EventHandler {
         
@@ -211,11 +238,17 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
             _ = client?.modulesManager.register(AuthModule());
         }
         
-        public func check(account: BareJID, password: String, callback: @escaping (Result<Void,ErrorCondition>)->Void) {
+        public func check(account: BareJID, password: String, endpoint: SocketConnectorNetwork.Endpoint?, disableTLS13: Bool, callback: @escaping (Result<Void,ErrorCondition>)->Void) {
             self.callback = callback;
             client?.connectionConfiguration.useSeeOtherHost = false;
             client?.connectionConfiguration.userJid = account;
             client?.connectionConfiguration.credentials = .password(password: password, authenticationName: nil, cache: nil);
+            client?.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
+                if let endpoint = endpoint {
+                    options.connectionDetails = endpoint;
+                }
+                options.networkProcessorProviders.append(disableTLS13 ? SSLProcessorProvider(supportedTlsVersions: TLSVersion.TLSv1_2...TLSVersion.TLSv1_2) : SSLProcessorProvider());
+            })
             client?.login();
         }
         

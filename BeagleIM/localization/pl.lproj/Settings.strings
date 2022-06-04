@@ -34,6 +34,9 @@
 /* Class = "NSTextFieldCell"; title = "Please fill following fields:"; ObjectID = "8Cm-XV-mfb"; */
 "8Cm-XV-mfb.title" = "Proszę wypełnić następujące pola:";
 
+/* Class = "NSTextFieldCell"; title = "Username"; ObjectID = "8M7-KR-5mo"; */
+"8M7-KR-5mo.title" = "Nazwa użytkownika";
+
 /* Class = "NSTextFieldCell"; title = "XMPP ID"; ObjectID = "8pC-eX-DvY"; */
 "8pC-eX-DvY.title" = "XMPP ID";
 
@@ -51,6 +54,9 @@
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "aMC-en-eZF"; */
 "aMC-en-eZF.title" = "Anuluj";
+
+/* Class = "NSTextFieldCell"; title = "Connection details"; ObjectID = "b6C-mg-DGL"; */
+"b6C-mg-DGL.title" = "Szczegóły połączenia";
 
 /* Class = "NSMenuItem"; title = "Last week"; ObjectID = "B9q-jf-nOC"; */
 "B9q-jf-nOC.title" = "Ostatni tydzień";
@@ -97,6 +103,9 @@
 /* Class = "NSButtonCell"; title = "Submit"; ObjectID = "fYG-1W-E0t"; */
 "fYG-1W-E0t.title" = "Zatwierdź";
 
+/* Class = "NSTextFieldCell"; title = "Port"; ObjectID = "g2A-aU-32n"; */
+"g2A-aU-32n.title" = "Port";
+
 /* Class = "NSTextFieldCell"; placeholderString = "Full name"; ObjectID = "gcb-gy-dOu"; */
 "gcb-gy-dOu.placeholderString" = "Pełna nazwa";
 
@@ -109,14 +118,26 @@
 /* Class = "NSButtonCell"; title = "Enabled"; ObjectID = "gpR-aC-82b"; */
 "gpR-aC-82b.title" = "Włączone";
 
+/* Class = "NSTextFieldCell"; title = "Password"; ObjectID = "GSs-9e-oRd"; */
+"GSs-9e-oRd.title" = "Hasło";
+
 /* Class = "NSButtonCell"; title = "Change"; ObjectID = "GTN-Ge-Agc"; */
 "GTN-Ge-Agc.title" = "Zmień";
+
+/* Class = "NSButtonCell"; title = "Disable TLS 1.3"; ObjectID = "HBs-Mc-ghm"; */
+"HBs-Mc-ghm.title" = "Wyłącz TLS 1.3";
 
 /* Class = "NSButtonCell"; title = "Register"; ObjectID = "heh-y3-2kR"; */
 "heh-y3-2kR.title" = "Zarejestruj";
 
+/* Class = "NSTextFieldCell"; title = "Host"; ObjectID = "hgo-ms-wHQ"; */
+"hgo-ms-wHQ.title" = "Host";
+
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "hR3-qS-JXb"; */
 "hR3-qS-JXb.title" = "Anuluj";
+
+/* Class = "NSTextFieldCell"; placeholderString = "Automatic"; ObjectID = "hUP-vG-G7V"; */
+"hUP-vG-G7V.placeholderString" = "Automatycznie";
 
 /* Class = "NSTextFieldCell"; title = "Change password"; ObjectID = "iIE-7s-Mvt"; */
 "iIE-7s-Mvt.title" = "Zmień hasło";
@@ -157,6 +178,9 @@
 /* Class = "NSMenuItem"; title = "Change password"; ObjectID = "MFc-eO-0vV"; */
 "MFc-eO-0vV.title" = "Zmień hasło";
 
+/* Class = "NSTextFieldCell"; placeholderString = "Automatic"; ObjectID = "MjQ-Mu-eIj"; */
+"MjQ-Mu-eIj.placeholderString" = "Automatycznie";
+
 /* Class = "NSTextFieldCell"; title = "Phones"; ObjectID = "NtX-vm-yQi"; */
 "NtX-vm-yQi.title" = "Telefony";
 
@@ -165,6 +189,9 @@
 
 /* Class = "NSTextFieldCell"; title = "Addresses"; ObjectID = "nV4-fl-h2q"; */
 "nV4-fl-h2q.title" = "Adresy";
+
+/* Class = "NSTextFieldCell"; placeholderString = "Automatic"; ObjectID = "nYH-Yw-xbp"; */
+"nYH-Yw-xbp.placeholderString" = "Automatycznie";
 
 /* Class = "NSMenuItem"; title = "Last 12 hours"; ObjectID = "o17-R1-mNs"; */
 "o17-R1-mNs.title" = "Ostatnie 12 godzin";
@@ -187,6 +214,9 @@
 /* Class = "NSTextFieldCell"; title = "Default"; ObjectID = "PLb-9s-193"; */
 "PLb-9s-193.title" = "Domyślne";
 
+/* Class = "NSButtonCell"; title = "Use Direct TLS"; ObjectID = "pp5-lu-nLl"; */
+"pp5-lu-nLl.title" = "Użyj bezpośredniego TLS";
+
 /* Class = "NSMenuItem"; title = "Profile"; ObjectID = "Pqf-I0-C3I"; */
 "Pqf-I0-C3I.title" = "Profil";
 
@@ -195,6 +225,9 @@
 
 /* Class = "NSTextFieldCell"; title = "Resource"; ObjectID = "QbC-PO-xuW"; */
 "QbC-PO-xuW.title" = "Zasób";
+
+/* Class = "NSTextFieldCell"; title = "Port"; ObjectID = "Qf6-cp-3hi"; */
+"Qf6-cp-3hi.title" = "Port";
 
 /* Class = "NSMenuItem"; title = "Last month"; ObjectID = "qSg-kc-7nQ"; */
 "qSg-kc-7nQ.title" = "Ostatni miesiąc";
@@ -223,8 +256,17 @@
 /* Class = "NSMenuItem"; title = "OMEMO settings"; ObjectID = "uOu-4t-LCA"; */
 "uOu-4t-LCA.title" = "Ustawienia OMEMO";
 
+/* Class = "NSButtonCell"; title = "Disable TLS 1.3"; ObjectID = "vrI-CU-Qe6"; */
+"vrI-CU-Qe6.title" = "Wyłącz TLS 1.3";
+
+/* Class = "NSTextFieldCell"; placeholderString = "user@domain.com"; ObjectID = "VTO-AL-f5u"; */
+"VTO-AL-f5u.placeholderString" = "user@domain.com";
+
 /* Class = "NSTextFieldCell"; title = "Other devices with OMEMO"; ObjectID = "Vum-Tn-nHu"; */
 "Vum-Tn-nHu.title" = "Inne urządzenia z OMEMO";
+
+/* Class = "NSTextFieldCell"; title = "Host"; ObjectID = "vXd-BW-tw1"; */
+"vXd-BW-tw1.title" = "Host";
 
 /* Class = "NSWindow"; title = "Preferences"; ObjectID = "WjX-Y5-Uyc"; */
 "WjX-Y5-Uyc.title" = "Preferencje";
@@ -253,6 +295,9 @@
 /* Class = "NSMenuItem"; title = "Automatic"; ObjectID = "xRa-Ah-yOh"; */
 "xRa-Ah-yOh.title" = "Automatyczny";
 
+/* Class = "NSButtonCell"; title = "Use Direct TLS"; ObjectID = "XYA-0B-NL2"; */
+"XYA-0B-NL2.title" = "Użyj bezpośredniego TLS";
+
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "yk0-1q-zhc"; */
 "yk0-1q-zhc.title" = "Anuluj";
 
@@ -264,6 +309,9 @@
 
 /* Class = "NSViewController"; title = "General"; ObjectID = "Z0Q-Gs-cLx"; */
 "Z0Q-Gs-cLx.title" = "Ogólne";
+
+/* Class = "NSTextFieldCell"; placeholderString = "Automatic"; ObjectID = "ZAx-pe-fAv"; */
+"ZAx-pe-fAv.placeholderString" = "Automatycznie";
 
 /* Class = "NSButtonCell"; title = "Save"; ObjectID = "zFR-Jm-1za"; */
 "zFR-Jm-1za.title" = "Zapisz";

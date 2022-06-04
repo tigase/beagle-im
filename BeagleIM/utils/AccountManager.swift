@@ -290,6 +290,35 @@ open class AccountManager {
             }
         }
         
+        public var disableTLS13: Bool {
+            get {
+                return data["disableTLS13"] as? Bool ?? false;
+            }
+            set {
+                if newValue {
+                    data["disableTLS13"] = newValue;
+                } else {
+                    data.removeValue(forKey: "disableTLS13");
+                }
+            }
+        }
+        
+        public var endpoint: SocketConnectorNetwork.Endpoint? {
+            get {
+                guard let values = data["endpoint"] as? [String: Any], let protoStr = values["proto"] as? String, let proto = ConnectorProtocol(rawValue: protoStr), let host = values["host"] as? String, let port = values["port"] as? Int else {
+                    return nil;
+                }
+                return SocketConnectorNetwork.Endpoint(proto: proto, host: host, port: port);
+            }
+            set {
+                if let value = newValue {
+                    data["endpoint"] = [ "proto": value.proto.rawValue, "host": value.host, "port": value.port ];
+                } else {
+                    data.removeValue(forKey: "endpoint");
+                }
+            }
+        }
+        
         public init(name: BareJID) {
             self.name = name;
             self.data = ["active": true];
