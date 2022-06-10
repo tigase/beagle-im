@@ -300,19 +300,24 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
     
     @objc func blockContactChanged(_ sender: NSButton) {
         if let chat = self.chat as? Chat, let context = chat.context {
+            let jid = JID(chat.jid);
             if sender.state == .on {
-                context.module(.blockingCommand).block(jids: [JID(chat.jid)], completionHandler: { [weak sender] result in
+                if DBRosterStore.instance.item(for: chat.account, jid: jid) == nil, let invitation = InvitationManager.instance.invitation(type: .presenceSubscription, account: chat.account, jid: jid) {
+                    InvitationManager.instance.remove(invitation: invitation);
+                    context.module(.presence).unsubscribed(by: jid);
+                }
+                context.module(.blockingCommand).block(jids: [jid], completionHandler: { [weak sender] result in
                     DispatchQueue.main.async {
                         switch result {
                         case .failure(_):
                             sender?.state = .off;
-                        default:
+                        case .success(_):
                             break;
                         }
                     }
                 })
             } else {
-                context.module(.blockingCommand).unblock(jids: [JID(chat.jid)], completionHandler: { [weak sender] result in
+                context.module(.blockingCommand).unblock(jids: [jid], completionHandler: { [weak sender] result in
                     DispatchQueue.main.async {
                         switch result {
                         case .failure(_):

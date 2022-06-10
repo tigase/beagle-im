@@ -49,6 +49,12 @@ class InvitationManager {
         return order;
     }
     
+    func invitation(type: InvitationItemType, account: BareJID, jid: JID) -> InvitationItem? {
+        dispatcher.sync {
+            return self.volatileItems.first(where: { $0.type == type && $0.account == account && $0.jid == jid }) ?? self.peristentItems.first(where: { $0.type == type && $0.account == account && $0.jid == jid });
+        }
+    }
+    
     func addPresenceSubscribe(for account: BareJID, from jid: JID) {
         dispatcher.async {
             let invitation = InvitationItem(type: .presenceSubscription, account: account, jid: jid, object: nil, order:  self.nextOrder());
