@@ -28,7 +28,7 @@ class PresenceAuthorizationRequestController: NSViewController {
     @IBOutlet var nameField: NSTextField!;
     @IBOutlet var jidField: NSTextField!;
     @IBOutlet var progressIndicator: NSProgressIndicator!;
-    @IBOutlet var blockButton: NSButton!;
+    @IBOutlet var blockingPullDownButton: NSPopUpButton!;
     
     var invitation: InvitationItem!;
     
@@ -48,7 +48,11 @@ class PresenceAuthorizationRequestController: NSViewController {
         refreshVCard();
         
         let blockingModule: BlockingCommandModule? = XmppService.instance.getClient(for: account)?.module(.blockingCommand);
-        blockButton.isHidden = !(blockingModule?.isAvailable ?? false);
+        blockingPullDownButton.isHidden = !(blockingModule?.isAvailable ?? false);
+        blockingPullDownButton.menu?.item(at: 0)?.isEnabled = true;
+        blockingPullDownButton.menu?.item(at: 1)?.isEnabled = true;
+        blockingPullDownButton.menu?.item(at: 2)?.isEnabled = blockingModule?.isReportingSupported ?? false;
+        blockingPullDownButton.menu?.item(at: 3)?.isEnabled = blockingModule?.isReportingSupported ?? false;
     }
     
     @IBAction func allowClicked(_ sender: Any) {
@@ -72,6 +76,18 @@ class PresenceAuthorizationRequestController: NSViewController {
     }
     
     @IBAction func blockClicked(_ sender: Any) {
+        denyAndBlock(report: nil);
+    }
+    
+    @IBAction func reportSpam(_ sender: Any) {
+        denyAndBlock(report: .init(cause: .spam));
+    }
+    
+    @IBAction func reportAbuse(_ sender: Any) {
+        denyAndBlock(report: .init(cause: .abuse));
+    }
+    
+    private func denyAndBlock(report: BlockingCommandModule.Report?) {
         guard let client = XmppService.instance.getClient(for: account) else {
             return;
         }
@@ -79,7 +95,7 @@ class PresenceAuthorizationRequestController: NSViewController {
         client.module(.presence).unsubscribed(by: jid);
 
         InvitationManager.instance.remove(invitation: invitation);
-        client.module(.blockingCommand).block(jids: [jid.withoutResource], completionHandler: { result in
+        client.module(.blockingCommand).block(jid: jid.withoutResource, report: report, completionHandler: { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(_):

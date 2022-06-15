@@ -169,63 +169,98 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
 
     override func prepareConversationLogContextMenu(dataSource: ConversationDataSource, menu: NSMenu, forRow row: Int) {
         super.prepareConversationLogContextMenu(dataSource: dataSource, menu: menu, forRow: row);
-        if let item = dataSource.getItem(at: row), item.state.direction == .outgoing {
-            switch item.payload {
-            case .message(_, _), .attachment(_, _):
-                if item.state.isError {
-                    let resend = menu.addItem(withTitle: NSLocalizedString("Resend message", comment: "context menu item"), action: #selector(resendMessage), keyEquivalent: "");
-                    resend.target = self;
-                    resend.tag = item.id;
-                    if #available(macOS 11.0, *) {
-                        resend.image = NSImage(systemSymbolName: "repeat", accessibilityDescription: "resend")
-                    }
-                } else {
-                    if item.isMessage(), !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0.isMessage() }, in: 0..<row) {
-                        let correct = menu.addItem(withTitle: NSLocalizedString("Correct message", comment: "context menu item"), action: #selector(correctMessage), keyEquivalent: "");
-                        correct.target = self;
-                        correct.tag = item.id;
+        if let item = dataSource.getItem(at: row) {
+            switch item.state.direction {
+            case .outgoing:
+                switch item.payload {
+                case .message(_, _), .attachment(_, _):
+                    if item.state.isError {
+                        let resend = menu.addItem(withTitle: NSLocalizedString("Resend message", comment: "context menu item"), action: #selector(resendMessage), keyEquivalent: "");
+                        resend.target = self;
+                        resend.tag = item.id;
                         if #available(macOS 11.0, *) {
-                            correct.image = NSImage(systemSymbolName: "pencil.circle", accessibilityDescription: "correct")
+                            resend.image = NSImage(systemSymbolName: "repeat", accessibilityDescription: "resend")
+                        }
+                    } else {
+                        if item.isMessage(), !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0.isMessage() }, in: 0..<row) {
+                            let correct = menu.addItem(withTitle: NSLocalizedString("Correct message", comment: "context menu item"), action: #selector(correctMessage), keyEquivalent: "");
+                            correct.target = self;
+                            correct.tag = item.id;
+                            if #available(macOS 11.0, *) {
+                                correct.image = NSImage(systemSymbolName: "pencil.circle", accessibilityDescription: "correct")
+                            }
+                        }
+                        
+                        if XmppService.instance.getClient(for: item.conversation.account)?.isConnected ?? false {
+                            let retract = menu.addItem(withTitle: NSLocalizedString("Retract message", comment: "context menu item"), action: #selector(retractMessage), keyEquivalent: "");
+                            retract.target = self;
+                            retract.tag = item.id;
+                            if #available(macOS 11.0, *) {
+                                retract.image = NSImage(systemSymbolName: "trash", accessibilityDescription: "retract")
+                            }
                         }
                     }
-                    
-                    if XmppService.instance.getClient(for: item.conversation.account)?.isConnected ?? false {
-                        let retract = menu.addItem(withTitle: NSLocalizedString("Retract message", comment: "context menu item"), action: #selector(retractMessage), keyEquivalent: "");
-                        retract.target = self;
-                        retract.tag = item.id;
+                case .location(_):
+                    if item.state.isError {
+                        let resend = menu.addItem(withTitle: NSLocalizedString("Resend message", comment: "context menu item"), action: #selector(resendMessage), keyEquivalent: "");
+                        resend.target = self;
+                        resend.tag = item.id;
                         if #available(macOS 11.0, *) {
-                            retract.image = NSImage(systemSymbolName: "trash", accessibilityDescription: "retract")
+                            resend.image = NSImage(systemSymbolName: "repeat", accessibilityDescription: "resend")
+                        }
+                    } else {
+                        let showMap = menu.insertItem(withTitle: NSLocalizedString("Show map", comment: "context menu item"), action: #selector(showMap), keyEquivalent: "", at: 0);
+                        showMap.target = self;
+                        showMap.tag = item.id;
+                        if #available(macOS 11.0, *) {
+                            showMap.image = NSImage(systemSymbolName: "map", accessibilityDescription: "show map")
+                        }
+                        if XmppService.instance.getClient(for: item.conversation.account)?.isConnected ?? false {
+                            let retract = menu.addItem(withTitle: NSLocalizedString("Retract message", comment: "context menu item"), action: #selector(retractMessage), keyEquivalent: "");
+                            retract.target = self;
+                            retract.tag = item.id;
+                            if #available(macOS 11.0, *) {
+                                retract.image = NSImage(systemSymbolName: "trash", accessibilityDescription: "retract")
+                            }
                         }
                     }
+                default:
+                    break;
                 }
-            case .location(_):
-                if item.state.isError {
-                    let resend = menu.addItem(withTitle: NSLocalizedString("Resend message", comment: "context menu item"), action: #selector(resendMessage), keyEquivalent: "");
-                    resend.target = self;
-                    resend.tag = item.id;
-                    if #available(macOS 11.0, *) {
-                        resend.image = NSImage(systemSymbolName: "repeat", accessibilityDescription: "resend")
-                    }
-                } else {
-                    let showMap = menu.insertItem(withTitle: NSLocalizedString("Show map", comment: "context menu item"), action: #selector(showMap), keyEquivalent: "", at: 0);
-                    showMap.target = self;
-                    showMap.tag = item.id;
-                    if #available(macOS 11.0, *) {
-                        showMap.image = NSImage(systemSymbolName: "map", accessibilityDescription: "show map")
-                    }
-                    if XmppService.instance.getClient(for: item.conversation.account)?.isConnected ?? false {
-                        let retract = menu.addItem(withTitle: NSLocalizedString("Retract message", comment: "context menu item"), action: #selector(retractMessage), keyEquivalent: "");
-                        retract.target = self;
-                        retract.tag = item.id;
+            case .incoming:
+                switch item.payload {
+                case .location(_), .attachment(_, _), .message(_, _):
+                    if XmppService.instance.getClient(for: item.conversation.account)?.module(.blockingCommand).isReportingSupported ?? true {
+                        let report = menu.addItem(withTitle: NSLocalizedString("Report", comment: "context menu item"), action: nil, keyEquivalent: "");
                         if #available(macOS 11.0, *) {
-                            retract.image = NSImage(systemSymbolName: "trash", accessibilityDescription: "retract")
+                            report.image = NSImage(systemSymbolName: "hand.raised", accessibilityDescription: nil);
                         }
+                        let submenu = NSMenu(title: "");
+                        submenu.addItem(withTitle: NSLocalizedString("Spam", comment: "context menu item"), action: #selector(reportSpam(_:)), keyEquivalent: "").target = self;
+                        submenu.addItem(withTitle: NSLocalizedString("Abuse", comment: "context menu item"), action: #selector(reportAbuse(_:)), keyEquivalent: "").target = self;
+                        menu.setSubmenu(submenu, for: report);
                     }
+                default:
+                    break;
                 }
-            default:
-                break;
             }
         }
+    }
+    
+    @objc func reportSpam(_ sender: NSMenuItem) {
+        report(report: .init(cause: .spam))
+    }
+    
+    @objc func reportAbuse(_ sender: NSMenuItem) {
+        report(report: .init(cause: .abuse))
+    }
+    
+    private func report(report: BlockingCommandModule.Report) {
+        guard let blockingModule = XmppService.instance.getClient(for: conversation.account)?.module(.blockingCommand), blockingModule.isReportingSupported else {
+            return;
+        }
+        
+        blockingModule.block(jid: JID(conversation.jid), report: report, completionHandler: { _ in });
     }
 
     @objc func resendMessage(_ sender: NSMenuItem) {

@@ -16,6 +16,9 @@
 /* Class = "NSMenuItem"; title = "Free for chat"; ObjectID = "6lh-Nd-PuS"; */
 "6lh-Nd-PuS.title" = "Chętny do rozmowy";
 
+/* Class = "NSMenuItem"; title = "Report spam"; ObjectID = "6sl-Iv-s9e"; */
+"6sl-Iv-s9e.title" = "Zgłoś spam";
+
 /* Class = "NSTextFieldCell"; title = "Do you wish to allow access to your presence information?"; ObjectID = "7xC-1v-L0Z"; */
 "7xC-1v-L0Z.title" = "Czy chcesz dać dostęp do informacji o twojej dostępności?";
 
@@ -30,6 +33,9 @@
 
 /* Class = "NSMenuItem"; title = "Away"; ObjectID = "c1O-3v-Ijv"; */
 "c1O-3v-Ijv.title" = "Zaraz wracam";
+
+/* Class = "NSMenuItem"; title = "Report abuse"; ObjectID = "cBw-dt-rtK"; */
+"cBw-dt-rtK.title" = "Zgłoś nadużycie";
 
 /* Class = "NSWindow"; title = "Contacts"; ObjectID = "cDT-Yv-76r"; */
 "cDT-Yv-76r.title" = "Kontakty";
@@ -64,9 +70,6 @@
 /* Class = "NSMenuItem"; title = "Item"; ObjectID = "JeU-f0-XZh"; */
 "JeU-f0-XZh.title" = "Item";
 
-/* Class = "NSButtonCell"; title = "Block"; ObjectID = "kra-zY-CBr"; */
-"kra-zY-CBr.title" = "Blokuj";
-
 /* Class = "NSMenuItem"; title = "Modify status..."; ObjectID = "KTg-sQ-XFj"; */
 "KTg-sQ-XFj.title" = "Zmień status...";
 
@@ -99,6 +102,12 @@
 
 /* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "qnx-gv-kFT"; */
 "qnx-gv-kFT.title" = "Anuluj";
+
+/* Class = "NSMenuItem"; title = "Block"; ObjectID = "rcU-7Z-syR"; */
+"rcU-7Z-syR.title" = "Zablokuj";
+
+/* Class = "NSMenuItem"; title = "Block..."; ObjectID = "VHS-bs-SZS"; */
+"VHS-bs-SZS.title" = "Zablokuj";
 
 /* Class = "NSMenuItem"; title = "XA"; ObjectID = "WvP-bI-78d"; */
 "WvP-bI-78d.title" = "Nieobecny";

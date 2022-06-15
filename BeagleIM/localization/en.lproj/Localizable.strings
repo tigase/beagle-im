@@ -10,6 +10,9 @@
 /* replaces removed messages */
 "(this message has been removed)" = "(this message has been removed)";
 
+/* context menu item */
+"Abuse" = "Abuse";
+
 /* Button */
 "Accept" = "Accept";
 
@@ -802,6 +805,9 @@
 /* context menu item */
 "Reply with PM" = "Reply with PM";
 
+/* context menu item */
+"Report" = "Report";
+
 /* add roster item label */
 "Request presence subscription" = "Request presence subscription";
 
@@ -929,6 +935,9 @@
 
 /* settings */
 "Smart" = "Smart";
+
+/* context menu item */
+"Spam" = "Spam";
 
 /* setting */
 "Spellchecking" = "Spellchecking";
