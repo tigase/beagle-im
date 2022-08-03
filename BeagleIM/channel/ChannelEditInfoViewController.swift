@@ -20,7 +20,7 @@
 //
 
 import AppKit
-import TigaseSwift
+import Martin
 import Quartz
 
 class ChannelEditInfoViewController: NSViewController, ChannelAwareProtocol {

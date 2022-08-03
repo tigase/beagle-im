@@ -83,6 +83,7 @@
 		FE368DA027553FC300788CB5 /* EmojiShortcodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE368D9F27553FC300788CB5 /* EmojiShortcodes.swift */; };
 		FE368DA22758057100788CB5 /* EmojiFaces.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE368DA12758057100788CB5 /* EmojiFaces.swift */; };
 		FE380ADA21B15720008717FA /* DownloadStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE380AD921B15720008717FA /* DownloadStore.swift */; };
+		FE392E06289AF994006AA914 /* MartinOMEMO in Frameworks */ = {isa = PBXBuildFile; productRef = FE392E05289AF994006AA914 /* MartinOMEMO */; };
 		FE3AA0C92154062F001667A9 /* ChatsListGroupProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0C82154062F001667A9 /* ChatsListGroupProtocol.swift */; };
 		FE3AA0CD2154069D001667A9 /* ChatsListGroupGroupchat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0CC2154069D001667A9 /* ChatsListGroupGroupchat.swift */; };
 		FE3AA0CF215406D1001667A9 /* ChatsListGroupChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3AA0CE215406D1001667A9 /* ChatsListGroupChat.swift */; };
@@ -209,7 +210,6 @@
 		FEB994AF2413A03D00B8E7A7 /* ChannelEditConfigViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB994AE2413A03D00B8E7A7 /* ChannelEditConfigViewController.swift */; };
 		FEB994B1241418FE00B8E7A7 /* InviteToChannelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB994B0241418FE00B8E7A7 /* InviteToChannelViewController.swift */; };
 		FEB994B324154C1F00B8E7A7 /* ChannelManageParticipants.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB994B224154C1F00B8E7A7 /* ChannelManageParticipants.swift */; };
-		FEB9EA2B2440912B00435937 /* TigaseSwiftOMEMO in Frameworks */ = {isa = PBXBuildFile; productRef = FEB9EA2A2440912B00435937 /* TigaseSwiftOMEMO */; };
 		FEC135E9261254E200054666 /* Publisher+OnlyGetter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC135E8261254E200054666 /* Publisher+OnlyGetter.swift */; };
 		FEC135ED2612550000054666 /* Publisher+ThrottledSink.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC135EC2612550000054666 /* Publisher+ThrottledSink.swift */; };
 		FEC336ED2408141700EC1A0D /* ChannelParticipantsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC336EC2408141700EC1A0D /* ChannelParticipantsViewController.swift */; };
@@ -578,9 +578,9 @@
 				FE1A34BF258D2CB60058B86A /* OpenSSL.xcframework in Frameworks */,
 				FE0E30A5252E2E320030F8C5 /* TigaseSQLite3 in Frameworks */,
 				FE1A34C4258D2CB80058B86A /* WebRTC.xcframework in Frameworks */,
+				FE392E06289AF994006AA914 /* MartinOMEMO in Frameworks */,
 				FE83E365217B0F89001DEF09 /* AVFoundation.framework in Frameworks */,
 				FEF9CE2220827F0000B09B6C /* libsqlite3.0.tbd in Frameworks */,
-				FEB9EA2B2440912B00435937 /* TigaseSwiftOMEMO in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1129,8 +1129,8 @@
 			);
 			name = BeagleIM;
 			packageProductDependencies = (
-				FEB9EA2A2440912B00435937 /* TigaseSwiftOMEMO */,
 				FE0E30A4252E2E320030F8C5 /* TigaseSQLite3 */,
+				FE392E05289AF994006AA914 /* MartinOMEMO */,
 			);
 			productName = BeagleIM;
 			productReference = FED2ECF02066B01C00F506A5 /* BeagleIM.app */;
@@ -1220,8 +1220,8 @@
 			);
 			mainGroup = FED2ECE72066B01C00F506A5;
 			packageReferences = (
-				FEB9EA292440912B00435937 /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */,
 				FE0E30A3252E2E320030F8C5 /* XCRemoteSwiftPackageReference "tigase-sqlite3.swift" */,
+				FE392E04289AF994006AA914 /* XCRemoteSwiftPackageReference "MartinOMEMO" */,
 			);
 			productRefGroup = FED2ECF12066B01C00F506A5 /* Products */;
 			projectDirPath = "";
@@ -2004,12 +2004,12 @@
 				minimumVersion = 1.0.0;
 			};
 		};
-		FEB9EA292440912B00435937 /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */ = {
+		FE392E04289AF994006AA914 /* XCRemoteSwiftPackageReference "MartinOMEMO" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/tigase/tigase-swift-omemo";
+			repositoryURL = "https://github.com/tigase/MartinOMEMO";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.2.1;
+				branch = master;
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -2020,10 +2020,10 @@
 			package = FE0E30A3252E2E320030F8C5 /* XCRemoteSwiftPackageReference "tigase-sqlite3.swift" */;
 			productName = TigaseSQLite3;
 		};
-		FEB9EA2A2440912B00435937 /* TigaseSwiftOMEMO */ = {
+		FE392E05289AF994006AA914 /* MartinOMEMO */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = FEB9EA292440912B00435937 /* XCRemoteSwiftPackageReference "tigase-swift-omemo" */;
-			productName = TigaseSwiftOMEMO;
+			package = FE392E04289AF994006AA914 /* XCRemoteSwiftPackageReference "MartinOMEMO" */;
+			productName = MartinOMEMO;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -21,7 +21,7 @@
 
 import Foundation
 import TigaseSQLite3
-import TigaseSwift
+import Martin
 import OSLog
 
 class Database {

@@ -20,8 +20,8 @@
 //
 
 import AppKit
-import TigaseSwift
-import TigaseSwiftOMEMO
+import Martin
+import MartinOMEMO
 import Combine
 
 open class OMEMOContoller: NSViewController, AccountAware, NSTableViewDataSource, NSTableViewDelegate {

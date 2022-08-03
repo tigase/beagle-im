@@ -21,7 +21,7 @@
 
 import AppKit
 import Combine
-import TigaseSwift
+import Martin
 import TigaseLogging
 import WebRTC
 import MetalKit

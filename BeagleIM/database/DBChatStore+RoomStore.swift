@@ -20,7 +20,7 @@
 //
 
 import Foundation
-import TigaseSwift
+import Martin
 
 extension DBChatStore: RoomStore {
 

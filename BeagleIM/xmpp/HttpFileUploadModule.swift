@@ -20,10 +20,10 @@
 //
 
 import Foundation
-import TigaseSwift
+import Martin
 import Combine
 
-class HttpFileUploadModule: TigaseSwift.HttpFileUploadModule, Resetable {
+class HttpFileUploadModule: Martin.HttpFileUploadModule, Resetable {
     
     @Published
     var availableComponents: [UploadComponent] = [];

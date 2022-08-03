@@ -21,7 +21,7 @@
 
 import AppKit
 import WebRTC
-import TigaseSwift
+import Martin
 import Metal
 import UserNotifications
 import os

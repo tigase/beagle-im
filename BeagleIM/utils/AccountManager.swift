@@ -21,7 +21,7 @@
 
 import Foundation
 import Security
-import TigaseSwift
+import Martin
 import Combine
 
 open class AccountManager {

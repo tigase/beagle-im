@@ -8,7 +8,7 @@
 
 import AppKit
 import Combine
-import TigaseSwift
+import Martin
 
 class InviteToMeetingController: NSViewController {
     

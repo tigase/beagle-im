@@ -20,7 +20,7 @@
 //
 
 import AppKit
-import TigaseSwift
+import Martin
 
 // TODO: Remove this controller. It should not be needed in the future.
 @available(*, unavailable)

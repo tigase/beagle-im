@@ -20,7 +20,7 @@
 //
 
 import Foundation
-import TigaseSwift
+import Martin
 import os
 import TigaseSQLite3
 import Combine

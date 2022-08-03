@@ -7,7 +7,7 @@
 //
 
 import AppKit
-import TigaseSwift
+import Martin
 
 class InvitationCellView: NSTableCellView {
     

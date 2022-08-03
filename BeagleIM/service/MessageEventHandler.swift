@@ -20,8 +20,8 @@
 //
 
 import AppKit
-import TigaseSwift
-import TigaseSwiftOMEMO
+import Martin
+import MartinOMEMO
 import os
 import Combine
 import TigaseLogging

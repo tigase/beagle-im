@@ -20,7 +20,7 @@
 //
 
 import AppKit
-import TigaseSwift
+import Martin
 
 class AccountDetailsViewController: NSViewController, AccountAware, NSTextFieldDelegate {
     

@@ -20,10 +20,10 @@
 //
 
 import Foundation
-import TigaseSwift
+import Martin
 import Combine
 
-class PresenceStore: TigaseSwift.PresenceStore {
+class PresenceStore: Martin.PresenceStore {
     
     public static let instance = PresenceStore.init();
     
@@ -32,7 +32,7 @@ class PresenceStore: TigaseSwift.PresenceStore {
         let jid: BareJID;
     }
     
-    typealias PresenceHolder = TigaseSwift.DefaultPresenceStore.PresenceHolder;
+    typealias PresenceHolder = Martin.DefaultPresenceStore.PresenceHolder;
     
     private let dispatcher = QueueDispatcher(label: "presence_store_queue", attributes: DispatchQueue.Attributes.concurrent);
     

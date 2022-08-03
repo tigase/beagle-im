@@ -21,7 +21,7 @@
 
 import Foundation
 import UserNotifications
-import TigaseSwift
+import Martin
 import Combine
 import TigaseLogging
 

@@ -21,7 +21,7 @@
 
 import AppKit
 import Combine
-import TigaseSwift
+import Martin
 
 class ChannelSelectNewOwnerViewController: NSViewController {
  

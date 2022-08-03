@@ -19,7 +19,7 @@
 // If not, see https://www.gnu.org/licenses/.
 //
 import AppKit
-import TigaseSwift
+import Martin
 import Combine
 
 struct ConversationItem: ChatsListItemProtocol, Hashable {

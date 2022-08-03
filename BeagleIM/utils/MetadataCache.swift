@@ -21,7 +21,7 @@
 
 import AppKit
 import LinkPresentation
-import TigaseSwift
+import Martin
 
 @available(OSX 10.15, *)
 class MetadataCache {

@@ -21,7 +21,7 @@
 
 import Foundation
 import Combine
-import TigaseSwift
+import Martin
 import AppKit
 
 class MeetEventHandler: XmppServiceExtension {

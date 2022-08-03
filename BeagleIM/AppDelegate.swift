@@ -21,7 +21,7 @@
 
 import Cocoa
 import WebRTC
-import TigaseSwift
+import Martin
 import UserNotifications
 import AVFoundation
 import AVKit

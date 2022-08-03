@@ -20,11 +20,11 @@
 //
 
 import Foundation
-import TigaseSwift
+import Martin
 import AppKit
 import Combine
 
-public class ConversationBase: TigaseSwift.ConversationBase, Identifiable, Hashable, DisplayableIdWithKeyProtocol {
+public class ConversationBase: Martin.ConversationBase, Identifiable, Hashable, DisplayableIdWithKeyProtocol {
     
     public static func == (lhs: ConversationBase, rhs: ConversationBase) -> Bool {
         return lhs.id == rhs.id;

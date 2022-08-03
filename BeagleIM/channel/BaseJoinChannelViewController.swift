@@ -21,7 +21,7 @@
 
 import Foundation
 import AppKit
-import TigaseSwift
+import Martin
 
 class BaseJoinChannelViewController: NSViewController {
  

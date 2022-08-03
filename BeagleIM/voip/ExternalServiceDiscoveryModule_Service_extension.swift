@@ -22,7 +22,7 @@
 import Foundation
 import Network
 import WebRTC
-import TigaseSwift
+import Martin
 
 extension ExternalServiceDiscoveryModule.Service {
     

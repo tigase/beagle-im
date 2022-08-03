@@ -7,7 +7,7 @@
 //
 
 import AppKit
-import TigaseSwift
+import Martin
 import UserNotifications
 import Combine
 

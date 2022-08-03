@@ -21,7 +21,7 @@
 
 import Foundation
 import Combine
-import TigaseSwift
+import Martin
 import TigaseLogging
 
 class MeetManager {

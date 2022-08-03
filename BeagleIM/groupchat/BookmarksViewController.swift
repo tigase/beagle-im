@@ -21,7 +21,7 @@
 
 import Foundation
 import AppKit
-import TigaseSwift
+import Martin
 import Combine
 
 class BookmarksViewController: NSViewController, NSTableViewDataSource, NSTableViewDelegate, NSMenuDelegate {

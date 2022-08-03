@@ -21,7 +21,7 @@
 
 import AppKit
 import LinkPresentation
-import TigaseSwift
+import Martin
 
 class ChatMessageCellView: BaseChatCellView {
 

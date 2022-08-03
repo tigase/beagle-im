@@ -21,8 +21,8 @@
 
 import Foundation
 import AppKit
-import TigaseSwift
-import TigaseSwiftOMEMO
+import Martin
+import MartinOMEMO
 
 class DownloadManager: NSObject {
 

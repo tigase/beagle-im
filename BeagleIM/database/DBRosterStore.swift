@@ -20,7 +20,7 @@
 //
 
 import Foundation
-import TigaseSwift
+import Martin
 import TigaseSQLite3
 
 extension Query {
@@ -227,7 +227,7 @@ struct DBRosterData: Codable, DatabaseConvertibleStringValue {
         
 }
 
-public class RosterItem: TigaseSwift.RosterItemBase, Identifiable, Hashable {
+public class RosterItem: Martin.RosterItemBase, Identifiable, Hashable {
     
     public static func == (lhs: RosterItem, rhs: RosterItem) -> Bool {
         return lhs.id == rhs.id;

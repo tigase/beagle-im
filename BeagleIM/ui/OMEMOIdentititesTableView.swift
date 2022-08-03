@@ -20,7 +20,7 @@
 //
 
 import AppKit
-import TigaseSwiftOMEMO
+import MartinOMEMO
 
 open class OMEMOIdentitiesTableView: NSTableView, NSTableViewDataSource {
     

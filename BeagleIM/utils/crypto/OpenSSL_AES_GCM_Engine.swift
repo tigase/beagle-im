@@ -21,7 +21,7 @@
 
 import Foundation
 import OpenSSL
-import TigaseSwiftOMEMO
+import MartinOMEMO
 
 class OpenSSL_AES_GCM_Engine: AES_GCM_Engine {
     

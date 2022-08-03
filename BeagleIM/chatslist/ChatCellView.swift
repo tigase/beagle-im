@@ -20,7 +20,7 @@
 //
 
 import AppKit
-import TigaseSwift
+import Martin
 import Combine
 
 class ChatCellView: NSTableCellView {
