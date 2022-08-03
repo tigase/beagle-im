@@ -2009,7 +2009,7 @@
 			repositoryURL = "https://github.com/tigase/tigase-swift-omemo";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 2.2.0;
+				minimumVersion = 2.2.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
