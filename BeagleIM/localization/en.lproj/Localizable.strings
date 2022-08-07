@@ -250,7 +250,7 @@
 "Country" = "Country";
 
 /* context menu item */
-"Create channel" = "Utwórz kanał";
+"Create channel" = "Create channel";
 
 /* setting */
 "Dark" = "Dark";
@@ -547,10 +547,10 @@
 "It was not possible to verify that server is trusted" = "It was not possible to verify that server is trusted";
 
 /* action join bookmark item */
-"Join %@" = "Dołącz do %@";
+"Join %@" = "Join %@";
 
 /* context menu item */
-"Join channel" = "Dołącz do kanału";
+"Join channel" = "Join channel";
 
 /* window title */
 "Joining channel %@" = "Joining channel %@";
