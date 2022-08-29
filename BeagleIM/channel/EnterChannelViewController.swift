@@ -23,7 +23,7 @@ import Foundation
 import AppKit
 import Martin
 
-class EnterChannelViewController: NSViewController {
+class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
         
     @IBOutlet var titleLabel: NSTextField!;
     @IBOutlet var nicknameField: NSTextField!;
@@ -93,6 +93,10 @@ class EnterChannelViewController: NSViewController {
     
     private func refreshTitle() {
         titleLabel.stringValue = String.localizedStringWithFormat(NSLocalizedString("Joining channel %@", comment: "window title"), channelName ?? info?.identities.first?.name ?? channelJid.stringValue)
+    }
+    
+    func controlTextDidChange(_ obj: Notification) {
+        updateJoinButton();
     }
     
     private func updateJoinButton() {
