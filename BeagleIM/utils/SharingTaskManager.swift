@@ -436,7 +436,8 @@ class AbstractSharingTaskItem: NSObject, URLSessionDelegate {
                     case .invalidResponseCode(let uploadedUrl):
                         task.askForInvalidHttpResponse(url: uploadedUrl, completionHandler: { result1 in
                             if result1 {
-                                self.sendAttachmentToConversation(originalUrl: originalUrl, filename: fileInfo.filenameWithSuffix, uploadedUrl: uploadedUrl, filesize: Int64(filesize), mimeType: mimeType, completionHandler: completionHandler);
+                                let urlToSend = urlConverter?(uploadedUrl) ?? uploadedUrl;
+                                self.sendAttachmentToConversation(originalUrl: originalUrl, filename: fileInfo.filenameWithSuffix, uploadedUrl: urlToSend, filesize: Int64(filesize), mimeType: mimeType, completionHandler: completionHandler);
                                 self.completed(with: .success(uploadedUrl));
                             } else {
                                 completionHandler?();
