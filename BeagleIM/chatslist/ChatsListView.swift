@@ -217,23 +217,32 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
             return false;
         }
         
-        var tasks: [AbstractSharingTaskItem] = [];
+        var items: [ShareItem] = [];
         info.enumerateDraggingItems(options: [], for: nil, classes: [NSFilePromiseReceiver.self, NSURL.self], searchOptions: [.urlReadingFileURLsOnly: true]) { (item, _, _) in
             switch item.item {
             case let filePromiseReceived as NSFilePromiseReceiver:
-                tasks.append(FilePromiseReceiverTaskItem(chat: conv, filePromiseReceiver: filePromiseReceived));
+                items.append(.promiseReceived(filePromiseReceived));
             case let fileUrl as URL:
                 guard fileUrl.isFileURL else {
                     return;
                 }
-                tasks.append(FileURLSharingTaskItem(chat: conv, url: fileUrl));
+                items.append(.url(fileUrl));
             default:
                 break;
             }
         }
-        if !tasks.isEmpty {
+        
+        if !items.isEmpty {
             let askForQuality = NSEvent.modifierFlags.contains(.option);
-            SharingTaskManager.instance.share(task: SharingTaskManager.SharingTask(window: self.view.window, conversation: conv, items: tasks, imageQuality: askForQuality ? nil : ImageQuality.current, videoQuality: askForQuality ? nil : VideoQuality.current));
+            Task {
+                do {
+                    try await SharingTaskManager.instance.share(conversation: conv, items: items, quality: askForQuality ? .ask : .default)
+                } catch {
+                    await MainActor.run(body: {
+                        SharingTaskManager.instance.show(error: error, window: self.view.window!);
+                    })
+                }
+            }
         }
         return true;
     }
@@ -522,18 +531,22 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 let alert = NSAlert();
                 alert.alertStyle = .warning;
                 alert.messageText = NSLocalizedString("Delete group chat?", comment: "alert window title");
-                alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("You are leaving the group chat %@", comment: "alert window message"), r.name ?? r.jid.stringValue);
+                alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("You are leaving the group chat %@", comment: "alert window message"), r.name ?? r.jid.description);
                 alert.addButton(withTitle: NSLocalizedString("Delete chat", comment: "Button"))
                 alert.addButton(withTitle: NSLocalizedString("Leave chat", comment: "Button"))
                 alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Button"))
                 alert.beginSheetModal(for: self.view.window!) { (response) in
                     switch response {
                     case .alertFirstButtonReturn:
-                        mucModule.destroy(room: r);
-                        r.context?.module(.pepBookmarks).remove(bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: JID(r.jid), autojoin: false));
+                        Task {
+                            try await mucModule.destroy(room: r);
+                            try await r.context?.module(.pepBookmarks).remove(bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.description, jid: JID(r.jid), autojoin: false));
+                        }
                     case .alertSecondButtonReturn:
-                        mucModule.leave(room: r);
-                        r.context?.module(.pepBookmarks).setConferenceAutojoin(false, for: JID(r.jid));
+                        Task {
+                            try await mucModule.leave(room: r);
+                            try await r.context?.module(.pepBookmarks).setConferenceAutojoin(false, for: JID(r.jid));
+                        }
                     default:
                         // cancel, nothing to do..
                         break;
@@ -541,26 +554,14 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 };
                 return false;
             } else {
-                mucModule.leave(room: r);
-                r.context?.module(.pepBookmarks).setConferenceAutojoin(false, for: JID(r.jid));
+                Task {
+                    try await mucModule.leave(room: r);
+                    try await r.context?.module(.pepBookmarks).setConferenceAutojoin(false, for: JID(r.jid));
+                }
                 return true;
             }
         case let c as Channel:
             guard let mixModule = c.context?.module(.mix), let userJid = c.context?.userBareJid else {
-                return false;
-            }
-            
-            if 1==1 {
-                let errors: [Error] = [
-                    XMPPError.feature_not_implemented,
-                    XMPPError.bad_request("Invalid request!"),
-                    PubSubError.remote_server_timeout,
-                    PubSubError(error: .feature_not_implemented, pubsubErrorCondition: PubSubErrorCondition.unsupported),
-                    PubSubError(error: .forbidden("You have no permission to access this resource!"), pubsubErrorCondition: PubSubErrorCondition.not_subscribed)
-                ];
-                for error in errors {
-                    print("error : \(error.localizedDescription)");
-                }
                 return false;
             }
             
@@ -578,7 +579,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
             mixModule.retrieveConfig(for: c.channelJid, completionHandler: { result in
                 switch result {
                 case .success(let data):
-                    if let adminsField: JidMultiField = data.getField(named: "Owner"), adminsField.value.contains(JID(userJid)) && adminsField.value.count == 1 {
+                    if let owners = data.owner, owners.contains(JID(userJid)) && owners.count == 1 {
                         // you need to pass the permission or delete channel..
                         DispatchQueue.main.async {
                             let alert = Alert();
@@ -608,7 +609,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                                                 alert.alertStyle = .warning;
                                                 alert.icon = NSImage(named: NSImage.cautionName);
                                                 alert.messageText = NSLocalizedString("Channel destruction failed!", comment: "alert window title");
-                                                alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert window message"), c.name ?? c.channelJid.stringValue, error.localizedDescription);
+                                                alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert window message"), c.name ?? c.channelJid.description, error.localizedDescription);
                                                 alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                                                 alert.beginSheetModal(for: window, completionHandler: nil);
                                             }
@@ -618,7 +619,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                                     if let controller = NSStoryboard(name: "MIX", bundle: nil).instantiateController(withIdentifier: "SelectNewOwnerViewController") as? ChannelSelectNewOwnerViewController {
                                         controller.participants = otherParticipants;
                                         controller.successHandler = { newAdmin in
-                                            adminsField.value = adminsField.value.filter({ $0.bareJid != userJid }) + [JID(newAdmin)];
+                                            data.owner = owners.filter({ $0.bareJid != userJid }) + [JID(newAdmin)];
                                             mixModule.updateConfig(for: c.channelJid, config: data, completionHandler: { _ in
                                                 leaveFn();
                                             })

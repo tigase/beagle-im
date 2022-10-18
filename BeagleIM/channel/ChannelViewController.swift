@@ -62,7 +62,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         channelAvatarView.displayableId = channel;
         channel.descriptionPublisher.map({ $0 ?? "" }).assign(to: \.stringValue, on: channelDescriptionLabel).store(in: &cancellables);
         channel.descriptionPublisher.assign(to: \.toolTip, on: channelDescriptionLabel).store(in: &cancellables);
-        channelJidLabel.title = jid.stringValue;
+        channelJidLabel.title = jid.description;
         
         channelAvatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
         
@@ -149,10 +149,8 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     
     @IBAction func correctLastMessage(_ sender: AnyObject) {
         for i in 0..<dataSource.count {
-            if let item = dataSource.getItem(at: i), item.state.direction == .outgoing, case .message(let message, _) = item.payload {
-                DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id, completionHandler: { [weak self] originId in
-                    self?.startMessageCorrection(message: message, originId: originId);
-                })
+            if let item = dataSource.getItem(at: i), item.state.direction == .outgoing, case .message(let message, _) = item.payload, let originId = DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id) {
+                startMessageCorrection(message: message, originId: originId);
                 return;
             }
         }
@@ -164,13 +162,11 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             return
         }
      
-        guard let item = dataSource.getItem(withId: tag), case .message(let message, _) = item.payload else {
+        guard let item = dataSource.getItem(withId: tag), case .message(let message, _) = item.payload, let originId = DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id) else {
             return;
         }
-        
-        DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id, completionHandler: { [weak self] originId in
-            self?.startMessageCorrection(message: message, originId: originId);
-        })
+
+        startMessageCorrection(message: message, originId: originId);
     }
     
     @objc func retractMessage(_ sender: NSMenuItem) {
@@ -191,19 +187,24 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
             switch result {
             case .alertFirstButtonReturn:
-                chat.retract(entry: item);
+                Task {
+                    do {
+                        try await self.channel.retract(entry: item);
+                    } catch {
+                        self.showError(message: NSLocalizedString("Retraction failed!", comment: "message retraction failed alert title"), error: error)
+                    }
+                }
             default:
                 break;
             }
         })
     }
     
-    override func send(message: String, correctedMessageOriginId: String?) -> Bool {
+    override func send(message: String, correctedMessageOriginId: String?) async throws {
         guard let client = XmppService.instance.getClient(for: account), client.isConnected, channel.state == .joined else {
-            return false;
+            throw XMPPError(condition: .service_unavailable);
         }
-        channel.sendMessage(text: message, correctedMessageOriginId: correctedMessageOriginId);
-        return true;
+        try await channel.sendMessage(text: message, correctedMessageOriginId: correctedMessageOriginId);
     }
     
     private func update(permissions: Set<ChannelPermission>) {
@@ -246,7 +247,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         alert.alertStyle = .warning;
         alert.icon = NSImage(named: NSImage.cautionName);
         alert.messageText = NSLocalizedString("Destroy channel?", comment: "alert window title");
-        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Are you sure that you want to leave and destroy channel %@?", comment: "alert window message"), channel.name ?? channel.channelJid.stringValue);
+        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Are you sure that you want to leave and destroy channel %@?", comment: "alert window message"), channel.name ?? channel.channelJid.description);
         alert.addButton(withTitle: NSLocalizedString("Yes", comment: "Button"));
         alert.addButton(withTitle: NSLocalizedString("No", comment: "Button"));
         alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
@@ -267,7 +268,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
                             alert.alertStyle = .warning;
                             alert.icon = NSImage(named: NSImage.cautionName);
                             alert.messageText = NSLocalizedString("Channel destruction failed!", comment: "alert window title");
-                            alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert window message"), channel.name ?? channel.channelJid.stringValue, error.localizedDescription);
+                            alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert window message"), channel.name ?? channel.channelJid.description, error.localizedDescription);
                             alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                             alert.beginSheetModal(for: window, completionHandler: nil);
                         }

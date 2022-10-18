@@ -23,20 +23,19 @@ import AppKit
 import Martin
 import CoreLocation
 
-public enum ConversationEntryPayload: Hashable {
+public enum ConversationEntryPayload: Hashable, Sendable {
     case message(message: String, correctionTimestamp: Date?)
     case attachment(url: String, appendix: ChatAttachmentAppendix)
     case linkPreview(url: String)
-    case messageRetracted
+    case retraction
     case invitation(message: String?, appendix: ChatInvitationAppendix)
     case deleted
     case unreadMessages
     case marker(type: ChatMarker.MarkerType, senders: [ConversationEntrySender])
     case location(location: CLLocationCoordinate2D)
-    
 }
 
-public final class ConversationEntry: Hashable {
+public final class ConversationEntry: Hashable, Sendable {
     
     public static func == (lhs: ConversationEntry, rhs: ConversationEntry) -> Bool {
         lhs.id == rhs.id && lhs.timestamp == rhs.timestamp && lhs.payload == rhs.payload && lhs.sender == rhs.sender && lhs.state == rhs.state && lhs.options == rhs.options;
@@ -100,21 +99,22 @@ public final class ConversationEntry: Hashable {
     }
  
     func allowedTimeDiff() -> TimeInterval {
-        switch Settings.messageGrouping {
-        case .none:
-            return -1.0;
-        case .always:
-            return 60.0 * 60.0 * 24.0;
-        case .smart:
-            return 60.0;
-        }
+        // FIXME: add this setting
+//        switch settings.messageGrouping {
+//        case .none:
+//            return -1.0;
+//        case .always:
+//            return 60.0 * 60.0 * 24.0;
+//        case .smart:
+            return 30.0;
+//        }
     }
 
 }
 
 extension ConversationEntry {
     
-    struct Options: Hashable {
+    struct Options: Hashable, Sendable {
         let recipient: ConversationEntryRecipient;
         let encryption: ConversationEntryEncryption;
         let isMarkable: Bool;
@@ -132,7 +132,7 @@ public protocol ConversationEntryRelated {
 
 extension ConversationEntry {
 
-    public enum Order {
+    public enum Order: Sendable {
         case first
         case last
     }

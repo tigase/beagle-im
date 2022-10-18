@@ -42,23 +42,23 @@ class BaseJoinChannelViewController: NSViewController {
 
     override func viewWillAppear() {
         self.accountButton.addItem(withTitle: "");
-        AccountManager.getAccounts().filter { account -> Bool in
+        AccountManager.accountNames().filter { account -> Bool in
             return XmppService.instance.getClient(for: account) != nil
             }.forEach { (account) in
-            self.accountButton.addItem(withTitle: account.stringValue);
+            self.accountButton.addItem(withTitle: account.description);
         }
         if self.account == nil {
             self.account = AccountManager.defaultAccount;
         }
         if let account = self.account {
-            self.accountButton.selectItem(withTitle: account.stringValue);
-            self.accountButton.title = account.stringValue;
+            self.accountButton.selectItem(withTitle: account.description);
+            self.accountButton.title = account.description;
         } else {
             self.accountButton.selectItem(at: 1);
             self.accountButton.title = self.accountButton.itemTitle(at: 1);
             self.account = BareJID(self.accountButton.itemTitle(at: 1));
         }
-        showDisclosure(AccountManager.getAccounts().count != 1);
+        showDisclosure(AccountManager.accounts.count != 1);
         findComponents();
         updateSubmitState();
     }
@@ -131,7 +131,7 @@ class BaseJoinChannelViewController: NSViewController {
         alert.messageText = NSLocalizedString("Nickname", comment: "alert window title");
         alert.informativeText = NSLocalizedString("Enter a nickname which you want to use in this channel.", comment: "alert window message");
         let nicknameField = NSTextField(frame: NSRect(x: 0, y: 0, width: 200, height: 7 + NSFont.systemFontSize));
-        nicknameField.stringValue = suggestedNickname ?? AccountManager.getAccount(for: account)?.nickname ?? ""
+        nicknameField.stringValue = suggestedNickname ?? AccountManager.account(for: account)?.nickname ?? ""
         alert.accessoryView = nicknameField;
         alert.addButton(withTitle: NSLocalizedString("Submit", comment: "Button"));
         alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Button"));
@@ -156,64 +156,35 @@ class BaseJoinChannelViewController: NSViewController {
         }
         operationStarted();
         
-        var components: [Component] = [];
-        let group = DispatchGroup();
-        group.enter();
-        retrieveComponent(from: domainJid, name: nil, discoModule: discoModule, completionHandler: { result in
-            switch result {
-            case .success(let component):
-                DispatchQueue.main.async {
-                    components.append(component);
-                }
-                group.leave();
-            case .failure(_):
-                discoModule.getItems(for: domainJid, completionHandler: { result in
-                    switch result {
-                    case .success(let items):
-                        // we need to do disco on all components to find out local mix/muc component..
-                        // maybe this should be done once for all "views"?
-                        for item in items.items {
-                            group.enter();
-                            self.retrieveComponent(from: item.jid, name: item.name, discoModule: discoModule, completionHandler: { result in
-                                switch result {
-                                case .success(let component):
-                                    DispatchQueue.main.async {
-                                        components.append(component);
-                                    }
-                                case .failure(_):
-                                    break;
-                                }
-                                group.leave();
-                            });
-                        }
-                    case .failure(_):
-                        break;
-                    }
-                    group.leave();
-                });
+        Task {
+            do {
+                let components = try await retrieveComponents(from: domainJid, name: nil, discoModule: discoModule);
+                await MainActor.run(body: {
+                    self.components = components;
+                })
+            } catch {
+                await MainActor.run(body: {
+                    self.operationFinished();
+                })
             }
-        })
-        
-        group.notify(queue: DispatchQueue.main, execute: {
-            self.operationFinished();
-            self.components = components;
-        })
+        }
     }
     
-    private func retrieveComponent(from jid: JID, name: String?, discoModule: DiscoveryModule, completionHandler: @escaping (Result<Component,XMPPError>)->Void) {
-        discoModule.getInfo(for: jid, completionHandler: { result in
-            switch result {
-            case .success(let info):
-                guard let component = Component(jid: jid, name: name, identities: info.identities, features: info.features) else {
-                    completionHandler(.failure(.item_not_found));
-                    return;
-                }
-                completionHandler(.success(component));
-            case .failure(let error):
-                completionHandler(.failure(error));
-            }
-        })
-
+    private func retrieveComponents(from domain: JID, name: String?, discoModule: DiscoveryModule) async throws -> [Component] {
+        do {
+            return [try await retrieveComponent(from: domain, name: nil, discoModule: discoModule)];
+        } catch {
+            let items = try await discoModule.items(for: domain);
+            return await items.items.concurrentMap({ try? await self.retrieveComponent(from: $0.jid, name: $0.name, discoModule: discoModule) }).compactMap({ $0 });
+        }
+    }
+    
+    private func retrieveComponent(from jid: JID, name: String?, discoModule: DiscoveryModule) async throws -> Component {
+        let info = try await discoModule.info(for: jid);
+        guard let component = Component(jid: jid, name: name, identities: info.identities, features: info.features) else {
+            throw XMPPError(condition: .item_not_found);
+        }
+        return component;
     }
     
     enum ComponentType {

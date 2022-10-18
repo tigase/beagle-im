@@ -43,9 +43,9 @@ public class DBChatMarkersStore {
         case .buddy(_):
             return ["account": conversation.account, "jid": conversation.jid, "sender_nick": "", "sender_id": "", "sender_jid": conversation.jid];
         case .occupant(let nickname, let jid):
-            return ["account": conversation.account, "jid": conversation.jid, "sender_nick": nickname, "sender_id": "", "sender_jid": jid?.stringValue ?? ""];
+            return ["account": conversation.account, "jid": conversation.jid, "sender_nick": nickname, "sender_id": "", "sender_jid": jid?.description ?? ""];
         case .participant(let id, let nickname, let jid):
-            return ["account": conversation.account, "jid": conversation.jid, "sender_nick": nickname, "sender_id": id, "sender_jid": jid?.stringValue ?? ""];
+            return ["account": conversation.account, "jid": conversation.jid, "sender_nick": nickname, "sender_id": id, "sender_jid": jid?.description ?? ""];
         }
     }
     

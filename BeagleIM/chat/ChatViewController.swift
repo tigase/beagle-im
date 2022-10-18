@@ -95,7 +95,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         buddyAvatarView.displayableId = conversation;
         chat.descriptionPublisher.map({ $0 ?? "" }).assign(to: \.stringValue, on: buddyStatusLabel).store(in: &cancellables);
         chat.descriptionPublisher.assign(to: \.toolTip, on: buddyStatusLabel).store(in: &cancellables);
-        buddyJidLabel.title = jid.stringValue;
+        buddyJidLabel.title = jid.description;
 
         buddyAvatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
         
@@ -158,7 +158,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         guard let message = self.chat.changeChatState(state: chatState) else {
             return;
         }
-        chat.context?.module(.message).write(message);
+        chat.context?.module(.message).write(stanza: message);
     }
 
     override func textDidChange(_ notification: Notification) {
@@ -275,13 +275,16 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
 
         switch item.payload {
         case .message(let message, _):
-            chat.sendMessage(text: message, correctedMessageOriginId: nil);
-            DBChatHistoryStore.instance.remove(item: item);
+            Task {
+                try await chat.sendMessage(text: message, correctedMessageOriginId: nil);
+                DBChatHistoryStore.instance.remove(item: item);
+            }
         case .attachment(let url, let appendix):
             let oldLocalFile = DownloadStore.instance.url(for: "\(item.id)");
-            chat.sendAttachment(url: url, appendix: appendix, originalUrl: oldLocalFile, completionHandler: {
+            Task {
+                try await chat.sendAttachment(url: url, appendix: appendix, originalUrl: oldLocalFile);
                 DBChatHistoryStore.instance.remove(item: item);
-            })
+            }
         default:
             break;
         }
@@ -298,10 +301,8 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
     
     @IBAction func correctLastMessage(_ sender: AnyObject) {
         for i in 0..<dataSource.count {
-            if let item = dataSource.getItem(at: i), item.state.direction == .outgoing, case .message(let message, _) = item.payload {
-                DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id, completionHandler: { [weak self] originId in
-                    self?.startMessageCorrection(message: message, originId: originId);
-                })
+            if let item = dataSource.getItem(at: i), item.state.direction == .outgoing, case .message(let message, _) = item.payload, let originId = DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id) {
+                startMessageCorrection(message: message, originId: originId);
                 return;
             }
         }
@@ -313,13 +314,11 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
             return
         }
      
-        guard let item = dataSource.getItem(withId: tag), case .message(let message, _) = item.payload else {
+        guard let item = dataSource.getItem(withId: tag), case .message(let message, _) = item.payload, let originId = DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id) else {
             return;
         }
         
-        DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id, completionHandler: { [weak self] originId in
-            self?.startMessageCorrection(message: message, originId: originId);
-        })
+        startMessageCorrection(message: message, originId: originId);
     }
 
     @objc func retractMessage(_ sender: NSMenuItem) {
@@ -340,16 +339,21 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
             switch result {
             case .alertFirstButtonReturn:
-                self.chat.retract(entry: item);
+                Task {
+                    do {
+                        try await self.chat.retract(entry: item);
+                    } catch {
+                        self.showError(message: NSLocalizedString("Retraction failed!", comment: "message retraction failed alert title"), error: error)
+                    }
+                }
             default:
                 break;
             }
         })
     }
         
-    override func send(message: String, correctedMessageOriginId: String?) -> Bool {
-        chat.sendMessage(text: message, correctedMessageOriginId: correctedMessageOriginId);
-        return true;
+    override func send(message: String, correctedMessageOriginId: String?) async throws {
+        try await chat.sendMessage(text: message, correctedMessageOriginId: correctedMessageOriginId);
     }
             
 //    fileprivate func updateCapabilities() {
@@ -361,41 +365,45 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
 //    }
 
     @IBAction func audioCallClicked(_ sender: Any) {
-        let call = Call(account: self.account, with: self.jid, sid: UUID().uuidString, direction: .outgoing, media: [.audio]);
-        CallManager.instance.reportOutgoingCall(call, completionHandler: self.handleCallInitiationResult(_:));
+        call(jid: self.jid, from: self.account, media: [.audio])
     }
 
     @IBAction func videoCallClicked(_ sender: NSButton) {
-        let call = Call(account: self.account, with: self.jid, sid: UUID().uuidString, direction: .outgoing, media: [.audio, .video]);
-        CallManager.instance.reportOutgoingCall(call, completionHandler: self.handleCallInitiationResult(_:));
+        call(jid: self.jid, from: self.account, media: [.audio,.video])
     }
     
-    func handleCallInitiationResult(_ result: Result<Void,Error>) {
-        switch result {
-        case .success(_):
-            break;
-        case .failure(let err):
-            DispatchQueue.main.async {
-                let alert = NSAlert();
-                alert.alertStyle = .warning;
-                alert.messageText = NSLocalizedString("Call failed", comment: "alert window title");
-                alert.informativeText = NSLocalizedString("It was not possible to establish call", comment: "alert window message");
-                switch err {
-                case let e as ErrorCondition:
-                    switch e {
-                    case .forbidden:
-                        alert.informativeText = NSLocalizedString("It was not possible to access camera or microphone. Please check permissions in the system settings", comment: "alert window message");
+    func call(jid: BareJID, from account: BareJID, media: [Call.Media]) {
+        Task {
+            do {
+                guard let client = XmppService.instance.getClient(for: account) else {
+                    throw XMPPError(condition: .item_not_found);
+                }
+                
+                let call = Call(client: client, with: jid, sid: UUID().uuidString, direction: .outgoing, media: media);
+                try await CallManager.instance.reportOutgoingCall(call);
+            } catch {
+                await MainActor.run(body: {
+                    let alert = NSAlert();
+                    alert.alertStyle = .warning;
+                    alert.messageText = NSLocalizedString("Call failed", comment: "alert window title");
+                    alert.informativeText = NSLocalizedString("It was not possible to establish call", comment: "alert window message");
+                    switch error {
+                    case let e as XMPPError:
+                        switch e.condition {
+                        case .forbidden:
+                            alert.informativeText = NSLocalizedString("It was not possible to access camera or microphone. Please check permissions in the system settings", comment: "alert window message");
+                        default:
+                            break;
+                        }
                     default:
                         break;
                     }
-                default:
-                    break;
-                }
-                guard let window = self.view.window else {
-                    return;
-                }
-                alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
-                alert.beginSheetModal(for: window, completionHandler: nil);
+                    guard let window = self.view.window else {
+                        return;
+                    }
+                    _ = alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
+                    alert.beginSheetModal(for: window, completionHandler: nil);
+                })
             }
         }
     }

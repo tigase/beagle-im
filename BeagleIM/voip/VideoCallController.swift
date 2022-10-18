@@ -252,7 +252,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
     private func updateAvatarView() {
         if let call = self.call {
             self.remoteAvatarView?.avatar = AvatarManager.instance.avatar(for: call.jid, on: call.account);
-            self.remoteAvatarView?.name = DBRosterStore.instance.item(for: call.account, jid: JID(call.jid))?.name ?? call.jid.stringValue;
+            self.remoteAvatarView?.name = DBRosterStore.instance.item(for: call.account, jid: JID(call.jid))?.name ?? call.jid.description;
         } else {
             self.remoteAvatarView?.avatar = nil;
             self.remoteAvatarView?.name = nil;
@@ -315,14 +315,14 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
             self.avplayer = AVPlayer(url: Bundle.main.url(forResource: "incomingCall", withExtension: "mp3")!);
             let buttons = [ NSLocalizedString("Accept", comment: "Button"), NSLocalizedString("Reject", comment: "Button") ];
             
-            let name = DBRosterStore.instance.item(for: call.account, jid: JID(call.jid))?.name ?? call.jid.stringValue;
+            let name = DBRosterStore.instance.item(for: call.account, jid: JID(call.jid))?.name ?? call.jid.description;
             
             self.showAlert(title: (call.media.contains(.video) ? String.localizedStringWithFormat(NSLocalizedString("Incoming video call from %@", comment: "video call controller"), name) : String.localizedStringWithFormat(NSLocalizedString("Incoming audio call from %@", comment: "video call controller"), name)) + NSLocalizedString("Do you want to accept this call?", comment: "video call controller"), buttons: buttons, completionHandler: { (response) in
                 self.avplayer = nil;
                 switch response {
                 case .alertFirstButtonReturn:
                     DispatchQueue.global().async {
-                        call.accept()
+                        call.accept(offerMedia: call.media)
                     }
                 default:
                     call.reject();
@@ -338,7 +338,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
         sender.backgroundColor = muted ? NSColor.red : NSColor.white;
         sender.contentTintColor = muted ? NSColor.white : NSColor.black;
         
-        self.call?.muted(value: muted);
+        self.call?.mute(value: muted);
     }
     
     @IBAction func moreClicked(_ sender: RoundButton) {

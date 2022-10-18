@@ -21,7 +21,7 @@
 
 import Foundation
 
-public enum ConversationEntryIncomingState: Hashable {
+public enum ConversationEntryIncomingState: Hashable, Sendable {
     case received
     case displayed
     
@@ -30,14 +30,14 @@ public enum ConversationEntryIncomingState: Hashable {
     }
 }
 
-public enum ConversationEntryOutogingState: Hashable {
+public enum ConversationEntryOutogingState: Hashable, Sendable {
     case unsent
     case sent
     case delivered
     case displayed
 }
 
-public enum ConversationEntryState: Hashable {
+public enum ConversationEntryState: Hashable, Sendable {
 
     case none
     

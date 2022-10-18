@@ -100,8 +100,8 @@ class SingleParticipantSelectionView: NSSearchField, NSSearchFieldDelegate {
         self.selectionPublisher.send(nil);
         let query = self.stringValue.lowercased();
             
-        var items = participants.filter({ $0.nickname?.lowercased().contains(query) ?? false || $0.jid?.stringValue.lowercased().contains(query) ?? false }).sorted(by: { p1, p2 -> Bool in
-            return (p1.nickname ?? p1.jid?.stringValue ?? p1.id) < (p2.nickname ?? p2.jid?.stringValue ?? p2.id);
+        var items = participants.filter({ $0.nickname?.lowercased().contains(query) ?? false || $0.jid?.description.lowercased().contains(query) ?? false }).sorted(by: { p1, p2 -> Bool in
+            return (p1.nickname ?? p1.jid?.description ?? p1.id) < (p2.nickname ?? p2.jid?.description ?? p2.id);
         });
                         
         if !items.isEmpty {
@@ -146,7 +146,7 @@ class SingleParticipantSelectionView: NSSearchField, NSSearchFieldDelegate {
             return;
         }
      
-        self.stringValue = item.nickname ?? item.jid?.stringValue ?? item.id;
+        self.stringValue = item.nickname ?? item.jid?.description ?? item.id;
         selectionPublisher.send(item);
     }
     

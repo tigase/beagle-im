@@ -120,30 +120,19 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         conversation.featuresPublisher.combineLatest(CaptureDeviceManager.authorizationStatusPublisher(for: .audio), { features, media in
             return features.contains(.httpFileUpload) && (media == .authorized || media == .notDetermined);
         }).receive(on: DispatchQueue.main).assign(to: \.isEnabled, on: self.voiceMessageButton).store(in: &cancellables)
-        NotificationCenter.default.addObserver(self, selector: #selector(sharingProgressChanged(_:)), name: SharingTaskManager.PROGRESS_CHANGED, object: conversation);
-        self.updateSharingProgress();
+        (conversation as! ConversationBase).$fileUploadProgress.removeDuplicates().receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] progress in
+            self?.updateSharing(progress: progress);
+        }).store(in: &cancellables);
     }
     
     override func viewDidDisappear() {
         super.viewDidDisappear()
         self.cancellables.removeAll();
     }
-    
-    @objc func sharingProgressChanged(_ notification: Notification) {
-        DispatchQueue.main.async {
-            self.updateSharingProgress();
-        }
-    }
-    
-    func updateSharingProgress() {
-        let progress = SharingTaskManager.instance.progress(for: conversation);
-        sharingProgressBar.isIndeterminate = progress != nil;
-        if let value = progress {
-            self.sharingProgressBar.doubleValue = value;
-            self.sharingProgressBar.isHidden = value == 1;
-        } else {
-            self.sharingProgressBar.isHidden = false;
-        }
+        
+    func updateSharing(progress value: Double) {
+        self.sharingProgressBar.doubleValue = value;
+        self.sharingProgressBar.isHidden = value == 1;
     }
     
     func paste(in textView: AutoresizingTextView, pasteboard: NSPasteboard) -> Bool {
@@ -161,8 +150,13 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
             alert.addButton(withTitle: NSLocalizedString("No", comment: "Deny sending files"));
             alert.beginSheetModal(for: self.view.window!, completionHandler: { response in
                 if response == .alertFirstButtonReturn {
-                    let tasks = urls.map({ FileURLSharingTaskItem(chat: self.conversation, url: $0 as URL)});
-                    SharingTaskManager.instance.share(task: SharingTaskManager.SharingTask(controller: self, items: tasks, askForQuality: false));
+                    Task {
+                        do {
+                            try await SharingTaskManager.instance.share(conversation: self.conversation, items: urls.map({ .url($0 as URL) }), quality: .default);
+                        } catch {
+                            SharingTaskManager.instance.show(error: error, window: self.view.window!);
+                        }
+                    }
                 } else {
                     textView.pasteURLs(pasteboard);
                 }
@@ -193,23 +187,29 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
             return false;
         }
         
-        var tasks: [AbstractSharingTaskItem] = [];
+        var items: [ShareItem] = [];
         sender.enumerateDraggingItems(options: [], for: nil, classes: [NSFilePromiseReceiver.self, NSURL.self], searchOptions: [.urlReadingFileURLsOnly: true]) { (item, _, _) in
             switch item.item {
             case let filePromiseReceived as NSFilePromiseReceiver:
-                tasks.append(FilePromiseReceiverTaskItem(chat: self.conversation, filePromiseReceiver: filePromiseReceived));
+                items.append(.promiseReceived(filePromiseReceived))
             case let fileUrl as URL:
                 guard fileUrl.isFileURL else {
                     return;
                 }
-                tasks.append(FileURLSharingTaskItem(chat: self.conversation, url: fileUrl));
+                items.append(.url(fileUrl))
             default:
                 break;
             }
         }
-        if !tasks.isEmpty {
+        if !items.isEmpty {
             let askForQuality = NSEvent.modifierFlags.contains(.option);
-            SharingTaskManager.instance.share(task: SharingTaskManager.SharingTask(controller: self, items: tasks, askForQuality: askForQuality));
+            Task {
+                do {
+                    try await SharingTaskManager.instance.share(conversation: self.conversation, items: items, quality: askForQuality ? .ask : .default);
+                } catch {
+                    SharingTaskManager.instance.show(error: error, window: self.view.window!);
+                }
+            }
         }
         return true;
     }
@@ -223,8 +223,13 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
     @IBAction func attachFile(_ sender: NSButton) {
         let askForQuality = NSEvent.modifierFlags.contains(.option);
         self.selectFile { (urls) in
-            let tasks = urls.map({ FileURLSharingTaskItem(chat: self.conversation, url: $0)});
-            SharingTaskManager.instance.share(task: SharingTaskManager.SharingTask(controller: self, items: tasks, askForQuality: askForQuality));
+            Task {
+                do {
+                    try await SharingTaskManager.instance.share(conversation: self.conversation, items: urls.map({ .url($0 as URL) }), quality: .default);
+                } catch {
+                    SharingTaskManager.instance.show(error: error, window: self.view.window!);
+                }
+            }
         }
     }
     

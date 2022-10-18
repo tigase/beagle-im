@@ -45,19 +45,19 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
     let name: String;
     weak var delegate: ChatsListViewDataSourceDelegate?;
     fileprivate var items: [ConversationItem] = [];
-    let dispatcher: QueueDispatcher;
+    let queue: DispatchQueue;
     
     let canOpenChat: Bool;
     
     private var cancellables: Set<AnyCancellable> = [];
     
-    init(name: String, dispatcher: QueueDispatcher, delegate: ChatsListViewDataSourceDelegate, canOpenChat: Bool) {
+    init(name: String, queue: DispatchQueue, delegate: ChatsListViewDataSourceDelegate, canOpenChat: Bool) {
         self.name = name;
         self.delegate = delegate;
-        self.dispatcher = dispatcher;
+        self.queue = queue;
         self.canOpenChat = canOpenChat;
 
-        DBChatStore.instance.$conversations.throttleFixed(for: 0.1, scheduler: self.dispatcher.queue, latest: true).sink(receiveValue: { [weak self] items in
+        DBChatStore.instance.conversationsPublisher.throttleFixed(for: 0.1, scheduler: self.queue, latest: true).sink(receiveValue: { [weak self] items in
             self?.update(items: items);
         }).store(in: &cancellables);
     }
@@ -99,7 +99,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
     }
     
     func forChat(_ chat: Conversation, execute: @escaping (ConversationItem) -> Void) {
-        self.dispatcher.async {
+        self.queue.async {
             let items = self.items;
             guard let item = items.first(where: { (it) -> Bool in
                 it.chat.id == chat.id
@@ -112,7 +112,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
     }
 
     func forChat(account: BareJID, jid: BareJID, execute: @escaping (ConversationItem) -> Void) {
-        self.dispatcher.async {
+        self.queue.async {
             let items = self.items;
             guard let item = items.first(where: { (it) -> Bool in
                 it.chat.account == account && it.chat.jid == jid

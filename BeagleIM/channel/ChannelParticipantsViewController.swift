@@ -78,7 +78,7 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
         }
     }
     
-    private let participantsDispatcher = QueueDispatcher(label: "participantsQueue");
+    private let participantsQueue = DispatchQueue(label: "participantsQueue");
     
     private var cancellables: Set<AnyCancellable> = [];
     
@@ -155,14 +155,10 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
         participantsTableView.selectionHighlightStyle = .none;
     }
         
-    func update(fromConfig config: JabberDataElement) {
+    func update(fromConfig config: MixChannelConfig) {
         var roles = Roles();
-        if let ownerField: JidMultiField = config.getField(named: "Owner") {
-            roles.owners = ownerField.value.map({ $0.bareJid });
-        }
-        if let adminField: JidMultiField = config.getField(named: "Administrator") {
-            roles.admins = adminField.value.map({ $0.bareJid });
-        }
+        roles.owners = config.owner?.map({ $0.bareJid }) ?? [];
+        roles.admins = config.administrator?.map({ $0.bareJid }) ?? [];
         self.roles = roles;
     }
     
@@ -186,8 +182,8 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
     }
         
     func sortParticipants(p1: MixParticipant, p2: MixParticipant) -> Bool {
-        let v1 = p1.nickname?.lowercased() ?? p1.jid?.stringValue ?? p1.id;
-        let v2 = p2.nickname?.lowercased() ?? p2.jid?.stringValue ?? p2.id;
+        let v1 = p1.nickname?.lowercased() ?? p1.jid?.description ?? p1.id;
+        let v2 = p2.nickname?.lowercased() ?? p2.jid?.description ?? p2.id;
         return v1 < v2;
     }
     
@@ -321,11 +317,9 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
         }
 
         modifyConfig({ config in
-            guard let field: JidMultiField = config.getField(named: "Administrator"), !field.value.contains(JID(jid)) else {
-                return nil;
+            if config.administrator?.contains(JID(jid)) ?? true {
+                config.administrator?.append(JID(jid));
             }
-            field.value.append(JID(jid));
-            return config;
         })
     }
     
@@ -336,11 +330,7 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
         }
 
         modifyConfig({ config in
-            guard let field: JidMultiField = config.getField(named: "Administrator"), field.value.contains(JID(jid)) else {
-                return nil;
-            }
-            field.value.removeAll(where: { $0.bareJid == jid });
-            return config;
+            config.administrator?.removeAll(where: { $0.bareJid == jid });
         })
     }
     
@@ -351,11 +341,9 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
         }
 
         modifyConfig({ config in
-            guard let field: JidMultiField = config.getField(named: "Owner"), !field.value.contains(JID(jid)) else {
-                return nil;
+            if config.owner?.contains(JID(jid)) ?? true {
+                config.owner?.append(JID(jid));
             }
-            field.value.append(JID(jid));
-            return config;
         })
     }
     
@@ -366,42 +354,26 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
         }
 
         modifyConfig({ config in
-            guard let field: JidMultiField = config.getField(named: "Owner"), field.value.contains(JID(jid)) else {
-                return nil;
+            config.owner?.removeAll(where: { $0.bareJid == jid });
+            if config.owner?.isEmpty ?? true {
+                throw XMPPError(condition: .not_acceptable);
             }
-            field.value.removeAll(where: { $0.bareJid == jid });
-            guard !field.value.isEmpty else {
-                return nil;
-            }
-            return config;
         })
     }
 
-    private func modifyConfig(_ fn: @escaping (JabberDataElement)->JabberDataElement?) {
+    private func modifyConfig(_ fn: @escaping (MixChannelConfig) throws -> Void) {
         guard let mixModule = channel.context?.module(.mix) else {
             return;
         }
         let channelJid = channel.jid;
-        mixModule.retrieveConfig(for: channelJid, completionHandler: { [weak self] result in
-            switch result {
-            case .success(let config):
-                guard let newConfig = fn(config) else {
-                    return;
-                }
-                mixModule.updateConfig(for: channelJid, config: newConfig, completionHandler: { result in
-                    switch result {
-                    case .success(_):
-                        DispatchQueue.main.async {
-                            self?.update(fromConfig: newConfig);
-                        }
-                    case .failure(_):
-                        break;
-                    }
-                })
-            case .failure(_):
-                break;
-            }
-        })
+        Task {
+            let config = try await mixModule.config(for: channelJid);
+            try fn(config);
+            try await mixModule.config(config, for: channelJid);
+            await MainActor.run(body: {
+                self.update(fromConfig: config);
+            })
+        }
     }
 }
 
@@ -412,7 +384,7 @@ class ChannelParticipantTableCellView: NSTableCellView {
     @IBOutlet var roleView: NSImageView!;
     
     func update(participant: ChannelParticipantsViewController.ParticipantItem, in channel: Channel) {
-        let name = participant.nickname ?? participant.jid?.stringValue ?? participant.id;
+        let name = participant.nickname ?? participant.jid?.description ?? participant.id;
         self.avatarView.name = name;
         if let jid = participant.jid {
             self.avatarView.avatar = AvatarManager.instance.avatar(for: jid, on: channel.account);

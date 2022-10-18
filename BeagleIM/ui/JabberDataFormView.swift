@@ -61,16 +61,14 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
     var hideFields: [String] = [];
     var instruction: String?;
     
-    var xmppClient: XMPPClient?;
+    var xmppClient: Martin.XMPPClient?;
     var jid: JID?;
     var bob: [BobData] = [];
-    var form: JabberDataElement? {
+    var form: DataForm? {
         didSet {
-            visibleFields = form?.visibleFieldNames.filter({ name -> Bool in !self.hideFields.contains(name)}) ?? [];
+            visibleFields = form?.fields.filter({ $0.type != .hidden }).map({ $0.var }).filter({ name -> Bool in !self.hideFields.contains(name)}) ?? [];
             
-            self.instruction = form?.instructions.map({ (texts) -> String in
-                return texts.filter({ $0 != nil }).map({ $0! }).joined(separator: "\n");
-                });
+            self.instruction = form?.instructions.joined(separator: "\n");
             if self.instruction?.isEmpty ?? false {
                 self.instruction = nil;
             }
@@ -82,7 +80,7 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
                 let offset = self.instruction != nil ? 1 : 0;
                 for i in 0..<self.numberOfRows {
                     
-                    let label = i == 0 && self.instruction != nil ? self.instruction! : self.extractLabel(from: form!.getField(named: visibleFields[i - offset])!);
+                    let label = i == 0 && self.instruction != nil ? self.instruction! : self.extractLabel(from: form!.field(for: visibleFields[i - offset])!);
                     
                     let textStorage = NSTextStorage(string: label);
                     textStorage.addAttribute(.font, value: NSFont.systemFont(ofSize: NSFont.labelFontSize, weight: i == 0 && self.instruction != nil ? .medium : .regular), range: NSRange(0..<textStorage.length));
@@ -178,9 +176,9 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
         let offset = self.instruction != nil ? 1 : 0;
         if tableColumn != nil {
             let horizontalSpacing = self.intercellSpacing.width / 2;
-            let field = form?.getField(named: visibleFields[row - offset]);
+            let field = form?.field(for: visibleFields[row - offset]);
             if tableView.column(withIdentifier: tableColumn!.identifier) == 0 {
-                if field is BooleanField {
+                if field is DataForm.Field.Boolean {
                     return nil;
                 }
                 let view = NSTextField(labelWithString: extractLabel(from: field!));
@@ -269,31 +267,31 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
         return true;
     }
     
-    fileprivate func extractLabel(from formField: Field) -> String {
-        return formField.label ?? (formField.name.prefix(1).uppercased() + formField.name.dropFirst());
+    fileprivate func extractLabel(from formField: DataForm.Field) -> String {
+        return formField.label ?? (formField.var.prefix(1).uppercased() + formField.var.dropFirst());
     }
     
-    fileprivate func create(row: Int, field formField: Field) -> NSView {
-        let label = formField.label ?? (formField.name.prefix(1).uppercased() + formField.name.dropFirst());
+    fileprivate func create(row: Int, field formField: DataForm.Field) -> NSView {
+        let label = extractLabel(from: formField)
         switch formField {
-        case let f as BooleanField:
-            return addCheckbox(row: row, label: label, value: f.value);
-        case let f as TextSingleField:
-            return addTextField(row: row, label: label, value: f.value);
-        case let f as TextPrivateField:
-            return addTextPrivateField(row: row,label: label, value: f.value);
-        case let f as TextMultiField:
-            return addTextMultiField(row: row, label: label, value: f.value);
-        case let f as JidSingleField:
-            return addTextField(row: row, label: label, value: f.value?.stringValue);
-        case let f as JidMultiField:
-            return addTextMultiField(row: row, label: label, value: f.value.map({ j -> String in return j.stringValue}));
-        case let f as ListSingleField:
-            return addListSingleField(row: row, label: label, value: f.value, options: f.options);
-        case let f as ListMultiField:
-            return addListMultiField(row: row, label: label, value: f.value, options: f.options);
-        case let f as FixedField:
-            return addFixedField(label: label, value: f.value);
+        case let f as DataForm.Field.Boolean:
+            return addCheckbox(row: row, label: label, value: f.value());
+        case let f as DataForm.Field.TextSingle:
+            return addTextField(row: row, label: label, value: f.value());
+        case let f as DataForm.Field.TextPrivate:
+            return addTextPrivateField(row: row,label: label, value: f.value());
+        case let f as DataForm.Field.TextMulti:
+            return addTextMultiField(row: row, label: label, value: f.values());
+        case let f as DataForm.Field.JIDSingle:
+            return addTextField(row: row, label: label, value: f.value()?.description);
+        case let f as DataForm.Field.JIDMulti:
+            return addTextMultiField(row: row, label: label, value: f.values().map({ j -> String in return j.description}));
+        case let f as DataForm.Field.ListSingle:
+            return addListSingleField(row: row, label: label, value: f.currentValue, options: f.options);
+        case let f as DataForm.Field.ListMulti:
+            return addListMultiField(row: row, label: label, value: f.currentValues, options: f.options);
+        case let f as DataForm.Field.Fixed:
+            return addFixedField(label: label, value: f.value());
         default:
             return NSView(frame: .zero);
         }
@@ -314,19 +312,19 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
     
     @objc fileprivate func fieldChanged(_ sender: NSView) {
         let row = (sender as? MultiSelectField)?.row ?? sender.tag;
-        switch self.form?.getField(named: visibleFields[row])! {
-        case let f as BooleanField:
-            f.value = (sender as! NSButton).state == .on;
-        case let f as TextSingleField:
-            f.value = (sender as! NSTextField).stringValue;
-        case let f as TextPrivateField:
-            f.value = (sender as! NSTextField).stringValue;
-        case let f as JidSingleField:
+        switch self.form?.field(for: visibleFields[row])! {
+        case let f as DataForm.Field.Boolean:
+            f.value((sender as! NSButton).state == .on);
+        case let f as DataForm.Field.TextSingle:
+            f.value((sender as! NSTextField).stringValue);
+        case let f as DataForm.Field.TextPrivate:
+            f.value((sender as! NSTextField).stringValue);
+        case let f as DataForm.Field.JIDSingle:
             let v = (sender as? NSTextField)?.stringValue.trimmingCharacters(in: .whitespaces);
-            f.value = (v?.isEmpty ?? true) ? nil : JID(v!);
-        case let f as ListMultiField:
+            f.value((v?.isEmpty ?? true) ? nil : JID(v!));
+        case let f as DataForm.Field.ListMulti:
             let v = (sender as! MultiSelectField).value;
-            f.value = v;
+            f.values(v);
         default:
             break;
         }
@@ -338,13 +336,13 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
         }
         let row = sender.row;
         
-        switch self.form?.getField(named: self.visibleFields[row])! {
-        case let f as TextMultiField:
+        switch self.form?.field(for: self.visibleFields[row])! {
+        case let f as DataForm.Field.TextMulti:
             let v = sender.string;
-            f.value = v.split(separator: "\n").map({ s in String(s) });
-        case let f as JidMultiField:
+            f.values(v.split(separator: "\n").map({ s in String(s) }));
+        case let f as DataForm.Field.JIDMulti:
             let v = sender.string.split(separator: "\n");
-            f.value = v.map({ s in String(s) }).map({ s in JID(s) });
+            f.values(v.map({ s in String(s) }).map({ s in JID(s) }));
         default:
             break;
         }
@@ -406,7 +404,7 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
         return field;
     }
     
-    fileprivate func addListSingleField(row: Int, label: String, value: String?, options: [ListFieldOption]) -> NSButton {
+    fileprivate func addListSingleField(row: Int, label: String, value: String?, options: [DataForm.Field.Option]) -> NSButton {
         let field = NSPopUpButton(frame: .zero, pullsDown: true);
         field.addItem(withTitle: "");
         field.action = #selector(listSelectionChanged);
@@ -424,16 +422,16 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
     
     @objc fileprivate func listSelectionChanged(_ sender: NSPopUpButton) {
         sender.title = sender.titleOfSelectedItem ?? "";
-        switch self.form?.getField(named: self.visibleFields[sender.tag])! {
-        case let f as ListSingleField:
+        switch self.form?.field(for: self.visibleFields[sender.tag])! {
+        case let f as DataForm.Field.ListSingle:
             let v = sender.indexOfSelectedItem;
-            f.value = v == -1 ? nil : f.options[v-1].value;
+            f.value(v == -1 ? nil : f.options[v-1].value);
         default:
             break;
         }
     }
     
-    fileprivate func addListMultiField(row: Int, label: String, value: [String], options: [ListFieldOption]) -> NSStackView {
+    fileprivate func addListMultiField(row: Int, label: String, value: [String], options: [DataForm.Field.Option]) -> NSStackView {
         let field = MultiSelectField(row: row, value: value, options: options);
         field.action = #selector(fieldChanged(_:))
         field.target = self;
@@ -462,12 +460,12 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
     class MultiSelectField: NSStackView {
         
         let row: Int;
-        let options: [ListFieldOption];
+        let options: [DataForm.Field.Option];
         var value: [String];
         var action: Selector?;
         weak var target: NSObject?;
         
-        init(row: Int, value: [String], options: [ListFieldOption]) {
+        init(row: Int, value: [String], options: [DataForm.Field.Option]) {
             self.row = row;
             self.options = options;
             self.value = value;
@@ -574,7 +572,7 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
             }
         }
         
-        func loadImage(from uri: String, xmppClient: XMPPClient?, jid: JID?) {
+        func loadImage(from uri: String, xmppClient: Martin.XMPPClient?, jid: JID?) {
             if uri.starts(with: "cid:") {
                 if let client = xmppClient, client.state != .disconnected() {
                     self.progressIndicator.startAnimation(nil);
@@ -582,7 +580,7 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
                     iq.type = .get;
                     iq.to = jid;
                     iq.addChild(Element(name: "data", attributes: ["xmlns":"urn:xmpp:bob", "cid": String(uri.dropFirst(4))]));
-                    client.context.writer.write(iq, completionHandler: { [weak self] result in
+                    client.context.writer.write(iq: iq, completionHandler: { [weak self] result in
                         guard let that = self else {
                             return;
                         }
@@ -590,7 +588,7 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
                         that.progressIndicator.stopAnimation(nil);
                         switch result {
                         case .success(let response):
-                            if let value = response.findChild(name: "data", xmlns: "urn:xmpp:bob")?.value, let data = Data(base64Encoded: value, options: [.ignoreUnknownCharacters]), let image = NSImage(data: data) {
+                            if let value = response.firstChild(name: "data", xmlns: "urn:xmpp:bob")?.value, let data = Data(base64Encoded: value, options: [.ignoreUnknownCharacters]), let image = NSImage(data: data) {
                                 that.image = image;
                                 return;
                             }

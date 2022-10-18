@@ -57,8 +57,6 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
     @IBOutlet var hideAdvConstraint: NSLayoutConstraint!;
     @IBOutlet var advGrid: NSGridView!;
     
-    var accountValidatorTask: AccountValidatorTask?;
-    
     override func viewWillAppear() {
         super.viewWillAppear();
         portField.formatter = PortValueFormatter();
@@ -130,40 +128,43 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
     
     @IBAction func logInClicked(_ button: NSButton) {
         let jid = BareJID(usernameField.stringValue);
-        var account = AccountManager.Account(name: jid);
-        account.password = passwordField.stringValue;
         self.showProgressIndicator();
-        self.accountValidatorTask = AccountValidatorTask(controller: self);
-        var endpoint: SocketConnectorNetwork.Endpoint?;
+        
+        let password = passwordField.stringValue;
+        var settings = AccountDetailsViewController.Settings();
+        settings.disableTLS13 = disableTLS13Check.state == .on;
+        settings.useDirectTLS = useDirectTLSCheck.state == .on;
         if !(hostField.stringValue.isEmpty || portField.stringValue.isEmpty), let port = Int(portField.stringValue) {
-            endpoint = .init(proto: useDirectTLSCheck.state == .on ? .XMPPS : .XMPP, host: hostField.stringValue, port: port);
+            settings.host = hostField.stringValue;
+            settings.port = port;
         }
-        account.endpoint = endpoint;
-        account.disableTLS13 = disableTLS13Check.state == .on;
-        self.accountValidatorTask?.check(account: account.name, password: account.password!, endpoint: endpoint, disableTLS13: disableTLS13Check.state == .on, callback: { result in
-            let certificateInfo = self.accountValidatorTask?.acceptedCertificate;
-            DispatchQueue.main.async {
-                self.accountValidatorTask?.finish();
-                self.accountValidatorTask = nil;
-                self.hideProgressIndicator();
-                switch result {
-                case .success(_):
-                    if let certInfo = certificateInfo {
-                        account.serverCertificate = ServerCertificateInfo(sslCertificateInfo: certInfo, accepted: true);
-                    }
-                    
-                    do {
-                        try AccountManager.save(account: account);
-                        self.view.window?.sheetParent?.endSheet(self.view.window!);
-                    } catch {
-                        let alert = NSAlert(error: error);
-                        alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
-                    }
-                case .failure(let error):
+        Task {
+            do {
+                let certificateInfo = try await AccountValidatorTask.validate(viewController: self, account: jid, password: password, connectivitySettings: settings);
+                do {
+                    try AccountManager.modifyAccount(for: jid, { account in
+                        account.password = password;
+                        if let host = settings.host, let port = settings.port {
+                            account.serverEndpoint = .init(proto: settings.useDirectTLS ? .XMPPS : .XMPP, host: host, port: port);
+                        }
+                        account.disableTLS13 = settings.disableTLS13;
+                        if let certInfo = certificateInfo {
+                            account.acceptedCertificate = AcceptableServerCertificate(certificate: certInfo, accepted: true)
+                        }
+                    })
+
+                    self.view.window?.sheetParent?.endSheet(self.view.window!);
+                } catch {
+                    let alert = NSAlert(error: error);
+                    alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
+                }
+
+            } catch {
+                await MainActor.run(body: {
                     let alert = NSAlert();
                     alert.alertStyle = .critical;
                     alert.messageText = NSLocalizedString("Authentication failed", comment: "alert window title");
-                    switch error {
+                    switch (error as? XMPPError)?.condition {
                     case .not_authorized:
                         alert.informativeText = NSLocalizedString("Login and password do not match.", comment: "alert window message");
                     default:
@@ -172,10 +173,12 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
                     alert.beginSheetModal(for: self.view.window!, completionHandler: { _ in
                         // nothing to do.. just wait for user interaction
                     })
-                    break;
-                }
+                })
             }
-        })
+            await MainActor.run(body: {
+                hideProgressIndicator();
+            })
+        }
     }
     
     private func showProgressIndicator() {
@@ -202,135 +205,65 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
         })
     }
 
-    class AccountValidatorTask: EventHandler {
-        
-        private var cancellable: AnyCancellable?;
-        var client: XMPPClient? {
-            willSet {
-                if newValue != nil {
-                    newValue?.eventBus.register(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE);
-                }
-            }
-            didSet {
-                if oldValue != nil {
-                    _ = oldValue?.disconnect(true);
-                    oldValue?.eventBus.unregister(handler: self, for: SaslModule.SaslAuthSuccessEvent.TYPE, SaslModule.SaslAuthFailedEvent.TYPE);
-                }
-                cancellable = client?.$state.sink(receiveValue: { [weak self] state in self?.changedState(state) });
-            }
-        }
-        
-        var callback: ((Result<Void,ErrorCondition>)->Void)? = nil;
-        weak var controller: AddAccountController?;
-        var dispatchQueue = DispatchQueue(label: "accountValidatorSync");
-        
-        var acceptedCertificate: SslCertificateInfo? = nil;
-        
-        init(controller: AddAccountController) {
-            self.controller = controller;
-            initClient();
-        }
-        
-        fileprivate func initClient() {
-            self.client = XMPPClient();
-            _ = client?.modulesManager.register(StreamFeaturesModule());
-            _ = client?.modulesManager.register(SaslModule());
-            _ = client?.modulesManager.register(AuthModule());
-        }
-        
-        public func check(account: BareJID, password: String, endpoint: SocketConnectorNetwork.Endpoint?, disableTLS13: Bool, callback: @escaping (Result<Void,ErrorCondition>)->Void) {
-            self.callback = callback;
-            client?.connectionConfiguration.useSeeOtherHost = false;
-            client?.connectionConfiguration.userJid = account;
-            client?.connectionConfiguration.credentials = .password(password: password, authenticationName: nil, cache: nil);
-            client?.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
-                if let endpoint = endpoint {
-                    options.connectionDetails = endpoint;
-                }
-                options.networkProcessorProviders.append(disableTLS13 ? SSLProcessorProvider(supportedTlsVersions: TLSVersion.TLSv1_2...TLSVersion.TLSv1_2) : SSLProcessorProvider());
-            })
-            client?.login();
-        }
-        
-        public func handle(event: Event) {
-            dispatchQueue.sync {
-                guard let callback = self.callback else {
-                    return;
-                }
-                var param: ErrorCondition? = nil;
-                switch event {
-                case is SaslModule.SaslAuthSuccessEvent:
-                    param = nil;
-                case is SaslModule.SaslAuthFailedEvent:
-                    param = ErrorCondition.not_authorized;
-                default:
-                    param = ErrorCondition.service_unavailable;
-                }
-                
-                DispatchQueue.main.async {
-                    if let error = param {
-                        callback(.failure(error));
-                    } else {
-                        callback(.success(Void()));
-                    }
-                }
-                self.finish();
-            }
-        }
-        
-        func changedState(_ state: XMPPClient.State) {
-            dispatchQueue.sync {
-                guard let callback = self.callback else {
-                    return;
-                }
+    class AccountValidatorTask {
 
-                switch state {
-                case .disconnected(let reason):
-                    switch reason {
-                    case .sslCertError(let trust):
-                        self.callback = nil;
-                        let certData = SslCertificateInfo(trust: trust);
-                        DispatchQueue.main.async {
-                            let alert = NSStoryboard(name: "Main", bundle: nil).instantiateController(withIdentifier: "ServerCertificateErrorController") as! ServerCertificateErrorController;
-                            _ = alert.view;
-                            alert.account = self.client?.sessionObject.userBareJid;
-                            alert.certficateInfo = certData;
-                            alert.completionHandler = { accepted in
-                                self.acceptedCertificate = certData;
-                                if (accepted) {
-                                    self.client?.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
-                                        options.networkProcessorProviders.append(SSLProcessorProvider());
-                                        options.sslCertificateValidation = .fingerprint(certData.details.fingerprintSha1);
-                                    });
-                                    self.callback = callback;
-                                    self.client?.login();
-                                } else {
-                                    self.finish();
-                                    DispatchQueue.main.async {
-                                        callback(.failure(.service_unavailable));
-                                    }
-                                }
-                            };
-                            self.controller?.presentAsSheet(alert);
-                        }
-                        return;
-                    default:
-                        break;
-                    }
-                    DispatchQueue.main.async {
-                        callback(.failure(.service_unavailable));
-                    }
-                    self.finish();
-                default:
-                    break;
+        public static func validate(viewController: NSViewController, account: BareJID, password: String, connectivitySettings: AccountDetailsViewController.Settings) async throws -> SSLCertificateInfo? {
+            let client = XMPPClient();
+            _ = client.modulesManager.register(StreamFeaturesModule());
+            _ = client.modulesManager.register(SaslModule());
+            _ = client.modulesManager.register(AuthModule());
+            _ = client.modulesManager.register(ResourceBinderModule());
+            _ = client.modulesManager.register(SessionEstablishmentModule());
+            client.connectionConfiguration.useSeeOtherHost = false;
+            client.connectionConfiguration.userJid = account;
+            client.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
+                if let host = connectivitySettings.host, let port = connectivitySettings.port {
+                    options.connectionDetails = .init(proto: connectivitySettings.useDirectTLS ? .XMPPS : .XMPP, host: host, port: port)
                 }
+                options.networkProcessorProviders.append(connectivitySettings.disableTLS13 ? SSLProcessorProvider(supportedTlsVersions: TLSVersion.TLSv1_2...TLSVersion.TLSv1_2) : SSLProcessorProvider());
+            })
+            client.connectionConfiguration.credentials = .password(password: password, authenticationName: nil, cache: nil);
+            defer {
+                Task {
+                    try await client.disconnect();
+                }
+            }
+            do {
+                try await client.loginAndWait();
+                return nil;
+            } catch let error as XMPPClient.State.DisconnectionReason {
+                print(error)
+                guard case let .sslCertError(trust) = error else {
+                    throw error;
+                }
+                let certData = SSLCertificateInfo(trust: trust)!;
+                guard await showCertificateError(viewController: viewController, account: account, certData: certData) else {
+                    throw error;
+                }
+                client.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
+                    options.networkProcessorProviders.append(SSLProcessorProvider());
+                    options.sslCertificateValidation = .fingerprint(certData.subject.fingerprints.first!);
+                });
+                
+                try await client.loginAndWait();
+                return certData;
             }
         }
         
-        public func finish() {
-            self.callback = nil;
-            self.client = nil;
-            self.controller = nil;
+        static func showCertificateError(viewController controller: NSViewController, account: BareJID, certData: SSLCertificateInfo) async -> Bool {
+            return await withUnsafeContinuation({ continuation in
+                DispatchQueue.main.async {
+                    let alert = NSStoryboard(name: "Main", bundle: nil).instantiateController(withIdentifier: "ServerCertificateErrorController") as! ServerCertificateErrorController;
+                    _ = alert.view;
+                    alert.account = account;
+                    alert.certficateInfo = certData;
+                    alert.completionHandler = { accepted in
+                        continuation.resume(returning: accepted);
+                    };
+                    controller.presentAsSheet(alert);
+                }
+            })
         }
+        
     }
 }

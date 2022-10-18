@@ -51,7 +51,7 @@ class CreateMeetingController: NSViewController {
                             let alert = NSAlert();
                             alert.alertStyle = .warning;
                             alert.messageText = NSLocalizedString("Unable to create a meet", comment: "create meet controller")
-                            alert.informativeText = error == .item_not_found ? NSLocalizedString("Selected account does not support creating a meeting. Please select a different account.", comment: "create meet controller") : String.localizedStringWithFormat(NSLocalizedString("While checking for support XMPP server returned an error: %@. Please select a different account or try again later.", comment: "create meet controller"), error.localizedDescription);
+                            alert.informativeText = error.condition == .item_not_found ? NSLocalizedString("Selected account does not support creating a meeting. Please select a different account.", comment: "create meet controller") : String.localizedStringWithFormat(NSLocalizedString("While checking for support XMPP server returned an error: %@. Please select a different account or try again later.", comment: "create meet controller"), error.localizedDescription);
                             alert.beginSheetModal(for: that.view.window!, completionHandler: { response in
                                 // nothing to do except closing..
                                 //that.close();
@@ -72,7 +72,7 @@ class CreateMeetingController: NSViewController {
         super.viewWillAppear();
         
         accountSelection.removeAllItems();
-        let accounts = AccountManager.getActiveAccounts().map({ $0.name.stringValue });
+        let accounts = AccountManager.activeAccounts().map({ $0.name.description });
         for account in accounts.sorted() {
             accountSelection.addItem(withTitle: account);
         }
@@ -80,7 +80,7 @@ class CreateMeetingController: NSViewController {
         accountSelection.target = self;
         accountSelection.action = #selector(accountSelectionChanged(_:));
         
-        if let defAccount = AccountManager.defaultAccount, let idx = accounts.firstIndex(of: defAccount.stringValue) {
+        if let defAccount = AccountManager.defaultAccount, let idx = accounts.firstIndex(of: defAccount.description) {
             accountSelection.selectItem(at: idx);
         } else if !accounts.isEmpty {
             accountSelection.selectItem(at: 0);
@@ -112,16 +112,22 @@ class CreateMeetingController: NSViewController {
             return;
         }
         self.operationInProgress = true;
-        client.module(.meet).createMeet(at: meetComponentJid, media: [.audio,.video], participants: participants, completionHandler: { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let meetJid):
-                    MeetManager.instance.registerMeet(at: meetJid, using: client)?.join();
-                    for jid in participants {
-                        client.module(.meet).sendMessageInitiation(action: .propose(id: UUID().uuidString, meetJid: meetJid, media: [.audio,.video]), to: JID(jid));
-                    }
-                    self.close();
-                case .failure(let error):
+        Task {
+            do {
+                let meetModule = client.module(.meet);
+                let meetJid = try await meetModule.createMeet(at: meetComponentJid, media: [.audio,.video], participants: participants);
+                do {
+                    try await MeetManager.instance.registerMeet(at: meetJid, using: client)?.join();
+                    _ = await participants.concurrentMap({ jid in
+                        try? await meetModule.sendMessageInitiation(action:  .propose(id: UUID().uuidString, meetJid: meetJid, media: [.audio,.video]), to: jid.jid())
+                    })
+                } catch {
+                    try await meetModule.destroy(meetJid: meetJid);
+                    throw error;
+                }
+                self.close();
+            } catch {
+                await MainActor.run(body: {
                     let alert = NSAlert();
                     alert.alertStyle = .warning;
                     alert.messageText = NSLocalizedString("Meeting creation failed", comment: "create meet controller");
@@ -130,10 +136,10 @@ class CreateMeetingController: NSViewController {
                         // nothing to do except closing..
                         self.close();
                     });
-                }
+                })
+                self.operationInProgress = false;
             }
-            self.operationInProgress = false;
-        });
+        }
     }
     
     @IBAction func cancelClicked(_ sender: NSButton) {

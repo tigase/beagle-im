@@ -82,40 +82,42 @@ class AccountDetailsViewController: NSViewController, AccountAware, NSTextFieldD
     }
     
     func refresh() {
-        username?.stringValue = account?.stringValue ?? "";
-        let acc = account == nil ? nil : AccountManager.getAccount(for: account!);
+        username?.stringValue = account?.description ?? "";
+        let acc = account == nil ? nil : AccountManager.account(for: account!);
         nickname?.stringValue = acc?.nickname ?? "";
-        active?.state = (acc?.active ?? false) ? .on : .off;
+        active?.state = (acc?.enabled ?? false) ? .on : .off;
         resourceType?.itemArray.forEach { (item) in
             item.state = .off;
         }
-        if let rt = acc?.resourceType {
+        if let rt = acc?.additional.resourceType {
             switch rt {
             case .automatic:
                 resourceType?.selectItem(at: 1);
+                resourceName?.stringValue = "BeagleIM";
             case .hostname:
                 resourceType?.selectItem(at: 2);
-            case .custom:
+                resourceName?.stringValue = "BeagleIM";
+            case .manual(let resource):
                 resourceType?.selectItem(at: 3);
+                resourceName?.stringValue = resource;
             }
         } else {
             resourceType?.selectItem(at: 1);
         }
         resourceType?.selectedItem?.state = .on;
         resourceType?.title = resourceType?.titleOfSelectedItem ?? "";
-        resourceName?.stringValue = acc?.resourceName ?? "BeagleIM";
         active.isEnabled = account != nil;
         changePasswordButton.isEnabled = account != nil;
         nickname.isEnabled = account != nil;
         resourceName.isEnabled = resourceType.indexOfSelectedItem == 3;
         
-        host.stringValue = acc?.endpoint?.host ?? "";
-        if let portInt = acc?.endpoint?.port {
+        host.stringValue = acc?.serverEndpoint?.host ?? "";
+        if let portInt = acc?.serverEndpoint?.port {
             port.stringValue = String(portInt);
         } else {
             port.stringValue = "";
         }
-        useDirectTLS.state = (acc?.endpoint?.proto == .XMPPS) ? .on : .off;
+        useDirectTLS.state = (acc?.serverEndpoint?.proto == .XMPPS) ? .on : .off;
         disableTLS13.state = (acc?.disableTLS13 ?? false) ? .on : .off;
     }
         
@@ -134,23 +136,31 @@ class AccountDetailsViewController: NSViewController, AccountAware, NSTextFieldD
     }
     
     @IBAction func save(_ sender: NSButton) {
-        guard let jid = self.account, var account = AccountManager.getAccount(for: jid) else {
+        guard let jid = self.account else {
             // do not save if we cannot find the account
             return;
         }
-        account.nickname = nickname.stringValue;
-        account.active = active.state == .on;
-        let idx = resourceType.indexOfSelectedItem;
-        account.resourceType = idx == 1 ? .automatic : (idx == 2 ? .hostname : .custom);
-        account.resourceName = resourceName.stringValue;
-        
-        if !(host.stringValue.isEmpty || port.stringValue.isEmpty), let portInt = Int(port.stringValue) {
-            account.endpoint = .init(proto: useDirectTLS.state == .on ? .XMPPS : .XMPP, host: host.stringValue, port: portInt)
-        }
-        account.disableTLS13 = disableTLS13.state == .on;
-        
+
         do {
-            try AccountManager.save(account: account);
+            try AccountManager.modifyAccount(for: jid, { account in
+                account.nickname = self.nickname.stringValue;
+                account.enabled = self.active.state == .on;
+                let idx = self.resourceType.indexOfSelectedItem;
+                switch idx {
+                case 2:
+                    account.additional.resourceType = .hostname;
+                case 3:
+                    account.additional.resourceType = .manual(self.resourceName.stringValue.isEmpty ? "BeagleIM" : self.resourceName.stringValue);
+                default:
+                    account.additional.resourceType = .automatic;
+                }
+                
+                if !(self.host.stringValue.isEmpty || self.port.stringValue.isEmpty), let portInt = Int(self.port.stringValue) {
+                    account.serverEndpoint = .init(proto: self.useDirectTLS.state == .on ? .XMPPS : .XMPP, host: self.host.stringValue, port: portInt)
+                }
+                account.disableTLS13 = self.disableTLS13.state == .on;
+                
+            })
             dismiss(self);
         } catch {
             let alert = NSAlert(error: error);
@@ -164,5 +174,12 @@ class AccountDetailsViewController: NSViewController, AccountAware, NSTextFieldD
                 changeAccountController.account = self.account;
             }
         }
+    }
+    
+    class Settings {
+        var host: String?;
+        var port: Int?;
+        var useDirectTLS: Bool = false;
+        var disableTLS13: Bool = false;
     }
 }

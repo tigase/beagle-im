@@ -54,7 +54,7 @@ extension DatabasePool {
 extension JID: DatabaseConvertibleStringValue {
     
     public func encode() -> String {
-        return self.stringValue;
+        return self.description;
     }
     
 }
@@ -62,14 +62,14 @@ extension JID: DatabaseConvertibleStringValue {
 extension BareJID: DatabaseConvertibleStringValue {
     
     public func encode() -> String {
-        return self.stringValue;
+        return self.description;
     }
     
 }
 
 extension Element: DatabaseConvertibleStringValue {
     public func encode() -> String {
-        return self.stringValue;
+        return self.description;
     }
 }
 

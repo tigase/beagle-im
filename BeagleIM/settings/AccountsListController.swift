@@ -53,7 +53,7 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
     }
     
     func refreshAccounts() {
-        accounts = AccountManager.getAccounts();
+        accounts = AccountManager.accountNames();
         self.currentAccount = nil;
         self.tableView?.reloadData();
         self.tableView?.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false);
@@ -180,7 +180,7 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
         
         let alert = NSAlert();
         alert.messageText = NSLocalizedString("Account removal", comment: "alert window title");
-        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Should the account %@ be removed from the server as well?", comment: "alert window message"), jid.stringValue);
+        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Should the account %@ be removed from the server as well?", comment: "alert window message"), jid.description);
         alert.addButton(withTitle: NSLocalizedString("Remove from server", comment: "Button"))
         alert.addButton(withTitle: NSLocalizedString("Remove from application", comment: "Button"))
         alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Button"));
@@ -197,28 +197,25 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
                 }
                 
                 let regModule = client.modulesManager.register(InBandRegistrationModule());
-                regModule.unregister(completionHander: { (result) in
-                    DispatchQueue.main.async {
-                        if let account = AccountManager.getAccount(for: jid) {
-                            do {
-                                try AccountManager.delete(account: account);
-                            } catch {
-                                let alert = NSAlert(error: error);
-                                alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
-                            }
-                        }
+                Task {
+                    do {
+                        _ = try await regModule.unregister()
+                        try AccountManager.deleteAccount(for: jid)
+                    } catch {
+                        await MainActor.run(body: {
+                            let alert = NSAlert(error: error);
+                            alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
+                        })
                     }
-                })
+                }
                 break;
             case .alertSecondButtonReturn:
                 // remove from the application
-                if let account = AccountManager.getAccount(for: jid) {
-                    do {
-                        try AccountManager.delete(account: account);
-                    } catch {
-                        let alert = NSAlert(error: error);
-                        alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
-                    }
+                do {
+                    try AccountManager.deleteAccount(for: jid)
+                } catch {
+                    let alert = NSAlert(error: error);
+                    alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
                 }
             default:
                 // cancel
@@ -297,7 +294,7 @@ class AccountCellView: NSTableCellView {
         cancellables.removeAll();
         self.accountJid = accountJid;
         avatarObj = AvatarManager.instance.avatarPublisher(for: .init(account: accountJid, jid: accountJid, mucNickname: nil));
-        let acc = AccountManager.getAccount(for: accountJid);
+        let acc = AccountManager.account(for: accountJid);
         switch acc?.state.value {
         case .connected:
             avatar.status = .online;
@@ -316,17 +313,18 @@ class AccountCellView: NSTableCellView {
                 return nil;
             }
         }).receive(on: DispatchQueue.main).assign(to: \.status, on: avatar).store(in: &cancellables);
-        enabledCheckbox.state = (acc?.active ?? false) ? .on : .off;
+        enabledCheckbox.state = (acc?.enabled ?? false) ? .on : .off;
         nickname.stringValue = acc?.nickname ?? "";
-        jid.stringValue = accountJid.stringValue
+        jid.stringValue = accountJid.description
         defaultLabel.isHidden = accountJid != AccountManager.defaultAccount;
     }
     
     @IBAction func enabledSwitched(_ sender: NSButton) {
-        if let accountJid = self.accountJid, var account = AccountManager.getAccount(for: accountJid) {
-            account.active = sender.state == .on;
+        if let accountJid = self.accountJid {
             do {
-                try AccountManager.save(account: account);
+                try AccountManager.modifyAccount(for: accountJid, { account in
+                    account.enabled = sender.state == .on;
+                })
             } catch {
                 sender.state = sender.state == .on ? .off : .on;
             }

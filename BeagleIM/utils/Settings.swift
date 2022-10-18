@@ -219,8 +219,8 @@ enum AccountSettings {
     public static let CHANGED = Notification.Name("accountSettingChanged");
     
     public static func initialize() {
-        let accountJids = AccountManager.getAccounts().map { (jid) -> String in
-            return jid.stringValue
+        let accountJids = AccountManager.accountNames().map { (jid) -> String in
+            return jid.description
         };
         let toRemove = UserDefaults.standard.dictionaryRepresentation().keys.filter { key -> Bool in
             return key.hasPrefix("accounts.") && accountJids.first(where: { jid -> Bool in

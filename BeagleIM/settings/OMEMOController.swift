@@ -77,7 +77,7 @@ open class OMEMOContoller: NSViewController, AccountAware, NSTableViewDataSource
         localFingerprint.textColor = (omemoModule?.isReady ?? false) ?  NSColor.labelColor : NSColor.secondaryLabelColor;
         
         if let tmp = AccountSettings.omemoRegistrationId(account).uint32() {
-            let jid = self.account!.stringValue;
+            let jid = self.account!.description;
             let localDeviceId = Int32(bitPattern: tmp);
             self.remoteIdentitiesTableView.identities = DBOMEMOStore.instance.identities(forAccount: self.account!, andName: jid).filter({ (identity) -> Bool in
                 return identity.address.deviceId != localDeviceId;

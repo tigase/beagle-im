@@ -67,7 +67,7 @@ class DBOMEMOStore {
         }
         
         guard let data = try! Database.main.reader({ database in
-            return try database.select(query: .omemoKeyPairForAccount, params: ["account": account, "name": account.stringValue, "deviceId": deviceId]).mapFirst({ $0.data(for: "key") });
+            return try database.select(query: .omemoKeyPairForAccount, params: ["account": account, "name": account.description, "deviceId": deviceId]).mapFirst({ $0.data(for: "key") });
         }) else {
             return nil;
         }
@@ -280,27 +280,27 @@ class SignalIdentityKeyStore: SignalIdentityKeyStoreProtocol, ContextAware {
     weak var context: Context?;
     
     func keyPair() -> SignalIdentityKeyPairProtocol? {
-        return DBOMEMOStore.instance.keyPair(forAccount: context!.sessionObject.userBareJid!);
+        return DBOMEMOStore.instance.keyPair(forAccount: context!.userBareJid);
     }
     
     func localRegistrationId() -> UInt32 {
-        return DBOMEMOStore.instance.localRegistrationId(forAccount: context!.sessionObject.userBareJid!) ?? 0;
+        return DBOMEMOStore.instance.localRegistrationId(forAccount: context!.userBareJid) ?? 0;
     }
     
     func save(identity: SignalAddress, key: SignalIdentityKeyProtocol?) -> Bool {
-        return DBOMEMOStore.instance.save(identity: identity, key: key, forAccount: context!.sessionObject.userBareJid!, own: true)
+        return DBOMEMOStore.instance.save(identity: identity, key: key, forAccount: context!.userBareJid, own: true)
     }
     
     func save(identity: SignalAddress, publicKeyData: Data?) -> Bool {
-        return DBOMEMOStore.instance.save(identity: identity, publicKeyData: publicKeyData, forAccount: context!.sessionObject.userBareJid!);
+        return DBOMEMOStore.instance.save(identity: identity, publicKeyData: publicKeyData, forAccount: context!.userBareJid);
     }
     
     func setStatus(_ status: IdentityStatus, forIdentity: SignalAddress) -> Bool {
-        return DBOMEMOStore.instance.setStatus(status, forIdentity: forIdentity, andAccount: context!.sessionObject.userBareJid!);
+        return DBOMEMOStore.instance.setStatus(status, forIdentity: forIdentity, andAccount: context!.userBareJid);
     }
     
     func setStatus(active: Bool, forIdentity: SignalAddress) -> Bool {
-        return DBOMEMOStore.instance.setStatus(active: active, forIdentity: forIdentity, andAccount: context!.sessionObject.userBareJid!);
+        return DBOMEMOStore.instance.setStatus(active: active, forIdentity: forIdentity, andAccount: context!.userBareJid);
     }
 
     func isTrusted(identity: SignalAddress, key: SignalIdentityKeyProtocol?) -> Bool {
@@ -312,11 +312,11 @@ class SignalIdentityKeyStore: SignalIdentityKeyStoreProtocol, ContextAware {
     }
     
     func identityFingerprint(forAddress address: SignalAddress) -> String? {
-        return DBOMEMOStore.instance.identityFingerprint(forAccount: self.context!.sessionObject.userBareJid!, andAddress: address);
+        return DBOMEMOStore.instance.identityFingerprint(forAccount: self.context!.userBareJid, andAddress: address);
     }
     
     func identities(forName name: String) -> [Identity] {
-        return DBOMEMOStore.instance.identities(forAccount: self.context!.sessionObject.userBareJid!, andName: name);
+        return DBOMEMOStore.instance.identities(forAccount: self.context!.userBareJid, andName: name);
     }
     
 }
@@ -336,15 +336,15 @@ class SignalPreKeyStore: SignalPreKeyStoreProtocol, ContextAware {
     private var preKeysMarkedForRemoval: [UInt32] = [];
     
     func currentPreKeyId() -> UInt32 {
-        return DBOMEMOStore.instance.currentPreKeyId(forAccount: context!.sessionObject.userBareJid!);
+        return DBOMEMOStore.instance.currentPreKeyId(forAccount: context!.userBareJid);
     }
     
     func loadPreKey(withId: UInt32) -> Data? {
-        return DBOMEMOStore.instance.loadPreKey(forAccount: context!.sessionObject.userBareJid!, withId: withId);
+        return DBOMEMOStore.instance.loadPreKey(forAccount: context!.userBareJid, withId: withId);
     }
     
     func storePreKey(_ data: Data, withId: UInt32) -> Bool {
-        guard DBOMEMOStore.instance.store(preKey: data, forAccount: context!.sessionObject.userBareJid!, withId: withId) else {
+        guard DBOMEMOStore.instance.store(preKey: data, forAccount: context!.userBareJid, withId: withId) else {
             return false;
         }
 //        AccountSettings.omemoCurrentPreKeyId(context.sessionObject.userBareJid!).set(value: withId);
@@ -352,7 +352,7 @@ class SignalPreKeyStore: SignalPreKeyStoreProtocol, ContextAware {
     }
     
     func containsPreKey(withId: UInt32) -> Bool {
-        return DBOMEMOStore.instance.containsPreKey(forAccount: context!.sessionObject.userBareJid!, withId: withId);
+        return DBOMEMOStore.instance.containsPreKey(forAccount: context!.userBareJid, withId: withId);
     }
     
     func deletePreKey(withId: UInt32) -> Bool {
@@ -369,7 +369,7 @@ class SignalPreKeyStore: SignalPreKeyStoreProtocol, ContextAware {
                 preKeysMarkedForRemoval.removeAll();
             }
             print("removing queued prekeys: \(preKeysMarkedForRemoval)");
-            return preKeysMarkedForRemoval.filter({ id in DBOMEMOStore.instance.deletePreKey(forAccount: context!.sessionObject.userBareJid!, withId: id) });
+            return preKeysMarkedForRemoval.filter({ id in DBOMEMOStore.instance.deletePreKey(forAccount: context!.userBareJid, withId: id) });
         }).count > 0;
     }
 }
@@ -379,23 +379,23 @@ class SignalSignedPreKeyStore: SignalSignedPreKeyStoreProtocol, ContextAware {
     weak var context: Context?;
     
     func countSignedPreKeys() -> Int {
-        return DBOMEMOStore.instance.countSignedPreKeys(forAccount: context!.sessionObject.userBareJid!);
+        return DBOMEMOStore.instance.countSignedPreKeys(forAccount: context!.userBareJid);
     }
     
     func loadSignedPreKey(withId: UInt32) -> Data? {
-        return DBOMEMOStore.instance.loadSignedPreKey(forAccount: context!.sessionObject.userBareJid!, withId: withId);
+        return DBOMEMOStore.instance.loadSignedPreKey(forAccount: context!.userBareJid, withId: withId);
     }
     
     func storeSignedPreKey(_ data: Data, withId: UInt32) -> Bool {
-        return DBOMEMOStore.instance.store(signedPreKey: data, forAccount: context!.sessionObject.userBareJid!, withId: withId);
+        return DBOMEMOStore.instance.store(signedPreKey: data, forAccount: context!.userBareJid, withId: withId);
     }
     
     func containsSignedPreKey(withId: UInt32) -> Bool {
-        return DBOMEMOStore.instance.containsSignedPreKey(forAccount: context!.sessionObject.userBareJid!, withId: withId);
+        return DBOMEMOStore.instance.containsSignedPreKey(forAccount: context!.userBareJid, withId: withId);
     }
     
     func deleteSignedPreKey(withId: UInt32) -> Bool {
-        return DBOMEMOStore.instance.deleteSignedPreKey(forAccount: context!.sessionObject.userBareJid!, withId: withId);
+        return DBOMEMOStore.instance.deleteSignedPreKey(forAccount: context!.userBareJid, withId: withId);
     }
 }
 
@@ -404,27 +404,27 @@ class SignalSessionStore: SignalSessionStoreProtocol, ContextAware {
     weak var context: Context?;
     
     func sessionRecord(forAddress address: SignalAddress) -> Data? {
-        return DBOMEMOStore.instance.sessionRecord(forAccount: context!.sessionObject.userBareJid!, andAddress: address);
+        return DBOMEMOStore.instance.sessionRecord(forAccount: context!.userBareJid, andAddress: address);
     }
     
     func allDevices(for name: String, activeAndTrusted: Bool) -> [Int32] {
-        return DBOMEMOStore.instance.allDevices(forAccount: context!.sessionObject.userBareJid!, andName: name, activeAndTrusted: activeAndTrusted);
+        return DBOMEMOStore.instance.allDevices(forAccount: context!.userBareJid, andName: name, activeAndTrusted: activeAndTrusted);
     }
     
     func storeSessionRecord(_ data: Data, forAddress address: SignalAddress) -> Bool {
-        return DBOMEMOStore.instance.store(sessionRecord: data, forAccount: context!.sessionObject.userBareJid!, andAddress: address);
+        return DBOMEMOStore.instance.store(sessionRecord: data, forAccount: context!.userBareJid, andAddress: address);
     }
     
     func containsSessionRecord(forAddress: SignalAddress) -> Bool {
-        return DBOMEMOStore.instance.containsSessionRecord(forAccount: context!.sessionObject.userBareJid!, andAddress: forAddress);
+        return DBOMEMOStore.instance.containsSessionRecord(forAccount: context!.userBareJid, andAddress: forAddress);
     }
     
     func deleteSessionRecord(forAddress: SignalAddress) -> Bool {
-        return DBOMEMOStore.instance.deleteSessionRecord(forAccount: context!.sessionObject.userBareJid!, andAddress: forAddress);
+        return DBOMEMOStore.instance.deleteSessionRecord(forAccount: context!.userBareJid, andAddress: forAddress);
     }
     
     func deleteAllSessions(for name: String) -> Bool {
-        return DBOMEMOStore.instance.deleteAllSessions(forAccount: context!.sessionObject.userBareJid!, andName: name);
+        return DBOMEMOStore.instance.deleteAllSessions(forAccount: context!.userBareJid, andName: name);
     }
 }
 
@@ -458,16 +458,16 @@ class OMEMOStoreWrapper: SignalStorage {
         }
 
         if wipe {
-            DBOMEMOStore.instance.wipe(forAccount: context!.sessionObject.userBareJid!);
+            DBOMEMOStore.instance.wipe(forAccount: context!.userBareJid);
         }
 
         let hasKeyPair = identityKeyStore.keyPair() != nil;
         if wipe || identityKeyStore.localRegistrationId() == 0 || !hasKeyPair {
             let regId: UInt32 = signalContext.generateRegistrationId();
-            AccountSettings.omemoRegistrationId(context!.sessionObject.userBareJid!).set(value: regId);
+            AccountSettings.omemoRegistrationId(context!.userBareJid).set(value: regId);
 
             let keyPair = SignalIdentityKeyPair.generateKeyPair(context: signalContext);
-            if !identityKeyStore.save(identity: SignalAddress(name: context!.sessionObject.userBareJid!.stringValue, deviceId: Int32(identityKeyStore.localRegistrationId())), key: keyPair) {
+            if !identityKeyStore.save(identity: SignalAddress(name: context!.userBareJid.description, deviceId: Int32(identityKeyStore.localRegistrationId())), key: keyPair) {
             }
         }
         return true;

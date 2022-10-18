@@ -25,73 +25,97 @@ import Martin
 import Combine
 
 open class AccountManager {
-
-    private static let dispatcher = QueueDispatcher(label: "AccountManager");
-    private static var accounts: [BareJID: Account] = [:];
     
-    static let accountEventsPublisher = PassthroughSubject<Event,Never>();
+    private static let queue = DispatchQueue(label: "AccountManager");
+    private static var _accounts: [BareJID: Account] = [:];
+    
+    public static var accounts: [Account] {
+        return queue.sync {
+            return Array(_accounts.values);
+        }
+    }
+    
+    public static let accountEventsPublisher = PassthroughSubject<Event,Never>();
     
     static var defaultAccount: BareJID? {
         get {
             return BareJID(Settings.defaultAccount);
         }
         set {
-            Settings.defaultAccount = newValue?.stringValue;
+            Settings.defaultAccount = newValue?.description;
+        }
+    }
+//    public static let saltedPasswordCache = AccountManagerScramSaltedPasswordCache();
+    
+    public static func initialize() throws {
+        try queue.sync {
+            try reloadAccounts();
         }
     }
     
-    static func getAccounts() -> [BareJID] {
-        return self.dispatcher.sync {
-            guard accounts.isEmpty else {
-                return Array(accounts.keys).sorted(by: { (j1, j2) -> Bool in
-                    j1.stringValue.compare(j2.stringValue) == .orderedAscending
-                });
+    @available(*, deprecated, message: "Will be removed in future versions after account data conversion is completed")
+    public static func convertOldAccounts() throws {
+        try queue.sync {
+            guard _accounts.isEmpty else {
+                return;
             }
             
-            let query: [String: Any] = [ kSecClass as String: kSecClassGenericPassword, kSecMatchLimit as String: kSecMatchLimitAll, kSecReturnAttributes as String: kCFBooleanTrue as Any, kSecAttrService as String: "xmpp"];
+            let query = [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitAll, String(kSecReturnAttributes) : kCFBooleanTrue as Any, String(kSecAttrService) : "xmpp" ] as [String : Any];
             var result: CFTypeRef?;
-            
+
             guard SecItemCopyMatching(query as CFDictionary, &result) == noErr else {
-                return [];
+                return;
             }
             
             guard let results = result as? [[String: NSObject]] else {
-                return [];
+                return;
             }
-            
+
             let accounts = results.filter({ $0[kSecAttrAccount as String] != nil}).map { item -> BareJID in
                 return BareJID(item[kSecAttrAccount as String] as! String);
-                }.sorted(by: { (j1, j2) -> Bool in
-                    j1.stringValue.compare(j2.stringValue) == .orderedAscending
-                });
+            }.sorted(by: { (j1, j2) -> Bool in
+                j1.description.compare(j2.description) == .orderedAscending
+            });
             
-            for account in accounts {
-                if let item = getAccountInt(for: account) {
-                    self.accounts[account] = item;
+            for name in accounts {
+                if let oldAccount = getAccountOld(for: name) {
+                    var newAccount = Account(name: name, enabled: oldAccount.active);
+                    newAccount.serverEndpoint = oldAccount.endpoint;
+                    newAccount.rosterVersion = oldAccount.rosterVersion;
+                    newAccount.disableTLS13 = oldAccount.disableTLS13;
+                    newAccount.acceptedCertificate = oldAccount.serverCertificate?.acceptableServerCertificate();
+                    newAccount.nickname = oldAccount.nickname;
+                    newAccount.statusMessage = oldAccount.presenceDescription;
+                    switch oldAccount.resourceType {
+                    case .automatic:
+                        newAccount.additional.resourceType = .automatic;
+                    case .hostname:
+                        newAccount.additional.resourceType = .hostname;
+                    case .custom:
+                        newAccount.additional.resourceType = .manual(oldAccount.resourceName ?? "UNKNOWN");
+                    }
+
+                    newAccount.omemoDeviceId = UserDefaults.standard.value(forKey: "accounts.\(name).omemoRegistrationId") as? UInt32;
+                    if let features = UserDefaults.standard.value(forKey: "accounts.\(name).KnownServerFeatures") as? [String] {
+                        newAccount.additional.knownServerFeatures = features.compactMap({ ServerFeature(rawValue: $0) });
+                    }
+
+                    try DBAccountStore.create(account: newAccount);
+                }
+                
+                let prefix = "accounts.\(name).";
+                let toRemove = UserDefaults.standard.dictionaryRepresentation().keys.filter { $0.hasPrefix(prefix) };
+                toRemove.forEach { (key) in
+                    UserDefaults.standard.removeObject(forKey: key);
                 }
             }
-            return accounts;
+            try reloadAccounts();
         }
     }
     
-    static func getActiveAccounts() -> [Account] {
-        return getAccounts().compactMap({ jid -> Account? in
-            guard let account = getAccount(for: jid), account.active else {
-                return nil;
-            }
-            return account;
-        });
-    }
-    
-    static func getAccount(for jid: BareJID) -> Account? {
-        return self.dispatcher.sync {
-            return self.accounts[jid];
-        }
-    }
-    
-    private static func getAccountInt(for jid: BareJID) -> Account? {
-        let query: [String: Any] = [ kSecClass as String: kSecClassGenericPassword, kSecMatchLimit as String: kSecMatchLimitOne, kSecReturnAttributes as String: kCFBooleanTrue as Any, kSecAttrService as String: "xmpp" as NSObject, kSecAttrAccount as String : jid.stringValue as NSObject ];
-        
+    @available(*, deprecated, message: "Will be removed in future versions after account data conversion is completed")
+    private static func getAccountOld(for jid: BareJID) -> AccountOld? {
+        let query = AccountManager.getAccountQuery(jid.description);
         var result: CFTypeRef?;
         
         guard SecItemCopyMatching(query as CFDictionary, &result) == noErr else {
@@ -102,102 +126,178 @@ open class AccountManager {
             return nil;
         }
         
-        let dict = AccountManager.parseDict(from: r[kSecAttrGeneric as String] as? Data);
+        var dict: [String: Any]? = nil;
+        if let data = r[String(kSecAttrGeneric)] as? NSData {
+            NSKeyedUnarchiver.setClass(ServerCertificateInfoOld.self, forClassName: "BeagleIM.ServerCertificateInfo");
+            dict = NSKeyedUnarchiver.unarchiveObject(with: data as Data) as? [String: Any];
+        }
         
-        return Account(name: jid, data: dict);
+        return AccountOld(name: jid, data: dict);
     }
     
-    static func save(account toSave: Account) throws {
-        try self.dispatcher.sync {
-            var account = toSave;
-            var query: [String: Any] = [ kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "xmpp" as NSObject, kSecAttrAccount as String : account.name.stringValue as NSObject ];
-            var update: [String: Any] = [ kSecAttrGeneric as String: try! NSKeyedArchiver.archivedData(withRootObject: account.data, requiringSecureCoding: false), kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock];
-            if let newPassword = account.newPassword {
-                update[kSecValueData as String] = newPassword.data(using: .utf8)!;
-            }
-
-            if getAccount(for: account.name) == nil {
-                query.merge(update) { (v1, v2) -> Any in
-                    return v1;
-                }
-                if let error = AccountManagerError(status: SecItemAdd(query as CFDictionary, nil)) {
-                    throw error;
+    private static func reloadAccounts() throws {
+//        self._accounts.removeAll();
+        let accounts = try DBAccountStore.list();
+        for source in accounts {
+            if var account = self._accounts[source.name] {
+                if let password = password(for: account.name) {
+                    account.password = password;
+                    account.serverEndpoint = source.serverEndpoint;
+                    account.acceptedCertificate = source.acceptedCertificate;
+                    account.enabled = source.enabled;
+                    account.additional = source.additional;
+                    self._accounts[account.name] = account;
+                    
+                    DispatchQueue.main.async {
+                        self.accountEventsPublisher.send(account.enabled ? .enabled(account, false) : .disabled(account));
+                    }
                 }
             } else {
-                if let error = AccountManagerError(status: SecItemUpdate(query as CFDictionary, update as CFDictionary)) {
-                    throw error;
+                var account = source;
+                if let password = password(for: account.name) {
+                    account.password = password;
+                    self._accounts[account.name] = account;
                 }
-            }
-            
-                account.newPassword = nil;
-            
-            if defaultAccount == nil {
-                defaultAccount = account.name;
-            }
-             
-            self.accounts[account.name] = account;
-            
-            DispatchQueue.main.async {
-                self.accountEventsPublisher.send(account.active ? .enabled(account) : .disabled(account));
             }
         }
     }
     
-    static func delete(account: Account) throws {
-        try dispatcher.sync {
-            let query: [String: Any] = [ kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "xmpp" as NSObject, kSecAttrAccount as String : account.name.stringValue as NSObject ];
+    public static func activeAccounts() -> [Account] {
+        return queue.sync {
+            return _accounts.values.filter({ $0.enabled });
+        }
+    }
+    
+    public static func accountNames() -> [BareJID] {
+        return self.queue.sync {
+            return _accounts.keys.sorted(by: { (j1, j2) -> Bool in
+                j1.description.compare(j2.description) == .orderedAscending;
+            });
+        }
+    }
+
+    public static func account(for jid: BareJID) -> Account? {
+        return self.queue.sync {
+            return self._accounts[jid];
+        }
+    }
+    
+    private static func password(for account: BareJID) -> String? {
+        let query = AccountManager.getAccountQuery(account.description, withData: kSecReturnData);
+        
+        var result: CFTypeRef?;
+        
+        guard SecItemCopyMatching(query as CFDictionary, &result) == noErr else {
+            return nil;
+        }
+        
+        guard let data = result as? Data else {
+            return nil;
+        }
+        
+        return String(data: data, encoding: .utf8);
+    }
+    
+    private static func password(_ newPassword: String, for account: BareJID) throws {
+        var query = AccountManager.getAccountQuery(account.description);
+        query.removeValue(forKey: String(kSecMatchLimit));
+        query.removeValue(forKey: String(kSecReturnAttributes));
+        query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock;
+
+        if let updateError = AccountManagerError(status: SecItemUpdate(query as CFDictionary, [kSecValueData as String: newPassword.data(using: .utf8)!] as CFDictionary)) {
+            if updateError.status == errSecItemNotFound {
+                query[kSecValueData as String] = newPassword.data(using: .utf8)!;
+                if let insertError = AccountManagerError(status: SecItemAdd(query as CFDictionary, nil)) {
+                    throw insertError;
+                }
+            } else {
+                throw updateError;
+            }
+        }
+    }
+    
+    public static func modifyAccount(for jid: BareJID, _ block: @escaping (inout Account)->Void) throws {
+        try self.queue.sync {
+            let oldValue = _accounts[jid];
+            
+            var newValue = oldValue ?? Account(name: jid, enabled: true);
+            block(&newValue);
+            
+            guard !newValue.password.isEmpty else {
+                throw XMPPError(condition: .bad_request);
+            }
+
+            if newValue.password != oldValue?.password {
+                try self.password(newValue.password, for: newValue.name);
+            }
+            
+            if let oldValue = oldValue {
+                try DBAccountStore.update(from: oldValue, to: newValue)
+            } else {
+                try DBAccountStore.create(account: newValue);
+            }
+                         
+            self._accounts[newValue.name] = newValue;
+                        
+            let reconnect = oldValue?.password != newValue.password || oldValue?.acceptedCertificate != newValue.acceptedCertificate || oldValue?.enabled != newValue.enabled || oldValue?.serverEndpoint != newValue.serverEndpoint || oldValue?.omemoDeviceId == newValue.omemoDeviceId;
+            
+            DispatchQueue.main.async {
+                self.accountEventsPublisher.send(newValue.enabled ? .enabled(newValue, reconnect) : .disabled(newValue));
+            }
+        }
+    }
+
+    public static func deleteAccount(for jid: BareJID) throws {
+        try queue.sync {
+            var query = AccountManager.getAccountQuery(jid.description);
+            query.removeValue(forKey: String(kSecMatchLimit));
+            query.removeValue(forKey: String(kSecReturnAttributes));
             
             if let error = AccountManagerError(status: SecItemDelete(query as CFDictionary)) {
                 throw error;
             }
             
-            if let defAccount = defaultAccount, defAccount == account.name {
-                defaultAccount = getAccounts().first;
+            guard let account = self._accounts.removeValue(forKey: jid) else {
+                return;
             }
-
-            self.accounts.removeValue(forKey: account.name);
-
+            
             DispatchQueue.main.async {
                 self.accountEventsPublisher.send(.removed(account));
             }
         }
     }
     
-    static fileprivate func parseDict(from data: Data?) -> [String: Any]? {
-        guard data != nil else {
-            return nil;
-        }
-        
-        return try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data!) as? [String: Any];
-    }
-        
-    enum Event {
-        case enabled(Account)
-        case disabled(Account)
-        case removed(Account)
+    fileprivate static func getAccountQuery(_ name:String, withData:CFString = kSecReturnAttributes) -> [String: Any] {
+        return [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitOne, String(withData) : kCFBooleanTrue!, String(kSecAttrService) : "xmpp" as NSObject, String(kSecAttrAccount) : name as NSObject ];
     }
     
-    struct AccountManagerError: LocalizedError, CustomDebugStringConvertible {
-        let status: OSStatus;
-        let message: String?;
-        
-        var errorDescription: String? {
-            return NSLocalizedString("It was not possible to modify account.", comment: "account manager error") + "\n" + (message ?? (NSLocalizedString("Error code", comment: "account manager error") + ": \(status)"));
+    public enum Event {
+            case enabled(Account,Bool)
+            case disabled(Account)
+            case removed(Account)
         }
         
-        var failureReason: String? {
+    public struct AccountManagerError: LocalizedError, CustomDebugStringConvertible {
+        public let status: OSStatus;
+        public let message: String?;
+        
+        public var errorDescription: String? {
+            return "\(NSLocalizedString("It was not possible to modify account.", comment: "error description message"))\n\(message ?? "\(NSLocalizedString("Error code", comment: "error description message - detail")): \(status)")";
+        }
+        
+        public var failureReason: String? {
             return message;
         }
         
-        var recoverySuggestion: String? {
-            return NSLocalizedString("Try again. If removal failed, try accessing Keychain to update account credentials manually.", comment: "account manager error");
+        public var recoverySuggestion: String? {
+            return NSLocalizedString("Try again. If removal failed, try accessing Keychain to update account credentials manually.", comment: "error recovery suggestion");
         }
         
-        var debugDescription: String {
+        public var debugDescription: String {
             return "AccountManagerError(status: \(status), message: \(message ?? "nil"))";
         }
         
-        init?(status: OSStatus) {
+        public init?(status: OSStatus) {
             guard status != noErr else {
                 return nil;
             }
@@ -205,34 +305,22 @@ open class AccountManager {
             message = SecCopyErrorMessageString(status, nil) as String?;
         }
     }
-    
-    struct Account {
+        
+    @available(*, deprecated, message: "Will be removed in future versions after account data conversion is completed")
+    struct AccountOld {
         
         public var state = CurrentValueSubject<XMPPClient.State,Never>(.disconnected());
-        
-        fileprivate var data: [String: Any];
-        fileprivate var newPassword: String?;
-        
+                
         public let name: BareJID;
-        
-        public var password: String? {
+
+        fileprivate var data:[String: Any];
+
+        public var active:Bool {
             get {
-                guard newPassword == nil else {
-                    return newPassword;
-                }
-                return getPassword();
+                return (data["active"] as? Bool) ?? true;
             }
             set {
-                self.newPassword = newValue;
-            }
-        }
-        
-        public var active: Bool {
-            get {
-                return data["active"] as? Bool ?? false;
-            }
-            set {
-                data["active"] = newValue;
+                data["active"] = newValue as AnyObject?;
             }
         }
         
@@ -252,18 +340,6 @@ open class AccountManager {
             }
         }
         
-        public var resourceType: ResourceType {
-            get {
-                guard let val = data["resourceType"] as? String, let r = ResourceType(rawValue: val) else {
-                    return .automatic;
-                }
-                return r;
-            }
-            set {
-                data["resourceType"] = newValue.rawValue;
-            }
-        }
-        
         public var resourceName: String? {
             get {
                 return data["resourceName"] as? String;
@@ -277,15 +353,88 @@ open class AccountManager {
             }
         }
         
-        public var serverCertificate: ServerCertificateInfo? {
+        public var resourceType: ResourceType {
             get {
-                return data["serverCertificateInfo"] as? ServerCertificateInfo;
+                guard let val = data["resourceType"] as? String, let r = ResourceType(rawValue: val) else {
+                    return .automatic;
+                }
+                return r;
             }
             set {
-                if newValue == nil {
-                    data.removeValue(forKey: "serverCertificateInfo");
+                data["resourceType"] = newValue.rawValue;
+            }
+        }
+        
+        public var server:String? {
+            get {
+                return data["serverHost"] as? String;
+            }
+            set {
+                if newValue != nil {
+                    data["serverHost"] = newValue as AnyObject?;
                 } else {
-                    data["serverCertificateInfo"] = newValue;
+                    data.removeValue(forKey: "serverHost");
+                }
+            }
+        }
+        
+        public var rosterVersion:String? {
+            get {
+                return data["rosterVersion"] as? String;
+            }
+            set {
+                if newValue != nil {
+                    data["rosterVersion"] = newValue as AnyObject?;
+                } else {
+                    data.removeValue(forKey: "rosterVersion");
+                }
+            }
+        }
+        
+        public var presenceDescription: String? {
+            get {
+                return data["presenceDescription"] as? String;
+            }
+            set {
+                if newValue != nil {
+                    data["presenceDescription"] = newValue as AnyObject?;
+                } else {
+                    data.removeValue(forKey: "presenceDescription");
+                }
+            }
+        }
+        
+        public var pushNotifications: Bool {
+            get {
+                return (data["pushNotifications"] as? Bool) ?? false;
+            }
+            set {
+                data["pushNotifications"] = newValue as AnyObject?;
+            }
+        }
+                
+        public var serverCertificate: ServerCertificateInfoOld? {
+            get {
+                return data["serverCert"] as? ServerCertificateInfoOld;
+            }
+            set {
+                if newValue != nil {
+                    data["serverCert"] = newValue;
+                } else {
+                    data.removeValue(forKey: "serverCert");
+                }
+            }
+        }
+        
+        public var saltedPassword: SaltEntry? {
+            get {
+                return SaltEntry(dict: data["saltedPassword"] as? [String: Any]);
+            }
+            set {
+                if newValue != nil {
+                    data["saltedPassword"] = newValue!.dictionary() as AnyObject?;
+                } else {
+                    data.removeValue(forKey: "saltedPassword");
                 }
             }
         }
@@ -318,37 +467,46 @@ open class AccountManager {
                 }
             }
         }
-        
-        public init(name: BareJID) {
+                
+        public init(name: BareJID, data: [String: Any]? = nil) {
             self.name = name;
-            self.data = ["active": true];
+            self.data = data ?? [String: Any]();
         }
         
-        fileprivate init(name: BareJID, data: [String: Any]?) {
-            self.name = name;
-            self.data = data ?? [:];
+        public mutating func acceptCertificate(_ certData: SslCertificateInfoOld?) {
+            guard let data = certData else {
+                self.serverCertificate = nil;
+                return;
+            }
+            self.serverCertificate = ServerCertificateInfoOld(sslCertificateInfo: data, accepted: true);
         }
         
-        fileprivate func getPassword() -> String? {
-            let query: [String: Any] = [ kSecClass as String: kSecClassGenericPassword, kSecMatchLimit as String: kSecMatchLimitOne, kSecReturnData as String: kCFBooleanTrue as Any, kSecAttrService as String: "xmpp" as NSObject, kSecAttrAccount as String : name.stringValue as NSObject ];
-            var result: CFTypeRef?;
-                
-            let r = SecItemCopyMatching(query as CFDictionary, &result);
-            guard r == noErr else {
-                return nil;
-            }
-                
-            guard let data = result as? Data else {
-                return nil;
-            }
-                
-            return String(data: data, encoding: .utf8);
-        }
-     
         enum ResourceType: String {
             case automatic
             case hostname
             case custom
+        }
+    }
+    
+    @available(*, deprecated, message: "Not used any more")
+    open class SaltEntry {
+        public let id: String;
+        public let value: [UInt8];
+        
+        convenience init?(dict: [String: Any]?) {
+            guard let id = dict?["id"] as? String, let value = dict?["value"] as? [UInt8] else {
+                return nil;
+            }
+            self.init(id: id, value: value);
+        }
+        
+        public init(id: String, value: [UInt8]) {
+            self.id = id;
+            self.value = value;
+        }
+        
+        open func dictionary() -> [String: Any] {
+            return ["id": id, "value": value];
         }
     }
 }

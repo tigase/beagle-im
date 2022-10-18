@@ -25,17 +25,17 @@ class InvitationManager {
     private var volatileItems: Set<InvitationItem> = [];
 
     private var cancellables: Set<AnyCancellable> = [];
-    let dispatcher = QueueDispatcher(label: "InvitationManagerQueue");
+    let queue = DispatchQueue(label: "InvitationManagerQueue");
     
     public let itemsPublisher: PassthroughSubject<Set<InvitationItem>, Never> = PassthroughSubject();
 
     private var order: Int = 1;
     
     init() {
-        XmppService.instance.$connectedClients.receive(on: dispatcher.queue).map({ $0.map({ $0.userBareJid }) }).sink(receiveValue: { accounts in
+        XmppService.instance.$connectedClients.receive(on: queue).map({ $0.map({ $0.userBareJid }) }).sink(receiveValue: { accounts in
             self.volatileItems = self.volatileItems.filter({ accounts.contains($0.account) });
         }).store(in: &cancellables);
-        XmppService.instance.$connectedClients.receive(on: dispatcher.queue).map({ $0.map({ $0.userBareJid })}).combineLatest($peristentItems, { accounts, invites in
+        XmppService.instance.$connectedClients.receive(on: queue).map({ $0.map({ $0.userBareJid })}).combineLatest($peristentItems, { accounts, invites in
             return invites.filter({ accounts.contains($0.account) });
         }).combineLatest($volatileItems, { persistent, volatile -> Set<InvitationItem> in
             return persistent.union(volatile);
@@ -50,13 +50,13 @@ class InvitationManager {
     }
     
     func invitation(type: InvitationItemType, account: BareJID, jid: JID) -> InvitationItem? {
-        dispatcher.sync {
+        queue.sync {
             return self.volatileItems.first(where: { $0.type == type && $0.account == account && $0.jid == jid }) ?? self.peristentItems.first(where: { $0.type == type && $0.account == account && $0.jid == jid });
         }
     }
     
     func addPresenceSubscribe(for account: BareJID, from jid: JID) {
-        dispatcher.async {
+        queue.async {
             let invitation = InvitationItem(type: .presenceSubscription, account: account, jid: jid, object: nil, order:  self.nextOrder());
             guard !self.volatileItems.contains(invitation) else {
                 return;
@@ -69,7 +69,7 @@ class InvitationManager {
 
     func addMucInvitation(for account: BareJID, roomJid: BareJID, invitation mucInvitation: MucModule.Invitation) {
         let jid = JID(roomJid);
-        dispatcher.async {
+        queue.async {
             let invitation = InvitationItem(type: .mucInvitation, account: account, jid: jid, object: mucInvitation, order:  self.nextOrder());
             guard !self.peristentItems.contains(invitation) else {
                 return;
@@ -81,7 +81,7 @@ class InvitationManager {
     }
     
     func mucJoined(on account: BareJID, roomJid: BareJID) {
-        dispatcher.async {
+        queue.async {
             let tmp = InvitationItem(type: .mucInvitation, account: account, jid: JID(roomJid), object: nil, order:  self.nextOrder());
             if let invitation = self.peristentItems.remove(tmp) {
                 self.removed(invitations: [invitation]);
@@ -90,7 +90,7 @@ class InvitationManager {
     }
     
     func handle(invitationWithId id: String, window: NSWindow) {
-        dispatcher.async {
+        queue.async {
             guard let invitation = self.peristentItems.first(where: { $0.id == id }) else {
                 return;
             }
@@ -116,10 +116,10 @@ class InvitationManager {
                         } else {
                             return nil;
                         }
-                    }).first ?? inviter.stringValue;
-                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("User %@ invited you (%@) to the groupchat %@", comment: "invitation alert - message"), name, invitation.account.stringValue, mucInvitation.roomJid.stringValue);
+                    }).first ?? inviter.description;
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("User %@ invited you (%@) to the groupchat %@", comment: "invitation alert - message"), name, invitation.account.description, mucInvitation.roomJid.description);
                 } else {
-                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("You (%@) were invited to the groupchat %@", comment: "invitation alert - message"), invitation.account.stringValue, mucInvitation.roomJid.stringValue);
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("You (%@) were invited to the groupchat %@", comment: "invitation alert - message"), invitation.account.description, mucInvitation.roomJid.description);
                 }
                 alert.addButton(withTitle: NSLocalizedString("Accept", comment: "Button"));
                 alert.addButton(withTitle: NSLocalizedString("Decline", comment: "Button"));
@@ -159,7 +159,7 @@ class InvitationManager {
     }
     
     func remove(invitation: InvitationItem) {
-        dispatcher.async {
+        queue.async {
             guard self.peristentItems.remove(invitation) != nil || self.volatileItems.remove(invitation) != nil else {
                 return;
             }
@@ -186,9 +186,9 @@ class InvitationManager {
         let rosterItem = DBRosterStore.instance.item(for: invitation.account, jid: invitation.jid);
         let content = UNMutableNotificationContent();
         content.title = NSLocalizedString("Authorization request", comment: "alert window title");
-        content.body = String.localizedStringWithFormat(NSLocalizedString("%@ requests authorization to access information about you presence", comment: "alert window message"), rosterItem?.name ?? invitation.jid.stringValue);
+        content.body = String.localizedStringWithFormat(NSLocalizedString("%@ requests authorization to access information about you presence", comment: "alert window message"), rosterItem?.name ?? invitation.jid.description);
         content.sound = UNNotificationSound.default;
-        content.userInfo = ["account": invitation.account.stringValue, "jid": invitation.jid.stringValue, "id": "presence-subscription-request"];
+        content.userInfo = ["account": invitation.account.description, "jid": invitation.jid.description, "id": "presence-subscription-request"];
         let request = UNNotificationRequest(identifier: invitation.id, content: content, trigger: nil);
         UNUserNotificationCenter.current().add(request, withCompletionHandler: nil);
     }
@@ -197,9 +197,9 @@ class InvitationManager {
         let mucInvitation = invitation.object as! MucModule.Invitation;
         let content = UNMutableNotificationContent();
         content.title = NSLocalizedString("Invitation to groupchat", comment: "alert window title");
-        content.body = String.localizedStringWithFormat(NSLocalizedString("You (%@) were invited to the groupchat %@", comment: "alert window message"), invitation.account.stringValue, mucInvitation.roomJid.stringValue);
+        content.body = String.localizedStringWithFormat(NSLocalizedString("You (%@) were invited to the groupchat %@", comment: "alert window message"), invitation.account.description, mucInvitation.roomJid.description);
         content.sound = UNNotificationSound.default;
-        content.userInfo = ["account": invitation.account.stringValue, "jid": invitation.jid.stringValue, "id": "presence-subscription-request"];
+        content.userInfo = ["account": invitation.account.description, "jid": invitation.jid.description, "id": "presence-subscription-request"];
         let request = UNNotificationRequest(identifier: invitation.id, content: content, trigger: nil);
         UNUserNotificationCenter.current().add(request, withCompletionHandler: nil);
     }

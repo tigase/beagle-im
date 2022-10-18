@@ -62,7 +62,7 @@ class DBChatHistorySyncStore {
             if let lastTo = last.to {
                 // we only need to update `to` value
                 if lastTo >= period.from {
-                    os_log("updating sync period to for account %s and component %s", log: .chatHistorySync, type: .debug, period.account.stringValue, period.component?.stringValue ?? "nil");
+                    os_log("updating sync period to for account %s and component %s", log: .chatHistorySync, type: .debug, period.account.description, period.component?.description ?? "nil");
                     let newTo = period.to == nil ? nil : max(lastTo, period.to!);
                     try! Database.main.writer({ database in
                         try database.update(query: .mamSyncUpdatePeriodTo, cached: false, params: ["id": last.id.uuidString, "to_timestamp": newTo]);
@@ -76,7 +76,7 @@ class DBChatHistorySyncStore {
                 return;
             }
         }
-        os_log("adding sync period %s for account %s and component %s from %{time_t}d to %{time_t}d", log: .chatHistorySync, type: .debug, period.id.uuidString, period.account.stringValue, period.component?.stringValue ?? "nil", time_t(period.from.timeIntervalSince1970), time_t(period.to?.timeIntervalSince1970 ?? 0));
+        os_log("adding sync period %s for account %s and component %s from %{time_t}d to %{time_t}d", log: .chatHistorySync, type: .debug, period.id.uuidString, period.account.description, period.component?.description ?? "nil", time_t(period.from.timeIntervalSince1970), time_t(period.to?.timeIntervalSince1970 ?? 0));
         try! Database.main.writer({ database in
             try database.insert(query: .mamSyncInsertPeriod, cached: false, params: ["id": period.id.uuidString, "account": period.account, "component": period.component, "from_timestamp": period.from, "to_timestamp": period.to]);
         })
@@ -95,12 +95,12 @@ class DBChatHistorySyncStore {
                 return Period(id: UUID(uuidString: cursor["id"]!)!, account: cursor["account"]!, component: cursor["component"], from: cursor["from_timestamp"]!, after: cursor["from_id"], to: cursor["to_timestamp"]);
             })
         })
-        os_log("loaded %d sync periods for account %s and component %s", log: .chatHistorySync, type: .debug, periods.count, account.stringValue, component?.stringValue ?? "nil");
+        os_log("loaded %d sync periods for account %s and component %s", log: .chatHistorySync, type: .debug, periods.count, account.description, component?.description ?? "nil");
         return periods;
     }
     
     func removeSyncPerod(_ period: Period) {
-        os_log("removing sync period %s for account %s and component %s", log: .chatHistorySync, type: .debug, period.id.uuidString, period.account.stringValue, period.component?.stringValue ?? "nil");
+        os_log("removing sync period %s for account %s and component %s", log: .chatHistorySync, type: .debug, period.id.uuidString, period.account.description, period.component?.description ?? "nil");
         try! Database.main.writer({ database in
             try database.delete(query: .mamSyncDeletePeriod, cached: false, params: ["id": period.id.uuidString])
         })
@@ -117,7 +117,7 @@ class DBChatHistorySyncStore {
     }
     
     func updatePeriod(_ period: Period, after: String) {
-        os_log("updating sync period %s for account %s and component %s to after %s", log: .chatHistorySync, type: .debug, period.id.uuidString, period.account.stringValue, period.component?.stringValue ?? "nil", after);
+        os_log("updating sync period %s for account %s and component %s to after %s", log: .chatHistorySync, type: .debug, period.id.uuidString, period.account.description, period.component?.description ?? "nil", after);
         try! Database.main.writer({ database in
             try database.update(query: .mamSyncUpdatePeriodAfter, cached: false, params: ["id": period.id.uuidString, "after": after]);
         })

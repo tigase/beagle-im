@@ -36,7 +36,7 @@ class SelectAdHocCommandController: NSViewController {
         didSet {
             commendSelector.removeAllItems();
             items.forEach { item in
-                commendSelector.addItem(withTitle: item.name ?? item.node ?? item.jid.stringValue);
+                commendSelector.addItem(withTitle: item.name ?? item.node ?? item.jid.description);
             }
             executeButton.isEnabled = !items.isEmpty;
         }
@@ -50,23 +50,20 @@ class SelectAdHocCommandController: NSViewController {
         }
         
         self.progressIndicator.startAnimation(self);
-        discoveryModule.getItems(for: jid!, node: "http://jabber.org/protocol/commands", completionHandler: { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let items):
+        Task {
+            if let items = try? await discoveryModule.items(for: jid!, node: "http://jabber.org/protocol/commands") {
+                await MainActor.run(body: {
                     self.items = items.items.sorted(by: { (i1, i2) -> Bool in
-                        let s1 = i1.name ?? i1.node ?? i1.jid.stringValue;
-                        let s2 = i2.name ?? i2.node ?? i2.jid.stringValue;
+                        let s1 = i1.name ?? i1.node ?? i1.jid.description;
+                        let s2 = i2.name ?? i2.node ?? i2.jid.description;
                         return (s1).compare(s2) == .orderedAscending;
                     });
-                case .failure(let error):
-                    break;
-                }
-                DispatchQueue.main.async {
-                    self.progressIndicator.stopAnimation(self);
-                }
+                })
             }
-        })
+            await MainActor.run(body: {
+                self.progressIndicator.stopAnimation(self);
+            })
+        }
     }
     
     @IBAction func cancelClicked(_ sender: NSButton) {

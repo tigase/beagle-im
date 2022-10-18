@@ -48,11 +48,11 @@ class ChannelManagerParticipants: NSViewController, ChannelAwareProtocol, NSTabV
                 switch result {
                 case .success(let banned):
                     DispatchQueue.main.async {
-                        self.banned = banned.sorted(by: { $0.stringValue < $1.stringValue });
+                        self.banned = banned.sorted(by: { $0.description < $1.description });
                         self.bannedTableView?.reloadData();
                     }
-                case .failure(let errorCondition):
-                    if errorCondition != .item_not_found {
+                case .failure(let error):
+                    if error.condition != .item_not_found {
                         DispatchQueue.main.async {
                             // show alert..
                         }
@@ -65,7 +65,7 @@ class ChannelManagerParticipants: NSViewController, ChannelAwareProtocol, NSTabV
                 switch result {
                 case .success(let allowed):
                     DispatchQueue.main.async {
-                        self.allowed = allowed.sorted(by: { $0.stringValue < $1.stringValue });
+                        self.allowed = allowed.sorted(by: { $0.description < $1.description });
                         self.allowedTableView?.reloadData();
                     }
                 case .failure(_):
@@ -106,7 +106,7 @@ class ChannelManagerParticipants: NSViewController, ChannelAwareProtocol, NSTabV
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         let item = self.item(tableView: tableView, row: row);
         let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ManageBannedParticipantsTableCellView"), owner: nil) as? NSTableCellView;
-        view?.textField?.stringValue = item.stringValue;
+        view?.textField?.stringValue = item.description;
         return view;
     }
     
@@ -158,7 +158,7 @@ class ChannelManagerParticipants: NSViewController, ChannelAwareProtocol, NSTabV
                                 return;
                             }
                             allowed.append(jid);
-                            self.allowed = allowed.sorted(by: { $0.stringValue < $1.stringValue });
+                            self.allowed = allowed.sorted(by: { $0.description < $1.description });
                             self.allowedTableView?.insertRows(at: IndexSet(integer: self.allowed?.firstIndex(of: jid) ?? 0), withAnimation: .effectFade);
                         }
                     case .failure(_):
@@ -209,7 +209,7 @@ class ChannelManagerParticipants: NSViewController, ChannelAwareProtocol, NSTabV
                                 return;
                             }
                             banned.append(jid);
-                            self.banned = banned.sorted(by: { $0.stringValue < $1.stringValue });
+                            self.banned = banned.sorted(by: { $0.description < $1.description });
                             self.bannedTableView?.insertRows(at: IndexSet(integer: self.banned.firstIndex(of: jid) ?? 0), withAnimation: .effectFade);
                         }
                     case .failure(_):

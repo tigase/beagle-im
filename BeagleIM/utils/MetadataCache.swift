@@ -30,7 +30,7 @@ class MetadataCache {
 
     private var cache: [URL: Result<LPLinkMetadata, MetadataCache.CacheError>] = [:];
     private let diskCacheUrl: URL;
-    private let dispatcher = QueueDispatcher(label: "MetadataCache");
+    private let queue = DispatchQueue(label: "MetadataCache");
 
     private var inProgress: [URL: OperationQueue] = [:];
     
@@ -71,7 +71,7 @@ class MetadataCache {
     }
 
     func generateMetadata(for url: URL, withId id: String, completionHandler: @escaping (LPLinkMetadata?)->Void) {
-        dispatcher.async {
+        queue.async {
             if let queue = self.inProgress[url] {
                 queue.addOperation {
                     completionHandler(self.metadata(for: id));
@@ -95,7 +95,7 @@ class MetadataCache {
                             metadata.originalURL = url;
                             self.store(metadata, for: id);
                         }
-                        self.dispatcher.async {
+                        self.queue.async {
                             self.inProgress.removeValue(forKey: url);
                             queue.isSuspended = false;
                         }

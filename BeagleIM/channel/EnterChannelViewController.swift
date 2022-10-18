@@ -51,7 +51,7 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
     override func viewWillAppear() {
         super.viewWillAppear();
         refreshTitle();
-        nicknameField.stringValue = suggestedNickname ?? AccountManager.getAccount(for: account)?.nickname ?? "";
+        nicknameField.stringValue = suggestedNickname ?? AccountManager.account(for: account)?.nickname ?? "";
         passwordField.stringValue = password ?? "";
     
         refreshPasswordVisibility();
@@ -63,7 +63,7 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
         
         if let client = XmppService.instance.getClient(for: account) {
             self.progressIndicator.startAnimation(self);
-            client.module(.disco).getInfo(for: JID(channelJid!), completionHandler: { [weak self] result in
+            client.module(.disco).info(for: JID(channelJid!), completionHandler: { [weak self] result in
                 DispatchQueue.main.async {
                     switch result {
                     case .success(let info):
@@ -92,7 +92,7 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
     }
     
     private func refreshTitle() {
-        titleLabel.stringValue = String.localizedStringWithFormat(NSLocalizedString("Joining channel %@", comment: "window title"), channelName ?? info?.identities.first?.name ?? channelJid.stringValue)
+        titleLabel.stringValue = String.localizedStringWithFormat(NSLocalizedString("Joining channel %@", comment: "window title"), channelName ?? info?.identities.first?.name ?? channelJid.description)
     }
     
     func controlTextDidChange(_ obj: Notification) {
@@ -150,8 +150,7 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
         switch componentType {
         case .muc:
             let room = channelJid;
-            let result = client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname, password: passwordField.stringValue);
-            result.handle({ [weak self] r in
+            let result = client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname, password: passwordField.description, completionHandler: { [weak self] r in
                 switch r {
                 case .success(let roomResult):
                     switch roomResult {
@@ -159,45 +158,10 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
                         (room as! Room).roomFeatures = Set(features.compactMap({ Room.Feature(rawValue: $0) }));
                     }
                     if createBookmark {
-                        client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: channelName ?? room.localPart ?? room.stringValue, jid: JID(room), autojoin: autojoin, nick: nickname, password: password));
-                    }
-                    DispatchQueue.main.async {
-                        self?.close(returnCode: .OK);
-                    }
-                case .failure(let error):
-                    DispatchQueue.main.async {
-                        guard let window = self?.view.window else {
-                            return;
+                        Task {
+                            try await client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: channelName ?? room.localPart ?? room.description, jid: JID(room), autojoin: autojoin, nick: nickname, password: password));
                         }
-                        
-                        let alert = NSAlert();
-                        alert.messageText = NSLocalizedString("Could not join", comment: "alert window title");
-                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to join a channel. The server returned an error: %@", comment: "alert window title"), error.localizedDescription);
-                        alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
-                        alert.beginSheetModal(for: window, completionHandler: nil);
                     }
-                }
-                DispatchQueue.main.async {
-                    self?.progressIndicator.stopAnimation(self);
-                }
-            })
-        case .mix:
-            client.module(.mix).join(channel: channelJid, withNick: nickname, completionHandler: { [weak self] result in
-                switch result {
-                case .success(_):
-                    if let channel = DBChatStore.instance.channel(for: client, with: channelJid) {
-                        client.module(.disco).getItems(for: JID(channel.jid), completionHandler: { result in
-                            switch result {
-                            case .success(let info):
-                                channel.updateOptions({ options in
-                                    options.features = Set(info.items.compactMap({ $0.node }).compactMap({ Channel.Feature(rawValue: $0) }));
-                                })
-                            case .failure(_):
-                                break;
-                            }
-                        });
-                    }
-                    // we have joined, so all what we need to do is close this window
                     DispatchQueue.main.async {
                         self?.close(returnCode: .OK);
                     }
@@ -218,6 +182,38 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
                     self?.progressIndicator.stopAnimation(self);
                 }
             });
+        case .mix:
+            Task {
+                do {
+                    _ = try await client.module(.mix).join(channel: channelJid, withNick: nickname);
+                    if let channel = DBChatStore.instance.channel(for: client, with: channelJid) {
+                        if let info = try? await client.module(.disco).items(for: JID(channel.jid)) {
+                            channel.updateOptions({ options in
+                                options.features = Set(info.items.compactMap({ $0.node }).compactMap({ Channel.Feature(rawValue: $0) }));
+                            })
+                        }
+                    }
+                    // we have joined, so all what we need to do is close this window
+                    DispatchQueue.main.async { [weak self] in
+                        self?.close(returnCode: .OK);
+                    }
+                } catch {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let window = self?.view.window else {
+                            return;
+                        }
+                        
+                        let alert = NSAlert();
+                        alert.messageText = NSLocalizedString("Could not join", comment: "alert window title");
+                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to join a channel. The server returned an error: %@", comment: "alert window title"), error.localizedDescription);
+                        alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
+                        alert.beginSheetModal(for: window, completionHandler: nil);
+                    }
+                }
+                DispatchQueue.main.async { [weak self] in
+                    self?.progressIndicator.stopAnimation(self);
+                }
+            }
         }
     }
 

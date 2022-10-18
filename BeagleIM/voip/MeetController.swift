@@ -288,23 +288,22 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
     }
     
     func deny(jid: BareJID) {
-        self.meet?.deny(jids: [jid], completionHandler: { result in
-            switch result {
-            case .success(_):
-                break;
-            case .failure(let error):
-                DispatchQueue.main.async { [weak self] in
-                    guard let window = self?.view.window else {
+        Task {
+            do {
+                try await self.meet?.deny(jids: [jid]);
+            } catch {
+                await MainActor.run(body: {
+                    guard let window = self.view.window else {
                         return;
                     }
                     let alert = NSAlert();
                     alert.alertStyle = .informational;
                     alert.messageText = NSLocalizedString("Failed to kick out", comment: "meet controlller");
-                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to kick out %@. Server returned an error: %@", comment: "meet controller"), jid.stringValue, error.localizedDescription);
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to kick out %@. Server returned an error: %@", comment: "meet controller"), jid.description, error.localizedDescription);
                     alert.beginSheetModal(for: window, completionHandler: nil);
-                }
+                })
             }
-        })
+        }
     }
     
     private class FlowLayout: NSCollectionViewFlowLayout {

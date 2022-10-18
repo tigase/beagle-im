@@ -34,7 +34,7 @@ class PresenceStore: Martin.PresenceStore {
     
     typealias PresenceHolder = Martin.DefaultPresenceStore.PresenceHolder;
     
-    private let dispatcher = QueueDispatcher(label: "presence_store_queue", attributes: DispatchQueue.Attributes.concurrent);
+    private let queue = DispatchQueue(label: "presence_store_queue", attributes: .concurrent);
     
     @Published
     public private(set) var bestPresences: [Key: Presence] = [:];
@@ -52,7 +52,7 @@ class PresenceStore: Martin.PresenceStore {
     
     public func reset(scopes: Set<ResetableScope>, for context: Context) {
         if scopes.contains(.session) {
-            dispatcher.sync(flags: .barrier) {
+            queue.sync(flags: .barrier) {
                 let keysToRemove = Set(presencesByBareJID.keys.filter({ $0.account == context.userBareJid }));
                 presencesByBareJID = presencesByBareJID.filter({ !keysToRemove.contains($0.key) });
                 let events = keysToRemove.map({ BestPresenceEvent(account: $0.account, jid: $0.jid, presence: nil)});
@@ -69,13 +69,13 @@ class PresenceStore: Martin.PresenceStore {
     }
     
     open func presence(for jid: JID, context: Context) -> Presence? {
-        return dispatcher.sync {
+        return queue.sync {
             return self.presencesByBareJID[.init(account: context.userBareJid, jid: jid.bareJid)]?.presence(for: jid);
         }
     }
     
     open func presences(for jid: BareJID, context: Context) -> [Presence] {
-        return dispatcher.sync {
+        return queue.sync {
             return self.presencesByBareJID[.init(account: context.userBareJid, jid: jid)]?.presences;
         } ?? [];
     }
@@ -94,7 +94,7 @@ class PresenceStore: Martin.PresenceStore {
         }
         
         let key = Key(account: context.userBareJid, jid: jid.bareJid);
-        return dispatcher.sync(flags: .barrier) {
+        return queue.sync(flags: .barrier) {
             let holder = self.holder(for: key);
             holder.update(presence: presence);
             if let best = holder.bestPresence, self.bestPresences[key] !== best {
@@ -107,7 +107,7 @@ class PresenceStore: Martin.PresenceStore {
     
     open func removePresence(for jid: JID, context: Context) -> Bool {
         let key = Key(account: context.userBareJid, jid: jid.bareJid);
-        return dispatcher.sync(flags: .barrier) {
+        return queue.sync(flags: .barrier) {
             guard let holder = self.presencesByBareJID[key] else {
                 return false;
             }

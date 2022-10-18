@@ -147,7 +147,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         room.$features.combineLatest(Settings.$messageEncryption).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (features, defEncryption) in
             self?.refreshEncryptionStatus(features: features, defEncryption: defEncryption);
         }).store(in: &cancellables);
-        jidView.stringValue = room.roomJid.stringValue;
+        jidView.stringValue = room.roomJid.description;
 
         sidebarWidthConstraint.constant = Settings.showRoomDetailsSidebar ? 200 : 0;
         avatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
@@ -372,10 +372,8 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     
     @IBAction func correctLastMessage(_ sender: AnyObject) {
         for i in 0..<dataSource.count {
-            if let item = dataSource.getItem(at: i), item.state.direction == .outgoing, case .message(let message, _) = item.payload {
-                DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id, completionHandler: { [weak self] originId in
-                    self?.startMessageCorrection(message: message, originId: originId);
-                })
+            if let item = dataSource.getItem(at: i), item.state.direction == .outgoing, case .message(let message, _) = item.payload, let originId = DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id) {
+                self.startMessageCorrection(message: message, originId: originId);
                 return;
             }
         }
@@ -387,13 +385,11 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             return
         }
      
-        guard let item = dataSource.getItem(withId: tag), case .message(let message, _) = item.payload else {
+        guard let item = dataSource.getItem(withId: tag), case .message(let message, _) = item.payload, let originId = DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id) else {
             return;
         }
         
-        DBChatHistoryStore.instance.originId(for: self.conversation, id: item.id, completionHandler: { [weak self] originId in
-            self?.startMessageCorrection(message: message, originId: originId);
-        })
+        startMessageCorrection(message: message, originId: originId);
     }
     
     @objc func retractMessage(_ sender: NSMenuItem) {
@@ -414,20 +410,25 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
             switch result {
             case .alertFirstButtonReturn:
-                chat.retract(entry: item);
+                Task {
+                    do {
+                        try await chat.retract(entry: item);
+                    } catch {
+                        self.showError(message: NSLocalizedString("Retraction failed!", comment: "message retraction failed alert title"), error: error)
+                    }
+                }
             default:
                 break;
             }
         })
     }
     
-    override func send(message: String, correctedMessageOriginId: String?) -> Bool {
+    override func send(message: String, correctedMessageOriginId: String?) async throws {
         guard (room.context?.isConnected ?? false) && room.state == .joined else {
-            return false;
+            throw XMPPError(condition: .service_unavailable);
         }
         
-        room.sendMessage(text: message, correctedMessageOriginId: correctedMessageOriginId);
-        return true;
+        try await room.sendMessage(text: message, correctedMessageOriginId: correctedMessageOriginId);
     }
         
     override func textDidChange(_ obj: Notification) {
@@ -531,7 +532,7 @@ class GroupchatParticipantsContainer: NSObject, NSOutlineViewDelegate, NSOutline
         didSet {
             cancellables.removeAll();
             self.outlineView?.isHidden = true;
-            room?.occupantsPublisher.throttle(for: 0.1, scheduler: self.dispatcher.queue, latest: true).sink(receiveValue:{ [weak self] value in
+            room?.occupantsPublisher.throttle(for: 0.1, scheduler: self.dispatcher, latest: true).sink(receiveValue:{ [weak self] value in
                     self?.update(participants: value);
             }).store(in: &cancellables);
         }
@@ -547,7 +548,7 @@ class GroupchatParticipantsContainer: NSObject, NSOutlineViewDelegate, NSOutline
     
     weak var delegate: GroupchatViewController?;
     
-    private var dispatcher = QueueDispatcher(label: "GroupchatParticipantsContainer");
+    private var dispatcher = DispatchQueue(label: "GroupchatParticipantsContainer");
     
     init(delegate: GroupchatViewController) {
         self.delegate = delegate;
@@ -757,7 +758,9 @@ class GroupchatPMPopover: NSPopover {
     }
     
     @objc func sendPM(_ sender: NSButton) {
-        room.sendPrivateMessage(to: occupant, text: textView.string)
+        Task {
+            try await room.sendPrivateMessage(to: occupant, text: textView.string)
+        }
         self.close();
     }
         
@@ -888,23 +891,22 @@ extension GroupchatParticipantsContainer: NSMenuDelegate {
             switch response {
             case .alertFirstButtonReturn:
                 // we need to ban the user
-                mucModule.setRoomAffiliations(to: room, changedAffiliations: [MucModule.RoomAffiliation(jid: jid.withoutResource, affiliation: .outcast)], completionHandler: { result in
-                    switch result {
-                    case .success(_):
-                        break;
-                    case .failure(let error):
-                        DispatchQueue.main.async {
+                Task {
+                    do {
+                        try await mucModule.roomAffiliations([MucModule.RoomAffiliation(jid: jid.withoutResource(), affiliation: .outcast)], to: room);
+                    } catch {
+                        await MainActor.run(body: {
                             let alert = NSAlert();
                             alert.icon = NSImage(named: NSImage.cautionName);
                             alert.messageText = String.localizedStringWithFormat(NSLocalizedString("Banning user %@ failed", comment: "alert window title"), participant.nickname);
                             alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert window message"), error.localizedDescription);
-                            alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
+                            _ = alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                             alert.beginSheetModal(for: window, completionHandler: { response in
                                 //we do not care about the response
                             })
-                        }
+                        })
                     }
-                })
+                }
                 break;
             default:
                 // action was cancelled

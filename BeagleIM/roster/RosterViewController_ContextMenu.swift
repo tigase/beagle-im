@@ -111,7 +111,22 @@ extension RosterViewController: NSMenuDelegate {
 
                 let oldItem = DBRosterStore.instance.item(for: item.account, jid: JID(item.jid));
                 let groups = oldItem?.groups ?? [];
-                rosterModule.updateItem(jid: JID(item.jid), name: textField.stringValue.isEmpty ? nil : textField.stringValue, groups: groups, completionHandler: nil);
+                Task {
+                    do {
+                        _ = try await rosterModule.updateItem(jid: JID(item.jid), name: textField.stringValue.isEmpty ? nil : textField.stringValue, groups: groups);
+                    } catch {
+                        await MainActor.run(body: {
+                            guard let window = self.view.window else {
+                                return;
+                            }
+                            let alert = NSAlert();
+                            alert.alertStyle = .warning;
+                            alert.messageText = NSLocalizedString("Modifying contact", comment: "roster controller");
+                            alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to modify contact %@. Received an error: %@", comment: "roster controller"), item.jid.description, error.localizedDescription);
+                            alert.beginSheetModal(for: window, completionHandler: { _ in });
+                        })
+                    }
+                }
             }
         }
     }
@@ -137,8 +152,25 @@ extension RosterViewController: NSMenuDelegate {
     
     @IBAction func removeSelected(_ sender: NSMenuItem) {
         let item = self.getItem(at: self.contactsTableView.clickedRow);
-        
-        XmppService.instance.getClient(for: item.account)?.module(.roster).removeItem(jid: JID(item.jid), completionHandler: nil);
+        guard let rosterModule = XmppService.instance.getClient(for: item.account)?.module(.roster) else {
+            return;
+        }
+        Task {
+            do {
+                _ = try await rosterModule.removeItem(jid: item.jid.jid());
+            } catch {
+                await MainActor.run(body: {
+                    guard let window = self.view.window else {
+                        return;
+                    }
+                    let alert = NSAlert();
+                    alert.alertStyle = .warning;
+                    alert.messageText = NSLocalizedString("Removing contact", comment: "roster controller");
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to remove contact %@. Received an error: %@", comment: "roster controller"), item.jid.description, error.localizedDescription);
+                    alert.beginSheetModal(for: window, completionHandler: { _ in });
+                })
+            }
+        }
     }
  
     fileprivate class InviteToRoomMenuItem: NSMenuItem {
@@ -149,7 +181,7 @@ extension RosterViewController: NSMenuDelegate {
         init(room: Room, invitee: BareJID) {
             self.room = room;
             self.invitee = invitee;
-            super.init(title: room.roomJid.stringValue, action: #selector(invite), keyEquivalent: "");
+            super.init(title: room.roomJid.description, action: #selector(invite), keyEquivalent: "");
             self.target = self;
         }
         

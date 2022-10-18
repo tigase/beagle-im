@@ -22,17 +22,8 @@
 import Foundation
 import Martin
 
-extension XMPPClient {
+public class XMPPClient: Martin.XMPPClient {
     
-    fileprivate static let RETRY_NO_KEY = "retryNo";
-    
-    var retryNo: Int {
-        get {
-            return sessionObject.getProperty(XMPPClient.RETRY_NO_KEY) ?? 0;
-        }
-        set {
-            sessionObject.setUserProperty(XMPPClient.RETRY_NO_KEY, value: newValue);
-        }
-    }
+    var retryNo: Int = 0;
     
 }

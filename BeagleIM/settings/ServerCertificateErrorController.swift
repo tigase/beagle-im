@@ -48,24 +48,24 @@ class ServerCertificateErrorController: NSViewController {
             }
             windowTitle.stringValue = String.localizedStringWithFormat(NSLocalizedString("SSL certificate of %@ could not be verified", comment: "setting"), domain);
             message.stringValue = String.localizedStringWithFormat(NSLocalizedString("It is not possible to automatically verify server certificate for %@. Please review certificate details:", comment: "setting"), domain);
-            self.certficateInfo = AccountManager.getAccount(for: account!)?.serverCertificate;
+            self.certficateInfo = AccountManager.account(for: account!)?.acceptedCertificate?.certificate;
         }
     }
-    var certficateInfo: SslCertificateInfo? {
+    var certficateInfo: SSLCertificateInfo? {
         didSet {
             guard let info = certficateInfo else {
                 return;
             }
-            certificateName.stringValue = info.details.name;
-            if info.details.validFrom != nil && info.details.validTo != nil {
-                let color: NSColor = ((Date() > info.details.validTo!) ? NSColor.systemRed : NSColor.textColor);
-                certificateValidPeriod.attributedStringValue = NSAttributedString(string: String.localizedStringWithFormat(NSLocalizedString("From %@ until %@", comment: "setting"), dateFormatter.string(for: info.details.validFrom!)!, dateFormatter.string(for: info.details.validTo!)!), attributes: [.foregroundColor: color]);
+            certificateName.stringValue = info.subject.name;
+            if info.subject.notBefore != nil && info.subject.notAfter != nil {
+                let color: NSColor = ((Date() > info.subject.notAfter!) ? NSColor.systemRed : NSColor.textColor);
+                certificateValidPeriod.attributedStringValue = NSAttributedString(string: String.localizedStringWithFormat(NSLocalizedString("From %@ until %@", comment: "setting"), dateFormatter.string(for: info.subject.notBefore!)!, dateFormatter.string(for: info.subject.notAfter!)!), attributes: [.foregroundColor: color]);
             } else {
                 certificateValidPeriod.attributedStringValue = NSAttributedString(string: NSLocalizedString("Unknown", comment: "setting"), attributes: [.foregroundColor: NSColor.systemOrange]);
             }
-            certificateFingerprint.stringValue = info.details.fingerprintSha1;
+            certificateFingerprint.stringValue = info.subject.fingerprints.first?.value ?? "Unknown";//.fingerprintSha1;
             issuerName.stringValue = info.issuer?.name ?? NSLocalizedString("Self-Signed", comment: "setting");
-            issuesFingerprint.stringValue = info.issuer?.fingerprintSha1 ?? "";
+            issuesFingerprint.stringValue = info.issuer?.fingerprints.first?.value ?? "Unknown";
         }
     }
     
@@ -84,12 +84,16 @@ class ServerCertificateErrorController: NSViewController {
             completionHandler = nil;
             handler(true);
         } else {
-            guard let jid = self.account, var account = AccountManager.getAccount(for: jid) else {
+            guard let jid = self.account else {
                 return;
             }
-            account.serverCertificate?.accepted = true;
-            account.active = true;
-            try? AccountManager.save(account: account);
+            
+            try? AccountManager.modifyAccount(for: jid, { account in
+                if let cert = account.acceptedCertificate?.certificate {
+                    account.acceptedCertificate = AcceptableServerCertificate(certificate: cert, accepted: true);
+                }
+                account.enabled = true;
+            })
         }
     }
 }

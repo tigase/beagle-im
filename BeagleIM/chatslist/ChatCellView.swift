@@ -86,10 +86,10 @@ class ChatCellView: NSTableCellView {
                 lastMessageField.stopAnimating();
                 self.lastMessageHeightConstraint?.isActive = false;
                 if let activity = lastActivity {
-                    switch activity {
-                    case .message(let lastMessage, let direction, let sender):
+                    switch activity.payload {
+                    case .message(let lastMessage):
                         if lastMessage.starts(with: "/me ") {
-                            let nick = sender ?? (direction == .incoming ? (self.label?.stringValue ?? "") : (AccountManager.getAccount(for: account)?.nickname ??  NSLocalizedString("Me", comment: "/me replacement if no nickname found")));
+                            let nick = activity.sender.nickname ?? NSLocalizedString("Me", comment: "/me replacement if no nickname found");
                             let msg = NSMutableAttributedString(string: "\(nick) ", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium), toHaveTrait: .italicFontMask), .foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
                             msg.append(NSAttributedString(string: "\(lastMessage.dropFirst(4))", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .regular), toHaveTrait: .italicFontMask), .foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]));
                             lastMessageField.attributedStringValue = msg;
@@ -98,58 +98,30 @@ class ChatCellView: NSTableCellView {
                             if Settings.enableMarkdownFormatting {
                                 Markdown.applyStyling(attributedString: msg, fontSize: NSFont.systemFontSize - 1, showEmoticons: Settings.showEmoticons);
                             }
-                            if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                            switch activity.sender {
+                            case .none, .buddy(_):
+                                lastMessageField.attributedStringValue = msg;
+                            case .me(_):
+                                let nick = NSLocalizedString("You", comment: "you label for conversation log")
+                                let prefix = NSMutableAttributedString(string: "\(nick): ", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium), toHaveTrait: .italicFontMask)]);
                                 prefix.append(msg);
                                 lastMessageField.attributedStringValue = prefix;
-                            } else {
-                                lastMessageField.attributedStringValue = msg;
+                            default:
+                                if let nick = activity.sender.nickname {
+                                    let prefix = NSMutableAttributedString(string: "\(nick): ", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium), toHaveTrait: .italicFontMask)]);
+                                    prefix.append(msg);
+                                    lastMessageField.attributedStringValue = prefix;
+                                } else {
+                                    lastMessageField.attributedStringValue = msg;
+                                }
                             }
                         }
-                    case .location(_, _, let sender):
-                        if let fieldfont = lastMessageField.font {
-                            let msg = NSAttributedString(string: "📍 " + NSLocalizedString("Location", comment: "location name in chats list"), attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask, .boldFontMask]), .foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
-
-                            if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
-                                prefix.append(msg);
-                                lastMessageField.attributedStringValue = prefix;
-                            } else {
-                                lastMessageField.attributedStringValue = msg;
-                            }
-                        } else {
-                            let msg = NSAttributedString(string: "📍 " + NSLocalizedString("Location", comment: "location name in chats list"), attributes: [.foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
-                        
-                            if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
-                                prefix.append(msg);
-                                lastMessageField.attributedStringValue = prefix;
-                            } else {
-                                lastMessageField.attributedStringValue = msg;
-                            }
-                        }
-                    case .invitation(_, _, let sender):
-                        if let fieldfont = lastMessageField.font {
-                            let msg = NSAttributedString(string: "📨 " + NSLocalizedString("Invitation", comment: "invitation name in chats list"), attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask, .boldFontMask]), .foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
-
-                            if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
-                                prefix.append(msg);
-                                lastMessageField.attributedStringValue = prefix;
-                            } else {
-                                lastMessageField.attributedStringValue = msg;
-                            }
-                        } else {
-                            let msg = NSAttributedString(string: "📨 " + NSLocalizedString("Invitation", comment: "invitation name in chats list"), attributes: [.foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
-                        
-                            if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
-                                prefix.append(msg);
-                                lastMessageField.attributedStringValue = prefix;
-                            } else {
-                                lastMessageField.attributedStringValue = msg;
-                            }
-                        }
-                    case .attachment(_, _, let sender):
+                    case .attachment:
                         if let fieldfont = self.lastMessage?.font {
                             let msg = NSAttributedString(string: "📎 " + NSLocalizedString("Attachment", comment: "attachment name in chats list"), attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask, .boldFontMask]), .foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
 
-                            if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                            if let nick = activity.sender.nickname {
+                                let prefix = NSMutableAttributedString(string: "\(nick): ", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium), toHaveTrait: .italicFontMask)])
                                 prefix.append(msg);
                                 lastMessageField.attributedStringValue = prefix;
                             } else {
@@ -158,13 +130,82 @@ class ChatCellView: NSTableCellView {
                         } else {
                             let msg = NSAttributedString(string: "📎 " + NSLocalizedString("Attachment", comment: "attachment name in chats list"), attributes: [.foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
                         
-                            if let prefix = sender != nil ? NSMutableAttributedString(string: "\(sender!): ") : nil {
+                            if let nick = activity.sender.nickname {
+                                let prefix = NSMutableAttributedString(string: "\(nick): ", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium), toHaveTrait: .italicFontMask)])
                                 prefix.append(msg);
                                 lastMessageField.attributedStringValue = prefix;
                             } else {
                                 lastMessageField.attributedStringValue = msg;
                             }
                         }
+                    case .location:
+                        if let fieldfont = lastMessageField.font {
+                            let msg = NSAttributedString(string: "📍 " + NSLocalizedString("Location", comment: "location name in chats list"), attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask, .boldFontMask]), .foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
+
+                            if let nick = activity.sender.nickname {
+                                let prefix = NSMutableAttributedString(string: "\(nick): ", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium), toHaveTrait: .italicFontMask)])
+                                prefix.append(msg);
+                                lastMessageField.attributedStringValue = prefix;
+                            } else {
+                                lastMessageField.attributedStringValue = msg;
+                            }
+                        } else {
+                            let msg = NSAttributedString(string: "📍 " + NSLocalizedString("Location", comment: "location name in chats list"), attributes: [.foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
+                        
+                            if let nick = activity.sender.nickname {
+                                let prefix = NSMutableAttributedString(string: "\(nick): ", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium), toHaveTrait: .italicFontMask)])
+                                prefix.append(msg);
+                                lastMessageField.attributedStringValue = prefix;
+                            } else {
+                                lastMessageField.attributedStringValue = msg;
+                            }
+                        }
+                    case .invitation:
+                        if let fieldfont = lastMessageField.font {
+                            let msg = NSAttributedString(string: "📨 " + NSLocalizedString("Invitation", comment: "invitation name in chats list"), attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask, .boldFontMask]), .foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
+
+                            if let nick = activity.sender.nickname {
+                                let prefix = NSMutableAttributedString(string: "\(nick): ", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium), toHaveTrait: .italicFontMask)])
+                                prefix.append(msg);
+                                lastMessageField.attributedStringValue = prefix;
+                            } else {
+                                lastMessageField.attributedStringValue = msg;
+                            }
+                        } else {
+                            let msg = NSAttributedString(string: "📨 " + NSLocalizedString("Invitation", comment: "invitation name in chats list"), attributes: [.foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
+                        
+                            if let nick = activity.sender.nickname {
+                                let prefix = NSMutableAttributedString(string: "\(nick): ", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium), toHaveTrait: .italicFontMask)])
+                                prefix.append(msg);
+                                lastMessageField.attributedStringValue = prefix;
+                            } else {
+                                lastMessageField.attributedStringValue = msg;
+                            }
+                        }
+                    case .retraction:
+                        if let fieldfont = lastMessageField.font {
+                            let msg = NSAttributedString(string: "🗑️ " + NSLocalizedString("Retraction", comment: "retraction name in chats list"), attributes: [.font:  NSFontManager.shared.convert(fieldfont, toHaveTrait: [.italicFontMask, .fixedPitchFontMask, .boldFontMask]), .foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
+
+                            if let nick = activity.sender.nickname {
+                                let prefix = NSMutableAttributedString(string: "\(nick): ", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium), toHaveTrait: .italicFontMask)])
+                                prefix.append(msg);
+                                lastMessageField.attributedStringValue = prefix;
+                            } else {
+                                lastMessageField.attributedStringValue = msg;
+                            }
+                        } else {
+                            let msg = NSAttributedString(string: "🗑️ " + NSLocalizedString("Retraction", comment: "retraction name in chats list"), attributes: [.foregroundColor: lastMessageField.textColor!.withAlphaComponent(0.8)]);
+                        
+                            if let nick = activity.sender.nickname {
+                                let prefix = NSMutableAttributedString(string: "\(nick): ", attributes: [.font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium), toHaveTrait: .italicFontMask)])
+                                prefix.append(msg);
+                                lastMessageField.attributedStringValue = prefix;
+                            } else {
+                                lastMessageField.attributedStringValue = msg;
+                            }
+                        }
+                    case .none:
+                        lastMessageField.stringValue = "";
                     }
                 } else {
                     lastMessageField.stringValue = "";

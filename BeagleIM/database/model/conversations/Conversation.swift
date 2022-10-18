@@ -24,6 +24,11 @@ import TigaseSQLite3
 import Martin
 import Combine
 
+import Foundation
+import TigaseSQLite3
+import Martin
+import Combine
+
 public enum ConversationFeature {
     case omemo
     case httpFileUpload
@@ -39,11 +44,11 @@ public protocol Conversation: ConversationProtocol, ConversationKey, Displayable
     
     var id: Int { get }
     var timestamp: Date { get }
-    var timestampPublisher: AnyPublisher<Date,Never> { get }
+    var timestampPublisher: Publishers.Map<Published<LastChatActivity>.Publisher,Date> { get }
     var unread: Int { get }
     var unreadPublisher: AnyPublisher<Int,Never> { get }
-    var lastActivity: LastConversationActivity? { get }
-    var lastActivityPublisher: Published<LastConversationActivity?>.Publisher { get }
+    var lastActivity: LastConversationActivity { get }
+    var lastActivityPublisher: Published<LastConversationActivity>.Publisher { get }
     
     var notifications: ConversationNotification { get }
     
@@ -56,15 +61,21 @@ public protocol Conversation: ConversationProtocol, ConversationKey, Displayable
     
     func mark(as markerType: ChatMarker.MarkerType, before: Date, by sender: ConversationEntrySender);
     func markAsRead(count: Int) -> Bool;
-    func update(lastActivity: LastConversationActivity?, timestamp: Date, isUnread: Bool) -> Bool;
+    func update(_ activity: LastConversationActivity, isUnread: Bool) -> Bool;
     
-    func sendMessage(text: String, correctedMessageOriginId: String?);
-    func prepareAttachment(url: URL, completionHandler: @escaping (Result<(URL,Bool,((URL)->URL)?),ShareError>)->Void);
-    func sendAttachment(url: String, appendix: ChatAttachmentAppendix, originalUrl: URL?, completionHandler: (()->Void)?);
+    func sendMessage(text: String, correctedMessageOriginId: String?) async throws;
+    func prepareAttachment(url originalURL: URL) throws -> SharePreparedAttachment
+    func sendAttachment(url: String, appendix: ChatAttachmentAppendix, originalUrl: URL?) async throws;
     func canSendChatMarker() -> Bool;
     func sendChatMarker(_ marker: Message.ChatMarkers, andDeliveryReceipt: Bool);
     
     func isLocal(sender: ConversationEntrySender) -> Bool;
+}
+
+public struct SharePreparedAttachment {
+    let url: URL;
+    let isTemporary: Bool;
+    let prepareShareURL: ((URL) -> URL)?;
 }
 
 import MartinOMEMO
@@ -76,85 +87,124 @@ extension Conversation {
         return DBChatHistoryStore.instance.history(for: self, queryType: type);
     }
     
-    func retract(entry: ConversationEntry) {
+    func retract(entry: ConversationEntry) async throws {
         guard context != nil else {
-            return;
+            throw XMPPError(condition: .remote_server_timeout);
         }
-        DBChatHistoryStore.instance.originId(for: account, with: jid, id: entry.id, completionHandler: { originId in
-            let message = self.createMessageRetraction(forMessageWithId: originId);
-            self.send(message: message, completionHandler: nil);
-            DBChatHistoryStore.instance.retractMessage(for: self, stanzaId: originId, sender: entry.sender, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
-        })
+        guard let originId = DBChatHistoryStore.instance.originId(for: account, with: jid, id: entry.id) else {
+            throw XMPPError(condition: .item_not_found);
+        }
+        let message = self.createMessageRetraction(forMessageWithId: originId);
+        try await self.send(message: message);
+        DBChatHistoryStore.instance.retractMessage(for: self, stanzaId: originId, sender: entry.sender, retractionStanzaId: message.id, retractionTimestamp: Date(), serverMsgId: nil, remoteMsgId: nil);
     }
-}
-
-public enum ConversationType: Int {
-    case chat = 0
-    case room = 1
-    case channel = 2
 }
 
 public typealias LastConversationActivity = LastChatActivity
 
-public enum LastChatActivity {
-    case message(String, direction: MessageDirection, sender: String?)
-    case attachment(String, direction: MessageDirection, sender: String?)
-    case invitation(String, direction: MessageDirection, sender: String?)
-    case location(String, direction: MessageDirection, sender: String?)
+public struct LastChatActivity {
+    let timestamp: Date;
+    let sender: ConversationEntrySender;
+    let payload: LastChatActivityType?;
     
-    static func from(itemType: ItemType?, data: String?, direction: MessageDirection, sender: String?) -> LastChatActivity? {
-        guard itemType != nil else {
-            return nil;
+    static func none(timestamp: Date) -> LastChatActivity {
+        return .init(timestamp: timestamp, sender: .none, payload: nil);
+    }
+    
+    static func from(timestamp: Date, itemType: ItemType?, data: String?, sender: ConversationEntrySender) -> LastChatActivity {
+        let type = LastChatActivityType.from(itemType: itemType, data: data);
+        return .init(timestamp: timestamp, sender: sender, payload: type);
+    }
+    
+}
+
+public enum LastChatActivityType {
+    case message(message: String)
+    case attachment
+    case invitation
+    case location
+    case retraction
+
+    static func from(itemType: ItemType?, data: String?) -> LastChatActivityType? {
+        guard let itemType = itemType else {
+            return nil
         }
-        switch itemType! {
+
+        switch itemType {
         case .message:
-            return data == nil ? nil : .message(data!, direction: direction, sender: sender);
+            if let data = data {
+                return .message(message: data);
+            }
+            return nil;
         case .location:
-            return data == nil ? nil : .location(data!, direction: direction, sender: sender);
+            return .location;
         case .invitation:
-            return data == nil ? nil : .invitation(data!, direction: direction, sender: sender);
+            return .invitation;
         case .attachment:
-            return data == nil ? nil : .attachment(data!, direction: direction, sender: sender);
+            return .attachment;
         case .linkPreview:
             return nil;
-        case .messageRetracted, .attachmentRetracted:
-            // TODO: Should we notify user that last message was retracted??
+        case .retraction:
+            return .retraction;
+        }
+    }
+    
+    static func from(_ payload: ConversationEntryPayload) -> LastChatActivityType? {
+        switch payload {
+        case .message(let message, _):
+            return .message(message: message);
+        case .attachment(_, _):
+            return .attachment
+        case .linkPreview(_):
             return nil;
+        case .retraction:
+            return .retraction;
+        case .invitation(_, _):
+            return .invitation;
+        case .deleted:
+            return nil;
+        case .unreadMessages:
+            return nil;
+        case .marker(_, _):
+            return nil;
+        case .location(_):
+            return .location;
         }
     }
 }
 
+extension LastChatActivityType {
+    
+    static func from(_ cursor: Cursor) -> LastChatActivityType? {
+        guard let itemType = ItemType(rawValue: cursor.int(for: "item_type") ?? -1) else {
+            return nil;
+        }
+        let encryption = DBChatHistoryStore.encryptionFrom(cursor: cursor);
+        return from(itemType: itemType, data: encryption.message() ?? cursor.string(for: "data"));
+    }
+    
+}
+
 typealias ConversationEncryption = ChatEncryption
 
-public enum ChatEncryption: String, Codable {
-    case none = "none";
-    case omemo = "omemo";
-}
-
-public protocol ChatOptionsProtocol: DatabaseConvertibleStringValue {
-    
-    var notifications: ConversationNotification { get }
-    
-    var confirmMessages: Bool { get }
-    
-    func equals(_ options: ChatOptionsProtocol) -> Bool
-}
-
-public enum ConversationNotification: String {
-    case none
-    case mention
-    case always
-}
-
-public struct ChatMarker: Hashable {
+public struct ChatMarker: Hashable, Sendable {
     let sender: ConversationEntrySender;
     let timestamp: Date;
     let type: MarkerType;
         
-    public enum MarkerType: Int, Comparable, Hashable {
+    public enum MarkerType: Int, Comparable, Hashable, Sendable {
         case received = 0
         case displayed = 1
 
+        public var label: String {
+            switch self {
+            case .received:
+                return NSLocalizedString("Received", comment: "label for chat marker")
+            case .displayed:
+                return NSLocalizedString("Displayed", comment: "label for chat marker")
+            }
+        }
+        
         public static func < (lhs: MarkerType, rhs: MarkerType) -> Bool {
             return lhs.rawValue < rhs.rawValue;
         }
@@ -175,7 +225,7 @@ extension Conversation {
 //    public func readTillTimestampPublisher(for jid: JID) -> Published<Date?>.Publisher {
 //        return entry(for: jid).$timestamp;
 //    }
-//    
+//
 //    public func markers(inRange range: ClosedRange<Date>) -> [Date] {
 //        return chatMarkers.filter({ (arg0) -> Bool in
 //            let (key, value) = arg0;

@@ -89,20 +89,20 @@ public class Contact: DisplayableIdWithKeyProtocol {
 
 public class ContactManager {
     
-    public let dispatcher = QueueDispatcher(label: "contactManager");
+    public let queue = DispatchQueue(label: "contactManager");
     public static let instance = ContactManager();
     
     private var items: [Contact.Key: Contact.Weak] = [:];
     private var cancellables: Set<AnyCancellable> = [];
     
     public init() {
-        PresenceStore.instance.bestPresenceEvents.receive(on: dispatcher.queue).sink(receiveValue: { [weak self] event in
+        PresenceStore.instance.bestPresenceEvents.receive(on: queue).sink(receiveValue: { [weak self] event in
             self?.update(presence: event.presence, for: .init(account: event.account, jid: event.jid, type: .buddy));
         }).store(in: &cancellables);
     }
     
     public func contact(for key: Contact.Key) -> Contact {
-        return dispatcher.sync(execute: {
+        return queue.sync(execute: {
             if let contact = self.items[key]?.contact {
                 return contact;
             } else {
@@ -114,25 +114,25 @@ public class ContactManager {
     }
     
     public func existingContact(for key: Contact.Key) -> Contact? {
-        return dispatcher.sync(execute: {
+        return queue.sync(execute: {
             return self.items[key]?.contact;
         })
     }
     
     public func update(name: String?, for key: Contact.Key) {
-        dispatcher.async {
+        queue.async {
             guard let contact = self.items[key]?.contact else {
                 return;
             }
 
             DispatchQueue.main.async {
-                contact.displayName = name ?? key.jid.stringValue;
+                contact.displayName = name ?? key.jid.description;
             }
         }
     }
     
     public func update(presence: Presence?, for key: Contact.Key) {
-        dispatcher.async {
+        queue.async {
             guard let contact = self.items[key]?.contact else {
                 return;
             }
@@ -158,7 +158,7 @@ public class ContactManager {
     private func name(for key: Contact.Key) -> String {
         switch key.type {
         case .buddy:
-            return DBRosterStore.instance.item(for: key.account, jid: JID(key.jid))?.name ?? key.jid.stringValue;
+            return DBRosterStore.instance.item(for: key.account, jid: JID(key.jid))?.name ?? key.jid.description;
         case .participant(let id):
             return (DBChatStore.instance.conversation(for: key.account, with: key.jid) as? Channel)?.participant(withId: id)?.nickname ?? id;
         case .occupant(let nickname):
@@ -167,7 +167,7 @@ public class ContactManager {
     }
     
     fileprivate func release(_ key: Contact.Key) {
-        dispatcher.async {
+        queue.async {
             if let weak = self.items[key], weak.contact == nil {
                 self.items.removeValue(forKey: key);
             }

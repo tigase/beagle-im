@@ -51,9 +51,9 @@ class JoinGroupchatViewController: NSViewController, NSTextFieldDelegate {
     
     override func viewWillAppear() {
         let passwordPart = self.isPasswordRequired ? (" " + NSLocalizedString("and password", comment: "join groupchat part")) : "";
-        self.infoLabel.stringValue = String.localizedStringWithFormat(NSLocalizedString("Please enter nickname %@ to enter to join groupchat at %@.", comment: "join groupchat info label"), passwordPart, roomJid!.stringValue);
+        self.infoLabel.stringValue = String.localizedStringWithFormat(NSLocalizedString("Please enter nickname %@ to enter to join groupchat at %@.", comment: "join groupchat info label"), passwordPart, roomJid!.description);
         
-        nicknameField.stringValue = AccountManager.getAccount(for: self.account!)?.nickname ?? "";
+        nicknameField.stringValue = AccountManager.account(for: self.account!)?.nickname ?? "";
         passwordField.isHidden = !isPasswordRequired;
         
         if !isPasswordRequired {
@@ -90,7 +90,9 @@ class JoinGroupchatViewController: NSViewController, NSTextFieldDelegate {
             return;
         }
         
-        _ = mucModule.join(roomName: roomName, mucServer: mucServer, nickname: nickname, password: isPasswordRequired ? self.passwordField.stringValue : nil);
+        Task {
+            _ = try await mucModule.join(roomName: roomName, mucServer: mucServer, nickname: nickname, password: isPasswordRequired ? self.passwordField.stringValue : nil);
+        }
         
         self.close();
     }

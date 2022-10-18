@@ -28,7 +28,7 @@ class DownloadManager: NSObject {
 
     static let instance = DownloadManager();
 
-    private let dispatcher = QueueDispatcher(label: "download_manager_queue");
+    private let queue = DispatchQueue(label: "download_manager_queue");
 
     private var itemDownloadInProgress: [Int] = [];
 
@@ -42,14 +42,14 @@ class DownloadManager: NSObject {
     }
     
     func downloadInProgress(for item: ConversationEntry) -> Bool {
-        return dispatcher.sync {
+        return queue.sync {
             return self.itemDownloadInProgress.contains(item.id);
         }
     }
 
-    func download(item: ConversationEntry, url: String, maxSize: Int64) -> Bool {
-        return dispatcher.sync {
-            guard var url = URL(string: url) else {
+    func download(item: ConversationEntry, url inUrl: String, maxSize: Int64) -> Bool {
+        return queue.sync(execute: { () -> Bool in
+            guard var url = URL(string: inUrl) else {
                 DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                     appendix.state = .error;
                 });
@@ -87,7 +87,7 @@ class DownloadManager: NSObject {
                     });
 
                     guard !isTooBig else {
-                      self.dispatcher.async {
+                      self.queue.async {
                           self.itemDownloadInProgress = self.itemDownloadInProgress.filter({ (id) -> Bool in
                               return item.id != id;
                             });
@@ -97,23 +97,28 @@ class DownloadManager: NSObject {
 
                     self.download(session: self.downloadSession, url: url, expectedSize: expectedSize, completionHandler: { result in
                         switch result {
-                        case .success((let localUrl, let filename)):
-                            if let encryptionKey = encryptionKey, let omemoModule = XmppService.instance.getClient(for: item.conversation.account)?.module(.omemo) {
-                                switch omemoModule.decryptFile(url: localUrl, fragment: encryptionKey) {
-                                case .success(let data):
-                                    try? data.write(to: localUrl);
-                                case .failure(_):
-                                    break;
-                                }
-                            }
-                            //let id = UUID().uuidString;
-                            _ = DownloadStore.instance.store(localUrl, filename: filename, with: "\(item.id)");
-                            DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
-                                appendix.state = .downloaded;
-                            });
-                            self.dispatcher.sync {
+                        case .success((let downloadedUrl, let filename)):
+                            self.queue.sync {
                                 self.itemDownloadInProgress = self.itemDownloadInProgress.filter({ (id) -> Bool in
                                     return item.id != id;
+                                });
+                            }
+                            if let encryptionKey = encryptionKey {
+                                do {
+                                    let data = try OMEMOModule.decryptFile(url: downloadedUrl, fragment: encryptionKey)
+                                    _ = DownloadStore.instance.store(data, filename: filename, with: "\(item.id)");
+                                    DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
+                                        appendix.state = .downloaded;
+                                    });
+                                } catch {
+                                    DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
+                                        appendix.state = .error;
+                                    });
+                                }
+                            } else {
+                                _ = DownloadStore.instance.store(downloadedUrl, filename: filename, with: "\(item.id)");
+                                DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
+                                    appendix.state = .downloaded;
                                 });
                             }
                         case .failure(let err):
@@ -129,19 +134,18 @@ class DownloadManager: NSObject {
                             DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                                 appendix.state = statusCode == 404 ? .gone : .error;
                             });
-                            self.dispatcher.sync {
+                            self.queue.sync {
                                 self.itemDownloadInProgress = self.itemDownloadInProgress.filter({ (id) -> Bool in
                                     return item.id != id;
                                 });
                             }
                         }
                     });
-                    break;
                 case .failure(let statusCode):
                     DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                         appendix.state = statusCode == 404 ? .gone : .error;
                     });
-                    self.dispatcher.async {
+                    self.queue.async {
                         self.itemDownloadInProgress = self.itemDownloadInProgress.filter({ (id) -> Bool in
                             return item.id != id;
                         });
@@ -149,7 +153,7 @@ class DownloadManager: NSObject {
                 }
             })
             return true;
-        }
+        })
     }
 
     func download(session: URLSession, url: URL, expectedSize: Int64, completionHandler: @escaping (Result<(URL,String), DownloadError>)->Void) {
@@ -228,7 +232,7 @@ class DownloadManager: NSObject {
 
 extension DownloadManager: URLSessionDownloadDelegate {
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        guard let item = dispatcher.sync(execute: {
+        guard let item = queue.sync(execute: {
             return self.inProgress.removeValue(forKey: downloadTask);
         }) else {
             return;
@@ -246,7 +250,7 @@ extension DownloadManager: URLSessionDownloadDelegate {
     }
     
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        guard let downloadTask = task as? URLSessionDownloadTask, let item = dispatcher.sync(execute: {
+        guard let downloadTask = task as? URLSessionDownloadTask, let item = queue.sync(execute: {
             return self.inProgress.removeValue(forKey: downloadTask);
         }) else {
             return;
@@ -255,7 +259,7 @@ extension DownloadManager: URLSessionDownloadDelegate {
     }
     
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
-        guard let sizeLimit = dispatcher.sync(execute: {
+        guard let sizeLimit = queue.sync(execute: {
             return self.inProgress[downloadTask]?.maxSize;
         }) else {
             return;

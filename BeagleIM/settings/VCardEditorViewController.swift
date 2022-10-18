@@ -120,50 +120,47 @@ class VCardEditorViewController: NSViewController, AccountAware {
     
     func refreshVCard() {
         if let account = self.account {
-            if isPrivate {
-                progressIndicator.startAnimation(self);
-                self.isEnabled = false;
-                PrivateVCard4Helper.retrieve(on: account, from: account, completionHandler: { res in
-                    let result: Result<VCard,ErrorCondition> = res.flatMapError({ err in
-                        if err == .item_not_found {
-                            // there may be no node yet..
-                            return .success(VCard());
-                        } else {
-                            return .failure(err);
-                        }
-                    });
-                    DispatchQueue.main.async {
-                        self.progressIndicator.stopAnimation(self);
-                        switch result {
-                        case .success(let vcard):
+            Task {
+                await MainActor.run(body: {
+                    self.progressIndicator.startAnimation(self);
+                    self.isEnabled = false;
+                })
+                if isPrivate {
+                    do {
+                        let vcard = try await PrivateVCard4Helper.retrieve(on: account, from: account);
+                        await MainActor.run(body: {
                             self.vcard = vcard;
-                            self.isEnabled = true;
-                        case .failure(let error):
-                            self.handleError(title: NSLocalizedString("Could not retrive current version of a private VCard from the server.", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.rawValue));
+                        })
+                    } catch {
+                        if let xmppError = error as? XMPPError, xmppError.condition == .item_not_found {
+                            await MainActor.run(body: {
+                                self.vcard = VCard();
+                            })
                         }
+                        await MainActor.run(body: {
+                            self.handleError(title: NSLocalizedString("Could not retrive current version of a private VCard from the server.", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.localizedDescription));
+                        })
                     }
-                });
-            } else {
-                progressIndicator.startAnimation(self);
-                self.isEnabled = false;
-                guard let client = XmppService.instance.getClient(for: account), client.state == .connected() else {
-                    self.handleError(title: NSLocalizedString("Could not retrive current version from the server.", comment: "vcard editor"), message: NSLocalizedString("Account is not connected", comment: "vcard editor"));
-                    progressIndicator.stopAnimation(self);
-                    return;
+                } else {
+                    if let client = XmppService.instance.getClient(for: account), client.state == .connected() {
+                        do {
+                            let vcard = try await client.module(.vcard4).retrieveVCard();
+                            DBVCardStore.instance.updateVCard(for: account, on: account, vcard: vcard);
+                            await MainActor.run(body: {
+                                self.vcard = vcard;
+                            })
+                        } catch {
+                            await MainActor.run(body: {
+                                self.handleError(title: NSLocalizedString("Could not retrive current version from the server.", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.localizedDescription));
+                            })
+                        }
+                    } else {
+                        self.handleError(title: NSLocalizedString("Could not retrive current version from the server.", comment: "vcard editor"), message: NSLocalizedString("Account is not connected", comment: "vcard editor"));
+                    }
                 }
-                client.module(.vcard4).retrieveVCard(completionHandler: { (result) in
-                    switch result {
-                    case .success(let vcard):
-                        DBVCardStore.instance.updateVCard(for: account, on: account, vcard: vcard);
-                        DispatchQueue.main.async {
-                            self.vcard = vcard;
-                            self.progressIndicator.stopAnimation(self);
-                            self.isEnabled = true;
-                        }
-                    case .failure(let error):
-                        self.progressIndicator.stopAnimation(self);
-                        self.handleError(title: NSLocalizedString("Could not retrive current version from the server.", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.localizedDescription));
-                    }
+                await MainActor.run(body: {
+                    self.isEnabled = true;
+                    self.progressIndicator.stopAnimation(self);
                 })
             }
         }
@@ -258,47 +255,44 @@ class VCardEditorViewController: NSViewController, AccountAware {
     @IBAction func submitClicked(_ sender: NSButton) {
         self.view.window?.makeFirstResponder(sender);
 
-        if isPrivate {
-            if let account = self.account {
-                self.isEnabled = false;
-                self.progressIndicator.startAnimation(self);
-                PrivateVCard4Helper.publish(on: account, vcard: vcard, completionHandler: { result in
-                    DispatchQueue.main.async {
-                        self.progressIndicator.stopAnimation(self);
-                        self.isEnabled = true;
-                        switch result {
-                        case .success(_):
-                            self.dismiss(self);
-                        case .failure(let error):
-                            self.handleError(title: NSLocalizedString("Publication of new version of private VCard failed", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.localizedDescription));
-                        }
-                    }
+        if let account = self.account {
+            Task {
+                await MainActor.run(body: {
+                    self.progressIndicator.startAnimation(self);
+                    self.isEnabled = false;
                 })
-            }
-        } else {
-            guard let account = self.account, let vcard4Module = XmppService.instance.getClient(for: account)?.module(.vcard4) else {
-                self.handleError(title: NSLocalizedString("Publication of new version of VCard failed", comment: "vcard editor"), message: NSLocalizedString("Account is not connected", comment: "vcard editor"));
-                return;
-            }
-            self.isEnabled = false;
-            self.progressIndicator.startAnimation(self);
-            vcard4Module.publishVCard(vcard, completionHandler: { result in
-                switch result {
-                case .success(_):
-                    DBVCardStore.instance.updateVCard(for: account, on: account, vcard: self.vcard);
-                    DispatchQueue.main.async {
-                        self.progressIndicator.stopAnimation(self);
-                        self.isEnabled = true;
-                        self.dismiss(self);
+                if isPrivate {
+                    do {
+                        try await PrivateVCard4Helper.publish(on: account, vcard: vcard);
+                    } catch {
+                        await MainActor.run(body: {
+                            self.handleError(title: NSLocalizedString("Publication of new version of private VCard failed", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.localizedDescription));
+                        })
                     }
-                case .failure(let error):
-                    DispatchQueue.main.async {
-                        self.progressIndicator.stopAnimation(self);
-                        self.isEnabled = true;
-                        self.handleError(title: NSLocalizedString("Publication of new version of VCard failed", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.localizedDescription));
+                } else {
+                    if let vcard4Module = XmppService.instance.getClient(for: account)?.module(.vcard4) {
+                        do {
+                            try await vcard4Module.publish(vcard: vcard);
+                            DBVCardStore.instance.updateVCard(for: account, on: account, vcard: self.vcard);
+                            await MainActor.run(body: {
+                                self.dismiss(self);
+                            })
+                        } catch {
+                            await MainActor.run(body: {
+                                self.handleError(title: NSLocalizedString("Publication of new version of VCard failed", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.localizedDescription));
+                            })
+                        }
+                    } else {
+                        await MainActor.run(body: {
+                            self.handleError(title: NSLocalizedString("Publication of new version of VCard failed", comment: "vcard editor"), message: NSLocalizedString("Account is not connected", comment: "vcard editor"));
+                        })
                     }
                 }
-            });
+                await MainActor.run(body: {
+                    self.isEnabled = true;
+                    self.progressIndicator.stopAnimation(self);
+                })
+            }
         }
     }
 
@@ -502,13 +496,13 @@ class VCardEditorViewController: NSViewController, AccountAware {
         });
     }
     
-    fileprivate func createRemoveButton(for item: VCard.VCardEntryItemTypeAware) -> NSButton {
+    fileprivate func createRemoveButton(for item: VCardEntryItemTypeAware) -> NSButton {
         let removeButton = NSButton(image: NSImage(named: NSImage.removeTemplateName)!, target: self, action: #selector(removePositionClicked));
         removeButton.bezelStyle = .texturedRounded;
         return removeButton;
     }
  
-    fileprivate func createTypeButton(for item: VCard.VCardEntryItemTypeAware, tag: Int, action: Selector) -> NSButton {
+    fileprivate func createTypeButton(for item: VCardEntryItemTypeAware, tag: Int, action: Selector) -> NSButton {
         let typeButton = NSPopUpButton(frame: .zero, pullsDown: false);
         typeButton.addItem(withTitle: NSLocalizedString("Home", comment: "vcard editor"));
         typeButton.addItem(withTitle: NSLocalizedString("Work", comment: "vcard editor"));

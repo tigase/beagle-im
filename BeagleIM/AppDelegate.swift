@@ -163,10 +163,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
 //        window.titlebarAppearsTransparent = true;
 //        window.titleVisibility = .hidden;
         
-        XmppService.instance.$currentStatus.combineLatest(DBChatStore.instance.$unreadMessagesCount, Settings.$systemMenuIcon).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (status, unread, show) in
+        XmppService.instance.$currentStatus.combineLatest(DBChatStore.instance.unreadMessageCountPublisher, Settings.$systemMenuIcon).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (status, unread, show) in
             self?.updateStatusItem(status: status, unread: unread, show: show);
         }).store(in: &cancellables);
-        DBChatStore.instance.$unreadMessagesCount.map({ $0 == 0 ? nil : "\($0)" }).receive(on: DispatchQueue.main).assign(to: \.badgeLabel,                                                                                                                            on: NSApplication.shared.dockTile).store(in: &cancellables);
+        DBChatStore.instance.unreadMessageCountPublisher.map({ $0 == 0 ? nil : "\($0)" }).receive(on: DispatchQueue.main).assign(to: \.badgeLabel,                                                                                                                            on: NSApplication.shared.dockTile).store(in: &cancellables);
         
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (result, error) in
             self.logger.debug("could not get authorization for notifications: \(result), \(error as Any)");
@@ -179,7 +179,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
 //        rosterWindowController.showWindow(self);
         XmppService.instance.initialize();
         
-        if AccountManager.getAccounts().isEmpty {
+        if AccountManager.accountNames().isEmpty {
             let alert = Alert();
             alert.messageText = NSLocalizedString("No account", comment: "No account added to BeagleIM");
             alert.informativeText = NSLocalizedString("To use BeagleIM you need to have the XMPP account configured. Would you like to add one now?", comment: "Should we add one now?");
@@ -252,7 +252,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                 let alert = Alert();
                 alert.icon = NSImage(named: NSImage.infoName);
                 alert.messageText = "Open URL";
-                alert.informativeText = "What do you want to do with " + uri.jid.stringValue + "?";
+                alert.informativeText = "What do you want to do with " + uri.jid.description + "?";
                 alert.addButton(withTitle: "Open chat");
                 alert.addButton(withTitle: "Join room");
                 alert.addButton(withTitle: "Add to contacts");
@@ -290,7 +290,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                 guard let windowController = self.mainWindowController?.storyboard?.instantiateController(withIdentifier: "Open1On1ChatController") as? NSWindowController else {
                     return;
                 }
-                (windowController.contentViewController as? Open1On1ChatController)?.searchField.stringValue = uri.jid.bareJid.stringValue;
+                (windowController.contentViewController as? Open1On1ChatController)?.searchField.stringValue = uri.jid.bareJid.description;
                 self.mainWindowController?.window?.beginSheet(windowController.window!, completionHandler: nil);
             }
         case .roster:
@@ -299,7 +299,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                 rosterWindow.makeKeyAndOrderFront(self);
                 if let addContact = NSStoryboard(name: "Roster", bundle: nil).instantiateController(withIdentifier: "AddContactController") as? AddContactController {
                     _ = addContact.view;
-                    addContact.jidField.stringValue = uri.jid.stringValue;
+                    addContact.jidField.stringValue = uri.jid.description;
                     addContact.labelField.stringValue = uri.dict?["name"] ?? "";
                     addContact.preauthToken = uri.dict?["preauth"];
                     rosterWindow.contentViewController?.presentAsSheet(addContact);
@@ -317,10 +317,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             xmlConsoleItem.isHidden = (!NSEvent.modifierFlags.contains(.option)) && (!Settings.showAdvancedXmppFeatures);
             let accountsMenu = NSMenu(title: "XML Console");
             
-            AccountManager.getAccounts().sorted(by: { (a1, a2) -> Bool in
-                return a1.stringValue.compare(a2.stringValue) == .orderedAscending;
+            AccountManager.accountNames().sorted(by: { (a1, a2) -> Bool in
+                return a1.description.compare(a2.description) == .orderedAscending;
             }).forEach { (accountJid) in
-                accountsMenu.addItem(withTitle: accountJid.stringValue, action: #selector(showXmlConsole), keyEquivalent: "").target = self;
+                accountsMenu.addItem(withTitle: accountJid.description, action: #selector(showXmlConsole), keyEquivalent: "").target = self;
             }
             
             xmlConsoleItem.submenu = accountsMenu;
@@ -330,12 +330,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             serviceDiscoveryItem.isHidden = (!NSEvent.modifierFlags.contains(.option)) && (!Settings.showAdvancedXmppFeatures);
             let accountsMenu = NSMenu(title: "Service Discovery");
             
-            AccountManager.getAccounts().filter({ (a1) -> Bool in
+            AccountManager.accountNames().filter({ (a1) -> Bool in
                 return XmppService.instance.getClient(for: a1) != nil;
             }).sorted(by: { (a1, a2) -> Bool in
-                return a1.stringValue.compare(a2.stringValue) == .orderedAscending;
+                return a1.description.compare(a2.description) == .orderedAscending;
             }).forEach { (accountJid) in
-                accountsMenu.addItem(withTitle: accountJid.stringValue, action: #selector(showServiceDiscovery), keyEquivalent: "").target = self;
+                accountsMenu.addItem(withTitle: accountJid.description, action: #selector(showServiceDiscovery), keyEquivalent: "").target = self;
             }
             
             serviceDiscoveryItem.submenu = accountsMenu;
@@ -552,7 +552,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                 return;
             }
             
-            if (chatViewController.account?.stringValue ?? "") != account || (chatViewController.conversation?.jid.stringValue ?? "") != jid {
+            if (chatViewController.account?.description ?? "") != account || (chatViewController.conversation?.jid.description ?? "") != jid {
                 completionHandler([.sound, .alert]);
                 return;
             }
@@ -568,7 +568,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
      
         DispatchQueue.main.async {
             let alert = Alert();
-            alert.messageText = String.localizedStringWithFormat(NSLocalizedString("Authentication failure for %@", comment: "authorization failure title"), accountName.stringValue);
+            alert.messageText = String.localizedStringWithFormat(NSLocalizedString("Authentication failure for %@", comment: "authorization failure title"), accountName.description);
             switch error {
             case .aborted, .temporary_auth_failure:
                 // those are temporary errors and we will retry, so there is no point in notifying user...

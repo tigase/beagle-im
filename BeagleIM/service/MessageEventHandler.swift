@@ -64,16 +64,20 @@ class MessageEventHandler: XmppServiceExtension {
                 from = occupantJid.bareJid;
             }
             
-            switch context.module(.omemo).decode(message: message, from: from, serverMsgId: serverMsgId) {
-            case .successMessage(_, let keyFingerprint):
-                encryption = .decrypted(fingerprint: keyFingerprint);
-                break;
-            case .successTransportKey(_, _):
-                logger.debug("got transport key with key and iv!");
-            case .failure(let error):
-                switch error {
+            // we need to know if MAM is being synced or not, if so, we should wait until it finishes!
+            do {
+                switch try context.module(.omemo).decrypt(message: message, from: from, serverMsgId: serverMsgId) {
+                case .message(let decryptedMessage):
+                    encryption = .decrypted(fingerprint: decryptedMessage.fingerprint);
+                    break;
+                case .transportKey(_):
+                    logger.debug("got transport key with key and iv!");
+                }
+            } catch {
+                let err = error as? SignalError ?? SignalError.unknown;
+                switch err {
                 case .invalidMessage:
-                    encryptionErrorBody = "Message was not encrypted for this device.";
+                    encryptionErrorBody = NSLocalizedString("Message was not encrypted for this device.", comment: "message decryption error");
                     encryption = .notForThisDevice;
                 case .duplicateMessage:
                     // message is a duplicate and was processed before
@@ -81,10 +85,9 @@ class MessageEventHandler: XmppServiceExtension {
                 case .notEncrypted:
                     encryption = .none;
                 default:
-                    encryptionErrorBody = "Message decryption failed! Error code: \(error.rawValue)";
-                    encryption = .decryptionFailed(errorCode: error.rawValue);
+                    encryptionErrorBody = String.localizedStringWithFormat(NSLocalizedString("Message decryption failed! Error code: %d", comment: "message decryption error"), err.rawValue);
+                    encryption = .decryptionFailed(errorCode: err.rawValue);
                 }
-                break;
             }
         }
 
@@ -127,7 +130,9 @@ class MessageEventHandler: XmppServiceExtension {
                             }
                         }
                         if let dbChat = chat as? Chat {
-                            dbChat.resendMessage(content: message.data, isAttachment: message.type == .attachment, encryption: message.encryption != .none ? .omemo : .none, stanzaId: message.correctionStanzaId ?? message.stanzaId, correctedMessageOriginId: message.correctionStanzaId == nil ? nil : message.stanzaId);
+                            Task {
+                                try await dbChat.resendMessage(content: message.data, isAttachment: message.type == .attachment, encryption: message.encryption != .none ? .omemo : .none, stanzaId: message.correctionStanzaId ?? message.stanzaId, correctedMessageOriginId: message.correctionStanzaId == nil ? nil : message.stanzaId);
+                            }
                         }
 
                     }
@@ -325,16 +330,16 @@ class MessageEventHandler: XmppServiceExtension {
     }
 
     static func calculateState(direction: MessageDirection, message: Message, isFromArchive archived: Bool, isMuc: Bool) -> ConversationEntryState {
-        let error = message.type == StanzaType.error;
+        let error = message.error;
         let unread = (!archived) || isMuc;
         if direction == .incoming {
-            if error {
-                return .incoming_error(unread ? .received : .displayed, errorMessage: message.errorText ?? message.errorCondition?.rawValue);
+            if let error = error {
+                return .incoming_error(unread ? .received : .displayed, errorMessage: error.localizedDescription);
             }
             return .incoming(unread ? .received : .displayed);
         } else {
-            if error {
-                return .outgoing_error(unread ? .received : .displayed,errorMessage: message.errorText ?? message.errorCondition?.rawValue);
+            if let error = error {
+                return .outgoing_error(unread ? .received : .displayed, errorMessage: error.localizedDescription);
             }
             return .outgoing(.sent);
         }
@@ -349,7 +354,7 @@ class MessageEventHandler: XmppServiceExtension {
             if syncPeriod == 0 {
                 syncPeriod = 72;
             }
-            let syncMessagesSince = max(DBChatHistoryStore.instance.lastMessageTimestamp(for: account), Date(timeIntervalSinceNow: -1 * syncPeriod * 3600));
+            let syncMessagesSince = max(DBChatHistoryStore.instance.lastMessageTimestamp(for: account) ?? Date(timeIntervalSinceNow: -1 * syncPeriod * 3600), Date(timeIntervalSinceNow: -1 * syncPeriod * 3600));
             // use last "received" stable stanza id for account MAM archive in case of MAM:2?
             syncSinceQueue.async {
                 self.syncSince[account] = syncMessagesSince;
@@ -364,21 +369,26 @@ class MessageEventHandler: XmppServiceExtension {
     
     static func syncMessagesScheduled(for client: XMPPClient) {
         syncSinceQueue.async {
-            guard AccountSettings.messageSyncAuto(client.userBareJid).bool(), let syncMessagesSince = syncSince[client.userBareJid] else {
+            guard AccountSettings.messageSyncAuto(client.userBareJid).bool() else {
                 return;
             }
-            syncMessages(for: client, since: syncMessagesSince);
+            let syncMessagesSince = syncSince[client.userBareJid];
+            Task {
+                try await syncMessages(for: client, since: syncMessagesSince);
+            }
         }
     }
     
-    static func syncMessages(for client: XMPPClient, version: MessageArchiveManagementModule.Version? = nil, componentJID: JID? = nil, since: Date, rsmQuery: RSM.Query? = nil) {
-        let period = DBChatHistorySyncStore.Period(account: client.userBareJid, component: componentJID?.bareJid, from: since, after: nil, to: nil);
-        DBChatHistorySyncStore.instance.addSyncPeriod(period);
+    static func syncMessages(for client: XMPPClient, version: MessageArchiveManagementModule.Version? = nil, componentJID: JID? = nil, since: Date?, rsmQuery: RSM.Query? = nil) async throws {
+        if let since = since {
+            let period = DBChatHistorySyncStore.Period(account: client.userBareJid, component: componentJID?.bareJid, from: since, after: nil, to: nil);
+            DBChatHistorySyncStore.instance.addSyncPeriod(period);
+        }
         
-        syncMessagePeriods(for: client, version: version, componentJID: componentJID?.bareJid)
+        try await syncMessagePeriods(for: client, version: version, componentJID: componentJID?.bareJid)
     }
     
-    static func syncMessagePeriods(for client: XMPPClient, version: MessageArchiveManagementModule.Version? = nil, componentJID jid: BareJID? = nil) {
+    static func syncMessagePeriods(for client: XMPPClient, version: MessageArchiveManagementModule.Version? = nil, componentJID jid: BareJID? = nil) async throws {
         guard let first = DBChatHistorySyncStore.instance.loadSyncPeriods(forAccount: client.userBareJid, component: jid).first else {
             if jid != nil {
                 DBChatMarkersStore.instance.syncCompleted(forAccount: client.userBareJid, with: jid!);
@@ -389,52 +399,46 @@ class MessageEventHandler: XmppServiceExtension {
 
         eventsPublisher.send(.started(account: client.userBareJid, with: jid));
         
-        syncSinceQueue.async {
-            syncMessages(for: client, period: first, version: version);
-        }
+        try await syncMessages(for: client, period: first, version: version);
     }
     
-    static func syncMessages(for client: XMPPClient, period: DBChatHistorySyncStore.Period, version: MessageArchiveManagementModule.Version? = nil, rsmQuery: RSM.Query? = nil, retry: Int = 3) {
+    static func syncMessages(for client: XMPPClient, period: DBChatHistorySyncStore.Period, version: MessageArchiveManagementModule.Version? = nil, rsmQuery: RSM.Query? = nil, retry: Int = 3) async throws {
+        let mamModule = client.module(.mam);
+        guard let version = version ?? mamModule.availableVersions.first else {
+            throw XMPPError(condition: .feature_not_implemented);
+        }
+
         let start = Date();
         let queryId = UUID().uuidString;
         let account = client.userBareJid;
-        client.module(.mam).queryItems(version: version, componentJid: period.component == nil ? nil : JID(period.component!), start: period.from, end: period.to, queryId: queryId, rsm: rsmQuery ?? RSM.Query(after: period.after, max: 150), completionHandler: { [weak client] result in
-            switch result {
-            case .success(let response):
-                if response.complete || response.rsm == nil {
-                    DBChatHistorySyncStore.instance.removeSyncPerod(period);
-                    if let client = client {
-                        syncMessagePeriods(for: client, version: version, componentJID: period.component);
-                    }
-                } else {
-                    if let last = response.rsm?.last, UUID(uuidString: last) != nil {
-                        DBChatHistorySyncStore.instance.updatePeriod(period, after: last);
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                        guard let client = client else {
-                            return;
-                        }
-                        self.syncMessages(for: client, period: period, version: version, rsmQuery: response.rsm?.next(150));
-                    }
+        let query: RSM.Query = rsmQuery ?? ( period.after == nil ? .max(150) : .after(period.after!, max: 150));
+        do {
+            let result = try await client.module(.mam).queryItems(MAMQueryForm(version: version, start: period.from, end: period.to), at: period.component?.jid(), queryId: queryId, rsm: query);
+            os_log("for account %s fetch for component %s with id %s executed in %f s", log: .chatHistorySync, type: .debug, period.account.description, period.component?.description ?? "nil", queryId, Date().timeIntervalSince(start));
+            if result.complete || result.rsm == nil {
+                DBChatHistorySyncStore.instance.removeSyncPerod(period);
+                try await syncMessagePeriods(for: client, version: version, componentJID: period.component);
+            } else {
+                if let last = result.rsm?.last, UUID(uuidString: last) != nil {
+                    DBChatHistorySyncStore.instance.updatePeriod(period, after: last);
                 }
-                os_log("for account %s fetch for component %s with id %s executed in %f s", log: .chatHistorySync, type: .debug, period.account.stringValue, period.component?.stringValue ?? "nil", queryId, Date().timeIntervalSince(start));
-            case .failure(let error):
-                guard client?.state ?? .disconnected() == .connected(), retry > 0 && error != .feature_not_implemented else {
-                    os_log("for account %s fetch for component %s with id %s could not synchronize message archive for: %{public}s", log: .chatHistorySync, type: .debug, period.account.stringValue, period.component?.stringValue ?? "nil", queryId, error.description);
-                    if period.component != nil {
-                        DBChatMarkersStore.instance.syncCompleted(forAccount: account, with: period.component!);
-                    }
-                    eventsPublisher.send(.finished(account: period.account, with: period.component))
-                    return;
-                }
-                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                    guard let client = client else {
-                        return;
-                    }
-                    self.syncMessages(for: client, period: period, version: version, rsmQuery: rsmQuery, retry: retry - 1);
-                }
+                
+                try await Task.sleep(nanoseconds: UInt64(100_000_000))
+                try await self.syncMessages(for: client, period: period, version: version, rsmQuery: result.rsm!.next(300));
             }
-        });
+        } catch {
+            let err = error as? XMPPError ?? .undefined_condition;
+            guard err.condition.type == .wait && retry > 0 else {
+                os_log("for account %s fetch for component %s with id %s could not synchronize message archive for: %{public}s", log: .chatHistorySync, type: .debug, period.account.description, period.component?.description ?? "nil", queryId, err.description);
+                if period.component != nil {
+                    DBChatMarkersStore.instance.syncCompleted(forAccount: account, with: period.component!);
+                }
+                eventsPublisher.send(.finished(account: period.account, with: period.component))
+                return;
+            }
+            try await Task.sleep(nanoseconds: UInt64(100_000_000))
+            try await self.syncMessages(for: client, period: period, version: version, rsmQuery: query, retry: retry - 1);
+        }
     }
 
     static func extractRealAuthor(from message: Message, for conversation: ConversationKey) -> (ConversationEntrySender,ConversationEntryRecipient)? {

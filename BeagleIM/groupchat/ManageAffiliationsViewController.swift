@@ -52,42 +52,34 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
         
         let affiliations: [MucAffiliation] = [.member, .admin, .outcast, .owner];
         self.progressIndicator.startAnimation(nil);
-        var errors: [XMPPError] = [];
-        let group = DispatchGroup();
-        
-        group.enter();
-        for aff in affiliations {
-            group.enter();
-            mucModule.getRoomAffiliations(from: room, with: aff, completionHandler: { result in
-                switch result {
-                case .success(let affiliations):
-                    DispatchQueue.main.async {
-                        self.affiliations.append(contentsOf: affiliations);
-                        self.updateVisibleAffiliations();
+
+        Task {
+            do {
+                let results = try await affiliations.asyncMapReduce({ aff in
+                    return try await mucModule.roomAffiliations(from: room, with: aff);
+                })
+                await MainActor.run(body: {
+                    self.affiliations.append(contentsOf: results);
+                    self.updateVisibleAffiliations();
+                })
+            } catch {
+                await MainActor.run(body: {
+                    if let window = self.view.window {
+                        let alert = NSAlert();
+                        alert.icon = NSImage(named: NSImage.cautionName);
+                        alert.messageText = NSLocalizedString("Authorization error", comment: "alert window title");
+                        alert.informativeText = NSLocalizedString("You are not authorized to view memeber list of this room.", comment: "alert window message");
+                        _ = alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
+                        alert.beginSheetModal(for: window, completionHandler: { result in
+                            self.close();
+                        });
                     }
-                case .failure(let error):
-                    DispatchQueue.main.async {
-                        errors.append(error);
-                    }
-                }
-                group.leave();
-            });
-        }
-        group.leave()
-        
-        group.notify(queue: DispatchQueue.main, execute: {
-            self.progressIndicator.stopAnimation(nil);
-            if let window = self.view.window, !errors.isEmpty {
-                let alert = NSAlert();
-                alert.icon = NSImage(named: NSImage.cautionName);
-                alert.messageText = NSLocalizedString("Authorization error", comment: "alert window title");
-                alert.informativeText = NSLocalizedString("You are not authorized to view memeber list of this room.", comment: "alert window message");
-                alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
-                alert.beginSheetModal(for: window, completionHandler: { result in
-                    self.close();
-                });
+                })
             }
-        });
+            await MainActor.run(body: {
+                self.progressIndicator.stopAnimation(nil);
+            })
+        }
     }
     
     func numberOfRows(in tableView: NSTableView) -> Int {
@@ -100,7 +92,7 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
             guard let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ManageAffiliationsColumnJidView"), owner: self) as? NSTableCellView else {
                 return nil;
             }
-            view.textField?.stringValue = visibleAffiliations[row].jid.stringValue;
+            view.textField?.stringValue = visibleAffiliations[row].jid.description;
             return view;
         case "ManageAffiliationsColumnAffiliation":
             guard let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ManageAffiliationsColumnAffiliationView"), owner: self) as? NSTableCellView else {
@@ -136,12 +128,12 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
     
     @objc fileprivate func updateVisibleAffiliations() {
         self.affiliations.sort(by: { (a1, a2) -> Bool in
-            return a1.jid.stringValue.compare(a2.jid.stringValue) == .orderedAscending
+            return a1.jid.description.compare(a2.jid.description) == .orderedAscending
         });
         let searchString = self.searchField.stringValue;
         if !searchString.isEmpty {
             self.visibleAffiliations = self.affiliations.filter({ (item) -> Bool in
-                return item.jid.stringValue.contains(searchString);
+                return item.jid.description.contains(searchString);
             });
         } else {
             self.visibleAffiliations = self.affiliations;
@@ -266,22 +258,23 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
         
         self.progressIndicator.startAnimation(nil);
         
-        mucModule.setRoomAffiliations(to: room, changedAffiliations: changes, completionHandler: { result in
-            DispatchQueue.main.async {
-                self.progressIndicator.stopAnimation(nil);
-                switch result {
-                case .success(_):
-                    self.close();
-                case .failure(let error):
+        Task {
+            do {
+                _ = try await mucModule.roomAffiliations(changes, to: room);
+            } catch {
+                await MainActor.run(body: {
                     let alert = NSAlert();
                     alert.icon = NSImage(named: NSImage.cautionName);
                     alert.messageText = NSLocalizedString("Error occurred", comment: "alert window title");
-                    alert.informativeText = (error == .forbidden()) ? NSLocalizedString("You are not allowed to modify list of affiliations for this room.", comment: "alert window message") : String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert window message"), error.localizedDescription);
-                    alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
+                    alert.informativeText = ((error as? XMPPError)?.condition == .forbidden) ? NSLocalizedString("You are not allowed to modify list of affiliations for this room.", comment: "alert window message") : String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert window message"), error.localizedDescription);
+                    _ = alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                     alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
-                }
+                })
             }
-        });
+            await MainActor.run(body: {
+                self.progressIndicator.stopAnimation(nil);
+            })
+        }
     }
     
     fileprivate func close() {

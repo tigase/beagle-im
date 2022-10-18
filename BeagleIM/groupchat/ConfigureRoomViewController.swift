@@ -41,14 +41,14 @@ class ConfigureRoomViewController: NSViewController {
     @IBOutlet var formView: JabberDataFormView!;
     @IBOutlet var scrollView: NSScrollView!;
 
-    var form: JabberDataElement? {
+    var form: RoomConfig? {
         didSet {
             if let roomJid = self.roomJid, let account = self.account {
                 avatarView.avatar = AvatarManager.instance.avatar(for: roomJid, on: account)
-                roomNameField.stringValue = (form?.getField(named: "muc#roomconfig_roomname") as? TextSingleField)?.value ?? "";
+                roomNameField.stringValue = form?.name ?? "";
                 subjectField.stringValue = room?.subject ?? "";
             }
-            formView.form = form;
+            formView.form = form?.form;
         }
     }
     
@@ -70,85 +70,72 @@ class ConfigureRoomViewController: NSViewController {
         
         let dispatchGroup = DispatchGroup();
         progressIndicator.startAnimation(nil);
-        dispatchGroup.enter();
-        mucModule.getRoomConfiguration(roomJid: JID(roomJid == nil ? mucComponent : roomJid!), completionHandler: { [weak self] result in
-            DispatchQueue.main.async {
-                dispatchGroup.leave();
-                switch result {
-                case .success(let form):
-                    self?.form = form;
-                case .failure(let error):
-                    guard let that = self else {
-                        return;
-                    }
-                    let alert = NSAlert();
-                    alert.messageText = NSLocalizedString("Error occurred", comment: "alert window title");
-                    alert.icon = NSImage(named: NSImage.cautionName);
-                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Could not retrieve room configuration from the server. Got following error: %@", comment: "alert window message"), error.localizedDescription);
-                    alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
-                    alert.beginSheetModal(for: that.view.window!, completionHandler: { result in
-                        that.close(result: .cancel);
-                    });
+        var tasks: [Task<Void,Error>] = [
+            Task {
+                do {
+                    let config = try await mucModule.roomConfiguration(of:  JID(roomJid == nil ? mucComponent : roomJid!));
+                    await MainActor.run(body: {
+                        self.form = config;
+                    })
+                } catch {
+                    await MainActor.run(body: {
+                        let alert = NSAlert();
+                        alert.messageText = NSLocalizedString("Error occurred", comment: "alert window title");
+                        alert.icon = NSImage(named: NSImage.cautionName);
+                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Could not retrieve room configuration from the server. Got following error: %@", comment: "alert window message"), error.localizedDescription);
+                        _ = alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
+                        alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
+                            self.close(result: .cancel);
+                        });
+                    })
                 }
             }
-        });
+        ];
         if let client = room?.context {
-            dispatchGroup.enter();
-            self.checkVCardSupport(vCardTempModule: client.module(.vcardTemp)) { [weak self] (result) in
-                guard let that = self else {
-                    dispatchGroup.leave();
-                    return;
-                }
-
-                switch result {
-                case .success(let val):
-                    DispatchQueue.main.async {
-                        that.avatarView.isEnabled = val;
-                        dispatchGroup.leave();
-                    }
-                case .failure(let err):
-                    guard err == .item_not_found else {
-                        DispatchQueue.main.async {
-                            that.avatarView.isEnabled = false;
-                            dispatchGroup.leave();
+            tasks.append(Task {
+                do {
+                    try await checkVCardSupport(vCardTempModule: client.module(.vcardTemp));
+                    await MainActor.run(body: {
+                        self.avatarView.isEnabled = true;
+                    })
+                } catch {
+                    if (error as? XMPPError)?.condition == .item_not_found {
+                        do {
+                            let result = try await checkVCardSupport(discoModule: client.module(.disco));
+                            await MainActor.run(body: {
+                                self.avatarView.isEnabled = result;
+                            })
+                        } catch {
+                            await MainActor.run(body: {
+                                self.avatarView.isEnabled = false;
+                            })
                         }
-                        return;
-                    }
-                    that.checkVCardSupport(discoModule: client.module(.disco)) { (result) in
-                        DispatchQueue.main.async {
-                            guard let that = self else {
-                                dispatchGroup.leave();
-                                return;
-                            }
-
-                            switch result {
-                            case .success(let value):
-                                that.avatarView.isEnabled = value;
-                            case .failure(_):
-                                that.avatarView.isEnabled = false;
-                            }
-                            dispatchGroup.leave();
-                        }
+                    } else {
+                        await MainActor.run(body: {
+                            self.avatarView.isEnabled = false;
+                        })
                     }
                 }
-            }
+            });
         }
         
-        dispatchGroup.notify(queue: DispatchQueue.main) { [weak self] in
-            self?.progressIndicator.stopAnimation(nil)
+        Task {
+            for task in tasks {
+                _ = await task.result
+            }
+            await MainActor.run(body: {
+                self.progressIndicator.stopAnimation(nil)
+            })
         }
     }
     
-    private func checkVCardSupport(vCardTempModule: VCardTempModule, completionHandler: @escaping (Result<Bool,XMPPError>)->Void) {
-        vCardTempModule.retrieveVCard(from: JID(roomJid!), completionHandler: { (result) in
-            completionHandler(result.map({ _ in true }));
-        });
+    private func checkVCardSupport(vCardTempModule: VCardTempModule) async throws {
+        _ = try await vCardTempModule.retrieveVCard(from: JID(roomJid!));
     }
     
-    private func checkVCardSupport(discoModule: DiscoveryModule, completionHandler: @escaping (Result<Bool,XMPPError>)->Void) {
-        discoModule.getInfo(for: JID(self.mucComponent!), completionHandler: { result in
-            completionHandler(result.map { info in info.features.contains(VCardTempModule.ID) });
-        });
+    private func checkVCardSupport(discoModule: DiscoveryModule) async throws -> Bool {
+        let info = try await discoModule.info(for: JID(self.mucComponent!));
+        return info.features.contains(VCardTempModule.ID);
     }
     
     @IBAction func cancelClicked(_ sender: NSButton) {
@@ -163,84 +150,87 @@ class ConfigureRoomViewController: NSViewController {
         formView.synchronize();
         
         let name = roomNameField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines);
-        (form?.getField(named: "muc#roomconfig_roomname") as? TextSingleField)?.value = name.isEmpty ? nil : name;
+        form?.name = name.isEmpty ? nil : name;
         
         guard let client = room?.context, room?.state == .joined else {
             return;
         }
         
-        let dispatchGroup = DispatchGroup();
-        dispatchGroup.enter();
         progressIndicator.startAnimation(nil);
-        
-        let queue = OperationQueue();
-        queue.maxConcurrentOperationCount = 1;
-        queue.isSuspended = true;
-        
+
+        var tasks: [Task<Void,Error>] = [];
+                
         let roomJid = self.roomJid!;
         
         if avatarView.isEnabled && avatarView.avatar != AvatarManager.instance.avatar(for: roomJid, on: account) {
-            let vcard = VCard();
+            var vcard = VCard();
             if let binval = avatarView.avatar?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
                 vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
             }
-            queue.addOperation {
-                client.module(.vcardTemp).publishVCard(vcard, to: roomJid, completionHandler: nil);
-            }
+            
+            tasks.append(Task {
+                try await client.module(.vcardTemp).publish(vcard: vcard, to: roomJid);
+            })
         }
         
         if subjectField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines) != room?.subject ?? "" {
             let newSubject = subjectField.stringValue.isEmpty ? nil : subjectField.stringValue;
-            queue.addOperation {
-                client.module(.muc).setRoomSubject(roomJid: roomJid, newSubject: newSubject);
-            }
+            tasks.append(Task {
+                try await client.module(.muc).setRoomSubject(roomJid: roomJid, newSubject: newSubject);
+            })
         }
         
         let account = self.account!;
         let room = self.room;
         let nickname = self.nickname;
-        let password = (form!.getField(named: "muc#roomconfig_roomsecret") as? SingleField)?.rawValue;
+        let password = form!.secret;
         
         let mucModule = client.module(.muc);
-        setRoomConfiguration(mucModule: mucModule, configuration: form!) { [weak self] (result) in
-            switch result {
-            case .success(_):
+        tasks.append(Task {
+            do {
+                try await mucModule.roomConfiguration(form!, of: JID(roomJid));
                 room?.updateOptions({ options in
                     options.password = password;
                 })
                 if let bookmark = client.module(.pepBookmarks).currentBookmarks.conference(for: JID(roomJid)) {
-                    client.module(.pepBookmarks).addOrUpdate(bookmark: bookmark.with(password: password));
+                    try? await client.module(.pepBookmarks).addOrUpdate(bookmark: bookmark.with(password: password));
                 }
-                queue.isSuspended = false;
-                dispatchGroup.leave();
-                break;
-            case .failure(let error):
-                DispatchQueue.main.async {
-                    guard let window = self?.view.window else {
+            } catch {
+                await MainActor.run(body: {
+                    guard let window = self.view.window else {
                         return;
                     }
                     let alert = NSAlert();
                     alert.messageText = NSLocalizedString("Error occurred", comment: "alert window title");
                     alert.icon = NSImage(named: NSImage.cautionName);
                     alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Could not apply room configuration on the server. Got following error: %@", comment: "alert window message"), error.localizedDescription);
-                    alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
+                    _ = alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                     alert.beginSheetModal(for: window, completionHandler: { result in
-                        dispatchGroup.leave();
+                        self.close();
                     });
-                }
+                })
             }
-        }
-                
-        dispatchGroup.notify(queue: DispatchQueue.main) { [weak self] in
-            self?.progressIndicator.stopAnimation(nil);
-            self?.close();
+        })
+        
+        Task {
+            if (await tasks.asyncMap({ r in
+                switch await r.result {
+                case .failure(_):
+                    return true;
+                case .success(_):
+                    return true;
+                }
+            })).filter({ $0 }).isEmpty {
+                await MainActor.run(body: {
+                    self.close();
+                })
+            }
+            await MainActor.run(body: {
+                self.progressIndicator.stopAnimation(nil);
+            })
         }
     }
-    
-    private func setRoomConfiguration(mucModule: MucModule, configuration: JabberDataElement, completionHandler: @escaping (Result<Void,XMPPError>)->Void) {
-        mucModule.setRoomConfiguration(roomJid: JID(self.roomJid), configuration: configuration, completionHandler: completionHandler);
-    }
-    
+        
     @IBAction func disclosureClicked(_ sender: NSButton) {
         formView.isHidden = sender.state == .off;
     }

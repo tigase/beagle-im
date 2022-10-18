@@ -35,25 +35,23 @@ extension DBChatStore: ChatStore {
     }
     
     public func createChat(for context: Context, with jid: BareJID) -> ConversationCreateResult<Chat> {
-        self.conversationsLifecycleQueue.sync {
-        if let chat = chat(for: context, with: jid) {
-            return .found(chat);
-        }
-    
         let account = context.userBareJid;
-        guard let chat: Chat = createConversation(for: account, with: jid, execute: {
-            let timestamp = Date();
-            let id = try! self.openConversation(account: account, jid: jid, type: .chat, timestamp: timestamp, options: nil);
-            let chat = Chat(dispatcher: self.conversationDispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity(for: account, jid: jid), unread: 0, options: ChatOptions());
-
-            return chat;
-        }) else {
-            if let chat = self.chat(for: context, with: jid) {
-                return .found(chat);
+        return self.queue.sync {
+            guard let conversation = self.accountsConversations.conversation(for: account, with: jid) else {
+                let timestamp = Date();
+                let id = try! self.openConversation(account: context.userBareJid, jid: jid, type: .chat, timestamp: timestamp, options: nil);
+                let chat = Chat(context: context, jid: jid, id: id, lastActivity: lastActivity(for: account, jid: jid, conversationType: .chat) ?? .none(timestamp: timestamp), unread: 0, options: ChatOptions());
+                if self.accountsConversations.add(chat) {
+                    self.conversationsEventsPublisher.send(.created(chat));
+                    return .created(chat);
+                } else {
+                    return .none;
+                }
             }
-            return .none;
-        }
-        return .created(chat);
+            guard let chat = conversation as? Chat else {
+                return .none;
+            }
+            return .found(chat);
         }
     }
     

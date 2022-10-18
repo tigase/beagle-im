@@ -23,8 +23,9 @@ import Foundation
 import Martin
 import AppKit
 import Combine
+import Intents
 
-public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtocol, Conversation, LastMessageTimestampAware {
+public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtocol, Conversation, LastMessageTimestampAware, @unchecked Sendable {
     
     open override var defaultMessageType: StanzaType {
         return .groupchat;
@@ -35,7 +36,9 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
     
     public var permissionsPublisher: AnyPublisher<Set<ChannelPermission>,Never> {
         if permissions == nil {
-            context?.module(.mix).retrieveAffiliations(for: self, completionHandler: nil);
+            Task {
+                try await context?.module(.mix).affiliations(for: self);
+            }
         }
         return $permissions.compactMap({ $0 }).eraseToAnyPublisher();
     }
@@ -49,7 +52,7 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
     }
     
     public func update(permissions: Set<ChannelPermission>) {
-        dispatcher.async(flags: .barrier) {
+        withLock {
             self.permissions = permissions;
         }
     }
@@ -95,10 +98,10 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
     
     private let creationTimestamp: Date;
     public var lastMessageTimestamp: Date? {
-        guard creationTimestamp == timestamp else {
+        guard creationTimestamp == lastActivity.timestamp else {
             return nil;
         }
-        return timestamp;
+        return lastActivity.timestamp;
     }
     
     private var connectionState: XMPPClient.State = .disconnected() {
@@ -113,41 +116,13 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
     public var debugDescription: String {
         return "Channel(account: \(account), jid: \(jid))";
     }
-        
-    public enum Feature: String, Codable {
-        case avatar = "avatar"
-        case membersOnly = "members-only"
-        
-        public static func from(node nodeStr: String?) -> Feature? {
-            guard let node = nodeStr else {
-                return nil;
-            }
-            
-            switch node {
-            case "urn:xmpp:mix:nodes:allowed":
-                return .membersOnly;
-            case "urn:xmpp:avatar:metadata":
-                return .avatar;
-            default:
-                return nil;
-            }
-        }
-        
-        public init(from decoder: Decoder) throws {
-            self = Feature(rawValue: try decoder.singleValueContainer().decode(String.self))!
-        }
-        
-        public func encode(to encoder: Encoder) throws {
-            var container = encoder.singleValueContainer();
-            try container.encode(self.rawValue);
-        }
-        
-    }
+
+    typealias Feature = ChannelFeature;
     
-    init(dispatcher: QueueDispatcher, context: Context, channelJid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: ChannelOptions, creationTimestamp: Date) {
-         self.creationTimestamp = creationTimestamp;
-        self.displayable = ChannelDisplayableId(displayName: options.name ?? channelJid.stringValue, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: channelJid, mucNickname: nil)), description: options.description);
-        super.init(dispatcher: dispatcher, context: context, jid: channelJid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
+    init(context: Context, channelJid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, options: ChannelOptions, creationTimestamp: Date) {
+        self.creationTimestamp = creationTimestamp;
+        self.displayable = ChannelDisplayableId(displayName: options.name ?? channelJid.description, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: channelJid, mucNickname: nil)), description: options.description);
+        super.init(context: context, jid: channelJid, id: id, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
         context.$state.sink(receiveValue: { [weak self] state in
             self?.connectionState = state;
         }).store(in: &cancellables);
@@ -160,6 +135,7 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         }).sink(receiveValue: { [weak self] value in
             self?.update(features: value);
         }).store(in: &cancellables);
+
     }
         
     public override func isLocal(sender: ConversationEntrySender) -> Bool {
@@ -177,7 +153,7 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
     public override func updateOptions(_ fn: @escaping (inout ChannelOptions) -> Void) {
         super.updateOptions(fn);
         DispatchQueue.main.async {
-            self.displayable.displayName = self.options.name ?? self.jid.stringValue;
+            self.displayable.displayName = self.options.name ?? self.jid.description;
             self.displayable.description = self.options.description;
             self.updateState();
         }
@@ -189,26 +165,40 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         return msg;
     }
     
-    public func sendMessage(text: String, correctedMessageOriginId: String?) {
+    public func sendMessage(text: String, correctedMessageOriginId: String?) async throws {
         let message = self.createMessage(text: text);
         message.lastMessageCorrectionId = correctedMessageOriginId;
-        self.send(message: message, completionHandler: nil);
+        try await self.send(message: message);
+        if #available(macOS 12.0, *) {
+            let sender = INPerson(personHandle: INPersonHandle(value: self.account.description, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.description, isMe: true, suggestionType: .instantMessageAddress);
+            let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.description, isMe: false, suggestionType: .instantMessageAddress);
+            let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.description)|sender=\(self.jid.description)", serviceName: "Beagle IM", sender: sender, attachments: nil);
+            let interaction = INInteraction(intent: intent, response: nil);
+            interaction.direction = .outgoing;
+            try? await interaction.donate();
+        }
     }
     
-    public func prepareAttachment(url originalURL: URL, completionHandler: (Result<(URL, Bool, ((URL) -> URL)?), ShareError>) -> Void) {
-        completionHandler(.success((originalURL, false, nil)));
+    public func prepareAttachment(url originalURL: URL) throws -> SharePreparedAttachment {
+        return .init(url: originalURL, isTemporary: false, prepareShareURL: nil);
     }
     
-    public func sendAttachment(url uploadedUrl: String, appendix: ChatAttachmentAppendix, originalUrl: URL?, completionHandler: (() -> Void)?) {
+    public func sendAttachment(url uploadedUrl: String, appendix: ChatAttachmentAppendix, originalUrl: URL?) async throws {
         guard ((self.context as? XMPPClient)?.state ?? .disconnected()) == .connected(), self.state == .joined else {
-            completionHandler?();
-            return;
+            throw XMPPError(condition: .remote_server_timeout);
         }
         
         let message = self.createMessage(text: uploadedUrl);
         message.oob = uploadedUrl;
-        send(message: message, completionHandler: nil)
-        completionHandler?();
+        try await send(message: message)
+        if #available(macOS 12.0, *) {
+            let sender = INPerson(personHandle: INPersonHandle(value: self.account.description, type: .unknown), nameComponents: nil, displayName: self.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.account.description, isMe: true, suggestionType: .instantMessageAddress);
+            let recipient = INPerson(personHandle: INPersonHandle(value: self.jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: self.jid.description, isMe: false, suggestionType: .instantMessageAddress);
+            let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: INSpeakableString(spokenPhrase: self.displayName), conversationIdentifier: "account=\(self.account.description)|sender=\(self.jid.description)", serviceName: "Beagle IM", sender: sender, attachments: nil);
+            let interaction = INInteraction(intent: intent, response: nil);
+            interaction.direction = .outgoing;
+            try? await interaction.donate();
+        }
     }
     
     public func canSendChatMarker() -> Bool {
@@ -227,13 +217,17 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
             if receipt {
                 message.messageDelivery = .received(id: marker.id)
             }
-            self.send(message: message, completionHandler: nil);
+            Task {
+                try await self.send(message: message);
+            }
         } else if case .displayed(_) = marker {
             let message = createMessage(id: UUID().uuidString, type: .chat);
             message.to = JID(BareJID(localPart: "\(participantId)#\(jid.localPart!)", domain: jid.domain), resource: nil);
             message.chatMarkers = marker;
             message.hints = [.store]
-            self.send(message: message, completionHandler: nil);
+            Task {
+                try await self.send(message: message);
+            }
         }
     }
     
@@ -289,7 +283,7 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
 extension Channel: MixParticipantsProtocol {
     
     public var participants: [MixParticipant] {
-        return dispatcher.sync {
+        return withLock {
             return self.participantsStore.participants;
         }
     }
@@ -299,89 +293,27 @@ extension Channel: MixParticipantsProtocol {
     }
     
     public func participant(withId: String) -> MixParticipant? {
-        return dispatcher.sync {
+        return withLock {
             return self.participantsStore.participant(withId: withId);
         }
     }
     
     public func set(participants: [MixParticipant]) {
-        dispatcher.async(flags: .barrier) {
+        withLock {
             self.participantsStore.set(participants: participants);
         }
     }
     
     public func update(participant: MixParticipant) {
-        dispatcher.async(flags: .barrier) {
+        withLock {
             self.participantsStore.update(participant: participant);
         }
     }
     
     public func removeParticipant(withId id: String) -> MixParticipant? {
-        return dispatcher.sync(flags: .barrier) {
+        return withLock {
             return self.participantsStore.removeParticipant(withId: id);
         }
-    }
-}
-
-public struct ChannelOptions: Codable, ChatOptionsProtocol, Equatable {
-    
-    var participantId: String;
-    var nick: String?;
-    var name: String?;
-    var description: String?;
-    var state: ChannelState;
-    public var notifications: ConversationNotification = .always;
-    var features: Set<Channel.Feature> = [];
-    public var confirmMessages: Bool = true;
-    
-    public init(participantId: String, nick: String?, state: ChannelState) {
-        self.participantId = participantId;
-        self.nick = nick;
-        self.state = state;
-    }
-    
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self);
-        participantId = try container.decode(String.self, forKey: .participantId);
-        state = try container.decodeIfPresent(Int.self, forKey: .state).map({ ChannelState(rawValue: $0) ?? .joined }) ?? .joined;
-        nick = try container.decodeIfPresent(String.self, forKey: .nick);
-        name = try container.decodeIfPresent(String.self, forKey: .name);
-        description = try container.decodeIfPresent(String.self, forKey: .description);
-        notifications = ConversationNotification(rawValue: try container.decodeIfPresent(String.self, forKey: .notifications) ?? "") ?? .always;
-        features = try container.decodeIfPresent(Set<Channel.Feature>.self, forKey: .features) ?? [];
-        confirmMessages = try container.decodeIfPresent(Bool.self, forKey: .confirmMessages) ?? true;
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self);
-        try container.encode(participantId, forKey: .participantId);
-        try container.encode(state.rawValue, forKey: .state);
-        try container.encodeIfPresent(nick, forKey: .nick);
-        try container.encodeIfPresent(name, forKey: .name);
-        try container.encodeIfPresent(description, forKey: .description);
-        if notifications != .always {
-            try container.encode(notifications.rawValue, forKey: .notifications);
-        }
-        try container.encode(features, forKey: .features);
-        try container.encode(confirmMessages, forKey: .confirmMessages);
-    }
-    
-    public func equals(_ options: ChatOptionsProtocol) -> Bool {
-        guard let options = options as? ChannelOptions else {
-            return false;
-        }
-        return options == self;
-    }
-    
-    enum CodingKeys: String, CodingKey {
-        case participantId = "participantId"
-        case nick = "nick";
-        case state = "state"
-        case notifications = "notifications";
-        case name = "name";
-        case description = "desc";
-        case features = "features";
-        case confirmMessages = "confirmMessages";
     }
 }
 

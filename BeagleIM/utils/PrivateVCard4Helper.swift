@@ -31,63 +31,39 @@ class PrivateVCard4Helper {
         return Settings.showAdvancedXmppFeatures;
     }
     
-    static func retrieve(on account: BareJID, from jid: BareJID, completionHandler: @escaping (Result<VCard,ErrorCondition>)->Void) {
+    static func retrieve(on account: BareJID, from jid: BareJID) async throws -> VCard {
         if isEnabled, let pubsubModule = XmppService.instance.getClient(for: account)?.module(.pubsub) {
-            pubsubModule.retrieveItems(from: jid, for: NODE, limit: .items(withIds: ["current"]), completionHandler: { result in
-                switch result {
-                case .success(let items):
-                    if let item = items.items.first.map({ $0.payload }), let vcard = VCard(vcard4: item) {
-                        completionHandler(.success(vcard));
-                        return;
-                    }
-                    break;
-                default:
-                    break;
-                }
-                completionHandler(.failure(.item_not_found));
-            });
+            let items = try await pubsubModule.retrieveItems(from: jid, for: NODE, limit: .items(withIds: ["current"]));
+            guard let item = items.items.first.map({ $0.payload }), let vcard = VCard(vcard4: item) else {
+                throw XMPPError(condition: .item_not_found);
+            }
+            return vcard;
         } else {
-            completionHandler(.failure(.item_not_found));
+            throw XMPPError(condition: .item_not_found);
         }
     }
     
-    static func publish(on account: BareJID, vcard: VCard, completionHandler: @escaping (PubSubPublishItemResult)->Void) {
+    static func publish(on account: BareJID, vcard: VCard) async throws {
         if isEnabled, let pubsubModule = XmppService.instance.getClient(for: account)?.module(.pubsub) {
-            let publishOptions = JabberDataElement(type: .submit);
-            publishOptions.addField(HiddenField(name: "FORM_TYPE")).value = "http://jabber.org/protocol/pubsub#publish-options";
-            publishOptions.addField(TextSingleField(name: "pubsub#access_model")).value = "presence";
-            pubsubModule.publishItem(at: account, to: NODE, itemId: "current", payload: vcard.toVCard4(), publishOptions: publishOptions, completionHandler: { result in
-                switch result {
-                case .failure(let error):
-                    guard error.error != .conflict() else {
-                        pubsubModule.retrieveNodeConfiguration(from: account, node: NODE, completionHandler: { res in
-                            switch res {
-                            case .failure(_):
-                                completionHandler(result);
-                            case .success(let configuration):
-                                let field = configuration.getField(named: "pubsub#access_model") ?? configuration.addField(TextSingleField(name: "pubsub#access_model"));
-                                field.value = "presence";
-                                pubsubModule.configureNode(at: account, node: NODE, with: configuration, completionHandler: { res in
-                                    switch res {
-                                    case .failure(_):
-                                        completionHandler(result);
-                                    case .success:
-                                        pubsubModule.publishItem(at: account, to: NODE, itemId: "current", payload: vcard.toVCard4(), publishOptions: publishOptions, completionHandler: { result in
-                                            completionHandler(result);
-                                        });
-                                    }
-                                })
-                            }
-                        })
-                        return;
-                    }
-                default:
-                    break;
+            let publishOptions = PubSubNodeConfig()
+            publishOptions.accessModel = .presence;
+            do {
+                _ = try await pubsubModule.publishItem(at: account, to: NODE, itemId: "current", payload: vcard.toVCard4(), publishOptions: publishOptions);
+            } catch let publishError as XMPPError  {
+                guard publishError.condition != .conflict else {
+                    throw publishError;
                 }
-                completionHandler(result);
-            });
+                do {
+                    let config = try await pubsubModule.retrieveNodeConfiguration(from: account, node: NODE);
+                    config.accessModel = .presence;
+                    try await pubsubModule.configureNode(at: account, node: NODE, with: publishOptions);
+                } catch {
+                    throw publishError;
+                }
+                _ = try await pubsubModule.publishItem(at: account, to: NODE, itemId: "current", payload: vcard.toVCard4(), publishOptions: publishOptions);
+            }
         } else {
-            completionHandler(.failure(.undefined_condition));
+            throw XMPPError(condition: .undefined_condition);
         }
     }
 }

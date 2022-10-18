@@ -39,7 +39,7 @@ class ChangePasswordController: NSViewController, NSTextFieldDelegate, AccountAw
     
     override func viewWillAppear() {
         self.changeButton.isEnabled = false;
-        self.message.stringValue = String.localizedStringWithFormat(NSLocalizedString("To change password for account %$ please fill out this form:", comment: "settings"), self.account?.stringValue ?? "");
+        self.message.stringValue = String.localizedStringWithFormat(NSLocalizedString("To change password for account %$ please fill out this form:", comment: "settings"), self.account?.description ?? "");
         if let account = self.account {
             let connected = (XmppService.instance.getClient(for: account)?.state ?? .disconnected()) == .connected();
             if connected {
@@ -105,13 +105,10 @@ class ChangePasswordController: NSViewController, NSTextFieldDelegate, AccountAw
     }
     
     fileprivate func changePassword(for account: BareJID, newPassword: String) {
-        guard var acc = AccountManager.getAccount(for: account) else {
-            return;
-        }
-
-        acc.password = newPassword;
         do {
-            try AccountManager.save(account: acc);
+            try AccountManager.modifyAccount(for: account, { acc in
+                acc.password = newPassword;
+            })
 
             if self.changeOnServer?.state == .on {
                 let alert = NSAlert();

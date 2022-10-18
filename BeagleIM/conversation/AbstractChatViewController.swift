@@ -113,20 +113,15 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     
     override func viewWillAppear() {
         super.viewWillAppear();
-        self.messageField?.placeholderAttributedString = account != nil ? NSAttributedString(string: String.localizedStringWithFormat(NSLocalizedString("from %@...", comment: "placehoder of message entry field"), account.stringValue), attributes: [.foregroundColor: NSColor.placeholderTextColor, .font: NSFont.systemFont(ofSize: NSFont.systemFontSize)]) : nil;
+        self.messageField?.placeholderAttributedString = account != nil ? NSAttributedString(string: String.localizedStringWithFormat(NSLocalizedString("from %@...", comment: "placehoder of message entry field"), account.description), attributes: [.foregroundColor: NSColor.placeholderTextColor, .font: NSFont.systemFont(ofSize: NSFont.systemFontSize)]) : nil;
         
         self.updateMessageFieldSize();
         self.messageFieldScroller.cornerRadius = messageFieldScrollerHeight.constant / 2;
                 
-        DBChatStore.instance.messageDraft(for: account, with: jid, completionHandler: { draft in
-            guard let text = draft else {
-                return;
-            }
-            DispatchQueue.main.async {
-                self.messageField.string = text;
-                self.updateMessageFieldSize();
-            }
-        });
+        if let draft = DBChatStore.instance.messageDraft(for: account, with: jid) {
+            self.messageField.string = draft;
+            self.updateMessageFieldSize();
+        }        
     }
     
     override func viewWillDisappear() {
@@ -157,8 +152,7 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
         self.messageField.complete(nil);
     }
         
-    func send(message: String, correctedMessageOriginId: String?) -> Bool {
-        return false;
+    func send(message: String, correctedMessageOriginId: String?) async throws {
     }
         
     func updateMessageFieldSize() {
@@ -261,12 +255,15 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
                     guard !msg.isEmpty else {
                         return;
                     }
-                    guard self.send(message: msg, correctedMessageOriginId: self.correctedMessageOriginId) else {
-                        return;
+                    
+                    Task {
+                        try await self.send(message: msg, correctedMessageOriginId: self.correctedMessageOriginId);
+                        await MainActor.run(body: {
+                            self.messageField.reset();
+                            self.correctedMessageOriginId = nil;
+                            self.updateMessageFieldSize();
+                        })
                     }
-                    self.messageField.reset();
-                    self.correctedMessageOriginId = nil;
-                    self.updateMessageFieldSize();
                 }
                 return true;
             }

@@ -25,7 +25,7 @@ import Martin
 class ChatsListGroupChat: ChatsListGroupAbstractChat {
     
     init(delegate: ChatsListViewDataSourceDelegate) {
-        super.init(name: NSLocalizedString("Direct messages", comment: "Chats list group name"), dispatcher: QueueDispatcher(label: "chats_list_group_chats_queue"), delegate: delegate, canOpenChat: true);
+        super.init(name: NSLocalizedString("Direct messages", comment: "Chats list group name"), queue: DispatchQueue(label: "chats_list_group_chats_queue"), delegate: delegate, canOpenChat: true);
     }
     
     override func isAccepted(chat: Conversation) -> Bool {
@@ -37,7 +37,7 @@ class ChatsListGroupChat: ChatsListGroupAbstractChat {
 class ChatsListGroupChatUnknown: ChatsListGroupAbstractChat {
     
     init(delegate: ChatsListViewDataSourceDelegate) {
-        super.init(name: NSLocalizedString("From unknown", comment: "Chats list group name"), dispatcher: QueueDispatcher(label: "chats_list_group_chats_unkonwn_queue"), delegate: delegate, canOpenChat: false);
+        super.init(name: NSLocalizedString("From unknown", comment: "Chats list group name"), queue: DispatchQueue(label: "chats_list_group_chats_unkonwn_queue"), delegate: delegate, canOpenChat: false);
     }
     
     override func isAccepted(chat: Conversation) -> Bool {

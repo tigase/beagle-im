@@ -20,6 +20,7 @@
 //
 
 import AppKit
+import Intents
 
 extension NSImage {
     
@@ -178,6 +179,13 @@ extension NSImage {
         })
     }
     
+    @available(macOS 11.0, *)
+    public func inImage() -> INImage? {
+        guard let data = self.jpegData(compressionQuality: 0.7) else {
+            return nil;
+        }
+        return INImage(imageData: data);
+    }
 }
 
 fileprivate extension NSImage {

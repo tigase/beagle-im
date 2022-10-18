@@ -21,7 +21,7 @@
 
 import Foundation
 
-public enum ConversationEntryEncryption: Hashable {
+public enum ConversationEntryEncryption: Hashable, Sendable {
     case none
     case decrypted(fingerprint: String?)
     case decryptionFailed(errorCode: Int)
@@ -32,9 +32,9 @@ public enum ConversationEntryEncryption: Hashable {
         case .none, .decrypted(_):
             return nil;
         case .decryptionFailed(let errorCode):
-            return String.localizedStringWithFormat(NSLocalizedString("Message decryption failed! Error code: %d", comment: "OMEMO decryption error"), errorCode);
+            return String.localizedStringWithFormat(NSLocalizedString("Message decryption failed! Error code: %d", comment: "message encryption failure"), errorCode);
         case .notForThisDevice:
-            return NSLocalizedString("Message was not encrypted for this devices", comment: "OMEMO decryption error");
+            return NSLocalizedString("Message was not encrypted for this device", comment: "message encryption failure");
         }
     }
     
@@ -55,7 +55,7 @@ public enum ConversationEntryEncryption: Hashable {
             return nil;
         }
     }
-    
+
     var value: MessageEncryption {
         switch self {
         case .none:

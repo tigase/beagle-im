@@ -44,7 +44,7 @@ class MeetEventHandler: XmppServiceExtension {
                         let alert = Alert();
                         alert.icon = NSImage(named: "videoCall");
                         alert.messageText = "Invitiation to meeting";
-                        alert.informativeText = "User \(DBRosterStore.instance.item(for: client, jid: sender.withoutResource)?.name ?? sender.bareJid.stringValue) invites you to join a meeting";
+                        alert.informativeText = "User \(DBRosterStore.instance.item(for: client, jid: sender.withoutResource())?.name ?? sender.bareJid.description) invites you to join a meeting";
                         alert.addButton(withTitle: "Accept");
                         alert.addButton(withTitle: "Decline");
 
@@ -53,10 +53,14 @@ class MeetEventHandler: XmppServiceExtension {
                         alert.run(completionHandler: { response in
                             switch response {
                             case .alertFirstButtonReturn:
-                                client.module(.meet).sendMessageInitiation(action: .proceed(id: id), to: sender);
-                                MeetManager.instance.registerMeet(at: JID(meetJid), using: client)?.join();
+                                Task {
+                                    try await client.module(.meet).sendMessageInitiation(action: .proceed(id: id), to: sender);
+                                    try await MeetManager.instance.registerMeet(at: meetJid.withoutResource(), using: client)?.join();
+                                }
                             default:
-                                client.module(.meet).sendMessageInitiation(action: .reject(id: id), to: sender);
+                                Task {
+                                    try await client.module(.meet).sendMessageInitiation(action: .reject(id: id), to: sender);
+                                }
                             }
                         })
                     }

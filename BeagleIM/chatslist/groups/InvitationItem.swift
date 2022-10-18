@@ -29,7 +29,7 @@ class InvitationItem: ChatsListItemProtocol, Identifiable, Equatable, Hashable {
     }
     
     var id: String {
-        return self.name + ":" + account.stringValue + ":" + jid.stringValue;
+        return self.name + ":" + account.description + ":" + jid.description;
     }
     
     var name: String {

@@ -26,6 +26,46 @@ import TigaseLogging
 class HTTPFileUploadHelper {
     
     private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "HTTPFileUploadHelper")
+
+    static func upload(withClient client: Context, filename: String, inputStream: InputStream, filesize size: Int, mimeType: String?, delegate: URLSessionDelegate?) async throws -> URL {
+        let httpUploadModule = client.module(.httpFileUpload);
+        let results = try await httpUploadModule.findHttpUploadComponents();
+        guard !results.isEmpty else {
+            throw ShareError.notSupported;
+        }
+        guard let compJid = results.first(where: { $0.maxSize > size })?.jid else {
+            throw ShareError.fileTooBig;
+        }
+        
+        let slot = try await httpUploadModule.requestUploadSlot(componentJid: compJid, filename: filename, size: size, contentType: mimeType);
+        
+        var request = URLRequest(url: slot.putUri);
+        slot.putHeaders.forEach({ (k,v) in
+            request.addValue(v, forHTTPHeaderField: k);
+        });
+        request.httpMethod = "PUT";
+        request.httpBodyStream = inputStream;
+        request.addValue(String(size), forHTTPHeaderField: "Content-Length");
+        if let mimeType = mimeType {
+            request.addValue(mimeType, forHTTPHeaderField: "Content-Type");
+        }
+        let session = URLSession(configuration: URLSessionConfiguration.default, delegate: delegate, delegateQueue: OperationQueue.main);
+        return try await withUnsafeThrowingContinuation({ continuation in
+            session.dataTask(with: request) { (data, response, error) in
+                let code = (response as? HTTPURLResponse)?.statusCode ?? 500;
+                guard error == nil && (code == 200 || code == 201) else {
+                    self.logger.error("upload of file \(filename) failed, error: \(error as Any), response: \(response as Any)");
+                    continuation.resume(throwing: error!);
+                    return;
+                }
+                if code == 200 {
+                    continuation.resume(throwing: ShareError.invalidResponseCode(url: slot.getUri));
+                } else {
+                    continuation.resume(returning: slot.getUri)
+                }
+            }.resume();
+        })
+    }
     
     static func upload(withClient client: Context, filename: String, inputStream: InputStream, filesize size: Int, mimeType: String?, delegate: URLSessionDelegate?, completionHandler: @escaping (Result<URL,ShareError>)->Void) {
         let httpUploadModule = client.module(.httpFileUpload);
@@ -73,7 +113,7 @@ class HTTPFileUploadHelper {
                     }
                 });
             case .failure(let error):
-                if error == .item_not_found {
+                if error.condition == .item_not_found {
                     completionHandler(.failure(.notSupported));
                 } else {
                     completionHandler(.failure(.unknownError));

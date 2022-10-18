@@ -320,8 +320,13 @@ class VoiceRecordingView: NSView, AVAudioRecorderDelegate, AVAudioPlayerDelegate
         audioRecorder?.stop();
         self.fileUrl = nil;
         
-        let task = FileURLSharingTaskItem(chat: controller.conversation, url: url, deleteFileOnCompletion: true);
-        SharingTaskManager.instance.share(task: SharingTaskManager.SharingTask(controller: controller, items: [task], imageQuality: .original, videoQuality: .original));
+        Task {
+            do {
+                try await SharingTaskManager.instance.share(conversation: controller.conversation, items: [.url(url)], quality: .original)
+            } catch {
+                SharingTaskManager.instance.show(error: error, window: self.window!);
+            }
+        }
         self.hideVoiceRecordingView(self);
     }
     

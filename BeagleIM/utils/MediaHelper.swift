@@ -108,6 +108,32 @@ public struct ShareFileInfo {
 
 class MediaHelper {
     
+    private static func replaceExtension(filename: String, newExtension: String) -> String {
+        var startOffset = filename.startIndex;
+        if filename.hasPrefix("trim.") {
+            startOffset = filename.index(startOffset, offsetBy: "trim.".count);
+        }
+
+        var name = String(filename[startOffset..<filename.endIndex]);
+        if let idx = name.lastIndex(of: ".") {
+            name = String(name[name.startIndex..<idx])
+        }
+        
+        return "\(name).\(newExtension)"
+    }
+    
+    static func askImageQuality(window: NSWindow) async throws -> ImageQuality {
+        return try await withUnsafeThrowingContinuation({ continuation in
+            askImageQuality(window: window, forceQualityQuestion: true, continuation.resume(with:));
+        })
+    }
+
+    static func askVideoQuality(window: NSWindow) async throws -> VideoQuality {
+        return try await withUnsafeThrowingContinuation({ continuation in
+            askVideoQuality(window: window, forceQualityQuestion: true, continuation.resume(with:));
+        })
+    }
+
     static func askImageQuality(window: NSWindow, forceQualityQuestion askQuality: Bool, _ completionHandler: @escaping (Result<ImageQuality,ShareError>)->Void) {
         if let quality = askQuality ? nil : ImageQuality.current {
             completionHandler(.success(quality));
@@ -159,6 +185,50 @@ class MediaHelper {
         }
     }
     
+    struct ShareFileInfo2 {
+        var url: URL;
+        let filename: String;
+        var suffix: String?;
+        
+        var filenameWithSuffix: String {
+            if let suffix = self.suffix {
+                return "\(filename).\(suffix)";
+            }
+            return filename;
+        }
+        
+        public static func from(url: URL) -> ShareFileInfo2 {
+            let name = url.lastPathComponent;
+            var startOffset = name.startIndex;
+            if name.hasPrefix("trim.") {
+                startOffset = name.index(startOffset, offsetBy: "trim.".count);
+            }
+            
+            if let idx = name.lastIndex(of: "."), idx > startOffset {
+                return ShareFileInfo2(url: url, filename: String(name[startOffset..<idx]), suffix: String(name[name.index(after: idx)..<name.endIndex]));
+            } else {
+                return ShareFileInfo2(url: url, filename: String(name[startOffset..<name.endIndex]), suffix: nil);
+            }
+        }
+    }
+    
+    static func compressImage(url: URL, quality: ImageQuality) throws -> (URL,String) {
+        guard quality != .original else {
+            return (url, url.lastPathComponent);
+        }
+        
+        let inData = try Data(contentsOf: url);
+        guard let outData = NSImage(data: inData)?.scaled(maxWidthOrHeight: quality.size).jpegData(compressionQuality: quality.quality) else {
+            throw ShareError.notSupported;
+        }
+        
+        let fileUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: false);
+        
+        try outData.write(to: fileUrl);
+        
+        return (fileUrl, replaceExtension(filename: url.lastPathComponent, newExtension: "jpg"));
+    }
+    
     static func compressImage(url: URL, fileInfo: ShareFileInfo, quality: ImageQuality, deleteSource: Bool, completionHandler: @escaping (Result<(URL,ShareFileInfo),ShareError>)->Void) {
         guard quality != .original else {
             completionHandler(.success((url, fileInfo)));
@@ -187,6 +257,35 @@ class MediaHelper {
             completionHandler(.failure(.noAccessError));
             return;
         }
+    }
+    
+    static func compressMovie(url: URL, quality: VideoQuality, progressCallback: @escaping (Float)->Void) async throws -> (URL, String) {
+        guard quality != .original else {
+            return (url, url.lastPathComponent);
+        }
+
+        let video = AVAsset(url: url);
+        let exportSession = AVAssetExportSession(asset: video, presetName: quality.preset)!;
+        exportSession.shouldOptimizeForNetworkUse = true;
+        exportSession.outputFileType = .mp4;
+        let fileUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: false);
+        exportSession.outputURL = fileUrl;
+
+        let timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true, block: { _ in
+            progressCallback(exportSession.progress);
+        })
+        let _:Void = try await withUnsafeThrowingContinuation({ continuation in
+            exportSession.exportAsynchronously {
+                timer.invalidate();
+
+                if let error = exportSession.error {
+                    continuation.resume(throwing: error);
+                } else {
+                    continuation.resume(returning: Void());
+                }
+            }
+        })
+        return (fileUrl, replaceExtension(filename: url.lastPathComponent, newExtension: "mp4"));
     }
     
     static func compressMovie(url: URL, fileInfo: ShareFileInfo, quality: VideoQuality, deleteSource: Bool, progressCallback: @escaping (Float)->Void, completionHandler: @escaping (Result<(URL,ShareFileInfo),ShareError>)->Void) {

@@ -24,14 +24,22 @@ import Martin
 import MartinOMEMO
 import AppKit
 import Combine
+import Intents
 
-public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conversation {
+public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conversation, @unchecked Sendable {
     
     public override var defaultMessageType: StanzaType {
         return .chat;
     }
     
-    var localChatState: ChatState = .active;
+    private var _localChatState: ChatState = .active;
+    public var localChatState: ChatState {
+        get {
+            return withLock({
+                return _localChatState;
+            })
+        }
+    }
     @Published
     private(set) var remoteChatState: ChatState? = nil;
     
@@ -44,10 +52,10 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
     public var debugDescription: String {
         return "Chat(account: \(account), jid: \(jid))";
     }
-
-    init(dispatcher: QueueDispatcher, context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastConversationActivity?, unread: Int, options: ChatOptions) {
+    
+    init(context: Context, jid: BareJID, id: Int, lastActivity: LastConversationActivity, unread: Int, options: ChatOptions) {
         let contact = ContactManager.instance.contact(for: .init(account: context.userBareJid, jid: jid, type: .buddy));
-        super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options, displayableId: contact);
+        super.init(context: context, jid: jid, id: id, lastActivity: lastActivity, unread: unread, options: options, displayableId: contact);
         (context.module(.httpFileUpload) as! HttpFileUploadModule).isAvailablePublisher.combineLatest(context.$state, { isAvailable, state -> [ConversationFeature] in
             if case .connected(_) = state {
                 return isAvailable ? [.httpFileUpload, .omemo] : [.omemo];
@@ -63,19 +71,25 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         return account == jid.bareJid;
     }
     
+    @discardableResult
+    func update(localChatState state: ChatState) -> Bool {
+        return withLock({
+            guard _localChatState != state else {
+                return false;
+            }
+            self._localChatState = state;
+            return true;
+        })
+    }
+    
     func changeChatState(state: ChatState) -> Message? {
-        guard localChatState != state else {
+        guard update(localChatState: state), remoteChatState != nil else {
             return nil;
         }
-        self.localChatState = state;
-        if (remoteChatState != nil) {
-            let msg = Message();
-            msg.to = JID(jid);
-            msg.type = StanzaType.chat;
-            msg.chatState = state;
-            return msg;
-        }
-        return nil;
+        
+        let msg = Message(type: .chat, to: jid.jid());
+        msg.chatState = state;
+        return msg;
     }
     
     private var remoteChatStateTimer: Foundation.Timer?;
@@ -115,7 +129,9 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         msg.chatState = .active;
         msg.isMarkable = true;
         msg.messageDelivery = .request;
-        self.localChatState = .active;
+        withLock({
+            self._localChatState = .active;
+        })
         return msg;
     }
     
@@ -134,43 +150,32 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
             message.messageDelivery = .received(id: marker.id)
         }
         message.hints = [.store];
-        self.send(message: message, completionHandler: nil);
+        Task {
+            try await self.send(message: message);
+        }
     }
  
-    public func prepareAttachment(url originalURL: URL, completionHandler: @escaping (Result<(URL, Bool, ((URL) -> URL)?), ShareError>) -> Void) {
+    public func prepareAttachment(url originalURL: URL) throws -> SharePreparedAttachment {
         let encryption = self.options.encryption ?? .none;
         switch encryption {
         case .none:
-            completionHandler(.success((originalURL, false, nil)));
+            return .init(url: originalURL, isTemporary: false, prepareShareURL: nil);
         case .omemo:
-            guard let omemoModule: OMEMOModule = self.context?.module(.omemo), let data = try? Data(contentsOf: originalURL) else {
-                completionHandler(.failure(.unknownError));
-                return;
-            }
-            let result = omemoModule.encryptFile(data: data);
-            switch result {
-            case .success(let (encryptedData, hash)):
-                let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString);
-                do {
-                    try encryptedData.write(to: tmpFile);
-                    completionHandler(.success((tmpFile, true, { url in
-                        var parts = URLComponents(url: url, resolvingAgainstBaseURL: true)!;
-                        parts.scheme = "aesgcm";
-                        parts.fragment = hash;
-                        let shareUrl = parts.url!;
+            let (encryptedData, hash) = try OMEMOModule.encryptFile(url: originalURL);
+            let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString);
+            try encryptedData.write(to: tmpFile);
+            return .init(url: tmpFile, isTemporary: true, prepareShareURL: { url in
+                var parts = URLComponents(url: url, resolvingAgainstBaseURL: true)!;
+                parts.scheme = "aesgcm";
+                parts.fragment = hash;
+                let shareUrl = parts.url!;
 
-                        return shareUrl;
-                    })));
-                } catch {
-                    completionHandler(.failure(.noAccessError));
-                }
-            case .failure(_):
-                completionHandler(.failure(.unknownError));
-            }
+                return shareUrl;
+            });
         }
     }
     
-    public func sendMessage(text: String, correctedMessageOriginId: String?) {
+    public func sendMessage(text: String, correctedMessageOriginId: String?) async throws {
         let stanzaId = UUID().uuidString;
         let encryption = self.options.encryption ?? Settings.messageEncryption;
         
@@ -180,100 +185,77 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
             var messageEncryption: ConversationEntryEncryption = .none;
             switch encryption {
             case .omemo:
-                messageEncryption = .decrypted(fingerprint: DBOMEMOStore.instance.identityFingerprint(forAccount: self.account, andAddress: SignalAddress(name: self.account.stringValue, deviceId: Int32(bitPattern: DBOMEMOStore.instance.localRegistrationId(forAccount: self.account)!))));
+                messageEncryption = .decrypted(fingerprint: DBOMEMOStore.instance.identityFingerprint(forAccount: self.account, andAddress: SignalAddress(name: self.account.description, deviceId: Int32(bitPattern: DBOMEMOStore.instance.localRegistrationId(forAccount: self.account)!))));
             case .none:
                 break;
             }
             let options = ConversationEntry.Options(recipient: .none, encryption: messageEncryption, isMarkable: true)
-            DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.unsent), sender: .me(conversation: self), type: .message, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: text, appendix: nil, options: options, linkPreviewAction: .none, completionHandler: nil);
+            _ = DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.unsent), sender: .me(conversation: self), type: .message, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: text, appendix: nil, options: options, linkPreviewAction: .none);
         }
         
-        resendMessage(content: text, isAttachment: false, encryption: encryption, stanzaId: stanzaId, correctedMessageOriginId: correctedMessageOriginId);
+        try await resendMessage(content: text, isAttachment: false, encryption: encryption, stanzaId: stanzaId, correctedMessageOriginId: correctedMessageOriginId);
     }
     
     // we are only encrypting URL and not file content, it should be encoded prior uploading
-    public func sendAttachment(url: String, appendix: ChatAttachmentAppendix, originalUrl: URL?, completionHandler: (()->Void)?) {
+    public func sendAttachment(url: String, appendix: ChatAttachmentAppendix, originalUrl: URL?) async throws {
         let stanzaId = UUID().uuidString;
         let encryption = self.options.encryption ?? Settings.messageEncryption;
 
         var messageEncryption: ConversationEntryEncryption = .none;
         switch encryption {
         case .omemo:
-            messageEncryption = .decrypted(fingerprint: DBOMEMOStore.instance.identityFingerprint(forAccount: self.account, andAddress: SignalAddress(name: self.account.stringValue, deviceId: Int32(bitPattern: DBOMEMOStore.instance.localRegistrationId(forAccount: self.account)!))));
+            messageEncryption = .decrypted(fingerprint: DBOMEMOStore.instance.identityFingerprint(forAccount: self.account, andAddress: SignalAddress(name: self.account.description, deviceId: Int32(bitPattern: DBOMEMOStore.instance.localRegistrationId(forAccount: self.account)!))));
         case .none:
             break;
         }
         let options = ConversationEntry.Options(recipient: .none, encryption: messageEncryption, isMarkable: true)
-        DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.unsent), sender: .me(conversation: self), type: .attachment, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: url, appendix: appendix, options: options, linkPreviewAction: .none, completionHandler: { msgId in
+        if let msgId = DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.unsent), sender: .me(conversation: self), type: .attachment, timestamp: Date(), stanzaId: stanzaId, serverMsgId: nil, remoteMsgId: nil, data: url, appendix: appendix, options: options, linkPreviewAction: .none) {
             if let url = originalUrl {
-                _ = DownloadStore.instance.store(url, filename: appendix.filename ?? url.lastPathComponent, with: "\(msgId)");
+                _ = DownloadStore.instance.store(url, filename:  appendix.filename ?? url.lastPathComponent, with: "\(msgId)");
             }
-            completionHandler?();
-        });
-        resendMessage(content: url, isAttachment: true, encryption: encryption, stanzaId: stanzaId, correctedMessageOriginId: nil);
+        }
+        try await resendMessage(content: url, isAttachment: true, encryption: encryption, stanzaId: stanzaId, correctedMessageOriginId: nil);
     }
     
-    func resendMessage(content: String, isAttachment: Bool, encryption: ChatEncryption, stanzaId: String, correctedMessageOriginId: String?) {
+    func resendMessage(content: String, isAttachment: Bool, encryption: ChatEncryption, stanzaId: String, correctedMessageOriginId: String?) async throws {
         let message = createMessage(text: content, id: stanzaId);
         if isAttachment {
             message.oob = content
         }
         message.lastMessageCorrectionId = correctedMessageOriginId;
-        send(message: message, encryption: encryption, completionHandler: { result in
-            switch result {
-            case .success(_):
-                DBChatHistoryStore.instance.updateItemState(for: self, stanzaId: correctedMessageOriginId ?? message.id!, from: .outgoing(.unsent), to: .outgoing(.sent), withTimestamp: correctedMessageOriginId != nil ? nil : Date());
-            case .failure(let error):
-                switch error {
-                case .gone:
-                    return;
-                default:
-                    break;
-                }
-                DBChatHistoryStore.instance.markOutgoingAsError(for: self, stanzaId: message.id!, errorCondition: .undefined_condition, errorMessage: error.message)
+        
+        if #available(macOS 12.0, *) {
+            let sender = INPerson(personHandle: INPersonHandle(value: account.description, type: .unknown), nameComponents: nil, displayName: AccountManager.account(for: self.account)?.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: account.description, isMe: true, suggestionType: .instantMessageAddress);
+            let recipient = INPerson(personHandle: INPersonHandle(value: jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: jid.description, isMe: false, suggestionType: .instantMessageAddress);
+            let intent = INSendMessageIntent(recipients: [recipient], outgoingMessageType: .outgoingMessageText, content: nil, speakableGroupName: nil, conversationIdentifier: "account=\(account.description)|sender=\(jid.description)", serviceName: "Beagle IM", sender: sender, attachments: nil);
+            let interaction = INInteraction(intent: intent, response: nil);
+            interaction.direction = .outgoing;
+            try await interaction.donate();
+        }
+        
+        do {
+            try await send(message: message, encryption: encryption);
+            DBChatHistoryStore.instance.updateItemState(for: self, stanzaId: correctedMessageOriginId ?? message.id!, from: .outgoing(.unsent), to: .outgoing(.sent), withTimestamp: correctedMessageOriginId != nil ? nil : Date());
+        } catch let error as XMPPError {
+            guard error.condition == .gone else {
+                DBChatHistoryStore.instance.markOutgoingAsError(for: self, stanzaId: message.id!, error: error)
+                throw error;
             }
-        })
+        }
     }
     
-    private func send(message: Message, encryption: ChatEncryption, completionHandler: @escaping (Result<Void,XMPPError>)->Void) {
-        XmppService.instance.tasksQueue.schedule(for: jid, task: { callback in
+    private func send(message: Message, encryption: ChatEncryption) async throws {
+        try await XmppService.instance.tasksQueue.schedule(for: jid, operation: {
             switch encryption {
             case .none:
-                super.send(message: message, completionHandler: { result in
-                    completionHandler(result);
-                    callback();
-                });
+                try await super.send(message: message);
             case .omemo:
                 guard let context = self.context as? XMPPClient, context.isConnected else {
-                    completionHandler(.failure(.gone(nil)));
-                    callback();
-                    return;
+                    throw XMPPError(condition: .gone);
                 }
-                message.oob = nil;
-                context.module(.omemo).encode(message: message, completionHandler: { result in
-                    switch result {
-                    case .successMessage(let encodedMessage, _):
-                        guard context.isConnected else {
-                            completionHandler(.failure(.gone(nil)))
-                            callback();
-                            return;
-                        }
-                        super.send(message: encodedMessage, completionHandler: { result in
-                            completionHandler(result);
-                            callback();
-                        });
-                    case .failure(let error):
-                        var errorMessage = NSLocalizedString("It was not possible to send encrypted message due to encryption error", comment: "omemo encryption error");
-                        switch error {
-                        case .noSession:
-                            errorMessage = NSLocalizedString("There is no trusted device to send message to", comment: "omemo encryption error");
-                        default:
-                            break;
-                        }
-                        completionHandler(.failure(.unexpected_request(errorMessage)));
-                        callback();
-                    }
-                })
+
+                let encryptedMessage = try await context.module(.omemo).encrypt(message: message);
+                try await super.send(message: encryptedMessage.message);
             }
         })
     }
@@ -288,46 +270,3 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
     }
 }
 
-typealias ConversationOptionsProtocol = ChatOptionsProtocol
-
-public struct ChatOptions: Codable, ConversationOptionsProtocol, Equatable {
-    
-    var encryption: ChatEncryption?;
-    public var notifications: ConversationNotification = .always;
-    public var confirmMessages: Bool = true;
-    
-    init() {}
-    
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self);
-        if let val = try container.decodeIfPresent(String.self, forKey: .encryption) {
-            encryption = ChatEncryption(rawValue: val);
-        }
-        notifications = ConversationNotification(rawValue: try container.decodeIfPresent(String.self, forKey: .notifications) ?? "") ?? .always;
-        confirmMessages = try container.decodeIfPresent(Bool.self, forKey: .confirmMessages) ?? true;
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self);
-        if encryption != nil {
-            try container.encode(encryption!.rawValue, forKey: .encryption);
-        }
-        if notifications != .always {
-            try container.encode(notifications.rawValue, forKey: .notifications);
-        }
-        try container.encode(confirmMessages, forKey: .confirmMessages);
-    }
-    
-    public func equals(_ options: ChatOptionsProtocol) -> Bool {
-        guard let options = options as? ChatOptions else {
-            return false;
-        }
-        return options == self;
-    }
-    
-    enum CodingKeys: String, CodingKey {
-        case encryption = "encrypt"
-        case notifications = "notifications";
-        case confirmMessages = "confirmMessages"
-    }
-}

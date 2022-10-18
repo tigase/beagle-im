@@ -43,7 +43,7 @@ class ExecuteAdHocCommandController: NSViewController {
     var jid: JID!;
     var commandId: String!;
 
-    var form: JabberDataElement? {
+    var form: DataForm? {
         didSet {
             if let title = form?.title, !title.isEmpty {
                 titleField.stringValue = title;
@@ -57,7 +57,7 @@ class ExecuteAdHocCommandController: NSViewController {
                 titleInstructionsNoSpaceConstraint?.isActive = true;
             }
             
-            if let instructions = form?.instructions?.map({ s -> String in s ?? ""}).joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines), !instructions.isEmpty {
+            if let instructions = form?.instructions.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines), !instructions.isEmpty {
                 instructionsField.stringValue = instructions;
                 instructionsFieldHeightConstraint.isActive = false;
                 instructionsFormNoSpaceConstraint?.isActive = false;

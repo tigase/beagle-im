@@ -22,14 +22,14 @@
 import Foundation
 import Martin
 
-public protocol ConversationKey: CustomDebugStringConvertible {
+public protocol ConversationKey: CustomDebugStringConvertible, Sendable {
 
     var account: BareJID { get }
     var jid: BareJID { get }
         
 }
 
-public class ConversationKeyItem: ConversationKey {
+public struct ConversationKeyItem: ConversationKey {
     
     public let account: BareJID;
     public let jid: BareJID;

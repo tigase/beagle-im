@@ -150,7 +150,9 @@ class BookmarksViewController: NSViewController, NSTableViewDataSource, NSTableV
             return;
         }
         
-        client.module(.pepBookmarks).remove(bookmark: item.conference);
+        Task {
+            try await client.module(.pepBookmarks).remove(bookmark: item.conference);
+        }
     }
     
     @objc func enableAutojoin(_ sender: Any) {
@@ -164,7 +166,9 @@ class BookmarksViewController: NSViewController, NSTableViewDataSource, NSTableV
             return;
         }
         
-        client.module(.pepBookmarks).addOrUpdate(bookmark: item.conference.with(autojoin: true));
+        Task {
+            try await client.module(.pepBookmarks).addOrUpdate(bookmark: item.conference.with(autojoin: true));
+        }
     }
     
     @objc func disableAutojoin(_ sender: Any) {
@@ -178,7 +182,9 @@ class BookmarksViewController: NSViewController, NSTableViewDataSource, NSTableV
             return;
         }
         
-        client.module(.pepBookmarks).addOrUpdate(bookmark: item.conference.with(autojoin: false));
+        Task {
+            try await client.module(.pepBookmarks).addOrUpdate(bookmark: item.conference.with(autojoin: false));
+        }
     }
     
     struct Item {
@@ -187,7 +193,7 @@ class BookmarksViewController: NSViewController, NSTableViewDataSource, NSTableV
         var conference: Bookmarks.Conference;
      
         var displayName: String {
-            return conference.name ?? conference.jid.localPart ?? conference.jid.stringValue;
+            return conference.name ?? conference.jid.localPart ?? conference.jid.description;
         }
     }
 }
@@ -202,7 +208,7 @@ class BookmarkTableViewCell: NSTableCellView {
         didSet {
             avatar.avatar = (item != nil ? AvatarManager.instance.avatar(for: item!.conference.jid.bareJid, on: item!.account) : nil) ?? AvatarManager.instance.defaultGroupchatAvatar;
             nameLabel.stringValue = item?.displayName ?? "";
-            jidLabel.stringValue = item?.conference.jid.stringValue ?? "";
+            jidLabel.stringValue = item?.conference.jid.description ?? "";
         }
     }
     

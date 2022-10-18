@@ -50,7 +50,7 @@ class ChannelManageBlocked: NSViewController, NSTableViewDelegate, NSTableViewDa
                     switch result {
                     case .success(let banned):
                             self.actionInProgress = false;
-                            self.banned = banned.sorted(by: { $0.stringValue < $1.stringValue });
+                            self.banned = banned.sorted(by: { $0.description < $1.description });
                             self.tableView?.reloadData();
                     case .failure(let errorCondition):
                             self.actionInProgress = false;
@@ -71,7 +71,7 @@ class ChannelManageBlocked: NSViewController, NSTableViewDelegate, NSTableViewDa
         }
     
         let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "BlockedJidColumn"), owner: nil) as? NSTableCellView;
-        view?.textField?.stringValue = banned[row].stringValue;
+        view?.textField?.stringValue = banned[row].description;
         return view;
     }
     
@@ -89,7 +89,7 @@ class ChannelManageBlocked: NSViewController, NSTableViewDelegate, NSTableViewDa
                             var banned = self.banned;
                             if !banned.contains(jid) {
                                 banned.append(jid);
-                                self.banned = banned.sorted(by: { $0.stringValue < $1.stringValue });
+                                self.banned = banned.sorted(by: { $0.description < $1.description });
                                 self.tableView?.insertRows(at: IndexSet(integer: self.banned.firstIndex(of: jid) ?? 0), withAnimation: .effectFade);
                             }
                         case .failure(_):

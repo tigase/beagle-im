@@ -116,7 +116,7 @@ class JoinChannelViewController: BaseJoinChannelViewController, NSTableViewDeleg
                 for component in that.components {
                     group.enter();
                     let channelJid = JID(BareJID(localPart: text, domain: component.jid.domain));
-                    client.module(.disco).getInfo(for: channelJid, node: nil, completionHandler: { result in
+                    client.module(.disco).info(for: channelJid, node: nil, completionHandler: { result in
                          switch result {
                          case .success(let info):
                              DispatchQueue.main.async {
@@ -178,7 +178,7 @@ class JoinChannelViewController: BaseJoinChannelViewController, NSTableViewDeleg
         } else {
             if val.contains("@") {
                 self.items = allItems.filter({ (item) -> Bool in
-                    return (item.name ?? "").contains(val) || item.jid.stringValue.contains(val);
+                    return (item.name ?? "").contains(val) || item.jid.description.contains(val);
                 });
             } else {
                 self.items = allItems.filter({ (item) -> Bool in
@@ -206,7 +206,7 @@ class JoinChannelViewController: BaseJoinChannelViewController, NSTableViewDeleg
         group.enter();
         for component in components {
             group.enter();
-            client.module(.disco).getItems(for: component.jid, completionHandler: { result in
+            client.module(.disco).items(for: component.jid, completionHandler: { result in
                 switch result {
                 case .success(let items):
                     DispatchQueue.main.async {
@@ -233,6 +233,6 @@ class MucRoomView: NSTableCellView {
     
     func set(item: DiscoveryModule.Item) {
         label.stringValue = item.name ?? item.jid.localPart!;
-        jidLabel.stringValue = item.jid.stringValue;
+        jidLabel.stringValue = item.jid.description;
     }
 }

@@ -22,7 +22,7 @@
 import AppKit
 import Martin
 
-public enum ConversationEntrySender: Hashable {
+public enum ConversationEntrySender: Hashable, Sendable {
     
     case none
     case me(nickname: String)
@@ -74,14 +74,46 @@ public enum ConversationEntrySender: Hashable {
     }
     
     static func me(conversation: ConversationKey) -> ConversationEntrySender {
-        return .me(nickname: AccountManager.getAccount(for: conversation.account)?.nickname ?? conversation.account.stringValue);
+        return .me(nickname: AccountManager.account(for: conversation.account)?.nickname ?? conversation.account.description);
     }
     
     static func buddy(conversation: ConversationKey) -> ConversationEntrySender {
         if let conv = conversation as? Conversation {
             return .buddy(nickname: conv.displayName);
         } else {
-            return .buddy(nickname: DBRosterStore.instance.item(for: conversation.account, jid: JID(conversation.jid))?.name ?? conversation.jid.stringValue);
+            return .buddy(nickname: DBRosterStore.instance.item(for: conversation.account, jid: JID(conversation.jid))?.name ?? conversation.jid.description);
         }
     }
+}
+
+import TigaseSQLite3
+
+extension ConversationEntrySender {
+    
+    static func from(conversationType: ConversationType, conversation: ConversationKey, cursor: Cursor) -> ConversationEntrySender {
+        let direction = ConversationEntryState.from(code: cursor.int(for: "state") ?? 0, errorMessage: nil).direction;
+        switch conversationType {
+        case .chat:
+            switch direction {
+            case .outgoing:
+                return .me(conversation: conversation);
+            case .incoming:
+                return .buddy(conversation: conversation);
+            }
+        case .room:
+            guard let nickname: String = cursor["author_nickname"] else {
+                return .none;
+            }
+            return .occupant(nickname: nickname, jid: cursor["author_jid"]);
+        case .channel:
+            guard let participantId: String = cursor["participant_id"], let nickname: String = cursor["author_nickname"] else {
+                guard let nickname: String = cursor["author_nickname"] else {
+                    return .buddy(nickname: "");
+                }
+                return .occupant(nickname: nickname, jid: cursor["author_jid"]);
+            }
+            return .participant(id: participantId, nickname: nickname, jid: cursor["author_jid"]);
+        }
+    }
+    
 }

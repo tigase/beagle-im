@@ -36,30 +36,32 @@ class DBVCardStore {
     public static let VCARD_UPDATED = Notification.Name("vcardUpdated");
     public static let instance = DBVCardStore();
     
-    private let dispatcher = QueueDispatcher(label: "vcard_store");
+    private let queue = DispatchQueue(label: "vcard_store");
         
     private init() {
         
     }
     
-    open func vcard(for jid: BareJID, completionHandler: @escaping (VCard?)->Void) {
-        dispatcher.async {
-            let data: String? = try! Database.main.reader({ database in
-                try database.select(query: .vcardFindByJid, params: ["jid": jid]).mapFirst({ cursor -> String? in
-                    return cursor.string(for: "data");
-                })
-            });
-            
-            guard let value = data, let elem = Element.from(string: value) else {
-                completionHandler(nil);
-                return;
+    open func vcard(for jid: BareJID) async -> VCard? {
+        await withUnsafeContinuation({ continuation in
+            queue.async {
+                let data: String? = try! Database.main.reader({ database in
+                    try database.select(query: .vcardFindByJid, params: ["jid": jid]).mapFirst({ cursor -> String? in
+                        return cursor.string(for: "data");
+                    })
+                });
+                
+                guard let value = data, let elem = Element.from(string: value) else {
+                    continuation.resume(returning: nil);
+                    return;
+                }
+                continuation.resume(returning: (VCard(vcard4: elem) ?? VCard(vcardTemp: elem)));
             }
-            completionHandler(VCard(vcard4: elem) ?? VCard(vcardTemp: elem));
-        }
+        })
     }
     
     open func updateVCard(for jid: BareJID, on account: BareJID, vcard: VCard) {
-        dispatcher.async {
+        queue.async {
             try! Database.main.writer({ database in
                 let params: [String: Any?] = ["jid": jid, "data": vcard.toVCard4(), "timestamp": Date()];
                 try database.update(query: .vcardUpdate, params: params);

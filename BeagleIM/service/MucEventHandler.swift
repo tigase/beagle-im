@@ -35,39 +35,32 @@ class MucEventHandler: XmppServiceExtension {
             }
             client.module(.muc).roomManager.rooms(for: client).forEach { (room) in
                 // first we need to check if room supports MAM
-                DBChatMarkersStore.instance.awaitingSync(for: room as! Room);
-                client.module(.disco).getInfo(for: JID(room.jid), completionHandler: { result in
-                    var mamVersions: [MessageArchiveManagementModule.Version] = [];
-                    switch result {
-                    case .success(let info):
-                        mamVersions = info.features.compactMap({ MessageArchiveManagementModule.Version(rawValue: $0) });
-                        (room as! Room).roomFeatures = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
-                    default:
-                        break;
-                    }
+                Task {
+                    DBChatMarkersStore.instance.awaitingSync(for: room as! Room);
+                    let info = try await client.module(.disco).info(for: JID(room.jid));
+                    let mamVersions = info.features.compactMap(MessageArchiveManagementModule.Version.init(rawValue:));
+                    (room as! Room).roomFeatures = Set(info.features.compactMap(Room.Feature.init(rawValue:)));
                     if let timestamp = (room as? Room)?.timestamp {
                         if !mamVersions.isEmpty {
-                            room.rejoin(fetchHistory: .skip).handle({ result in
-                                guard case .success(let r) = result else {
+                            let result = try await room.rejoin(fetchHistory: .skip);
+                            switch result {
+                            case .created(let room), .joined(let room):
+                                guard let client = room.context as? XMPPClient else {
                                     return;
                                 }
-                                switch r {
-                                case .created(let room), .joined(let room):
-                                    guard let client = room.context as? XMPPClient else {
-                                        return;
-                                    }
-                                    MessageEventHandler.syncMessages(for: client, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: JID(room.jid), since: timestamp);
+                                Task {
+                                    try await MessageEventHandler.syncMessages(for: client, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: JID(room.jid), since: timestamp);
                                 }
-                            });
+                            }
                         } else {
                             DBChatMarkersStore.instance.syncCompleted(forAccount: room.account, with: room.jid);
-                            _ = room.rejoin(fetchHistory: .from(timestamp));
+                            _ = try await room.rejoin(fetchHistory: .from(timestamp))
                         }
                     } else {
                         DBChatMarkersStore.instance.syncCompleted(forAccount: room.account, with: room.jid);
-                        _ = room.rejoin(fetchHistory: .initial);
+                        _ = try await room.rejoin(fetchHistory: .initial);
                     }
-                });
+                }
             }
         }).store(in: &cancellables);
         client.module(.muc).messagesPublisher.sink(receiveValue: { e in
@@ -78,8 +71,12 @@ class MucEventHandler: XmppServiceExtension {
             }
             if let xUser = XMucUserElement.extract(from: e.message) {
                 if xUser.statuses.contains(104) {
-                    self.updateRoomName(room: room);
-                    VCardManager.instance.refreshVCard(for: room.roomJid, on: room.account, completionHandler: nil);
+                    Task {
+                        try await self.updateRoomName(room: room);
+                    }
+                    Task {
+                        _ = try await VCardManager.instance.refreshVCard(for: room.roomJid, on: room.account);
+                    }
                 }
             }
             DBChatHistoryStore.instance.append(for: room, message: e.message, source: .stream);
@@ -108,7 +105,9 @@ class MucEventHandler: XmppServiceExtension {
                     guard let nick = bookmark.nick else {
                         return;
                     }
-                    _ = mucModule.join(roomName: bookmark.jid.localPart!, mucServer: bookmark.jid.domain, nickname: nick, password: bookmark.password);
+                    Task {
+                        _ = try await mucModule.join(roomName: bookmark.jid.localPart!, mucServer: bookmark.jid.domain, nickname: nick, password: bookmark.password);
+                    }
                 });
         }).store(in: &cancellables);
     }
@@ -120,7 +119,7 @@ class MucEventHandler: XmppServiceExtension {
         
         DispatchQueue.main.async {
             let alert = Alert();
-            alert.messageText = String.localizedStringWithFormat(NSLocalizedString("Room %@", comment: "alert window title"), room.jid.stringValue);
+            alert.messageText = String.localizedStringWithFormat(NSLocalizedString("Room %@", comment: "alert window title"), room.jid.description);
             alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Could not join room. Reason:\n%@", comment: "alert window message"), error.reason);
             alert.icon = NSImage(named: NSImage.userGroupName);
             alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
@@ -150,35 +149,37 @@ class MucEventHandler: XmppServiceExtension {
         context.module(.muc).leave(room: room);
     }
         
-    public func updateRoomName(room: Room) {
-        room.context?.module(.disco).getInfo(for: JID(room.jid), completionHandler: { result in
-            switch result {
-            case .success(let info):
-                let newName = info.identities.first(where: { (identity) -> Bool in
-                    return identity.category == "conference";
-                })?.name?.trimmingCharacters(in: .whitespacesAndNewlines);
-                
-                room.updateRoom(name: newName);
-            case .failure(_):
-                break;
-            }
-        });
+    public func updateRoomName(room: Room) async throws {
+        let info = try await room.context!.module(.disco).info(for: room.jid.jid());
+        let newName = info.identities.first(where: { (identity) -> Bool in
+            return identity.category == "conference";
+        })?.name?.trimmingCharacters(in: .whitespacesAndNewlines);
+        
+        room.updateRoom(name: newName);
     }
 }
 
 class CustomMucModule: MucModule {
     
-    override func join(room: RoomProtocol, fetchHistory: RoomHistoryFetch) -> Future<RoomJoinResult, XMPPError> {
-        return Future({ promise in
-            super.join(room: room, fetchHistory: fetchHistory).handle({ result in
-                switch result {
-                case .success(_):
-                    MucEventHandler.instance.updateRoomName(room: room as! Room);
-                case .failure(_):
-                    break;
+    override func join(room: RoomProtocol, fetchHistory: RoomHistoryFetch) async throws -> RoomJoinResult {
+        let result = try await super.join(room: room, fetchHistory: fetchHistory);
+        Task {
+            try await MucEventHandler.instance.updateRoomName(room: room as! Room);
+        }
+        return result;
+    }
+    
+    override func join(room: RoomProtocol, fetchHistory: RoomHistoryFetch, completionHandler: @escaping (Result<RoomJoinResult,XMPPError>)->Void) {
+        super.join(room: room, fetchHistory: fetchHistory, completionHandler: { result in
+            switch result {
+            case .success(_):
+                Task {
+                    try await MucEventHandler.instance.updateRoomName(room: room as! Room);
                 }
-                promise(result);
-            })
+            case .failure(_):
+                break;
+            }
+            completionHandler(result);
         });
     }
     

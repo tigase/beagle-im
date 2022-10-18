@@ -25,42 +25,62 @@ import Martin
 class VCardManager {
     
     public static let instance = VCardManager();
-    
-    open func retrieveVCard(for jid: BareJID, on account: BareJID, completionHandler: @escaping (Result<VCard,XMPPError>)->Void) {
-        self.retrieveVCard(for: JID(jid), on: account, completionHandler: completionHandler);
-    }
-    
-    open func retrieveVCard(for jid: JID, on account: BareJID, completionHandler: @escaping (Result<VCard,XMPPError>)->Void) {
+        
+    open func retrieveVCard(for jid: JID, on account: BareJID) async throws -> VCard {
         guard let client = XmppService.instance.getClient(for: account) else {
-            completionHandler(.failure(.undefined_condition));
-            return;
+            throw XMPPError.undefined_condition;
         }
         
         let queryJid = jid.bareJid == account ? nil : jid;
         
-        self.retrieveVCard(module: client.module(.vcard4), for: queryJid, on: account) { (result) in
-            switch result {
-            case .success(let vcard):
-                completionHandler(.success(vcard));
-            case .failure(_):
-                self.retrieveVCard(module: client.module(.vcardTemp), for: queryJid, on: account, completionHandler: completionHandler);
+        do {
+            return try await client.module(.vcard4).retrieveVCard(from: queryJid);
+        } catch {
+            guard (error as? XMPPError ?? .undefined_condition).condition.type != .wait else {
+                throw error;
             }
+            return try await client.module(.vcardTemp).retrieveVCard(from: queryJid);
         }
     }
     
-    open func refreshVCard(for jid: BareJID, on account: BareJID, completionHandler: ((Result<VCard,XMPPError>)->Void)?) {
-        retrieveVCard(for: jid, on: account, completionHandler: { result in
-            switch result {
-            case .success(let vcard):
-                DBVCardStore.instance.updateVCard(for: jid, on: account, vcard: vcard);
-            default:
-                break;
-            }
-            completionHandler?(result);
-        })
+    open func refreshVCard(for jid: BareJID, on account: BareJID) async throws -> VCard {
+        let vcard = try await retrieveVCard(for: jid.jid(), on: account);
+        DBVCardStore.instance.updateVCard(for: jid, on: account, vcard: vcard);
+        return vcard;
     }
     
-    fileprivate func retrieveVCard(module: VCardModuleProtocol, for jid: JID?, on account: BareJID, completionHandler: @escaping (Result<VCard,XMPPError>)->Void) {
-        module.retrieveVCard(from: jid, completionHandler: completionHandler);
+    public static func fetchPhoto(photo: VCard.Photo) async throws -> Data {
+        if let binval = photo.binval {
+            guard let data = Data(base64Encoded: binval, options: .ignoreUnknownCharacters) else {
+                throw XMPPError(condition: .not_acceptable, message: "Unable to decode base64 data");
+            }
+            return data;
+        } else if let uri = photo.uri {
+            if uri.hasPrefix("data:image") && uri.contains(";base64,") {
+                guard let idx = uri.firstIndex(of: ","), let data = Data(base64Encoded: String(uri.suffix(from: uri.index(after: idx))), options: .ignoreUnknownCharacters) else {
+                    throw XMPPError(condition: .not_acceptable, message: "Unable to decode image URI");
+                }
+                return data;
+            } else if let url = URL(string: uri) {
+                return try await withUnsafeThrowingContinuation({ continuation in
+                    let task = URLSession.shared.dataTask(with: url) { (data, response, err) in
+                        if let error = err {
+                            continuation.resume(throwing: error);
+                        } else {
+                            guard let data = data else {
+                                continuation.resume(throwing: XMPPError(condition: .item_not_found));
+                                return;
+                            }
+                            continuation.resume(returning: data);
+                        }
+                    };
+                    task.resume();
+                })
+            } else {
+                throw XMPPError(condition: .not_acceptable, message: "Unable to decode image URI");
+            }
+        } else {
+            throw XMPPError(condition: .item_not_found);
+        }
     }
 }

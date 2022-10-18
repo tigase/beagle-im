@@ -193,21 +193,23 @@ class CreateChannelViewController: BaseJoinChannelViewController, NSTextFieldDel
             
             self.operationStarted();
 
-            let form = JabberDataElement(type: .submit);
-            form.addField(TextSingleField(name: "muc#roomconfig_roomname", value: channelName));
-            form.addField(BooleanField(name: "muc#roomconfig_membersonly", value: priv));
-            form.addField(BooleanField(name: "muc#roomconfig_publicroom", value: !priv));
-            form.addField(TextSingleField(name: "muc#roomconfig_roomdesc", value: channelDescription));
-            form.addField(TextSingleField(name: "muc#roomconfig_whois", value: priv ? "anyone" : "moderators"))
+            let config = RoomConfig();
+            config.name = channelName;
+            config.membersOnly = priv;
+            config.publicRoom = !priv;
+            config.desc = channelDescription;
+            config.whois = priv ? .anyone : .moderators;
             let roomJid = BareJID(localPart: roomName, domain: component.jid.domain);
-            mucModule.setRoomConfiguration(roomJid: JID(roomJid), configuration: form, completionHandler: { [weak self] result in
+            mucModule.roomConfiguration(config, of: JID(roomJid), completionHandler: { [weak self] result in
                 switch result {
                 case .success(_):
-                    let vcard = VCard();
+                    var vcard = VCard();
                     if let binval = avatar?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
                         vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
                     }
-                    client.module(.vcardTemp).publishVCard(vcard, to: roomJid, completionHandler: nil);
+                    Task {
+                        try await client.module(.vcardTemp).publish(vcard: vcard, to: roomJid);
+                    }
                     completionHander(.success(roomJid), {
                         if channelDescription != nil {
                             mucModule.setRoomSubject(roomJid: roomJid, newSubject: channelDescription);

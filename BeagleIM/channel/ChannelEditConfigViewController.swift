@@ -51,7 +51,7 @@ class ChannelEditConfigViewControlller: NSViewController, ChannelAwareProtocol {
                 switch result {
                 case .success(let config):
                     self?.submitButton.isEnabled = true;
-                    self?.formView.form = config;
+                    self?.formView.form = config.form;
                 case .failure(let errorCondition):
                     guard let that = self else {
                         return;
@@ -74,7 +74,7 @@ class ChannelEditConfigViewControlller: NSViewController, ChannelAwareProtocol {
         }
 
         progressIndicator.startAnimation(self);
-        mixModule.updateConfig(for: channel.channelJid, config: config, completionHandler: { [weak self] result in
+        mixModule.updateConfig(for: channel.channelJid, config: MixChannelConfig(form: config), completionHandler: { [weak self] result in
             DispatchQueue.main.async {
                 self?.progressIndicator.stopAnimation(self);
                 switch result {

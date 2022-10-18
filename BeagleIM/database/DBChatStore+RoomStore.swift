@@ -35,27 +35,24 @@ extension DBChatStore: RoomStore {
     }
     
     public func createRoom(for context: Context, with jid: BareJID, nickname: String, password: String?) -> ConversationCreateResult<Room> {
-        self.conversationsLifecycleQueue.sync {
-        if let room = room(for: context, with: jid) {
-            return .found(room);
-        }
-    
         let account = context.userBareJid;
-        guard let room: Room = createConversation(for: account, with: jid, execute: {
-            let timestamp = Date();
-            let options = RoomOptions(nickname: nickname, password: password);
-            let id = try! self.openConversation(account: account, jid: jid, type: .room, timestamp: timestamp, options: options);
-            
-            let room = Room(dispatcher: self.conversationDispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity(for: account, jid: jid), unread: 0, options: options);
-
-            return room;
-        }) else {
-            if let room = self.room(for: context, with: jid) {
-                return .found(room);
+        return self.queue.sync {
+            guard let conversation = self.accountsConversations.conversation(for: account, with: jid) else {
+                let timestamp = Date();
+                let options = RoomOptions(nickname: nickname, password: password);
+                let id = try! self.openConversation(account: context.userBareJid, jid: jid, type: .room, timestamp: timestamp, options: options);
+                let room = Room(context: context, jid: jid, id: id, lastActivity: lastActivity(for: account, jid: jid, conversationType: .room) ?? .none(timestamp: timestamp), unread: 0, options: options);
+                if self.accountsConversations.add(room) {
+                    self.conversationsEventsPublisher.send(.created(room));
+                    return .created(room);
+                } else {
+                    return .none;
+                }
             }
-            return .none;
-        }
-        return .created(room);
+            guard let room = conversation as? Room else {
+                return .none;
+            }
+            return .found(room);
         }
     }
     

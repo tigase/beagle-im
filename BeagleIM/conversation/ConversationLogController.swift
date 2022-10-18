@@ -51,7 +51,7 @@ class ConversationLogController: AbstractConversationLogController, NSTableViewD
             return false;
         }
         switch prevEntry.payload {
-        case .messageRetracted, .message(_, _), .attachment(_, _):
+        case .retraction, .message(_, _), .attachment(_, _):
             return entry.isMergeable(with: prevEntry);
         case .marker(_, _), .linkPreview(_):
             return isContinuation(at: row + 1, for: entry);
@@ -72,7 +72,7 @@ class ConversationLogController: AbstractConversationLogController, NSTableViewD
                 return cell;
             }
             return nil;
-        case .messageRetracted:
+        case .retraction:
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: isContinuation(at: row, for: item) ? "ChatMessageContinuationCellView" : "ChatMessageCellView"), owner: nil) as? ChatMessageCellView {
 
                 cell.id = item.id;

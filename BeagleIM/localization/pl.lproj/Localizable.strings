@@ -238,6 +238,9 @@
 /* vcard editor */
 "Could not retrive current version of a private VCard from the server." = "Nie udało się pobrać bieżącej wersji prywatnej wizytówki z serwera.";
 
+/* omemo muc error - no members */
+"Could not send encrypted message due to missing list of room members." = "Could not send encrypted message due to missing list of room members.";
+
 /* vcard editor */
 "Country" = "Kraj";
 
@@ -386,6 +389,9 @@
 "File is too big to share" = "Plik jest za duży by go udostępnić";
 
 /* alert window message */
+"File sharing failed with an error: %@" = "File sharing failed with an error: %@";
+
+/* alert window message */
 "File upload completed but it was not confirmed correctly by your server. Do you wish to proceed anyway?" = "Plik został przesłany ale serwer nie potwierdził poprawności jego przesłania. Czy chcesz kontynuować?";
 
 /* settings */
@@ -510,8 +516,14 @@
 /* account manager error */
 "It was not possible to modify account." = "Nie udało się zmodyfikować konta";
 
+/* roster controller */
+"It was not possible to modify contact %@. Received an error: %@" = "It was not possible to modify contact %1$@. Received an error: %2$@";
+
 /* alert window message */
 "It was not possible to publish channel details: %@" = "Nie udało się opublikować szczegółów kanału: %@";
+
+/* roster controller */
+"It was not possible to remove contact %@. Received an error: %@" = "It was not possible to remove contact %1$@. Received an error: %2$@";
 
 /* alert window message */
 "It was not possible to retrieve channel configuration: %@" = "Nie udało się pobrać konfiguracji kanału: %@";
@@ -624,6 +636,12 @@
 /* settings */
 "Message grouping" = "Grupowanie wiadomości";
 
+/* message encryption failure */
+"Message was not encrypted for this device" = "Message was not encrypted for this device";
+
+/* message decryption error */
+"Message was not encrypted for this device." = "Message was not encrypted for this device.";
+
 /* OMEMO decryption error */
 "Message was not encrypted for this devices" = "Wiadomość nie jest zaszyfrowana dla tego urządzenia";
 
@@ -632,6 +650,9 @@
 
 /* list of users with this role */
 "Moderators" = "Moderatorzy";
+
+/* roster controller */
+"Modifying contact" = "Modifying contact";
 
 /* popup checkbox label */
 "Mute notifications" = "Wycisz powiadomienia";
@@ -781,6 +802,9 @@
 /* Button */
 "Remove from server" = "Usuń z serwera";
 
+/* roster controller */
+"Removing contact" = "Removing contact";
+
 /* context menu item */
 "Reply" = "Odpowiedz";
 
@@ -807,6 +831,12 @@
 
 /* context menu item */
 "Retract message" = "Wycofaj wiadomość";
+
+/* retraction name in chats list */
+"Retraction" = "Retraction";
+
+/* message retraction failed alert title */
+"Retraction failed!" = "Retraction failed!";
 
 /* video call conroller */
 "Ringing..." = "Dzwoni...";
@@ -1041,6 +1071,9 @@
 
 /* Yes, we should add account */
 "Yes" = "Tak";
+
+/* you label for conversation log */
+"You" = "You";
 
 /* alert window message
    invitation alert - message */

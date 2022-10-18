@@ -246,6 +246,9 @@
 /* vcard editor */
 "Could not retrive current version of a private VCard from the server." = "Could not retrive current version of a private VCard from the server.";
 
+/* omemo muc error - no members */
+"Could not send encrypted message due to missing list of room members." = "Could not send encrypted message due to missing list of room members.";
+
 /* vcard editor */
 "Country" = "Country";
 
@@ -394,6 +397,9 @@
 "File is too big to share" = "File is too big to share";
 
 /* alert window message */
+"File sharing failed with an error: %@" = "File sharing failed with an error: %@";
+
+/* alert window message */
 "File upload completed but it was not confirmed correctly by your server. Do you wish to proceed anyway?" = "File upload completed but it was not confirmed correctly by your server. Do you wish to proceed anyway?";
 
 /* settings */
@@ -522,8 +528,14 @@
 /* account manager error */
 "It was not possible to modify account." = "It was not possible to modify account.";
 
+/* roster controller */
+"It was not possible to modify contact %@. Received an error: %@" = "It was not possible to modify contact %1$@. Received an error: %2$@";
+
 /* alert window message */
 "It was not possible to publish channel details: %@" = "It was not possible to publish channel details: %@";
+
+/* roster controller */
+"It was not possible to remove contact %@. Received an error: %@" = "It was not possible to remove contact %1$@. Received an error: %2$@";
 
 /* alert window message */
 "It was not possible to retrieve channel configuration: %@" = "It was not possible to retrieve channel configuration: %@";
@@ -636,6 +648,12 @@
 /* settings */
 "Message grouping" = "Message grouping";
 
+/* message encryption failure */
+"Message was not encrypted for this device" = "Message was not encrypted for this device";
+
+/* message decryption error */
+"Message was not encrypted for this device." = "Message was not encrypted for this device.";
+
 /* OMEMO decryption error */
 "Message was not encrypted for this devices" = "Message was not encrypted for this devices";
 
@@ -644,6 +662,9 @@
 
 /* list of users with this role */
 "Moderators" = "Moderators";
+
+/* roster controller */
+"Modifying contact" = "Modifying contact";
 
 /* popup checkbox label */
 "Mute notifications" = "Mute notifications";
@@ -799,6 +820,9 @@
 /* Button */
 "Remove from server" = "Remove from server";
 
+/* roster controller */
+"Removing contact" = "Removing contact";
+
 /* context menu item */
 "Reply" = "Reply";
 
@@ -825,6 +849,12 @@
 
 /* context menu item */
 "Retract message" = "Retract message";
+
+/* retraction name in chats list */
+"Retraction" = "Retraction";
+
+/* message retraction failed alert title */
+"Retraction failed!" = "Retraction failed!";
 
 /* video call conroller */
 "Ringing..." = "Ringing...";
@@ -1068,6 +1098,9 @@
    Confirm sending files
    Yes, we should add account */
 "Yes" = "Yes";
+
+/* you label for conversation log */
+"You" = "You";
 
 /* alert window message
    invitation alert - message */

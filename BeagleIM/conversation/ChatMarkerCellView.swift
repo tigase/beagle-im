@@ -69,16 +69,7 @@ class ChatMarkerCellView: NSTableCellView {
 }
 
 extension ChatMarker.MarkerType {
-    
-    var label: String {
-        switch self {
-        case .displayed:
-            return "Displayed";
-        case .received:
-            return "Received";
-        }
-    }
-    
+        
     func localizedLabel(by senders: String) -> String {
         switch self {
         case .displayed:

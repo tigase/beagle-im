@@ -54,6 +54,22 @@ class DownloadStore {
         self.deleteFile(for: "\(item.id)")
     }
     
+    func store(_ data: Data, filename: String, with id: String) -> URL {
+        let fileDir = diskCacheUrl.appendingPathComponent(id, isDirectory: true);
+        if !FileManager.default.fileExists(atPath: fileDir.path) {
+            try! FileManager.default.createDirectory(at: fileDir, withIntermediateDirectories: true, attributes: nil);
+        }
+
+        let dest = fileDir.appendingPathComponent(filename);
+        try! data.write(to: dest);
+
+        if !FileManager.default.fileExists(atPath: fileDir.appendingPathComponent(id).path) {
+            try! FileManager.default.createSymbolicLink(at: fileDir.appendingPathComponent(id), withDestinationURL: dest);
+        }
+
+        return dest;
+    }
+    
     func store(_ source: URL, filename: String, with id: String) -> URL {
         let fileDir = diskCacheUrl.appendingPathComponent(id, isDirectory: true);
         if !FileManager.default.fileExists(atPath: fileDir.path) {

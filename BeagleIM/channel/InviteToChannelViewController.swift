@@ -48,26 +48,26 @@ class InviteToChannelViewControllerController: NSViewController, NSTextFieldDele
                     if val {
                         for jid in jids {
                             mixModule.allowAccess(to: channel.channelJid, for: jid.bareJid, completionHandler: { result in
-                                let body = "Invitation to channel \(channel.channelJid.stringValue)";
+                                let body = "Invitation to channel \(channel.channelJid.description)";
                                 let mixInvitation = MixInvitation(inviter: channel.account, invitee: jid.bareJid, channel: channel.channelJid, token: nil);
                                 let message = mixModule.createInvitation(mixInvitation, message: body);
                                 message.messageDelivery = .request;
                                 let conversationKey: ConversationKey = DBChatStore.instance.conversation(for: channel.account, with: jid.bareJid) ?? ConversationKeyItem(account: channel.account, jid: jid.bareJid);
                                 let options = ConversationEntry.Options(recipient: .none, encryption: .none, isMarkable: false);
-                                DBChatHistoryStore.instance.appendItem(for: conversationKey, state: .outgoing(.sent), sender: .me(conversation: conversationKey), type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), options: options, linkPreviewAction: .none, completionHandler: nil);
-                                mixModule.write(message);
+                                _ = DBChatHistoryStore.instance.appendItem(for: conversationKey, state: .outgoing(.sent), sender: .me(conversation: conversationKey), type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), options: options, linkPreviewAction: .none);
+                                mixModule.write(stanza: message);
                             });
                         }
                     } else {
                         for jid in jids {
-                            let body = "Invitation to channel \(channel.channelJid.stringValue)";
+                            let body = "Invitation to channel \(channel.channelJid.description)";
                             let mixInvitation = MixInvitation(inviter: channel.account, invitee: jid.bareJid, channel: channel.channelJid, token: nil);
                             let message = mixModule.createInvitation(mixInvitation, message: body);
                             message.messageDelivery = .request;
                             let conversationKey: ConversationKey = DBChatStore.instance.conversation(for: channel.account, with: jid.bareJid) ?? ConversationKeyItem(account: channel.account, jid: jid.bareJid);
                             let options = ConversationEntry.Options(recipient: .none, encryption: .none, isMarkable: false);
-                            DBChatHistoryStore.instance.appendItem(for: conversationKey, state: .outgoing(.sent), sender: .me(conversation: conversationKey), type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), options: options, linkPreviewAction: .none, completionHandler: nil);
-                            mixModule.write(message);
+                            _ = DBChatHistoryStore.instance.appendItem(for: conversationKey, state: .outgoing(.sent), sender: .me(conversation: conversationKey), type: .invitation, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: body, appendix: ChatInvitationAppendix(mixInvitation: mixInvitation), options: options, linkPreviewAction: .none);
+                            mixModule.write(stanza: message);
                         }
                     }
                     DispatchQueue.main.async {

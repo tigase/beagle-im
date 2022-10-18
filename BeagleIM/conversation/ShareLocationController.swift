@@ -160,7 +160,9 @@ class ShareLocationController: NSViewController, CLLocationManagerDelegate, MKMa
     
     @objc func shareSelectedLocation(_ sender: Any) {
         print("sharing currently selected location!");
-        conversation.sendMessage(text: currentAnnotation.geoUri, correctedMessageOriginId: nil);
+        Task {
+            try await conversation.sendMessage(text: currentAnnotation.geoUri, correctedMessageOriginId: nil);
+        }
         self.view.window?.orderOut(self);
     }
     

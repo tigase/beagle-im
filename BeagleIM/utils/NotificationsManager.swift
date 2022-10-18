@@ -72,7 +72,7 @@ extension ConversationEntry {
         }
         
         if conversation is Chat {
-            guard Settings.notificationsFromUnknownSenders || conversation.displayName != conversation.jid.stringValue else {
+            guard Settings.notificationsFromUnknownSenders || conversation.displayName != conversation.jid.description else {
                 return false;
             }
         }
@@ -103,13 +103,13 @@ public class NotificationManager {
     
     private var queues: [NotificationQueueKey: NotificationQueue] = [:];
     
-    private let dispatcher = QueueDispatcher(label: "NotificationManager");
+    private let queue = DispatchQueue(label: "NotificationManager");
     private var cancellables: Set<AnyCancellable> = [];
     
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "NotificationManager");
     
     init() {
-        MessageEventHandler.eventsPublisher.receive(on: dispatcher.queue).sink(receiveValue: { [weak self] event in
+        MessageEventHandler.eventsPublisher.receive(on: queue).sink(receiveValue: { [weak self] event in
             switch event {
             case .started(let account, let jid):
                 self?.syncStarted(for: account, with: jid);
@@ -117,13 +117,13 @@ public class NotificationManager {
                 self?.syncCompleted(for: account, with: jid);
             }
         }).store(in: &cancellables);
-        DBChatHistoryStore.instance.markedAsRead.receive(on: dispatcher.queue).sink(receiveValue: { [weak self] marked in
+        DBChatHistoryStore.instance.markedAsRead.receive(on: queue).sink(receiveValue: { [weak self] marked in
             self?.markAsRead(on: marked.account, with: marked.jid, itemsIds: marked.messages.map({ $0.id }));
         }).store(in: &cancellables);
     }
     
     func newMessage(_ entry: ConversationEntry) {
-        dispatcher.async {
+        queue.async {
             guard entry.shouldNotify() else {
                 return;
             }
@@ -148,7 +148,7 @@ public class NotificationManager {
     }
     
     private func syncStarted(for account: BareJID, with jid: BareJID?) {
-        dispatcher.async {
+        queue.async {
             let key = NotificationQueueKey(account: account, jid: jid);
             if self.queues[key] == nil {
                 self.queues[key] = NotificationQueue();
@@ -157,7 +157,7 @@ public class NotificationManager {
     }
     
     private func syncCompleted(for account: BareJID, with jid: BareJID?) {
-        dispatcher.async {
+        queue.async {
             if let messages = self.queues.removeValue(forKey: .init(account: account, jid: jid))?.unreadMessages {
                 for message in messages {
                     self.notifyNewMessage(message: message);
@@ -182,7 +182,7 @@ public class NotificationManager {
         }
         content.body = (body.contains("`") || !Settings.enableMarkdownFormatting || !Settings.showEmoticons) ? body : body.emojify();
         content.sound = UNNotificationSound.default
-        content.userInfo = ["account": conversation.account.stringValue, "jid": conversation.jid.stringValue, "id": "message-new"];
+        content.userInfo = ["account": conversation.account.description, "jid": conversation.jid.description, "id": "message-new"];
  
         let request = UNNotificationRequest(identifier: "message:\(entry.id):new", content: content, trigger: nil);
         UNUserNotificationCenter.current().add(request) { (error) in

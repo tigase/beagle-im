@@ -35,7 +35,7 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
     
     fileprivate var domainFieldHeightConstraint: NSLayoutConstraint?;
     fileprivate var formHeightConstraint: NSLayoutConstraint?;
-    fileprivate var task: InBandRegistrationModule.AccountRegistrationTask?;
+    fileprivate var task: InBandRegistrationModule.AccountRegistrationAsyncTask?;
     
     fileprivate var account: BareJID?;
     fileprivate var password: String?;
@@ -64,26 +64,31 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
                 return;
             }
             
-            submitButton?.isEnabled = false;
-            progressIndicator?.startAnimation(self);
-            retrieveRegistrationForm(domain: domainField.stringValue, completion: { form, bob in
-                self.form?.xmppClient = self.task?.client;
-                self.form?.jid = JID(self.domainField.stringValue);
-                self.submitButton?.isEnabled = true;
-                self.progressIndicator?.stopAnimation(self);
-                self.form?.bob = bob;
-                self.form?.form = form;
-                self.formHeightConstraint?.isActive = true;
-                self.domainFieldHeightConstraint?.isActive = true;
-            });
+            retrieveRegistrationForm(domain: domainField.stringValue, acceptedCertificate: nil);
             return
         }
         
         if let form = self.form {
             form.synchronize();
-            account = BareJID(localPart: (form.form!.getField(named: "username") as? TextSingleField)?.value, domain: domainField.stringValue);
-            password = (form.form!.getField(named: "password") as? TextPrivateField)?.value;
-            task?.submit(form: form.form!);
+            account = BareJID(localPart: form.form!.value(for: "username", type: String.self), domain: domainField.stringValue);
+            password = form.form!.value(for: "password", type: String.self);
+            Task {
+                progressIndicator?.startAnimation(self);
+                submitButton?.isEnabled = false;
+                do {
+                    try await task?.submit(form: form.form!);
+                    await MainActor.run(body: {
+                        self.saveAccount(acceptedCertificate: task?.acceptedSslCertificate);
+                        self.dismissView();
+                    })
+                } catch {
+                    self.onRegistrationError(error as? XMPPError ?? .undefined_condition);
+                }
+                await MainActor.run(body: {
+                    progressIndicator?.stopAnimation(self);
+                    submitButton?.isEnabled = true;
+                })
+            }
         }
     }
     
@@ -105,15 +110,19 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
         self.view.window?.sheetParent?.endSheet(self.view.window!);
     }
     
-    fileprivate func saveAccount(acceptedCertificate: SslCertificateInfo?) {
-        var account = AccountManager.Account(name: self.account!);
-        account.password = password;
-        if acceptedCertificate != nil {
-            account.serverCertificate = ServerCertificateInfo(sslCertificateInfo: acceptedCertificate!, accepted: true);
+    fileprivate func saveAccount(acceptedCertificate: SSLCertificateInfo?) {
+        guard let jid = account else {
+            return;
         }
-        
         do {
-            try AccountManager.save(account: account);
+            try AccountManager.modifyAccount(for: jid, { account in
+                if let certInfo = acceptedCertificate {
+                    account.acceptedCertificate = AcceptableServerCertificate(certificate: certInfo, accepted: true);
+                } else {
+                    account.acceptedCertificate = nil;
+                }
+                account.password = self.password!;
+            })
             dismissView();
         } catch {
             let alert = NSAlert(error: error);
@@ -121,30 +130,26 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
         }
     }
     
-    fileprivate func onRegistrationError(errorCondition: ErrorCondition?, message: String?) {
+    fileprivate func onRegistrationError(_ error: XMPPError) {
         DispatchQueue.main.async {
             self.submitButton?.isEnabled = true;
             self.progressIndicator?.stopAnimation(self);
         }
 
-        var msg = message;
+        var msg = error.message;
 
-        if errorCondition == nil {
-            msg = NSLocalizedString("Server did not respond on registration request", comment: "register account error");
-        } else {
-            if msg == nil || msg == "Unsuccessful registration attempt" {
-                switch errorCondition! {
-                case .feature_not_implemented:
-                    msg = NSLocalizedString("Registration is not supported by this server", comment: "register account error");
-                case .not_acceptable, .not_allowed:
-                    msg = NSLocalizedString("Provided values are not acceptable", comment: "register account error");
-                case .conflict:
-                    msg = NSLocalizedString("User with provided username already exists", comment: "register account error");
-                case .service_unavailable:
-                    msg = NSLocalizedString("Service is not available at this time.", comment: "register account error")
-                default:
-                    msg = String.localizedStringWithFormat(NSLocalizedString("Server returned error: %@", comment: "register account error"), errorCondition!.rawValue);
-                }
+        if msg == nil || msg == "Unsuccessful registration attempt" {
+            switch error.condition {
+            case .feature_not_implemented:
+                msg = NSLocalizedString("Registration is not supported by this server", comment: "register account error");
+            case .not_acceptable, .not_allowed:
+                msg = NSLocalizedString("Provided values are not acceptable", comment: "register account error");
+            case .conflict:
+                msg = NSLocalizedString("User with provided username already exists", comment: "register account error");
+            case .service_unavailable:
+                msg = NSLocalizedString("Service is not available at this time.", comment: "register account error")
+            default:
+                msg = String.localizedStringWithFormat(NSLocalizedString("Server returned error: %@", comment: "register account error"), error.localizedDescription);
             }
         }
         
@@ -155,14 +160,14 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
             alert.icon = NSImage(named: NSImage.cautionName);
             alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
             alert.beginSheetModal(for: self.view.window!) { (response) in
-                if errorCondition == ErrorCondition.feature_not_implemented || errorCondition == ErrorCondition.service_unavailable {
+                if error.condition == ErrorCondition.feature_not_implemented || error.condition == ErrorCondition.service_unavailable {
                     self.dismissView();
                 }
             }
         }
     }
     
-    fileprivate func onCertificateError(certData: SslCertificateInfo, accepted: @escaping ()->Void) {
+    fileprivate func onCertificateError(certData: SSLCertificateInfo, accepted: @escaping ()->Void) {
         DispatchQueue.main.async {
             guard let controller = NSStoryboard(name: "Main", bundle: nil).instantiateController(withIdentifier: "ServerCertificateErrorController") as? ServerCertificateErrorController else {
                 return;
@@ -181,24 +186,39 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
         }
     }
     
-    fileprivate func retrieveRegistrationForm(domain: String, completion: @escaping (JabberDataElement,[BobData])->Void) {
-        let onForm = {(form: JabberDataElement, bob: [BobData], task: InBandRegistrationModule.AccountRegistrationTask)->Void in
-            DispatchQueue.main.async {
-                completion(form, bob);
+    fileprivate func retrieveRegistrationForm(domain: String, acceptedCertificate: SSLCertificateInfo?) {
+        self.task = InBandRegistrationModule.AccountRegistrationAsyncTask(domainName: domain, preauth: nil);
+        task?.acceptedSslCertificate = acceptedCertificate;
+
+        submitButton?.isEnabled = false;
+        progressIndicator?.startAnimation(self);
+
+        Task {
+            do {
+                let result = try await task!.retrieveForm();
+                await MainActor.run(body: {
+                    self.form?.xmppClient = self.task?.client;
+                    self.form?.jid = JID(self.domainField.stringValue);
+                    self.submitButton?.isEnabled = true;
+                    self.progressIndicator?.stopAnimation(self);
+                    self.form?.bob = result.bob;
+                    self.form?.form = result.form;
+                    self.formHeightConstraint?.isActive = true;
+                    self.domainFieldHeightConstraint?.isActive = true;
+                })
+            } catch XMPPClient.State.DisconnectionReason.sslCertError(let secTrust) {
+                let info = SSLCertificateInfo(trust: secTrust)!;
+                self.onCertificateError(certData: info, accepted: {
+                    self.retrieveRegistrationForm(domain: domain, acceptedCertificate: info);
+                })
+            } catch {
+                self.onRegistrationError(error as? XMPPError ?? .undefined_condition);
             }
-        };
-        let client: XMPPClient? = nil;
-        self.task = InBandRegistrationModule.AccountRegistrationTask(client: client, domainName: domain, onForm: onForm, sslCertificateValidator: nil, onCertificateValidationError: self.onCertificateError, completionHandler: { result in
-            switch result {
-            case .success:
-                let certData: SslCertificateInfo? = self.task?.getAcceptedCertificate();
-                DispatchQueue.main.async {
-                    self.saveAccount(acceptedCertificate: certData);
-                    self.dismissView();
-                }
-            case .failure(let error):
-                self.onRegistrationError(errorCondition: error.errorCondition, message: error.message);
-            }
-        });
+            
+            await MainActor.run(body: {
+                self.submitButton?.isEnabled = true;
+                self.progressIndicator?.stopAnimation(self);
+            })
+        }
     }
 }

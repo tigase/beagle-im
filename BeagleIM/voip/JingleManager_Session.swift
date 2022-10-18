@@ -63,13 +63,8 @@ extension JingleManager {
         override init(context: Context, jid: JID, sid: String, role: Jingle.Content.Creator, initiationType: JingleSessionInitiationType) {
             super.init(context: context, jid: jid, sid: sid, role: role, initiationType: initiationType);
         }
-        
-        override func initiate(contents: [Jingle.Content], bundle: [String]?) -> Future<Void, XMPPError> {
-            //self.localDescription = SDP(contents: contents, bundle: bundle);
-            return super.initiate(contents: contents, bundle: bundle);
-        }
-        
-        override func initiated(contents: [Jingle.Content], bundle: [String]?) {
+                
+        override func initiated(contents: [Jingle.Content], bundle: Jingle.Bundle?) {
             super.initiated(contents: contents, bundle: bundle)
             received(action: .contentSet(SDP(contents: contents, bundle: bundle)));
         }
@@ -99,26 +94,17 @@ extension JingleManager {
             }
         }
         
-        override func accept() {
-            super.accept();
-        }
-        
-        override func accept(contents: [Jingle.Content], bundle: [String]?) -> Future<Void, XMPPError> {
-            //self.localDescription = SDP(contents: contents, bundle: bundle);
-            return super.accept(contents: contents, bundle: bundle);
-        }
-                
-        override func accepted(contents: [Jingle.Content], bundle: [String]?) {
+        override func accepted(contents: [Jingle.Content], bundle: Jingle.Bundle?) {
             super.accepted(contents: contents, bundle: bundle)
             received(action: .contentSet(SDP(contents: contents, bundle: bundle)));
         }
         
-        func decline() {
-            self.terminate(reason: .decline);
+        func decline() async throws {
+            try await self.terminate(reason: .decline);
         }
         
 
-        open override func contentModified(action: Jingle.ContentAction, contents: [Jingle.Content], bundle: [String]?) {
+        open override func contentModified(action: Jingle.ContentAction, contents: [Jingle.Content], bundle: Jingle.Bundle?) {
             let sdp = SDP(contents: contents, bundle: bundle);
             received(action: .contentApply(action, sdp));
         }

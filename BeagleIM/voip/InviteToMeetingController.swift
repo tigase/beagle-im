@@ -45,15 +45,18 @@ class InviteToMeetingController: NSViewController {
         }
         
         self.operationInProgress = true;
-        meet.allow(jids: self.contactSelectionView.items.map({ $0.jid }), completionHandler: { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let jids):
-                    for jid in jids {
-                        meet.client.module(.meet).sendMessageInitiation(action: .propose(id: UUID().uuidString, meetJid: meet.jid, media: [.audio, .video]), to: JID(jid));
-                    }
+        Task {
+            do {
+                let jids = self.contactSelectionView.items.map({ $0.jid });
+                try await meet.allow(jids: jids);
+                _ = await jids.concurrentMap({ jid in
+                    try? await meet.client.module(.meet).sendMessageInitiation(action: .propose(id: UUID().uuidString, meetJid: meet.jid, media: [.audio, .video]), to: jid.jid())
+                })
+                await MainActor.run(body: {
                     self.close();
-                case .failure(let error):
+                })
+            } catch {
+                await MainActor.run(body: {
                     let alert = NSAlert();
                     alert.alertStyle = .warning;
                     alert.messageText = NSLocalizedString("Allowing access to meeting failed", comment: "invite to meeting controller");
@@ -62,10 +65,12 @@ class InviteToMeetingController: NSViewController {
                         // nothing to do except closing..
                         self.close();
                     });
-                }
+                })
             }
-            self.operationInProgress = false;
-        });
+            await MainActor.run(body: {
+                self.operationInProgress = false;
+            })
+        }
     }
     
     @IBAction func cancelClicked(_ sender: NSButton) {

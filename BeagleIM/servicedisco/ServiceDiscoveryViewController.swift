@@ -37,7 +37,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
     var jid: JID? {
         didSet {
             //resetOutlineView();
-            self.jidField.stringValue = jid?.stringValue ?? "";
+            self.jidField.stringValue = jid?.description ?? "";
             self.refreshButtonStates();
             self.progressIndicator.stopAnimation(self);
             guard let jid = self.jid else {
@@ -101,7 +101,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
             return;
         }
         if item.jid.domain != rootItem?.jid.domain {
-            self.jidField.stringValue = item.jid.stringValue;
+            self.jidField.stringValue = item.jid.description;
             self.node = item.node;
             self.jid = item.jid;
         } else {
@@ -160,7 +160,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
             }
             (view?.subviews[0] as? NSImageView)?.image = image;
             (view?.subviews[1] as? NSTextField)?.stringValue = it?.name ?? "";
-            (view?.subviews[2] as? NSTextField)?.stringValue = it?.jid.stringValue ?? "";
+            (view?.subviews[2] as? NSTextField)?.stringValue = it?.jid.description ?? "";
             if let version = it?.version {
                 let versionStr = "\(version.name) \(version.version)";
                 (view?.subviews[3] as? NSTextField)?.stringValue = versionStr;
@@ -200,7 +200,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
             return;
         }
         if item.jid.domain != rootItem?.jid.domain {
-            self.jidField.stringValue = item.jid.stringValue;
+            self.jidField.stringValue = item.jid.description;
             self.node = item.node;
             self.jid = item.jid;
         } else {
@@ -254,7 +254,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
         
         self.joinButton.isEnabled = false;
         self.progressIndicator.startAnimation(self);
-        discoModule.getInfo(for: item.jid, node: nil, completionHandler: { [weak self] result in
+        discoModule.info(for: item.jid, node: nil, completionHandler: { [weak self] result in
             switch result {
             case .success(let info):
                 let requiresPassword = info.features.firstIndex(of: "muc_passwordprotected") != nil;
@@ -362,7 +362,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
 
         self.progressIndicator.startAnimation(self);
         let node = self.node;
-        client.module(.disco).getInfo(for: jid, node: node, completionHandler: { [weak self] result in
+        client.module(.disco).info(for: jid, node: node, completionHandler: { [weak self] result in
             switch result {
             case .success(let info):
                 let categories = info.identities.map({ (identity) -> String in
@@ -382,7 +382,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                     let alert = Alert();
                     alert.icon = NSImage(named: NSImage.cautionName);
                     alert.messageText = NSLocalizedString("Service Discovery Failure!", comment: "alert window title");
-                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to retrieve disco#info details from %@\\%@: %@", comment: "alert window message"), jid.stringValue, node, error.localizedDescription);
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to retrieve disco#info details from %@\\%@: %@", comment: "alert window message"), jid.description, node, error.localizedDescription);
                     alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                     alert.run(completionHandler: { (response) in
                         // nothing to do..
@@ -402,7 +402,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
 
         let discoModule = client.module(.disco);
         let node = parentItem.identities.contains(where: { $0.category == "conference" && $0.type == "mix" }) ? "mix" : parentItem.node;
-        discoModule.getItems(for: parentItem.jid, node: node, completionHandler: { [weak self] result in
+        discoModule.items(for: parentItem.jid, node: node, completionHandler: { [weak self] result in
             switch result {
             case .success(let items):
                 DispatchQueue.main.async {
@@ -410,7 +410,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                     parentItem.subitems = items.items.map({ (item) -> Item in
                         return Item(item);
                     }).sorted(by: { (i1, i2) -> Bool in
-                        return (i1.name ?? i1.jid.stringValue).compare(i2.name ?? i2.jid.stringValue) == .orderedAscending;
+                        return (i1.name ?? i1.jid.description).compare(i2.name ?? i2.jid.description) == .orderedAscending;
                     })
                     if self?.rootItem == nil {
                         self?.rootItem = parentItem;
@@ -439,7 +439,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                     group.enter();
                     items.items.forEach({ (item) in
                         group.enter();
-                        discoModule.getInfo(for: item.jid, node: item.node, completionHandler: { result in
+                        discoModule.info(for: item.jid, node: item.node, completionHandler: { result in
                             switch result {
                             case .success(let info):
                                 if info.features.contains("jabber:iq:version") {
@@ -498,7 +498,7 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
                     let alert = Alert();
                     alert.icon = NSImage(named: NSImage.cautionName);
                     alert.messageText = NSLocalizedString("Service Discovery Failure!", comment: "alert window title");
-                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to retrieve disco#items details from %@\\%@: %@", comment: "alert window message"), parentItem.jid.stringValue, node, error.localizedDescription);
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to retrieve disco#items details from %@\\%@: %@", comment: "alert window message"), parentItem.jid.description, node, error.localizedDescription);
                     alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                     alert.run(completionHandler: { (response) in
                         // nothing to do..
@@ -527,19 +527,25 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
         }
     }
     
-    class Item: DiscoveryModule.Item {
+    class Item {
         
+        public let jid:JID;
+        public let node:String?;
+        public let name:String?;
+
         private(set) var identities: [DiscoveryModule.Identity] = [];
         private(set) var features: [String] = [];
         fileprivate var subitems: [Item]? = nil;
         private(set) var version: SoftwareVersionModule.SoftwareVersion?;
         
-        override init(jid: JID, node: String?, name: String?) {
-            super.init(jid: jid, node: node, name: name);
+        init(jid: JID, node: String?, name: String?) {
+            self.jid = jid;
+            self.node = node;
+            self.name = name;
         }
         
-        init(_ item: DiscoveryModule.Item) {
-            super.init(jid: item.jid, node: item.node, name: item.name);
+        convenience init(_ item: DiscoveryModule.Item) {
+            self.init(jid: item.jid, node: item.node, name: item.name);
         }
         
         func hasFeature(_ feature: String) -> Bool {

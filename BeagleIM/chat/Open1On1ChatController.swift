@@ -41,13 +41,13 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
         accountHeightConstraint = accountField.heightAnchor.constraint(equalToConstant: 0);
         self.showDisclosure(false);
         self.accountField.addItem(withTitle: "");
-        AccountManager.getAccounts().filter { account -> Bool in
-            return XmppService.instance.getClient(for: account) != nil
+        AccountManager.activeAccounts().filter { account -> Bool in
+            return XmppService.instance.getClient(for: account.name) != nil
             }.forEach { (account) in
-                self.accountField.addItem(withTitle: account.stringValue);
+                self.accountField.addItem(withTitle: account.name.description);
         }
         if let defAccount = AccountManager.defaultAccount {
-            self.accountField.selectItem(withTitle: defAccount.stringValue);
+            self.accountField.selectItem(withTitle: defAccount.description);
             self.accountField.title = self.accountField.titleOfSelectedItem ?? "";
         } else {
             self.accountField.selectItem(at: 1);
@@ -90,10 +90,10 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
                 addContact.showDoNotAskAgain = true;
                 
                 _ = addContact.view;
-                if let idx = addContact.accountSelector.itemTitles.firstIndex(of: account.stringValue) {
+                if let idx = addContact.accountSelector.itemTitles.firstIndex(of: account.description) {
                     addContact.accountSelector.selectItem(at: idx);
                 }
-                addContact.jidField.stringValue = jid.stringValue
+                addContact.jidField.stringValue = jid.description
 
                 if let window = (NSApplication.shared.delegate as? AppDelegate)?.mainWindowController?.window {
                     window.contentViewController?.presentAsSheet(addContact);
@@ -180,12 +180,12 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
         let query = searchField.stringValue.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).lowercased();
         if !query.isEmpty {
             rows = rows.filter { (item) -> Bool in
-                return item.jid.stringValue.lowercased().contains(query) || (item.name?.lowercased() ?? "").contains(query);
+                return item.jid.description.lowercased().contains(query) || (item.name?.lowercased() ?? "").contains(query);
             };
         }
         self.rows = rows.sorted { (i1, i2) -> Bool in
-                let n1 = i1.name ?? i1.jid.stringValue;
-                let n2 = i2.name ?? i2.jid.stringValue;
+                let n1 = i1.name ?? i1.jid.description;
+                let n2 = i2.name ?? i2.jid.description;
                 return n1.compare(n2) == .orderedAscending;
         }
         self.contactsView.reloadData();
@@ -223,8 +223,8 @@ class Open1On1ChatItemView: NSTableCellView {
         didSet {
             cancellables.removeAll();
             contact?.displayNamePublisher.assign(to: \.stringValue, on: name).store(in: &cancellables);
-            self.jid.stringValue = contact?.jid.stringValue ?? "";
-            self.account.stringValue = String.localizedStringWithFormat(NSLocalizedString("using %@", comment: "marks used account"), contact?.account.stringValue ?? "");
+            self.jid.stringValue = contact?.jid.description ?? "";
+            self.account.stringValue = String.localizedStringWithFormat(NSLocalizedString("using %@", comment: "marks used account"), contact?.account.description ?? "");
             self.avatar.displayableId = contact;
         }
     }
