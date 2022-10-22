@@ -21,8 +21,9 @@
 
 import Foundation
 import OpenSSL
+import Martin
 
-open class SSLCertificate {
+open class SSLCertificate: Martin.SSLCertificate {
     
     private let ref: OpaquePointer;
     
@@ -32,6 +33,13 @@ open class SSLCertificate {
     
     deinit {
         X509_free(ref);
+    }
+    
+    open var algorithmName: String {
+        let algPtr = X509_get0_tbs_sigalg(ref).pointee.algorithm;
+        var tmp = [CChar](repeating: 0, count: 100);
+        let read = i2t_ASN1_OBJECT(&tmp, 100, algPtr);
+        return String(cString: tmp);
     }
     
     open func derCertificateData() -> Data? {
