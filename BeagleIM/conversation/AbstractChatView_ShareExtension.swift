@@ -225,7 +225,7 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         self.selectFile { (urls) in
             Task {
                 do {
-                    try await SharingTaskManager.instance.share(conversation: self.conversation, items: urls.map({ .url($0 as URL) }), quality: .default);
+                    try await SharingTaskManager.instance.share(conversation: self.conversation, items: urls.map({ .url($0 as URL) }), quality: askForQuality ? .ask : .default);
                 } catch {
                     SharingTaskManager.instance.show(error: error, window: self.view.window!);
                 }

@@ -131,7 +131,7 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
         self.showProgressIndicator();
         
         let password = passwordField.stringValue;
-        var settings = AccountDetailsViewController.Settings();
+        let settings = AccountDetailsViewController.Settings();
         settings.disableTLS13 = disableTLS13Check.state == .on;
         settings.useDirectTLS = useDirectTLSCheck.state == .on;
         if !(hostField.stringValue.isEmpty || portField.stringValue.isEmpty), let port = Int(portField.stringValue) {

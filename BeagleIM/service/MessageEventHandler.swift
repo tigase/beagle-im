@@ -459,7 +459,7 @@ class MessageEventHandler: XmppServiceExtension {
             }
         } else {
             // this can be 1-1 message from MUC..
-            if let room = conversation as? Room, message.findChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") != nil {
+            if let room = conversation as? Room, message.firstChild(name: "x", xmlns: "http://jabber.org/protocol/muc#user") != nil {
                 if conversation.account == message.from?.bareJid {
                     // outgoing message!
                     if let recipientNickname = message.to?.resource {

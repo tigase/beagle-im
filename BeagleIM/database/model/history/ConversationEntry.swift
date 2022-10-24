@@ -23,6 +23,10 @@ import AppKit
 import Martin
 import CoreLocation
 
+extension Date: @unchecked Sendable {
+    
+}
+
 public enum ConversationEntryPayload: Hashable, Sendable {
     case message(message: String, correctionTimestamp: Date?)
     case attachment(url: String, appendix: ChatAttachmentAppendix)

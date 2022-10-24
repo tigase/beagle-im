@@ -222,7 +222,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
             return true;
         }
         
-        guard let (itemId, idx, ts, messageView, view) = estimateSelectionPoint(event: event, table: table, superview: superview) else {
+        guard let (itemId, idx, ts, messageView, _) = estimateSelectionPoint(event: event, table: table, superview: superview) else {
             selectionEnd = nil;
             selectionStart = nil;
             selectedItems.removeAll();

@@ -189,7 +189,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
             case .alertFirstButtonReturn:
                 Task {
                     do {
-                        try await self.channel.retract(entry: item);
+                        try await chat.retract(entry: item);
                     } catch {
                         self.showError(message: NSLocalizedString("Retraction failed!", comment: "message retraction failed alert title"), error: error)
                     }

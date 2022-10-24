@@ -147,13 +147,13 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
         self.progressIndicator.startAnimation(self);
         let createBookmark = bookmarkCreateButton.isEnabled && bookmarkCreateButton.state == .on;
         let autojoin = bookmarkAutojoinButton.isEnabled && bookmarkAutojoinButton.state == .on;
-        switch componentType {
-        case .muc:
-            let room = channelJid;
-            let result = client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname, password: passwordField.description, completionHandler: { [weak self] r in
-                switch r {
-                case .success(let roomResult):
-                    switch roomResult {
+        Task {
+            do {
+                switch componentType {
+                case .muc:
+                    let room = channelJid;
+                    let joinResult = try await client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname, password: passwordField.description);
+                    switch joinResult {
                     case .created(let room), .joined(let room):
                         (room as! Room).roomFeatures = Set(features.compactMap({ Room.Feature(rawValue: $0) }));
                     }
@@ -162,29 +162,7 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
                             try await client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: channelName ?? room.localPart ?? room.description, jid: JID(room), autojoin: autojoin, nick: nickname, password: password));
                         }
                     }
-                    DispatchQueue.main.async {
-                        self?.close(returnCode: .OK);
-                    }
-                case .failure(let error):
-                    DispatchQueue.main.async {
-                        guard let window = self?.view.window else {
-                            return;
-                        }
-                        
-                        let alert = NSAlert();
-                        alert.messageText = NSLocalizedString("Could not join", comment: "alert window title");
-                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to join a channel. The server returned an error: %@", comment: "alert window title"), error.localizedDescription);
-                        alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
-                        alert.beginSheetModal(for: window, completionHandler: nil);
-                    }
-                }
-                DispatchQueue.main.async {
-                    self?.progressIndicator.stopAnimation(self);
-                }
-            });
-        case .mix:
-            Task {
-                do {
+                case .mix:
                     _ = try await client.module(.mix).join(channel: channelJid, withNick: nickname);
                     if let channel = DBChatStore.instance.channel(for: client, with: channelJid) {
                         if let info = try? await client.module(.disco).items(for: JID(channel.jid)) {
@@ -193,27 +171,27 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
                             })
                         }
                     }
-                    // we have joined, so all what we need to do is close this window
-                    DispatchQueue.main.async { [weak self] in
-                        self?.close(returnCode: .OK);
-                    }
-                } catch {
-                    DispatchQueue.main.async { [weak self] in
-                        guard let window = self?.view.window else {
-                            return;
-                        }
-                        
-                        let alert = NSAlert();
-                        alert.messageText = NSLocalizedString("Could not join", comment: "alert window title");
-                        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to join a channel. The server returned an error: %@", comment: "alert window title"), error.localizedDescription);
-                        alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
-                        alert.beginSheetModal(for: window, completionHandler: nil);
-                    }
                 }
-                DispatchQueue.main.async { [weak self] in
-                    self?.progressIndicator.stopAnimation(self);
-                }
+                // we have joined, so all what we need to do is close this window
+                await MainActor.run(body: {
+                    self.close(returnCode: .OK);
+                })
+            } catch {
+                await MainActor.run(body: {
+                    guard let window = self.view.window else {
+                        return;
+                    }
+                    let alert = NSAlert();
+                    alert.messageText = NSLocalizedString("Could not join", comment: "alert window title");
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to join a channel. The server returned an error: %@", comment: "alert window title"), error.localizedDescription);
+                    _ = alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
+                    alert.beginSheetModal(for: window, completionHandler: nil);
+                })
             }
+            await MainActor.run(body: {
+                self.progressIndicator.stopAnimation(self);
+                
+            })
         }
     }
 

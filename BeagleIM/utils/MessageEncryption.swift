@@ -21,7 +21,7 @@
 
 import Foundation
 
-public enum MessageEncryption: Int {
+public enum MessageEncryption: Int, Sendable {
     case none = 0
     case decrypted = 1
     case decryptionFailed = 2

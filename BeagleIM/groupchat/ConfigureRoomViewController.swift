@@ -68,7 +68,6 @@ class ConfigureRoomViewController: NSViewController {
             return;
         }
         
-        let dispatchGroup = DispatchGroup();
         progressIndicator.startAnimation(nil);
         var tasks: [Task<Void,Error>] = [
             Task {
@@ -180,9 +179,7 @@ class ConfigureRoomViewController: NSViewController {
             })
         }
         
-        let account = self.account!;
         let room = self.room;
-        let nickname = self.nickname;
         let password = form!.secret;
         
         let mucModule = client.module(.muc);

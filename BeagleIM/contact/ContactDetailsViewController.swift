@@ -1055,7 +1055,7 @@ open class ContactDetailsViewController1: NSViewController, NSTableViewDelegate 
     
     @IBAction func refreshVCard(_ sender: NSButton) {
         Task {
-            let vcard = try await VCardManager.instance.refreshVCard(for: jid, on: account);
+            _ = try await VCardManager.instance.refreshVCard(for: jid, on: account);
             await MainActor.run(body: {
                 self.refresh();
             })

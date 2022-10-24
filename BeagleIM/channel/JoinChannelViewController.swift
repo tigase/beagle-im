@@ -60,7 +60,7 @@ class JoinChannelViewController: BaseJoinChannelViewController, NSTableViewDeleg
         if channelsTableView.selectedRow >= 0, let account = self.account, let window = self.view.window {
             let item = self.items[channelsTableView.selectedRow];
             
-            guard let component = self.components.first(where: { $0.jid.domain == item.jid.domain }), let account = self.account else {
+            guard let component = self.components.first(where: { $0.jid.domain == item.jid.domain }) else {
                 return;
             }
 

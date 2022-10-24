@@ -45,27 +45,28 @@ class ChannelEditConfigViewControlller: NSViewController, ChannelAwareProtocol {
         }
         
         progressIndicator.startAnimation(self);
-        mixModule.retrieveConfig(for: channel.channelJid, completionHandler: { [weak self] result in
-            DispatchQueue.main.async {
-                self?.progressIndicator.stopAnimation(self);
-                switch result {
-                case .success(let config):
-                    self?.submitButton.isEnabled = true;
-                    self?.formView.form = config.form;
-                case .failure(let errorCondition):
-                    guard let that = self else {
-                        return;
-                    }
+        Task {
+            do {
+                let config = try await mixModule.config(for: channel.channelJid);
+                await MainActor.run(body: {
+                    self.submitButton.isEnabled = true;
+                    self.formView.form = config.form;
+                })
+            } catch {
+                await MainActor.run(body: {
                     let alert = NSAlert();
                     alert.alertStyle = .warning;
                     alert.messageText = NSLocalizedString("Could not retrieve config", comment: "alert window title");
-                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to retrieve channel configuration: %@", comment: "alert window message"), errorCondition.localizedDescription);
-                    alert.beginSheetModal(for: that.view.window!, completionHandler: { response in
-                        that.dismiss(that);
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to retrieve channel configuration: %@", comment: "alert window message"), error.localizedDescription);
+                    alert.beginSheetModal(for: self.view.window!, completionHandler: { response in
+                        self.dismiss(self);
                     })
-                }
+                })
             }
-        })
+            await MainActor.run(body: {
+                self.progressIndicator.stopAnimation(self);
+            })
+        }
     }
     
     private func submitConfig() {
@@ -74,27 +75,24 @@ class ChannelEditConfigViewControlller: NSViewController, ChannelAwareProtocol {
         }
 
         progressIndicator.startAnimation(self);
-        mixModule.updateConfig(for: channel.channelJid, config: MixChannelConfig(form: config), completionHandler: { [weak self] result in
-            DispatchQueue.main.async {
-                self?.progressIndicator.stopAnimation(self);
-                switch result {
-                case .success(_):
-                    guard let that = self else {
-                        return;
-                    }
-                    that.dismiss(that);
-                    break;
-                case .failure(let errorCondition):
-                    guard let that = self else {
-                        return;
-                    }
+        Task {
+            do {
+                try await mixModule.config(.init(form: config), for: channel.channelJid);
+                await MainActor.run(body: {
+                    self.dismiss(self);
+                })
+            } catch {
+                await MainActor.run(body: {
                     let alert = NSAlert();
                     alert.alertStyle = .warning;
                     alert.messageText = NSLocalizedString("Configuration change failed", comment: "alert window title");
-                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to change channel configuration: %@", comment: "alert window message"), errorCondition.localizedDescription);
-                    alert.beginSheetModal(for: that.view.window!, completionHandler: nil)
-                }
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to change channel configuration: %@", comment: "alert window message"), error.localizedDescription);
+                    alert.beginSheetModal(for: self.view.window!, completionHandler: nil)
+                })
             }
-        })
+            await MainActor.run(body: {
+                self.progressIndicator.stopAnimation(self);
+            })
+        }
     }
 }

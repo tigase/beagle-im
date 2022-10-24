@@ -22,7 +22,7 @@
 import Foundation
 import Martin
 
-public struct ChatAttachmentAppendix: AppendixProtocol, Hashable {
+public struct ChatAttachmentAppendix: AppendixProtocol, Hashable, Sendable {
     
     var state: State = .new;
     var filesize: Int? = nil;
