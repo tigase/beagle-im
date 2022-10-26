@@ -172,6 +172,7 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
     var muteNotifications: NSButton?;
     var bookmark: NSButton?;
     var blockContact: NSButton?;
+    var blockServer: NSButton?;
     var confirmMessages: NSButton?;
     
     open override func viewWillAppear() {
@@ -199,6 +200,9 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
                     rows.append(blockContact!);
                     blockContact?.state = BlockedEventHandler.isBlocked(JID(c.jid), on: client) ? .on : .off;
                     blockContact?.isEnabled = client.module(.blockingCommand).isAvailable;
+                    blockServer = NSButton(checkboxWithTitle: NSLocalizedString("Block server", comment: "popup checkbox label"), target: self, action: #selector(blockServerChanged));
+                    rows.append(blockServer!);
+                    blockServer?.state = BlockedEventHandler.isBlocked(JID(c.jid.domain), on: client) ? .on : .off;
                 }
                 if DBRosterStore.instance.item(for: chat.account, jid: JID(chat.jid)) == nil {
                     let button = NSButton(title: NSLocalizedString("Add to contacts", comment: "popup button label"), image: NSImage(named: NSImage.addTemplateName)!, target: self, action: #selector(self.addToRoster(_:)));
@@ -318,6 +322,64 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
                 })
             } else {
                 context.module(.blockingCommand).unblock(jids: [jid], completionHandler: { [weak sender] result in
+                    DispatchQueue.main.async {
+                        switch result {
+                        case .failure(_):
+                            sender?.state = .on;
+                        default:
+                            break;
+                        }
+                    }
+                })
+            }
+        }
+    }
+    
+    @objc func blockServerChanged(_ sender: NSButton) {
+        if let chat = self.chat as? Chat, let context = chat.context {
+            let jid = JID(chat.jid);
+            if sender.state == .on {
+                let alert = NSAlert();
+                alert.alertStyle = .warning;
+                alert.messageText = NSLocalizedString("Blocking server", comment: "alert title")
+                alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Blocking server %@ will result in closing all open conversations with users of this server and blocking all communications with this server. Are you sure?", comment: "alert message"), chat.jid.domain);
+                alert.addButton(withTitle: NSLocalizedString("Yes", comment: "button label"))
+                alert.addButton(withTitle: NSLocalizedString("No", comment: "button label"))
+                alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
+                    switch result {
+                    case .alertFirstButtonReturn:
+                        if DBRosterStore.instance.item(for: chat.account, jid: jid) == nil, let invitation = InvitationManager.instance.invitation(type: .presenceSubscription, account: chat.account, jid: jid) {
+                            InvitationManager.instance.remove(invitation: invitation);
+                            context.module(.presence).unsubscribed(by: jid);
+                        }
+                        context.module(.blockingCommand).block(jids: [JID(jid.domain)], completionHandler: { [weak sender] result in
+                            DispatchQueue.main.async {
+                                switch result {
+                                case .failure(_):
+                                    sender?.state = .off;
+                                case .success(_):
+                                    DispatchQueue.main.async {
+                                        guard let window = self.view.window else {
+                                            return;
+                                        }
+                                        window.close();
+                                    }
+                                    InvitationManager.instance.removeAll(fromServer: jid.domain, on: chat.account);
+                                    let chatsToClose = DBChatStore.instance.chats(for: context).filter({ $0.jid.domain == jid.domain });
+                                    for toClose in chatsToClose {
+                                        _  = DBChatStore.instance.close(chat: toClose);
+                                    }
+                                    break;
+                                }
+                            }
+                        })
+                    default:
+                        sender.state = .off;
+                        break;
+                    }
+                })
+            } else {
+                context.module(.blockingCommand).unblock(jids: [JID(jid.domain)], completionHandler: { [weak sender] result in
                     DispatchQueue.main.async {
                         switch result {
                         case .failure(_):

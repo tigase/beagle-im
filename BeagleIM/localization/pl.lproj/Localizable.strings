@@ -128,6 +128,15 @@
 "Block contact" = "Zablokuj kontakt";
 
 /* popup checkbox label */
+"Block server" = "Zablokuj serwer";
+
+/* alert title */
+"Blocking server" = "Blokowanie serwera";
+
+/* alert message */
+"Blocking server %@ will result in closing all open conversations with users of this server and blocking all communications with this server. Are you sure?" = "Zablokowanie serwera %@ spowoduje zamknięcie wszystich otwartych rozmów z użytkownikami tego serwera oraz zablokuje całą komunikację z tym serwerem. Czy jesteś pewien?";
+
+/* popup checkbox label */
 "Bookmark" = "Zakładka";
 
 /* video call conroller */

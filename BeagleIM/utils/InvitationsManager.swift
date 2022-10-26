@@ -167,6 +167,16 @@ class InvitationManager {
         }
     }
  
+    func removeAll(fromServer domain: String, on account: BareJID) {
+        dispatcher.async {
+            let persistentToRemove = self.peristentItems.filter({ $0.account == account && $0.jid.domain == domain });
+            self.peristentItems = self.peristentItems.filter({ !persistentToRemove.contains($0) });
+            let volatileToRemove = self.volatileItems.filter({ $0.account == account && $0.jid.domain == domain });
+            self.volatileItems = self.volatileItems.filter({ !volatileToRemove.contains($0) });
+            self.removed(invitations: Array(persistentToRemove) + Array(volatileToRemove));
+        }
+    }
+    
     private func addded(invitations: [InvitationItem]) {
         for invitation in invitations {
             switch invitation.type {
