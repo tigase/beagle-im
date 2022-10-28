@@ -76,6 +76,9 @@
 /* Class = "NSMenuItem"; title = "Available"; ObjectID = "lQF-nR-YHS"; */
 "lQF-nR-YHS.title" = "Available";
 
+/* Class = "NSMenuItem"; title = "Block server"; ObjectID = "M0b-pK-5Jc"; */
+"M0b-pK-5Jc.title" = "Block server";
+
 /* Class = "NSMenuItem"; title = "Custom message..."; ObjectID = "M0g-vT-p2M"; */
 "M0g-vT-p2M.title" = "Custom message...";
 

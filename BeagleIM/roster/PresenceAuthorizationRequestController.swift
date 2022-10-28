@@ -53,6 +53,7 @@ class PresenceAuthorizationRequestController: NSViewController {
         blockingPullDownButton.menu?.item(at: 1)?.isEnabled = true;
         blockingPullDownButton.menu?.item(at: 2)?.isEnabled = blockingModule?.isReportingSupported ?? false;
         blockingPullDownButton.menu?.item(at: 3)?.isEnabled = blockingModule?.isReportingSupported ?? false;
+        blockingPullDownButton.menu?.item(at: 4)?.isEnabled = true;
     }
     
     @IBAction func allowClicked(_ sender: Any) {
@@ -87,6 +88,39 @@ class PresenceAuthorizationRequestController: NSViewController {
         denyAndBlock(report: .init(cause: .abuse));
     }
     
+    @IBAction func blockServer(_ sender: Any) {
+        guard let client = XmppService.instance.getClient(for: account) else {
+            return;
+        }
+        
+        client.module(.presence).unsubscribed(by: jid);
+
+        InvitationManager.instance.remove(invitation: invitation);
+        client.module(.blockingCommand).block(jids: [JID(jid.domain)], completionHandler: { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(_):
+                    // everything went ok!
+                    InvitationManager.instance.removeAll(fromServer: self.invitation.jid.domain, on: self.invitation.account);
+                    let chatsToClose = DBChatStore.instance.chats(for: client).filter({ $0.jid.domain == self.invitation.jid.domain });
+                    for toClose in chatsToClose {
+                        _  = DBChatStore.instance.close(chat: toClose);
+                    }
+                    break;
+                case .failure(let err):
+                    let alert = Alert();
+                    alert.messageText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to block %@", comment: "alert window title"), self.jid.domain);
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert window message"), err.localizedDescription);
+                    alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
+                    alert.run(completionHandler: { res in
+                        // do we have anything to do here?
+                    });
+                    break;
+                }
+            }
+        });
+    }
+    
     private func denyAndBlock(report: BlockingCommandModule.Report?) {
         guard let client = XmppService.instance.getClient(for: account) else {
             return;
@@ -100,6 +134,9 @@ class PresenceAuthorizationRequestController: NSViewController {
                 switch result {
                 case .success(_):
                     // everything went ok!
+                    if let chat = DBChatStore.instance.chat(for: client, with: self.jid.bareJid) {
+                        _ = DBChatStore.instance.close(chat: chat);
+                    }
                     break;
                 case .failure(let err):
                     let alert = Alert();

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="20037"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="21225"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -566,7 +566,7 @@ Gw
                                         </progressIndicator>
                                         <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="aYy-k0-r8O">
                                             <rect key="frame" x="17" y="16" width="84" height="25"/>
-                                            <popUpButtonCell key="cell" type="push" title="Block..." bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" pullsDown="YES" autoenablesItems="NO" selectedItem="VHS-bs-SZS" id="ldn-2b-d4z">
+                                            <popUpButtonCell key="cell" type="push" title="Block..." bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" pullsDown="YES" autoenablesItems="NO" id="ldn-2b-d4z">
                                                 <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="menu"/>
                                                 <menu key="menu" showsStateColumn="NO" autoenablesItems="NO" id="4Sz-0m-svS">
@@ -586,6 +586,12 @@ Gw
                                                         <menuItem title="Report abuse" id="cBw-dt-rtK">
                                                             <connections>
                                                                 <action selector="reportAbuse:" target="PNc-qW-Epk" id="1x1-oQ-nxQ"/>
+                                                            </connections>
+                                                        </menuItem>
+                                                        <menuItem title="Block server" id="M0b-pK-5Jc">
+                                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                                            <connections>
+                                                                <action selector="blockServer:" target="PNc-qW-Epk" id="HLK-8z-7kg"/>
                                                             </connections>
                                                         </menuItem>
                                                     </items>

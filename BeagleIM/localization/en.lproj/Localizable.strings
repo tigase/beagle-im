@@ -131,6 +131,15 @@
 "Block contact" = "Block contact";
 
 /* popup checkbox label */
+"Block server" = "Block server";
+
+/* alert title */
+"Blocking server" = "Blocking server";
+
+/* alert message */
+"Blocking server %@ will result in closing all open conversations with users of this server and blocking all communications with this server. Are you sure?" = "Blocking server %@ will result in closing all open conversations with users of this server and blocking all communications with this server. Are you sure?";
+
+/* popup checkbox label */
 "Bookmark" = "Bookmark";
 
 /* video call conroller */
