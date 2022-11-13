@@ -107,7 +107,7 @@ class ChangePasswordController: NSViewController, NSTextFieldDelegate, AccountAw
     fileprivate func changePassword(for account: BareJID, newPassword: String) {
         do {
             try AccountManager.modifyAccount(for: account, { acc in
-                acc.password = newPassword;
+                acc.credentials = .password(newPassword);
             })
 
             if self.changeOnServer?.state == .on {

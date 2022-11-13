@@ -29,7 +29,7 @@ public struct Account {
     public var state = CurrentValueSubject<XMPPClient.State,Never>(.disconnected());
 
     public let name: BareJID;
-    public var password: String;
+    public var credentials: Credentials;
     public var enabled: Bool;
     public var serverEndpoint: SocketConnectorNetwork.Endpoint?; // replaces server and endpoint..
     public var lastEndpoint: SocketConnectorNetwork.Endpoint?;
@@ -128,9 +128,9 @@ public struct Account {
         }
     }
 
-    public init(name: BareJID, enabled: Bool, password: String = "", serverEndpoint: SocketConnectorNetwork.Endpoint? = nil, lastEndpoint: SocketConnectorNetwork.Endpoint? = nil, rosterVersion: String? = nil, statusMessage: String? = nil, additional: Additional = Additional())  {
+    public init(name: BareJID, enabled: Bool, credentials: Credentials = .anonymous(), serverEndpoint: SocketConnectorNetwork.Endpoint? = nil, lastEndpoint: SocketConnectorNetwork.Endpoint? = nil, rosterVersion: String? = nil, statusMessage: String? = nil, additional: Additional = Additional())  {
         self.name = name;
-        self.password = password;
+        self.credentials = credentials;
         self.enabled = enabled;
         self.serverEndpoint = serverEndpoint;
         self.lastEndpoint = lastEndpoint;

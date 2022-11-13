@@ -26,6 +26,7 @@ import Combine
 
 open class AccountManager {
     
+    private static let serviceName = "BeagleIM";
     private static let queue = DispatchQueue(label: "AccountManager");
     private static var _accounts: [BareJID: Account] = [:];
     
@@ -45,7 +46,6 @@ open class AccountManager {
             Settings.defaultAccount = newValue?.description;
         }
     }
-//    public static let saltedPasswordCache = AccountManagerScramSaltedPasswordCache();
     
     public static func initialize() throws {
         try queue.sync {
@@ -115,7 +115,7 @@ open class AccountManager {
     
     @available(*, deprecated, message: "Will be removed in future versions after account data conversion is completed")
     private static func getAccountOld(for jid: BareJID) -> AccountOld? {
-        let query = AccountManager.getAccountQuery(jid.description);
+        let query = AccountManager.getAccountQueryOld(jid.description);
         var result: CFTypeRef?;
         
         guard SecItemCopyMatching(query as CFDictionary, &result) == noErr else {
@@ -140,8 +140,8 @@ open class AccountManager {
         let accounts = try DBAccountStore.list();
         for source in accounts {
             if var account = self._accounts[source.name] {
-                if let password = password(for: account.name) {
-                    account.password = password;
+                if let credentials = credentials(for: account.name) {
+                    account.credentials = credentials;
                     account.serverEndpoint = source.serverEndpoint;
                     account.acceptedCertificate = source.acceptedCertificate;
                     account.enabled = source.enabled;
@@ -154,8 +154,8 @@ open class AccountManager {
                 }
             } else {
                 var account = source;
-                if let password = password(for: account.name) {
-                    account.password = password;
+                if let credentials = credentials(for: account.name) {
+                    account.credentials = credentials;
                     self._accounts[account.name] = account;
                 }
             }
@@ -182,8 +182,34 @@ open class AccountManager {
         }
     }
     
-    private static func password(for account: BareJID) -> String? {
-        let query = AccountManager.getAccountQuery(account.description, withData: kSecReturnData);
+    private static func credentials(for account: BareJID) -> Credentials? {
+        let query = AccountManager.accountQuery(account.description, withData: kSecReturnData);
+        var result: CFTypeRef?;
+        
+        guard SecItemCopyMatching(query as CFDictionary, &result) == noErr, let data = result as? Data else {
+            do {
+                guard let password = passwordOld(for: account) else {
+                    return nil;
+                }
+                let newCred = Credentials.password(password);
+                try credentials(newCred, for: account);
+                try deleteAccountOldCredentials(for: account);
+                return newCred;
+            } catch {
+                return nil;
+            }
+        }
+        
+        guard let credentials = try? JSONDecoder().decode(Credentials.self, from: data) else {
+            return nil;
+        }
+
+        return credentials;
+    }
+    
+    private static func passwordOld(for account: BareJID) -> String? {
+        let query = AccountManager.getAccountQueryOld(account.description, withData: kSecReturnData);
+
         
         var result: CFTypeRef?;
         
@@ -198,15 +224,16 @@ open class AccountManager {
         return String(data: data, encoding: .utf8);
     }
     
-    private static func password(_ newPassword: String, for account: BareJID) throws {
-        var query = AccountManager.getAccountQuery(account.description);
+    private static func credentials(_ credentials: Credentials, for account: BareJID) throws {
+        var query = AccountManager.accountQuery(account.description);
         query.removeValue(forKey: String(kSecMatchLimit));
         query.removeValue(forKey: String(kSecReturnAttributes));
         query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock;
 
-        if let updateError = AccountManagerError(status: SecItemUpdate(query as CFDictionary, [kSecValueData as String: newPassword.data(using: .utf8)!] as CFDictionary)) {
+        let data = try JSONEncoder().encode(credentials);
+        if let updateError = AccountManagerError(status: SecItemUpdate(query as CFDictionary, [kSecValueData as String: data] as CFDictionary)) {
             if updateError.status == errSecItemNotFound {
-                query[kSecValueData as String] = newPassword.data(using: .utf8)!;
+                query[kSecValueData as String] = data;
                 if let insertError = AccountManagerError(status: SecItemAdd(query as CFDictionary, nil)) {
                     throw insertError;
                 }
@@ -223,12 +250,12 @@ open class AccountManager {
             var newValue = oldValue ?? Account(name: jid, enabled: true);
             block(&newValue);
             
-            guard !newValue.password.isEmpty else {
+            guard !newValue.credentials.isEmpty else {
                 throw XMPPError(condition: .bad_request);
             }
 
-            if newValue.password != oldValue?.password {
-                try self.password(newValue.password, for: newValue.name);
+            if newValue.credentials != oldValue?.credentials {
+                try self.credentials(newValue.credentials, for: newValue.name);
             }
             
             if let oldValue = oldValue {
@@ -239,7 +266,7 @@ open class AccountManager {
                          
             self._accounts[newValue.name] = newValue;
                         
-            let reconnect = oldValue?.password != newValue.password || oldValue?.acceptedCertificate != newValue.acceptedCertificate || oldValue?.enabled != newValue.enabled || oldValue?.serverEndpoint != newValue.serverEndpoint || oldValue?.omemoDeviceId == newValue.omemoDeviceId;
+            let reconnect = oldValue?.credentials.password != newValue.credentials.password || oldValue?.acceptedCertificate != newValue.acceptedCertificate || oldValue?.enabled != newValue.enabled || oldValue?.serverEndpoint != newValue.serverEndpoint || oldValue?.omemoDeviceId != newValue.omemoDeviceId;
             
             DispatchQueue.main.async {
                 self.accountEventsPublisher.send(newValue.enabled ? .enabled(newValue, reconnect) : .disabled(newValue));
@@ -249,7 +276,7 @@ open class AccountManager {
 
     public static func deleteAccount(for jid: BareJID) throws {
         try queue.sync {
-            var query = AccountManager.getAccountQuery(jid.description);
+            var query = AccountManager.accountQuery(jid.description);
             query.removeValue(forKey: String(kSecMatchLimit));
             query.removeValue(forKey: String(kSecReturnAttributes));
             
@@ -267,8 +294,22 @@ open class AccountManager {
         }
     }
     
-    fileprivate static func getAccountQuery(_ name:String, withData:CFString = kSecReturnAttributes) -> [String: Any] {
+    private static func deleteAccountOldCredentials(for jid: BareJID) throws {
+        var query = AccountManager.getAccountQueryOld(jid.description);
+        query.removeValue(forKey: String(kSecMatchLimit));
+        query.removeValue(forKey: String(kSecReturnAttributes));
+        
+        if let error = AccountManagerError(status: SecItemDelete(query as CFDictionary)) {
+            throw error;
+        }
+    }
+    
+    fileprivate static func getAccountQueryOld(_ name:String, withData:CFString = kSecReturnAttributes) -> [String: Any] {
         return [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitOne, String(withData) : kCFBooleanTrue!, String(kSecAttrService) : "xmpp" as NSObject, String(kSecAttrAccount) : name as NSObject ];
+    }
+
+    fileprivate static func accountQuery(_ name:String, withData:CFString = kSecReturnAttributes) -> [String: Any] {
+        return [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitOne, String(withData) : kCFBooleanTrue!, String(kSecAttrService) : serviceName as NSObject, String(kSecAttrAccount) : name as NSObject ];
     }
     
     public enum Event {

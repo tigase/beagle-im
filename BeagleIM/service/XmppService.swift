@@ -369,6 +369,18 @@ class XmppService {
         for ext in extensions {
             ext.register(for: client, cancellables: &clientCancellables.cancellables);
         }
+        
+        let accountJid = account.name;
+        client.connectionConfiguration.credentialsPublisher.sink(receiveValue: { newCredentials in
+            do {
+                self.logger.debug("storing changed credentials: \(String(data: try! JSONEncoder().encode(newCredentials), encoding: .utf8)!)");
+                try AccountManager.modifyAccount(for: accountJid, { account in
+                    account.credentials = newCredentials;
+                })
+            } catch {
+                self.logger.error("storing updated credentials failed: \(error.localizedDescription)");
+            }
+        }).store(in: &clientCancellables.cancellables);
             
         self._clients[account.name] = client;
         return client;

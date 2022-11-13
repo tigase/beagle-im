@@ -25,7 +25,7 @@ import Martin
 extension XMPPClient {
     
     public func configure(for account: Account) {
-        connectionConfiguration.credentials = .password(password: account.password, authenticationName: nil, cache: nil);
+        connectionConfiguration.credentials = account.credentials //.password(password: account.password, authenticationName: nil, cache: nil);
         connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
             if let acceptableCertificate = account.acceptedCertificate, acceptableCertificate.accepted, let fingerprint = acceptableCertificate.certificate.subject.fingerprints.first {
                 options.sslCertificateValidation = .fingerprint(fingerprint);

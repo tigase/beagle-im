@@ -143,7 +143,7 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
                 let certificateInfo = try await AccountValidatorTask.validate(viewController: self, account: jid, password: password, connectivitySettings: settings);
                 do {
                     try AccountManager.modifyAccount(for: jid, { account in
-                        account.password = password;
+                        account.credentials = .password(password)
                         if let host = settings.host, let port = settings.port {
                             account.serverEndpoint = .init(proto: settings.useDirectTLS ? .XMPPS : .XMPP, host: host, port: port);
                         }
@@ -222,7 +222,7 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
                 }
                 options.networkProcessorProviders.append(connectivitySettings.disableTLS13 ? SSLProcessorProvider(supportedTlsVersions: TLSVersion.TLSv1_2...TLSVersion.TLSv1_2) : SSLProcessorProvider());
             })
-            client.connectionConfiguration.credentials = .password(password: password, authenticationName: nil, cache: nil);
+            client.connectionConfiguration.credentials = .password(password); // authenticationName: nil, cache: nil);
             defer {
                 Task {
                     try await client.disconnect();

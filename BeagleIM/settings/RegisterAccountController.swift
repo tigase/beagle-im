@@ -121,7 +121,7 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
                 } else {
                     account.acceptedCertificate = nil;
                 }
-                account.password = self.password!;
+                account.credentials = .password(self.password!);
             })
             dismissView();
         } catch {
