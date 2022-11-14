@@ -496,7 +496,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
         }
         
         var selectedTexts: [NSAttributedString] {
-            let texts = items.map { NSMutableAttributedString(attributedString: $0.attributedString) };
+            let texts = items.sorted(by: { $0.timestamp < $1.timestamp }).map { NSMutableAttributedString(attributedString: $0.attributedString) };
 
             for text in texts {
                 text.removeAttribute(.backgroundColor, range: NSRange(location:0, length: text.length));
