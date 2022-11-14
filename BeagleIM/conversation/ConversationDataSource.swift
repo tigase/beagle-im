@@ -233,6 +233,9 @@ class ConversationDataSource {
             if let scrollToIdx = scrollToIdx {
                 self.delegate?.scrollRowToVisible(scrollToIdx);
             } else {
+                if (self.delegate?.isVisible(row: 0) ?? false) {
+                    self.delegate?.scrollRowToVisible(0);
+                }
                 self.delegate?.markAsReadUpToNewestVisibleRow();
             }
         }
@@ -250,6 +253,10 @@ class ConversationDataSource {
         self.markers = grouped.map({ k, v in
             return ConversationEntry(id: Int.max, conversation: conversation, timestamp: k.timestamp, state: .none, sender: .none, payload: .marker(type: k.type, senders: v), options: .none)
         });
+        
+        guard state == .loaded else {
+            return;
+        }
 
         self.updateStore();
     }
