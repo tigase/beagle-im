@@ -549,6 +549,8 @@ class GroupchatParticipantsContainer: NSObject, NSOutlineViewDelegate, NSOutline
     
     private var dispatcher = QueueDispatcher(label: "GroupchatParticipantsContainer");
     
+    private var initialized = false;
+    
     init(delegate: GroupchatViewController) {
         self.delegate = delegate;
         super.init();
@@ -588,19 +590,26 @@ class GroupchatParticipantsContainer: NSObject, NSOutlineViewDelegate, NSOutline
             
             self.outlineView?.beginUpdates();
 
-            if !allChanges.removed.isEmpty {
-                outlineView?.removeItems(at: allChanges.removed, inParent: nil, withAnimation: .effectFade);
-            }
-            if !allChanges.inserted.isEmpty {
-                outlineView?.insertItems(at: allChanges.inserted, inParent: nil, withAnimation: .effectFade);
-                for idx in allChanges.inserted {
-                    outlineView?.expandItem(groups[idx], expandChildren: true);
+            if (!initialized) {
+                initialized = true;
+                outlineView?.reloadData();
+                outlineView?.expandItem(nil, expandChildren: true);
+                //self.expandAll();
+            } else {
+                if !allChanges.removed.isEmpty {
+                    outlineView?.removeItems(at: allChanges.removed, inParent: nil, withAnimation: .effectFade);
                 }
-            }
-            
-            for (group, changes) in allChanges2 {
-                self.outlineView?.removeItems(at: changes.removed, inParent: group, withAnimation: .effectFade);
-                self.outlineView?.insertItems(at: changes.inserted, inParent: group, withAnimation: .effectFade);
+                if !allChanges.inserted.isEmpty {
+                    outlineView?.insertItems(at: allChanges.inserted, inParent: nil, withAnimation: .effectFade);
+                    for idx in allChanges.inserted {
+                        outlineView?.expandItem(groups[idx], expandChildren: true);
+                    }
+                }
+                
+                for (group, changes) in allChanges2 {
+                    self.outlineView?.removeItems(at: changes.removed, inParent: group, withAnimation: .effectFade);
+                    self.outlineView?.insertItems(at: changes.inserted, inParent: group, withAnimation: .effectFade);
+                }
             }
             self.outlineView?.endUpdates();
             self.outlineView?.isHidden = false;
@@ -620,7 +629,7 @@ class GroupchatParticipantsContainer: NSObject, NSOutlineViewDelegate, NSOutline
     func outlineView(_ outlineView: NSOutlineView, shouldExpandItem item: Any) -> Bool {
         return item is ParticipantsGroup;
     }
-    
+        
     func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
         if let group = item as? ParticipantsGroup {
             return group.participants[index];
