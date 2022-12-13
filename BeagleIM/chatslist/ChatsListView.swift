@@ -300,6 +300,58 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         }
     }
     
+    func blockSelectedContacts(wholeDomains: Bool) {
+        let selectedItems = self.outlineView.selectedRowIndexes.compactMap({ self.outlineView.item(atRow: $0) as? ChatsListContactItemProtocol });
+        
+        let byAccount = Dictionary(grouping: selectedItems, by: { $0.account });
+        
+        for (account, items) in byAccount {
+            if let client = XmppService.instance.getClient(for: account), client.state == .connected() {
+                let subscriptionRequests = items.compactMap({ $0 as? InvitationItem });
+                if !subscriptionRequests.isEmpty {
+                    for jid in subscriptionRequests.filter({ $0.type == .presenceSubscription }).map({ $0.jid }) {
+                        client.module(.presence).unsubscribed(by: jid)
+                    }
+                }
+                let jids = wholeDomains ? Array(Set(items.map({ JID($0.jid.domain)! }))) : items.map({ $0.jid.withoutResource });
+                if wholeDomains {
+                    InvitationManager.instance.removeAll(fromServers: jids.map({ $0.domain }), on: account);
+                } else {
+                    InvitationManager.instance.remove(invitations: subscriptionRequests);
+                }
+                client.module(.blockingCommand).block(jids: items.map({ $0.jid.withoutResource }), completionHandler: { result in
+                    switch result {
+                    case .failure(let error):
+                        DispatchQueue.main.async {
+                            let alert = Alert();
+                            alert.messageText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to block %@", comment: "alert window title"), jids.map({ $0.description }).joined(separator: ", "));
+                            alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert window message"), error.localizedDescription);
+                            alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
+                            alert.run(completionHandler: { res in
+                                // do we have anything to do here?
+                            });
+                        }
+                    default:
+                        if wholeDomains {
+                            let domains = Set(jids.map({ $0.domain }));
+                            let chatsToClose = DBChatStore.instance.chats(for: client).filter({ domains.contains($0.jid.domain) });
+                            for toClose in chatsToClose {
+                                _  = DBChatStore.instance.close(chat: toClose);
+                            }
+                        } else {
+                            let jidsSet = Set(jids.map({ $0.bareJid }))
+                            let chatsToClose = DBChatStore.instance.chats(for: client).filter({ jidsSet.contains($0.jid) });
+                            for toClose in chatsToClose {
+                                _  = DBChatStore.instance.close(chat: toClose);
+                            }
+                        }
+                    }
+                })
+            }
+        }
+        
+    }
+    
     private var scrollChatToMessageWithId: Int?;
     
     @objc func chatSelected(_ notification: Notification) {
@@ -508,7 +560,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         }
         return nil;
     }
-        
+
     func close(chat: ConversationItem) -> Bool {
         switch chat.chat {
         case let c as Chat:
@@ -547,20 +599,6 @@ extension ChatsListViewController: NSOutlineViewDelegate {
             }
         case let c as Channel:
             guard let mixModule = c.context?.module(.mix), let userJid = c.context?.userBareJid else {
-                return false;
-            }
-            
-            if 1==1 {
-                let errors: [Error] = [
-                    XMPPError.feature_not_implemented,
-                    XMPPError.bad_request("Invalid request!"),
-                    PubSubError.remote_server_timeout,
-                    PubSubError(error: .feature_not_implemented, pubsubErrorCondition: PubSubErrorCondition.unsupported),
-                    PubSubError(error: .forbidden("You have no permission to access this resource!"), pubsubErrorCondition: PubSubErrorCondition.not_subscribed)
-                ];
-                for error in errors {
-                    print("error : \(error.localizedDescription)");
-                }
                 return false;
             }
             

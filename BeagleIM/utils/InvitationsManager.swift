@@ -166,12 +166,28 @@ class InvitationManager {
             self.removed(invitations: [invitation]);
         }
     }
- 
-    func removeAll(fromServer domain: String, on account: BareJID) {
+    
+    func remove(invitations: [InvitationItem]) {
         dispatcher.async {
-            let persistentToRemove = self.peristentItems.filter({ $0.account == account && $0.jid.domain == domain });
+            let toRemove = invitations.filter({ self.peristentItems.contains($0) || self.volatileItems.contains($0) });
+            guard !toRemove.isEmpty else {
+                return;
+            }
+            
+            let toRemoveSet = Set(toRemove);
+            
+            self.peristentItems = self.peristentItems.filter({ !toRemoveSet.contains($0) });
+            self.volatileItems = self.volatileItems.filter({ !toRemoveSet.contains($0) });
+            self.removed(invitations: toRemove);
+        }
+    }
+ 
+    func removeAll(fromServers: [String], on account: BareJID) {
+        let domains = Set(fromServers);
+        dispatcher.async {
+            let persistentToRemove = self.peristentItems.filter({ $0.account == account && domains.contains($0.jid.domain) });
             self.peristentItems = self.peristentItems.filter({ !persistentToRemove.contains($0) });
-            let volatileToRemove = self.volatileItems.filter({ $0.account == account && $0.jid.domain == domain });
+            let volatileToRemove = self.volatileItems.filter({ $0.account == account && domains.contains($0.jid.domain) });
             self.volatileItems = self.volatileItems.filter({ !volatileToRemove.contains($0) });
             self.removed(invitations: Array(persistentToRemove) + Array(volatileToRemove));
         }

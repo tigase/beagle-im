@@ -31,6 +31,7 @@ import TigaseLogging
 extension NSUserInterfaceItemIdentifier {
     
     static let createMeetingMenuItem = NSUserInterfaceItemIdentifier("createMeetingMenuItem");
+    static let blockSelectedItem = NSUserInterfaceItemIdentifier("blockSelectedItem");
     static let serviceDiscoveryMenuItem = NSUserInterfaceItemIdentifier("serviceDiscoveryMenuItem")
     static let xmlConsoleMenuItem = NSUserInterfaceItemIdentifier("xmlConsoleMenuItem");
 }
@@ -312,6 +313,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     func menuNeedsUpdate(_ menu: NSMenu) {
         if let meetItem = menu.items.first(where: { $0.identifier == .createMeetingMenuItem }) {
             meetItem.isHidden = (!NSEvent.modifierFlags.contains(.option)) && (!Settings.showAdvancedXmppFeatures);
+        }
+        if let blockSelectedItem = menu.items.first(where: { $0.identifier == .blockSelectedItem }) {
+            if let chatsWindowController = NSApp.windows.compactMap({ w in
+                return w.windowController as? ChatsWindowController
+            }).first, let chatsListViewController = (chatsWindowController.contentViewController as? NSSplitViewController)?.splitViewItems.first?.viewController as? ChatsListViewController {
+                blockSelectedItem.isEnabled = !chatsListViewController.outlineView.selectedRowIndexes.isEmpty;
+            } else {
+                blockSelectedItem.isEnabled = false;
+            }
         }
         if let xmlConsoleItem = menu.items.first(where: { $0.identifier == .xmlConsoleMenuItem }) {
             xmlConsoleItem.isHidden = (!NSEvent.modifierFlags.contains(.option)) && (!Settings.showAdvancedXmppFeatures);
@@ -631,6 +641,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             
             windowController.showWindow(self);
         }
+    }
+    
+    @IBAction func blockContacts(_ sender: Any) {
+        blockSelectedItems(wholeDomains: false)
+    }
+    
+    @IBAction func blockServers(_ sender: Any) {
+        blockSelectedItems(wholeDomains: true)
+    }
+
+    private func blockSelectedItems(wholeDomains: Bool) {
+        if let chatsWindowController = NSApp.windows.compactMap({ w in
+            return w.windowController as? ChatsWindowController
+        }).first, let chatsListViewController = (chatsWindowController.contentViewController as? NSSplitViewController)?.splitViewItems.first?.viewController as? ChatsListViewController {
+            chatsListViewController.blockSelectedContacts(wholeDomains: wholeDomains)
+        }
+    }
+    
+    @IBAction func closeChat(_ sender: Any) {
+        NotificationCenter.default.post(name: ChatsListViewController.CLOSE_SELECTED_CHAT, object: nil);
     }
     
 }

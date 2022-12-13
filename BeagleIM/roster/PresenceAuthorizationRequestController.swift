@@ -103,7 +103,7 @@ class PresenceAuthorizationRequestController: NSViewController {
                 switch result {
                 case .success(_):
                     // everything went ok!
-                    InvitationManager.instance.removeAll(fromServer: self.invitation.jid.domain, on: self.invitation.account);
+                    InvitationManager.instance.removeAll(fromServers: [self.invitation.jid.domain], on: self.invitation.account);
                     let chatsToClose = DBChatStore.instance.chats(for: client).filter({ $0.jid.domain == self.invitation.jid.domain });
                     for toClose in chatsToClose {
                         _  = DBChatStore.instance.close(chat: toClose);

@@ -55,6 +55,9 @@
 /* Class = "NSMenuItem"; title = "Edit"; ObjectID = "5QF-Oa-p0T"; */
 "5QF-Oa-p0T.title" = "Edytuj";
 
+/* Class = "NSMenuItem"; title = "Contacts"; ObjectID = "6Av-8t-HCf"; */
+"6Av-8t-HCf.title" = "Kontakty";
+
 /* Class = "NSMenuItem"; title = "Redo"; ObjectID = "6dh-zS-Vam"; */
 "6dh-zS-Vam.title" = "Ponów";
 
@@ -63,6 +66,9 @@
 
 /* Class = "NSMenuItem"; title = "Correct Spelling Automatically"; ObjectID = "78Y-hA-62v"; */
 "78Y-hA-62v.title" = "Poprawiaj pisownię automatycznie";
+
+/* Class = "NSMenuItem"; title = "Block selected"; ObjectID = "7Us-lx-oCX"; */
+"7Us-lx-oCX.title" = "Zablokuj zaznaczone";
 
 /* Class = "NSMenuItem"; title = "Bookmarks"; ObjectID = "84M-Lu-xst"; */
 "84M-Lu-xst.title" = "Zakładki";
@@ -129,6 +135,9 @@
 
 /* Class = "NSMenuItem"; title = "Make Lower Case"; ObjectID = "d9M-CD-aMd"; */
 "d9M-CD-aMd.title" = "Zamień na małe litery";
+
+/* Class = "NSMenuItem"; title = "Servers"; ObjectID = "dE2-yg-mHt"; */
+"dE2-yg-mHt.title" = "Serwery";
 
 /* Class = "NSMenuItem"; title = "Help"; ObjectID = "DGd-S4-N6a"; */
 "DGd-S4-N6a.title" = "Pomoc";
@@ -333,6 +342,9 @@
 
 /* Class = "NSTextFieldCell"; title = "Certificate name:"; ObjectID = "vQs-EJ-86s"; */
 "vQs-EJ-86s.title" = "Nazwa certyfikatu:";
+
+/* Class = "NSMenu"; title = "Block selected"; ObjectID = "w0e-u4-cfJ"; */
+"w0e-u4-cfJ.title" = "Zablokuj zaznaczone";
 
 /* Class = "NSMenu"; title = "Edit"; ObjectID = "W48-6f-4Dl"; */
 "W48-6f-4Dl.title" = "Edytuj";
