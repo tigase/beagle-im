@@ -116,7 +116,7 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
         let password = passwordField.stringValue.isEmpty ? nil : passwordField.stringValue;
         let channelJid = channelJid!;
      
-        join(client: client, channelJid: channelJid, channelName: info?.identities.first?.name, nickname: nickname, password: password, features: info?.features ?? [])
+        join(client: client, channelJid: channelJid, channelName: info?.identities.first?.name, nickname: nickname, password: password, features: info?.features ?? [], formElement: info?.form?.element)
     }
     
     @IBAction func createBookmarkChanged(_ sender: NSButton) {
@@ -143,7 +143,7 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
         }
     }
     
-    private func join(client: XMPPClient, channelJid: BareJID, channelName: String?, nickname: String, password: String?, features: [String]) {
+    private func join(client: XMPPClient, channelJid: BareJID, channelName: String?, nickname: String, password: String?, features: [String], formElement: Element?) {
         self.progressIndicator.startAnimation(self);
         let createBookmark = bookmarkCreateButton.isEnabled && bookmarkCreateButton.state == .on;
         let autojoin = bookmarkAutojoinButton.isEnabled && bookmarkAutojoinButton.state == .on;
@@ -157,6 +157,11 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
                     switch roomResult {
                     case .created(let room), .joined(let room):
                         (room as! Room).roomFeatures = Set(features.compactMap({ Room.Feature(rawValue: $0) }));
+                        if let formElement = formElement, let config = RoomConfig(element: formElement) {
+                            (room as! Room).allowedPM = config.allowPM ?? .anyone;
+                        } else {
+                            (room as! Room).allowedPM = .anyone;
+                        }
                     }
                     if createBookmark {
                         client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: channelName ?? room.localPart ?? room.stringValue, jid: JID(room), autojoin: autojoin, nick: nickname, password: password));

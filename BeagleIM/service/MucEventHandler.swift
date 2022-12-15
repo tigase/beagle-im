@@ -36,12 +36,14 @@ class MucEventHandler: XmppServiceExtension {
             client.module(.muc).roomManager.rooms(for: client).forEach { (room) in
                 // first we need to check if room supports MAM
                 DBChatMarkersStore.instance.awaitingSync(for: room as! Room);
-                client.module(.disco).getInfo(for: JID(room.jid), completionHandler: { result in
+                client.module(.disco).getInfo(for: JID(room.jid), resultHandler: { result in
                     var mamVersions: [MessageArchiveManagementModule.Version] = [];
                     switch result {
                     case .success(let info):
                         mamVersions = info.features.compactMap({ MessageArchiveManagementModule.Version(rawValue: $0) });
                         (room as! Room).roomFeatures = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
+                        let config = RoomConfig(form: info.form);
+                        (room as! Room).allowedPM = config.allowPM ?? .anyone;
                     default:
                         break;
                     }

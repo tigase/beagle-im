@@ -26,11 +26,11 @@ import AppKit
 import Combine
 
 public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conversation {
-
+    
     open override var defaultMessageType: StanzaType {
         return .groupchat;
     }
-
+    
     private let occupantsStore = RoomOccupantsStoreBase();
     
     public var occupantsPublisher: AnyPublisher<[MucOccupant], Never> {
@@ -96,10 +96,12 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     public var roomJid: BareJID {
         return jid;
     }
-
+    
     public var debugDescription: String {
         return "Room(account: \(account), jid: \(jid))";
     }
+    
+    public var allowedPM: RoomConfig.AllowPM = .anyone;
     
     @Published
     public var roomFeatures: Set<Feature> = [] {
@@ -365,6 +367,19 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
         return self.roomFeatures.contains(.membersOnly) && self.roomFeatures.contains(.nonAnonymous);
     }
     
+    public func canSendPrivateMessage() -> Bool {
+        switch allowedPM {
+        case .anyone:
+            return true;
+        case .moderators:
+            return role == .moderator;
+        case .participants:
+            return role == .participant || role == .moderator;
+        case .none:
+            return false;
+        }
+    }
+
     public func sendChatMarker(_ marker: Message.ChatMarkers, andDeliveryReceipt receipt: Bool) {
         guard Settings.confirmMessages else {
             return;
@@ -382,7 +397,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
                 message.messageDelivery = .received(id: marker.id)
             }
             self.send(message: message, completionHandler: nil);
-        } else if case .displayed(_) = marker {
+        } else if case .displayed(_) = marker, canSendPrivateMessage() {
             let message = self.createPrivateMessage(recipientNickname: self.nickname);
             message.chatMarkers = marker;
             message.hints = [.store]
