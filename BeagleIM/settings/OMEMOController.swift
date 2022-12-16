@@ -63,7 +63,7 @@ open class OMEMOContoller: NSViewController, AccountAware, NSTableViewDataSource
             return;
         }
         let omemoModule: OMEMOModule? = XmppService.instance.getClient(for: account)?.module(.omemo);
-        var fingerprint = keyPair.publicKey?.map { (byte) -> String in
+        var fingerprint = keyPair.publicKeyData?.map { (byte) -> String in
             return String(format: "%02x", byte)
             }.dropFirst(1).joined();
 

@@ -290,7 +290,7 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
 
         let channelJid = channel.jid;
         if inviteOnly {
-            mixModule.allowAccess(to: channelJid, for: jid, completionHandler: { [weak self] result in
+            mixModule.allowAccess(to: channelJid, for: jid, value: false, completionHandler: { [weak self] result in
                 switch result {
                 case .success(_):
                     break;

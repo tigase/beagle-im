@@ -307,6 +307,9 @@
 /* video call controller */
 "Do you want to accept this call?" = "Czy chcesz odebrać to połączenie?";
 
+/* confirm to allow access to your presence information */
+"Do you want to allow access to your online status and associated data for account %@?" = "Czy chcesz zezwolić na dostęp do twojego statusu online i powiązanych danych dla konta %@?";
+
 /* OMEMO settings */
 "Do you want to deactivate and remove selected identities?" = "Czy chcesz dezaktywować i usunąć wybrane tożsamości?";
 

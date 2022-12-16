@@ -40,6 +40,8 @@ class MucEventHandler: XmppServiceExtension {
                     let info = try await client.module(.disco).info(for: JID(room.jid));
                     let mamVersions = info.features.compactMap(MessageArchiveManagementModule.Version.init(rawValue:));
                     (room as! Room).roomFeatures = Set(info.features.compactMap(Room.Feature.init(rawValue:)));
+                    let config = RoomConfig(form: info.form);
+                    (room as! Room).allowedPM = config.allowPM ?? .anyone;
                     if let timestamp = (room as? Room)?.timestamp {
                         if !mamVersions.isEmpty {
                             let result = try await room.rejoin(fetchHistory: .skip);

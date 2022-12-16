@@ -19,9 +19,6 @@
 /* Class = "NSMenuItem"; title = "Report spam"; ObjectID = "6sl-Iv-s9e"; */
 "6sl-Iv-s9e.title" = "Zgłoś spam";
 
-/* Class = "NSTextFieldCell"; title = "Do you wish to allow access to your presence information?"; ObjectID = "7xC-1v-L0Z"; */
-"7xC-1v-L0Z.title" = "Czy chcesz dać dostęp do informacji o twojej dostępności?";
-
 /* Class = "NSMenuItem"; title = "Authorization"; ObjectID = "bBW-O0-JVI"; */
 "bBW-O0-JVI.title" = "Autoryzacja";
 

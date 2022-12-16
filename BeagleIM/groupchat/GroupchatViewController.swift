@@ -282,11 +282,13 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
     override func prepareConversationLogContextMenu(dataSource: ConversationDataSource, menu: NSMenu, forRow row: Int) {
         super.prepareConversationLogContextMenu(dataSource: dataSource, menu: menu, forRow: row);
         if row != NSNotFound || !(self.conversationLogController?.selectionManager.hasSingleSender ?? false) {
-            let reply = menu.addItem(withTitle: NSLocalizedString("Reply with PM", comment: "context menu item"), action: #selector(replySelectedMessagesViaPM), keyEquivalent: "");
-            reply.target = self
-            reply.tag = row;
-            if #available(macOS 11.0, *) {
-                reply.image = NSImage(systemSymbolName: "arrowshape.turn.up.left.circle", accessibilityDescription: "reply with PM");
+            if room.canSendPrivateMessage() {
+                let reply = menu.addItem(withTitle: NSLocalizedString("Reply with PM", comment: "context menu item"), action: #selector(replySelectedMessagesViaPM), keyEquivalent: "");
+                reply.target = self
+                reply.tag = row;
+                if #available(macOS 11.0, *) {
+                    reply.image = NSImage(systemSymbolName: "arrowshape.turn.up.left.circle", accessibilityDescription: "reply with PM");
+                }
             }
         }
         if let item = dataSource.getItem(at: row), item.state.direction == .outgoing {
@@ -550,6 +552,8 @@ class GroupchatParticipantsContainer: NSObject, NSOutlineViewDelegate, NSOutline
     
     private var dispatcher = DispatchQueue(label: "GroupchatParticipantsContainer");
     
+    private var initialized = false;
+    
     init(delegate: GroupchatViewController) {
         self.delegate = delegate;
         super.init();
@@ -589,19 +593,26 @@ class GroupchatParticipantsContainer: NSObject, NSOutlineViewDelegate, NSOutline
             
             self.outlineView?.beginUpdates();
 
-            if !allChanges.removed.isEmpty {
-                outlineView?.removeItems(at: allChanges.removed, inParent: nil, withAnimation: .effectFade);
-            }
-            if !allChanges.inserted.isEmpty {
-                outlineView?.insertItems(at: allChanges.inserted, inParent: nil, withAnimation: .effectFade);
-                for idx in allChanges.inserted {
-                    outlineView?.expandItem(groups[idx], expandChildren: true);
+            if (!initialized) {
+                initialized = true;
+                outlineView?.reloadData();
+                outlineView?.expandItem(nil, expandChildren: true);
+                //self.expandAll();
+            } else {
+                if !allChanges.removed.isEmpty {
+                    outlineView?.removeItems(at: allChanges.removed, inParent: nil, withAnimation: .effectFade);
                 }
-            }
-            
-            for (group, changes) in allChanges2 {
-                self.outlineView?.removeItems(at: changes.removed, inParent: group, withAnimation: .effectFade);
-                self.outlineView?.insertItems(at: changes.inserted, inParent: group, withAnimation: .effectFade);
+                if !allChanges.inserted.isEmpty {
+                    outlineView?.insertItems(at: allChanges.inserted, inParent: nil, withAnimation: .effectFade);
+                    for idx in allChanges.inserted {
+                        outlineView?.expandItem(groups[idx], expandChildren: true);
+                    }
+                }
+                
+                for (group, changes) in allChanges2 {
+                    self.outlineView?.removeItems(at: changes.removed, inParent: group, withAnimation: .effectFade);
+                    self.outlineView?.insertItems(at: changes.inserted, inParent: group, withAnimation: .effectFade);
+                }
             }
             self.outlineView?.endUpdates();
             self.outlineView?.isHidden = false;
@@ -621,7 +632,7 @@ class GroupchatParticipantsContainer: NSObject, NSOutlineViewDelegate, NSOutline
     func outlineView(_ outlineView: NSOutlineView, shouldExpandItem item: Any) -> Bool {
         return item is ParticipantsGroup;
     }
-    
+        
     func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
         if let group = item as? ParticipantsGroup {
             return group.participants[index];
@@ -851,7 +862,10 @@ extension GroupchatParticipantsContainer: NSMenuDelegate {
                 
         switch item.action {
         case #selector(privateMessage(_:)):
-            break;
+            guard room?.canSendPrivateMessage() ?? false else {
+                item.isHidden = true;
+                return true;
+            }
         case #selector(banUser(_:)):
             guard let affiliation = self.room?.occupant(nickname: nickname)?.affiliation, (affiliation == .admin || affiliation == .owner) else {
                 item.isHidden = true;

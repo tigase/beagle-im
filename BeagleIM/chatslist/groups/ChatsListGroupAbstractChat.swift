@@ -22,7 +22,7 @@ import AppKit
 import Martin
 import Combine
 
-struct ConversationItem: ChatsListItemProtocol, Hashable {
+struct ConversationItem: ChatsListItemProtocol, ChatsListContactItemProtocol, Hashable {
     
     static func == (lhs: ConversationItem, rhs: ConversationItem) -> Bool {
         return lhs.chat.id == rhs.chat.id;
@@ -31,6 +31,15 @@ struct ConversationItem: ChatsListItemProtocol, Hashable {
     var name: String {
         return chat.displayName;
     }
+    
+    var account: BareJID {
+        return chat.account;
+    }
+    
+    var jid: JID {
+        return JID(chat.jid);
+    }
+    
     let chat: Conversation;
     
     let timestamp: Date;

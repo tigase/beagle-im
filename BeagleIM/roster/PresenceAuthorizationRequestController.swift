@@ -27,6 +27,7 @@ class PresenceAuthorizationRequestController: NSViewController {
     @IBOutlet var avatarView: AvatarView!;
     @IBOutlet var nameField: NSTextField!;
     @IBOutlet var jidField: NSTextField!;
+    @IBOutlet var descriptionField: NSTextField!;
     @IBOutlet var progressIndicator: NSProgressIndicator!;
     @IBOutlet var blockingPullDownButton: NSPopUpButton!;
     
@@ -45,6 +46,7 @@ class PresenceAuthorizationRequestController: NSViewController {
         nameField.stringValue = jid.description;
         jidField.stringValue = jid.description;
         jidField.isHidden = true;
+        descriptionField.stringValue = String.localizedStringWithFormat(NSLocalizedString("Do you want to allow access to your online status and associated data for account %@?", comment: "confirm to allow access to your presence information"), jid.description)
         refreshVCard();
         
         let blockingModule: BlockingCommandModule? = XmppService.instance.getClient(for: account)?.module(.blockingCommand);
@@ -101,7 +103,7 @@ class PresenceAuthorizationRequestController: NSViewController {
                 switch result {
                 case .success(_):
                     // everything went ok!
-                    InvitationManager.instance.removeAll(fromServer: self.invitation.jid.domain, on: self.invitation.account);
+                    InvitationManager.instance.removeAll(fromServers: [self.invitation.jid.domain], on: self.invitation.account);
                     let chatsToClose = DBChatStore.instance.chats(for: client).filter({ $0.jid.domain == self.invitation.jid.domain });
                     for toClose in chatsToClose {
                         _  = DBChatStore.instance.close(chat: toClose);

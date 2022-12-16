@@ -22,7 +22,7 @@
 import Foundation
 import Martin
 
-class InvitationItem: ChatsListItemProtocol, Identifiable, Equatable, Hashable {
+class InvitationItem: ChatsListItemProtocol, ChatsListContactItemProtocol, Identifiable, Equatable, Hashable {
     
     static func == (lhs: InvitationItem, rhs: InvitationItem) -> Bool {
         return lhs.type == rhs.type && lhs.account == rhs.account && lhs.jid == rhs.jid;

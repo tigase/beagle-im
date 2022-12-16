@@ -476,13 +476,13 @@ Gw
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <box borderType="line" title="Box" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="bpz-Q8-eSz">
-                                <rect key="frame" x="38" y="134" width="297" height="199"/>
+                                <rect key="frame" x="38" y="118" width="297" height="215"/>
                                 <view key="contentView" id="Kjg-gV-49h">
-                                    <rect key="frame" x="3" y="3" width="291" height="193"/>
+                                    <rect key="frame" x="3" y="3" width="291" height="209"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="fwT-B3-QUa" customClass="AvatarView" customModule="BeagleIM" customModuleProvider="target">
-                                            <rect key="frame" x="20" y="100" width="48" height="48"/>
+                                            <rect key="frame" x="20" y="116" width="48" height="48"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="48" id="1hR-0W-efq"/>
                                                 <constraint firstAttribute="width" constant="48" id="Sll-IN-eay"/>
@@ -490,7 +490,7 @@ Gw
                                             <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="4fa-Ud-EXP"/>
                                         </imageView>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ugb-Q9-re5">
-                                            <rect key="frame" x="76" y="132" width="160" height="16"/>
+                                            <rect key="frame" x="76" y="148" width="160" height="16"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Romeo Monteki" id="mTm-Oz-LEh">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -501,7 +501,7 @@ Gw
                                             </attributedString>
                                         </textField>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="TLf-I4-O50">
-                                            <rect key="frame" x="76" y="108" width="160" height="16"/>
+                                            <rect key="frame" x="76" y="124" width="160" height="16"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="mIr-Fn-sH6">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
@@ -512,7 +512,7 @@ Gw
                                             </attributedString>
                                         </textField>
                                         <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="MSZ-9b-fed">
-                                            <rect key="frame" x="251" y="97.5" width="20.5" height="38"/>
+                                            <rect key="frame" x="251" y="113.5" width="20.5" height="38"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="32" id="EVQ-Cc-D8w"/>
                                                 <constraint firstAttribute="width" constant="20" id="g6m-Y2-Oij"/>
@@ -526,12 +526,15 @@ Gw
                                             </connections>
                                         </button>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="uLX-Sb-u3u">
-                                            <rect key="frame" x="18" y="60" width="255" height="32"/>
-                                            <textFieldCell key="cell" selectable="YES" title="Do you wish to allow access to your presence information?" id="7xC-1v-L0Z">
+                                            <rect key="frame" x="18" y="60" width="255" height="48"/>
+                                            <textFieldCell key="cell" selectable="YES" title="Do you want to allow access to your online status and associated data for account user@example.org?" id="7xC-1v-L0Z">
                                                 <font key="font" usesAppearanceFont="YES"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
+                                            <attributedString key="userComments">
+                                                <fragment content="#bc-ignore!"/>
+                                            </attributedString>
                                         </textField>
                                         <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="5ds-XM-ogj">
                                             <rect key="frame" x="211" y="13" width="67" height="32"/>
@@ -554,7 +557,7 @@ Gw
                                             </connections>
                                         </button>
                                         <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="4ct-p4-Rhg">
-                                            <rect key="frame" x="18" y="156" width="151" height="17"/>
+                                            <rect key="frame" x="18" y="172" width="151" height="17"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Authorization request" id="gry-dE-a9e">
                                                 <font key="font" metaFont="systemSemibold" size="14"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -562,7 +565,7 @@ Gw
                                             </textFieldCell>
                                         </textField>
                                         <progressIndicator wantsLayer="YES" maxValue="100" displayedWhenStopped="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="QEJ-0y-37F">
-                                            <rect key="frame" x="130" y="81" width="32" height="32"/>
+                                            <rect key="frame" x="130" y="89" width="32" height="32"/>
                                         </progressIndicator>
                                         <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="aYy-k0-r8O">
                                             <rect key="frame" x="17" y="16" width="84" height="25"/>
@@ -649,6 +652,7 @@ Gw
                     <connections>
                         <outlet property="avatarView" destination="fwT-B3-QUa" id="pJc-iU-V27"/>
                         <outlet property="blockingPullDownButton" destination="aYy-k0-r8O" id="V6G-jb-3X6"/>
+                        <outlet property="descriptionField" destination="uLX-Sb-u3u" id="h9N-Yo-jmL"/>
                         <outlet property="jidField" destination="TLf-I4-O50" id="r3J-4s-OqR"/>
                         <outlet property="nameField" destination="Ugb-Q9-re5" id="hSJ-1q-k3t"/>
                         <outlet property="progressIndicator" destination="QEJ-0y-37F" id="5II-jI-dBa"/>

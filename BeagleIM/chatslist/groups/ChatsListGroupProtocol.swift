@@ -40,3 +40,10 @@ protocol ChatsListGroupProtocol {
 protocol ChatsListItemProtocol {
     var name: String { get }
 }
+
+protocol ChatsListContactItemProtocol {
+    
+    var account: BareJID { get };
+    var jid: JID { get };
+    
+}

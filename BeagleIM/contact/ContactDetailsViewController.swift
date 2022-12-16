@@ -365,7 +365,7 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
                                         }
                                         window.close();
                                     }
-                                    InvitationManager.instance.removeAll(fromServer: jid.domain, on: chat.account);
+                                    InvitationManager.instance.removeAll(fromServers: [jid.domain], on: chat.account);
                                     let chatsToClose = DBChatStore.instance.chats(for: context).filter({ $0.jid.domain == jid.domain });
                                     for toClose in chatsToClose {
                                         _  = DBChatStore.instance.close(chat: toClose);

@@ -116,7 +116,7 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
         let password = passwordField.stringValue.isEmpty ? nil : passwordField.stringValue;
         let channelJid = channelJid!;
      
-        join(client: client, channelJid: channelJid, channelName: info?.identities.first?.name, nickname: nickname, password: password, features: info?.features ?? [])
+        join(client: client, channelJid: channelJid, channelName: info?.identities.first?.name, nickname: nickname, password: password, features: info?.features ?? [], form: info?.form)
     }
     
     @IBAction func createBookmarkChanged(_ sender: NSButton) {
@@ -143,7 +143,7 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
         }
     }
     
-    private func join(client: XMPPClient, channelJid: BareJID, channelName: String?, nickname: String, password: String?, features: [String]) {
+    private func join(client: XMPPClient, channelJid: BareJID, channelName: String?, nickname: String, password: String?, features: [String], form: DataForm?) {
         self.progressIndicator.startAnimation(self);
         let createBookmark = bookmarkCreateButton.isEnabled && bookmarkCreateButton.state == .on;
         let autojoin = bookmarkAutojoinButton.isEnabled && bookmarkAutojoinButton.state == .on;
@@ -156,6 +156,8 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
                     switch joinResult {
                     case .created(let room), .joined(let room):
                         (room as! Room).roomFeatures = Set(features.compactMap({ Room.Feature(rawValue: $0) }));
+                        let config = RoomConfig(form: form)
+                        (room as! Room).allowedPM = config.allowPM ?? .anyone;
                     }
                     if createBookmark {
                         Task {
