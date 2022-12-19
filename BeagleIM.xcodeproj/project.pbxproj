@@ -2008,8 +2008,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tigase/MartinOMEMO";
 			requirement = {
-				branch = master;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.2.2;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
