@@ -26,7 +26,7 @@
         <!-- See https://github.com/ewilderj/doap/issues/49 -->
         <language>en</language>
 
-        <schema:logo rdf:resource="https://raw.githubusercontent.com/tigase/beagle-im/master/BeagleIM/Assets.xcassets/AppIcon.appiconset/IMG_0720_1024.png"/>
+        <schema:logo rdf:resource="https://raw.githubusercontent.com/tigase/beagle-im/master/BeagleIM/Assets.xcassets/AppIcon.appiconset/1024.png"/>
 
         <programming-language>Swift</programming-language>
 
