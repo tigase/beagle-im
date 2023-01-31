@@ -180,13 +180,16 @@ Advanced
 
 
 
-
-
-.. |images/siskin03| image:: images/siskin03.png
-.. |images/join01| image:: images/join01.png
-.. |images/join02| image:: images/join02.png
-.. |images/editcontacts01| image:: images/editcontacts01.png
-.. |images/editcontacts02| image:: images/editcontacts02.png
-.. |images/status| image:: images/status.png
-
-
+.. |images/chat01| image:: images/chat01.png 
+.. |images/contact01| image:: images/contact01.png
+.. |images/contact02| image:: images/contact02.png
+.. |images/contact03| image:: images/contact03.png
+.. |images/contact04| image:: images/contact04.png
+.. |images/Chats01| image:: images/Chats01.png
+.. |images/Chats02| image:: images/Chats02.png
+.. |images/preference| image:: images/preference.png
+.. |images/preference02| image:: images/preference02.png
+.. |images/preference03| image:: images/preference03.png
+.. |images/preference04| image:: images/preference04.png
+.. |images/status01| image:: images/status01.png
+.. |images/status02| image:: images/status02.png
