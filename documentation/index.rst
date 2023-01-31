@@ -1,6 +1,6 @@
 
 ==========================================
-Tigase Messenger for macOS - Version 1.0
+Tigase Messenger for macOS
 ==========================================
 
 .. toctree::
