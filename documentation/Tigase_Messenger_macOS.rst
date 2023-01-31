@@ -43,8 +43,8 @@ By tapping yes, you will receive notifications of presence changes from your con
 .. NOTE::
    You will only receive this option if 'Request presence subscription' is set to yes in account settings.
 
-.. TIP::
-If somebody not on your friends list adds you, you will receive this same message.
+.. NOTE::
+   If somebody not on your friends list adds you, you will receive this same message.
 
 Edit/Delete a contact
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -133,11 +133,11 @@ General
 
 This section has two options: 
 
--  |Show for messages from unknown senders:
+-  | Show for messages from unknown senders:
    | Whether message will be showen if you receive a message from someone who is not in your contact list and does not have presence subscription 
 
--  |Show system manu icon:
-   |Whether BeagleIM icon in the system menu bar be showed on the top of the screen
+-  | Show system manu icon:
+   | Whether BeagleIM icon in the system menu bar be showed on the top of the screen
 
 If "show sytem manu icon" is checked and you have ongoing/new conversation(even run in the background), the beagleIM icon will be in color showed on your top right of your screen.
 
