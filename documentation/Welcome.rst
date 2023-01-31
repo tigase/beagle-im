@@ -79,5 +79,5 @@ If you do not want to make any change at this moment, you could close this wendo
 
 .. |images/register01| image:: images/register01.PNG
 .. |images/register02| image:: images/register02.PNG
-.. |images/register03| image:: images/register03.PNGma
+.. |images/register03| image:: images/register03.PNG
 
