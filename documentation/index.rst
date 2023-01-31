@@ -10,7 +10,7 @@ Tigase Messenger for macOS - Version 1.0
 
 
    Welcome
-   Tigase_Messenger_iOS
+   Tigase_Messenger_macOS
 
 
 
