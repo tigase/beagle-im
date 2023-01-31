@@ -69,6 +69,7 @@ Your XMPP address is now configured to be used in BeagleIM.
 
 Final Steps
 ------------
+
 Once your account is verified, the application will log you in as online and display the "Preferences" as follows:
 
 |images/register03|
@@ -78,5 +79,5 @@ If you do not want to make any change at this moment, you could close this wendo
 
 .. |images/register01| image:: images/register01.PNG
 .. |images/register02| image:: images/register02.PNG
-.. |images/Beagle01| image:: images/Beagle01.jpg
-.. |images/Beagle02| image:: images/Beagle02.png
+.. |images/register03| image:: images/register03.PNG
+
