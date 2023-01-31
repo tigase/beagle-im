@@ -77,7 +77,7 @@ Once your account is verified, the application will log you in as online and dis
 If you do not want to make any change at this moment, you could close this wendow and now you go to the chat main screen.
 
 
-.. |images/register01| image:: images/register01.PNG
-.. |images/register02| image:: images/register02.PNG
-.. |images/register03| image:: images/register03.PNG
+.. |images/register01| image:: images/register01.png
+.. |images/register02| image:: images/register02.png
+.. |images/register03| image:: images/register03.png
 
