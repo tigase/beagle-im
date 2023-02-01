@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: TigaseDoc \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-31 09:25-0800\n"
+"POT-Creation-Date: 2023-02-01 12:38-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,52 +17,52 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.11.0\n"
 
-#: ../../Tigase_Messenger_macOS.rst:2
-msgid "Tigase Messenger for macOS Interface"
+#: ../../BeagleIM_for_macOS.rst:2
+msgid "BeagleIM for macOS Interface"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:4
+#: ../../BeagleIM_for_macOS.rst:4
 msgid ""
 "The menu interface for BeagleIM on the top will be showed as the "
 "following :"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:6
+#: ../../BeagleIM_for_macOS.rst:6
 msgid "|images/chat01|"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:183
+#: ../../BeagleIM_for_macOS.rst:183
 msgid "images/chat01"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:10
+#: ../../BeagleIM_for_macOS.rst:10
 msgid "Window"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:12
+#: ../../BeagleIM_for_macOS.rst:12
 msgid ""
 "click windows on the top and select contacts, the following windows will "
 "pop up. and then you can add add/edit/delete account and change your "
 "status here."
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:14
+#: ../../BeagleIM_for_macOS.rst:14
 msgid "|images/contact01|"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:184
+#: ../../BeagleIM_for_macOS.rst:184
 msgid "images/contact01"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:18
+#: ../../BeagleIM_for_macOS.rst:18
 msgid "Contacts"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:21
+#: ../../BeagleIM_for_macOS.rst:21
 msgid "Add a contact"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:23
+#: ../../BeagleIM_for_macOS.rst:23
 msgid ""
 "Click \"+\" sign at the left bottom from the last screen pop up. Then "
 "type in the JID of the user, do not use resources, just bare JID. You may"
@@ -71,15 +71,15 @@ msgid ""
 "contact. When adding users, you have two options to select:"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:25
+#: ../../BeagleIM_for_macOS.rst:25
 msgid "|images/contact02|"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:185
+#: ../../BeagleIM_for_macOS.rst:185
 msgid "images/contact02"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:28
+#: ../../BeagleIM_for_macOS.rst:28
 msgid ""
 "Allow presence subscription - This will allow sending of presence status "
 "and changes to this user on your roster. You may disable this to reduce "
@@ -88,7 +88,7 @@ msgid ""
 "not receive information if they are online, busy or away."
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:30
+#: ../../BeagleIM_for_macOS.rst:30
 msgid ""
 "Request presence subscription - Turning this on will enable the "
 "applications to send presence changes to this person on the roster. You "
@@ -96,50 +96,50 @@ msgid ""
 "notifications if you turn off the phone"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:34
+#: ../../BeagleIM_for_macOS.rst:34
 msgid ""
 "These options are on by default and enable Tigase BeagleIM for iOS to "
 "behave like a traditional client."
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:37
+#: ../../BeagleIM_for_macOS.rst:37
 msgid ""
 "If you do decide to Request presence subscription when adding a new "
 "contact, you will be presented with this screen when they add you back:"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:39
+#: ../../BeagleIM_for_macOS.rst:39
 msgid "|images/contact03|"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:186
+#: ../../BeagleIM_for_macOS.rst:186
 msgid "images/contact03"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:41
+#: ../../BeagleIM_for_macOS.rst:41
 msgid ""
 "By tapping yes, you will receive notifications of presence changes from "
 "your contact. This subscription will be maintained by the server, and "
 "will stay active with your friends list."
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:44
+#: ../../BeagleIM_for_macOS.rst:44
 msgid ""
 "You will only receive this option if 'Request presence subscription' is "
 "set to yes in account settings."
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:47
+#: ../../BeagleIM_for_macOS.rst:47
 msgid ""
 "If somebody not on your friends list adds you, you will receive this same"
 " message."
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:50
+#: ../../BeagleIM_for_macOS.rst:50
 msgid "Edit/Delete a contact"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:52
+#: ../../BeagleIM_for_macOS.rst:52
 msgid ""
 "When editing a contact, you may chose to change the account that has "
 "friended the user, edit a roster name (which will be shown on your "
@@ -147,15 +147,15 @@ msgid ""
 "click \"all\" , following options will be showed:"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:54
+#: ../../BeagleIM_for_macOS.rst:54
 msgid "|images/contact04|"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:187
+#: ../../BeagleIM_for_macOS.rst:187
 msgid "images/contact04"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:56
+#: ../../BeagleIM_for_macOS.rst:56
 msgid ""
 "Here, you may also decide to selectively approve or deny subscription "
 "requests to and from the user. If you click authorize - \"resend "
@@ -163,302 +163,302 @@ msgid ""
 "whether you are online, busy, or away."
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:58
+#: ../../BeagleIM_for_macOS.rst:58
 msgid ""
 "If you decide to remove the contacts from your rost, click \"remove\" and"
 " then the contact will be removed from your roster."
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:62
+#: ../../BeagleIM_for_macOS.rst:62
 msgid "User Status"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:64
+#: ../../BeagleIM_for_macOS.rst:64
 msgid ""
 "Your account status will be managed automatically by using the following "
 "rules by default"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:67
+#: ../../BeagleIM_for_macOS.rst:67
 msgid "Status"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:67
+#: ../../BeagleIM_for_macOS.rst:67
 msgid "Behavior"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:69
+#: ../../BeagleIM_for_macOS.rst:69
 msgid "Online"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:69
+#: ../../BeagleIM_for_macOS.rst:69
 msgid "Application has focus on the device."
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:71
+#: ../../BeagleIM_for_macOS.rst:71
 msgid "Away / XA"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:71
+#: ../../BeagleIM_for_macOS.rst:71
 msgid "Application is running in the background."
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:73
+#: ../../BeagleIM_for_macOS.rst:73
 msgid "Offline"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:73
+#: ../../BeagleIM_for_macOS.rst:73
 msgid ""
 "Application is killed or disconnected. If the device is turned off for a "
 "period of time, this will also set status to offline."
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:76
+#: ../../BeagleIM_for_macOS.rst:76
 msgid ""
 "However, you may override this logic by tapping window - contacts , and "
 "selecting a status manually by using drop down list."
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:78
+#: ../../BeagleIM_for_macOS.rst:78
 msgid "|images/status01|  |images/status02|"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:194
+#: ../../BeagleIM_for_macOS.rst:194
 msgid "images/status01"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:195
+#: ../../BeagleIM_for_macOS.rst:195
 msgid "images/status02"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:81
+#: ../../BeagleIM_for_macOS.rst:81
 msgid ""
 "offline: If offline is elected, it will be considered unavailable. And "
 "you will not receive message from your contacts."
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:85
+#: ../../BeagleIM_for_macOS.rst:85
 msgid "Chats"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:87
+#: ../../BeagleIM_for_macOS.rst:87
 msgid ""
 "After adding contacts, go to window on the top and select Chats. Now you "
 "are able to open conversation window with your friends by click +sign."
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:89
+#: ../../BeagleIM_for_macOS.rst:89
 msgid "|images/Chats01|"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:188
+#: ../../BeagleIM_for_macOS.rst:188
 msgid "images/Chats01"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:91
+#: ../../BeagleIM_for_macOS.rst:91
 msgid ""
 "Once you open the conversation window, you are able chat with your friend"
 " by typing. If you are tired of typing but you still want to chat, then "
 "just make a voice call or video call."
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:93
+#: ../../BeagleIM_for_macOS.rst:93
 msgid "|images/Chats02|"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:189
+#: ../../BeagleIM_for_macOS.rst:189
 msgid "images/Chats02"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:97
+#: ../../BeagleIM_for_macOS.rst:97
 msgid "Preference"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:99
+#: ../../BeagleIM_for_macOS.rst:99
 msgid "Click BeagleIM on the top and select preference: |images/preference|"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:190
+#: ../../BeagleIM_for_macOS.rst:190
 msgid "images/preference"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:102
+#: ../../BeagleIM_for_macOS.rst:102
 msgid ""
 "After that, the preference panel showed here could let you change some "
 "settings."
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:105
+#: ../../BeagleIM_for_macOS.rst:105
 msgid "|images/preference02|"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:191
+#: ../../BeagleIM_for_macOS.rst:191
 msgid "images/preference02"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:109
+#: ../../BeagleIM_for_macOS.rst:109
 msgid "General"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:111
+#: ../../BeagleIM_for_macOS.rst:111
 msgid "**Apperance**"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst
+#: ../../BeagleIM_for_macOS.rst
 msgid "automatic, light and dark"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst
+#: ../../BeagleIM_for_macOS.rst
 msgid "adjust background brightness"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:117
+#: ../../BeagleIM_for_macOS.rst:117
 msgid "**Chats list style**"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst
+#: ../../BeagleIM_for_macOS.rst
 msgid "Minimal small large:"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst
+#: ../../BeagleIM_for_macOS.rst
 msgid ""
 "The lines of preview text(from less to more) to keep within the chat "
 "window without using internal or message archive."
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:122
+#: ../../BeagleIM_for_macOS.rst:122
 msgid "**Sent image quality**"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst
+#: ../../BeagleIM_for_macOS.rst
 msgid "Low Medium High Higset Original:"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst
+#: ../../BeagleIM_for_macOS.rst
 msgid "The quailty of images will be sent out"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:127
+#: ../../BeagleIM_for_macOS.rst:127
 msgid "**Sent videos quality**"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst
+#: ../../BeagleIM_for_macOS.rst
 msgid "The quailty of videos will be sent out"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:132
+#: ../../BeagleIM_for_macOS.rst:132
 msgid "**Notifications**"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:134
+#: ../../BeagleIM_for_macOS.rst:134
 msgid "This section has two options:"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst
+#: ../../BeagleIM_for_macOS.rst
 msgid "Show for messages from unknown senders:"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst
+#: ../../BeagleIM_for_macOS.rst
 msgid ""
 "Whether message will be showen if you receive a message from someone who "
 "is not in your contact list and does not have presence subscription"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst
+#: ../../BeagleIM_for_macOS.rst
 msgid "Show system manu icon:"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst
+#: ../../BeagleIM_for_macOS.rst
 msgid ""
 "Whether BeagleIM icon in the system menu bar be showed on the top of the "
 "screen"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:142
+#: ../../BeagleIM_for_macOS.rst:142
 msgid ""
 "If \"show sytem manu icon\" is checked and you have ongoing/new "
 "conversation(even run in the background), the beagleIM icon will be in "
 "color showed on your top right of your screen."
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:144
+#: ../../BeagleIM_for_macOS.rst:144
 msgid "|images/preference03|"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:192
+#: ../../BeagleIM_for_macOS.rst:192
 msgid "images/preference03"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:147
+#: ../../BeagleIM_for_macOS.rst:147
 msgid ""
 "If \"show sytem manu icon\" is checked and you do not have ongoing/new "
 "conversation(not running in the background as well), the beagleIM icon "
 "will be in black and white showed on your top right of your screen."
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:149
+#: ../../BeagleIM_for_macOS.rst:149
 msgid "|images/preference04|"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:193
+#: ../../BeagleIM_for_macOS.rst:193
 msgid "images/preference04"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:154
+#: ../../BeagleIM_for_macOS.rst:154
 msgid "Accounts"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:156
+#: ../../BeagleIM_for_macOS.rst:156
 msgid "**Add** -  | Allows to add other XMPP account"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:159
+#: ../../BeagleIM_for_macOS.rst:159
 msgid "**Edit**"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst
+#: ../../BeagleIM_for_macOS.rst
 msgid "Change password:"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst
+#: ../../BeagleIM_for_macOS.rst
 msgid "user password can be changed at here"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst
+#: ../../BeagleIM_for_macOS.rst
 msgid "Connection details:"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst
+#: ../../BeagleIM_for_macOS.rst
 msgid "Nickname of user can be change at this window"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst
+#: ../../BeagleIM_for_macOS.rst
 msgid "Public profile:"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst
+#: ../../BeagleIM_for_macOS.rst
 msgid ""
 "There is a blank space in the upper left corner where you may upload a "
 "photo as your avatar."
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:170
+#: ../../BeagleIM_for_macOS.rst:170
 msgid "**Blocked**"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst
+#: ../../BeagleIM_for_macOS.rst
 msgid "Lists of contacts which has been blocked"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst:176
+#: ../../BeagleIM_for_macOS.rst:176
 msgid "Advanced"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst
+#: ../../BeagleIM_for_macOS.rst
 msgid "Automatic attachments download:"
 msgstr ""
 
-#: ../../Tigase_Messenger_macOS.rst
+#: ../../BeagleIM_for_macOS.rst
 msgid ""
 "Sets the maximum size of files being sent to the user which may be "
 "automatically donwload. Default size is 10.0MB"
@@ -645,5 +645,8 @@ msgid "Tigase Messenger for macOS"
 msgstr ""
 
 #~ msgid "Tigase Messenger for macOS - Version 1.0"
+#~ msgstr ""
+
+#~ msgid "Tigase Messenger for macOS Interface"
 #~ msgstr ""
 
