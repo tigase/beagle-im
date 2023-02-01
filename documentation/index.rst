@@ -1,6 +1,6 @@
 
 ==========================================
-Tigase Messenger for macOS
+BeagleIM for macOS
 ==========================================
 
 .. toctree::
