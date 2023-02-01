@@ -10,7 +10,7 @@ Tigase Messenger for macOS
 
 
    Welcome
-   Tigase_Messenger_macOS
+   BeagleIM_for_macOS
 
 
 
