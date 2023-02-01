@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: TigaseDoc \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-01 12:38-0800\n"
+"POT-Creation-Date: 2023-02-01 13:12-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -641,12 +641,15 @@ msgid ""
 msgstr ""
 
 #: ../../index.rst:4
-msgid "Tigase Messenger for macOS"
+msgid "BeagleIM for macOS"
 msgstr ""
 
 #~ msgid "Tigase Messenger for macOS - Version 1.0"
 #~ msgstr ""
 
 #~ msgid "Tigase Messenger for macOS Interface"
+#~ msgstr ""
+
+#~ msgid "Tigase Messenger for macOS"
 #~ msgstr ""
 
