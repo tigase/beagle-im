@@ -1,4 +1,4 @@
-Tigase Messenger for macOS Interface
+BeagleIM for macOS Interface
 ======================================
 
 The menu interface for BeagleIM on the top will be showed as the following :
