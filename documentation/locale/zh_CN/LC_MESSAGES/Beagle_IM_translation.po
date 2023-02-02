@@ -3,64 +3,68 @@
 # This file is distributed under the same license as the TigaseDoc package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: TigaseDoc \n"
+"Project-Id-Version: TigaseDoc\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-02-01 13:12-0800\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"PO-Revision-Date: 2023-02-03 21:47+0000\n"
+"Last-Translator: Qian Luo <qian.luo@tigase.net>\n"
+"Language-Team: Chinese (Simplified) <http://translate.tigase.net/projects/"
+"beagleim/beagleim-documentation/zh_Hans/>\n"
+"Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 4.11.2\n"
 "Generated-By: Babel 2.11.0\n"
 
 #: ../../BeagleIM_for_macOS.rst:2
 msgid "BeagleIM for macOS Interface"
-msgstr ""
+msgstr "用于macOS系统的BeagleIM"
 
 #: ../../BeagleIM_for_macOS.rst:4
 msgid ""
 "The menu interface for BeagleIM on the top will be showed as the "
 "following :"
-msgstr ""
+msgstr "顶部BeagleIM的菜单界面如下："
 
 #: ../../BeagleIM_for_macOS.rst:6
 msgid "|images/chat01|"
-msgstr ""
+msgstr "|images/chat01|"
 
 #: ../../BeagleIM_for_macOS.rst:183
 msgid "images/chat01"
-msgstr ""
+msgstr "images/chat01"
 
 #: ../../BeagleIM_for_macOS.rst:10
 msgid "Window"
-msgstr ""
+msgstr "窗口"
 
 #: ../../BeagleIM_for_macOS.rst:12
 msgid ""
 "click windows on the top and select contacts, the following windows will "
 "pop up. and then you can add add/edit/delete account and change your "
 "status here."
-msgstr ""
+msgstr "点击上方的窗口，选择联系人，会弹出如下窗口。然后您可以在此处添加/编辑/删除帐"
+"户并更改您的状态。"
 
 #: ../../BeagleIM_for_macOS.rst:14
 msgid "|images/contact01|"
-msgstr ""
+msgstr "|images/contact01|"
 
 #: ../../BeagleIM_for_macOS.rst:184
 msgid "images/contact01"
-msgstr ""
+msgstr "images/contact01"
 
 #: ../../BeagleIM_for_macOS.rst:18
 msgid "Contacts"
-msgstr ""
+msgstr "联系人"
 
 #: ../../BeagleIM_for_macOS.rst:21
 msgid "Add a contact"
-msgstr ""
+msgstr "添加联系人"
 
 #: ../../BeagleIM_for_macOS.rst:23
 msgid ""
@@ -70,14 +74,17 @@ msgid ""
 "list.In this tutorial *my friend* is selected as the name for the "
 "contact. When adding users, you have two options to select:"
 msgstr ""
+"在弹出的最后一个屏幕中单击左下角的“+”号。然后输入用户的JID，不使用资源，只是"
+"裸JID。您可以为要添加到您的朋友列表中的联系人输入一个友好的昵称。在本教程中，"
+"选择 *my friend* 作为联系人的姓名。添加用户时，您有两个选项可供选："
 
 #: ../../BeagleIM_for_macOS.rst:25
 msgid "|images/contact02|"
-msgstr ""
+msgstr "|images/contact02|"
 
 #: ../../BeagleIM_for_macOS.rst:185
 msgid "images/contact02"
-msgstr ""
+msgstr "images/contact02"
 
 #: ../../BeagleIM_for_macOS.rst:28
 msgid ""
@@ -87,6 +94,9 @@ msgid ""
 "information.If you elect not to Allow presence subscription , you will "
 "not receive information if they are online, busy or away."
 msgstr ""
+"允许在线状态订阅 - 这将允许向您名册上的该用户发送在线状态和更改。您可以禁用此"
+"功能以减少网络使用，但是您将无法获得状态信息。如果您选择不允许在线状态订阅，"
+"您将不会收到他们在线、忙碌或离开时的信息。"
 
 #: ../../BeagleIM_for_macOS.rst:30
 msgid ""
@@ -95,49 +105,54 @@ msgid ""
 "may disable this to reduce network usage, however they will not receive "
 "notifications if you turn off the phone"
 msgstr ""
+"请求在线状态订阅 - 打开此功能将使应用程序能够将在线状态更改发送给名册上的此人"
+"。您可以禁用此功能以减少网络使用，但是如果您关闭手机，他们将不会收到通知"
 
 #: ../../BeagleIM_for_macOS.rst:34
 msgid ""
 "These options are on by default and enable Tigase BeagleIM for iOS to "
 "behave like a traditional client."
-msgstr ""
+msgstr "这些选项在默认情况下处于启用状态，并使适用于 iOS 的 Tigase BeagleIM "
+"能够像传统客户端一样运行。"
 
 #: ../../BeagleIM_for_macOS.rst:37
 msgid ""
 "If you do decide to Request presence subscription when adding a new "
 "contact, you will be presented with this screen when they add you back:"
-msgstr ""
+msgstr "如果您决定在添加新联系人时请求状态订阅，当他们将您添加回来时，您将看到此屏幕"
+"："
 
 #: ../../BeagleIM_for_macOS.rst:39
 msgid "|images/contact03|"
-msgstr ""
+msgstr "|images/contact03|"
 
 #: ../../BeagleIM_for_macOS.rst:186
 msgid "images/contact03"
-msgstr ""
+msgstr "images/contact03"
 
 #: ../../BeagleIM_for_macOS.rst:41
 msgid ""
 "By tapping yes, you will receive notifications of presence changes from "
 "your contact. This subscription will be maintained by the server, and "
 "will stay active with your friends list."
-msgstr ""
+msgstr "通过点击是，您将收到来自您的联系人的状态更改通知。此订阅将由服务器维护，并将"
+"在您的好友列表中保持活跃。"
 
 #: ../../BeagleIM_for_macOS.rst:44
 msgid ""
 "You will only receive this option if 'Request presence subscription' is "
 "set to yes in account settings."
-msgstr ""
+msgstr "只有在帐户设置中将'请求状态订阅'设置为'是'，您才会收到此选项。"
 
 #: ../../BeagleIM_for_macOS.rst:47
 msgid ""
 "If somebody not on your friends list adds you, you will receive this same"
 " message."
-msgstr ""
+msgstr "如果不在您朋友列表中的某人添加了您，您将收到同样的消息。"
 
 #: ../../BeagleIM_for_macOS.rst:50
 msgid "Edit/Delete a contact"
-msgstr ""
+msgstr "编辑/删除联系人"
 
 #: ../../BeagleIM_for_macOS.rst:52
 msgid ""
@@ -146,14 +161,16 @@ msgid ""
 "roster). From submenual of windows, after clicking contacts, you can "
 "click \"all\" , following options will be showed:"
 msgstr ""
+"编辑联系人时，您可以选择更改与用户加为好友的帐户，编辑名册名称（将显示在您的"
+"名册中）。从窗口的子菜单中，单击联系人后，您可以单击“全部”，将显示以下选项："
 
 #: ../../BeagleIM_for_macOS.rst:54
 msgid "|images/contact04|"
-msgstr ""
+msgstr "|images/contact04|"
 
 #: ../../BeagleIM_for_macOS.rst:187
 msgid "images/contact04"
-msgstr ""
+msgstr "images/contact04"
 
 #: ../../BeagleIM_for_macOS.rst:56
 msgid ""
@@ -162,217 +179,223 @@ msgid ""
 "to\"/\"remove from\"  , contacts on your roster will/ will not know "
 "whether you are online, busy, or away."
 msgstr ""
+"在这里，您还可以决定有选择地批准或拒绝用户的订阅请求。如果您单击授权 - "
+"“重新发送至”/“从中删除”，您名册上的联系人将/将不知道您是在线、忙碌还是离开。"
 
 #: ../../BeagleIM_for_macOS.rst:58
 msgid ""
 "If you decide to remove the contacts from your rost, click \"remove\" and"
 " then the contact will be removed from your roster."
-msgstr ""
+msgstr "如果您决定从您的名册中删除联系人，请单击“删除”，然后该联系人将从您的名册中删"
+"除。"
 
 #: ../../BeagleIM_for_macOS.rst:62
 msgid "User Status"
-msgstr ""
+msgstr "用户状态"
 
 #: ../../BeagleIM_for_macOS.rst:64
 msgid ""
 "Your account status will be managed automatically by using the following "
 "rules by default"
-msgstr ""
+msgstr "默认情况下，您的帐户状态将使用以下规则自动管理"
 
 #: ../../BeagleIM_for_macOS.rst:67
 msgid "Status"
-msgstr ""
+msgstr "状态"
 
 #: ../../BeagleIM_for_macOS.rst:67
 msgid "Behavior"
-msgstr ""
+msgstr "特性"
 
 #: ../../BeagleIM_for_macOS.rst:69
 msgid "Online"
-msgstr ""
+msgstr "在线"
 
 #: ../../BeagleIM_for_macOS.rst:69
 msgid "Application has focus on the device."
-msgstr ""
+msgstr "应用程序已将焦点放在设备上。"
 
 #: ../../BeagleIM_for_macOS.rst:71
 msgid "Away / XA"
-msgstr ""
+msgstr "离开/长时间离开"
 
 #: ../../BeagleIM_for_macOS.rst:71
 msgid "Application is running in the background."
-msgstr ""
+msgstr "应用程序正在后台运行。"
 
 #: ../../BeagleIM_for_macOS.rst:73
 msgid "Offline"
-msgstr ""
+msgstr "离线"
 
 #: ../../BeagleIM_for_macOS.rst:73
 msgid ""
 "Application is killed or disconnected. If the device is turned off for a "
 "period of time, this will also set status to offline."
-msgstr ""
+msgstr "应用程序被中止或断开连接。如果设备关闭一段时间，这也会将状态设置为离线。"
 
 #: ../../BeagleIM_for_macOS.rst:76
 msgid ""
 "However, you may override this logic by tapping window - contacts , and "
 "selecting a status manually by using drop down list."
-msgstr ""
+msgstr "但是，您可以通过点击窗口 - "
+"联系人并使用下拉列表手动选择状态来更改默认在线状态。"
 
 #: ../../BeagleIM_for_macOS.rst:78
 msgid "|images/status01|  |images/status02|"
-msgstr ""
+msgstr "|images/status01|  |images/status02|"
 
 #: ../../BeagleIM_for_macOS.rst:194
 msgid "images/status01"
-msgstr ""
+msgstr "images/status01"
 
 #: ../../BeagleIM_for_macOS.rst:195
 msgid "images/status02"
-msgstr ""
+msgstr "images/status02"
 
 #: ../../BeagleIM_for_macOS.rst:81
 msgid ""
 "offline: If offline is elected, it will be considered unavailable. And "
 "you will not receive message from your contacts."
-msgstr ""
+msgstr "offline：如果选择offline，则认为不可用。而且您不会收到来自联系人的消息。"
 
 #: ../../BeagleIM_for_macOS.rst:85
 msgid "Chats"
-msgstr ""
+msgstr "聊天"
 
 #: ../../BeagleIM_for_macOS.rst:87
 msgid ""
 "After adding contacts, go to window on the top and select Chats. Now you "
 "are able to open conversation window with your friends by click +sign."
-msgstr ""
+msgstr "添加联系人后，转到顶部的窗口并选择聊天。现在您可以通过单击 + "
+"符号打开与朋友的对话窗口。"
 
 #: ../../BeagleIM_for_macOS.rst:89
 msgid "|images/Chats01|"
-msgstr ""
+msgstr "|images/Chats01|"
 
 #: ../../BeagleIM_for_macOS.rst:188
 msgid "images/Chats01"
-msgstr ""
+msgstr "images/Chats01"
 
 #: ../../BeagleIM_for_macOS.rst:91
 msgid ""
 "Once you open the conversation window, you are able chat with your friend"
 " by typing. If you are tired of typing but you still want to chat, then "
 "just make a voice call or video call."
-msgstr ""
+msgstr "打开对话窗口后，您可以通过打字与朋友聊天。如果您打字打累了，但还想聊天，那就"
+"打个语音电话或视频电话吧。"
 
 #: ../../BeagleIM_for_macOS.rst:93
 msgid "|images/Chats02|"
-msgstr ""
+msgstr "|images/Chats02|"
 
 #: ../../BeagleIM_for_macOS.rst:189
 msgid "images/Chats02"
-msgstr ""
+msgstr "images/Chats02"
 
 #: ../../BeagleIM_for_macOS.rst:97
 msgid "Preference"
-msgstr ""
+msgstr "首选项"
 
 #: ../../BeagleIM_for_macOS.rst:99
 msgid "Click BeagleIM on the top and select preference: |images/preference|"
-msgstr ""
+msgstr "单击顶部的 BeagleIM 并选择首选项: |images/preference|"
 
 #: ../../BeagleIM_for_macOS.rst:190
 msgid "images/preference"
-msgstr ""
+msgstr "images/preference"
 
 #: ../../BeagleIM_for_macOS.rst:102
 msgid ""
 "After that, the preference panel showed here could let you change some "
 "settings."
-msgstr ""
+msgstr "之后，此处显示的首选项面板可以让您更改一些设置。"
 
 #: ../../BeagleIM_for_macOS.rst:105
 msgid "|images/preference02|"
-msgstr ""
+msgstr "|images/preference02|"
 
 #: ../../BeagleIM_for_macOS.rst:191
 msgid "images/preference02"
-msgstr ""
+msgstr "images/preference02"
 
 #: ../../BeagleIM_for_macOS.rst:109
 msgid "General"
-msgstr ""
+msgstr "通用"
 
 #: ../../BeagleIM_for_macOS.rst:111
 msgid "**Apperance**"
-msgstr ""
+msgstr "**外观**"
 
 #: ../../BeagleIM_for_macOS.rst
 msgid "automatic, light and dark"
-msgstr ""
+msgstr "自动，明和暗"
 
 #: ../../BeagleIM_for_macOS.rst
 msgid "adjust background brightness"
-msgstr ""
+msgstr "调整背景亮度"
 
 #: ../../BeagleIM_for_macOS.rst:117
 msgid "**Chats list style**"
-msgstr ""
+msgstr "**聊天列表样式**"
 
 #: ../../BeagleIM_for_macOS.rst
 msgid "Minimal small large:"
-msgstr ""
+msgstr "最小 小 大"
 
 #: ../../BeagleIM_for_macOS.rst
 msgid ""
 "The lines of preview text(from less to more) to keep within the chat "
 "window without using internal or message archive."
-msgstr ""
+msgstr "预览文本行（从少到多）保留在聊天窗口中，无需使用内部或消息存档。"
 
 #: ../../BeagleIM_for_macOS.rst:122
 msgid "**Sent image quality**"
-msgstr ""
+msgstr "**发送的图像质量**"
 
 #: ../../BeagleIM_for_macOS.rst
 msgid "Low Medium High Higset Original:"
-msgstr ""
+msgstr "低 中 高 最高 原始:"
 
 #: ../../BeagleIM_for_macOS.rst
 msgid "The quailty of images will be sent out"
-msgstr ""
+msgstr "将被发送出去的图片质量"
 
 #: ../../BeagleIM_for_macOS.rst:127
 msgid "**Sent videos quality**"
-msgstr ""
+msgstr "**发送的视频质量**"
 
 #: ../../BeagleIM_for_macOS.rst
 msgid "The quailty of videos will be sent out"
-msgstr ""
+msgstr "将被发送出去的视频质量"
 
 #: ../../BeagleIM_for_macOS.rst:132
 msgid "**Notifications**"
-msgstr ""
+msgstr "**通知**"
 
 #: ../../BeagleIM_for_macOS.rst:134
 msgid "This section has two options:"
-msgstr ""
+msgstr "本节有两个选项："
 
 #: ../../BeagleIM_for_macOS.rst
 msgid "Show for messages from unknown senders:"
-msgstr ""
+msgstr "显示来自未知发件人的邮件："
 
 #: ../../BeagleIM_for_macOS.rst
 msgid ""
 "Whether message will be showen if you receive a message from someone who "
 "is not in your contact list and does not have presence subscription"
-msgstr ""
+msgstr "如果您收到来自不在您的联系人列表中且没有状态订阅的人的消息，是否会显示消息"
 
 #: ../../BeagleIM_for_macOS.rst
 msgid "Show system manu icon:"
-msgstr ""
+msgstr "显示系统菜单图标："
 
 #: ../../BeagleIM_for_macOS.rst
 msgid ""
 "Whether BeagleIM icon in the system menu bar be showed on the top of the "
 "screen"
-msgstr ""
+msgstr "系统菜单栏中的BeagleIM图标是否显示在屏幕顶部"
 
 #: ../../BeagleIM_for_macOS.rst:142
 msgid ""
@@ -380,14 +403,17 @@ msgid ""
 "conversation(even run in the background), the beagleIM icon will be in "
 "color showed on your top right of your screen."
 msgstr ""
+"如果选中“show sytem manu "
+"icon（系统菜单图标）”并且您有正在进行的/新的对话（即使在后台运行），beagleIM "
+"图标将以彩色显示在屏幕的右上角。"
 
 #: ../../BeagleIM_for_macOS.rst:144
 msgid "|images/preference03|"
-msgstr ""
+msgstr "|images/preference03|"
 
 #: ../../BeagleIM_for_macOS.rst:192
 msgid "images/preference03"
-msgstr ""
+msgstr "images/preference03"
 
 #: ../../BeagleIM_for_macOS.rst:147
 msgid ""
@@ -395,82 +421,85 @@ msgid ""
 "conversation(not running in the background as well), the beagleIM icon "
 "will be in black and white showed on your top right of your screen."
 msgstr ""
+"如果选中“show sytem manu "
+"icon（显示系统菜单图标）”并且您没有正在进行的/新的对话（后台也没有），则 "
+"beagleIM 图标将以黑白显示在屏幕的右上角。"
 
 #: ../../BeagleIM_for_macOS.rst:149
 msgid "|images/preference04|"
-msgstr ""
+msgstr "|images/preference04|"
 
 #: ../../BeagleIM_for_macOS.rst:193
 msgid "images/preference04"
-msgstr ""
+msgstr "images/preference04"
 
 #: ../../BeagleIM_for_macOS.rst:154
 msgid "Accounts"
-msgstr ""
+msgstr "帐户"
 
 #: ../../BeagleIM_for_macOS.rst:156
 msgid "**Add** -  | Allows to add other XMPP account"
-msgstr ""
+msgstr "**添加** - |允许添加其他 XMPP 帐户"
 
 #: ../../BeagleIM_for_macOS.rst:159
 msgid "**Edit**"
-msgstr ""
+msgstr "**编辑**"
 
 #: ../../BeagleIM_for_macOS.rst
 msgid "Change password:"
-msgstr ""
+msgstr "更改密码："
 
 #: ../../BeagleIM_for_macOS.rst
 msgid "user password can be changed at here"
-msgstr ""
+msgstr "用户密码可以在这里更改"
 
 #: ../../BeagleIM_for_macOS.rst
 msgid "Connection details:"
-msgstr ""
+msgstr "连接细节："
 
 #: ../../BeagleIM_for_macOS.rst
 msgid "Nickname of user can be change at this window"
-msgstr ""
+msgstr "可以在此窗口更改用户的昵称"
 
 #: ../../BeagleIM_for_macOS.rst
 msgid "Public profile:"
-msgstr ""
+msgstr "公开资料："
 
 #: ../../BeagleIM_for_macOS.rst
 msgid ""
 "There is a blank space in the upper left corner where you may upload a "
 "photo as your avatar."
-msgstr ""
+msgstr "左上角有一个空白区域，您可以上传照片作为您的头像。"
 
 #: ../../BeagleIM_for_macOS.rst:170
 msgid "**Blocked**"
-msgstr ""
+msgstr "**已屏蔽**"
 
 #: ../../BeagleIM_for_macOS.rst
 msgid "Lists of contacts which has been blocked"
-msgstr ""
+msgstr "被屏蔽的联系人列表"
 
 #: ../../BeagleIM_for_macOS.rst:176
 msgid "Advanced"
-msgstr ""
+msgstr "高级"
 
 #: ../../BeagleIM_for_macOS.rst
 msgid "Automatic attachments download:"
-msgstr ""
+msgstr "自动附件下载："
 
 #: ../../BeagleIM_for_macOS.rst
 msgid ""
 "Sets the maximum size of files being sent to the user which may be "
 "automatically donwload. Default size is 10.0MB"
-msgstr ""
+msgstr "设置发送给用户的可以自动下载的文件的最大大小。默认大小为 10.0MB"
 
 #: ../../Welcome.rst:2
 msgid "Welcome"
-msgstr ""
+msgstr "欢迎"
 
 #: ../../Welcome.rst:4
 msgid "Welcome to the documentation for BeagleIM for macOS."
-msgstr ""
+msgstr "欢迎使用用于 macOS 的 BeagleIM文档。"
 
 #: ../../Welcome.rst:6
 msgid ""
@@ -479,54 +508,58 @@ msgid ""
 "known as Jabber) if you've never used it before. Veterans of the protocol"
 " will find many features here they are familiar."
 msgstr ""
+"BeagleIM 是由 Tigase, Inc. 开发的轻量级且功能强大的 XMPP 客户端。"
+"如果您以前从未使用过 XMPP 协议（以前称为 Jabber），它提供了一种开始使用它的简"
+"单方法。该协议的老用户会在这里找到他们熟悉的许多功能。"
 
 #: ../../Welcome.rst:9
 msgid ""
 "Control multiple accounts from a single application and sign into all "
 "your XMPP accounts at once."
-msgstr ""
+msgstr "从单个应用程序控制多个帐户并一次登录所有 XMPP 帐户。"
 
 #: ../../Welcome.rst:11
 msgid "Message Archive supported: Access chat history from the server."
-msgstr ""
+msgstr "支持消息存档：从服务器访问聊天记录。"
 
 #: ../../Welcome.rst:13
 msgid "Support for joining and creating chatrooms for multi-party collaboration."
-msgstr ""
+msgstr "支持加入和创建聊天室以进行多方协作。"
 
 #: ../../Welcome.rst:15
 msgid ""
 "Automated status management; no need to change status every time you put "
 "your computer to sleep or leave it for a while."
-msgstr ""
+msgstr "自动化状态管理；无需在每次让计算机进入睡眠状态或暂时离开时更改状态。"
 
 #: ../../Welcome.rst:17
 msgid ""
 "In-band registration; Sign into and create a new account on your favorite"
 " XMPP/Jabber​ server!"
-msgstr ""
+msgstr "带内注册；在您最喜欢的 XMPP/Jabber 服务器上登录并创建一个新帐户！"
 
 #: ../../Welcome.rst:19
 msgid ""
 "Photos and other files easy sharing in private chats and in group chats, "
 "even with people using different XMPP clients."
-msgstr ""
+msgstr "照片和其他文件可以在私人聊天和群聊中轻松共享，甚至可以与使用不同 XMPP "
+"客户端的人共享。"
 
 #: ../../Welcome.rst:21
 msgid "Vcard support: robust user profiles."
-msgstr ""
+msgstr "Vcard 支持：强大的用户配置文件。"
 
 #: ../../Welcome.rst:24
 msgid "Minimum Requirements"
-msgstr ""
+msgstr "最低要求"
 
 #: ../../Welcome.rst:26
 msgid "Requires macOS 11.0 or later and a Mac with Apple M1 chip or later."
-msgstr ""
+msgstr "需要 macOS 11.0 或更高版本以及配备 Apple M1 芯片或更高版本的 Mac。"
 
 #: ../../Welcome.rst:30
 msgid "Installation"
-msgstr ""
+msgstr "安装"
 
 #: ../../Welcome.rst:32
 msgid ""
@@ -535,24 +568,28 @@ msgid ""
 "<https://apps.apple.com/us/app/beagle-im/id1445349494?mt=12>`__ ). Please"
 " keep in mind that BeagleIM is available in English only."
 msgstr ""
+"如果您想在 iMac 上使用 XMPP 帐户，BeagleIM 是一个不错的选择。您可以从 App "
+"Store 获取 BeagleIM（`external <https://apps.apple.com/us/app/beagle-im/"
+"id1445349494?mt=12>`__）。请记住，BeagleIM 仅提供英文版本。"
 
 #: ../../Welcome.rst:36
 msgid "Account Setup"
-msgstr ""
+msgstr "帐户设置"
 
 #: ../../Welcome.rst:38
 msgid ""
 "After downloading BeagleIM from the App Store you can start it by "
 "clicking the BeagleIM icon. The below window will be popped up:"
-msgstr ""
+msgstr "从 App Store 下载 BeagleIM 后，您可以通过单击 BeagleIM "
+"图标来启动它。将弹出以下窗口："
 
 #: ../../Welcome.rst:40
 msgid "|images/register01|"
-msgstr ""
+msgstr "|images/register01|"
 
 #: ../../Welcome.rst:80
 msgid "images/register01"
-msgstr ""
+msgstr "images/register01"
 
 #: ../../Welcome.rst:42
 msgid ""
@@ -560,21 +597,24 @@ msgid ""
 "\"Yes\", you will need the XMPP account to log in if you already have "
 "one. Otherwise, you will need register a new XMPP account"
 msgstr ""
+"您现在的选择是现在或以后添加 XMPP 帐户。如果您点击“是”，您将需要 XMPP "
+"帐户才能登录（如果您已有一个）。否则，您将需要注册一个新的 XMPP 帐户"
 
 #: ../../Welcome.rst:46
 msgid "Registering for a New XMPP Account"
-msgstr ""
+msgstr "注册一个新的 XMPP 帐户"
 
 #: ../../Welcome.rst:49
 msgid ""
 "You have the choice between a lot of different XMPP providers. Your XMPP "
 "address will be the username you choose followed by the @-sign and the "
 "domain of the chosen provider."
-msgstr ""
+msgstr "您可以在许多不同的 XMPP 提供商之间进行选择。您的 XMPP "
+"地址将是您选择的用户名，后跟 @ 符号和所选提供商的域。"
 
 #: ../../Welcome.rst:51
 msgid "Some examples for XMPP providers are:"
-msgstr ""
+msgstr "XMPP 提供商的一些示例是："
 
 #: ../../Welcome.rst:53
 msgid ""
@@ -584,16 +624,22 @@ msgid ""
 " by looking at this list: (`external <https://apps.apple.com/us/app"
 "/Beagle-im/id1153516838>`__ )."
 msgstr ""
+"magicbroccoli.de: 注册 (`external <https://magicbroccoli.de/register/>`__ ). "
+"wiuwiu.de: 注册 (`external link <https://wiuwiu.de/>`__ ). "
+"您还可以通过查看此列表来选择提供商： (`external <https://apps.apple.com/us/"
+"app/Beagle-im/id1153516838>`__ )."
 
 #: ../../Welcome.rst:57
 msgid ""
 "If you do not know any XMPP server domain names, then you could select "
 "one of trusted servers from `here <https://list.jabber.at/>`__"
 msgstr ""
+"如果您不知道任何 XMPP 服务器域名，那么您可以从 `这里 <https://list.jabber.at/"
+">`__ 中选择一个受信任的服务器"
 
 #: ../../Welcome.rst:61
 msgid "Use an Existing Account"
-msgstr ""
+msgstr "使用现有帐户"
 
 #: ../../Welcome.rst:63
 msgid ""
@@ -603,46 +649,50 @@ msgid ""
 " \"Log in\". Please keep in mind that in this tutorial the XMPP address "
 "userfortest2023@xmpp.jp is used as an example account."
 msgstr ""
+"因为您已经在上一节中注册了一个地址，那么您可以选择登录现有的 XMPP "
+"帐户。之后，您必须输入您的 XMPP "
+"地址和密码，然后单击“登录”完成这些步骤。请记住，在本教程中，XMPP 地址 "
+"userfortest2023@xmpp.jp 用作示例帐户。"
 
 #: ../../Welcome.rst:65
 msgid "|images/register02|"
-msgstr ""
+msgstr "|images/register02|"
 
 #: ../../Welcome.rst:81
 msgid "images/register02"
-msgstr ""
+msgstr "images/register02"
 
 #: ../../Welcome.rst:68
 msgid "Your XMPP address is now configured to be used in BeagleIM."
-msgstr ""
+msgstr "您的 XMPP 地址现已配置为在 BeagleIM 中使用。"
 
 #: ../../Welcome.rst:71
 msgid "Final Steps"
-msgstr ""
+msgstr "最后的步骤"
 
 #: ../../Welcome.rst:73
 msgid ""
 "Once your account is verified, the application will log you in as online "
 "and display the \"Preferences\" as follows:"
-msgstr ""
+msgstr "一旦您的帐户通过验证，该应用程序将让您在线登录并显示“首选项”，如下所示："
 
 #: ../../Welcome.rst:75
 msgid "|images/register03|"
-msgstr ""
+msgstr "|images/register03|"
 
 #: ../../Welcome.rst:82
 msgid "images/register03"
-msgstr ""
+msgstr "images/register03"
 
 #: ../../Welcome.rst:77
 msgid ""
 "If you do not want to make any change at this moment, you could close "
 "this wendow and now you go to the chat main screen."
-msgstr ""
+msgstr "如果此时您不想做任何更改，您可以关闭此窗口，然后转到聊天主屏幕。"
 
 #: ../../index.rst:4
 msgid "BeagleIM for macOS"
-msgstr ""
+msgstr "用于 macOS 的 BeagleIM"
 
 #~ msgid "Tigase Messenger for macOS - Version 1.0"
 #~ msgstr ""
@@ -652,4 +702,3 @@ msgstr ""
 
 #~ msgid "Tigase Messenger for macOS"
 #~ msgstr ""
-
