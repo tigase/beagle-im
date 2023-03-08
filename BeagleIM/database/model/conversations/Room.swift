@@ -135,6 +135,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     public enum Feature: String {
         case membersOnly = "muc_membersonly"
         case nonAnonymous = "muc_nonanonymous"
+        case messageModeration = "urn:xmpp:message-moderate:0"
     }
         
     private var cancellables: Set<AnyCancellable> = [];
@@ -361,6 +362,14 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
         let options = ConversationEntry.Options(recipient: .occupant(nickname: occupant.nickname), encryption: .none, isMarkable: false)
         DBChatHistoryStore.instance.appendItem(for: self, state: .outgoing(.sent), sender: .occupant(nickname: self.options.nickname, jid: nil), type: .message, timestamp: Date(), stanzaId: message.id, serverMsgId: nil, remoteMsgId: nil, data: text, appendix: nil, options: options, linkPreviewAction: .auto, completionHandler: nil);
         self.send(message: message, completionHandler: nil);
+    }
+    
+    public func moderate(entry: ConversationEntry, completionHandler: @escaping (Result<Void,XMPPError>)->Void) {
+        guard roomFeatures.contains(.messageModeration), let stableIds = DBChatHistoryStore.instance.stableIds(forId: entry.id), let remoteId = stableIds.remote else {
+            completionHandler(.failure(.feature_not_implemented));
+            return;
+        }
+        moderateMessage(id: remoteId, completionHandler: completionHandler);
     }
     
     public func canSendChatMarker() -> Bool {

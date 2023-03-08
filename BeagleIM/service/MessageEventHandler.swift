@@ -321,6 +321,8 @@ class MessageEventHandler: XmppServiceExtension {
             }
             // we were not able to determine if we were senders or not.
             return direction;
+        case .channel:
+            return .incoming;
         }
     }
 
@@ -451,7 +453,7 @@ class MessageEventHandler: XmppServiceExtension {
                     return (.occupant(nickname: nickname, jid: nil), .none);
                 }
                 // invalid sender? what should we do?
-                return nil;
+                return (.channel, .none);
             }
         } else {
             // this can be 1-1 message from MUC..

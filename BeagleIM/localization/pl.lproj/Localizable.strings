@@ -82,6 +82,9 @@
 /* alert window message */
 "Are you sure that you want to leave and destroy channel %@?" = "Czy jesteś pewien że chcesz opuścić i usunąć kanał %@?";
 
+/* alert window title */
+"Are you sure you want to moderate that message?" = "Czy jesteś pewien że chcesz moderować tą wiadomość?";
+
 /* alert window */
 "Are you sure you want to retract that message?" = "Czy jesteś pewien że chcesz wycofać tą wiadomość?";
 
@@ -391,6 +394,9 @@
 /* message archiving settings retrieval failed */
 "Failed to retrieve archiving configuration from the server" = "Nie udało się pobrać konfiguracji archiwizacji z serwera";
 
+/* alert window title */
+"Failure" = "Błąd";
+
 /* media helper sharing error */
 "Feature not supported by XMPP server" = "Funkcja nie jest obługiwana przez serwer XMPP";
 
@@ -636,11 +642,20 @@
 /* settings */
 "Message grouping" = "Grupowanie wiadomości";
 
+/* alert body, moderation failed */
+"Message moderation failed! Server returned an error: %@" = "Moderacja wiadomości nie powiodła się! Serwer zwrócił błąd: %@";
+
 /* OMEMO decryption error */
 "Message was not encrypted for this devices" = "Wiadomość nie jest zaszyfrowana dla tego urządzenia";
 
 /* setting */
 "Minimal" = "Minimalny";
+
+/* Button */
+"Moderate" = "Moderuj";
+
+/* context menu item */
+"Moderate message" = "Moderuj wiadomość";
 
 /* list of users with this role */
 "Moderators" = "Moderatorzy";
@@ -948,6 +963,9 @@
 
 /* contact details popup label */
 "Telephone" = "Telefon";
+
+/* alert window message */
+"That message will be removed from the history and it's receiveres will be asked to remove it as well." = "Ta wiadomość zostanie usunięta z historii a jej odbiorcy zostaną poproszeni o jej usunięcie.";
 
 /* alert window */
 "That message will be removed immediately and it's receives will be asked to remove it as well." = "Ta wiadmość zostanie usunięta natychmiast a jej odbiorcy zostaną poproszeni o jej usunięcie.";

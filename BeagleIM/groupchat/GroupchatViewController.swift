@@ -291,50 +291,62 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
                 }
             }
         }
-        if let item = dataSource.getItem(at: row), item.state.direction == .outgoing {
-            switch item.payload {
-            case .message(_, _), .attachment(_, _):
-                if item.state.isError {
-                } else {
-                    if item.isMessage(), !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0.isMessage() }, in: 0..<row) {
-                        let correct = menu.addItem(withTitle: NSLocalizedString("Correct message", comment: "context menu item"), action: #selector(correctMessage), keyEquivalent: "");
-                        correct.target = self;
-                        correct.tag = item.id;
-                        if #available(macOS 11.0, *) {
-                            correct.image = NSImage(systemSymbolName: "pencil.circle", accessibilityDescription: "correct")
+        if let item = dataSource.getItem(at: row) {
+            if item.state.direction == .outgoing {
+                switch item.payload {
+                case .message(_, _), .attachment(_, _):
+                    if item.state.isError {
+                    } else {
+                        if item.isMessage(), !dataSource.isAnyMatching({ $0.state.direction == .outgoing && $0.isMessage() }, in: 0..<row) {
+                            let correct = menu.addItem(withTitle: NSLocalizedString("Correct message", comment: "context menu item"), action: #selector(correctMessage), keyEquivalent: "");
+                            correct.target = self;
+                            correct.tag = item.id;
+                            if #available(macOS 11.0, *) {
+                                correct.image = NSImage(systemSymbolName: "pencil.circle", accessibilityDescription: "correct")
+                            }
+                        }
+                        if room.state == .joined {
+                            let retract = menu.addItem(withTitle: NSLocalizedString("Retract message", comment: "context menu item"), action: #selector(retractMessage), keyEquivalent: "");
+                            retract.target = self;
+                            retract.tag = item.id;
+                            if #available(macOS 11.0, *) {
+                                retract.image = NSImage(systemSymbolName: "trash", accessibilityDescription: "retract")
+                            }
                         }
                     }
-                
-                    if room.state == .joined {
-                        let retract = menu.addItem(withTitle: NSLocalizedString("Retract message", comment: "context menu item"), action: #selector(retractMessage), keyEquivalent: "");
-                        retract.target = self;
-                        retract.tag = item.id;
+                case .location(_):
+                    if item.state.isError {
+                    } else {
+                        let showMap = menu.insertItem(withTitle: NSLocalizedString("Show map", comment: "context menu item"), action: #selector(showMap), keyEquivalent: "", at: 0);
+                        showMap.target = self;
+                        showMap.tag = item.id;
                         if #available(macOS 11.0, *) {
-                            retract.image = NSImage(systemSymbolName: "trash", accessibilityDescription: "retract")
+                            showMap.image = NSImage(systemSymbolName: "map", accessibilityDescription: "show map")
+                        }
+                        if room.state == .joined {
+                            let retract = menu.addItem(withTitle: NSLocalizedString("Retract message", comment: "context menu item"), action: #selector(retractMessage), keyEquivalent: "");
+                            retract.target = self;
+                            retract.tag = item.id;
+                            if #available(macOS 11.0, *) {
+                                retract.image = NSImage(systemSymbolName: "trash", accessibilityDescription: "retract")
+                            }
                         }
                     }
+                default:
+                    break;
                 }
-            case .location(_):
-                if item.state.isError {
-                } else {
-                    let showMap = menu.insertItem(withTitle: NSLocalizedString("Show map", comment: "context menu item"), action: #selector(showMap), keyEquivalent: "", at: 0);
-                    showMap.target = self;
-                    showMap.tag = item.id;
-                    if #available(macOS 11.0, *) {
-                        showMap.image = NSImage(systemSymbolName: "map", accessibilityDescription: "show map")
-                    }
-                    if room.state == .joined {
-                        let retract = menu.addItem(withTitle: NSLocalizedString("Retract message", comment: "context menu item"), action: #selector(retractMessage), keyEquivalent: "");
-                        retract.target = self;
-                        retract.tag = item.id;
-                        if #available(macOS 11.0, *) {
-                            retract.image = NSImage(systemSymbolName: "trash", accessibilityDescription: "retract")
-                        }
-                    }
-                }
-            default:
-                break;
             }
+            if room.state == .joined {
+                if item.state.direction == .incoming && item.payload != .messageRetracted && room.roomFeatures.contains(.messageModeration) && room.role == .moderator {
+                    let moderate = menu.addItem(withTitle: NSLocalizedString("Moderate message", comment: "context menu item"), action: #selector(moderateMessage), keyEquivalent: "");
+                    moderate.target = self;
+                    moderate.tag = item.id;
+                    if #available(macOS 11.0, *) {
+                        moderate.image = NSImage(systemSymbolName: "trash.circle", accessibilityDescription: "moderate")
+                    }
+                }
+            }
+
         }
     }
     
@@ -417,6 +429,48 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
             switch result {
             case .alertFirstButtonReturn:
                 chat.retract(entry: item);
+            default:
+                break;
+            }
+        })
+    }
+    
+    @objc func moderateMessage(_ sender: NSMenuItem) {
+        let tag = sender.tag;
+        guard tag >= 0 else {
+            return
+        }
+        
+        guard let item = dataSource.getItem(withId: tag), item.sender != .none, let chat = self.conversation as? Room, chat.role == .moderator && chat.roomFeatures.contains(.messageModeration) else {
+            return;
+        }
+        
+        let alert = NSAlert();
+        alert.messageText = NSLocalizedString("Are you sure you want to moderate that message?", comment: "alert window title")
+        alert.informativeText = NSLocalizedString("That message will be removed from the history and it's receiveres will be asked to remove it as well.", comment: "alert window message");
+        alert.addButton(withTitle: NSLocalizedString("Moderate", comment: "Button"));
+        alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Button"));
+        alert.beginSheetModal(for: self.view.window!, completionHandler: { result in
+            switch result {
+            case .alertFirstButtonReturn:
+                chat.moderate(entry: item, completionHandler: { result in
+                    switch result {
+                    case .failure(let error):
+                        DispatchQueue.main.async { [weak self] in
+                            guard let window = self?.view.window else {
+                                return;
+                            }
+
+                            let alert = NSAlert();
+                            alert.messageText = NSLocalizedString("Failure", comment: "alert window title")
+                            alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Message moderation failed! Server returned an error: %@", comment: "alert body, moderation failed"), error.localizedDescription);
+                            alert.addButton(withTitle: NSLocalizedString("OK", comment: "button"));
+                            alert.beginSheetModal(for: window, completionHandler: nil);
+                        }
+                    case .success(_):
+                        break;
+                    }
+                });
             default:
                 break;
             }

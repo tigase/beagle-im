@@ -29,6 +29,7 @@ public enum ConversationEntrySender: Hashable {
     case buddy(nickname: String)
     case occupant(nickname: String, jid: BareJID?)
     case participant(id: String, nickname: String, jid: BareJID?)
+    case channel
     
     var nickname: String? {
         switch self {
@@ -36,7 +37,7 @@ public enum ConversationEntrySender: Hashable {
             return nickname;
         case .buddy(let nickname), .occupant(let nickname, _), .participant(_, let nickname,  _):
             return nickname;
-        case .none:
+        case .none, .channel:
             return nil;
         }
     }
@@ -59,7 +60,7 @@ public enum ConversationEntrySender: Hashable {
             } else {
                 return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: BareJID(localPart: "\(participantId)#\(key.jid.localPart ?? "")", domain: key.jid.domain), mucNickname: nil));
             }
-        case .none:
+        case .none, .channel:
             return nil;
         }
     }
