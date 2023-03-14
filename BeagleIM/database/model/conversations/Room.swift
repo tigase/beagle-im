@@ -130,6 +130,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     public enum Feature: String {
         case membersOnly = "muc_membersonly"
         case nonAnonymous = "muc_nonanonymous"
+        case messageModeration = "urn:xmpp:message-moderate:0"
     }
     
     private var cancellables: Set<AnyCancellable> = [];
@@ -339,6 +340,13 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
             }
             throw error;
         }
+    }
+    
+    public func moderate(entry: ConversationEntry) async throws {
+        guard roomFeatures.contains(.messageModeration), let stableIds = DBChatHistoryStore.instance.stableIds(forId: entry.id), let remoteId = stableIds.remote else {
+            throw XMPPError(condition: .feature_not_implemented);
+        }
+        try await moderateMessage(id: remoteId);
     }
     
     public func canSendChatMarker() -> Bool {

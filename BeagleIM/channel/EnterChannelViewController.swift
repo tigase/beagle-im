@@ -47,6 +47,7 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
 
     var isPasswordVisible: Bool = true;
     var isBookmarkVisible: Bool = true;
+    var isCreation: Bool = false;
     
     override func viewWillAppear() {
         super.viewWillAppear();
@@ -61,7 +62,7 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
         bookmarkAutojoinButton.isEnabled = isBookmarkVisible && bookmarkCreateButton.state == .on;
         updateJoinButton();
         
-        if let client = XmppService.instance.getClient(for: account) {
+        if let client = XmppService.instance.getClient(for: account), !isCreation  {
             self.progressIndicator.startAnimation(self);
             client.module(.disco).info(for: JID(channelJid!), completionHandler: { [weak self] result in
                 DispatchQueue.main.async {
@@ -158,6 +159,9 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
                         (room as! Room).roomFeatures = Set(features.compactMap({ Room.Feature(rawValue: $0) }));
                         let config = RoomConfig(form: form)
                         (room as! Room).allowedPM = config.allowPM ?? .anyone;
+                        Task {
+                            try await MucEventHandler.instance.updateRoomName(room: (room as! Room));
+                        }
                     }
                     if createBookmark {
                         Task {

@@ -36,7 +36,7 @@ public class DBChatMarkersStore {
     
     private func queryParams(conversation: ConversationKey, sender: ConversationEntrySender) -> [String: Any?]? {
         switch sender {
-        case .none:
+        case .none, .channel:
             return nil;
         case .me(_):
             return ["account": conversation.account, "jid": conversation.jid, "sender_nick": "", "sender_id": "", "sender_jid": conversation.account];

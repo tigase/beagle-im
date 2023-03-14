@@ -102,7 +102,7 @@ class CreateChannelViewController: BaseJoinChannelViewController, NSTextFieldDel
         }
         let avatar: NSImage? = self.avatarButton.image;
         
-        self.create(account: account, channelLocalPart: localPart, channelName: name, channelDescription: description, type: type, private: isPrivate, avatar: avatar, completionHander: { result, completionHandler in
+        self.create(account: account, channelLocalPart: localPart, channelName: name, channelDescription: description, type: type, private: isPrivate, avatar: avatar, completionHander: { result, wasCreated, completionHandler in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let channelJid):
@@ -117,6 +117,10 @@ class CreateChannelViewController: BaseJoinChannelViewController, NSTextFieldDel
                     controller.componentType = type;
                     controller.suggestedNickname = nil;
                     controller.password = nil;
+                    controller.isCreation = !wasCreated;
+                    if !wasCreated {
+                        controller.info = DiscoveryModule.DiscoveryInfoResult(identities: [.init(category: "conference", type: "text", name: name)], features: [], form: nil);
+                    }
                     
                     let windowController = NSWindowController(window: NSWindow(contentViewController: controller));
                     window.beginSheet(windowController.window!, completionHandler: { result in
@@ -143,7 +147,7 @@ class CreateChannelViewController: BaseJoinChannelViewController, NSTextFieldDel
         });
     }
     
-    func create(account: BareJID, channelLocalPart: String?, channelName: String, channelDescription: String?, type: BaseJoinChannelViewController.ComponentType, private priv: Bool, avatar: NSImage?, completionHander: @escaping (Result<BareJID,XMPPError>, (()->Void)?)->Void) {
+    func create(account: BareJID, channelLocalPart: String?, channelName: String, channelDescription: String?, type: BaseJoinChannelViewController.ComponentType, private priv: Bool, avatar: NSImage?, completionHander: @escaping (Result<BareJID,XMPPError>,Bool, (()->Void)?)->Void) {
         guard let client = XmppService.instance.getClient(for: account), let component = self.components.first(where: { $0.type == type }) else {
             return;
         }
@@ -177,9 +181,9 @@ class CreateChannelViewController: BaseJoinChannelViewController, NSTextFieldDel
                             self?.logger.debug("changed channel access policy: \(result)");
                         })
                     }
-                    completionHander(.success(channelJid), nil);
+                    completionHander(.success(channelJid), true, nil);
                 case .failure(let error):
-                    completionHander(.failure(error), nil);
+                    completionHander(.failure(error), false, nil);
                 }
                 DispatchQueue.main.async {
                     self?.operationFinished();
@@ -210,7 +214,7 @@ class CreateChannelViewController: BaseJoinChannelViewController, NSTextFieldDel
                     Task {
                         try await client.module(.vcardTemp).publish(vcard: vcard, to: roomJid);
                     }
-                    completionHander(.success(roomJid), {
+                    completionHander(.success(roomJid), true, {
                         if channelDescription != nil {
                             mucModule.setRoomSubject(roomJid: roomJid, newSubject: channelDescription);
                         }
@@ -219,7 +223,29 @@ class CreateChannelViewController: BaseJoinChannelViewController, NSTextFieldDel
                         self?.operationFinished();
                     }
                 case .failure(let error):
-                    completionHander(.failure(error), nil);
+                    guard error.condition == .item_not_found else {
+                        completionHander(.failure(error), false, nil);
+                        DispatchQueue.main.async {
+                            self?.operationFinished();
+                        }
+                        return;
+                    }
+                    // workaround for prosody sending item-not-found but allowing to create a room anyway..
+                    var vcard = VCard();
+                    if let binval = avatar?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
+                        vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
+                    }
+                    completionHander(.success(roomJid), false, {
+                        Task {
+                            try await client.module(.vcardTemp).publish(vcard: vcard, to: roomJid);
+                        }
+                        if channelDescription != nil {
+                            mucModule.setRoomSubject(roomJid: roomJid, newSubject: channelDescription);
+                        }
+                    });
+                    DispatchQueue.main.async {
+                        self?.operationFinished();
+                    }
                 }
             });
         }
