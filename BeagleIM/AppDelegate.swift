@@ -413,7 +413,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     }
 
     @IBAction func openMastodon(_ sender: NSMenuItem) {
-        NSWorkspace.shared.open(URL(string: "https://mastodon.technology/@tigase")!);
+        NSWorkspace.shared.open(URL(string: "https://fosstodon.org/@tigase")!);
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
