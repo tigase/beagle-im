@@ -46,7 +46,7 @@ class PresenceAuthorizationRequestController: NSViewController {
         nameField.stringValue = jid.stringValue;
         jidField.stringValue = jid.stringValue;
         jidField.isHidden = true;
-        descriptionField.stringValue = String.localizedStringWithFormat(NSLocalizedString("Do you want to allow access to your online status and associated data for account %@?", comment: "confirm to allow access to your presence information"), jid.stringValue)
+        descriptionField.stringValue = String.localizedStringWithFormat(NSLocalizedString("Do you want to allow access to your online status and associated data for account %@?", comment: "confirm to allow access to your presence information"), account.stringValue)
         refreshVCard();
         
         let blockingModule: BlockingCommandModule? = XmppService.instance.getClient(for: account)?.module(.blockingCommand);
