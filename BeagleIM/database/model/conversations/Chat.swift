@@ -138,7 +138,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
     }
  
     public func prepareAttachment(url originalURL: URL, completionHandler: @escaping (Result<(URL, Bool, ((URL) -> URL)?), ShareError>) -> Void) {
-        let encryption = self.options.encryption ?? .none;
+        let encryption = self.options.encryption ?? Settings.messageEncryption;
         switch encryption {
         case .none:
             completionHandler(.success((originalURL, false, nil)));

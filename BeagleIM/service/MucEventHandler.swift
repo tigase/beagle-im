@@ -43,7 +43,19 @@ class MucEventHandler: XmppServiceExtension {
                         mamVersions = info.features.compactMap({ MessageArchiveManagementModule.Version(rawValue: $0) });
                         (room as! Room).roomFeatures = Set(info.features.compactMap({ Room.Feature(rawValue: $0) }));
                         let config = RoomConfig(form: info.form);
-                        (room as! Room).allowedPM = config.allowPM ?? .anyone;
+                        if let allowPM = config.allowPM {
+                            (room as! Room).allowedPM = allowPM;
+                        } else {
+                            (room as! Room).allowedPM = .none;
+                            client.module(.muc).roomConfiguration(roomJid: JID(room.jid), completionHandler: { result in
+                                switch result {
+                                case .success(let config):
+                                    (room as! Room).allowedPM = config.allowPM ?? .none;
+                                case .failure(let err):
+                                    (room as! Room).allowedPM = .none;
+                                }
+                            })
+                        }
                     default:
                         break;
                     }

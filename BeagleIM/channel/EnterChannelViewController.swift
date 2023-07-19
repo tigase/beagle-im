@@ -158,10 +158,18 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
                     switch roomResult {
                     case .created(let room), .joined(let room):
                         (room as! Room).roomFeatures = Set(features.compactMap({ Room.Feature(rawValue: $0) }));
-                        if let formElement = formElement, let config = RoomConfig(element: formElement) {
-                            (room as! Room).allowedPM = config.allowPM ?? .anyone;
+                        if let formElement = formElement, let config = RoomConfig(element: formElement), let allowPM = config.allowPM {
+                            (room as! Room).allowedPM = allowPM;
                         } else {
-                            (room as! Room).allowedPM = .anyone;
+                            (room as! Room).allowedPM = .none;
+                            client.module(.muc).roomConfiguration(roomJid: JID(room.jid), completionHandler: { result in
+                                switch result {
+                                case .success(let config):
+                                    (room as! Room).allowedPM = config.allowPM ?? .none;
+                                case .failure(let err):
+                                    (room as! Room).allowedPM = .none;
+                                }
+                            })
                         }
                     }
                     if createBookmark {
