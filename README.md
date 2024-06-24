@@ -1,3 +1,6 @@
+> # NOTE: Tigase Halcyon has new home at [tigase.dev/tigase/_clients/beagle-im/](https://tigase.dev/tigase/_clients/beagle-im/) - please submit all issues/pull-requests there!
+
+
 <p align="center">
   <a href="https://beagle.im/">
     <img
