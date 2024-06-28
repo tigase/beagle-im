@@ -86,7 +86,7 @@ class AvatarView: NSImageView {
     }
     
     override func draw(_ dirtyRect: NSRect) {
-        let path = NSBezierPath(roundedRect: dirtyRect, xRadius: frame.width/2, yRadius: frame.width/2);
+        let path = NSBezierPath(roundedRect: self.bounds, xRadius: frame.width/2, yRadius: frame.width/2);
         path.addClip();
 
         if self.image != nil {
@@ -96,12 +96,12 @@ class AvatarView: NSImageView {
             (isDark ? NSColor.white : NSColor.darkGray).withAlphaComponent(0.3).setFill();
             path.fill();
 
-            let font = NSFont.systemFont(ofSize: dirtyRect.width * 0.4, weight: .medium);
+            let font = NSFont.systemFont(ofSize: frame.width * 0.4, weight: .medium);
             let textAttr: [NSAttributedString.Key: Any] = [.foregroundColor: NSColor.white.withAlphaComponent(0.9), .font: font];
 
             let textSize = text.size(withAttributes: textAttr)
 
-            text.draw(in: CGRect(x: dirtyRect.midX - textSize.width/2, y: dirtyRect.midY - textSize.height/2, width: textSize.width, height: textSize.height), withAttributes: textAttr);
+            text.draw(in: CGRect(x: bounds.midX - textSize.width/2, y: bounds.midY - textSize.height/2, width: textSize.width, height: textSize.height), withAttributes: textAttr);
         }
     }
     

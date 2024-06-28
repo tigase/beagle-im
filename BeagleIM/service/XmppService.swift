@@ -221,6 +221,7 @@ class XmppService {
             if let idx = options.networkProcessorProviders.firstIndex(where: { $0 is SSLProcessorProvider }) {
                 options.networkProcessorProviders.remove(at: idx);
             }
+            options.connectionTimeout = 5 * 60;
             options.networkProcessorProviders.append(account.disableTLS13 ? SSLProcessorProvider(supportedTlsVersions: TLSVersion.TLSv1_2...TLSVersion.TLSv1_2) : SSLProcessorProvider());
         });
 

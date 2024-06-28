@@ -1,52 +1,51 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "libsignal",
-        "repositoryURL": "https://github.com/tigase/libsignal",
-        "state": {
-          "branch": null,
-          "revision": "d23d5af0d729cf66b93cea607f3f84a34b9fddfd",
-          "version": "1.0.0"
-        }
-      },
-      {
-        "package": "tigase-logging.swift",
-        "repositoryURL": "https://github.com/tigase/tigase-logging.swift",
-        "state": {
-          "branch": "master",
-          "revision": "382e2e85e64f8b1e3fcb71a996a030bf1b62ecb3",
-          "version": null
-        }
-      },
-      {
-        "package": "tigase-sqlite3.swift",
-        "repositoryURL": "https://github.com/tigase/tigase-sqlite3.swift.git",
-        "state": {
-          "branch": "master",
-          "revision": "d4a563a709df4ba0e05a04cf8ac6f68075c54288",
-          "version": null
-        }
-      },
-      {
-        "package": "TigaseSwift",
-        "repositoryURL": "https://github.com/tigase/tigase-swift",
-        "state": {
-          "branch": "master",
-          "revision": "3bcb9f4e08220a608caac689494d4d187d7804fd",
-          "version": null
-        }
-      },
-      {
-        "package": "TigaseSwiftOMEMO",
-        "repositoryURL": "https://github.com/tigase/tigase-swift-omemo",
-        "state": {
-          "branch": "master",
-          "revision": "d7a32ee1f5558b496543c9980f668a9b7c0d4c6b",
-          "version": null
-        }
+  "originHash" : "5c9666bd5fd2c30f1ff797bf3dca071e41b5c6baf2f50c901324fd64b23834d6",
+  "pins" : [
+    {
+      "identity" : "libsignal",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tigase/libsignal",
+      "state" : {
+        "revision" : "d23d5af0d729cf66b93cea607f3f84a34b9fddfd",
+        "version" : "1.0.0"
       }
-    ]
-  },
-  "version": 1
+    },
+    {
+      "identity" : "martin",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tigase/Martin",
+      "state" : {
+        "revision" : "1d70e9e7eb51a7faa500832be6400a39f86083f7",
+        "version" : "3.2.4"
+      }
+    },
+    {
+      "identity" : "martinomemo",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tigase/MartinOMEMO",
+      "state" : {
+        "revision" : "3c162154d646aa258c9a86c0a07655a536e55a94",
+        "version" : "2.2.3"
+      }
+    },
+    {
+      "identity" : "tigase-logging.swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tigase/tigase-logging.swift",
+      "state" : {
+        "revision" : "382e2e85e64f8b1e3fcb71a996a030bf1b62ecb3",
+        "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "tigase-sqlite3.swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tigase/tigase-sqlite3.swift.git",
+      "state" : {
+        "revision" : "da4974f537333e48aeb6b8191cfd1903f2846d40",
+        "version" : "1.0.0"
+      }
+    }
+  ],
+  "version" : 3
 }

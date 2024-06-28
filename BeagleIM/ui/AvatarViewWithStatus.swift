@@ -151,7 +151,7 @@ class AvatarViewWithStatus: NSView {
         override func draw(_ dirtyRect: NSRect) {
             if backgroundColor != nil {
                 backgroundColor!.setFill();
-                let ellipse = NSBezierPath.init(roundedRect: dirtyRect, xRadius: dirtyRect.width/2, yRadius: dirtyRect.height/2);
+                let ellipse = NSBezierPath.init(roundedRect: self.bounds, xRadius: frame.width/2, yRadius: frame.height/2);
                 ellipse.fill();
                 ellipse.setClip();
                 
