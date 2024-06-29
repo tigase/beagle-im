@@ -487,12 +487,20 @@ class EmojiShortcodeSuggestionItemView: SuggestionItemViewBase<String> {
     
     required init() {
         emoji = NSTextField(labelWithString: "");
+        emoji.drawsBackground = false;
+        emoji.isEditable = false
+        emoji.isSelectable = false
+        emoji.isBezeled = false;
         emoji.cell?.truncatesLastVisibleLine = false;
         emoji.cell?.lineBreakMode = .byWordWrapping;
         emoji.cell?.alignment = .center;
         emoji.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal);
 
         label = NSTextField(labelWithString: "");
+        label.drawsBackground = false;
+        label.isEditable = false
+        label.isSelectable = false
+        label.isBezeled = false;
         label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium);
         label.cell?.truncatesLastVisibleLine = true;
         label.cell?.lineBreakMode = .byTruncatingTail;
@@ -574,9 +582,17 @@ class EmojiFaceSuggestionItemView: SuggestionItemViewBase<EmojiFace> {
         emoji.cell?.truncatesLastVisibleLine = false;
         emoji.cell?.lineBreakMode = .byWordWrapping;
         emoji.cell?.alignment = .center;
+        emoji.drawsBackground = false;
+        emoji.isEditable = false
+        emoji.isSelectable = false
+        emoji.isBezeled = false;
         emoji.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal);
 
         label = NSTextField(labelWithString: "");
+        label.drawsBackground = false;
+        label.isEditable = false
+        label.isSelectable = false
+        label.isBezeled = false;
         label.font = NSFont.systemFont(ofSize: NSFont.systemFontSize - 1, weight: .medium);
         label.cell?.truncatesLastVisibleLine = true;
         label.cell?.lineBreakMode = .byTruncatingTail;
