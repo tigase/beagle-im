@@ -190,6 +190,7 @@ class Call: NSObject, JingleSessionActionDelegate {
     private var cancellables: Set<AnyCancellable> = [];
     
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "Call");
+    private let rtcLogger: RTCFileLogger;
     
     var currentCapturerDevice: VideoCaptureDevice? {
         return localCapturer?.currentDevice;
@@ -201,6 +202,11 @@ class Call: NSObject, JingleSessionActionDelegate {
         self.media = media;
         self.sid = sid;
         self.direction = direction;
+        RTCSetMinDebugLogLevel(RTCLoggingSeverity.verbose)
+        self.rtcLogger = RTCFileLogger(dirPath: FileManager.default.temporaryDirectory.path, maxFileSize: 1024*1024*10)
+        self.rtcLogger.severity = RTCFileLoggerSeverity.verbose
+        self.rtcLogger.shouldDisableBuffering = true
+        self.rtcLogger.start();
     }
     
     func reset() {
@@ -224,6 +230,7 @@ class Call: NSObject, JingleSessionActionDelegate {
             }
             self.establishingSessions.removeAll();
             self.state = .ended;
+            self.rtcLogger.stop();
         }
     }
 
@@ -502,7 +509,13 @@ class Call: NSObject, JingleSessionActionDelegate {
         
         if case let .transportAdd(candidate, contentName) = action {
             if let idx = remoteSessionDescription?.contents.firstIndex(where: { $0.name == contentName }) {
-                peerConnection.add(RTCIceCandidate(sdp: candidate.toSDP(), sdpMLineIndex: Int32(idx), sdpMid: contentName));
+                logger.debug("adding remote ice candidate: \(candidate.toSDP())")
+                peerConnection.add(RTCIceCandidate(sdp: candidate.toSDP(), sdpMLineIndex: Int32(idx), sdpMid: contentName), completionHandler: { err in
+                    guard let err else {
+                        return;
+                    }
+                    self.logger.error("failed to add ice candidate \(candidate.toSDP()) with error \(err.localizedDescription)")
+                });
             }
             remoteSessionSemaphore.signal();
             return;
@@ -563,9 +576,32 @@ class Call: NSObject, JingleSessionActionDelegate {
         }
     }
 
+    func sdpToString(sdp input: SDP, sid: String, localRole: Jingle.Content.Creator, direction: SDP.Direction) -> String {
+        var sdp = [
+            "v=0", "o=- \(sid) \(input.id.replacingOccurrences(of: ".", with: "")) IN IP4 0.0.0.0", "s=-", "t=0 0"
+        ];
+        
+        if input.bundle != nil {
+            var t = [ "a=group:BUNDLE" ];
+            t.append(contentsOf: input.bundle!);
+            sdp.append(t.joined(separator: " "));
+        }
+        
+        let contents: [String] = input.contents.map({ c -> String in
+            return c.toSDP(localRole: localRole, direction: direction);
+        });
+        sdp.append(contentsOf: contents);
+        
+        return sdp.joined(separator: "\r\n") + "\r\n";
+    }
+    
     private func setRemoteDescription(_ remoteDescription: SDP, peerConnection: RTCPeerConnection, session: JingleSession, completionHandler: @escaping (Result<SDP?,Error>)->Void) {
-        logger.debug("setting remote description: \(remoteDescription.toString(withSid: "", localRole: session.role, direction: .incoming))");
-        peerConnection.setRemoteDescription(RTCSessionDescription(type: self.direction == .incoming ? .offer : .answer, sdp: remoteDescription.toString(withSid: self.webrtcSid!, localRole: session.role, direction: .incoming)), completionHandler: { err in
+        let descr = sdpToString(sdp: remoteDescription, sid: self.webrtcSid!, localRole: session.role, direction: .incoming)
+//        logger.debug("setting remote description: \(remoteDescription.toString(withSid: "", localRole: session.role, direction: .incoming))");
+        logger.debug("setting remote description: \(descr)")
+        peerConnection.setRemoteDescription(RTCSessionDescription(type: self.direction == .incoming ? .offer : .answer, sdp: descr),
+                                            //                        remoteDescription.toString(withSid: self.webrtcSid!, localRole: session.role, direction: .incoming)),
+                                            completionHandler: { err in
             guard let error = err else {
                 self.remoteSessionDescription = remoteDescription;
                 if peerConnection.signalingState == .haveRemoteOffer {
@@ -674,6 +710,7 @@ extension Call: RTCPeerConnectionDelegate {
     }
         
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceConnectionState) {
+        logger.debug("changed ice connection state to \(newState.name)")
         switch newState {
         case .disconnected:
             break;
@@ -717,6 +754,8 @@ extension Call: RTCPeerConnectionDelegate {
         guard let sdp = self.localSessionDescription else {
             return;
         }
+        
+        logger.debug("sending local ice candidate: \(sdp)")
         
         guard let content = sdp.contents.first(where: { c -> Bool in
             return c.name == mid;
@@ -774,6 +813,14 @@ extension Call: RTCPeerConnectionDelegate {
             }
         }
     }
+    
+    func peerConnection(_ peerConnection: RTCPeerConnection, didChangeLocalCandidate local: RTCIceCandidate, remoteCandidate remote: RTCIceCandidate, lastReceivedMs lastDataReceivedMs: Int32, changeReason reason: String) {
+        logger.debug("changing ice connection candidates, local: \(local.sdp), remote: \(remote.sdp), reason: \(reason)")
+    }
+    
+    func peerConnection(_ peerConnection: RTCPeerConnection, didFailToGatherIceCandidate event: RTCIceCandidateErrorEvent) {
+        logger.debug("failed to gather ice candidate: \(event.errorCode) \(event.errorText) \(event.address):\(event.port) \(event.url)")
+    }
 }
 
 extension Call {
@@ -784,14 +831,29 @@ extension Call {
         }
     }
     
-    func addRemoteCandidate(_ candidate: RTCIceCandidate) {
-        DispatchQueue.main.async {
-        guard let peerConnection = self.currentConnection else {
-                return;
-            }
-            peerConnection.add(candidate);
+}
+
+extension RTCIceConnectionState {
+    var name: String {
+        switch self {
+        case .new:
+            return "new"
+        case .checking:
+            return "checking"
+        case .connected:
+            return "connected"
+        case .completed:
+            return "completed"
+        case .failed:
+            return "failed"
+        case .disconnected:
+            return "disconnected"
+        case .closed:
+            return "closed"
+        case .count:
+            return "count";
+        @unknown default:
+            return "unknown"
         }
     }
-    
-    
 }

@@ -227,6 +227,18 @@ class DownloadManager: NSObject {
 }
 
 extension DownloadManager: URLSessionDownloadDelegate {
+  
+    // Uncomment to disable SSL certificate verification!
+//    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+//        if challenge.protectionSpace.serverTrust == nil {
+//            completionHandler(.useCredential, nil)
+//        } else {
+//            let trust: SecTrust = challenge.protectionSpace.serverTrust!
+//            let credential = URLCredential(trust: trust)
+//            completionHandler(.useCredential, credential)
+//        }
+//    }
+    
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
         guard let item = dispatcher.sync(execute: {
             return self.inProgress.removeValue(forKey: downloadTask);

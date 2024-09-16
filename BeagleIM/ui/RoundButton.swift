@@ -39,7 +39,8 @@ public class RoundButton: NSButton {
         }
     }
     
-    public override func draw(_ dirtyRect: NSRect) {
+    public override func draw(_ dirtyRectX: NSRect) {
+        let dirtyRect = self.bounds;
         NSGraphicsContext.saveGraphicsState();
         
         let path = NSBezierPath(roundedRect: dirtyRect, xRadius: frame.width/2, yRadius: frame.width/2);

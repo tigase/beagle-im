@@ -183,13 +183,18 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
         remoteVideoView.scaling = .fill;
         localVideoViewAspect = localVideoView.widthAnchor.constraint(equalTo: localVideoView.heightAnchor, multiplier: 1.0);
         localVideoViewAspect?.isActive = true;
-        
-//        remoteVideoViewAspect = remoteVideoView.widthAnchor.constraint(equalTo: remoteVideoView.heightAnchor, multiplier: 1.0);
-//        remoteVideoViewAspect?.isActive = true;
-        
+                
         localVideoView.wantsLayer = true;
+//        localVideoView?.makeBackingLayer()
+//        localVideoView?.autoresizesSubviews = true;
+//        localVideoView?.clipsToBounds = true;
+//        for subview in localVideoView?.subviews ?? [] {
+//            subview.clipsToBounds = true;
+//            subview.layer?.masksToBounds = true
+//        }
         localVideoView.layer?.cornerRadius = 5;
-        localVideoView.layer?.backgroundColor = NSColor.black.cgColor;
+//        localVideoView?.layer?.masksToBounds = true;
+//        localVideoView?.layer?.backgroundColor = NSColor.black.cgColor;
         localVideoView.delegate = self;
         remoteVideoView.delegate = self;
     }
