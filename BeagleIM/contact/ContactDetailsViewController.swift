@@ -115,13 +115,13 @@ open class ConversationDetailsViewController: NSViewController, ContactDetailsAc
     var showSettings: Bool = false;
     
     open override func viewWillAppear() {
-        nameField.stringValue = jid?.stringValue ?? "";
+        nameField.stringValue = jid?.description ?? "";
         //nameField.focusRingType = .none;
-        jidField.stringValue = jid?.stringValue ?? "";
+        jidField.stringValue = jid?.description ?? "";
         if let jid = self.jid, let account = self.account {
             avatarView.avatar = AvatarManager.instance.avatar(for: jid, on: account);
             if self.viewType == .groupchat {
-                nameField.stringValue = DBChatStore.instance.conversation(for: account, with: jid)?.displayName ?? jid.stringValue;
+                nameField.stringValue = DBChatStore.instance.conversation(for: account, with: jid)?.displayName ?? jid.description;
             } else {
             DBVCardStore.instance.vcard(for: jid) { (vcard) in
                 DispatchQueue.main.async {
@@ -136,7 +136,7 @@ open class ConversationDetailsViewController: NSViewController, ContactDetailsAc
                             fn = fn.isEmpty ? surname : "\(fn) \(surname)"
                         }
                         if fn.isEmpty {
-                            fn = DBRosterStore.instance.item(for: account, jid: JID(jid))?.name ?? jid.stringValue;
+                            fn = DBRosterStore.instance.item(for: account, jid: JID(jid))?.name ?? jid.description;
                         }
                     }
                     self.nameField.stringValue = fn;
@@ -400,7 +400,7 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
         self.view.window?.close();
         if let addContactController = NSStoryboard(name: "Roster", bundle: nil).instantiateController(withIdentifier: "AddContactController") as? AddContactController {
             _ = addContactController.view;
-            addContactController.jidField.stringValue = chat.jid.stringValue;
+            addContactController.jidField.stringValue = chat.jid.description;
             DBVCardStore.instance.vcard(for: chat.jid) { (vcard) in
                 DispatchQueue.main.async {
                     var fn: String = "";
@@ -414,11 +414,11 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
                             fn = fn.isEmpty ? surname : "\(fn) \(surname)"
                         }
                     }
-                    if let idx = addContactController.accountSelector.itemTitles.firstIndex(of: chat.account.stringValue) {
+                    if let idx = addContactController.accountSelector.itemTitles.firstIndex(of: chat.account.description) {
                         addContactController.accountSelector.selectItem(at: idx);
                     }
                     if fn.isEmpty {
-                        addContactController.labelField.stringValue = chat.jid.localPart ?? chat.jid.stringValue;
+                        addContactController.labelField.stringValue = chat.jid.localPart ?? chat.jid.description;
                     } else {
                         addContactController.labelField.stringValue = fn;
                     }
@@ -434,10 +434,12 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
             return;
         }
         
-        if bookmark?.state == .on {
-            context.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: room.name ?? room.jid.localPart ?? room.jid.stringValue, jid: JID(room.jid), autojoin: false, nick: room.nickname, password: room.password));
-        } else {
-            context.module(.pepBookmarks).remove(bookmark: Bookmarks.Conference(name: room.name ?? room.jid.stringValue, jid: JID(room.jid), autojoin: false));
+        Task {
+            if bookmark?.state == .on {
+                try? await context.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: room.name ?? room.jid.localPart ?? room.jid.description, jid: JID(room.jid), autojoin: false, nick: room.nickname, password: room.password));
+            } else {
+                try? await context.module(.pepBookmarks).remove(bookmark: Bookmarks.Conference(name: room.name ?? room.jid.description, jid: JID(room.jid), autojoin: false));
+            }
         }
     }
     
@@ -466,7 +468,7 @@ open class ConversationOmemoViewController: NSViewController, ContactDetailsAcco
             return;
         }
         
-        self.identities = DBOMEMOStore.instance.identities(forAccount: account, andName: jid.stringValue).filter({ (identity) -> Bool in
+        self.identities = DBOMEMOStore.instance.identities(forAccount: account, andName: jid.description).filter({ (identity) -> Bool in
             return identity.status.isActive;
         })
     }
@@ -680,7 +682,7 @@ class ConversationVCardViewController: NSViewController, ContactDetailsAccountJi
                 fn = fn.isEmpty ? surname : "\(fn) \(surname)"
             }
             if fn.isEmpty {
-                fn = DBRosterStore.instance.item(for: account, jid: JID(jid))?.name ?? jid.stringValue;
+                fn = DBRosterStore.instance.item(for: account, jid: JID(jid))?.name ?? jid.description;
             }
         }
         let name = NSTextField(wrappingLabelWithString: fn);
@@ -1022,7 +1024,7 @@ open class ContactDetailsViewController1: NSViewController, NSTableViewDelegate 
     }
     
     func refresh() {
-        identitiesTableView.identities = DBOMEMOStore.instance.identities(forAccount: account!, andName: jid!.stringValue);
+        identitiesTableView.identities = DBOMEMOStore.instance.identities(forAccount: account!, andName: jid!.description);
         DBVCardStore.instance.vcard(for: jid) { (vcard) in
             DispatchQueue.main.async {
                 var fn: String = "";
@@ -1036,7 +1038,7 @@ open class ContactDetailsViewController1: NSViewController, NSTableViewDelegate 
                         fn = fn.isEmpty ? surname : "\(fn) \(surname)"
                     }
                     if fn.isEmpty {
-                        fn = DBRosterStore.instance.item(for: self.account, jid: JID(self.jid))?.name ?? self.jid.stringValue;
+                        fn = DBRosterStore.instance.item(for: self.account, jid: JID(self.jid))?.name ?? self.jid.description;
                     }
                 }
                 self.name.stringValue = fn;

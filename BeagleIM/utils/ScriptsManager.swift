@@ -64,10 +64,10 @@ class ScriptsManager {
         
         func execute(account: BareJID, jid: JID) {
             if let task = try? NSUserAppleScriptTask(url: self.url) {
-                let jidParam = NSAppleEventDescriptor(string: jid.stringValue);
+                let jidParam = NSAppleEventDescriptor(string: jid.description);
                 let params = NSAppleEventDescriptor(listDescriptor: ());
                 params.insert(jidParam, at: 1);
-                if let name = DBRosterStore.instance.item(for: account, jid: jid.withoutResource)?.name {
+                if let name = DBRosterStore.instance.item(for: account, jid: jid.withoutResource())?.name {
                     params.insert(NSAppleEventDescriptor(string: name), at: 2);
                 } else {
                     params.insert(NSAppleEventDescriptor.null(), at: 2);

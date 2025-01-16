@@ -35,27 +35,24 @@ extension DBChatStore: ChannelStore {
     }
     
     public func createChannel(for context: Context, with channelJid: BareJID, participantId: String, nick: String?, state: ChannelState) -> ConversationCreateResult<Channel> {
-        self.conversationsLifecycleQueue.sync {
-        if let channel = channel(for: context, with: channelJid) {
-            return .found(channel);
-        }
-    
         let account = context.userBareJid;
-        guard let channel: Channel = createConversation(for: account, with: channelJid, execute: {
-            let timestamp = Date();
-            let options = ChannelOptions(participantId: participantId, nick: nick, state: state);
-            
-            let id = try! self.openConversation(account: account, jid: channelJid, type: .channel, timestamp: timestamp, options: options);
-            let channel = Channel(dispatcher: self.conversationDispatcher, context: context, channelJid: channelJid, id: id, timestamp: timestamp, lastActivity: lastActivity(for: account, jid: channelJid), unread: 0, options: options, creationTimestamp: timestamp);
-
-            return channel;
-        }) else {
-            if let channel = self.channel(for: context, with: channelJid) {
-                return .found(channel);
+        return self.queue.sync {
+            guard let conversation = self.accountsConversations.conversation(for: account, with: channelJid) else {
+                let timestamp = Date();
+                let options = ChannelOptions(participantId: participantId, nick: nick, state: state);
+                let id = try! self.openConversation(account: context.userBareJid, jid: channelJid, type: .channel, timestamp: timestamp, options: nil);
+                let channel = Channel(context: context, channelJid: channelJid, id: id, lastActivity: lastActivity(for: account, jid: channelJid, conversationType: .channel) ?? .none(timestamp: timestamp), unread: 0, options: options, creationTimestamp: timestamp);
+                if self.accountsConversations.add(channel) {
+                    self.conversationsEventsPublisher.send(.created(channel));
+                    return .created(channel);
+                } else {
+                    return .none;
+                }
             }
-            return .none;
-        }
-        return .created(channel);
+            guard let channel = conversation as? Channel else {
+                return .none;
+            }
+            return .found(channel);
         }
     }
     

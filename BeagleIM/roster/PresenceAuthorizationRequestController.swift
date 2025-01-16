@@ -43,10 +43,10 @@ class PresenceAuthorizationRequestController: NSViewController {
     override func viewWillAppear() {
         super.viewWillAppear();
         
-        nameField.stringValue = jid.stringValue;
-        jidField.stringValue = jid.stringValue;
+        nameField.stringValue = jid.description;
+        jidField.stringValue = jid.description;
         jidField.isHidden = true;
-        descriptionField.stringValue = String.localizedStringWithFormat(NSLocalizedString("Do you want to allow access to your online status and associated data for account %@?", comment: "confirm to allow access to your presence information"), account.stringValue)
+        descriptionField.stringValue = String.localizedStringWithFormat(NSLocalizedString("Do you want to allow access to your online status and associated data for account %@?", comment: "confirm to allow access to your presence information"), account.description)
         refreshVCard();
         
         let blockingModule: BlockingCommandModule? = XmppService.instance.getClient(for: account)?.module(.blockingCommand);
@@ -131,7 +131,7 @@ class PresenceAuthorizationRequestController: NSViewController {
         client.module(.presence).unsubscribed(by: jid);
 
         InvitationManager.instance.remove(invitation: invitation);
-        client.module(.blockingCommand).block(jid: jid.withoutResource, report: report, completionHandler: { result in
+        client.module(.blockingCommand).block(jid: jid.withoutResource(), report: report, completionHandler: { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(_):
@@ -142,7 +142,7 @@ class PresenceAuthorizationRequestController: NSViewController {
                     break;
                 case .failure(let err):
                     let alert = Alert();
-                    alert.messageText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to block %@", comment: "alert window title"), self.jid.stringValue);
+                    alert.messageText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to block %@", comment: "alert window title"), self.jid.description);
                     alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert window message"), err.localizedDescription);
                     alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                     alert.run(completionHandler: { res in
@@ -169,7 +169,7 @@ class PresenceAuthorizationRequestController: NSViewController {
                     if let photo = vcard.photos.first, let dataStr = photo.binval, let data = Data(base64Encoded: dataStr), let image = NSImage(data: data) {
                         self.avatarView.image = image;
                     }
-                    self.nameField.stringValue = displayName ?? self.jid.stringValue;
+                    self.nameField.stringValue = displayName ?? self.jid.description;
                     self.jidField.isHidden = displayName == nil;
                 default:
                     break;

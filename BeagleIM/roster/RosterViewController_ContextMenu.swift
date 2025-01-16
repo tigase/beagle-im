@@ -111,7 +111,7 @@ extension RosterViewController: NSMenuDelegate {
 
                 let oldItem = DBRosterStore.instance.item(for: item.account, jid: JID(item.jid));
                 let groups = oldItem?.groups ?? [];
-                rosterModule.updateItem(jid: JID(item.jid), name: textField.stringValue.isEmpty ? nil : textField.stringValue, groups: groups, completionHandler: nil);
+                rosterModule.updateItem(jid: JID(item.jid), name: textField.stringValue.isEmpty ? nil : textField.stringValue, groups: groups, completionHandler: { _ in });
             }
         }
     }
@@ -138,7 +138,7 @@ extension RosterViewController: NSMenuDelegate {
     @IBAction func removeSelected(_ sender: NSMenuItem) {
         let item = self.getItem(at: self.contactsTableView.clickedRow);
         
-        XmppService.instance.getClient(for: item.account)?.module(.roster).removeItem(jid: JID(item.jid), completionHandler: nil);
+        XmppService.instance.getClient(for: item.account)?.module(.roster).removeItem(jid: JID(item.jid), completionHandler: { _ in });
     }
  
     fileprivate class InviteToRoomMenuItem: NSMenuItem {
@@ -149,7 +149,7 @@ extension RosterViewController: NSMenuDelegate {
         init(room: Room, invitee: BareJID) {
             self.room = room;
             self.invitee = invitee;
-            super.init(title: room.roomJid.stringValue, action: #selector(invite), keyEquivalent: "");
+            super.init(title: room.roomJid.description, action: #selector(invite), keyEquivalent: "");
             self.target = self;
         }
         

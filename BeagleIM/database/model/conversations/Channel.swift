@@ -24,7 +24,7 @@ import Martin
 import AppKit
 import Combine
 
-public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtocol, Conversation, LastMessageTimestampAware {
+public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtocol, Conversation, LastMessageTimestampAware, @unchecked Sendable {
     
     open override var defaultMessageType: StanzaType {
         return .groupchat;
@@ -49,7 +49,7 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
     }
     
     public func update(permissions: Set<ChannelPermission>) {
-        dispatcher.async(flags: .barrier) {
+        withLock {
             self.permissions = permissions;
         }
     }
@@ -144,10 +144,10 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         
     }
     
-    init(dispatcher: QueueDispatcher, context: Context, channelJid: BareJID, id: Int, timestamp: Date, lastActivity: LastChatActivity?, unread: Int, options: ChannelOptions, creationTimestamp: Date) {
+    init(context: Context, channelJid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, options: ChannelOptions, creationTimestamp: Date) {
          self.creationTimestamp = creationTimestamp;
-        self.displayable = ChannelDisplayableId(displayName: options.name ?? channelJid.stringValue, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: channelJid, mucNickname: nil)), description: options.description);
-        super.init(dispatcher: dispatcher, context: context, jid: channelJid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
+        self.displayable = ChannelDisplayableId(displayName: options.name ?? channelJid.description, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: channelJid, mucNickname: nil)), description: options.description);
+        super.init(context: context, jid: channelJid, id: id, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
         context.$state.sink(receiveValue: { [weak self] state in
             self?.connectionState = state;
         }).store(in: &cancellables);
@@ -177,7 +177,7 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
     public override func updateOptions(_ fn: @escaping (inout ChannelOptions) -> Void) {
         super.updateOptions(fn);
         DispatchQueue.main.async {
-            self.displayable.displayName = self.options.name ?? self.jid.stringValue;
+            self.displayable.displayName = self.options.name ?? self.jid.description;
             self.displayable.description = self.options.description;
             self.updateState();
         }
@@ -289,7 +289,7 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
 extension Channel: MixParticipantsProtocol {
     
     public var participants: [MixParticipant] {
-        return dispatcher.sync {
+        return withLock {
             return self.participantsStore.participants;
         }
     }
@@ -299,25 +299,25 @@ extension Channel: MixParticipantsProtocol {
     }
     
     public func participant(withId: String) -> MixParticipant? {
-        return dispatcher.sync {
+        return withLock {
             return self.participantsStore.participant(withId: withId);
         }
     }
     
     public func set(participants: [MixParticipant]) {
-        dispatcher.async(flags: .barrier) {
+        withLock {
             self.participantsStore.set(participants: participants);
         }
     }
     
     public func update(participant: MixParticipant) {
-        dispatcher.async(flags: .barrier) {
+        withLock {
             self.participantsStore.update(participant: participant);
         }
     }
     
     public func removeParticipant(withId id: String) -> MixParticipant? {
-        return dispatcher.sync(flags: .barrier) {
+        return withLock {
             return self.participantsStore.removeParticipant(withId: id);
         }
     }

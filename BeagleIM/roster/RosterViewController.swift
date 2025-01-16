@@ -33,7 +33,7 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
     @IBOutlet var addContactButton: NSButton!;
     
     fileprivate var items: [Item] = [];
-    fileprivate let dispatcher = QueueDispatcher(label: "roster_view");
+    fileprivate let queue = DispatchQueue(label: "roster_view");
     fileprivate var prevSelection = -1;
     @Published
     private var showOnlyOnline: Bool = true;
@@ -54,7 +54,7 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
     }
     
     override func viewWillAppear() {
-        DBRosterStore.instance.$items.combineLatest($showOnlyOnline, PresenceStore.instance.$bestPresences).throttle(for: 0.1, scheduler: dispatcher.queue, latest: true).sink(receiveValue: { [weak self] (items, available, presences) in
+        DBRosterStore.instance.$items.combineLatest($showOnlyOnline, PresenceStore.instance.$bestPresences).throttle(for: 0.1, scheduler: queue, latest: true).sink(receiveValue: { [weak self] (items, available, presences) in
             self?.update(items: Array(items), presences: presences, available: available);
         }).store(in: &cancellables);
         XmppService.instance.$currentStatus.receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] status in self?.statusUpdated(status) }).store(in: &cancellables);
@@ -262,7 +262,7 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
         init(account: BareJID, jid: BareJID, name: String?, status: Presence.Show?) {
             self.account = account;
             self.jid = jid;
-            self.displayName = name ?? jid.stringValue;
+            self.displayName = name ?? jid.description;
             self.status = status;
         }
     }

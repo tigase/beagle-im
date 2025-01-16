@@ -81,8 +81,8 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
         
         if let form = self.form {
             form.synchronize();
-            account = BareJID(localPart: (form.form!.getField(named: "username") as? TextSingleField)?.value, domain: domainField.stringValue);
-            password = (form.form!.getField(named: "password") as? TextPrivateField)?.value;
+            account = BareJID(localPart: form.form!.field(for: "username", type: DataForm.Field.TextSingle.self)?.value(), domain: domainField.stringValue);
+            password = form.form!.field(for: "password", type: DataForm.Field.TextPrivate.self)?.value();
             task?.submit(form: form.form!);
         }
     }
@@ -105,15 +105,14 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
         self.view.window?.sheetParent?.endSheet(self.view.window!);
     }
     
-    fileprivate func saveAccount(acceptedCertificate: SslCertificateInfo?) {
-        var account = AccountManager.Account(name: self.account!);
-        account.password = password;
-        if acceptedCertificate != nil {
-            account.serverCertificate = ServerCertificateInfo(sslCertificateInfo: acceptedCertificate!, accepted: true);
-        }
-        
+    fileprivate func saveAccount(acceptedCertificate: SSLCertificateInfo?) {
         do {
-            try AccountManager.save(account: account);
+            try AccountManager.modifyAccount(for: self.account!) { account in
+                account.credentials = .password(self.password ?? "");
+                if let sslCertificate = acceptedCertificate {
+                    account.acceptedCertificate = .init(certificate: sslCertificate, accepted: true);
+                }
+            }
             dismissView();
         } catch {
             let alert = NSAlert(error: error);
@@ -162,7 +161,7 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
         }
     }
     
-    fileprivate func onCertificateError(certData: SslCertificateInfo, accepted: @escaping ()->Void) {
+    fileprivate func onCertificateError(certData: SSLCertificateInfo, accepted: @escaping ()->Void) {
         DispatchQueue.main.async {
             guard let controller = NSStoryboard(name: "Main", bundle: nil).instantiateController(withIdentifier: "ServerCertificateErrorController") as? ServerCertificateErrorController else {
                 return;
@@ -181,8 +180,8 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
         }
     }
     
-    fileprivate func retrieveRegistrationForm(domain: String, completion: @escaping (JabberDataElement,[BobData])->Void) {
-        let onForm = {(form: JabberDataElement, bob: [BobData], task: InBandRegistrationModule.AccountRegistrationTask)->Void in
+    fileprivate func retrieveRegistrationForm(domain: String, completion: @escaping (DataForm,[BobData])->Void) {
+        let onForm = {(form: DataForm, bob: [BobData], task: InBandRegistrationModule.AccountRegistrationTask)->Void in
             DispatchQueue.main.async {
                 completion(form, bob);
             }
@@ -191,13 +190,13 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
         self.task = InBandRegistrationModule.AccountRegistrationTask(client: client, domainName: domain, onForm: onForm, sslCertificateValidator: nil, onCertificateValidationError: self.onCertificateError, completionHandler: { result in
             switch result {
             case .success:
-                let certData: SslCertificateInfo? = self.task?.getAcceptedCertificate();
+                let certData: SSLCertificateInfo? = self.task?.getAcceptedCertificate();
                 DispatchQueue.main.async {
                     self.saveAccount(acceptedCertificate: certData);
                     self.dismissView();
                 }
             case .failure(let error):
-                self.onRegistrationError(errorCondition: error.errorCondition, message: error.message);
+                self.onRegistrationError(errorCondition: error.condition, message: error.message);
             }
         });
     }

@@ -79,7 +79,7 @@ class XMLEntryViewController: NSViewController, NSTextViewDelegate {
         
         for elem in xmlDelegate.parsed {
             let stanza = Stanza.from(element: elem);
-            XmppService.instance.getClient(for: account)?.context.writer.write(stanza);
+            XmppService.instance.getClient(for: account)?.context.writer.write(stanza: stanza);
         }
         self.view.window?.close();
     }

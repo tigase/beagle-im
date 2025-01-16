@@ -197,7 +197,7 @@ class DBChatHistoryStore {
             return;
         }
 
-        let jid = jidFull.withoutResource;
+        let jid = jidFull.withoutResource();
 
         let mixInvitation = message.mixInvitation;
 
@@ -257,7 +257,7 @@ class DBChatHistoryStore {
             return;
         }
         
-        guard !state.isError || stanzaId == nil || !self.processOutgoingError(for: conversation, stanzaId: stanzaId!, errorCondition: message.errorCondition, errorMessage: message.errorText) else {
+        guard !state.isError || stanzaId == nil || !self.processOutgoingError(for: conversation, stanzaId: stanzaId!, errorCondition: message.error?.condition, errorMessage: message.error?.message) else {
             return;
         }
 
@@ -273,7 +273,7 @@ class DBChatHistoryStore {
                 guard let oldItemId = findItemId(for: conversation, remoteMsgId: stanzaIdToRetract), let oldItem = self.message(for: conversation, withId: oldItemId) else {
                     return;
                 }
-                retractMessageSync(oldItem: oldItem, for: conversation, retractionStanzaId: stanzaId, retractionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
+                retractMessageSync(oldItem: oldItem, for: conversation, sender: sender, retractionStanzaId: stanzaId, retractionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
             case .retracted(let retractionTimestamp):
                 self.appendItemSync(for: conversation, state: state, sender: sender, type: .messageRetracted, timestamp: timestamp, stanzaId: stanzaId, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, data: "", chatState: nil, appendix: ChatAttachmentAppendix(), options: .init(recipient: recipient, encryption: .none, isMarkable: true), linkPreviewAction: .none, completionHandler: nil);
             }
@@ -456,9 +456,10 @@ class DBChatHistoryStore {
             if let payload = payload {
                 let entry = ConversationEntry(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, payload: payload, options: options);
                 
-                DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: timestamp, itemType: type, message: options.encryption.message() ?? data, state: state, remoteChatState: state.direction == .incoming ? chatState : nil, senderNickname: sender.isGroupchat ? sender.nickname : nil) {
-                    NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: entry);
+                if let activityPayload = LastChatActivityType.from(payload) {
+                    DBChatStore.instance.newActivity(.init(timestamp: timestamp, sender: sender, payload: activityPayload), isUnread: state.isUnread, for: conversation.account, with: conversation.jid)
                 }
+                NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: entry);
                 
                 self.events.send(.added(entry));
                 NotificationManager.instance.newMessage(entry);
@@ -504,8 +505,8 @@ class DBChatHistoryStore {
                 markedAsRead.send(MarkedAsRead(account: conversation.account, jid: conversation.jid, messages: [.init(id: oldItem.id, markableId: nil)], onlyLocally: true));
 
                 let newMessageState: ConversationEntryState = (oldItem.state.direction == .incoming) ? (oldItem.state.isUnread ? .incoming(.displayed) : .incoming(newState.isUnread ? .received : .displayed)) : (.outgoing(.sent));
-                DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: oldItem.timestamp, itemType: .message, message: data, state: newMessageState, completionHandler: {
-                })
+                DBChatStore.instance.newActivity(.init(timestamp: oldItem.timestamp, sender: sender, payload: .message(message: data)), isUnread: newMessageState.isUnread, for: conversation.account, with: conversation.jid)
+
 
                 self.itemUpdated(withId: itemId, for: conversation);
                 
@@ -532,11 +533,11 @@ class DBChatHistoryStore {
 
     private func retractMessageSync(for conversation: ConversationKey, stanzaId: String, sender: ConversationEntrySender, retractionStanzaId: String?, retractionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?) {
         if let oldItem = self.findItem(for: conversation, originId: stanzaId, sender: sender) {
-            retractMessageSync(oldItem: oldItem, for: conversation, retractionStanzaId: retractionStanzaId, retractionTimestamp: retractionTimestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
+            retractMessageSync(oldItem: oldItem, for: conversation, sender: sender, retractionStanzaId: retractionStanzaId, retractionTimestamp: retractionTimestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
         }
     }
     
-    private func retractMessageSync(oldItem: ConversationEntry, for conversation: ConversationKey, retractionStanzaId: String?, retractionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?) {
+    private func retractMessageSync(oldItem: ConversationEntry, for conversation: ConversationKey, sender: ConversationEntrySender, retractionStanzaId: String?, retractionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?) {
         let itemId = oldItem.id;
         var itemType: ItemType = .messageRetracted;
         if case .attachment(_,_) = oldItem.payload {
@@ -551,9 +552,9 @@ class DBChatHistoryStore {
             markedAsRead.send(MarkedAsRead(account: conversation.account, jid: conversation.jid, messages: [.init(id: oldItem.id, markableId: nil)], onlyLocally: true));
 
             // what should be sent to "newMessage" how to reatract message from there??
-            let activity: LastChatActivity = DBChatStore.instance.lastActivity(for: conversation.account, jid: conversation.jid) ?? .message("", direction: .incoming, sender: nil);
-            DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: oldItem.timestamp, lastActivity: activity, state: oldItem.state.direction == .incoming ? .incoming(.displayed) : .outgoing(.sent), completionHandler: {
-            })
+            let activity: LastChatActivity = .init(timestamp: oldItem.timestamp, sender: sender, payload: .retraction);
+            DBChatStore.instance.newActivity(activity, isUnread: false, for: conversation.account, with: conversation.jid)
+                        
             if oldItem.state.isUnread {
                 DBChatStore.instance.markAsRead(for: conversation.account, with: conversation.jid, count: 1);
             }
@@ -639,9 +640,7 @@ class DBChatHistoryStore {
         }) > 0 else {
             return false;
         }
-        DBChatStore.instance.newMessage(for: conversation.account, with: conversation.jid, timestamp: Date(timeIntervalSince1970: 0), itemType: nil, message: nil, state: .outgoing_error(.received, errorMessage: errorMessage ?? errorCondition?.rawValue ?? "Unknown error")) {
-            self.itemUpdated(withId: itemId, for: conversation);
-        }
+        self.itemUpdated(withId: itemId, for: conversation);
         return true;
     }
 

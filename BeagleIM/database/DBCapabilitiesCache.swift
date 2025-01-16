@@ -32,21 +32,21 @@ extension Query {
     static let capsCountFeaturesForNode = Query("SELECT count(feature) FROM caps_features WHERE node = :node");
 }
 
-class DBCapabilitiesCache: CapabilitiesCache {
+class DBCapabilitiesCache: CapabilitiesCache {    
     
     public static let instance = DBCapabilitiesCache();
     
-    public let dispatcher: QueueDispatcher;
+    public let queue: DispatchQueue;
     
     private var features = [String: [String]]();
-    private var identities: [String: DiscoveryModule.Identity] = [:];
+    private var identities: [String: [DiscoveryModule.Identity]] = [:];
     
     fileprivate init() {
-        dispatcher = QueueDispatcher(label: "DBCapabilitiesCache", attributes: .concurrent);
+        queue = DispatchQueue(label: "DBCapabilitiesCache", attributes: .concurrent);
     }
 
-    open func getFeatures(for node: String) -> [String]? {
-        return dispatcher.sync {
+    open func features(for node: String) -> [String]? {
+        return queue.sync {
             guard let features = self.features[node] else {
                 let features = try! Database.main.reader({ database in
                     try database.select(query: .capsFindFeaturesForNode, params: ["node": node]).mapAll({ $0.string(for: "feature")});
@@ -61,62 +61,65 @@ class DBCapabilitiesCache: CapabilitiesCache {
         }
     }
     
-    open func getIdentity(for node: String) -> DiscoveryModule.Identity? {
-        guard let identity = self.identities[node] else {
-            if let identity = try! Database.main.reader({ database in
-                try database.select(query: .capsFindIdentityForNode, params: ["node": node]).mapFirst({ cursor -> DiscoveryModule.Identity? in
-                    guard let category = cursor.string(for: "category"), let type = cursor.string(for: "type") else {
-                        return nil;
-                    }
-                    return DiscoveryModule.Identity(category: category, type: type, name: cursor.string(for: "name"));
+    open func identities(for node: String) -> [DiscoveryModule.Identity]? {
+        queue.sync {
+            guard let identities = self.identities[node] else {
+                let identities = try! Database.main.reader({ database in
+                    try database.select(query: .capsFindIdentityForNode, params: ["node": node]).mapAll({ cursor -> DiscoveryModule.Identity? in
+                        guard let category = cursor.string(for: "category"), let type = cursor.string(for: "type") else {
+                            return nil;
+                        }
+                        return DiscoveryModule.Identity(category: category, type: type, name: cursor.string(for: "name"));
+                    });
                 });
-            }) {
-                self.identities[node] = identity;
-                return identity;
-            } else {
-                return nil;
+                if !identities.isEmpty {
+                    self.identities[node] = identities;
+                    return identities;
+                } else {
+                    return nil;
+                }
             }
+            return identities;
         }
-        return identity;
     }
     
-    open func getNodes(withFeature feature: String) -> [String] {
+    open func nodes(withFeature feature: String) -> [String] {
         return try! Database.main.reader({ database in
             try database.select(query: .capsFindNodesWithFeature, params: ["feature": feature]).mapAll({ $0.string(for: "node") });
         })
     }
     
     open func isCached(node: String, handler: @escaping (Bool)->Void) {
-        dispatcher.async {
+        queue.async {
             handler(self.isCached(node: node));
         }
     }
     
-    open func isSupported(for node: String, feature: String) -> Bool {
-        return getFeatures(for: node)?.contains(feature) ?? false;
+    open func isSupported(feature: String, for node: String) -> Bool {
+        return features(for: node)?.contains(feature) ?? false;
     }
     
-    open func store(node: String, identity: DiscoveryModule.Identity?, features: [String]) {
-        dispatcher.async(flags: .barrier) {
+    open func store(node: String, identities: [DiscoveryModule.Identity], features: [String]) {
+        queue.async(flags: .barrier) {
             guard !self.isCached(node: node) else {
                 return;
             }
             
             self.features[node] = features;
-            self.identities[node] = identity;
+            self.identities[node] = identities;
             
             try! Database.main.writer({ database in
                 for feature in features {
                     try database.insert(query: .capsInsertFeatureForNode, params: ["node": node, "feature": feature]);
                 }
-                if let identity = identity {
+                for identity in identities {
                     try database.insert(query: .capsInsertIdentityForNode, params: ["node": node, "name": identity.name, "category": identity.category, "type": identity.type]);
                 }
             })
         }
     }
     
-    fileprivate func isCached(node: String) -> Bool {
+    open func isCached(node: String) -> Bool {
         do {
             return try Database.main.reader({ database in
                 try database.count(query: .capsCountFeaturesForNode, params: ["node": node]);

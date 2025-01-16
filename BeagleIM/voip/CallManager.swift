@@ -31,11 +31,11 @@ class CallManager {
     static let instance = CallManager();
 
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "jingle")
-    private let dispatcher = QueueDispatcher(label: "callManager");
+    private let queue = DispatchQueue(label: "callManager");
     
     func reportIncomingCall(_ call: Call, completionHandler: @escaping (Result<Void,Error>)->Void) {
         call.session = JingleManager.instance.session(forCall: call);
-        dispatcher.async {
+        queue.async {
             call.webrtcSid = String(UInt64.random(in: UInt64.min...UInt64.max));
             call.changeState(.ringing);
             
@@ -61,7 +61,7 @@ class CallManager {
     }
     
     func reportOutgoingCall(_ call: Call, completionHandler: @escaping (Result<Void,Error>)->Void) {
-        dispatcher.async {
+        queue.async {
             call.webrtcSid = String(UInt64.random(in: UInt64.min...UInt64.max));
             call.changeState(.ringing);
             VideoCallController.open(completionHandler: { controller in
@@ -70,15 +70,15 @@ class CallManager {
             self.checkMediaAvailability(forCall: call, completionHandler: { result in
                 switch result {
                 case .success(_):
-                    call.initiateOutgoingCall(completionHandler: { result in
-                        switch result {
-                        case .success(_):
+                    Task {
+                        do {
+                            try await call.initiateOutgoingCall();
                             completionHandler(.success(Void()));
-                        case .failure(let err):
-                            completionHandler(.failure(err));
+                        } catch {
+                            completionHandler(.failure(error));
                             call.reset();
                         }
-                    });
+                    }
                 case .failure(let err):
                     completionHandler(.failure(err));
                     call.reset();
@@ -94,7 +94,7 @@ class CallManager {
         for media in call.media {
             group.enter();
             self.checkAccesssPermission(media: media, completionHandler: { result in
-                self.dispatcher.async {
+                self.queue.async {
                     switch result {
                     case .success(_):
                         break;
@@ -106,22 +106,22 @@ class CallManager {
             })
         }
         group.leave();
-        group.notify(queue: self.dispatcher.queue, execute: {
-            completionHandler(errors ? .failure(ErrorCondition.forbidden) : .success(Void()));
+        group.notify(queue: self.queue, execute: {
+            completionHandler(errors ? .failure(XMPPError(condition: .forbidden)) : .success(Void()));
         })
     }
     
     func checkAccesssPermission(media: Call.Media, completionHandler: @escaping(Result<Void,Error>)->Void) {
         CaptureDeviceManager.requestAccess(for: media.avmedia, completionHandler: { result in
             DispatchQueue.main.async {
-                completionHandler(result ? .success(Void()) : .failure(ErrorCondition.forbidden));
+                completionHandler(result ? .success(Void()) : .failure(XMPPError(condition: .forbidden)));
             }
         });
     }
     
-    private func initializeCall(_ call: Call, completionHandler: @escaping (Result<Void,Error>)->Void) {
-        call.initiateWebRTC(completionHandler: completionHandler);
-    }
+//    private func initializeCall(_ call: Call, completionHandler: @escaping (Result<Void,Error>)->Void) {
+//        call.initiateWebRTC(completionHandler: completionHandler);
+//    }
     
 }
 
@@ -178,7 +178,74 @@ class Call: NSObject, JingleSessionActionDelegate {
         }
     }
 
-    private var establishingSessions: [JingleManager.Session] = [];
+    private var establishingSessions = EstablishingSessions();
+    
+    private class EstablishingSessions: @unchecked Sendable {
+        
+        private let lock = UnfairLock();
+        private var _completed: Bool = false;
+        private var _sessions: [JingleManager.Session] = [];
+     
+        var isCompleted: Bool {
+            lock.lock();
+            defer {
+                lock.unlock();
+            }
+            return _completed;
+        }
+                
+        func add(session: JingleManager.Session) throws {
+            lock.lock();
+            defer {
+                lock.unlock();
+            }
+            guard !_completed else {
+                throw XMPPError(condition: .not_acceptable);
+            }
+                _sessions.append(session);
+        }
+        
+        func sessions() -> [JingleManager.Session] {
+            lock.lock();
+            defer {
+                lock.unlock();
+            }
+            return _sessions;
+        }
+                
+        func accepted(session: JingleManager.Session) throws -> [JingleManager.Session] {
+            lock.lock();
+            defer {
+                lock.unlock();
+            }
+            guard !_completed else {
+                throw XMPPError(condition: .not_acceptable);
+            }
+            _completed = true;
+            _sessions.removeAll(where: { $0.account == session.account && $0.jid == session.jid && $0.sid == session.sid })
+            return _sessions;
+        }
+        
+        func rejected(session: JingleManager.Session) {
+            lock.lock();
+            defer {
+                lock.unlock();
+            }
+            _sessions.removeAll(where: { $0.account == session.account && $0.jid == session.jid && $0.sid == session.sid })
+            _completed = _completed || _sessions.isEmpty;
+        }
+                
+        func rejectAll() -> [JingleManager.Session] {
+            lock.lock();
+            defer {
+                lock.unlock();
+            }
+            _completed = true;
+            let sessions = _sessions;
+            _sessions.removeAll()
+            return sessions;
+        }
+    }
     
     private var localCandidates: [RTCIceCandidate] = [];
     
@@ -222,13 +289,16 @@ class Call: NSObject, JingleSessionActionDelegate {
             self.localAudioTrack = nil;
             self.localVideoSource = nil;
             self.delegate?.callDidEnd(self);
-            _ = self.session?.terminate();
+            Task {
+                _ = try? await self.session?.terminate();
+            }
             self.session = nil;
             self.delegate = nil;
-            for session in self.establishingSessions {
-                session.terminate();
+            for session in self.establishingSessions.rejectAll() {
+                Task {
+                    try? await session.terminate();
+                }
             }
-            self.establishingSessions.removeAll();
             self.state = .ended;
             self.rtcLogger.stop();
         }
@@ -268,10 +338,9 @@ class Call: NSObject, JingleSessionActionDelegate {
         case ended
     }
 
-    func initiateOutgoingCall(with callee: JID? = nil, completionHandler: @escaping (Result<Void,Error>)->Void) {
+    func initiateOutgoingCall(with callee: JID? = nil) async throws {
         guard let client = XmppService.instance.getClient(for: account) else {
-            completionHandler(.failure(ErrorCondition.item_not_found));
-            return;
+            throw XMPPError(condition: .item_not_found);
         }
         var withJingle: [JID] = [];
         var withJMI: [JID] = [];
@@ -281,12 +350,11 @@ class Call: NSObject, JingleSessionActionDelegate {
         } else {
             let presences = PresenceStore.instance.presences(for: jid, context: client);
             guard !presences.isEmpty || Settings.ignoreJingleSupportCheck else {
-                completionHandler(.failure(ErrorCondition.item_not_found));
-                return;
+                throw XMPPError(condition: .item_not_found);
             };
             for presence in presences {
                 if let jid = presence.from, let capsNode = presence.capsNode {
-                    if let features = DBCapabilitiesCache.instance.getFeatures(for: capsNode) {
+                    if let features = DBCapabilitiesCache.instance.features(for: capsNode) {
                         if features.contains(JingleModule.XMLNS) && features.contains(Jingle.Transport.ICEUDPTransport.XMLNS) && features.contains("urn:xmpp:jingle:apps:rtp:audio") {
                             withJingle.append(jid);
                             if features.contains(JingleModule.MESSAGE_INITIATION_XMLNS) {
@@ -297,74 +365,97 @@ class Call: NSObject, JingleSessionActionDelegate {
                 }
             }
             guard !withJingle.isEmpty || Settings.ignoreJingleSupportCheck else {
-                completionHandler(.failure(ErrorCondition.item_not_found));
-                return;
+                throw XMPPError(condition: .item_not_found);
             }
         }
         
         self.changeState(.ringing);
-        initiateWebRTC(completionHandler: { result in
-            switch result {
-            case .success(_):
-                completionHandler(.success(Void()));
-                if withJMI.count == withJingle.count {
-                    let session = JingleManager.instance.open(for: client, with: JID(self.jid), sid: self.sid, role: .initiator, initiationType: .message);
-                    self.session = session;
-                    _ = session.initiate(descriptions: self.media.map({ Jingle.MessageInitiationAction.Description(xmlns: "urn:xmpp:jingle:apps:rtp:1", media: $0.rawValue) }));
-                } else {
-                    // we need to establish multiple 1-1 sessions...
-                    guard let peerConnection = self.currentConnection else {
-                        completionHandler(.failure(ErrorCondition.internal_server_error));
-                        return;
-                    }
-                    self.generateOfferAndSet(peerConnection: peerConnection, creatorProvider: { _ in Jingle.Content.Creator.initiator }, localRole: .initiator, completionHandler: { result in
-                        switch result {
-                        case .failure(_):
-                            self.reset();
-                        case .success(let sdp):
-                            DispatchQueue.main.async {
-                                for jid in withJingle {
-                                    let session = JingleManager.instance.open(for: client, with: jid, sid: self.sid, role: .initiator, initiationType: .iq);
-                                    session.$state.removeDuplicates().receive(on: DispatchQueue.main).sink(receiveValue: { state in
-                                        switch state {
-                                        case .accepted:
-                                            guard self.session == nil else {
-                                                session.terminate();
-                                                return;
+        do {
+            try initiateWebRTC(iceServers: await discoverIceServers(), offerMedia: self.media);
+        } catch {
+            reset();
+            throw error
+        }
+        
+        Task {
+            if withJMI.count == withJingle.count {
+                let session = JingleManager.instance.open(for: client, with: JID(self.jid), sid: self.sid, role: .initiator, initiationType: .message);
+                self.session = session;
+                do {
+                    _ = try await session.initiate(descriptions: self.media.map({ Jingle.MessageInitiationAction.Description(xmlns: "urn:xmpp:jingle:apps:rtp:1", media: $0.rawValue) }));
+                } catch {
+                    self.reset();
+                }
+            } else {
+                // we need to establish multiple 1-1 sessions...
+                guard let peerConnection = self.currentConnection else {
+                    return;
+                }
+                do {
+                    let sdp = try await generateOfferAndSet(peerConnection: peerConnection, creatorProvider: { _ in Jingle.Content.Creator.initiator }, localRole: .initiator);
+                    let sessions = withJingle.compactMap({ jid -> JingleManager.Session? in
+                        let session = JingleManager.instance.open(for: client, with: jid, sid: self.sid, role: .initiator, initiationType: .iq);
+                        session.$state.removeDuplicates().receive(on: DispatchQueue.main).sink(receiveValue: { state in
+                            switch state {
+                            case .accepted:
+                                Task {
+                                    guard self.session == nil else {
+                                        try? await session.terminate();
+                                        return;
+                                    }
+                                    do {
+                                        for sess in try self.establishingSessions.accepted(session: session) {
+                                            Task {
+                                                try? await sess.terminate();
                                             }
-                                            for sess in self.establishingSessions {
-                                                if sess.account == session.account && sess.jid == session.jid && sess.sid == session.sid {
-                                                } else {
-                                                    sess.terminate();
-                                                }
-                                            }
-                                            self.establishingSessions.removeAll();
-                                            self.session = session;
-                                            self.state = .connecting;
-                                            self.connectRemoteSDPPublishers(session: session);
-                                            self.sendLocalCandidates();
-                                        case .terminated:
-                                            if let idx = self.establishingSessions.firstIndex(where: { $0.account == session.account && $0.jid == session.jid && $0.sid == session.sid }) {
-                                                self.establishingSessions.remove(at: idx);
-                                            }
-                                            if self.establishingSessions.isEmpty && self.session == nil {
-                                                self.reset();
-                                            }
-                                        default:
-                                            break;
                                         }
-                                    }).store(in: &self.cancellables);
-                                    self.establishingSessions.append(session);
-                                    _ = session.initiate(contents: sdp.contents, bundle: sdp.bundle);
+                                        self.session = session;
+                                        self.state = .connecting;
+                                        self.connectRemoteSDPPublishers(session: session);
+                                        self.sendLocalCandidates();
+                                    } catch {
+                                        try await session.terminate();
+                                    }
+                                }
+                            case .terminated:
+                                Task {
+                                    self.establishingSessions.rejected(session: session);
+                                    if self.establishingSessions.isCompleted && self.session == nil {
+                                        self.reset();
+                                    }
+                                }
+                            default:
+                                break;
+                            }
+                        }).store(in: &cancellables);
+                        do {
+                            try self.establishingSessions.add(session: session);
+                            return session;
+                        } catch {
+                            return nil;
+                        }
+                    });
+                    for session in sessions {
+                        Task {
+                            do {
+                                try await session.initiate(contents: sdp.contents, bundle: sdp.bundle);
+                            } catch let error as XMPPError {
+                                if error.condition == .remote_server_timeout {
+                                    self.establishingSessions.rejected(session: session);
+                                    if self.establishingSessions.isCompleted && self.session == nil {
+                                        self.reset();
+                                    }
+                                } else {
+                                    throw error;
                                 }
                             }
                         }
-                    })
+                    }
+                } catch {
+                    self.reset();
                 }
-            case .failure(let err):
-                completionHandler(.failure(err));
             }
-        })
+        }
     }
         
     private func acceptedOutgingCall() {
@@ -372,19 +463,15 @@ class Call: NSObject, JingleSessionActionDelegate {
             return;
         }
         changeState(.connecting);
-        generateOfferAndSet(peerConnection: peerConnection, creatorProvider: session.contentCreator(of:), localRole: session.role, completionHandler: { result in
-            switch result {
-            case .success(let sdp):
-                guard let session = self.session else {
-                    self.reset();
-                    return
-                }
+        Task {
+            do {
+                let sdp = try await generateOfferAndSet(peerConnection: peerConnection, creatorProvider: session.contentCreator(of:), localRole: session.role);
                 self.connectRemoteSDPPublishers(session: session);
-                _ = session.initiate(contents: sdp.contents, bundle: sdp.bundle);
-            case .failure(_):
+                try await session.initiate(contents: sdp.contents, bundle: sdp.bundle);
+            } catch {
                 self.reset();
             }
-        });
+        }
     }
     
     private func connectRemoteSDPPublishers(session: JingleManager.Session) {
@@ -393,37 +480,24 @@ class Call: NSObject, JingleSessionActionDelegate {
             
     static let VALID_SERVICE_TYPES = ["stun", "stuns", "turn", "turns"];
     
-    func initiateWebRTC(completionHandler: @escaping (Result<Void,Error>)->Void) {
+    private func discoverIceServers() async -> [RTCIceServer] {
         if let module: ExternalServiceDiscoveryModule = XmppService.instance.getClient(for: self.account)?.module(.externalServiceDiscovery), module.isAvailable {
-            module.discover(from: nil, type: nil, completionHandler: { [weak self] result in
-                switch result {
-                case .success(let services):
-                    var servers: [RTCIceServer] = [];
-                    for service in services {
-                        if let server = service.rtcIceServer() {
-                            servers.append(server);
-                        }
-                    }
-                    self?.initiateWebRTC(iceServers: servers, completionHandler: completionHandler);
-                case .failure(_):
-                    self?.initiateWebRTC(iceServers: [], completionHandler: completionHandler);
-                }
-            })
-        } else {
-            initiateWebRTC(iceServers: [], completionHandler: completionHandler);
+            do {
+                let services = try await module.discover(from: nil, type: nil);
+                return services.compactMap({ $0.rtcIceServer() })
+            } catch {}
         }
+        return [];
     }
     
-    private func initiateWebRTC(iceServers: [RTCIceServer], completionHandler: @escaping (Result<Void,Error>)->Void) {
-        // moved initialization to main queue to sync with a call to reset()
-        DispatchQueue.main.async { [self] in
+    private func initiateWebRTC(iceServers: [RTCIceServer], offerMedia media: [Media]) throws {
         self.currentConnection = VideoCallController.initiatePeerConnection(iceServers: iceServers, withDelegate: self);
         if self.currentConnection != nil {
             self.localAudioTrack = VideoCallController.peerConnectionFactory.audioTrack(withTrackId: "audio-" + UUID().uuidString);
             if let localAudioTrack = self.localAudioTrack {
                 self.currentConnection?.add(localAudioTrack, streamIds: ["RTCmS"]);
             }
-            if self.media.contains(.video) && CaptureDeviceManager.authorizationStatus(for: .video) == .authorized {
+            if media.contains(.video) && CaptureDeviceManager.authorizationStatus(for: .video) == .authorized {
                 let videoSource = VideoCallController.peerConnectionFactory.videoSource();
                 self.localVideoSource = videoSource;
                 let localVideoTrack = VideoCallController.peerConnectionFactory.videoTrack(with: videoSource, trackId: "video-" + UUID().uuidString);
@@ -435,16 +509,12 @@ class Call: NSObject, JingleSessionActionDelegate {
                     })
                     self.delegate?.call(self, didReceiveLocalVideoTrack: localVideoTrack);
                     self.currentConnection?.add(localVideoTrack, streamIds: ["RTCmS"]);
-                    completionHandler(.success(Void()));
                 } else {
-                    completionHandler(.failure(ErrorCondition.item_not_found));
+                    throw XMPPError(condition: .item_not_found);
                 }
-            } else {
-                completionHandler(.success(Void()));
             }
         } else {
-            completionHandler(.failure(ErrorCondition.internal_server_error));
-        }
+            throw XMPPError(condition: .internal_server_error);
         }
     }
     
@@ -469,20 +539,19 @@ class Call: NSObject, JingleSessionActionDelegate {
             return;
         }
         changeState(.connecting);
-        initiateWebRTC(completionHandler: { result in
-            switch result {
-            case .success(_):
+        Task {
+            do {
+                try initiateWebRTC(iceServers: await discoverIceServers(), offerMedia: self.media);
                 guard self.currentConnection != nil else {
                     self.reject();
                     return;
                 }
-                session.accept();
+                try await session.accept();
                 self.connectRemoteSDPPublishers(session: session);
-            case .failure(_):
-                // there was an error, so we should reject this call
+            } catch {
                 self.reject();
             }
-        })
+        }
     }
     
     func reject() {
@@ -490,7 +559,9 @@ class Call: NSObject, JingleSessionActionDelegate {
             reset();
             return;
         }
-        session.decline();
+        Task {
+            try? await session.decline();
+        }
         reset();
     }
     
@@ -529,32 +600,34 @@ class Call: NSObject, JingleSessionActionDelegate {
         }
         
         let prevLocalSDP = self.localSessionDescription;
-        setRemoteDescription(newSDP, peerConnection: peerConnection, session: session, completionHandler: { result in
-            self.remoteSessionSemaphore.signal();
-            switch result {
-            case .failure(let error):
-                self.logger.debug("error setting remote description: \(error.localizedDescription)");
-                self.reset();
-            case .success(let localSDP):
-                if let sdp = localSDP {
-                    if prevLocalSDP != nil {
-                        let changes = sdp.diff(from: prevLocalSDP!);
+        Task {
+            do {
+                if let localSDP = try await setRemoteDescription(newSDP, peerConnection: peerConnection, session: session) {
+                    if let prevLocalSDP {
+                        let changes = localSDP.diff(from: prevLocalSDP);
                         if let addSDP = changes[.add] {
-                            _ = session.contentModify(action: .accept, contents: addSDP.contents, bundle: addSDP.bundle);
+                            Task {
+                                try await session.contentModify(action: .accept, contents: addSDP.contents, bundle: addSDP.bundle);
+                            }
                         }
                         if let modifySDP = changes[.modify] {
                             // can we safely ignore this?
                         }
                     } else {
-                        _ = session.accept(contents: sdp.contents, bundle: sdp.bundle)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
-                            self.sendLocalCandidates();
-                        })
+                        Task {
+                            try? await session.accept(contents: localSDP.contents, bundle: localSDP.bundle);
+                        }
+                        Task {
+                            try await Task.sleep(nanoseconds: 100 * 1000 * 1000);
+                            sendLocalCandidates();
+                        }
                     }
                 }
-                break;
+            } catch {
+                self.logger.debug("error setting remote description: \(error.localizedDescription)");
+                self.reset();
             }
-        });
+        }
     }
     
     private func apply(action: JingleManager.Session.Action, on prevSDP: SDP?) -> SDP? {
@@ -575,89 +648,40 @@ class Call: NSObject, JingleSessionActionDelegate {
             return nil;
         }
     }
-
-    func sdpToString(sdp input: SDP, sid: String, localRole: Jingle.Content.Creator, direction: SDP.Direction) -> String {
-        var sdp = [
-            "v=0", "o=- \(sid) \(input.id.replacingOccurrences(of: ".", with: "")) IN IP4 0.0.0.0", "s=-", "t=0 0"
-        ];
-        
-        if input.bundle != nil {
-            var t = [ "a=group:BUNDLE" ];
-            t.append(contentsOf: input.bundle!);
-            sdp.append(t.joined(separator: " "));
-        }
-        
-        let contents: [String] = input.contents.map({ c -> String in
-            return c.toSDP(localRole: localRole, direction: direction);
-        });
-        sdp.append(contentsOf: contents);
-        
-        return sdp.joined(separator: "\r\n") + "\r\n";
-    }
     
-    private func setRemoteDescription(_ remoteDescription: SDP, peerConnection: RTCPeerConnection, session: JingleSession, completionHandler: @escaping (Result<SDP?,Error>)->Void) {
-        let descr = sdpToString(sdp: remoteDescription, sid: self.webrtcSid!, localRole: session.role, direction: .incoming)
+    private func setRemoteDescription(_ remoteDescription: SDP, peerConnection: RTCPeerConnection, session: JingleSession) async throws -> SDP? {
+        let descr = remoteDescription.toString(withSid: self.webrtcSid!, localRole: session.role, direction: .incoming);
 //        logger.debug("setting remote description: \(remoteDescription.toString(withSid: "", localRole: session.role, direction: .incoming))");
         logger.debug("setting remote description: \(descr)")
-        peerConnection.setRemoteDescription(RTCSessionDescription(type: self.direction == .incoming ? .offer : .answer, sdp: descr),
-                                            //                        remoteDescription.toString(withSid: self.webrtcSid!, localRole: session.role, direction: .incoming)),
-                                            completionHandler: { err in
-            guard let error = err else {
-                self.remoteSessionDescription = remoteDescription;
-                if peerConnection.signalingState == .haveRemoteOffer {
-                    self.generateAnswerAndSet(peerConnection: peerConnection, creatorProvider: session.contentCreator(of:), localRole: session.role, completionHandler: { result in
-                        switch result {
-                        case .success(let localSDP):
-                            completionHandler(.success(localSDP));
-                        case .failure(let error):
-                            completionHandler(.failure(error));
-                        }
-                    })
-                } else {
-                    completionHandler(.success(nil));
-                }
-                return;
-            }
-            completionHandler(.failure(error));
-        });
+        try await peerConnection.setRemoteDescription(RTCSessionDescription(type: self.direction == .incoming ? .offer : .answer, sdp: descr));
+        self.remoteSessionDescription = remoteDescription;
+        if peerConnection.signalingState == .haveRemoteOffer {
+            return try await self.generateAnswerAndSet(peerConnection: peerConnection, creatorProvider: session.contentCreator(of:), localRole: session.role);
+        } else {
+            return nil;
+        }
     }
     
-    private func generateOfferAndSet(peerConnection: RTCPeerConnection, creatorProvider: @escaping (String)->Jingle.Content.Creator, localRole: Jingle.Content.Creator, completionHandler: @escaping (Result<SDP,Error>)->Void) {
+    private func generateOfferAndSet(peerConnection: RTCPeerConnection, creatorProvider: @escaping (String)->Jingle.Content.Creator, localRole: Jingle.Content.Creator) async throws -> SDP {
         logger.debug("generating offer");
-        peerConnection.offer(for: VideoCallController.defaultCallConstraints, completionHandler: { sdpOffer, err in
-            guard let error = err else {
-                self.setLocalDescription(peerConnection: peerConnection, sdp: sdpOffer!, creatorProvider: creatorProvider, localRole: localRole, completionHandler: completionHandler);
-                return;
-            }
-            completionHandler(.failure(error));
-        });
+        let sdpOffer = try await peerConnection.offer(for: VideoCallController.defaultCallConstraints)
+        return try await setLocalDescription(peerConnection: peerConnection, sdp: sdpOffer, creatorProvider: creatorProvider, localRole: localRole);
     };
         
-    private func generateAnswerAndSet(peerConnection: RTCPeerConnection, creatorProvider: @escaping (String)->Jingle.Content.Creator, localRole: Jingle.Content.Creator, completionHandler: @escaping (Result<SDP,Error>)->Void) {
+    private func generateAnswerAndSet(peerConnection: RTCPeerConnection, creatorProvider: @escaping (String)->Jingle.Content.Creator, localRole: Jingle.Content.Creator) async throws -> SDP {
         logger.debug("generating answer");
-        peerConnection.answer(for: VideoCallController.defaultCallConstraints, completionHandler: { sdpAnswer, err in
-            guard let error = err else {
-                self.setLocalDescription(peerConnection: peerConnection, sdp: sdpAnswer!, creatorProvider: creatorProvider, localRole: localRole, completionHandler: completionHandler);
-                return;
-            }
-            completionHandler(.failure(error));
-        });
+        let sdpAnswer = try await peerConnection.answer(for: VideoCallController.defaultCallConstraints);
+        return try await setLocalDescription(peerConnection: peerConnection, sdp: sdpAnswer, creatorProvider: creatorProvider, localRole: localRole);
     }
     
-    private func setLocalDescription(peerConnection: RTCPeerConnection, sdp localSDP: RTCSessionDescription, creatorProvider: @escaping (String)->Jingle.Content.Creator, localRole: Jingle.Content.Creator, completionHandler: @escaping (Result<SDP,Error>)->Void) {
+    private func setLocalDescription(peerConnection: RTCPeerConnection, sdp localSDP: RTCSessionDescription, creatorProvider: @escaping (String)->Jingle.Content.Creator, localRole: Jingle.Content.Creator) async throws -> SDP {
         logger.debug("setting local description: \(localSDP.sdp)");
-        peerConnection.setLocalDescription(localSDP, completionHandler: { err in
-            guard let error = err else {
-                guard let (sdp, _) = SDP.parse(sdpString: localSDP.sdp, creatorProvider: creatorProvider, localRole: localRole) else {
-                    completionHandler(.failure(ErrorCondition.not_acceptable));
-                    return;
-                }
-                self.localSessionDescription = sdp;
-                completionHandler(.success(sdp));
-                return;
-            }
-            completionHandler(.failure(error));
-        });
+        try await peerConnection.setLocalDescription(localSDP);
+        guard let (sdp, _) = SDP.parse(sdpString: localSDP.sdp, creatorProvider: creatorProvider, localRole: localRole) else {
+            throw XMPPError(condition: .not_acceptable);
+        }
+        self.localSessionDescription = sdp;
+        return sdp;
     }
     
     func changeState(_ state: State) {
@@ -670,7 +694,9 @@ class Call: NSObject, JingleSessionActionDelegate {
         self.localVideoTrack?.isEnabled = !value;
         let infos: [Jingle.SessionInfo] = self.localSessionDescription?.contents.filter({ $0.description?.media == "audio" || $0.description?.media == "video" }).map({ $0.name }).map({ value ? .mute(contentName: $0) : .unmute(contentName: $0) }) ?? [];
         if !infos.isEmpty {
-            session?.sessionInfo(infos);
+            Task {
+                try? await session?.sessionInfo(infos);
+            }
         }
     }
     
@@ -728,7 +754,7 @@ extension Call: RTCPeerConnectionDelegate {
     }
         
     func peerConnection(_ peerConnection: RTCPeerConnection, didGenerate candidate: RTCIceCandidate) {
-        JingleManager.instance.dispatcher.async {
+        JingleManager.instance.queue.async {
             self.localCandidates.append(candidate);
             self.sendLocalCandidates();
         }
@@ -739,20 +765,22 @@ extension Call: RTCPeerConnectionDelegate {
             return;
         }
         for candidate in localCandidates {
-            self.sendLocalCandidate(candidate, session: session);
+            Task {
+                try? await self.sendLocalCandidate(candidate, session: session);
+            }
         }
         self.localCandidates = [];
     }
     
-    private func sendLocalCandidate(_ candidate: RTCIceCandidate, session: JingleManager.Session) {
+    private func sendLocalCandidate(_ candidate: RTCIceCandidate, session: JingleManager.Session) async throws {
         guard let jingleCandidate = Jingle.Transport.ICEUDPTransport.Candidate(fromSDP: candidate.sdp) else {
-            return;
+            throw XMPPError(condition: .not_acceptable);
         }
         guard let mid = candidate.sdpMid else {
-            return;
+            throw XMPPError(condition: .not_acceptable);
         }
         guard let sdp = self.localSessionDescription else {
-            return;
+            throw XMPPError(condition: .unexpected_request);
         }
         
         logger.debug("sending local ice candidate: \(sdp)")
@@ -762,10 +790,10 @@ extension Call: RTCPeerConnectionDelegate {
         }), let transport = content.transports.first(where: {t -> Bool in
             return (t as? Jingle.Transport.ICEUDPTransport) != nil;
         }) as? Jingle.Transport.ICEUDPTransport else {
-            return;
+            throw XMPPError(condition: .not_acceptable);
         }
         
-        _ = session.transportInfo(contentName: mid, transport: Jingle.Transport.ICEUDPTransport(pwd: transport.pwd, ufrag: transport.ufrag, candidates: [jingleCandidate]));
+        try await session.transportInfo(contentName: mid, transport: Jingle.Transport.ICEUDPTransport(pwd: transport.pwd, ufrag: transport.ufrag, candidates: [jingleCandidate]));
     }
         
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove candidates: [RTCIceCandidate]) {
@@ -828,6 +856,13 @@ extension Call {
     func sessionTerminated() {
         DispatchQueue.main.async {
             self.reset();
+        }
+    }
+ 
+    func addRemoteCandidate(_ candidate: RTCIceCandidate) {
+        DispatchQueue.main.async {
+            guard let peerConnection = self.currentConnection else { return }
+            peerConnection.add(candidate, completionHandler: { _ in })
         }
     }
     

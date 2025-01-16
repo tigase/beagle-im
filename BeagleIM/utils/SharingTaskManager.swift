@@ -29,7 +29,7 @@ class SharingTaskManager {
     static let instance = SharingTaskManager();
     
     private var tasks: [SharingTask] = [];
-    let dispatcher = QueueDispatcher(label: "SharingTaskManager");
+    private let queue = DispatchQueue(label: "SharingTaskManager");
  
     static func guessContentType(of url: URL) -> String? {
         guard let uti = try? url.resourceValues(forKeys: [.typeIdentifierKey]).typeIdentifier else {
@@ -40,7 +40,7 @@ class SharingTaskManager {
     }
     
     func progress(for chat: Conversation) -> Double? {
-        let tasks = dispatcher.sync {
+        let tasks = queue.sync {
             return self.tasks.filter({ $0.chat.id == chat.id });
         }
         guard !tasks.isEmpty else {
@@ -53,14 +53,14 @@ class SharingTaskManager {
     }
     
     func share(task: SharingTask) {
-        dispatcher.sync {
+        queue.sync {
             self.tasks.append(task);
             task.start();
         }
     }
     
     func ended(task: SharingTask) {
-        dispatcher.sync {
+        queue.sync {
             if let idx = self.tasks.firstIndex(of: task) {
                 self.tasks.remove(at: idx);
             }
@@ -156,7 +156,7 @@ class SharingTaskManager {
         }
                 
         func askForImageQuality(completionHandler: @escaping (Result<ImageQuality,ShareError>)->Void) {
-            SharingTaskManager.instance.dispatcher.async {
+            SharingTaskManager.instance.queue.async {
                 self.semaphore.wait();
                 guard let imageQuality = self.imageQuality else {
                     guard let window = self.window else {
@@ -181,7 +181,7 @@ class SharingTaskManager {
         }
 
         func askForVideoQuality(completionHandler: @escaping (Result<VideoQuality,ShareError>)->Void) {
-            SharingTaskManager.instance.dispatcher.async {
+            SharingTaskManager.instance.queue.async {
                 self.semaphore.wait();
                 guard let videoQuality = self.videoQuality else {
                     guard let window = self.window else {
@@ -212,7 +212,7 @@ class SharingTaskManager {
                 return;
             }
 
-            SharingTaskManager.instance.dispatcher.async {
+            SharingTaskManager.instance.queue.async {
                 self.semaphore.wait();
                 guard let value = self.isInvalidHttpResponseAccepted else {
                     DispatchQueue.main.async {
@@ -245,9 +245,9 @@ class SharingTaskManager {
                 completionHandler(URLSession.AuthChallengeDisposition.performDefaultHandling, nil);
                 return;
             }
-            let info = SslCertificateInfo(trust: trust);
+            let info = SSLCertificateInfo(trust: trust)!;
             
-            SharingTaskManager.instance.dispatcher.async {
+            SharingTaskManager.instance.queue.async {
                 self.semaphore.wait();
                 guard !self.isSslTrusted else {
                     self.semaphore.signal();
@@ -260,7 +260,7 @@ class SharingTaskManager {
                     let alert = NSAlert();
                     alert.icon = NSImage(named: NSImage.cautionName);
                     alert.messageText = NSLocalizedString("Invalid SSL certificate", comment: "alert window title")
-                    alert.informativeText = info.issuer == nil ? String.localizedStringWithFormat(NSLocalizedString("HTTP File Upload server presented invalid SSL certificate for %@.\nReceived certificate %@ (%@) is self-signed!\n\nWould you like to connect to the server anyway?", comment: "alert window message - part 1"), challenge.protectionSpace.host, info.details.name, info.details.fingerprintSha1) : String.localizedStringWithFormat(NSLocalizedString("HTTP File Upload server presented invalid SSL certificate for %@.\nReceived certificate %@ (%@) is issued by %@.\n\nWould you like to connect to the server anyway?", comment: "alert window message - part 1"), challenge.protectionSpace.host, info.details.name, info.details.fingerprintSha1, info.issuer!.name);
+                    alert.informativeText = info.issuer == nil ? String.localizedStringWithFormat(NSLocalizedString("HTTP File Upload server presented invalid SSL certificate for %@.\nReceived certificate %@ (%@) is self-signed!\n\nWould you like to connect to the server anyway?", comment: "alert window message - part 1"), challenge.protectionSpace.host, info.subject.name, info.subject.fingerprints.first!.value) : String.localizedStringWithFormat(NSLocalizedString("HTTP File Upload server presented invalid SSL certificate for %@.\nReceived certificate %@ (%@) is issued by %@.\n\nWould you like to connect to the server anyway?", comment: "alert window message - part 1"), challenge.protectionSpace.host, info.subject.name, info.subject.fingerprints.first!.value, info.issuer!.name);
                     alert.addButton(withTitle: NSLocalizedString("Yes", comment: "Button"));
                     alert.addButton(withTitle: NSLocalizedString("No", comment: "Button"));
                     alert.beginSheetModal(for: window, completionHandler: { (response) in

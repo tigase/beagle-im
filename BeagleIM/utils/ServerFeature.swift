@@ -1,5 +1,5 @@
 //
-// ChatsListGroupCommon.swift
+// ServerFeature.swift
 //
 // BeagleIM
 // Copyright (C) 2020 "Tigase, Inc." <office@tigase.com>
@@ -19,21 +19,25 @@
 // If not, see https://www.gnu.org/licenses/.
 //
 
-import AppKit
+import Foundation
 import Martin
 
-class ChatsListGroupCommon: ChatsListGroupAbstractChat {
+public enum ServerFeature: String, Codable {
+    case mam
+    case push
     
-    init(delegate: ChatsListViewDataSourceDelegate) {
-        super.init(name: NSLocalizedString("Conversations", comment: "Chats list group name"), queue: DispatchQueue(label: "chats_list_group_chats_queue"), delegate: delegate, canOpenChat: true);
+    public static func from(info: DiscoveryModule.DiscoveryInfoResult) -> [ServerFeature] {
+        return from(features: info.features);
     }
     
-    override func isAccepted(chat: Conversation) -> Bool {
-        if chat is Chat {
-            return DBRosterStore.instance.item(for: chat.account, jid: JID(chat.jid)) != nil;
-        };
-
-        return chat is Room || chat is Channel
+    public static func from(features: [String]) -> [ServerFeature] {
+        var serverFeatures: [ServerFeature] = [];
+        if features.contains(MessageArchiveManagementModule.MAM_XMLNS) || features.contains(MessageArchiveManagementModule.MAM2_XMLNS) {
+            serverFeatures.append(.mam);
+        }
+        if features.contains(PushNotificationsModule.PUSH_NOTIFICATIONS_XMLNS) {
+            serverFeatures.append(.push);
+        }
+        return serverFeatures;
     }
-
 }

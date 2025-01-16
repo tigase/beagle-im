@@ -313,13 +313,13 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
                         client.module(.presence).unsubscribed(by: jid)
                     }
                 }
-                let jids = wholeDomains ? Array(Set(items.map({ JID($0.jid.domain)! }))) : items.map({ $0.jid.withoutResource });
+                let jids = wholeDomains ? Array(Set(items.map({ JID($0.jid.domain)! }))) : items.map({ $0.jid.withoutResource() });
                 if wholeDomains {
                     InvitationManager.instance.removeAll(fromServers: jids.map({ $0.domain }), on: account);
                 } else {
                     InvitationManager.instance.remove(invitations: subscriptionRequests);
                 }
-                client.module(.blockingCommand).block(jids: items.map({ $0.jid.withoutResource }), completionHandler: { result in
+                client.module(.blockingCommand).block(jids: items.map({ $0.jid.withoutResource() }), completionHandler: { result in
                     switch result {
                     case .failure(let error):
                         DispatchQueue.main.async {
@@ -574,18 +574,26 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 let alert = NSAlert();
                 alert.alertStyle = .warning;
                 alert.messageText = NSLocalizedString("Delete group chat?", comment: "alert window title");
-                alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("You are leaving the group chat %@", comment: "alert window message"), r.name ?? r.jid.stringValue);
+                alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("You are leaving the group chat %@", comment: "alert window message"), r.name ?? r.jid.description);
                 alert.addButton(withTitle: NSLocalizedString("Delete chat", comment: "Button"))
                 alert.addButton(withTitle: NSLocalizedString("Leave chat", comment: "Button"))
                 alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Button"))
                 alert.beginSheetModal(for: self.view.window!) { (response) in
                     switch response {
                     case .alertFirstButtonReturn:
-                        mucModule.destroy(room: r);
-                        r.context?.module(.pepBookmarks).remove(bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.stringValue, jid: JID(r.jid), autojoin: false));
+                        Task {
+                            try? await mucModule.destroy(room: r);
+                        }
+                        Task {
+                            try? await r.context?.module(.pepBookmarks).remove(bookmark: Bookmarks.Conference(name: r.name ?? r.roomJid.description, jid: JID(r.jid), autojoin: false));
+                        }
                     case .alertSecondButtonReturn:
-                        mucModule.leave(room: r);
-                        r.context?.module(.pepBookmarks).setConferenceAutojoin(false, for: JID(r.jid));
+                        Task {
+                            try? await mucModule.leave(room: r);
+                        }
+                        Task {
+                            try? await r.context?.module(.pepBookmarks).setConferenceAutojoin(false, for: JID(r.jid));
+                        }
                     default:
                         // cancel, nothing to do..
                         break;
@@ -593,8 +601,12 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 };
                 return false;
             } else {
-                mucModule.leave(room: r);
-                r.context?.module(.pepBookmarks).setConferenceAutojoin(false, for: JID(r.jid));
+                Task {
+                    try? await mucModule.leave(room: r);
+                }
+                Task {
+                    try? await r.context?.module(.pepBookmarks).setConferenceAutojoin(false, for: JID(r.jid));
+                }
                 return true;
             }
         case let c as Channel:
@@ -613,12 +625,11 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 })
             }
             
-            mixModule.retrieveConfig(for: c.channelJid, completionHandler: { result in
-                switch result {
-                case .success(let data):
-                    if let adminsField: JidMultiField = data.getField(named: "Owner"), adminsField.value.contains(JID(userJid)) && adminsField.value.count == 1 {
-                        // you need to pass the permission or delete channel..
-                        DispatchQueue.main.async {
+            Task {
+                do {
+                    var data = try await mixModule.config(for: c.channelJid);
+                    if let admins = data.administrator, admins.contains(JID(userJid)) && admins.count == 1 {
+                        await MainActor.run {
                             let alert = Alert();
                             alert.icon = NSImage(named: NSImage.cautionName);
                             alert.messageText = NSLocalizedString("Leaving channel", comment: "leaving channel title");
@@ -646,7 +657,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                                                 alert.alertStyle = .warning;
                                                 alert.icon = NSImage(named: NSImage.cautionName);
                                                 alert.messageText = NSLocalizedString("Channel destruction failed!", comment: "alert window title");
-                                                alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert window message"), c.name ?? c.channelJid.stringValue, error.localizedDescription);
+                                                alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert window message"), c.name ?? c.channelJid.description, error.localizedDescription);
                                                 alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                                                 alert.beginSheetModal(for: window, completionHandler: nil);
                                             }
@@ -656,7 +667,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                                     if let controller = NSStoryboard(name: "MIX", bundle: nil).instantiateController(withIdentifier: "SelectNewOwnerViewController") as? ChannelSelectNewOwnerViewController {
                                         controller.participants = otherParticipants;
                                         controller.successHandler = { newAdmin in
-                                            adminsField.value = adminsField.value.filter({ $0.bareJid != userJid }) + [JID(newAdmin)];
+                                            data.administrator = admins.filter({ $0.bareJid != userJid }) + [JID(newAdmin)];
                                             mixModule.updateConfig(for: c.channelJid, config: data, completionHandler: { _ in
                                                 leaveFn();
                                             })
@@ -670,14 +681,13 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                                     break;
                                 }
                             })
+
                         }
-                    } else {
-                        leaveFn();
                     }
-                case .failure(let error):
+                } catch {
                     leaveFn();
                 }
-            })
+            }
             return false;
         default:
             return false;
@@ -714,10 +724,7 @@ class ChatsListView: NSOutlineView {
     override func awakeFromNib() {
         super.awakeFromNib();
     }
-    
-    deinit {
-    }
-    
+        
     override func frameOfOutlineCell(atRow row: Int) -> NSRect {
         return NSRect.zero;
     }

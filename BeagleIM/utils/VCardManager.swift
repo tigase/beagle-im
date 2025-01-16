@@ -61,6 +61,13 @@ class VCardManager {
     }
     
     fileprivate func retrieveVCard(module: VCardModuleProtocol, for jid: JID?, on account: BareJID, completionHandler: @escaping (Result<VCard,XMPPError>)->Void) {
-        module.retrieveVCard(from: jid, completionHandler: completionHandler);
+        Task {
+            do {
+                let vcard = try await module.retrieveVCard(from: jid);
+                completionHandler(.success(vcard));
+            } catch {
+                completionHandler(.failure(error as! XMPPError))
+            }
+        }
     }
 }

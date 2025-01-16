@@ -34,7 +34,7 @@ class JingleManager: JingleSessionManager {
     
     private var cancellables: Set<AnyCancellable> = [];
     
-    let dispatcher = QueueDispatcher(label: "jingleEventHandler");
+    let queue = DispatchQueue(label: "jingleEventHandler");
     
     init() {
         if !RTCInitializeSSL() {
@@ -56,7 +56,7 @@ class JingleManager: JingleSessionManager {
     }
     
     func session(for account: BareJID, with jid: JID, sid: String?) -> Session? {
-        return dispatcher.sync {
+        return queue.sync {
             return connections.first(where: {(sess) -> Bool in
                 return sess.account == account && (sid == nil || sess.sid == sid) && (sess.jid == jid || (sess.jid.resource == nil && sess.jid.bareJid == jid.bareJid));
             });
@@ -64,7 +64,7 @@ class JingleManager: JingleSessionManager {
     }
     
     func open(for context: Context, with jid: JID, sid: String, role: Jingle.Content.Creator, initiationType: JingleSessionInitiationType) -> Session {
-        return dispatcher.sync {
+        return queue.sync {
             let session = Session(context: context, jid: jid, sid: sid, role: role, initiationType: initiationType);
             self.connections.append(session);
             session.$state.removeDuplicates().sink(receiveValue: { [weak self, weak session] state in
@@ -78,7 +78,7 @@ class JingleManager: JingleSessionManager {
     }
     
     func close(for account: BareJID, with jid: JID, sid: String) -> Session? {
-        return dispatcher.sync {
+        return queue.sync {
             guard let idx = self.connections.firstIndex(where: { sess -> Bool in
                 return sess.sid == sid && sess.account == account && sess.jid == jid;
             }) else {
@@ -110,13 +110,13 @@ class JingleManager: JingleSessionManager {
             PresenceStore.instance.presences(for: jid.bareJid, context: client).filter({ (p) -> Bool in
                 return (p.type ?? .available) == .available;
             }).forEach({ (p) in
-                guard let node = p.capsNode, let f = DBCapabilitiesCache.instance.getFeatures(for: node) else {
+                guard let node = p.capsNode, let f = DBCapabilitiesCache.instance.features(for: node) else {
                     return;
                 }
                 features.append(contentsOf: f);
             })
         } else {
-            guard let p = PresenceStore.instance.presence(for: jid, context: client), (p.type ?? .available) == .available, let node = p.capsNode, let f = DBCapabilitiesCache.instance.getFeatures(for: node) else {
+            guard let p = PresenceStore.instance.presence(for: jid, context: client), (p.type ?? .available) == .available, let node = p.capsNode, let f = DBCapabilitiesCache.instance.features(for: node) else {
                 return [];
             }
             features.append(contentsOf: f);
@@ -159,7 +159,9 @@ class JingleManager: JingleSessionManager {
                     // nothing to do as manager will call us back..
                     break;
                 case .failure(_):
-                    session.decline();
+                    Task {
+                        try? await session.decline();
+                    }
                 }
             });
         case .retract(let id):
@@ -176,9 +178,9 @@ class JingleManager: JingleSessionManager {
         }
     }
     
-    func sessionInitiated(for context: Context, with jid: JID, sid: String, contents: [Jingle.Content], bundle: [String]?) throws {
+    func sessionInitiated(for context: Context, with jid: JID, sid: String, contents: [Jingle.Content], bundle: Jingle.Bundle?) throws {
         guard let content = contents.first, let _ = content.description as? Jingle.RTP.Description else {
-            throw XMPPError.bad_request("Unsupported content type");
+            throw XMPPError(condition: .bad_request, message: "Unsupported content type");
         }
       
         let sdp = SDP(contents: contents, bundle: bundle);
@@ -197,15 +199,17 @@ class JingleManager: JingleSessionManager {
                 case .success(_):
                     break;
                 case .failure(_):
-                    session.terminate();
+                    Task {
+                        try? await session.terminate();
+                    }
                 }
             })
         }
     }
     
-    func sessionAccepted(for context: Context, with jid: JID, sid: String, contents: [Jingle.Content], bundle: [String]?) throws {
+    func sessionAccepted(for context: Context, with jid: JID, sid: String, contents: [Jingle.Content], bundle: Jingle.Bundle?) throws {
         guard let session = session(for: context, with: jid, sid: sid) else {
-            throw XMPPError.item_not_found;
+            throw XMPPError(condition: .item_not_found);
         }
         
         session.accepted(contents: contents, bundle: bundle);
@@ -216,7 +220,7 @@ class JingleManager: JingleSessionManager {
     }
     
     private func sessionTerminated(account: BareJID, sid: String) {
-        let toTerminate = dispatcher.sync(execute: {
+        let toTerminate = queue.sync(execute: {
             return connections.filter({(sess) -> Bool in
                 return sess.account == account && sess.sid == sid;
             });
@@ -235,7 +239,7 @@ class JingleManager: JingleSessionManager {
     
     func transportInfo(for context: Context, with jid: JID, sid: String, contents: [Jingle.Content]) throws {
         guard let session = self.session(for: context, with: jid, sid: sid) else {
-            throw XMPPError.item_not_found;
+            throw XMPPError(condition: .item_not_found);
         }
         
         contents.forEach { (content) in
@@ -250,9 +254,9 @@ class JingleManager: JingleSessionManager {
 
     }
     
-    func contentModified(for context: Context, with jid: JID, sid: String, action: Jingle.ContentAction, contents: [Jingle.Content], bundle: [String]?) throws {
+    func contentModified(for context: Context, with jid: JID, sid: String, action: Jingle.ContentAction, contents: [Jingle.Content], bundle: Jingle.Bundle?) throws {
         guard let session = self.session(for: context, with: jid, sid: sid) else {
-            throw XMPPError.item_not_found;
+            throw XMPPError(condition: .item_not_found);
         }
         
         session.contentModified(action: action, contents: contents, bundle: bundle);
@@ -260,7 +264,7 @@ class JingleManager: JingleSessionManager {
  
     func sessionInfo(for context: Context, with jid: JID, sid: String, info: [Jingle.SessionInfo]) throws {
         guard let session = self.session(for: context, with: jid, sid: sid) else {
-            throw XMPPError.item_not_found;
+            throw XMPPError(condition: .item_not_found);
         }
         
         session.sessionInfoReceived(info: info);
@@ -271,7 +275,7 @@ class JingleManager: JingleSessionManager {
 extension JingleManager {
 
     func session(forCall call: Call) -> Session? {
-        return dispatcher.sync {
+        return queue.sync {
             return self.connections.first(where: { $0.account == call.account && $0.jid.bareJid == call.jid && $0.sid == call.sid });
         }
     }

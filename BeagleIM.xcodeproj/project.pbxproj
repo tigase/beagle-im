@@ -27,6 +27,8 @@
 		FE10BCED23FAA86900E214F3 /* InvitationCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCEC23FAA86900E214F3 /* InvitationCellView.swift */; };
 		FE10BCEF23FAB13800E214F3 /* InvitationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCEE23FAB13800E214F3 /* InvitationsManager.swift */; };
 		FE10BCF123FC495700E214F3 /* db-schema-8.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE10BCF023FC495700E214F3 /* db-schema-8.sql */; };
+		FE1252AF2D2C14B300500FF6 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1252AE2D2C14B000500FF6 /* Account.swift */; };
+		FE1252B12D2C152900500FF6 /* ServerFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1252B02D2C152500500FF6 /* ServerFeature.swift */; };
 		FE137A4621F5FE05006B7F7C /* ShowMainWindowSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4521F5FE05006B7F7C /* ShowMainWindowSegue.swift */; };
 		FE14044325601BB000BE77E8 /* Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE14044225601BB000BE77E8 /* Chat.swift */; };
 		FE14044925601F9300BE77E8 /* Conversation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE14044825601F9300BE77E8 /* Conversation.swift */; };
@@ -126,6 +128,8 @@
 		FE65A283230314D9001E68EF /* SettingsTabViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE65A282230314D9001E68EF /* SettingsTabViewController.swift */; };
 		FE67E1C325A8E120005D034C /* NotificationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE67E1C225A8E120005D034C /* NotificationsManager.swift */; };
 		FE68418C25DA9B0F0042392E /* HttpFileUploadModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE68418B25DA9B0F0042392E /* HttpFileUploadModule.swift */; };
+		FE69BBB32D2D6E7D008BC5F9 /* DBAccountStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE69BBB22D2D6E79008BC5F9 /* DBAccountStore.swift */; };
+		FE69BBB52D2D6F29008BC5F9 /* db-schema-17.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE69BBB42D2D6F1E008BC5F9 /* db-schema-17.sql */; };
 		FE6E6BF721384D5F003B1696 /* AutoresizingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */; };
 		FE6E6BF821384D5F003B1696 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE321384D5E003B1696 /* ViewController.swift */; };
 		FE6E6BF921384D5F003B1696 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6E6BE421384D5E003B1696 /* AvatarView.swift */; };
@@ -245,7 +249,6 @@
 		FEEF25322264A80500202B28 /* OMEMOController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25312264A80500202B28 /* OMEMOController.swift */; };
 		FEEF25362266303A00202B28 /* OMEMOIdentititesTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25352266303A00202B28 /* OMEMOIdentititesTableView.swift */; };
 		FEEF25392266528E00202B28 /* ContactDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEEF25382266528E00202B28 /* ContactDetailsViewController.swift */; };
-		FEF5C3FA22632C0000889863 /* OpenSSL_AES_GCM_Engine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF5C3F922632C0000889863 /* OpenSSL_AES_GCM_Engine.swift */; };
 		FEF844742173B9DC0067B005 /* Markdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF844732173B9DC0067B005 /* Markdown.swift */; };
 		FEF8BED2216A6761001DA755 /* InviteToGroupchatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF8BED1216A6761001DA755 /* InviteToGroupchatController.swift */; };
 		FEF9CE1D2082765000B09B6C /* db-schema-1.sql in Resources */ = {isa = PBXBuildFile; fileRef = FEF9CE1C2082765000B09B6C /* db-schema-1.sql */; };
@@ -320,6 +323,8 @@
 		FE10BCEC23FAA86900E214F3 /* InvitationCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationCellView.swift; sourceTree = "<group>"; };
 		FE10BCEE23FAB13800E214F3 /* InvitationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationsManager.swift; sourceTree = "<group>"; };
 		FE10BCF023FC495700E214F3 /* db-schema-8.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-8.sql"; sourceTree = "<group>"; };
+		FE1252AE2D2C14B000500FF6 /* Account.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
+		FE1252B02D2C152500500FF6 /* ServerFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerFeature.swift; sourceTree = "<group>"; };
 		FE137A4521F5FE05006B7F7C /* ShowMainWindowSegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowMainWindowSegue.swift; sourceTree = "<group>"; };
 		FE14044225601BB000BE77E8 /* Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chat.swift; sourceTree = "<group>"; };
 		FE14044825601F9300BE77E8 /* Conversation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Conversation.swift; sourceTree = "<group>"; };
@@ -427,6 +432,8 @@
 		FE65A282230314D9001E68EF /* SettingsTabViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTabViewController.swift; sourceTree = "<group>"; };
 		FE67E1C225A8E120005D034C /* NotificationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsManager.swift; sourceTree = "<group>"; };
 		FE68418B25DA9B0F0042392E /* HttpFileUploadModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HttpFileUploadModule.swift; sourceTree = "<group>"; };
+		FE69BBB22D2D6E79008BC5F9 /* DBAccountStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBAccountStore.swift; sourceTree = "<group>"; };
+		FE69BBB42D2D6F1E008BC5F9 /* db-schema-17.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-17.sql"; sourceTree = "<group>"; };
 		FE6E6BE221384D5E003B1696 /* AutoresizingTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoresizingTextField.swift; sourceTree = "<group>"; };
 		FE6E6BE321384D5E003B1696 /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		FE6E6BE421384D5E003B1696 /* AvatarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
@@ -556,7 +563,6 @@
 		FEEF25312264A80500202B28 /* OMEMOController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OMEMOController.swift; sourceTree = "<group>"; };
 		FEEF25352266303A00202B28 /* OMEMOIdentititesTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OMEMOIdentititesTableView.swift; sourceTree = "<group>"; };
 		FEEF25382266528E00202B28 /* ContactDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactDetailsViewController.swift; sourceTree = "<group>"; };
-		FEF5C3F922632C0000889863 /* OpenSSL_AES_GCM_Engine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OpenSSL_AES_GCM_Engine.swift; sourceTree = "<group>"; };
 		FEF844732173B9DC0067B005 /* Markdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Markdown.swift; sourceTree = "<group>"; };
 		FEF8BED1216A6761001DA755 /* InviteToGroupchatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteToGroupchatController.swift; sourceTree = "<group>"; };
 		FEF9CE1C2082765000B09B6C /* db-schema-1.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-1.sql"; sourceTree = "<group>"; };
@@ -604,6 +610,7 @@
 		FE14044125601B9800BE77E8 /* model */ = {
 			isa = PBXGroup;
 			children = (
+				FE1252AE2D2C14B000500FF6 /* Account.swift */,
 				FE8F7CE62562F8850076C13E /* history */,
 				FE8F7CE52562F86C0076C13E /* conversations */,
 				FE75AA892587CD8E002B59AE /* DisplayableIdProtocol.swift */,
@@ -730,6 +737,7 @@
 		FE6E6BE521384D5E003B1696 /* utils */ = {
 			isa = PBXGroup;
 			children = (
+				FE1252B02D2C152500500FF6 /* ServerFeature.swift */,
 				FEC135E7261254CF00054666 /* combine */,
 				FE89341325DD338C004E38B0 /* crypto */,
 				FE6E6BE621384D5E003B1696 /* AccountManager.swift */,
@@ -813,6 +821,7 @@
 		FE6E6BF121384D5E003B1696 /* database */ = {
 			isa = PBXGroup;
 			children = (
+				FE69BBB22D2D6E79008BC5F9 /* DBAccountStore.swift */,
 				FE14044125601B9800BE77E8 /* model */,
 				FE6E6BF221384D5E003B1696 /* DBChatHistoryStore.swift */,
 				FED2A95125F00158008828E4 /* DBChatMarkersStore.swift */,
@@ -890,7 +899,6 @@
 				FE89341625DD3C07004E38B0 /* SSLCertificate.swift */,
 				FE89341825DD3C07004E38B0 /* SSLContext.swift */,
 				FE89341725DD3C07004E38B0 /* SSLProcessor.swift */,
-				FEF5C3F922632C0000889863 /* OpenSSL_AES_GCM_Engine.swift */,
 			);
 			path = crypto;
 			sourceTree = "<group>";
@@ -1008,6 +1016,7 @@
 				FE32A94624702D5B00E40BB1 /* db-schema-10.sql */,
 				FE31409524952DD0007C5CBC /* db-schema-11.sql */,
 				FE2E3D5826091D4900805F68 /* db-schema-13.sql */,
+				FE69BBB42D2D6F1E008BC5F9 /* db-schema-17.sql */,
 				FE0AE0BA26B0379F0010D2E2 /* Conversation.storyboard */,
 				FE0AE0BF26B038340010D2E2 /* ConversationDetails.storyboard */,
 				FE0AE12C26B0828A0010D2E2 /* SearchHistory.storyboard */,
@@ -1246,6 +1255,7 @@
 				FE6201E623AA43C900C965A5 /* db-schema-7.sql in Resources */,
 				FEFFF7CF23313B52004CB9CE /* db-schema-5.sql in Resources */,
 				FE2E3D5926091D4900805F68 /* db-schema-13.sql in Resources */,
+				FE69BBB52D2D6F29008BC5F9 /* db-schema-17.sql in Resources */,
 				FE17870724DECE3400C4012C /* incomingCall.mp3 in Resources */,
 				FEF9CE1D2082765000B09B6C /* db-schema-1.sql in Resources */,
 				FE25B1712350D2FC00CD69CA /* db-schema-6.sql in Resources */,
@@ -1335,7 +1345,6 @@
 				FE2ACA862355C5DA004623BC /* NSTableViewCustomGrid.swift in Sources */,
 				FE41FB31215AB32200AD86D3 /* ServerCertificateInfo.swift in Sources */,
 				FE9CB700238700E2008F1049 /* BlockedViewController.swift in Sources */,
-				FEF5C3FA22632C0000889863 /* OpenSSL_AES_GCM_Engine.swift in Sources */,
 				FE2809852169FB75002F5BD0 /* Alert.swift in Sources */,
 				FE8F7CE82562F8A60076C13E /* ConversationEntry.swift in Sources */,
 				FE89341A25DD3C07004E38B0 /* SSLProcessor.swift in Sources */,
@@ -1443,6 +1452,7 @@
 				FEA2998A25BC3C940021865E /* MixParticipant+AvatarPublisher.swift in Sources */,
 				FE6E6BF821384D5F003B1696 /* ViewController.swift in Sources */,
 				FE75CD602545E6A90064A733 /* MediaHelper.swift in Sources */,
+				FE69BBB32D2D6E7D008BC5F9 /* DBAccountStore.swift in Sources */,
 				FEA153BC26E299C5009D8140 /* CaptureDeviceManager.swift in Sources */,
 				FE9486B221BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift in Sources */,
 				FE34BBD12157901100775B07 /* JabberDataFormView.swift in Sources */,
@@ -1458,6 +1468,7 @@
 				FE30309E2447517A003B9D76 /* RosterWindowController.swift in Sources */,
 				FED2A95225F00159008828E4 /* DBChatMarkersStore.swift in Sources */,
 				FE5BE64C213AC3EA00463183 /* ChatsCellViewCloseButton.swift in Sources */,
+				FE1252B12D2C152900500FF6 /* ServerFeature.swift in Sources */,
 				FE75CD702549E9BE0064A733 /* SharingTaskManager.swift in Sources */,
 				FE3AA0D12154077D001667A9 /* ChatsListGroupAbstractChat.swift in Sources */,
 				FE8F7CF425645C450076C13E /* ConversationEntryEncryption.swift in Sources */,
@@ -1519,6 +1530,7 @@
 				FEEF25362266303A00202B28 /* OMEMOIdentititesTableView.swift in Sources */,
 				FEB4EAFC2162A3DC00F8A9E2 /* AutoresizineTextView.swift in Sources */,
 				FEB994AF2413A03D00B8E7A7 /* ChannelEditConfigViewController.swift in Sources */,
+				FE1252AF2D2C14B300500FF6 /* Account.swift in Sources */,
 				FE2ACA842355B967004623BC /* EditKeywordsController.swift in Sources */,
 				FEC336F5240A78AB00EC1A0D /* ChannelEditInfoViewController.swift in Sources */,
 				FEB4EAFE2163714300F8A9E2 /* RoundedScrollView.swift in Sources */,

@@ -95,7 +95,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         buddyAvatarView.displayableId = conversation;
         chat.descriptionPublisher.map({ $0 ?? "" }).assign(to: \.stringValue, on: buddyStatusLabel).store(in: &cancellables);
         chat.descriptionPublisher.assign(to: \.toolTip, on: buddyStatusLabel).store(in: &cancellables);
-        buddyJidLabel.title = jid.stringValue;
+        buddyJidLabel.title = jid.description;
 
         buddyAvatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
         
@@ -158,7 +158,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         guard let message = self.chat.changeChatState(state: chatState) else {
             return;
         }
-        chat.context?.module(.message).write(message);
+        chat.context?.module(.message).write(stanza: message);
     }
 
     override func textDidChange(_ notification: Notification) {

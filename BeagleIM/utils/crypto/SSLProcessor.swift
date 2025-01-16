@@ -23,6 +23,7 @@ import Foundation
 import Martin
 import OpenSSL
 import TigaseLogging
+import CryptoKit
 
 public enum TLSVersion: Comparable, CaseIterable {
     case TLSv1
@@ -187,6 +188,10 @@ open class SSLProcessor: ConnectorBase.NetworkProcessor, SSLNetworkProcessor {
     
     public var certificateValidation: SSLCertificateValidation = .default;
     public var certificateValidationFailed: ((SecTrust?)->Void)?;
+    public var supportedChannelBindings: [Martin.ChannelBinding] {
+        guard state == .active else { return [] }
+        return [.tlsExporter, .tlsServerEndPoint];
+    }
     
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "SSLProcessor");
     
@@ -331,6 +336,61 @@ open class SSLProcessor: ConnectorBase.NetworkProcessor, SSLNetworkProcessor {
             state = .closed;
             writeDataToNetwork(completion: .none);
         }
+    }
+    
+    open func peerCertificate() throws -> Martin.SSLCertificate {
+        guard let cert = getPeerCertificate() else {
+            throw XMPPError(condition: .item_not_found);
+        }
+        return cert;
+    }
+        
+    public func channelBindingData(type: Martin.ChannelBinding) throws -> Data {
+        switch type {
+        case .tlsServerEndPoint:
+            return try tlsServerEndPointData();
+        case .tlsExporter:
+            return try tlsExporterData();
+        case .tlsUnique:
+            throw XMPPError(condition: .feature_not_implemented);
+        }
+    }
+    
+    private func tlsServerEndPointData() throws -> Data {
+        let certificate = try peerCertificate();
+        guard let data = certificate.derCertificateData() else {
+            throw XMPPError(condition: .item_not_found);
+        }
+        let fullAlgName = certificate.algorithmName;
+        guard let range = fullAlgName.range(of: "with", options: [.caseInsensitive])else {
+            throw XMPPError(condition: .internal_server_error);
+        }
+        let algName = String(fullAlgName[fullAlgName.startIndex..<range.lowerBound]).uppercased();
+        switch algName {
+        case "SHA1", "MD5", "SHA256":
+            return Data(SHA256.hash(data: data));
+        case "SHA384":
+            return Data(SHA384.hash(data: data));
+        case "SHA512":
+            return Data(SHA512.hash(data: data));
+        default:
+            throw XMPPError(condition: .feature_not_implemented);
+        }
+    }
+
+    private func tlsExporterData() throws -> Data {
+        let label = "EXPORTER-Channel-Binding".data(using: .ascii)!;
+        let labelLength = label.count;
+        var data = [UInt8](repeating: 0, count: 32);
+        let ctx = [UInt8](repeating: 0, count: 0);
+        guard ctx.withUnsafeBytes({ ctxPtr in
+            label.withUnsafeBytes({ labelPtr in
+                SSL_export_keying_material(ssl, &data, 32, labelPtr.baseAddress!.assumingMemoryBound(to: UInt8.self), labelLength, ctxPtr.baseAddress!.assumingMemoryBound(to: UInt8.self), 0, Int32(1))
+                })
+        }) > 0 else {
+            throw XMPPError(condition: .item_not_found);
+        }
+        return Data(data);
     }
     
     open func getPeerCertificate() -> SSLCertificate? {

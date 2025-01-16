@@ -23,6 +23,7 @@ import AppKit
 import Martin
 import Combine
 import TigaseLogging
+import CryptoKit
 
 struct AvatarWeakRef {
     weak var avatar: Avatar?;
@@ -129,7 +130,7 @@ class AvatarManager {
     // Having a separate storage for images is good as it caches loaded images without the impact on the app.
     // However I wonder how ofter the app will load images as it would use cached version in avatar manager..
     
-    fileprivate var dispatcher = QueueDispatcher(label: "avatar_manager", attributes: .concurrent);
+    fileprivate var queue = DispatchQueue(label: "avatar_manager", attributes: .concurrent);
 
     public init() {
         NotificationCenter.default.addObserver(self, selector: #selector(vcardUpdated), name: DBVCardStore.VCARD_UPDATED, object: nil);
@@ -137,7 +138,7 @@ class AvatarManager {
 
     private var avatars: [Avatar.Key: AvatarWeakRef] = [:];
     open func avatarPublisher(for key: Avatar.Key) -> Avatar {
-        return dispatcher.sync(flags: .barrier) {
+        return queue.sync(flags: .barrier) {
             guard let avatar = avatars[key]?.avatar else {
                 let avatar = Avatar(key: key);
                 DispatchQueue.global(qos: .userInitiated).async {
@@ -151,13 +152,13 @@ class AvatarManager {
     }
     
     open func existingAvatarPublisher(for key: Avatar.Key) -> Avatar? {
-        return dispatcher.sync {
+        return queue.sync {
             return avatars[key]?.avatar;
         }
     }
     
     open func releasePublisher(for key: Avatar.Key) {
-        dispatcher.async(flags: .barrier) {
+        queue.async(flags: .barrier) {
             self.avatars.removeValue(forKey: key);
         }
     }
@@ -207,12 +208,12 @@ class AvatarManager {
         return store.avatar(for: hash);
     }
     
-    open func avatar(withHash hash: String, completionHandler: @escaping (Result<NSImage,ErrorCondition>)->Void) {
+    open func avatar(withHash hash: String, completionHandler: @escaping (Result<NSImage,XMPPError>)->Void) {
         store.avatar(for: hash, completionHandler: completionHandler);
     }
     
     open func storeAvatar(data: Data) -> String {
-        let hash = Digest.sha1.digest(toHex: data)!;
+        let hash = Insecure.SHA1.hash(toHex: data);
         self.store.storeAvatar(data: data, for: hash);
         NotificationCenter.default.post(name: AvatarManager.AVATAR_FOR_HASH_CHANGED, object: hash);
         return hash;
@@ -284,11 +285,10 @@ class AvatarManager {
         guard let pepModule = XmppService.instance.getClient(for: account)?.module(.pepUserAvatar) else {
             return;
         }
-
         pepModule.retrieveAvatar(from: jid, itemId: hash, completionHandler: { result in
             switch result {
-            case .success((let hash, let data)):
-                self.store.storeAvatar(data: data, for: hash);
+            case .success(let avatarData):
+                self.store.storeAvatar(data: avatarData.data, for: hash);
                 self.updateAvatar(hash: hash, forType: .pepUserAvatar, forJid: jid, on: account);
             case .failure(let error):
                 self.logger.error("could not retrieve avatar, got error: \(error.description)");

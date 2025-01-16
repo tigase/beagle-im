@@ -58,7 +58,7 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
         group.enter();
         for aff in affiliations {
             group.enter();
-            mucModule.getRoomAffiliations(from: room, with: aff, completionHandler: { result in
+            mucModule.roomAffiliations(from: room, with: aff, completionHandler: { result in
                 switch result {
                 case .success(let affiliations):
                     DispatchQueue.main.async {
@@ -100,7 +100,7 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
             guard let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ManageAffiliationsColumnJidView"), owner: self) as? NSTableCellView else {
                 return nil;
             }
-            view.textField?.stringValue = visibleAffiliations[row].jid.stringValue;
+            view.textField?.stringValue = visibleAffiliations[row].jid.description;
             return view;
         case "ManageAffiliationsColumnAffiliation":
             guard let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ManageAffiliationsColumnAffiliationView"), owner: self) as? NSTableCellView else {
@@ -136,12 +136,12 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
     
     @objc fileprivate func updateVisibleAffiliations() {
         self.affiliations.sort(by: { (a1, a2) -> Bool in
-            return a1.jid.stringValue.compare(a2.jid.stringValue) == .orderedAscending
+            return a1.jid.description.compare(a2.jid.description) == .orderedAscending
         });
         let searchString = self.searchField.stringValue;
         if !searchString.isEmpty {
             self.visibleAffiliations = self.affiliations.filter({ (item) -> Bool in
-                return item.jid.stringValue.contains(searchString);
+                return item.jid.description.contains(searchString);
             });
         } else {
             self.visibleAffiliations = self.affiliations;
@@ -266,7 +266,7 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
         
         self.progressIndicator.startAnimation(nil);
         
-        mucModule.setRoomAffiliations(to: room, changedAffiliations: changes, completionHandler: { result in
+        mucModule.roomAffiliations(changes, to: room, completionHandler: { result in
             DispatchQueue.main.async {
                 self.progressIndicator.stopAnimation(nil);
                 switch result {
@@ -276,7 +276,7 @@ class ManageAffiliationsViewController: NSViewController, NSTableViewDataSource,
                     let alert = NSAlert();
                     alert.icon = NSImage(named: NSImage.cautionName);
                     alert.messageText = NSLocalizedString("Error occurred", comment: "alert window title");
-                    alert.informativeText = (error == .forbidden()) ? NSLocalizedString("You are not allowed to modify list of affiliations for this room.", comment: "alert window message") : String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert window message"), error.localizedDescription);
+                    alert.informativeText = (error.condition == .forbidden) ? NSLocalizedString("You are not allowed to modify list of affiliations for this room.", comment: "alert window message") : String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "alert window message"), error.localizedDescription);
                     alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                     alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
                 }

@@ -63,7 +63,7 @@ open class OMEMOContoller: NSViewController, AccountAware, NSTableViewDataSource
             return;
         }
         let omemoModule: OMEMOModule? = XmppService.instance.getClient(for: account)?.module(.omemo);
-        var fingerprint = keyPair.publicKey?.map { (byte) -> String in
+        var fingerprint = keyPair.publicKeyData?.map { (byte) -> String in
             return String(format: "%02x", byte)
             }.dropFirst(1).joined();
 
@@ -71,14 +71,16 @@ open class OMEMOContoller: NSViewController, AccountAware, NSTableViewDataSource
             fingerprint = self.remoteIdentitiesTableView.prettify(fingerprint: fingerprint!);
         }
         
-        deviceId.stringValue = "\(NSLocalizedString("Device", comment: "device")): \(AccountSettings.omemoRegistrationId(account).uint32() ?? 0)";
+        let omemoDeviceId = AccountManager.account(for: account)?.omemoDeviceId ?? 0
+        
+        deviceId.stringValue = "\(NSLocalizedString("Device", comment: "device")): \(omemoDeviceId)";
         
         localFingerprint.stringValue = fingerprint ?? NSLocalizedString("Key not generated!", comment: "OMEMO settings");
         localFingerprint.textColor = (omemoModule?.isReady ?? false) ?  NSColor.labelColor : NSColor.secondaryLabelColor;
         
-        if let tmp = AccountSettings.omemoRegistrationId(account).uint32() {
-            let jid = self.account!.stringValue;
-            let localDeviceId = Int32(bitPattern: tmp);
+        if omemoDeviceId != 0 {
+            let jid = self.account!.description;
+            let localDeviceId = Int32(bitPattern: omemoDeviceId);
             self.remoteIdentitiesTableView.identities = DBOMEMOStore.instance.identities(forAccount: self.account!, andName: jid).filter({ (identity) -> Bool in
                 return identity.address.deviceId != localDeviceId;
             })

@@ -38,7 +38,7 @@ class ChannelEditInfoViewController: NSViewController, ChannelAwareProtocol {
         didSet {
             nameField.stringValue = info.name ?? "";
             descriptionField.stringValue = info.description ?? "";
-            avatarButton.name = channel.name ?? channel.channelJid.stringValue;
+            avatarButton.name = channel.name ?? channel.channelJid.description;
         }
     }
     
@@ -50,7 +50,7 @@ class ChannelEditInfoViewController: NSViewController, ChannelAwareProtocol {
         
         NotificationCenter.default.addObserver(self, selector: #selector(avatarChanged(_:)), name: AvatarManager.AVATAR_CHANGED, object: nil);
         
-        avatarButton.name = channel.name ?? channel.channelJid.stringValue;
+        avatarButton.name = channel.name ?? channel.channelJid.description;
         avatarButton.image = AvatarManager.instance.avatar(for: channel.channelJid, on: channel.account);
         self.submitButton.isEnabled = false;
         progressIndicator.startAnimation(self);
@@ -64,15 +64,15 @@ class ChannelEditInfoViewController: NSViewController, ChannelAwareProtocol {
                 DispatchQueue.main.async {
                     self?.info = info;
                 }
-            case .failure(let errorCondition):
-                guard errorCondition != .item_not_found, let that = self else {
+            case .failure(let error):
+                guard error.condition != .item_not_found, let that = self else {
                     return;
                 }
                 DispatchQueue.main.async {
                     let alert = NSAlert();
                     alert.alertStyle = .warning;
                     alert.messageText = NSLocalizedString("Could not retrieve details", comment: "alert window title")
-                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to retrieve channel details: %@", comment: "alert window message"), errorCondition.localizedDescription);
+                    alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to retrieve channel details: %@", comment: "alert window message"), error.localizedDescription);
                     alert.beginSheetModal(for: that.view.window!, completionHandler: { response in
                         that.dismiss(that);
                     })

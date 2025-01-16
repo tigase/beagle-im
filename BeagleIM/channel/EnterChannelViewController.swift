@@ -52,7 +52,7 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
     override func viewWillAppear() {
         super.viewWillAppear();
         refreshTitle();
-        nicknameField.stringValue = suggestedNickname ?? AccountManager.getAccount(for: account)?.nickname ?? "";
+        nicknameField.stringValue = suggestedNickname ?? AccountManager.account(for: account)?.nickname ?? "";
         passwordField.stringValue = password ?? "";
     
         refreshPasswordVisibility();
@@ -64,7 +64,7 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
         
         if let client = XmppService.instance.getClient(for: account), !isCreation  {
             self.progressIndicator.startAnimation(self);
-            client.module(.disco).getInfo(for: JID(channelJid!), completionHandler: { [weak self] result in
+            client.module(.disco).info(for: JID(channelJid!), completionHandler: { [weak self] result in
                 DispatchQueue.main.async {
                     switch result {
                     case .success(let info):
@@ -93,7 +93,7 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
     }
     
     private func refreshTitle() {
-        titleLabel.stringValue = String.localizedStringWithFormat(NSLocalizedString("Joining channel %@", comment: "window title"), channelName ?? info?.identities.first?.name ?? channelJid.stringValue)
+        titleLabel.stringValue = String.localizedStringWithFormat(NSLocalizedString("Joining channel %@", comment: "window title"), channelName ?? info?.identities.first?.name ?? channelJid.description)
     }
     
     func controlTextDidChange(_ obj: Notification) {
@@ -117,7 +117,7 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
         let password = passwordField.stringValue.isEmpty ? nil : passwordField.stringValue;
         let channelJid = channelJid!;
      
-        join(client: client, channelJid: channelJid, channelName: info?.identities.first?.name, nickname: nickname, password: password, features: info?.features ?? [], formElement: info?.form?.element)
+        join(client: client, channelJid: channelJid, channelName: info?.identities.first?.name, nickname: nickname, password: password, features: info?.features ?? [], form: info?.form)
     }
     
     @IBAction func createBookmarkChanged(_ sender: NSButton) {
@@ -144,25 +144,27 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
         }
     }
     
-    private func join(client: XMPPClient, channelJid: BareJID, channelName: String?, nickname: String, password: String?, features: [String], formElement: Element?) {
+    private func join(client: XMPPClient, channelJid: BareJID, channelName: String?, nickname: String, password: String?, features: [String], form: DataForm?) {
         self.progressIndicator.startAnimation(self);
         let createBookmark = bookmarkCreateButton.isEnabled && bookmarkCreateButton.state == .on;
         let autojoin = bookmarkAutojoinButton.isEnabled && bookmarkAutojoinButton.state == .on;
         switch componentType {
         case .muc:
             let room = channelJid;
-            let result = client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname, password: passwordField.stringValue);
-            result.handle({ [weak self] r in
-                switch r {
-                case .success(let roomResult):
+            Task {
+                do {
+                    let roomResult = try await client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname, password: passwordField.stringValue);
                     switch roomResult {
                     case .created(let room), .joined(let room):
                         (room as! Room).roomFeatures = Set(features.compactMap({ Room.Feature(rawValue: $0) }));
-                        if let formElement = formElement, let config = RoomConfig(element: formElement), let allowPM = config.allowPM {
-                            (room as! Room).allowedPM = allowPM;
+                        if let form = form {
+                            let config = RoomConfig(form: form)
+                            if let allowPM = config.allowPM {
+                                (room as! Room).allowedPM = allowPM;
+                            }
                         } else {
                             (room as! Room).allowedPM = .none;
-                            client.module(.muc).roomConfiguration(roomJid: JID(room.jid), completionHandler: { result in
+                            client.module(.muc).roomConfiguration(of: JID(room.jid), completionHandler: { result in
                                 switch result {
                                 case .success(let config):
                                     (room as! Room).allowedPM = config.allowPM ?? .none;
@@ -173,17 +175,19 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
                         }
                     }
                     if createBookmark {
-                        client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: channelName ?? room.localPart ?? room.stringValue, jid: JID(room), autojoin: autojoin, nick: nickname, password: password));
+                        Task {
+                            try? await client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: channelName ?? room.localPart ?? room.description, jid: JID(room), autojoin: autojoin, nick: nickname, password: password));
+                        }
                     }
                     if let roomObj = client.module(.muc).roomManager.room(for: client, with: room) as? Room {
                         MucEventHandler.instance.updateRoomName(room: roomObj);
                     }
                     DispatchQueue.main.async {
-                        self?.close(returnCode: .OK);
+                        self.close(returnCode: .OK);
                     }
-                case .failure(let error):
+                } catch {
                     DispatchQueue.main.async {
-                        guard let window = self?.view.window else {
+                        guard let window = self.view.window else {
                             return;
                         }
                         
@@ -195,15 +199,15 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
                     }
                 }
                 DispatchQueue.main.async {
-                    self?.progressIndicator.stopAnimation(self);
+                    self.progressIndicator.stopAnimation(self);
                 }
-            })
+            }
         case .mix:
             client.module(.mix).join(channel: channelJid, withNick: nickname, completionHandler: { [weak self] result in
                 switch result {
                 case .success(_):
                     if let channel = DBChatStore.instance.channel(for: client, with: channelJid) {
-                        client.module(.disco).getItems(for: JID(channel.jid), completionHandler: { result in
+                        client.module(.disco).items(for: JID(channel.jid), completionHandler: { result in
                             switch result {
                             case .success(let info):
                                 channel.updateOptions({ options in

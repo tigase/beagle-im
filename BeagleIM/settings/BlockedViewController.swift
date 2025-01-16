@@ -92,7 +92,7 @@ class BlockedViewController: NSViewController, NSTableViewDataSource, NSTableVie
     func updateItems() {
         let val = searchField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines).lowercased();
         self.items = self.allItems.filter({ it in
-            return val.isEmpty || it.jid.stringValue.lowercased().contains(val) || it.account.stringValue.lowercased().contains(val);
+            return val.isEmpty || it.jid.description.lowercased().contains(val) || it.account.description.lowercased().contains(val);
         });
         tableView.reloadData();
     }
@@ -149,13 +149,13 @@ class BlockedViewController: NSViewController, NSTableViewDataSource, NSTableVie
     
     struct Item: Equatable, Comparable {
         static func < (i1: BlockedViewController.Item, i2: BlockedViewController.Item) -> Bool {
-            switch i1.jid.stringValue.compare(i2.jid.stringValue) {
+            switch i1.jid.description.compare(i2.jid.description) {
             case.orderedAscending:
                 return true;
             case .orderedDescending:
                 return false;
             case .orderedSame:
-                return i1.account.stringValue.compare(i2.account.stringValue) == .orderedAscending;
+                return i1.account.description.compare(i2.account.description) == .orderedAscending;
             }
         }
         
@@ -171,7 +171,7 @@ class BlockedTableCellView: NSTableCellView {
     @IBOutlet var accountLabel: NSTextField!
     
     func update(with item: BlockedViewController.Item) {
-        jidLabel.stringValue = item.jid.stringValue;
-        accountLabel.stringValue = String.localizedStringWithFormat(NSLocalizedString("using %@", comment: "settings"), item.account.stringValue);
+        jidLabel.stringValue = item.jid.description;
+        accountLabel.stringValue = String.localizedStringWithFormat(NSLocalizedString("using %@", comment: "settings"), item.account.description);
     }
 }

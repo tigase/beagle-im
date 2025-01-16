@@ -39,11 +39,11 @@ public protocol Conversation: ConversationProtocol, ConversationKey, Displayable
     
     var id: Int { get }
     var timestamp: Date { get }
-    var timestampPublisher: AnyPublisher<Date,Never> { get }
+    var timestampPublisher: Publishers.Map<Published<LastChatActivity>.Publisher, Date> { get }
     var unread: Int { get }
     var unreadPublisher: AnyPublisher<Int,Never> { get }
-    var lastActivity: LastConversationActivity? { get }
-    var lastActivityPublisher: Published<LastConversationActivity?>.Publisher { get }
+    var lastActivity: LastConversationActivity { get }
+    var lastActivityPublisher: Published<LastConversationActivity>.Publisher { get }
     
     var notifications: ConversationNotification { get }
     
@@ -56,7 +56,7 @@ public protocol Conversation: ConversationProtocol, ConversationKey, Displayable
     
     func mark(as markerType: ChatMarker.MarkerType, before: Date, by sender: ConversationEntrySender);
     func markAsRead(count: Int) -> Bool;
-    func update(lastActivity: LastConversationActivity?, timestamp: Date, isUnread: Bool) -> Bool;
+    func update(lastActivity: LastConversationActivity, isUnread: Bool) -> Bool;
     
     func sendMessage(text: String, correctedMessageOriginId: String?);
     func prepareAttachment(url: URL, completionHandler: @escaping (Result<(URL,Bool,((URL)->URL)?),ShareError>)->Void);
@@ -96,32 +96,87 @@ public enum ConversationType: Int {
 
 public typealias LastConversationActivity = LastChatActivity
 
-public enum LastChatActivity {
-    case message(String, direction: MessageDirection, sender: String?)
-    case attachment(String, direction: MessageDirection, sender: String?)
-    case invitation(String, direction: MessageDirection, sender: String?)
-    case location(String, direction: MessageDirection, sender: String?)
+public struct LastChatActivity {
+    let timestamp: Date;
+    let sender: ConversationEntrySender;
+    let payload: LastChatActivityType?;
     
-    static func from(itemType: ItemType?, data: String?, direction: MessageDirection, sender: String?) -> LastChatActivity? {
-        guard itemType != nil else {
-            return nil;
+    static func none(timestamp: Date) -> LastChatActivity {
+        return .init(timestamp: timestamp, sender: .none, payload: nil);
+    }
+    
+    static func from(timestamp: Date, itemType: ItemType?, data: String?, sender: ConversationEntrySender) -> LastChatActivity {
+        let type = LastChatActivityType.from(itemType: itemType, data: data);
+        return .init(timestamp: timestamp, sender: sender, payload: type);
+    }
+    
+}
+
+public enum LastChatActivityType {
+    case message(message: String)
+    case attachment
+    case invitation
+    case location
+    case retraction
+    
+    static func from(itemType: ItemType?, data: String?) -> LastChatActivityType? {
+        guard let itemType = itemType else {
+            return nil
         }
-        switch itemType! {
+
+        switch itemType {
         case .message:
-            return data == nil ? nil : .message(data!, direction: direction, sender: sender);
-        case .location:
-            return data == nil ? nil : .location(data!, direction: direction, sender: sender);
-        case .invitation:
-            return data == nil ? nil : .invitation(data!, direction: direction, sender: sender);
-        case .attachment:
-            return data == nil ? nil : .attachment(data!, direction: direction, sender: sender);
-        case .linkPreview:
+            if let data = data {
+                return .message(message: data);
+            }
             return nil;
+        case .location:
+            return .location;
+        case .invitation:
+            return .invitation;
+        case .attachment:
+            return .attachment;
         case .messageRetracted, .attachmentRetracted:
-            // TODO: Should we notify user that last message was retracted??
+            return .retraction;
+        case .linkPreview:
             return nil;
         }
     }
+    
+    static func from(_ payload: ConversationEntryPayload) -> LastChatActivityType? {
+           switch payload {
+           case .message(let message, _):
+               return .message(message: message);
+           case .attachment(_, _):
+               return .attachment
+           case .linkPreview(_):
+               return nil;
+           case .invitation(_, _):
+               return .invitation;
+           case .messageRetracted:
+               return .retraction;
+           case .deleted:
+               return nil;
+           case .unreadMessages:
+               return nil;
+           case .marker(_, _):
+               return nil;
+           case .location(_):
+               return .location;
+           }
+       }
+}
+
+extension LastChatActivityType {
+    
+    static func from(_ cursor: Cursor) -> LastChatActivityType? {
+        guard let itemType = ItemType(rawValue: cursor.int(for: "item_type") ?? -1) else {
+            return nil;
+        }
+        let encryption = DBChatHistoryStore.encryptionFrom(cursor: cursor);
+        return from(itemType: itemType, data: encryption.message() ?? cursor.string(for: "data"));
+    }
+    
 }
 
 typealias ConversationEncryption = ChatEncryption

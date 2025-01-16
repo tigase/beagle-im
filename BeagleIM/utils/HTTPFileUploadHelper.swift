@@ -73,7 +73,7 @@ class HTTPFileUploadHelper {
                     }
                 });
             case .failure(let error):
-                if error == .item_not_found {
+                if error.condition == .item_not_found {
                     completionHandler(.failure(.notSupported));
                 } else {
                     completionHandler(.failure(.unknownError));

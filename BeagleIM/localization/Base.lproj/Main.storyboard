@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="21507"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="23504"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -560,7 +560,7 @@ CA
                         <rect key="frame" x="0.0" y="0.0" width="323" height="656"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <searchField wantsLayer="YES" verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Yn-Fz-PdY" customClass="ContactSuggestionField" customModule="BeagleIM" customModuleProvider="target">
+                            <searchField wantsLayer="YES" focusRingType="none" verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Yn-Fz-PdY" customClass="ContactSuggestionField" customModule="BeagleIM" customModuleProvider="target">
                                 <rect key="frame" x="10" y="610" width="303" height="22"/>
                                 <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" placeholderString="Chat with.." usesSingleLineMode="YES" bezelStyle="round" id="0LB-vL-6OK">
                                     <font key="font" metaFont="system"/>
@@ -601,7 +601,7 @@ CA
                                                             <rect key="frame" x="11" y="0.0" width="301" height="26"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
-                                                                <textField horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="249" translatesAutoresizingMaskIntoConstraints="NO" id="few-Rx-jGm">
+                                                                <textField focusRingType="none" horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="249" translatesAutoresizingMaskIntoConstraints="NO" id="few-Rx-jGm">
                                                                     <rect key="frame" x="2" y="5" width="277" height="16"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="KoE-gC-vJV">
                                                                         <font key="font" metaFont="system"/>
@@ -614,16 +614,16 @@ CA
                                                                 </textField>
                                                                 <button wantsLayer="YES" horizontalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="oOC-Ng-C7n" customClass="OutlineGroupItemButton" customModule="BeagleIM" customModuleProvider="target">
                                                                     <rect key="frame" x="277" y="-1" width="22" height="28"/>
-                                                                    <constraints>
-                                                                        <constraint firstAttribute="width" secondItem="oOC-Ng-C7n" secondAttribute="height" multiplier="1:1" id="B5c-zU-U1O"/>
-                                                                        <constraint firstAttribute="width" constant="22" id="jsY-Xn-xyW"/>
-                                                                        <constraint firstAttribute="height" constant="22" id="pzy-wo-Ibu"/>
-                                                                    </constraints>
                                                                     <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="plus.circle" catalog="system" imagePosition="only" alignment="center" continuous="YES" imageScaling="proportionallyUpOrDown" inset="2" id="LNb-VG-NLr">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                         <font key="font" metaFont="systemLight" size="13"/>
                                                                     </buttonCell>
                                                                     <color key="contentTintColor" red="0.99999600649999998" green="1" blue="1" alpha="0.86445552147239269" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                    <constraints>
+                                                                        <constraint firstAttribute="width" secondItem="oOC-Ng-C7n" secondAttribute="height" multiplier="1:1" id="B5c-zU-U1O"/>
+                                                                        <constraint firstAttribute="width" constant="22" id="jsY-Xn-xyW"/>
+                                                                        <constraint firstAttribute="height" constant="22" id="pzy-wo-Ibu"/>
+                                                                    </constraints>
                                                                     <connections>
                                                                         <action selector="openNewChatClicked:" target="Mca-Bg-gzo" id="z5V-tg-1VH"/>
                                                                     </connections>
@@ -655,7 +655,7 @@ CA
                                                                 <stackView distribution="fill" orientation="horizontal" alignment="centerY" spacing="4" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vNu-J0-OhQ">
                                                                     <rect key="frame" x="38" y="3" width="259" height="28"/>
                                                                     <subviews>
-                                                                        <textField verticalHuggingPriority="751" horizontalCompressionResistancePriority="450" translatesAutoresizingMaskIntoConstraints="NO" id="yJL-Bb-WQF">
+                                                                        <textField focusRingType="none" verticalHuggingPriority="751" horizontalCompressionResistancePriority="450" translatesAutoresizingMaskIntoConstraints="NO" id="yJL-Bb-WQF">
                                                                             <rect key="frame" x="-2" y="6" width="174" height="16"/>
                                                                             <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="tys-Rk-VSO">
                                                                                 <font key="font" metaFont="systemMedium" size="13"/>
@@ -676,7 +676,7 @@ CA
                                                                                 <fragment content="#bc-ignore!"/>
                                                                             </attributedString>
                                                                         </button>
-                                                                        <textField horizontalHuggingPriority="750" verticalHuggingPriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="oya-v7-VQP">
+                                                                        <textField focusRingType="none" horizontalHuggingPriority="750" verticalHuggingPriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="oya-v7-VQP">
                                                                             <rect key="frame" x="194" y="7" width="67" height="15"/>
                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Timestamp" id="Gr8-JG-Zcj">
                                                                                 <font key="font" metaFont="cellTitle"/>
@@ -701,14 +701,14 @@ CA
                                                                 </stackView>
                                                                 <button hidden="YES" translatesAutoresizingMaskIntoConstraints="NO" id="EjG-ha-Gce" customClass="ChatsCellViewCloseButton" customModule="BeagleIM" customModuleProvider="target">
                                                                     <rect key="frame" x="276" y="-1" width="15" height="23"/>
-                                                                    <constraints>
-                                                                        <constraint firstAttribute="height" constant="17" id="WEr-D7-fIp"/>
-                                                                    </constraints>
                                                                     <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSStopProgressFreestandingTemplate" imagePosition="only" alignment="center" imageScaling="proportionallyDown" inset="2" id="fga-r0-xBJ">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                         <font key="font" metaFont="system"/>
                                                                     </buttonCell>
                                                                     <color key="contentTintColor" red="0.99999600649999998" green="1" blue="1" alpha="0.90173264953987731" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                    <constraints>
+                                                                        <constraint firstAttribute="height" constant="17" id="WEr-D7-fIp"/>
+                                                                    </constraints>
                                                                     <connections>
                                                                         <action selector="closeClicked:" target="kej-aM-Lf6" id="hj6-Of-ucq"/>
                                                                     </connections>
@@ -749,7 +749,7 @@ CA
                                                                 <stackView distribution="fill" orientation="horizontal" alignment="bottom" spacing="4" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="750" verticalHuggingPriority="750" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yIx-Rv-fQs">
                                                                     <rect key="frame" x="46" y="22" width="251" height="16"/>
                                                                     <subviews>
-                                                                        <textField verticalHuggingPriority="1000" horizontalCompressionResistancePriority="450" translatesAutoresizingMaskIntoConstraints="NO" id="D3j-uw-B0L">
+                                                                        <textField focusRingType="none" verticalHuggingPriority="1000" horizontalCompressionResistancePriority="450" translatesAutoresizingMaskIntoConstraints="NO" id="D3j-uw-B0L">
                                                                             <rect key="frame" x="-2" y="0.0" width="166" height="16"/>
                                                                             <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="UGU-nw-IC0">
                                                                                 <font key="font" metaFont="systemMedium" size="13"/>
@@ -770,7 +770,7 @@ CA
                                                                                 <fragment content="#bc-ignore!"/>
                                                                             </attributedString>
                                                                         </button>
-                                                                        <textField horizontalHuggingPriority="750" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="oSI-VI-tNH">
+                                                                        <textField focusRingType="none" horizontalHuggingPriority="750" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="oSI-VI-tNH">
                                                                             <rect key="frame" x="186" y="0.0" width="67" height="15"/>
                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Timestamp" id="nD8-L0-6Xz">
                                                                                 <font key="font" metaFont="cellTitle"/>
@@ -796,7 +796,7 @@ CA
                                                                         <real value="3.4028234663852886e+38"/>
                                                                     </customSpacing>
                                                                 </stackView>
-                                                                <textField verticalHuggingPriority="1000" horizontalCompressionResistancePriority="252" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xeB-4o-jRR" customClass="ChatCellViewMessage" customModule="BeagleIM" customModuleProvider="target">
+                                                                <textField focusRingType="none" verticalHuggingPriority="1000" horizontalCompressionResistancePriority="252" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xeB-4o-jRR" customClass="ChatCellViewMessage" customModule="BeagleIM" customModuleProvider="target">
                                                                     <rect key="frame" x="44" y="4" width="255" height="16"/>
                                                                     <textFieldCell key="cell" truncatesLastVisibleLine="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" title="Label" id="Iby-FV-qPb">
                                                                         <font key="font" metaFont="cellTitle"/>
@@ -809,14 +809,14 @@ CA
                                                                 </textField>
                                                                 <button hidden="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4RK-8D-qy0" customClass="ChatsCellViewCloseButton" customModule="BeagleIM" customModuleProvider="target">
                                                                     <rect key="frame" x="276" y="1" width="15" height="23"/>
-                                                                    <constraints>
-                                                                        <constraint firstAttribute="height" constant="17" id="2mq-bQ-9wb"/>
-                                                                    </constraints>
                                                                     <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSStopProgressFreestandingTemplate" imagePosition="only" alignment="center" imageScaling="proportionallyDown" inset="2" id="Gtd-n3-C8z">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                         <font key="font" metaFont="system"/>
                                                                     </buttonCell>
                                                                     <color key="contentTintColor" red="0.99999600649999998" green="1" blue="1" alpha="0.90234375" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                    <constraints>
+                                                                        <constraint firstAttribute="height" constant="17" id="2mq-bQ-9wb"/>
+                                                                    </constraints>
                                                                     <connections>
                                                                         <action selector="closeClicked:" target="ygv-yp-WvX" id="ymI-k0-9B2"/>
                                                                     </connections>
@@ -861,7 +861,7 @@ CA
                                                                 <stackView distribution="fill" orientation="horizontal" alignment="bottom" spacing="4" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="750" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="c57-yc-BTJ">
                                                                     <rect key="frame" x="52" y="33" width="245" height="16"/>
                                                                     <subviews>
-                                                                        <textField verticalHuggingPriority="751" horizontalCompressionResistancePriority="450" translatesAutoresizingMaskIntoConstraints="NO" id="m3j-Rb-M6x">
+                                                                        <textField focusRingType="none" verticalHuggingPriority="751" horizontalCompressionResistancePriority="450" translatesAutoresizingMaskIntoConstraints="NO" id="m3j-Rb-M6x">
                                                                             <rect key="frame" x="-2" y="0.0" width="160" height="16"/>
                                                                             <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="30Y-0J-enL">
                                                                                 <font key="font" metaFont="systemMedium" size="13"/>
@@ -882,7 +882,7 @@ CA
                                                                                 <fragment content="#bc-ignore!"/>
                                                                             </attributedString>
                                                                         </button>
-                                                                        <textField horizontalHuggingPriority="750" verticalHuggingPriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="PqR-oy-TGv">
+                                                                        <textField focusRingType="none" horizontalHuggingPriority="750" verticalHuggingPriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="PqR-oy-TGv">
                                                                             <rect key="frame" x="180" y="0.0" width="67" height="15"/>
                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Timestamp" id="uIX-uL-LSO">
                                                                                 <font key="font" metaFont="cellTitle"/>
@@ -908,7 +908,7 @@ CA
                                                                         <real value="3.4028234663852886e+38"/>
                                                                     </customSpacing>
                                                                 </stackView>
-                                                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ev0-pa-eYe" customClass="ChatCellViewMessage" customModule="BeagleIM" customModuleProvider="target">
+                                                                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ev0-pa-eYe" customClass="ChatCellViewMessage" customModule="BeagleIM" customModuleProvider="target">
                                                                     <rect key="frame" x="50" y="2" width="249" height="30"/>
                                                                     <constraints>
                                                                         <constraint firstAttribute="height" constant="30" id="erf-R0-Ebh"/>
@@ -924,14 +924,14 @@ CA
                                                                 </textField>
                                                                 <button hidden="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6hC-0e-VWh" customClass="ChatsCellViewCloseButton" customModule="BeagleIM" customModuleProvider="target">
                                                                     <rect key="frame" x="276" y="-1" width="15" height="23"/>
-                                                                    <constraints>
-                                                                        <constraint firstAttribute="height" constant="17" id="gZO-Ui-uaJ"/>
-                                                                    </constraints>
                                                                     <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSStopProgressFreestandingTemplate" imagePosition="only" alignment="center" imageScaling="proportionallyDown" inset="2" id="3NH-xT-l8D">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                         <font key="font" metaFont="system"/>
                                                                     </buttonCell>
                                                                     <color key="contentTintColor" red="0.99999600649999998" green="1" blue="1" alpha="0.90194833205521474" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                    <constraints>
+                                                                        <constraint firstAttribute="height" constant="17" id="gZO-Ui-uaJ"/>
+                                                                    </constraints>
                                                                     <connections>
                                                                         <action selector="closeClicked:" target="17j-oV-5uz" id="4Hf-Sb-Gdg"/>
                                                                     </connections>
@@ -972,7 +972,7 @@ CA
                                                                         <constraint firstAttribute="height" constant="40" id="L5J-vb-zwl"/>
                                                                     </constraints>
                                                                 </view>
-                                                                <textField horizontalHuggingPriority="750" verticalHuggingPriority="751" horizontalCompressionResistancePriority="450" translatesAutoresizingMaskIntoConstraints="NO" id="eJH-I6-lyx">
+                                                                <textField focusRingType="none" horizontalHuggingPriority="750" verticalHuggingPriority="751" horizontalCompressionResistancePriority="450" translatesAutoresizingMaskIntoConstraints="NO" id="eJH-I6-lyx">
                                                                     <rect key="frame" x="50" y="26" width="98" height="16"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="QEG-js-YBk">
                                                                         <font key="font" metaFont="systemMedium" size="13"/>
@@ -983,7 +983,7 @@ CA
                                                                         <fragment content="#bc-ignore!"/>
                                                                     </attributedString>
                                                                 </textField>
-                                                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aHi-hz-jH2" customClass="ChatCellViewMessage" customModule="BeagleIM" customModuleProvider="target">
+                                                                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aHi-hz-jH2" customClass="ChatCellViewMessage" customModule="BeagleIM" customModuleProvider="target">
                                                                     <rect key="frame" x="50" y="9" width="50" height="15"/>
                                                                     <constraints>
                                                                         <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="46" id="Gy5-ea-fGj"/>
@@ -1109,7 +1109,7 @@ CA
                                                 <constraint firstAttribute="width" constant="48" id="piD-qs-r8e"/>
                                             </constraints>
                                         </view>
-                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="249" translatesAutoresizingMaskIntoConstraints="NO" id="c6x-4d-M5h">
+                                        <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="249" translatesAutoresizingMaskIntoConstraints="NO" id="c6x-4d-M5h">
                                             <rect key="frame" x="159" y="38" width="67" height="14"/>
                                             <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="contact@jid" id="gde-5T-n8j">
                                                 <font key="font" metaFont="label" size="11"/>
@@ -1120,7 +1120,7 @@ CA
                                                 <fragment content="#bc-ignore!"/>
                                             </attributedString>
                                         </textField>
-                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="450" verticalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dWl-2m-reJ" customClass="ChatViewStatusView" customModule="BeagleIM" customModuleProvider="target">
+                                        <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="450" verticalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dWl-2m-reJ" customClass="ChatViewStatusView" customModule="BeagleIM" customModuleProvider="target">
                                             <rect key="frame" x="64" y="4" width="291" height="30"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="30" id="JjS-Ed-SUn"/>
@@ -1150,7 +1150,7 @@ AAAAAAEGA
                                         <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="wc2-40-Sj9">
                                             <rect key="frame" x="0.0" y="-2" width="361" height="5"/>
                                         </box>
-                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="Ep5-O8-NQN">
+                                        <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="Ep5-O8-NQN">
                                             <rect key="frame" x="64" y="38" width="91" height="16"/>
                                             <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Contact name" id="yXg-0b-XTX">
                                                 <font key="font" metaFont="systemMedium" size="13"/>
@@ -1163,41 +1163,37 @@ AAAAAAEGA
                                         </textField>
                                         <button translatesAutoresizingMaskIntoConstraints="NO" id="Qwi-MG-iw4" customClass="NSButtonNoSizeWhenHidden" customModule="BeagleIM" customModuleProvider="target">
                                             <rect key="frame" x="248" y="31.5" width="20" height="25"/>
-                                            <constraints>
-                                                <constraint firstAttribute="width" constant="20" id="1Xs-C1-KSf"/>
-                                                <constraint firstAttribute="height" constant="20" id="VTc-IQ-JYD"/>
-                                            </constraints>
                                             <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="phone.fill" catalog="system" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="UfN-ac-rpr">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="20" id="1Xs-C1-KSf"/>
+                                                <constraint firstAttribute="height" constant="20" id="VTc-IQ-JYD"/>
+                                            </constraints>
                                             <connections>
                                                 <action selector="audioCallClicked:" target="bJ4-ee-HmU" id="kea-Sz-CGh"/>
                                             </connections>
                                         </button>
                                         <button translatesAutoresizingMaskIntoConstraints="NO" id="ssk-lx-sxG" customClass="NSButtonNoSizeWhenHidden" customModule="BeagleIM" customModuleProvider="target">
                                             <rect key="frame" x="272" y="34" width="20" height="20"/>
-                                            <constraints>
-                                                <constraint firstAttribute="height" constant="20" id="Xjb-6G-aLp"/>
-                                                <constraint firstAttribute="width" constant="20" id="tVz-Vy-90I"/>
-                                            </constraints>
                                             <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="videoCall" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="Mce-Ds-e9n">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="20" id="Xjb-6G-aLp"/>
+                                                <constraint firstAttribute="width" constant="20" id="tVz-Vy-90I"/>
+                                            </constraints>
                                             <connections>
                                                 <action selector="videoCallClicked:" target="bJ4-ee-HmU" id="Vnd-wZ-TQi"/>
                                             </connections>
                                         </button>
                                         <popUpButton translatesAutoresizingMaskIntoConstraints="NO" id="a3Q-Lk-9ws" customClass="NSPopupButtonNoSizeWhenHidden" customModule="BeagleIM" customModuleProvider="target">
                                             <rect key="frame" x="311" y="34" width="40" height="20"/>
-                                            <constraints>
-                                                <constraint firstAttribute="height" constant="20" id="H6d-MS-gds"/>
-                                                <constraint firstAttribute="width" constant="35" id="YlP-P0-Kea"/>
-                                            </constraints>
                                             <popUpButtonCell key="cell" type="square" title="Scripts" bezelStyle="shadowlessSquare" imagePosition="only" alignment="left" lineBreakMode="truncatingTail" state="on" imageScaling="proportionallyDown" inset="2" pullsDown="YES" selectedItem="yUL-qX-nrr" id="Ars-Y9-ISx">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                <font key="font" metaFont="menu"/>
+                                                <font key="font" metaFont="message"/>
                                                 <menu key="menu" id="pYZ-o7-267">
                                                     <items>
                                                         <menuItem title="Scripts" state="on" image="list.dash" catalog="system" hidden="YES" id="yUL-qX-nrr">
@@ -1206,17 +1202,21 @@ AAAAAAEGA
                                                     </items>
                                                 </menu>
                                             </popUpButtonCell>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="20" id="H6d-MS-gds"/>
+                                                <constraint firstAttribute="width" constant="35" id="YlP-P0-Kea"/>
+                                            </constraints>
                                         </popUpButton>
                                         <button translatesAutoresizingMaskIntoConstraints="NO" id="3Nn-mJ-xo7">
                                             <rect key="frame" x="296" y="31" width="20" height="26"/>
-                                            <constraints>
-                                                <constraint firstAttribute="width" constant="20" id="5bj-k1-Zen"/>
-                                                <constraint firstAttribute="height" constant="20" id="8LT-ZX-c1R"/>
-                                            </constraints>
                                             <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="info.circle.fill" catalog="system" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="ceA-Pe-pIU">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="20" id="5bj-k1-Zen"/>
+                                                <constraint firstAttribute="height" constant="20" id="8LT-ZX-c1R"/>
+                                            </constraints>
                                             <connections>
                                                 <action selector="showInfoClicked:" target="bJ4-ee-HmU" id="Fcy-zE-Cgm"/>
                                             </connections>
@@ -1309,7 +1309,7 @@ AAAAAAEGA
                         <rect key="frame" x="0.0" y="0.0" width="426" height="275"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="AsZ-J9-j0y">
+                            <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="AsZ-J9-j0y">
                                 <rect key="frame" x="5" y="160" width="415" height="17"/>
                                 <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" refusesFirstResponder="YES" alignment="left" title="OMEMO fingerprints" id="Aza-ey-eM2">
                                     <font key="font" metaFont="systemMedium" size="13"/>
@@ -1349,7 +1349,7 @@ AAAAAAEGA
                                                             <rect key="frame" x="1" y="1" width="273" height="17"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
-                                                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="U94-jy-EaT">
+                                                                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="U94-jy-EaT">
                                                                     <rect key="frame" x="2" y="4" width="269" height="15"/>
                                                                     <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Table View Cell" id="QUP-bc-yrx">
                                                                         <font key="font" size="13" name="CourierNewPS-BoldMT"/>
@@ -1434,7 +1434,7 @@ AAAAAAEGA
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
-                            <textField horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="BSM-Rt-1ig">
+                            <textField focusRingType="none" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="BSM-Rt-1ig">
                                 <rect key="frame" x="6" y="254" width="380" height="17"/>
                                 <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="Am7-bY-Ipw">
                                     <font key="font" metaFont="systemMedium" size="15"/>
@@ -1445,7 +1445,7 @@ AAAAAAEGA
                                     <fragment content="#bc-ignore!"/>
                                 </attributedString>
                             </textField>
-                            <textField horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0FB-QR-fM1">
+                            <textField focusRingType="none" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0FB-QR-fM1">
                                 <rect key="frame" x="6" y="233" width="380" height="16"/>
                                 <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="jTO-BC-Tlr">
                                     <font key="font" metaFont="cellTitle"/>
@@ -1470,7 +1470,7 @@ AAAAAAEGA
                                     <gridCell row="ZRT-pw-cAd" column="alg-Cm-Ljq" id="hA6-ki-tZ5"/>
                                 </gridCells>
                             </gridView>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="JU7-1Y-3pX">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="JU7-1Y-3pX">
                                 <rect key="frame" x="6" y="213" width="410" height="16"/>
                                 <textFieldCell key="cell" lineBreakMode="clipping" title="Addresses" id="aoE-kL-UeZ">
                                     <font key="font" metaFont="systemMedium" size="13"/>
@@ -1480,14 +1480,14 @@ AAAAAAEGA
                             </textField>
                             <button translatesAutoresizingMaskIntoConstraints="NO" id="P49-pk-Awo">
                                 <rect key="frame" x="396" y="250.5" width="18.5" height="25"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="18" id="7ZT-rC-yDQ"/>
-                                    <constraint firstAttribute="width" constant="18" id="7fx-UR-fj2"/>
-                                </constraints>
                                 <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="arrow.clockwise" catalog="system" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="Q8b-bd-K6L">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="18" id="7ZT-rC-yDQ"/>
+                                    <constraint firstAttribute="width" constant="18" id="7fx-UR-fj2"/>
+                                </constraints>
                                 <connections>
                                     <action selector="refreshVCard:" target="Oev-CB-q1V" id="aCg-fl-B5u"/>
                                 </connections>
@@ -1564,7 +1564,7 @@ AAAAAAEGA
                         <rect key="frame" x="0.0" y="0.0" width="360" height="496"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="d1s-lh-Azm">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="d1s-lh-Azm">
                                 <rect key="frame" x="18" y="470" width="157" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Select bookmark to join" id="TFF-An-cnY">
                                     <font key="font" metaFont="systemBold"/>
@@ -1612,7 +1612,7 @@ AAAAAAEGA
                                                                     </constraints>
                                                                     <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="aHq-rO-vaX"/>
                                                                 </imageView>
-                                                                <textField verticalHuggingPriority="1000" horizontalCompressionResistancePriority="450" translatesAutoresizingMaskIntoConstraints="NO" id="33s-Dd-60K">
+                                                                <textField focusRingType="none" verticalHuggingPriority="1000" horizontalCompressionResistancePriority="450" translatesAutoresizingMaskIntoConstraints="NO" id="33s-Dd-60K">
                                                                     <rect key="frame" x="58" y="31" width="105" height="16"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Bookmark name" id="e10-1Y-z3C">
                                                                         <font key="font" metaFont="systemMedium" size="13"/>
@@ -1623,7 +1623,7 @@ AAAAAAEGA
                                                                         <fragment content="#bc-ignore!"/>
                                                                     </attributedString>
                                                                 </textField>
-                                                                <textField verticalHuggingPriority="1000" horizontalCompressionResistancePriority="252" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3kN-PY-PET" customClass="ChatCellViewMessage" customModule="BeagleIM" customModuleProvider="target">
+                                                                <textField focusRingType="none" verticalHuggingPriority="1000" horizontalCompressionResistancePriority="252" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3kN-PY-PET" customClass="ChatCellViewMessage" customModule="BeagleIM" customModuleProvider="target">
                                                                     <rect key="frame" x="58" y="13" width="147" height="15"/>
                                                                     <textFieldCell key="cell" truncatesLastVisibleLine="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" title="room@muc.example.com" id="ga1-n1-gUK">
                                                                         <font key="font" metaFont="cellTitle"/>
@@ -1728,7 +1728,7 @@ Gw
                         <rect key="frame" x="0.0" y="0.0" width="535" height="446"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kXz-dc-QJ5">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kXz-dc-QJ5">
                                 <rect key="frame" x="18" y="410" width="139" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Configure groupchat" id="fgC-Hs-ibQ">
                                     <font key="font" metaFont="systemBold"/>
@@ -1760,7 +1760,7 @@ Gw
                                 </columns>
                                 <gridCells>
                                     <gridCell row="NwZ-NE-ADi" column="yAh-AY-yiv" id="oTj-RK-Ahn">
-                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="LO0-Hy-NYd">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="LO0-Hy-NYd">
                                             <rect key="frame" x="-2" y="25" width="76" height="21"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Room name" id="0tf-Md-wBw">
                                                 <font key="font" usesAppearanceFont="YES"/>
@@ -1770,7 +1770,7 @@ Gw
                                         </textField>
                                     </gridCell>
                                     <gridCell row="NwZ-NE-ADi" column="cPz-am-8VQ" id="mLh-cw-4Km">
-                                        <textField key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="43f-o9-YcD">
+                                        <textField key="contentView" focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="43f-o9-YcD">
                                             <rect key="frame" x="78" y="25" width="325" height="21"/>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" id="nAF-aA-aaa">
                                                 <font key="font" usesAppearanceFont="YES"/>
@@ -1780,7 +1780,7 @@ Gw
                                         </textField>
                                     </gridCell>
                                     <gridCell row="WIa-Pu-pml" column="yAh-AY-yiv" id="9sX-Dd-Dxt">
-                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="3Lp-HU-KVB">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="3Lp-HU-KVB">
                                             <rect key="frame" x="-2" y="0.0" width="76" height="21"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Subject" id="3dY-pc-BG8">
                                                 <font key="font" usesAppearanceFont="YES"/>
@@ -1790,7 +1790,7 @@ Gw
                                         </textField>
                                     </gridCell>
                                     <gridCell row="WIa-Pu-pml" column="cPz-am-8VQ" id="GAm-RF-HdJ">
-                                        <textField key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="BbN-Bn-An8">
+                                        <textField key="contentView" focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="BbN-Bn-An8">
                                             <rect key="frame" x="78" y="0.0" width="325" height="21"/>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" id="rvc-G3-AGl">
                                                 <font key="font" usesAppearanceFont="YES"/>
@@ -1803,14 +1803,14 @@ Gw
                             </gridView>
                             <button horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="xzR-3A-oMd">
                                 <rect key="frame" x="489" y="353" width="30" height="27"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="22" id="Ur5-X0-taD"/>
-                                    <constraint firstAttribute="height" constant="21" id="uJZ-f1-tBT"/>
-                                </constraints>
                                 <buttonCell key="cell" type="disclosure" bezelStyle="roundedDisclosure" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="eZO-4h-p6w">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES" changeBackground="YES" changeGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="22" id="Ur5-X0-taD"/>
+                                    <constraint firstAttribute="height" constant="21" id="uJZ-f1-tBT"/>
+                                </constraints>
                                 <connections>
                                     <action selector="disclosureClicked:" target="unt-Sh-xI5" id="QI2-d9-PEd"/>
                                 </connections>
@@ -1841,7 +1841,7 @@ Gw
                             <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="1W1-xH-DHK">
                                 <rect key="frame" x="252" y="207" width="32" height="32"/>
                             </progressIndicator>
-                            <textField wantsLayer="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="OAI-AJ-WlG" customClass="NSTextFieldNoClick" customModule="BeagleIM" customModuleProvider="target">
+                            <textField wantsLayer="YES" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="OAI-AJ-WlG" customClass="NSTextFieldNoClick" customModule="BeagleIM" customModuleProvider="target">
                                 <rect key="frame" x="24" y="364" width="43" height="11"/>
                                 <shadow key="shadow" blurRadius="3">
                                     <color key="color" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -1891,7 +1891,7 @@ Gw
                                                             <rect key="frame" x="15" y="1" width="199" height="16"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
-                                                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="lmQ-tI-kgY">
+                                                                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="lmQ-tI-kgY">
                                                                     <rect key="frame" x="0.0" y="0.0" width="199" height="16"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="faK-Zj-UW7">
                                                                         <font key="font" metaFont="system"/>
@@ -1934,7 +1934,7 @@ Gw
                                                             <rect key="frame" x="224" y="1" width="256" height="16"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
-                                                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="7jN-5U-yac">
+                                                                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="7jN-5U-yac">
                                                                     <rect key="frame" x="0.0" y="0.0" width="256" height="16"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="TcJ-j5-9sd">
                                                                         <font key="font" metaFont="system"/>
@@ -2052,7 +2052,7 @@ Gw
                                 </constraints>
                                 <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSCaution" id="oCV-9a-Kke"/>
                             </imageView>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="MWW-12-KLv">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="MWW-12-KLv">
                                 <rect key="frame" x="66" y="215" width="312" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="SSL certificate of test.com could not be verified" id="azs-oZ-e2C">
                                     <font key="font" metaFont="systemBold"/>
@@ -2060,7 +2060,7 @@ Gw
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
-                            <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="PVg-8T-5qZ">
+                            <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="PVg-8T-5qZ">
                                 <rect key="frame" x="66" y="177" width="402" height="30"/>
                                 <textFieldCell key="cell" selectable="YES" title="It is not possible to automatically verify server certificate for test.com. Please review following certiciate details." id="Wxz-bh-twp">
                                     <font key="font" metaFont="cellTitle"/>
@@ -2106,7 +2106,7 @@ Gw
                                 </columns>
                                 <gridCells>
                                     <gridCell row="dUN-Em-Inp" column="jzQ-Hh-2oo" id="11g-dS-Eb8">
-                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="G7d-3z-I2c">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="G7d-3z-I2c">
                                             <rect key="frame" x="-2" y="92" width="104" height="15"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Certificate name:" id="vQs-EJ-86s">
                                                 <font key="font" metaFont="systemMedium" size="12"/>
@@ -2116,7 +2116,7 @@ Gw
                                         </textField>
                                     </gridCell>
                                     <gridCell row="dUN-Em-Inp" column="Y0A-03-BzC" id="xDc-Xp-GTD">
-                                        <textField key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="dcc-gM-k6w">
+                                        <textField key="contentView" focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="dcc-gM-k6w">
                                             <rect key="frame" x="164" y="92" width="35" height="15"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="sfI-Td-iUq">
                                                 <font key="font" metaFont="cellTitle"/>
@@ -2129,7 +2129,7 @@ Gw
                                         </textField>
                                     </gridCell>
                                     <gridCell row="FMZ-Kw-1Gg" column="jzQ-Hh-2oo" id="qLf-DG-037">
-                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="bms-dT-gW8">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="bms-dT-gW8">
                                             <rect key="frame" x="-2" y="69" width="77" height="15"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Valid period:" id="VFO-Qh-k6S">
                                                 <font key="font" metaFont="systemMedium" size="12"/>
@@ -2139,7 +2139,7 @@ Gw
                                         </textField>
                                     </gridCell>
                                     <gridCell row="FMZ-Kw-1Gg" column="Y0A-03-BzC" id="MPN-pd-Jyh">
-                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gtx-0b-jdu">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gtx-0b-jdu">
                                             <rect key="frame" x="164" y="69" width="35" height="15"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="5cb-bY-3Nb">
                                                 <font key="font" metaFont="cellTitle"/>
@@ -2152,7 +2152,7 @@ Gw
                                         </textField>
                                     </gridCell>
                                     <gridCell row="8SU-Hy-DL6" column="jzQ-Hh-2oo" id="EwI-PH-1uz">
-                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="pVf-kZ-Ara">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="pVf-kZ-Ara">
                                             <rect key="frame" x="-2" y="46" width="72" height="15"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Fingerprint:" id="ZLa-eK-ZZz">
                                                 <font key="font" metaFont="systemMedium" size="12"/>
@@ -2162,7 +2162,7 @@ Gw
                                         </textField>
                                     </gridCell>
                                     <gridCell row="8SU-Hy-DL6" column="Y0A-03-BzC" id="bOY-9S-sVM">
-                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="def-pZ-Bbx">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="def-pZ-Bbx">
                                             <rect key="frame" x="164" y="46" width="35" height="15"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="Dmx-hJ-hXv">
                                                 <font key="font" metaFont="cellTitle"/>
@@ -2175,7 +2175,7 @@ Gw
                                         </textField>
                                     </gridCell>
                                     <gridCell row="pmd-Ck-bzp" column="jzQ-Hh-2oo" id="ciU-6M-1eR">
-                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ap1-Ug-nhj">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ap1-Ug-nhj">
                                             <rect key="frame" x="-2" y="23" width="64" height="15"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Issued by:" id="0BK-38-f0S">
                                                 <font key="font" metaFont="systemMedium" size="12"/>
@@ -2185,7 +2185,7 @@ Gw
                                         </textField>
                                     </gridCell>
                                     <gridCell row="pmd-Ck-bzp" column="Y0A-03-BzC" id="Bb0-oq-2h0">
-                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="V7s-ww-GPg">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="V7s-ww-GPg">
                                             <rect key="frame" x="164" y="23" width="35" height="15"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="Toq-W6-Bi6">
                                                 <font key="font" metaFont="cellTitle"/>
@@ -2198,7 +2198,7 @@ Gw
                                         </textField>
                                     </gridCell>
                                     <gridCell row="Jrx-HA-jVy" column="jzQ-Hh-2oo" id="ghG-KK-aYC">
-                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gko-B7-Baa">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gko-B7-Baa">
                                             <rect key="frame" x="-2" y="0.0" width="72" height="15"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Fingerprint:" id="wmG-Ai-yUK">
                                                 <font key="font" metaFont="systemMedium" size="12"/>
@@ -2208,7 +2208,7 @@ Gw
                                         </textField>
                                     </gridCell>
                                     <gridCell row="Jrx-HA-jVy" column="Y0A-03-BzC" id="yHz-US-fUL">
-                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ARy-Kq-eaC">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ARy-Kq-eaC">
                                             <rect key="frame" x="164" y="0.0" width="35" height="15"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="bgM-PY-KWL">
                                                 <font key="font" metaFont="cellTitle"/>
@@ -2287,7 +2287,7 @@ Gw
                         <rect key="frame" x="0.0" y="0.0" width="332" height="82"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="IL1-bS-N6z">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="IL1-bS-N6z">
                                 <rect key="frame" x="84" y="66" width="234" height="16"/>
                                 <textFieldCell key="cell" lineBreakMode="truncatingTail" title="Label" id="gBl-eb-iIv">
                                     <font key="font" metaFont="systemSemibold" size="13"/>
@@ -2298,7 +2298,7 @@ Gw
                                     <fragment content="#bc-ignore!"/>
                                 </attributedString>
                             </textField>
-                            <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="QD1-OR-ISG">
+                            <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="QD1-OR-ISG">
                                 <rect key="frame" x="84" y="44" width="234" height="14"/>
                                 <textFieldCell key="cell" selectable="YES" title="Multiline Label" id="6AN-tH-MVB">
                                     <font key="font" metaFont="message" size="11"/>
@@ -2406,7 +2406,7 @@ Gw
                         <rect key="frame" x="0.0" y="0.0" width="513" height="463"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gPH-Rz-Q4H">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gPH-Rz-Q4H">
                                 <rect key="frame" x="18" y="433" width="71" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Open chat" id="zIX-7q-w1b">
                                     <font key="font" metaFont="systemBold"/>
@@ -2418,14 +2418,14 @@ Gw
                                 <rect key="frame" x="17" y="401" width="480" height="25"/>
                                 <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" pullsDown="YES" id="98g-7y-tYp">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="menu"/>
+                                    <font key="font" metaFont="message"/>
                                     <menu key="menu" id="Cc4-NV-tcP"/>
                                 </popUpButtonCell>
                                 <connections>
                                     <action selector="accountSelectionChanged:" target="9v4-02-9CS" id="M7s-gS-h0o"/>
                                 </connections>
                             </popUpButton>
-                            <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gJ1-SK-jBO">
+                            <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gJ1-SK-jBO">
                                 <rect key="frame" x="20" y="375" width="473" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Find contact or enter JID" bezelStyle="round" id="FEa-jd-en4">
                                     <font key="font" metaFont="system"/>
@@ -2475,7 +2475,7 @@ Gw
                                                                         <constraint firstAttribute="height" constant="30" id="y4t-T0-K7X"/>
                                                                     </constraints>
                                                                 </view>
-                                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="74s-4J-XXh">
+                                                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="74s-4J-XXh">
                                                                     <rect key="frame" x="46" y="15" width="398" height="17"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Username" id="Ikd-Py-8pj">
                                                                         <font key="font" metaFont="systemMedium" size="13"/>
@@ -2486,7 +2486,7 @@ Gw
                                                                         <fragment content="#bc-ignore!"/>
                                                                     </attributedString>
                                                                 </textField>
-                                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="bzV-jx-BVK">
+                                                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="bzV-jx-BVK">
                                                                     <rect key="frame" x="46" y="2" width="94" height="13"/>
                                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="user@domain.com" id="VGT-gv-U2i">
                                                                         <font key="font" metaFont="menu" size="10"/>
@@ -2497,7 +2497,7 @@ Gw
                                                                         <fragment content="#bc-ignore!"/>
                                                                     </attributedString>
                                                                 </textField>
-                                                                <textField horizontalHuggingPriority="252" verticalHuggingPriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="LHG-c9-M39">
+                                                                <textField focusRingType="none" horizontalHuggingPriority="252" verticalHuggingPriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="LHG-c9-M39">
                                                                     <rect key="frame" x="372" y="2" width="72" height="13"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingMiddle" title="using account" id="ROY-5k-SBe">
                                                                         <font key="font" metaFont="menu" size="10"/>
@@ -2629,7 +2629,7 @@ Gw
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <box verticalHuggingPriority="750" boxType="custom" borderType="none" title="Box" transparent="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0O6-Pu-tW4">
-                                <rect key="frame" x="0.0" y="434" width="391" height="72"/>
+                                <rect key="frame" x="0.0" y="438" width="391" height="72"/>
                                 <view key="contentView" id="8J8-dt-vbv">
                                     <rect key="frame" x="0.0" y="0.0" width="391" height="72"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2641,7 +2641,7 @@ Gw
                                                 <constraint firstAttribute="width" constant="48" id="uLU-4S-6dT"/>
                                             </constraints>
                                         </view>
-                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="249" translatesAutoresizingMaskIntoConstraints="NO" id="pxt-na-aFe">
+                                        <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="249" translatesAutoresizingMaskIntoConstraints="NO" id="pxt-na-aFe">
                                             <rect key="frame" x="131" y="38" width="102" height="14"/>
                                             <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="user@domain.com" id="txK-sv-wuj">
                                                 <font key="font" metaFont="message" size="11"/>
@@ -2652,7 +2652,7 @@ Gw
                                                 <fragment content="#bc-ignore!"/>
                                             </attributedString>
                                         </textField>
-                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="450" horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="w1S-5v-cY4" customClass="ChatViewStatusView" customModule="BeagleIM" customModuleProvider="target">
+                                        <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="450" horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="w1S-5v-cY4" customClass="ChatViewStatusView" customModule="BeagleIM" customModuleProvider="target">
                                             <rect key="frame" x="64" y="4" width="319" height="30"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="30" id="D1k-2q-AGX"/>
@@ -2682,7 +2682,7 @@ AAAAAAEGA
                                         <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="mMG-Ae-wje">
                                             <rect key="frame" x="0.0" y="-2" width="391" height="5"/>
                                         </box>
-                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="ZD0-29-6Ph">
+                                        <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="ZD0-29-6Ph">
                                             <rect key="frame" x="64" y="38" width="63" height="16"/>
                                             <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Jonh Doe" id="h3R-C3-JJr">
                                                 <font key="font" metaFont="systemMedium" size="13"/>
@@ -2694,25 +2694,21 @@ AAAAAAEGA
                                             </attributedString>
                                         </textField>
                                         <button translatesAutoresizingMaskIntoConstraints="NO" id="Sra-s5-1zD">
-                                            <rect key="frame" x="278" y="32.5" width="20.5" height="24"/>
-                                            <constraints>
-                                                <constraint firstAttribute="height" constant="20" id="K6z-vN-H89"/>
-                                                <constraint firstAttribute="width" constant="20" id="Wxj-wm-JVQ"/>
-                                            </constraints>
+                                            <rect key="frame" x="274" y="32.5" width="20.5" height="24"/>
                                             <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="plus" catalog="system" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="Qe3-oq-KJN">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="20" id="K6z-vN-H89"/>
+                                                <constraint firstAttribute="width" constant="20" id="Wxj-wm-JVQ"/>
+                                            </constraints>
                                             <connections>
                                                 <segue destination="weA-EI-UP9" kind="sheet" identifier="InviteToGroupchat" id="MSe-6U-xiy"/>
                                             </connections>
                                         </button>
                                         <button horizontalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="7xK-y9-tDx">
-                                            <rect key="frame" x="302" y="34" width="20" height="20"/>
-                                            <constraints>
-                                                <constraint firstAttribute="width" constant="20" id="Ya6-0L-MZK"/>
-                                                <constraint firstAttribute="height" constant="20" id="sz5-Ch-knR"/>
-                                            </constraints>
+                                            <rect key="frame" x="298" y="34" width="20" height="20"/>
                                             <buttonCell key="cell" type="square" title="12" bezelStyle="shadowlessSquare" image="person.fill" catalog="system" imagePosition="right" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="uDh-Jo-uoa">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -2720,6 +2716,10 @@ AAAAAAEGA
                                                     <fragment content="#bc-ignore!"/>
                                                 </attributedString>
                                             </buttonCell>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="20" id="Ya6-0L-MZK"/>
+                                                <constraint firstAttribute="height" constant="20" id="sz5-Ch-knR"/>
+                                            </constraints>
                                             <attributedString key="userComments">
                                                 <fragment content="#bc-ignore!"/>
                                             </attributedString>
@@ -2728,13 +2728,10 @@ AAAAAAEGA
                                             </connections>
                                         </button>
                                         <popUpButton wantsLayer="YES" alphaValue="0.59999999999999998" translatesAutoresizingMaskIntoConstraints="NO" id="JOG-WH-1Aj">
-                                            <rect key="frame" x="346" y="34" width="35" height="20"/>
-                                            <constraints>
-                                                <constraint firstAttribute="height" constant="20" id="bo5-df-VEf"/>
-                                            </constraints>
+                                            <rect key="frame" x="342" y="34" width="39" height="20"/>
                                             <popUpButtonCell key="cell" type="bevel" bezelStyle="regularSquare" imagePosition="only" alignment="left" lineBreakMode="truncatingTail" imageScaling="proportionallyUpOrDown" inset="2" pullsDown="YES" autoenablesItems="NO" altersStateOfSelectedItem="NO" selectedItem="V28-Vj-HQj" id="Ssi-vh-g5S">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                <font key="font" metaFont="menu"/>
+                                                <font key="font" metaFont="message"/>
                                                 <menu key="menu" autoenablesItems="NO" id="z2A-hv-0Vn">
                                                     <items>
                                                         <menuItem image="ellipsis.circle" catalog="system" hidden="YES" id="V28-Vj-HQj">
@@ -2753,18 +2750,21 @@ AAAAAAEGA
                                                     </items>
                                                 </menu>
                                             </popUpButtonCell>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="20" id="bo5-df-VEf"/>
+                                            </constraints>
                                         </popUpButton>
                                         <button translatesAutoresizingMaskIntoConstraints="NO" id="aLG-u7-09c">
-                                            <rect key="frame" x="326" y="31" width="20" height="26"/>
+                                            <rect key="frame" x="322" y="31" width="20" height="26"/>
+                                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="info.circle.fill" catalog="system" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="Lrl-SC-gb0">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="20" id="bwZ-ok-vbA"/>
                                                 <constraint firstAttribute="width" secondItem="aLG-u7-09c" secondAttribute="height" multiplier="1:1" id="c0c-FJ-rub"/>
                                                 <constraint firstAttribute="width" constant="20" id="ez3-9k-jTJ"/>
                                             </constraints>
-                                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="info.circle.fill" catalog="system" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="Lrl-SC-gb0">
-                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                <font key="font" metaFont="system"/>
-                                            </buttonCell>
                                             <connections>
                                                 <action selector="showInfoClicked:" target="vht-52-XAK" id="GGl-F9-RTP"/>
                                             </connections>
@@ -2799,14 +2799,14 @@ AAAAAAEGA
                                 </view>
                             </box>
                             <splitView arrangesAllSubviews="NO" dividerStyle="thin" vertical="YES" translatesAutoresizingMaskIntoConstraints="NO" id="UFg-qL-DYr">
-                                <rect key="frame" x="0.0" y="0.0" width="391" height="434"/>
+                                <rect key="frame" x="0.0" y="0.0" width="391" height="438"/>
                                 <subviews>
                                     <customView misplaced="YES" id="Zah-Im-z0B">
-                                        <rect key="frame" x="0.0" y="0.0" width="390" height="434"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="390" height="438"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <subviews>
                                             <containerView translatesAutoresizingMaskIntoConstraints="NO" id="B0G-N7-Ff8">
-                                                <rect key="frame" x="0.0" y="2" width="190" height="434"/>
+                                                <rect key="frame" x="0.0" y="4" width="190" height="438"/>
                                                 <connections>
                                                     <segue destination="FAI-Oi-HUZ" kind="embed" id="dfU-FL-rSC"/>
                                                 </connections>
@@ -2820,17 +2820,17 @@ AAAAAAEGA
                                         </constraints>
                                     </customView>
                                     <customView misplaced="YES" id="VJJ-Aj-NHT">
-                                        <rect key="frame" x="391" y="0.0" width="0.0" height="434"/>
+                                        <rect key="frame" x="391" y="0.0" width="0.0" height="438"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <subviews>
                                             <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="28" horizontalPageScroll="10" verticalLineScroll="28" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qPg-RH-BHf">
-                                                <rect key="frame" x="0.0" y="2" width="200" height="434"/>
+                                                <rect key="frame" x="0.0" y="4" width="200" height="438"/>
                                                 <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="KfR-1C-rOz">
-                                                    <rect key="frame" x="0.0" y="0.0" width="200" height="434"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="200" height="438"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <subviews>
                                                         <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="none" columnReordering="NO" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" typeSelect="NO" enabled="NO" rowHeight="28" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" outlineTableColumn="0qr-P7-0PU" id="9Zj-K6-yAz" customClass="GroupchatParticipantsTableView" customModule="BeagleIM" customModuleProvider="target">
-                                                            <rect key="frame" x="0.0" y="0.0" width="200" height="434"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="200" height="438"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <size key="intercellSpacing" width="17" height="0.0"/>
                                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -2855,7 +2855,7 @@ AAAAAAEGA
                                                                             <rect key="frame" x="18" y="0.0" width="163" height="18"/>
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                             <subviews>
-                                                                                <textField horizontalHuggingPriority="249" horizontalCompressionResistancePriority="249" translatesAutoresizingMaskIntoConstraints="NO" id="v9Z-E9-Pgc">
+                                                                                <textField focusRingType="none" horizontalHuggingPriority="249" horizontalCompressionResistancePriority="249" translatesAutoresizingMaskIntoConstraints="NO" id="v9Z-E9-Pgc">
                                                                                     <rect key="frame" x="0.0" y="2" width="87" height="14"/>
                                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" usesSingleLineMode="YES" id="HUr-nw-nKs">
                                                                                         <font key="font" metaFont="systemSemibold" size="11"/>
@@ -2889,7 +2889,7 @@ AAAAAAEGA
                                                                                         <constraint firstAttribute="height" constant="24" id="ksh-zZ-Fr0"/>
                                                                                     </constraints>
                                                                                 </customView>
-                                                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="wHg-5g-dZT">
+                                                                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="wHg-5g-dZT">
                                                                                     <rect key="frame" x="40" y="6" width="37" height="16"/>
                                                                                     <textFieldCell key="cell" lineBreakMode="clipping" title="Label" usesSingleLineMode="YES" id="joV-vV-bpx">
                                                                                         <font key="font" usesAppearanceFont="YES"/>
@@ -2999,10 +2999,10 @@ AAAAAAEGA
             <objects>
                 <viewController identifier="ManageAffiliationsViewController" storyboardIdentifier="ManageAffiliationsViewController" id="8up-pb-xjq" customClass="ManageAffiliationsViewController" customModule="BeagleIM" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="azW-5A-eTH">
-                        <rect key="frame" x="0.0" y="0.0" width="407" height="419"/>
+                        <rect key="frame" x="0.0" y="0.0" width="412" height="419"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="m6a-5O-mre">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="m6a-5O-mre">
                                 <rect key="frame" x="18" y="383" width="128" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Manage affiliations" id="CAT-yl-a3u">
                                     <font key="font" metaFont="systemBold"/>
@@ -3010,8 +3010,8 @@ AAAAAAEGA
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
-                            <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="aee-ce-hJR">
-                                <rect key="frame" x="20" y="354" width="367" height="21"/>
+                            <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="aee-ce-hJR">
+                                <rect key="frame" x="20" y="354" width="372" height="21"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" placeholderString="Enter jid" drawsBackground="YES" id="1lw-tL-tyK">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -3019,13 +3019,13 @@ AAAAAAEGA
                                 </textFieldCell>
                             </textField>
                             <scrollView autohidesScrollers="YES" horizontalLineScroll="23" horizontalPageScroll="10" verticalLineScroll="23" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ufj-lo-X7S">
-                                <rect key="frame" x="20" y="40" width="367" height="306"/>
+                                <rect key="frame" x="20" y="40" width="372" height="306"/>
                                 <clipView key="contentView" drawsBackground="NO" id="U7W-GH-jod">
-                                    <rect key="frame" x="1" y="1" width="365" height="304"/>
+                                    <rect key="frame" x="1" y="1" width="370" height="304"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="firstColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" rowHeight="21" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" id="9zd-B5-Aia">
-                                            <rect key="frame" x="0.0" y="0.0" width="365" height="304"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="370" height="304"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <size key="intercellSpacing" width="3" height="2"/>
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -3050,7 +3050,7 @@ AAAAAAEGA
                                                             <rect key="frame" x="1" y="1" width="233" height="17"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
-                                                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cUI-kb-mw9">
+                                                                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cUI-kb-mw9">
                                                                     <rect key="frame" x="0.0" y="0.0" width="233" height="17"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="3Ys-tL-bW2">
@@ -3088,10 +3088,10 @@ AAAAAAEGA
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <popUpButton translatesAutoresizingMaskIntoConstraints="NO" id="fYn-BL-hfM">
-                                                                    <rect key="frame" x="-5" y="0.0" width="102" height="21"/>
+                                                                    <rect key="frame" x="0.0" y="0.0" width="97" height="21"/>
                                                                     <popUpButtonCell key="cell" type="bevel" title="Item 1" bezelStyle="rounded" alignment="center" lineBreakMode="truncatingTail" state="on" imageScaling="proportionallyDown" inset="2" pullsDown="YES" id="Pei-Ba-7me">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                                        <font key="font" metaFont="menu"/>
+                                                                        <font key="font" metaFont="message"/>
                                                                         <menu key="menu" id="Dl1-wX-trH">
                                                                             <items>
                                                                                 <menuItem title="Item 1" state="on" hidden="YES" id="cUO-st-zNA">
@@ -3128,7 +3128,7 @@ AAAAAAEGA
                                 </scroller>
                             </scrollView>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="0Og-MZ-L8a">
-                                <rect key="frame" x="330" y="13" width="64" height="24"/>
+                                <rect key="frame" x="335" y="13" width="64" height="24"/>
                                 <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="nL3-BQ-FCm">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -3138,7 +3138,7 @@ AAAAAAEGA
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="IAK-K5-z9w">
-                                <rect key="frame" x="257" y="9" width="76" height="32"/>
+                                <rect key="frame" x="262" y="9" width="76" height="32"/>
                                 <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Ip2-2F-LNN">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -3152,32 +3152,32 @@ Gw
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="X7J-qn-az8">
                                 <rect key="frame" x="20" y="21" width="16" height="16"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" secondItem="X7J-qn-az8" secondAttribute="height" multiplier="21:19" id="TT8-Pi-Oh2"/>
-                                </constraints>
                                 <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="overlaps" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="6zA-tk-f4N">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
+                                <constraints>
+                                    <constraint firstAttribute="width" secondItem="X7J-qn-az8" secondAttribute="height" multiplier="21:19" id="TT8-Pi-Oh2"/>
+                                </constraints>
                                 <connections>
                                     <action selector="addItemClicked:" target="8up-pb-xjq" id="fbl-Zl-Gwr"/>
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="DIZ-oh-cuF">
                                 <rect key="frame" x="36" y="21" width="16" height="16"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" secondItem="DIZ-oh-cuF" secondAttribute="height" multiplier="21:19" id="uuF-KT-Zfx"/>
-                                </constraints>
                                 <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="RjO-m2-7sm">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
+                                <constraints>
+                                    <constraint firstAttribute="width" secondItem="DIZ-oh-cuF" secondAttribute="height" multiplier="21:19" id="uuF-KT-Zfx"/>
+                                </constraints>
                                 <connections>
                                     <action selector="removeItemClicked:" target="8up-pb-xjq" id="tXF-ay-gTa"/>
                                 </connections>
                             </button>
                             <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="Eja-Xu-yrO">
-                                <rect key="frame" x="188" y="194" width="32" height="32"/>
+                                <rect key="frame" x="190" y="194" width="32" height="32"/>
                             </progressIndicator>
                         </subviews>
                         <constraints>
@@ -3245,7 +3245,7 @@ Gw
                                 </constraints>
                                 <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSEveryone" id="Uhm-87-yMU"/>
                             </imageView>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="dPV-84-sLa">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="dPV-84-sLa">
                                 <rect key="frame" x="66" y="376" width="167" height="19"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Invite to the groupchat" id="cxt-am-P6A">
                                     <font key="font" metaFont="systemSemibold" size="15"/>
@@ -3386,14 +3386,14 @@ Gw
         <segue reference="Rll-kG-u0S"/>
     </inferredMetricsTieBreakers>
     <resources>
-        <image name="NSAddTemplate" width="14" height="13"/>
+        <image name="NSAddTemplate" width="18" height="17"/>
         <image name="NSCaution" width="32" height="32"/>
         <image name="NSEveryone" width="32" height="32"/>
-        <image name="NSLockLockedTemplate" width="14" height="15"/>
-        <image name="NSLockUnlockedTemplate" width="17" height="15"/>
-        <image name="NSRemoveTemplate" width="14" height="4"/>
-        <image name="NSStopProgressFreestandingTemplate" width="15" height="15"/>
-        <image name="NSStopProgressTemplate" width="14" height="13"/>
+        <image name="NSLockLockedTemplate" width="17" height="19"/>
+        <image name="NSLockUnlockedTemplate" width="21" height="19"/>
+        <image name="NSRemoveTemplate" width="18" height="5"/>
+        <image name="NSStopProgressFreestandingTemplate" width="20" height="20"/>
+        <image name="NSStopProgressTemplate" width="17" height="16"/>
         <image name="arrow.clockwise" catalog="system" width="14" height="16"/>
         <image name="ellipsis.circle" catalog="system" width="15" height="15"/>
         <image name="info.circle.fill" catalog="system" width="15" height="15"/>

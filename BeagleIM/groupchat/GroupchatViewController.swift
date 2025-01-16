@@ -147,7 +147,7 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         room.$features.combineLatest(Settings.$messageEncryption).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (features, defEncryption) in
             self?.refreshEncryptionStatus(features: features, defEncryption: defEncryption);
         }).store(in: &cancellables);
-        jidView.stringValue = room.roomJid.stringValue;
+        jidView.stringValue = room.roomJid.description;
 
         sidebarWidthConstraint.constant = Settings.showRoomDetailsSidebar ? 200 : 0;
         avatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
@@ -587,7 +587,7 @@ class GroupchatParticipantsContainer: NSObject, NSOutlineViewDelegate, NSOutline
         didSet {
             cancellables.removeAll();
             self.outlineView?.isHidden = true;
-            room?.occupantsPublisher.throttle(for: 0.1, scheduler: self.dispatcher.queue, latest: true).sink(receiveValue:{ [weak self] value in
+            room?.occupantsPublisher.throttle(for: 0.1, scheduler: self.queue, latest: true).sink(receiveValue:{ [weak self] value in
                     self?.update(participants: value);
             }).store(in: &cancellables);
         }
@@ -603,7 +603,7 @@ class GroupchatParticipantsContainer: NSObject, NSOutlineViewDelegate, NSOutline
     
     weak var delegate: GroupchatViewController?;
     
-    private var dispatcher = QueueDispatcher(label: "GroupchatParticipantsContainer");
+    private var queue = DispatchQueue(label: "GroupchatParticipantsContainer");
     
     private var initialized = false;
     
@@ -956,7 +956,7 @@ extension GroupchatParticipantsContainer: NSMenuDelegate {
             switch response {
             case .alertFirstButtonReturn:
                 // we need to ban the user
-                mucModule.setRoomAffiliations(to: room, changedAffiliations: [MucModule.RoomAffiliation(jid: jid.withoutResource, affiliation: .outcast)], completionHandler: { result in
+                mucModule.roomAffiliations([MucModule.RoomAffiliation(jid: jid.withoutResource(), affiliation: .outcast)], to: room, completionHandler: { result in
                     switch result {
                     case .success(_):
                         break;

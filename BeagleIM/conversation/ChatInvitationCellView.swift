@@ -57,7 +57,7 @@ class ChatInvitationCellView: BaseChatCellView {
             defBottomButtonConstraint?.isActive = true;
         }
         
-        let messageBody = message ?? String.localizedStringWithFormat(NSLocalizedString("Invitation to channel %@", comment: "Invitation to channel message"), appendix.channel.stringValue);
+        let messageBody = message ?? String.localizedStringWithFormat(NSLocalizedString("Invitation to channel %@", comment: "Invitation to channel message"), appendix.channel.description);
         let msg = NSMutableAttributedString(string: messageBody);
         if let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue | NSTextCheckingResult.CheckingType.address.rawValue) {
         

@@ -62,7 +62,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         channelAvatarView.displayableId = channel;
         channel.descriptionPublisher.map({ $0 ?? "" }).assign(to: \.stringValue, on: channelDescriptionLabel).store(in: &cancellables);
         channel.descriptionPublisher.assign(to: \.toolTip, on: channelDescriptionLabel).store(in: &cancellables);
-        channelJidLabel.title = jid.stringValue;
+        channelJidLabel.title = jid.description;
         
         channelAvatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
         
@@ -246,7 +246,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         alert.alertStyle = .warning;
         alert.icon = NSImage(named: NSImage.cautionName);
         alert.messageText = NSLocalizedString("Destroy channel?", comment: "alert window title");
-        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Are you sure that you want to leave and destroy channel %@?", comment: "alert window message"), channel.name ?? channel.channelJid.stringValue);
+        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Are you sure that you want to leave and destroy channel %@?", comment: "alert window message"), channel.name ?? channel.channelJid.description);
         alert.addButton(withTitle: NSLocalizedString("Yes", comment: "Button"));
         alert.addButton(withTitle: NSLocalizedString("No", comment: "Button"));
         alert.beginSheetModal(for: self.view.window!, completionHandler: { (response) in
@@ -267,7 +267,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
                             alert.alertStyle = .warning;
                             alert.icon = NSImage(named: NSImage.cautionName);
                             alert.messageText = NSLocalizedString("Channel destruction failed!", comment: "alert window title");
-                            alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert window message"), channel.name ?? channel.channelJid.stringValue, error.localizedDescription);
+                            alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("It was not possible to destroy channel %@. Server returned an error: %@", comment: "alert window message"), channel.name ?? channel.channelJid.description, error.localizedDescription);
                             alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
                             alert.beginSheetModal(for: window, completionHandler: nil);
                         }

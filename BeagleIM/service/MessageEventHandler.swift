@@ -64,14 +64,17 @@ class MessageEventHandler: XmppServiceExtension {
                 from = occupantJid.bareJid;
             }
             
-            switch context.module(.omemo).decode(message: message, from: from, serverMsgId: serverMsgId) {
-            case .successMessage(_, let keyFingerprint):
-                encryption = .decrypted(fingerprint: keyFingerprint);
-                break;
-            case .successTransportKey(_, _):
-                logger.debug("got transport key with key and iv!");
-            case .failure(let error):
-                switch error {
+            do {
+                let result = try context.module(.omemo).decrypt(message: message, from: from, serverMsgId: serverMsgId);
+                switch result {
+                case .message(let decryptedMessage):
+                    encryption = .decrypted(fingerprint: decryptedMessage.fingerprint);
+                case .transportKey(_):
+                    logger.debug("got transport key with key and iv!");
+                }
+            } catch {
+                let err = error as? SignalError ?? SignalError.unknown;
+                switch err {
                 case .invalidMessage:
                     encryptionErrorBody = "Message was not encrypted for this device.";
                     encryption = .notForThisDevice;
@@ -81,10 +84,9 @@ class MessageEventHandler: XmppServiceExtension {
                 case .notEncrypted:
                     encryption = .none;
                 default:
-                    encryptionErrorBody = "Message decryption failed! Error code: \(error.rawValue)";
-                    encryption = .decryptionFailed(errorCode: error.rawValue);
+                    encryptionErrorBody = "Message decryption failed! Error code: \(err.rawValue)";
+                    encryption = .decryptionFailed(errorCode: err.rawValue);
                 }
-                break;
             }
         }
 
@@ -331,12 +333,12 @@ class MessageEventHandler: XmppServiceExtension {
         let unread = (!archived) || isMuc;
         if direction == .incoming {
             if error {
-                return .incoming_error(unread ? .received : .displayed, errorMessage: message.errorText ?? message.errorCondition?.rawValue);
+                return .incoming_error(unread ? .received : .displayed, errorMessage: message.error?.message ?? message.error?.localizedDescription);
             }
             return .incoming(unread ? .received : .displayed);
         } else {
             if error {
-                return .outgoing_error(unread ? .received : .displayed,errorMessage: message.errorText ?? message.errorCondition?.rawValue);
+                return .outgoing_error(unread ? .received : .displayed,errorMessage: message.error?.message ?? message.error?.localizedDescription);
             }
             return .outgoing(.sent);
         }
@@ -400,7 +402,7 @@ class MessageEventHandler: XmppServiceExtension {
         let start = Date();
         let queryId = UUID().uuidString;
         let account = client.userBareJid;
-        client.module(.mam).queryItems(version: version, componentJid: period.component == nil ? nil : JID(period.component!), start: period.from, end: period.to, queryId: queryId, rsm: rsmQuery ?? RSM.Query(after: period.after, max: 150), completionHandler: { [weak client] result in
+        client.module(.mam).queryItems(version: version, componentJid: period.component == nil ? nil : JID(period.component!), start: period.from, end: period.to, queryId: queryId, rsm: rsmQuery ?? (period.after == nil ? .max(150) : .after(period.after!, max: 150)), completionHandler: { [weak client] result in
             switch result {
             case .success(let response):
                 if response.complete || response.rsm == nil {
@@ -419,10 +421,10 @@ class MessageEventHandler: XmppServiceExtension {
                         self.syncMessages(for: client, period: period, version: version, rsmQuery: response.rsm?.next(150));
                     }
                 }
-                os_log("for account %s fetch for component %s with id %s executed in %f s", log: .chatHistorySync, type: .debug, period.account.stringValue, period.component?.stringValue ?? "nil", queryId, Date().timeIntervalSince(start));
+                os_log("for account %s fetch for component %s with id %s executed in %f s", log: .chatHistorySync, type: .debug, period.account.description, period.component?.description ?? "nil", queryId, Date().timeIntervalSince(start));
             case .failure(let error):
-                guard client?.state ?? .disconnected() == .connected(), retry > 0 && error != .feature_not_implemented else {
-                    os_log("for account %s fetch for component %s with id %s could not synchronize message archive for: %{public}s", log: .chatHistorySync, type: .debug, period.account.stringValue, period.component?.stringValue ?? "nil", queryId, error.description);
+                guard client?.state ?? .disconnected() == .connected(), retry > 0 && error.condition != .feature_not_implemented else {
+                    os_log("for account %s fetch for component %s with id %s could not synchronize message archive for: %{public}s", log: .chatHistorySync, type: .debug, period.account.description, period.component?.description ?? "nil", queryId, error.description);
                     if period.component != nil {
                         DBChatMarkersStore.instance.syncCompleted(forAccount: account, with: period.component!);
                     }

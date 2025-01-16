@@ -36,7 +36,7 @@ class MucEventHandler: XmppServiceExtension {
             client.module(.muc).roomManager.rooms(for: client).forEach { (room) in
                 // first we need to check if room supports MAM
                 DBChatMarkersStore.instance.awaitingSync(for: room as! Room);
-                client.module(.disco).getInfo(for: JID(room.jid), resultHandler: { result in
+                client.module(.disco).info(for: JID(room.jid), completionHandler: { result in
                     var mamVersions: [MessageArchiveManagementModule.Version] = [];
                     switch result {
                     case .success(let info):
@@ -47,7 +47,7 @@ class MucEventHandler: XmppServiceExtension {
                             (room as! Room).allowedPM = allowPM;
                         } else {
                             (room as! Room).allowedPM = .none;
-                            client.module(.muc).roomConfiguration(roomJid: JID(room.jid), completionHandler: { result in
+                            client.module(.muc).roomConfiguration(of: JID(room.jid), completionHandler: { result in
                                 switch result {
                                 case .success(let config):
                                     (room as! Room).allowedPM = config.allowPM ?? .none;
@@ -61,10 +61,8 @@ class MucEventHandler: XmppServiceExtension {
                     }
                     if let timestamp = (room as? Room)?.timestamp {
                         if !mamVersions.isEmpty {
-                            room.rejoin(fetchHistory: .skip).handle({ result in
-                                guard case .success(let r) = result else {
-                                    return;
-                                }
+                            Task {
+                                let r = try await room.rejoin(fetchHistory: .skip)
                                 switch r {
                                 case .created(let room), .joined(let room):
                                     guard let client = room.context as? XMPPClient else {
@@ -72,14 +70,18 @@ class MucEventHandler: XmppServiceExtension {
                                     }
                                     MessageEventHandler.syncMessages(for: client, version: mamVersions.contains(.MAM2) ? .MAM2 : .MAM1, componentJID: JID(room.jid), since: timestamp);
                                 }
-                            });
+                            }
                         } else {
                             DBChatMarkersStore.instance.syncCompleted(forAccount: room.account, with: room.jid);
-                            _ = room.rejoin(fetchHistory: .from(timestamp));
+                            Task {
+                                _ = try await room.rejoin(fetchHistory: .from(timestamp));
+                            }
                         }
                     } else {
                         DBChatMarkersStore.instance.syncCompleted(forAccount: room.account, with: room.jid);
-                        _ = room.rejoin(fetchHistory: .initial);
+                        Task {
+                            _ = try await room.rejoin(fetchHistory: .initial);
+                        }
                     }
                 });
             }
@@ -122,7 +124,9 @@ class MucEventHandler: XmppServiceExtension {
                     guard let nick = bookmark.nick else {
                         return;
                     }
-                    _ = mucModule.join(roomName: bookmark.jid.localPart!, mucServer: bookmark.jid.domain, nickname: nick, password: bookmark.password);
+                    Task {
+                        _ = try await mucModule.join(roomName: bookmark.jid.localPart!, mucServer: bookmark.jid.domain, nickname: nick, password: bookmark.password);
+                    }
                 });
         }).store(in: &cancellables);
     }
@@ -134,7 +138,7 @@ class MucEventHandler: XmppServiceExtension {
         
         DispatchQueue.main.async {
             let alert = Alert();
-            alert.messageText = String.localizedStringWithFormat(NSLocalizedString("Room %@", comment: "alert window title"), room.jid.stringValue);
+            alert.messageText = String.localizedStringWithFormat(NSLocalizedString("Room %@", comment: "alert window title"), room.jid.description);
             alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("Could not join room. Reason:\n%@", comment: "alert window message"), error.reason);
             alert.icon = NSImage(named: NSImage.userGroupName);
             alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
@@ -165,7 +169,7 @@ class MucEventHandler: XmppServiceExtension {
     }
         
     public func updateRoomName(room: Room) {
-        room.context?.module(.disco).getInfo(for: JID(room.jid), completionHandler: { result in
+        room.context?.module(.disco).info(for: JID(room.jid), completionHandler: { result in
             switch result {
             case .success(let info):
                 let newName = info.identities.first(where: { (identity) -> Bool in
@@ -180,20 +184,12 @@ class MucEventHandler: XmppServiceExtension {
     }
 }
 
-class CustomMucModule: MucModule {
+class CustomMucModule: MucModule, @unchecked Sendable {
     
-    override func join(room: RoomProtocol, fetchHistory: RoomHistoryFetch) -> Future<RoomJoinResult, XMPPError> {
-        return Future({ promise in
-            super.join(room: room, fetchHistory: fetchHistory).handle({ result in
-                switch result {
-                case .success(_):
-                    MucEventHandler.instance.updateRoomName(room: room as! Room);
-                case .failure(_):
-                    break;
-                }
-                promise(result);
-            })
-        });
+    override func join(room: any RoomProtocol, fetchHistory: RoomHistoryFetch) async throws -> RoomJoinResult {
+        let r = try await super.join(room: room, fetchHistory: fetchHistory);
+        MucEventHandler.instance.updateRoomName(room: room as! Room);
+        return r;
     }
-    
+        
 }

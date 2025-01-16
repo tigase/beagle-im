@@ -25,13 +25,20 @@ import MartinOMEMO
 import AppKit
 import Combine
 
-public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conversation {
+public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conversation, @unchecked Sendable {
     
     public override var defaultMessageType: StanzaType {
         return .chat;
     }
     
-    var localChatState: ChatState = .active;
+    private var _localChatState: ChatState = .active;
+    public var localChatState: ChatState {
+        get {
+            return withLock({
+                return _localChatState;
+            })
+        }
+    }
     @Published
     private(set) var remoteChatState: ChatState? = nil;
     
@@ -45,9 +52,9 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         return "Chat(account: \(account), jid: \(jid))";
     }
 
-    init(dispatcher: QueueDispatcher, context: Context, jid: BareJID, id: Int, timestamp: Date, lastActivity: LastConversationActivity?, unread: Int, options: ChatOptions) {
+    init(context: Context, jid: BareJID, id: Int, lastActivity: LastConversationActivity, unread: Int, options: ChatOptions) {
         let contact = ContactManager.instance.contact(for: .init(account: context.userBareJid, jid: jid, type: .buddy));
-        super.init(dispatcher: dispatcher, context: context, jid: jid, id: id, timestamp: timestamp, lastActivity: lastActivity, unread: unread, options: options, displayableId: contact);
+        super.init(context: context, jid: jid, id: id, lastActivity: lastActivity, unread: unread, options: options, displayableId: contact);
         (context.module(.httpFileUpload) as! HttpFileUploadModule).isAvailablePublisher.combineLatest(context.$state, { isAvailable, state -> [ConversationFeature] in
             if case .connected(_) = state {
                 return isAvailable ? [.httpFileUpload, .omemo] : [.omemo];
@@ -63,19 +70,25 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         return account == jid.bareJid;
     }
     
+    @discardableResult
+    func update(localChatState state: ChatState) -> Bool {
+        return withLock({
+            guard _localChatState != state else {
+                return false;
+            }
+            self._localChatState = state;
+            return true;
+        })
+    }
+    
     func changeChatState(state: ChatState) -> Message? {
-        guard localChatState != state else {
+        guard update(localChatState: state), remoteChatState != nil else {
             return nil;
         }
-        self.localChatState = state;
-        if (remoteChatState != nil) {
-            let msg = Message();
-            msg.to = JID(jid);
-            msg.type = StanzaType.chat;
-            msg.chatState = state;
-            return msg;
-        }
-        return nil;
+
+        let msg = Message(type: .chat, to: jid.jid());
+        msg.chatState = state;
+        return msg;
     }
     
     private var remoteChatStateTimer: Foundation.Timer?;
@@ -115,7 +128,9 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         msg.chatState = .active;
         msg.isMarkable = true;
         msg.messageDelivery = .request;
-        self.localChatState = .active;
+        withLock( {
+            self._localChatState = .active
+        })
         return msg;
     }
     
@@ -147,9 +162,8 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
                 completionHandler(.failure(.unknownError));
                 return;
             }
-            let result = omemoModule.encryptFile(data: data);
-            switch result {
-            case .success(let (encryptedData, hash)):
+            do {
+                let (encryptedData, hash) = try OMEMOModule.encryptFile(data: data);
                 let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString);
                 do {
                     try encryptedData.write(to: tmpFile);
@@ -164,7 +178,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
                 } catch {
                     completionHandler(.failure(.noAccessError));
                 }
-            case .failure(_):
+            } catch {
                 completionHandler(.failure(.unknownError));
             }
         }
@@ -180,7 +194,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
             var messageEncryption: ConversationEntryEncryption = .none;
             switch encryption {
             case .omemo:
-                messageEncryption = .decrypted(fingerprint: DBOMEMOStore.instance.identityFingerprint(forAccount: self.account, andAddress: SignalAddress(name: self.account.stringValue, deviceId: Int32(bitPattern: DBOMEMOStore.instance.localRegistrationId(forAccount: self.account)!))));
+                messageEncryption = .decrypted(fingerprint: DBOMEMOStore.instance.identityFingerprint(forAccount: self.account, andAddress: SignalAddress(name: self.account.description, deviceId: Int32(bitPattern: DBOMEMOStore.instance.localRegistrationId(forAccount: self.account)!))));
             case .none:
                 break;
             }
@@ -199,7 +213,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         var messageEncryption: ConversationEntryEncryption = .none;
         switch encryption {
         case .omemo:
-            messageEncryption = .decrypted(fingerprint: DBOMEMOStore.instance.identityFingerprint(forAccount: self.account, andAddress: SignalAddress(name: self.account.stringValue, deviceId: Int32(bitPattern: DBOMEMOStore.instance.localRegistrationId(forAccount: self.account)!))));
+            messageEncryption = .decrypted(fingerprint: DBOMEMOStore.instance.identityFingerprint(forAccount: self.account, andAddress: SignalAddress(name: self.account.description, deviceId: Int32(bitPattern: DBOMEMOStore.instance.localRegistrationId(forAccount: self.account)!))));
         case .none:
             break;
         }
@@ -224,7 +238,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
             case .success(_):
                 DBChatHistoryStore.instance.updateItemState(for: self, stanzaId: correctedMessageOriginId ?? message.id!, from: .outgoing(.unsent), to: .outgoing(.sent), withTimestamp: correctedMessageOriginId != nil ? nil : Date());
             case .failure(let error):
-                switch error {
+                switch error.condition {
                 case .gone:
                     return;
                 default:
@@ -245,35 +259,35 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
                 });
             case .omemo:
                 guard let context = self.context as? XMPPClient, context.isConnected else {
-                    completionHandler(.failure(.gone(nil)));
+                    completionHandler(.failure(XMPPError(condition: .gone)));
                     callback();
                     return;
                 }
                 message.oob = nil;
-                context.module(.omemo).encode(message: message, completionHandler: { result in
-                    switch result {
-                    case .successMessage(let encodedMessage, _):
+                Task {
+                    do {
+                        let encodedMessage = try await context.module(.omemo).encrypt(message: message);
                         guard context.isConnected else {
-                            completionHandler(.failure(.gone(nil)))
+                            completionHandler(.failure(XMPPError(condition: .gone)))
                             callback();
                             return;
                         }
-                        super.send(message: encodedMessage, completionHandler: { result in
+                        super.send(message: encodedMessage.message, completionHandler: { result in
                             completionHandler(result);
                             callback();
                         });
-                    case .failure(let error):
+                    } catch {
                         var errorMessage = NSLocalizedString("It was not possible to send encrypted message due to encryption error", comment: "omemo encryption error");
-                        switch error {
+                        switch error as? SignalError {
                         case .noSession:
                             errorMessage = NSLocalizedString("There is no trusted device to send message to", comment: "omemo encryption error");
                         default:
                             break;
                         }
-                        completionHandler(.failure(.unexpected_request(errorMessage)));
+                        completionHandler(.failure(XMPPError(condition: .unexpected_request, message: errorMessage)));
                         callback();
                     }
-                })
+                }
             }
         })
     }

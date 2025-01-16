@@ -37,7 +37,7 @@ class MixEventHandler: XmppServiceExtension {
             }
             let disco = client.module(.disco);
             for channel in client.module(.mix).channelManager.channels(for: client) {
-                disco.getItems(for: JID(channel.jid), node: "mix", completionHandler: { result in
+                disco.items(for: JID(channel.jid), node: "mix", completionHandler: { result in
                     switch result {
                     case .success(let info):
                         (channel as! Channel).updateOptions({ options in

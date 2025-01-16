@@ -28,7 +28,7 @@ class DownloadManager: NSObject {
 
     static let instance = DownloadManager();
 
-    private let dispatcher = QueueDispatcher(label: "download_manager_queue");
+    private let queue = DispatchQueue(label: "download_manager_queue");
 
     private var itemDownloadInProgress: [Int] = [];
 
@@ -42,13 +42,13 @@ class DownloadManager: NSObject {
     }
     
     func downloadInProgress(for item: ConversationEntry) -> Bool {
-        return dispatcher.sync {
+        return queue.sync {
             return self.itemDownloadInProgress.contains(item.id);
         }
     }
 
     func download(item: ConversationEntry, url: String, maxSize: Int64) -> Bool {
-        return dispatcher.sync {
+        return queue.sync {
             guard var url = URL(string: url) else {
                 DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                     appendix.state = .error;
@@ -87,7 +87,7 @@ class DownloadManager: NSObject {
                     });
 
                     guard !isTooBig else {
-                      self.dispatcher.async {
+                      self.queue.async {
                           self.itemDownloadInProgress = self.itemDownloadInProgress.filter({ (id) -> Bool in
                               return item.id != id;
                             });
@@ -99,10 +99,10 @@ class DownloadManager: NSObject {
                         switch result {
                         case .success((let localUrl, let filename)):
                             if let encryptionKey = encryptionKey, let omemoModule = XmppService.instance.getClient(for: item.conversation.account)?.module(.omemo) {
-                                switch omemoModule.decryptFile(url: localUrl, fragment: encryptionKey) {
-                                case .success(let data):
+                                do {
+                                    let data = try OMEMOModule.decryptFile(url: localUrl, fragment: encryptionKey);
                                     try? data.write(to: localUrl);
-                                case .failure(_):
+                                } catch {
                                     break;
                                 }
                             }
@@ -111,7 +111,7 @@ class DownloadManager: NSObject {
                             DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                                 appendix.state = .downloaded;
                             });
-                            self.dispatcher.sync {
+                            self.queue.sync {
                                 self.itemDownloadInProgress = self.itemDownloadInProgress.filter({ (id) -> Bool in
                                     return item.id != id;
                                 });
@@ -129,7 +129,7 @@ class DownloadManager: NSObject {
                             DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                                 appendix.state = statusCode == 404 ? .gone : .error;
                             });
-                            self.dispatcher.sync {
+                            self.queue.sync {
                                 self.itemDownloadInProgress = self.itemDownloadInProgress.filter({ (id) -> Bool in
                                     return item.id != id;
                                 });
@@ -141,7 +141,7 @@ class DownloadManager: NSObject {
                     DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
                         appendix.state = statusCode == 404 ? .gone : .error;
                     });
-                    self.dispatcher.async {
+                    self.queue.async {
                         self.itemDownloadInProgress = self.itemDownloadInProgress.filter({ (id) -> Bool in
                             return item.id != id;
                         });
@@ -240,7 +240,7 @@ extension DownloadManager: URLSessionDownloadDelegate {
 //    }
     
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        guard let item = dispatcher.sync(execute: {
+        guard let item = queue.sync(execute: {
             return self.inProgress.removeValue(forKey: downloadTask);
         }) else {
             return;
@@ -258,7 +258,7 @@ extension DownloadManager: URLSessionDownloadDelegate {
     }
     
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        guard let downloadTask = task as? URLSessionDownloadTask, let item = dispatcher.sync(execute: {
+        guard let downloadTask = task as? URLSessionDownloadTask, let item = queue.sync(execute: {
             return self.inProgress.removeValue(forKey: downloadTask);
         }) else {
             return;
@@ -267,7 +267,7 @@ extension DownloadManager: URLSessionDownloadDelegate {
     }
     
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
-        guard let sizeLimit = dispatcher.sync(execute: {
+        guard let sizeLimit = queue.sync(execute: {
             return self.inProgress[downloadTask]?.maxSize;
         }) else {
             return;

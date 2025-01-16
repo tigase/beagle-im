@@ -27,7 +27,7 @@ class XMLConsoleViewController: NSViewController, StreamLogger {
     public static func configureLogging(for client: XMPPClient) {
         DispatchQueue.main.async {
             guard let window = NSApp.windows.first(where: { (window) -> Bool in
-                (window.contentViewController as? XMLConsoleViewController)?.account == client.sessionObject.userBareJid!;
+                (window.contentViewController as? XMLConsoleViewController)?.account == client.userBareJid;
             }) else {
                 client.streamLogger = nil;
                 return;
@@ -70,7 +70,7 @@ class XMLConsoleViewController: NSViewController, StreamLogger {
     var account: BareJID!;
     
     override func viewWillAppear() {
-        self.view.window?.title = String.localizedStringWithFormat(NSLocalizedString("XML Console: %@", comment: "xml console title"), account!.stringValue);
+        self.view.window?.title = String.localizedStringWithFormat(NSLocalizedString("XML Console: %@", comment: "xml console title"), account!.description);
         
         XmppService.instance.getClient(for: account)?.streamLogger = self;
     }
@@ -99,7 +99,7 @@ class XMLConsoleViewController: NSViewController, StreamLogger {
         DispatchQueue.main.async { [weak self] in
             switch value {
             case .stanza(let stanza):
-                self?.add(timestamp: Date(), incoming: true, text: stanza.element.toPrettyString(secure: false));
+                self?.add(timestamp: Date(), incoming: true, text: stanza.element.prettyString(secure: false));
             case .streamClose(_):
                 self?.add(timestamp: Date(), incoming: true, text: "</stream:stream>");
             case .streamOpen(let attributes):
@@ -116,7 +116,7 @@ class XMLConsoleViewController: NSViewController, StreamLogger {
         DispatchQueue.main.async { [weak self] in
             switch value {
             case .stanza(let stanza):
-                self?.add(timestamp: Date(), incoming: false, text: stanza.element.toPrettyString(secure: false));
+                self?.add(timestamp: Date(), incoming: false, text: stanza.element.prettyString(secure: false));
             case .streamClose(_):
                 self?.add(timestamp: Date(), incoming: false, text: "</stream:stream>");
             case .streamOpen(let attributes):
@@ -138,7 +138,7 @@ class XMLConsoleViewController: NSViewController, StreamLogger {
     }
     
     fileprivate func add(timestamp: Date, incoming: Bool, stanza: Stanza) {
-        add(timestamp: timestamp, incoming: incoming, text: stanza.element.toPrettyString(secure: false));
+        add(timestamp: timestamp, incoming: incoming, text: stanza.element.prettyString(secure: false));
     }
     
     fileprivate func add(timestamp: Date, incoming: Bool, text: String) {

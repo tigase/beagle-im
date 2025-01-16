@@ -124,8 +124,8 @@ class VCardEditorViewController: NSViewController, AccountAware {
                 progressIndicator.startAnimation(self);
                 self.isEnabled = false;
                 PrivateVCard4Helper.retrieve(on: account, from: account, completionHandler: { res in
-                    let result: Result<VCard,ErrorCondition> = res.flatMapError({ err in
-                        if err == .item_not_found {
+                    let result: Result<VCard,XMPPError> = res.flatMapError({ err in
+                        if err.condition == .item_not_found {
                             // there may be no node yet..
                             return .success(VCard());
                         } else {
@@ -139,7 +139,7 @@ class VCardEditorViewController: NSViewController, AccountAware {
                             self.vcard = vcard;
                             self.isEnabled = true;
                         case .failure(let error):
-                            self.handleError(title: NSLocalizedString("Could not retrive current version of a private VCard from the server.", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.rawValue));
+                            self.handleError(title: NSLocalizedString("Could not retrive current version of a private VCard from the server.", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.localizedDescription));
                         }
                     }
                 });
@@ -151,20 +151,22 @@ class VCardEditorViewController: NSViewController, AccountAware {
                     progressIndicator.stopAnimation(self);
                     return;
                 }
-                client.module(.vcard4).retrieveVCard(completionHandler: { (result) in
-                    switch result {
-                    case .success(let vcard):
+                Task {
+                    do {
+                        let vcard = try await client.module(.vcard4).retrieveVCard();
                         DBVCardStore.instance.updateVCard(for: account, on: account, vcard: vcard);
-                        DispatchQueue.main.async {
+                        await MainActor.run(body: {
                             self.vcard = vcard;
                             self.progressIndicator.stopAnimation(self);
                             self.isEnabled = true;
-                        }
-                    case .failure(let error):
-                        self.progressIndicator.stopAnimation(self);
-                        self.handleError(title: NSLocalizedString("Could not retrive current version from the server.", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.localizedDescription));
+                        })
+                    } catch {
+                        await MainActor.run(body: {
+                            self.progressIndicator.stopAnimation(self);
+                            self.handleError(title: NSLocalizedString("Could not retrive current version from the server.", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.localizedDescription));
+                        })
                     }
-                })
+                }
             }
         }
     }
@@ -282,23 +284,23 @@ class VCardEditorViewController: NSViewController, AccountAware {
             }
             self.isEnabled = false;
             self.progressIndicator.startAnimation(self);
-            vcard4Module.publishVCard(vcard, completionHandler: { result in
-                switch result {
-                case .success(_):
+            Task {
+                do {
+                    try await vcard4Module.publish(vcard: vcard);
                     DBVCardStore.instance.updateVCard(for: account, on: account, vcard: self.vcard);
-                    DispatchQueue.main.async {
+                    await MainActor.run(body: {
                         self.progressIndicator.stopAnimation(self);
                         self.isEnabled = true;
                         self.dismiss(self);
-                    }
-                case .failure(let error):
-                    DispatchQueue.main.async {
+                    })
+                } catch {
+                    await MainActor.run(body: {
                         self.progressIndicator.stopAnimation(self);
                         self.isEnabled = true;
                         self.handleError(title: NSLocalizedString("Publication of new version of VCard failed", comment: "vcard editor"), message: String.localizedStringWithFormat(NSLocalizedString("Server returned an error: %@", comment: "vcard editor"), error.localizedDescription));
-                    }
+                    })
                 }
-            });
+            }
         }
     }
 
@@ -502,13 +504,13 @@ class VCardEditorViewController: NSViewController, AccountAware {
         });
     }
     
-    fileprivate func createRemoveButton(for item: VCard.VCardEntryItemTypeAware) -> NSButton {
+    fileprivate func createRemoveButton(for item: VCardEntryItemTypeAware) -> NSButton {
         let removeButton = NSButton(image: NSImage(named: NSImage.removeTemplateName)!, target: self, action: #selector(removePositionClicked));
         removeButton.bezelStyle = .texturedRounded;
         return removeButton;
     }
  
-    fileprivate func createTypeButton(for item: VCard.VCardEntryItemTypeAware, tag: Int, action: Selector) -> NSButton {
+    fileprivate func createTypeButton(for item: VCardEntryItemTypeAware, tag: Int, action: Selector) -> NSButton {
         let typeButton = NSPopUpButton(frame: .zero, pullsDown: false);
         typeButton.addItem(withTitle: NSLocalizedString("Home", comment: "vcard editor"));
         typeButton.addItem(withTitle: NSLocalizedString("Work", comment: "vcard editor"));

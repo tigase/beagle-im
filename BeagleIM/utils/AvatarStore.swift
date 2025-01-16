@@ -32,7 +32,6 @@ extension Query {
 
 class AvatarStore {
     
-    fileprivate let dispatcher = QueueDispatcher(label: "avatar_store", attributes: .concurrent);
     fileprivate let cacheDirectory: URL;
     
     private let cache = NSCache<NSString,NSImage>();
@@ -45,36 +44,31 @@ class AvatarStore {
     }
     
     func hasAvatarFor(hash: String) -> Bool {
-        return dispatcher.sync {
-            return FileManager.default.fileExists(atPath: self.cacheDirectory.appendingPathComponent(hash).path);
-        }
+        return FileManager.default.fileExists(atPath: self.cacheDirectory.appendingPathComponent(hash).path);
     }
     
     func avatarHash(for jid: BareJID, on account: BareJID) -> [AvatarHash] {
-        return dispatcher.sync {
-            return try! Database.main.reader({ database in
-                try database.select(query: .avatarFindHash, params: ["account": account, "jid": jid]).mapAll({ cursor -> AvatarHash? in
-                    guard let type = AvatarType(rawValue: cursor["type"]!), let hash: String = cursor["hash"] else {
-                        return nil;
-                    }
-                    return AvatarHash(type: type, hash: hash);
-                });
+        return try! Database.main.reader({ database in
+            try database.select(query: .avatarFindHash, params: ["account": account, "jid": jid]).mapAll({ cursor -> AvatarHash? in
+                guard let type = AvatarType(rawValue: cursor["type"]!), let hash: String = cursor["hash"] else {
+                    return nil;
+                }
+                return AvatarHash(type: type, hash: hash);
             });
-        }
+        });
     }
     
     func avatar(for hash: String) -> NSImage? {
-        return dispatcher.sync {
-            if let image = cache.object(forKey: hash as NSString) {
-                return image;
+        if let image = cache.object(forKey: hash as NSString) {
+            return image;
+        }
+        if let data = try? Data(contentsOf: self.cacheDirectory.appendingPathComponent(hash)), let image = NSImage(data: data) {
+            if let rep = image.bestRepresentation(for: .zero, context: nil, hints: nil) {
+                let tmpImage = NSImage(size: image.size);
+                tmpImage.addRepresentation(rep)
+                cache.setObject(tmpImage, forKey: hash as NSString);
+                return tmpImage;
             }
-            if let data = try? Data(contentsOf: self.cacheDirectory.appendingPathComponent(hash)), let image = NSImage(data: data) {
-                if let rep = image.bestRepresentation(for: .zero, context: nil, hints: nil) {
-                    let tmpImage = NSImage(size: image.size);
-                    tmpImage.addRepresentation(rep)
-                    cache.setObject(tmpImage, forKey: hash as NSString);
-                    return tmpImage;
-                }
 //                var rect = CGRect(origin: .zero, size: image.size);
 //                if let cgImage = image.cgImage(forProposedRect: &rect, context: nil, hints: nil) {
 //                    let tmpImage = NSImage(cgImage: cgImage, size: image.size);
@@ -83,41 +77,34 @@ class AvatarStore {
 //                }
 //                cache.setObject(image, forKey: hash as NSString);
 //                return image;
-            }
-            return nil;
         }
+        return nil;
     }
     
-    func avatar(for hash: String, completionHandler: @escaping (Result<NSImage,ErrorCondition>)->Void) {
-        dispatcher.async {
-            if let image = self.cache.object(forKey: hash as NSString) {
-                completionHandler(.success(image));
-                return;
-            }
-            if let data = try? Data(contentsOf: self.cacheDirectory.appendingPathComponent(hash)), let image = NSImage(data: data)? .scaled(maxWidthOrHeight: 48) {//.decoded() {
-                self.cache.setObject(image, forKey: hash as NSString);
-                completionHandler(.success(image));
-                return;
-            }
-            completionHandler(.failure(.conflict))
+    func avatar(for hash: String, completionHandler: @escaping (Result<NSImage,XMPPError>)->Void) {
+        if let image = self.cache.object(forKey: hash as NSString) {
+            completionHandler(.success(image));
+            return;
         }
+        if let data = try? Data(contentsOf: self.cacheDirectory.appendingPathComponent(hash)), let image = NSImage(data: data)? .scaled(maxWidthOrHeight: 48) {//.decoded() {
+            self.cache.setObject(image, forKey: hash as NSString);
+            completionHandler(.success(image));
+            return;
+        }
+        completionHandler(.failure(XMPPError.init(condition: .conflict)))
     }
     
     func removeAvatar(for hash: String) {
-        dispatcher.sync(flags: .barrier) {
-            try? FileManager.default.removeItem(at: self.cacheDirectory.appendingPathComponent(hash));
-            cache.removeObject(forKey: hash as NSString);
-        }
+        try? FileManager.default.removeItem(at: self.cacheDirectory.appendingPathComponent(hash));
+        cache.removeObject(forKey: hash as NSString);
     }
     
     func storeAvatar(data: Data, for hash: String) {
-        dispatcher.async(flags: .barrier) {
-            if !FileManager.default.createFile(atPath: self.cacheDirectory.appendingPathComponent(hash).path, contents: data, attributes: nil) {
-                os_log(OSLogType.error, log: .avatar, "Could not save avatar to local cache for hash: %{public}s", hash);
-            }
-            if let image = NSImage(data: data) {
-                self.cache.setObject(image, forKey: hash as NSString);
-            }
+        if !FileManager.default.createFile(atPath: self.cacheDirectory.appendingPathComponent(hash).path, contents: data, attributes: nil) {
+            os_log(OSLogType.error, log: .avatar, "Could not save avatar to local cache for hash: %{public}s", hash);
+        }
+        if let image = NSImage(data: data) {
+            self.cache.setObject(image, forKey: hash as NSString);
         }
     }
     
@@ -128,34 +115,30 @@ class AvatarStore {
     }
     
     func removeAvatarHash(for jid: BareJID, on account: BareJID, type: AvatarType, completionHandler: @escaping ()->Void) {
-        dispatcher.async {
-            try! Database.main.writer({ database in
-                try database.delete(query: .avatarDeleteHash, params: ["account": account, "jid": jid, "type": type.rawValue]);
-            });
-            completionHandler();
-        }
+        try! Database.main.writer({ database in
+            try database.delete(query: .avatarDeleteHash, params: ["account": account, "jid": jid, "type": type.rawValue]);
+        });
+        completionHandler();
     }
     
     func updateAvatarHash(for jid: BareJID, on account: BareJID, hash: AvatarHash, completionHandler: @escaping (AvatarUpdateResult)->Void ) {
-        dispatcher.async(flags: .barrier) {
-            let oldHashes = self.avatarHash(for: jid, on: account);
-            guard !oldHashes.contains(hash) else {
-                completionHandler(.notChanged);
-                return;
-            }
+        let oldHashes = self.avatarHash(for: jid, on: account);
+        guard !oldHashes.contains(hash) else {
+            completionHandler(.notChanged);
+            return;
+        }
             
-            try! Database.main.writer({ database in
-                try database.delete(query: .avatarDeleteHash, params: ["account": account, "jid": jid, "type": hash.type.rawValue]);
-                try database.insert(query: .avatarInsertHash, params: ["account": account, "jid": jid, "type": hash.type.rawValue, "hash": hash.hash]);
-            })
+        try! Database.main.writer({ database in
+            try database.delete(query: .avatarDeleteHash, params: ["account": account, "jid": jid, "type": hash.type.rawValue]);
+            try database.insert(query: .avatarInsertHash, params: ["account": account, "jid": jid, "type": hash.type.rawValue, "hash": hash.hash]);
+        })
 
-            if oldHashes.isEmpty {
-                completionHandler(.newAvatar(hash.hash));
-            } else if let first = oldHashes.first, first >= hash {
-                completionHandler(.newAvatar(hash.hash));
-            } else {
-                completionHandler(.notChanged);
-            }
+        if oldHashes.isEmpty {
+            completionHandler(.newAvatar(hash.hash));
+        } else if let first = oldHashes.first, first >= hash {
+            completionHandler(.newAvatar(hash.hash));
+        } else {
+            completionHandler(.notChanged);
         }
     }
  

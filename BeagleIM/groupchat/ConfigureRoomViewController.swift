@@ -41,14 +41,14 @@ class ConfigureRoomViewController: NSViewController {
     @IBOutlet var formView: JabberDataFormView!;
     @IBOutlet var scrollView: NSScrollView!;
 
-    var form: JabberDataElement? {
+    var config: RoomConfig? {
         didSet {
             if let roomJid = self.roomJid, let account = self.account {
                 avatarView.avatar = AvatarManager.instance.avatar(for: roomJid, on: account)
-                roomNameField.stringValue = (form?.getField(named: "muc#roomconfig_roomname") as? TextSingleField)?.value ?? "";
+                roomNameField.stringValue = config?.name ?? "";
                 subjectField.stringValue = room?.subject ?? "";
             }
-            formView.form = form;
+            formView.form = config?.form;
         }
     }
     
@@ -71,12 +71,12 @@ class ConfigureRoomViewController: NSViewController {
         let dispatchGroup = DispatchGroup();
         progressIndicator.startAnimation(nil);
         dispatchGroup.enter();
-        mucModule.getRoomConfiguration(roomJid: JID(roomJid == nil ? mucComponent : roomJid!), completionHandler: { [weak self] result in
+        mucModule.roomConfiguration(of: JID(roomJid == nil ? mucComponent : roomJid!), completionHandler: { [weak self] result in
             DispatchQueue.main.async {
                 dispatchGroup.leave();
                 switch result {
                 case .success(let form):
-                    self?.form = form;
+                    self?.config = form;
                 case .failure(let error):
                     guard let that = self else {
                         return;
@@ -107,7 +107,7 @@ class ConfigureRoomViewController: NSViewController {
                         dispatchGroup.leave();
                     }
                 case .failure(let err):
-                    guard err == .item_not_found else {
+                    guard err.condition == .item_not_found else {
                         DispatchQueue.main.async {
                             that.avatarView.isEnabled = false;
                             dispatchGroup.leave();
@@ -140,13 +140,18 @@ class ConfigureRoomViewController: NSViewController {
     }
     
     private func checkVCardSupport(vCardTempModule: VCardTempModule, completionHandler: @escaping (Result<Bool,XMPPError>)->Void) {
-        vCardTempModule.retrieveVCard(from: JID(roomJid!), completionHandler: { (result) in
-            completionHandler(result.map({ _ in true }));
-        });
+        Task {
+            do {
+                let result = try await vCardTempModule.retrieveVCard(from: JID(roomJid!));
+                completionHandler(.success(true))
+            } catch {
+                completionHandler(.failure(error as! XMPPError))
+            }
+        }
     }
     
     private func checkVCardSupport(discoModule: DiscoveryModule, completionHandler: @escaping (Result<Bool,XMPPError>)->Void) {
-        discoModule.getInfo(for: JID(self.mucComponent!), completionHandler: { result in
+        discoModule.info(for: JID(self.mucComponent!), completionHandler: { result in
             completionHandler(result.map { info in info.features.contains(VCardTempModule.ID) });
         });
     }
@@ -156,14 +161,14 @@ class ConfigureRoomViewController: NSViewController {
     }
     
     @IBAction func acceptClicked(_ sender: NSButton) {
-        guard form != nil else {
+        guard config != nil else {
             return;
         }
         
         formView.synchronize();
         
         let name = roomNameField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines);
-        (form?.getField(named: "muc#roomconfig_roomname") as? TextSingleField)?.value = name.isEmpty ? nil : name;
+        config?.name = name.isEmpty ? nil : name;
         
         guard let client = room?.context, room?.state == .joined else {
             return;
@@ -172,51 +177,46 @@ class ConfigureRoomViewController: NSViewController {
         let dispatchGroup = DispatchGroup();
         dispatchGroup.enter();
         progressIndicator.startAnimation(nil);
-        
-        let queue = OperationQueue();
-        queue.maxConcurrentOperationCount = 1;
-        queue.isSuspended = true;
-        
+                
         let roomJid = self.roomJid!;
-        
-        if avatarView.isEnabled && avatarView.avatar != AvatarManager.instance.avatar(for: roomJid, on: account) {
-            let vcard = VCard();
-            if let binval = avatarView.avatar?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
-                vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
-            }
-            queue.addOperation {
-                client.module(.vcardTemp).publishVCard(vcard, to: roomJid, completionHandler: nil);
-            }
-        }
-        
-        if subjectField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines) != room?.subject ?? "" {
-            let newSubject = subjectField.stringValue.isEmpty ? nil : subjectField.stringValue;
-            queue.addOperation {
-                client.module(.muc).setRoomSubject(roomJid: roomJid, newSubject: newSubject);
-            }
-        }
         
         let account = self.account!;
         let room = self.room;
         let nickname = self.nickname;
-        let password = (form!.getField(named: "muc#roomconfig_roomsecret") as? SingleField)?.rawValue;
+        let password = config!.secret;
         
         let mucModule = client.module(.muc);
-        setRoomConfiguration(mucModule: mucModule, configuration: form!) { [weak self] (result) in
-            switch result {
-            case .success(_):
+        
+        Task {
+            do {
+                _ = try await setRoomConfiguration(mucModule: mucModule, configuration: config!);
                 room?.updateOptions({ options in
                     options.password = password;
                 })
-                if let bookmark = client.module(.pepBookmarks).currentBookmarks.conference(for: JID(roomJid)) {
-                    client.module(.pepBookmarks).addOrUpdate(bookmark: bookmark.with(password: password));
+                if avatarView.isEnabled && avatarView.avatar != AvatarManager.instance.avatar(for: roomJid, on: account) {
+                    var vcard = VCard();
+                    if let binval = avatarView.avatar?.scaled(maxWidthOrHeight: 512.0).jpegData(compressionQuality: 0.8)?.base64EncodedString(options: []) {
+                        vcard.photos = [VCard.Photo(uri: nil, type: "image/jpeg", binval: binval, types: [.home])];
+                    }
+                    
+                    Task {
+                        try? await client.module(.vcardTemp).publish(vcard: vcard, to: roomJid);
+                    }
                 }
-                queue.isSuspended = false;
-                dispatchGroup.leave();
-                break;
-            case .failure(let error):
-                DispatchQueue.main.async {
-                    guard let window = self?.view.window else {
+                if subjectField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines) != room?.subject ?? "" {
+                    let newSubject = subjectField.stringValue.isEmpty ? nil : subjectField.stringValue;
+                    Task {
+                        try? await client.module(.muc).setRoomSubject(roomJid: roomJid, newSubject: newSubject);
+                    }
+                }
+                if let bookmark = client.module(.pepBookmarks).currentBookmarks.conference(for: JID(roomJid)) {
+                    Task {
+                        try? await client.module(.pepBookmarks).addOrUpdate(bookmark: bookmark.with(password: password));
+                    }
+                }
+            } catch {
+                await MainActor.run(body: {
+                    guard let window = self.view.window else {
                         return;
                     }
                     let alert = NSAlert();
@@ -227,18 +227,17 @@ class ConfigureRoomViewController: NSViewController {
                     alert.beginSheetModal(for: window, completionHandler: { result in
                         dispatchGroup.leave();
                     });
-                }
+                })
             }
-        }
-                
-        dispatchGroup.notify(queue: DispatchQueue.main) { [weak self] in
-            self?.progressIndicator.stopAnimation(nil);
-            self?.close();
+            await MainActor.run(body: {
+                self.progressIndicator.stopAnimation(nil);
+                self.close();
+            })
         }
     }
     
-    private func setRoomConfiguration(mucModule: MucModule, configuration: JabberDataElement, completionHandler: @escaping (Result<Void,XMPPError>)->Void) {
-        mucModule.setRoomConfiguration(roomJid: JID(self.roomJid), configuration: configuration, completionHandler: completionHandler);
+    private func setRoomConfiguration(mucModule: MucModule, configuration: RoomConfig) async throws {
+        try await mucModule.roomConfiguration(configuration, of: JID(self.roomJid));
     }
     
     @IBAction func disclosureClicked(_ sender: NSButton) {

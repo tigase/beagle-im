@@ -213,14 +213,13 @@ enum Appearance: String {
 enum AccountSettings {
     case messageSyncAuto(BareJID)
     case messageSyncPeriod(BareJID)
-    case omemoRegistrationId(BareJID)
 //    case omemoCurrentPreKeyId(BareJID)
     
     public static let CHANGED = Notification.Name("accountSettingChanged");
     
     public static func initialize() {
-        let accountJids = AccountManager.getAccounts().map { (jid) -> String in
-            return jid.stringValue
+        let accountJids = AccountManager.accountNames().map { (jid) -> String in
+            return jid.description
         };
         let toRemove = UserDefaults.standard.dictionaryRepresentation().keys.filter { key -> Bool in
             return key.hasPrefix("accounts.") && accountJids.first(where: { jid -> Bool in
@@ -238,8 +237,6 @@ enum AccountSettings {
             return account;
         case .messageSyncPeriod(let account):
             return account;
-        case .omemoRegistrationId(let account):
-            return account;
 //        case .omemoCurrentPreKeyId(let account):
 //            return account;
         }
@@ -251,8 +248,6 @@ enum AccountSettings {
             return "messageSyncAuto";
         case .messageSyncPeriod(_):
             return "messageSyncPeriod";
-        case .omemoRegistrationId(_):
-            return "omemoRegistrationId";
 //        case .omemoCurrentPreKeyId(_):
 //            return "omemoCurrentPreKeyId";
         }

@@ -30,7 +30,7 @@ class MetadataCache {
 
     private var cache: [URL: Result<LPLinkMetadata, MetadataCache.CacheError>] = [:];
     private let diskCacheUrl: URL;
-    private let dispatcher = QueueDispatcher(label: "MetadataCache");
+    private let dispatcher = DispatchQueue(label: "MetadataCache");
 
     private var inProgress: [URL: OperationQueue] = [:];
     
