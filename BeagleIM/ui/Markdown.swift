@@ -413,8 +413,6 @@ class Markdown {
             return c == MINUS ? listParagraphStyle : listParagraphContinuationStyle;
         case .number:
             return isNumber(c) ? listParagraphStyle : listParagraphContinuationStyle;
-        default:
-            return nil;
         }
     }
     
@@ -426,8 +424,6 @@ class Markdown {
             return c != MINUS;
         case .number:
             return !isNumber(c);
-        default:
-            return true;
         }
     }
  

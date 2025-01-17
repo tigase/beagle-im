@@ -27,7 +27,7 @@ import CoreLocation
 
 public class DatabaseMigrator: DatabaseSchemaMigrator {
     
-    public let expectedVersion: Int = 20;
+    public let expectedVersion: Int = 19;
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "DatabaseMigrator");
     
     public func upgrade(database: DatabaseWriter, newVersion version: Int) throws {

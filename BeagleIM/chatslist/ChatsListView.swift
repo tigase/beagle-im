@@ -628,12 +628,11 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                 })
             }
             
-            mixModule.retrieveConfig(for: c.channelJid, completionHandler: { result in
-                switch result {
-                case .success(let data):
+            Task {
+                do {
+                    let data = try await mixModule.config(for: c.channelJid);
                     if let owners = data.owner, owners.contains(JID(userJid)) && owners.count == 1 {
-                        // you need to pass the permission or delete channel..
-                        DispatchQueue.main.async {
+                        await MainActor.run {
                             let alert = Alert();
                             alert.icon = NSImage(named: NSImage.cautionName);
                             alert.messageText = NSLocalizedString("Leaving channel", comment: "leaving channel title");
@@ -685,14 +684,13 @@ extension ChatsListViewController: NSOutlineViewDelegate {
                                     break;
                                 }
                             })
+
                         }
-                    } else {
-                        leaveFn();
                     }
-                case .failure(let error):
+                } catch {
                     leaveFn();
                 }
-            })
+            }
             return false;
         default:
             return false;
@@ -729,10 +727,7 @@ class ChatsListView: NSOutlineView {
     override func awakeFromNib() {
         super.awakeFromNib();
     }
-    
-    deinit {
-    }
-    
+        
     override func frameOfOutlineCell(atRow row: Int) -> NSRect {
         return NSRect.zero;
     }

@@ -202,7 +202,7 @@ class CreateChannelViewController: BaseJoinChannelViewController, NSTextFieldDel
             config.membersOnly = priv;
             config.publicRoom = !priv;
             config.desc = channelDescription;
-            config.whois = priv ? .anyone : .moderators;
+            config.whois = priv ? .anyone : .moderators
             let roomJid = BareJID(localPart: roomName, domain: component.jid.domain);
             mucModule.roomConfiguration(config, of: JID(roomJid), completionHandler: { [weak self] result in
                 switch result {

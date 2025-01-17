@@ -317,9 +317,14 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
         }
 
         modifyConfig({ config in
-            if config.administrator?.contains(JID(jid)) ?? true {
-                config.administrator?.append(JID(jid));
+            guard !(config.administrator?.contains(JID(jid)) ?? false) else {
+                return nil;
             }
+            if (config.administrator == nil) {
+                config.administrator = [];
+            }
+            config.administrator?.append(JID(jid));
+            return config;
         })
     }
     
@@ -330,7 +335,11 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
         }
 
         modifyConfig({ config in
+            guard config.administrator?.contains(JID(jid)) ?? false else {
+                return nil;
+            }
             config.administrator?.removeAll(where: { $0.bareJid == jid });
+            return config;
         })
     }
     
@@ -341,9 +350,14 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
         }
 
         modifyConfig({ config in
-            if config.owner?.contains(JID(jid)) ?? true {
-                config.owner?.append(JID(jid));
+            guard !(config.owner?.contains(JID(jid)) ?? false) else {
+                return nil;
             }
+            if (config.owner == nil) {
+                config.owner = [];
+            }
+            config.owner?.append(JID(jid));
+            return config;
         })
     }
     
@@ -354,24 +368,30 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
         }
 
         modifyConfig({ config in
-            config.owner?.removeAll(where: { $0.bareJid == jid });
-            if config.owner?.isEmpty ?? true {
-                throw XMPPError(condition: .not_acceptable);
+            guard config.owner?.contains(JID(jid)) ?? false else {
+                return nil;
             }
+            config.owner?.removeAll(where: { $0.bareJid == jid })
+            guard !(config.owner?.isEmpty ?? true) else {
+                return nil;
+            }
+            return config;
         })
     }
 
-    private func modifyConfig(_ fn: @escaping (MixChannelConfig) throws -> Void) {
+    private func modifyConfig(_ fn: @escaping (MixChannelConfig)->MixChannelConfig?) {
         guard let mixModule = channel.context?.module(.mix) else {
             return;
         }
         let channelJid = channel.jid;
         Task {
             let config = try await mixModule.config(for: channelJid);
-            try fn(config);
-            try await mixModule.config(config, for: channelJid);
+            guard let newConfig = fn(config) else {
+                return;
+            }
+            try await mixModule.config(newConfig, for: channelJid);
             await MainActor.run(body: {
-                self.update(fromConfig: config);
+                self.update(fromConfig: newConfig);
             })
         }
     }

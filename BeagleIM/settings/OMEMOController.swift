@@ -71,14 +71,16 @@ open class OMEMOContoller: NSViewController, AccountAware, NSTableViewDataSource
             fingerprint = self.remoteIdentitiesTableView.prettify(fingerprint: fingerprint!);
         }
         
-        deviceId.stringValue = "\(NSLocalizedString("Device", comment: "device")): \(AccountSettings.omemoRegistrationId(account).uint32() ?? 0)";
+        let omemoDeviceId = AccountManager.account(for: account)?.omemoDeviceId ?? 0
+        
+        deviceId.stringValue = "\(NSLocalizedString("Device", comment: "device")): \(omemoDeviceId)";
         
         localFingerprint.stringValue = fingerprint ?? NSLocalizedString("Key not generated!", comment: "OMEMO settings");
         localFingerprint.textColor = (omemoModule?.isReady ?? false) ?  NSColor.labelColor : NSColor.secondaryLabelColor;
         
-        if let tmp = AccountSettings.omemoRegistrationId(account).uint32() {
+        if omemoDeviceId != 0 {
             let jid = self.account!.description;
-            let localDeviceId = Int32(bitPattern: tmp);
+            let localDeviceId = Int32(bitPattern: omemoDeviceId);
             self.remoteIdentitiesTableView.identities = DBOMEMOStore.instance.identities(forAccount: self.account!, andName: jid).filter({ (identity) -> Bool in
                 return identity.address.deviceId != localDeviceId;
             })

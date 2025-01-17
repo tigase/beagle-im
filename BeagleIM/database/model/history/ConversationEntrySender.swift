@@ -21,6 +21,7 @@
 
 import AppKit
 import Martin
+import TigaseSQLite3
 
 public enum ConversationEntrySender: Hashable, Sendable {
     
@@ -86,8 +87,6 @@ public enum ConversationEntrySender: Hashable, Sendable {
         }
     }
 }
-
-import TigaseSQLite3
 
 extension ConversationEntrySender {
     

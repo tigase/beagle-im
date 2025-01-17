@@ -22,7 +22,7 @@
 import Foundation
 import Martin
 
-public class XMPPClient: Martin.XMPPClient {
+public class XMPPClient: Martin.XMPPClient, @unchecked Sendable {
     
     var retryNo: Int = 0;
     

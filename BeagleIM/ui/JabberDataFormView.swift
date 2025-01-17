@@ -27,7 +27,7 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
     
     @IBInspectable var labelsToRight: Bool = false;
     
-    fileprivate var visibleFields: [String] = [];
+    fileprivate var visibleFields: [DataForm.Field] = [];
     fileprivate var namedFieldViews: [String: Any] = [:];
         
     override var isHidden: Bool {
@@ -66,9 +66,8 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
     var bob: [BobData] = [];
     var form: DataForm? {
         didSet {
-            visibleFields = form?.fields.filter({ $0.type != .hidden }).map({ $0.var }).filter({ name -> Bool in !self.hideFields.contains(name)}) ?? [];
-            
-            self.instruction = form?.instructions.joined(separator: "\n");
+            visibleFields = form?.fields.filter({ $0.type != .hidden }) ?? [];
+            self.instruction = form?.instructions.joined(separator: "\n")
             if self.instruction?.isEmpty ?? false {
                 self.instruction = nil;
             }
@@ -80,7 +79,7 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
                 let offset = self.instruction != nil ? 1 : 0;
                 for i in 0..<self.numberOfRows {
                     
-                    let label = i == 0 && self.instruction != nil ? self.instruction! : self.extractLabel(from: form!.field(for: visibleFields[i - offset])!);
+                    let label = i == 0 && self.instruction != nil ? self.instruction! : self.extractLabel(from: visibleFields[i-offset]);
                     
                     let textStorage = NSTextStorage(string: label);
                     textStorage.addAttribute(.font, value: NSFont.systemFont(ofSize: NSFont.labelFontSize, weight: i == 0 && self.instruction != nil ? .medium : .regular), range: NSRange(0..<textStorage.length));
@@ -176,12 +175,12 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
         let offset = self.instruction != nil ? 1 : 0;
         if tableColumn != nil {
             let horizontalSpacing = self.intercellSpacing.width / 2;
-            let field = form?.field(for: visibleFields[row - offset]);
+            let field = visibleFields[row - offset];
             if tableView.column(withIdentifier: tableColumn!.identifier) == 0 {
                 if field is DataForm.Field.Boolean {
                     return nil;
                 }
-                let view = NSTextField(labelWithString: extractLabel(from: field!));
+                let view = NSTextField(labelWithString: extractLabel(from: field));
                 view.alignment = labelsToRight ? .right : .left;
                 view.lineBreakMode = .byWordWrapping;
                 view.cell?.lineBreakMode = .byWordWrapping;
@@ -203,7 +202,7 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
 
                 return cellView;
             } else {
-                let view = create(row: row - offset, field: field!);
+                let view = create(row: row - offset, field: field);
                 view.translatesAutoresizingMaskIntoConstraints = false;
                 view.setContentHuggingPriority(.fittingSizeCompression, for: .horizontal);
                 view.setContentHuggingPriority(.fittingSizeCompression, for: .vertical);
@@ -220,7 +219,8 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
                 } else {
                     let cellView = NSTableCellView(frame: .zero);
                     var mediaView: MediaView?;
-                    if let medias = field?.media, let media = medias.first, let uri = media.uris.first(where: { $0.type.starts(with: "image/") }) {
+                    let medias = field.media;
+                    if let media = medias.first, let uri = media.uris.first(where: { $0.type.starts(with: "image/") }) {
                         mediaView = MediaView();
                         mediaView?.translatesAutoresizingMaskIntoConstraints = false;
                         mediaView?.setContentHuggingPriority(.defaultHigh, for: .horizontal);
@@ -272,7 +272,7 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
     }
     
     fileprivate func create(row: Int, field formField: DataForm.Field) -> NSView {
-        let label = extractLabel(from: formField)
+        let label = formField.label ?? (formField.var.prefix(1).uppercased() + formField.var.dropFirst());
         switch formField {
         case let f as DataForm.Field.Boolean:
             return addCheckbox(row: row, label: label, value: f.value());
@@ -287,9 +287,9 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
         case let f as DataForm.Field.JIDMulti:
             return addTextMultiField(row: row, label: label, value: f.values().map({ j -> String in return j.description}));
         case let f as DataForm.Field.ListSingle:
-            return addListSingleField(row: row, label: label, value: f.currentValue, options: f.options);
+            return addListSingleField(row: row, label: label, value: f.value(), options: f.options);
         case let f as DataForm.Field.ListMulti:
-            return addListMultiField(row: row, label: label, value: f.currentValues, options: f.options);
+            return addListMultiField(row: row, label: label, value: f.values(), options: f.options);
         case let f as DataForm.Field.Fixed:
             return addFixedField(label: label, value: f.value());
         default:
@@ -312,7 +312,7 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
     
     @objc fileprivate func fieldChanged(_ sender: NSView) {
         let row = (sender as? MultiSelectField)?.row ?? sender.tag;
-        switch self.form?.field(for: visibleFields[row])! {
+        switch self.visibleFields[row] {
         case let f as DataForm.Field.Boolean:
             f.value((sender as! NSButton).state == .on);
         case let f as DataForm.Field.TextSingle:
@@ -336,7 +336,7 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
         }
         let row = sender.row;
         
-        switch self.form?.field(for: self.visibleFields[row])! {
+        switch self.visibleFields[row] {
         case let f as DataForm.Field.TextMulti:
             let v = sender.string;
             f.values(v.split(separator: "\n").map({ s in String(s) }));
@@ -422,7 +422,7 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
     
     @objc fileprivate func listSelectionChanged(_ sender: NSPopUpButton) {
         sender.title = sender.titleOfSelectedItem ?? "";
-        switch self.form?.field(for: self.visibleFields[sender.tag])! {
+        switch self.visibleFields[sender.tag] {
         case let f as DataForm.Field.ListSingle:
             let v = sender.indexOfSelectedItem;
             f.value(v == -1 ? nil : f.options[v-1].value);

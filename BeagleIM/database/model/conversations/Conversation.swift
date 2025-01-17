@@ -44,7 +44,7 @@ public protocol Conversation: ConversationProtocol, ConversationKey, Displayable
     
     var id: Int { get }
     var timestamp: Date { get }
-    var timestampPublisher: Publishers.Map<Published<LastChatActivity>.Publisher,Date> { get }
+    var timestampPublisher: Publishers.Map<Published<LastChatActivity>.Publisher, Date> { get }
     var unread: Int { get }
     var unreadPublisher: AnyPublisher<Int,Never> { get }
     var lastActivity: LastConversationActivity { get }
@@ -61,7 +61,7 @@ public protocol Conversation: ConversationProtocol, ConversationKey, Displayable
     
     func mark(as markerType: ChatMarker.MarkerType, before: Date, by sender: ConversationEntrySender);
     func markAsRead(count: Int) -> Bool;
-    func update(_ activity: LastConversationActivity, isUnread: Bool) -> Bool;
+    func update(lastActivity: LastConversationActivity, isUnread: Bool) -> Bool;
     
     func sendMessage(text: String, correctedMessageOriginId: String?) async throws;
     func prepareAttachment(url originalURL: URL) throws -> SharePreparedAttachment
@@ -150,27 +150,27 @@ public enum LastChatActivityType {
     }
     
     static func from(_ payload: ConversationEntryPayload) -> LastChatActivityType? {
-        switch payload {
-        case .message(let message, _):
-            return .message(message: message);
-        case .attachment(_, _):
-            return .attachment
-        case .linkPreview(_):
-            return nil;
-        case .retraction:
-            return .retraction;
-        case .invitation(_, _):
-            return .invitation;
-        case .deleted:
-            return nil;
-        case .unreadMessages:
-            return nil;
-        case .marker(_, _):
-            return nil;
-        case .location(_):
-            return .location;
-        }
-    }
+           switch payload {
+           case .message(let message, _):
+               return .message(message: message);
+           case .attachment(_, _):
+               return .attachment
+           case .linkPreview(_):
+               return nil;
+           case .invitation(_, _):
+               return .invitation;
+           case .retraction:
+               return .retraction;
+           case .deleted:
+               return nil;
+           case .unreadMessages:
+               return nil;
+           case .marker(_, _):
+               return nil;
+           case .location(_):
+               return .location;
+           }
+       }
 }
 
 extension LastChatActivityType {

@@ -44,13 +44,13 @@ class InviteToMeetingController: NSViewController {
             return;
         }
         
+        let participants = self.contactSelectionView.items.map({ $0.jid });
         self.operationInProgress = true;
         Task {
             do {
-                let jids = self.contactSelectionView.items.map({ $0.jid });
-                try await meet.allow(jids: jids);
-                _ = await jids.concurrentMap({ jid in
-                    try? await meet.client.module(.meet).sendMessageInitiation(action: .propose(id: UUID().uuidString, meetJid: meet.jid, media: [.audio, .video]), to: jid.jid())
+                try await meet.allow(jids: participants)
+                _ = await participants.concurrentMap({ jid in
+                    try? await meet.client.module(.meet).sendMessageInitiation(action: .propose(id: UUID().uuidString, meetJid: meet.jid, media: [.audio, .video]), to: jid.jid());
                 })
                 await MainActor.run(body: {
                     self.close();

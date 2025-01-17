@@ -188,10 +188,8 @@ open class SSLProcessor: ConnectorBase.NetworkProcessor, SSLNetworkProcessor {
     
     public var certificateValidation: SSLCertificateValidation = .default;
     public var certificateValidationFailed: ((SecTrust?)->Void)?;
-    public var supportedChannelBindings: [ChannelBinding] {
-        guard state == .active else {
-            return [];
-        }
+    public var supportedChannelBindings: [Martin.ChannelBinding] {
+        guard state == .active else { return [] }
         return [.tlsExporter, .tlsServerEndPoint];
     }
     
@@ -346,7 +344,7 @@ open class SSLProcessor: ConnectorBase.NetworkProcessor, SSLNetworkProcessor {
         }
         return cert;
     }
-    
+
     open func channelBindingData(type: ChannelBinding) throws -> Data {
         switch type {
         case .tlsServerEndPoint:
@@ -378,9 +376,8 @@ open class SSLProcessor: ConnectorBase.NetworkProcessor, SSLNetworkProcessor {
         default:
             throw XMPPError(condition: .feature_not_implemented);
         }
-
     }
-    
+
     private func tlsExporterData() throws -> Data {
         let label = "EXPORTER-Channel-Binding".data(using: .ascii)!;
         let labelLength = label.count;
@@ -390,13 +387,12 @@ open class SSLProcessor: ConnectorBase.NetworkProcessor, SSLNetworkProcessor {
             label.withUnsafeBytes({ labelPtr in
                 SSL_export_keying_material(ssl, &data, 32, labelPtr.baseAddress!.assumingMemoryBound(to: UInt8.self), labelLength, ctxPtr.baseAddress!.assumingMemoryBound(to: UInt8.self), 0, Int32(1))
             })
-
         }) > 0 else {
             throw XMPPError(condition: .item_not_found);
         }
         return Data(data);
     }
-        
+    
     open func getPeerCertificate() -> SSLCertificate? {
         guard let ptr: OpaquePointer = SSL_get_peer_certificate(ssl) else {
             return nil;

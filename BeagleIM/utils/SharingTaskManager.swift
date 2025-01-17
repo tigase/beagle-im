@@ -23,12 +23,12 @@ import AppKit
 import Martin
 import Combine
 
-class SharingTaskManager {
+class SharingTaskManager: @unchecked Sendable {
     
     static let instance = SharingTaskManager();
     
     private var tasks: [SharingTask2] = [];
-    let dispatcher = DispatchQueue(label: "SharingTaskManager");//QueueDispatcher(label: "SharingTaskManager");
+    let dispatcher = DispatchQueue(label: "SharingTaskManager");
     fileprivate let semaphore = DispatchSemaphore(value: 1);
  
     static func guessContentType(of url: URL) -> String? {
@@ -239,7 +239,7 @@ class SharingTaskManager {
         })
     }
     
-    fileprivate func askForInvalidHttpResponse(url: URL, completionHandler: @escaping (Bool)->Void) {
+    fileprivate func askForInvalidHttpResponse(url: URL, completionHandler: @escaping (sending Bool)->Void) {
         guard let mainWindow = ((NSApplication.shared.delegate) as! AppDelegate).mainWindowController?.window else {
             completionHandler(false);
             return;

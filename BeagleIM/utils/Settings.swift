@@ -213,7 +213,6 @@ enum Appearance: String {
 enum AccountSettings {
     case messageSyncAuto(BareJID)
     case messageSyncPeriod(BareJID)
-    case omemoRegistrationId(BareJID)
 //    case omemoCurrentPreKeyId(BareJID)
     
     public static let CHANGED = Notification.Name("accountSettingChanged");
@@ -238,8 +237,6 @@ enum AccountSettings {
             return account;
         case .messageSyncPeriod(let account):
             return account;
-        case .omemoRegistrationId(let account):
-            return account;
 //        case .omemoCurrentPreKeyId(let account):
 //            return account;
         }
@@ -251,8 +248,6 @@ enum AccountSettings {
             return "messageSyncAuto";
         case .messageSyncPeriod(_):
             return "messageSyncPeriod";
-        case .omemoRegistrationId(_):
-            return "omemoRegistrationId";
 //        case .omemoCurrentPreKeyId(_):
 //            return "omemoCurrentPreKeyId";
         }

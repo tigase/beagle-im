@@ -50,7 +50,7 @@ public struct AcceptableServerCertificate: Codable, Equatable {
     }
 }
 
-open class ServerCertificateInfoOld: SslCertificateInfoOld {
+open class ServerCertificateInfoOld: SslCertificateInfoOld, @unchecked Sendable {
 
     public var accepted: Bool;
         

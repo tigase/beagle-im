@@ -24,7 +24,7 @@ import Martin
 import AppKit
 import Combine
 
-public class ConversationBase: Martin.ConversationBase, Identifiable, Hashable, DisplayableIdWithKeyProtocol {
+public class ConversationBase: Martin.ConversationBase, Identifiable, Hashable, DisplayableIdWithKeyProtocol, @unchecked Sendable {
     
     public static func == (lhs: ConversationBase, rhs: ConversationBase) -> Bool {
         return lhs.id == rhs.id;
@@ -103,7 +103,6 @@ public class ConversationBase: Martin.ConversationBase, Identifiable, Hashable, 
     
     public init(context: Context, jid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, displayableId: DisplayableIdProtocol) {
         self.id = id;
-//        self.timestamp = timestamp;
         self.lastActivity = lastActivity;
         self.unread = unread;
         self.displayableId = displayableId;
@@ -149,7 +148,7 @@ public class ConversationBase: Martin.ConversationBase, Identifiable, Hashable, 
         }
     }
 
-    public func update(_ lastActivity: LastChatActivity, isUnread: Bool) -> Bool {
+    public func update(lastActivity: LastChatActivity, isUnread: Bool) -> Bool {
         return withLock {
             if isUnread {
                 unread = unread + 1;
@@ -180,7 +179,7 @@ public class ConversationBase: Martin.ConversationBase, Identifiable, Hashable, 
     }
 }
 
-public class ConversationBaseWithOptions<Options: ChatOptionsProtocol>: ConversationBase {
+public class ConversationBaseWithOptions<Options: ChatOptionsProtocol>: ConversationBase, @unchecked Sendable {
     
     @Published
     private var _options: Options;
@@ -203,7 +202,7 @@ public class ConversationBaseWithOptions<Options: ChatOptionsProtocol>: Conversa
     }
 
     public func updateOptions(_ fn: @escaping (inout Options)->Void) {
-        return withLock {
+        withLock {
             var options = self._options;
             fn(&options);
             if !options.equals(self._options) {

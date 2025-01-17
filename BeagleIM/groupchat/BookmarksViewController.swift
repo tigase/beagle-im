@@ -149,9 +149,8 @@ class BookmarksViewController: NSViewController, NSTableViewDataSource, NSTableV
         guard let client = XmppService.instance.getClient(for: item.account) else {
             return;
         }
-        
         Task {
-            try await client.module(.pepBookmarks).remove(bookmark: item.conference);
+            try? await client.module(.pepBookmarks).remove(bookmark: item.conference);
         }
     }
     
@@ -167,7 +166,7 @@ class BookmarksViewController: NSViewController, NSTableViewDataSource, NSTableV
         }
         
         Task {
-            try await client.module(.pepBookmarks).addOrUpdate(bookmark: item.conference.with(autojoin: true));
+            try? await client.module(.pepBookmarks).addOrUpdate(bookmark: item.conference.with(autojoin: true));
         }
     }
     
@@ -183,7 +182,7 @@ class BookmarksViewController: NSViewController, NSTableViewDataSource, NSTableV
         }
         
         Task {
-            try await client.module(.pepBookmarks).addOrUpdate(bookmark: item.conference.with(autojoin: false));
+            try? await client.module(.pepBookmarks).addOrUpdate(bookmark: item.conference.with(autojoin: false));
         }
     }
     

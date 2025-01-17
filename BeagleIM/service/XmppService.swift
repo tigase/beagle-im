@@ -133,7 +133,7 @@ class XmppService {
             if let client = self._clients[account.name] {
                 let prevState = client.state;
                 Task {
-                    try await client.disconnect();
+                    try? await client.disconnect();
                 }
                 if prevState == .disconnected() && client.state == .disconnected() {
                     self.unregisterClient(client);
@@ -193,7 +193,7 @@ class XmppService {
         queue.async {
             self._clients.values.forEach { client in
                 Task {
-                    try await client.disconnect(force: force);
+                    try? await client.disconnect(force: force);
                 }
             }
         }
@@ -208,7 +208,7 @@ class XmppService {
     }
     
     private func reconnect(client: XMPPClient, ignoreCheck: Bool = false) {
-        self.queue.sync {
+        self.queue.async {
             guard client.state == .disconnected(), let account = AccountManager.account(for: client.userBareJid), account.enabled, ignoreCheck || (self.expectedStatus.value.show != nil)  else {
                 return;
             }
@@ -220,16 +220,16 @@ class XmppService {
     private func connect(client: XMPPClient, for account: Account) {
         client.configure(for: account);
 
-        switch account.additional.resourceType {
+        switch account.additional.resource {
         case .automatic:
             client.connectionConfiguration.resource = nil;
         case .hostname:
             client.connectionConfiguration.resource = Host.current().localizedName;
-        case .manual(let resource):
-            client.connectionConfiguration.resource = resource;
+        case .custom(let name):
+            client.connectionConfiguration.resource = name.isEmpty ? nil : name;
         }
         
-        try! client.login(lastSeeOtherHost: account.lastEndpoint);
+        try? client.login();
     }
     
     private class ClientCancellables {
@@ -295,6 +295,9 @@ class XmppService {
         })
         client.connectionConfiguration.userJid = jid;
         
+        _ = client.modulesManager.register(StreamFeaturesModule());
+        _ = client.modulesManager.register(StreamManagementModule(mode: .resumption));
+        _ = client.modulesManager.register(SaslModule());
         _ = client.modulesManager.register(AuthModule());
         _ = client.modulesManager.register(StreamFeaturesModule());
         _ = client.modulesManager.register(StreamManagementModule(mode: .resumption, maxResumptionTimeout: 90));
@@ -318,7 +321,6 @@ class XmppService {
         _ = client.modulesManager.register(PubSubModule());
         _ = client.modulesManager.register(PEPUserAvatarModule());
         _ = client.modulesManager.register(PEPBookmarksModule());
-
         _ = client.modulesManager.register(HttpFileUploadModule());
 
         let messageModule = MessageModule(chatManager: ChatManagerBase(store: DBChatStore.instance));
@@ -350,6 +352,7 @@ class XmppService {
         
         let signalStorage = OMEMOStoreWrapper(context: client.context);
         let signalContext = SignalContext(withStorage: signalStorage)!;
+        signalStorage.setup(withContext: signalContext);
         _ = client.modulesManager.register(OMEMOModule(signalContext: signalContext, signalStorage: signalStorage));
         
         XMLConsoleViewController.configureLogging(for: client);
@@ -408,7 +411,7 @@ class XmppService {
                 }
             case .authenticationFailure(let err):
                 if let error = err as? SaslError {
-                    switch error {
+                    switch error.cause {
                     case .aborted, .temporary_auth_failure:
                         // those are temporary errors, we shoud retry
                         break;
@@ -416,7 +419,7 @@ class XmppService {
                         reportSaslError(on: client.userBareJid, error: error);
                     }
                 } else {
-                    reportSaslError(on: client.userBareJid, error: .not_authorized);
+                    reportSaslError(on: client.userBareJid, error: .init(cause: .not_authorized, message: nil));
                 }
             case .none:
                 try? AccountManager.modifyAccount(for: client.userBareJid, {

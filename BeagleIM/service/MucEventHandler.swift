@@ -41,7 +41,18 @@ class MucEventHandler: XmppServiceExtension {
                     let mamVersions = info.features.compactMap(MessageArchiveManagementModule.Version.init(rawValue:));
                     (room as! Room).roomFeatures = Set(info.features.compactMap(Room.Feature.init(rawValue:)));
                     let config = RoomConfig(form: info.form);
-                    (room as! Room).allowedPM = config.allowPM ?? .anyone;
+                    if let allowPM = config.allowPM {
+                        (room as! Room).allowedPM = allowPM;
+                    } else {
+                        (room as! Room).allowedPM = .none;
+                        Task {
+                            if let config = try? await client.module(.muc).roomConfiguration(of: JID(room.jid)), let allowPM = config.allowPM {
+                                (room as! Room).allowedPM = allowPM
+                            } else {
+                                (room as! Room).allowedPM = .none;
+                            }
+                        }
+                    }
                     if let timestamp = (room as? Room)?.timestamp {
                         if !mamVersions.isEmpty {
                             let result = try await room.rejoin(fetchHistory: .skip);
@@ -161,7 +172,7 @@ class MucEventHandler: XmppServiceExtension {
     }
 }
 
-class CustomMucModule: MucModule {
+class CustomMucModule: MucModule, @unchecked Sendable {
     
     override func join(room: RoomProtocol, fetchHistory: RoomHistoryFetch) async throws -> RoomJoinResult {
         let result = try await super.join(room: room, fetchHistory: fetchHistory);
@@ -184,5 +195,5 @@ class CustomMucModule: MucModule {
             completionHandler(result);
         });
     }
-    
+        
 }

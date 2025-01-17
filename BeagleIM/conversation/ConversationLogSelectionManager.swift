@@ -187,15 +187,18 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
                         var before = textStorage.attributedSubstring(from: NSRange(0..<idx)).string;
                         var after = idx < textStorage.length ? textStorage.attributedSubstring(from: NSRange(idx..<textStorage.length)).string : "";
                         
-                        var beginOffset = before.lastIndex(where: { CharacterSet.newlines.contains($0.unicodeScalars.first!) }) ?? before.startIndex;
-                        let afterOffset = after.firstIndex(where: { CharacterSet.newlines.contains($0.unicodeScalars.first!) }) ?? after.endIndex;
-                        
-                        if beginOffset != before.endIndex {
-                            beginOffset = before.index(after: beginOffset);
-                            if beginOffset != before.endIndex {
-                                before.removeSubrange(beginOffset..<before.endIndex);
+                        var beginOffset = before.startIndex;
+                        if let beforeNewLineOffset = before.lastIndex(where: { CharacterSet.newlines.contains($0.unicodeScalars.first!) }), beforeNewLineOffset != before.endIndex {
+                            beginOffset = beforeNewLineOffset;
+                            let offset = before.index(after: beforeNewLineOffset);
+                            if offset != before.endIndex {
+                                beginOffset = offset;
                             }
                         }
+                        before.removeSubrange(beginOffset..<before.endIndex);
+
+                        let afterOffset = after.firstIndex(where: { CharacterSet.newlines.contains($0.unicodeScalars.first!) }) ?? after.endIndex;
+                        
                         if afterOffset != after.endIndex {
                             after.removeSubrange(afterOffset..<after.endIndex);
                         }

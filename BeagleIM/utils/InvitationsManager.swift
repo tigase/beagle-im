@@ -209,6 +209,9 @@ class InvitationManager {
     }
     
     private func deliverPresenceSubscriptionNotification(invitation: InvitationItem) {
+        guard Settings.notificationsFromUnknownSenders || DBRosterStore.instance.item(for: invitation.account, jid: invitation.jid) != nil else {
+            return;
+        }
         let rosterItem = DBRosterStore.instance.item(for: invitation.account, jid: invitation.jid);
         let content = UNMutableNotificationContent();
         content.title = NSLocalizedString("Authorization request", comment: "alert window title");
@@ -220,6 +223,9 @@ class InvitationManager {
     }
     
     private func deliverMucInvitationNotification(invitation: InvitationItem) {
+        guard Settings.notificationsFromUnknownSenders || (invitation.object as? MucModule.Invitation)?.inviter.map({ DBRosterStore.instance.item(for: invitation.account, jid: $0) }) != nil else {
+            return;
+        }
         let mucInvitation = invitation.object as! MucModule.Invitation;
         let content = UNMutableNotificationContent();
         content.title = NSLocalizedString("Invitation to groupchat", comment: "alert window title");

@@ -78,15 +78,15 @@ class ChatCellView: NSTableCellView {
         closeFunction = nil;
     }
 
-    func set(lastActivity: LastChatActivity?, chatState: ChatState, account: BareJID) {
+    func set(lastActivity activity: LastChatActivity, chatState: ChatState, account: BareJID) {
         self.unreadButton.appearance = NSAppearance(named: .darkAqua);
         self.chatState = chatState;
         if let lastMessageField = self.lastMessage {
             if chatState != .composing {
                 lastMessageField.stopAnimating();
                 self.lastMessageHeightConstraint?.isActive = false;
-                if let activity = lastActivity {
-                    switch activity.payload {
+                if let payload = activity.payload {
+                    switch payload {
                     case .message(let lastMessage):
                         if lastMessage.starts(with: "/me ") {
                             let nick = activity.sender.nickname ?? NSLocalizedString("Me", comment: "/me replacement if no nickname found");
@@ -204,8 +204,6 @@ class ChatCellView: NSTableCellView {
                                 lastMessageField.attributedStringValue = msg;
                             }
                         }
-                    case .none:
-                        lastMessageField.stringValue = "";
                     }
                 } else {
                     lastMessageField.stringValue = "";

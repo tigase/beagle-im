@@ -49,11 +49,11 @@ class ChannelManageBlocked: NSViewController, NSTableViewDelegate, NSTableViewDa
                 DispatchQueue.main.async {
                     switch result {
                     case .success(let banned):
-                            self.actionInProgress = false;
-                            self.banned = banned.sorted(by: { $0.description < $1.description });
-                            self.tableView?.reloadData();
+                        self.actionInProgress = false;
+                        self.banned = banned.sorted(by: { $0.description < $1.description });
+                        self.tableView?.reloadData();
                     case .failure(let errorCondition):
-                            self.actionInProgress = false;
+                        self.actionInProgress = false;
                     }
                 }
             });

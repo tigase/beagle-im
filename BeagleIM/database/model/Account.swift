@@ -2,7 +2,7 @@
 // Account.swift
 //
 // BeagleIM
-// Copyright (C) 2022 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2020 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -74,10 +74,10 @@ public struct Account {
         }
     }
     
-    public enum ResourceType: Codable, Equatable {
+    public enum Resource: Codable, Equatable {
         case automatic
         case hostname
-        case manual(String)
+        case custom(name: String)
     }
 
     public struct Additional: Codable, DatabaseConvertibleStringValue, Equatable {
@@ -85,8 +85,8 @@ public struct Account {
         public var acceptedCertificate: AcceptableServerCertificate?;
         public var nick: String?;
         public var disableTLS13: Bool;
+        public var resource: Resource
         public var knownServerFeatures: [ServerFeature];
-        public var resourceType: ResourceType;
 
         public init() {
             self.omemoDeviceId = nil
@@ -94,7 +94,7 @@ public struct Account {
             self.nick = nil;
             self.disableTLS13 = false;
             self.knownServerFeatures = [];
-            self.resourceType = .automatic;
+            self.resource = .automatic
         }
         
         public init(from decoder: Decoder) throws {
@@ -104,7 +104,7 @@ public struct Account {
             nick = try container.decodeIfPresent(String.self, forKey: .nick)
             disableTLS13 = try container.decode(Bool.self, forKey: .disableTLS13);
             knownServerFeatures = try container.decodeIfPresent([ServerFeature].self, forKey: .knownServerFeatures) ?? [];
-            resourceType = try container.decodeIfPresent(ResourceType.self, forKey: .resourceType) ?? .automatic;
+            resource = try container.decodeIfPresent(Resource.self, forKey: .resource) ?? .automatic;
         }
 
         public func encode(to encoder: Encoder) throws {
@@ -116,6 +116,9 @@ public struct Account {
             if !knownServerFeatures.isEmpty {
                 try container.encode(knownServerFeatures, forKey: .knownServerFeatures);
             }
+            if resource != .automatic {
+                try container.encode(resource, forKey: .resource)
+            }
         }
 
         enum CodingKeys: CodingKey {
@@ -124,7 +127,7 @@ public struct Account {
             case nick
             case disableTLS13
             case knownServerFeatures
-            case resourceType
+            case resource
         }
     }
 

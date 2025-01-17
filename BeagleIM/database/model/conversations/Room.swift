@@ -137,7 +137,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     
     init(context: Context, jid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, options: RoomOptions) {
         self.displayable = RoomDisplayableId(displayName: options.name ?? jid.description, status: nil, avatar: AvatarManager.instance.avatarPublisher(for: .init(account: context.userBareJid, jid: jid, mucNickname: nil)), description: nil);
-        super.init( context: context, jid: jid, id: id, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
+        super.init(context: context, jid: jid, id: id, lastActivity: lastActivity, unread: unread, options: options, displayableId: displayable);
         (context.module(.httpFileUpload) as! HttpFileUploadModule).isAvailablePublisher.combineLatest(self.statePublisher, self.$roomFeatures, { isAvailable, state, roomFeatures -> [ConversationFeature] in
             var features: [ConversationFeature] = [];
             if state == .joined {
@@ -217,7 +217,7 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     }
     
     public func removeTemp(nickname: String) -> MucOccupant? {
-        withLock {
+        return withLock {
             return occupantsStore.removeTemp(nickname: nickname);
         }
     }

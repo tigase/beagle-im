@@ -51,7 +51,7 @@ public class AccountConversations {
         let removed = chats.removeValue(forKey: conversation.jid) != nil;
         self.conversations = chats;
         return removed;
-    };
+    }
 
     func get(with jid: BareJID) -> Conversation? {
         return self.conversations[jid];

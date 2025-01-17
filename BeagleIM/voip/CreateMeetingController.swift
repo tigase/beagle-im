@@ -118,14 +118,18 @@ class CreateMeetingController: NSViewController {
                 let meetJid = try await meetModule.createMeet(at: meetComponentJid, media: [.audio,.video], participants: participants);
                 do {
                     try await MeetManager.instance.registerMeet(at: meetJid, using: client)?.join();
-                    _ = await participants.concurrentMap({ jid in
-                        try? await meetModule.sendMessageInitiation(action:  .propose(id: UUID().uuidString, meetJid: meetJid, media: [.audio,.video]), to: jid.jid())
-                    })
+                    for jid in participants {
+                        Task {
+                            try? await client.module(.meet).sendMessageInitiation(action: .propose(id: UUID().uuidString, meetJid: meetJid, media: [.audio,.video]), to: jid.jid())
+                        }
+                    }
                 } catch {
                     try await meetModule.destroy(meetJid: meetJid);
                     throw error;
                 }
-                self.close();
+                await MainActor.run(body: {
+                    self.close();
+                })
             } catch {
                 await MainActor.run(body: {
                     let alert = NSAlert();
@@ -137,8 +141,8 @@ class CreateMeetingController: NSViewController {
                         self.close();
                     });
                 })
-                self.operationInProgress = false;
             }
+            self.operationInProgress = false;
         }
     }
     

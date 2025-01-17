@@ -41,14 +41,14 @@ class ConfigureRoomViewController: NSViewController {
     @IBOutlet var formView: JabberDataFormView!;
     @IBOutlet var scrollView: NSScrollView!;
 
-    var form: RoomConfig? {
+    var config: RoomConfig? {
         didSet {
             if let roomJid = self.roomJid, let account = self.account {
                 avatarView.avatar = AvatarManager.instance.avatar(for: roomJid, on: account)
-                roomNameField.stringValue = form?.name ?? "";
+                roomNameField.stringValue = config?.name ?? "";
                 subjectField.stringValue = room?.subject ?? "";
             }
-            formView.form = form?.form;
+            formView.form = config?.form;
         }
     }
     
@@ -74,7 +74,7 @@ class ConfigureRoomViewController: NSViewController {
                 do {
                     let config = try await mucModule.roomConfiguration(of:  JID(roomJid == nil ? mucComponent : roomJid!));
                     await MainActor.run(body: {
-                        self.form = config;
+                        self.config = config;
                     })
                 } catch {
                     await MainActor.run(body: {
@@ -142,14 +142,14 @@ class ConfigureRoomViewController: NSViewController {
     }
     
     @IBAction func acceptClicked(_ sender: NSButton) {
-        guard form != nil else {
+        guard config != nil else {
             return;
         }
         
         formView.synchronize();
         
         let name = roomNameField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines);
-        form?.name = name.isEmpty ? nil : name;
+        config?.name = name.isEmpty ? nil : name;
         
         guard let client = room?.context, room?.state == .joined else {
             return;
@@ -180,12 +180,12 @@ class ConfigureRoomViewController: NSViewController {
         }
         
         let room = self.room;
-        let password = form!.secret;
+        let password = config!.secret;
         
         let mucModule = client.module(.muc);
         tasks.append(Task {
             do {
-                try await mucModule.roomConfiguration(form!, of: JID(roomJid));
+                try await mucModule.roomConfiguration(config!, of: JID(roomJid));
                 room?.updateOptions({ options in
                     options.password = password;
                 })

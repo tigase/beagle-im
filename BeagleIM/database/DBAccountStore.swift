@@ -2,7 +2,7 @@
 // DBAccountStore.swift
 //
 // BeagleIM
-// Copyright (C) 2022 "Tigase, Inc." <office@tigase.com>
+// Copyright (C) 2018 "Tigase, Inc." <office@tigase.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ import TigaseSQLite3
 
 extension Query {
     static let accountsList = Query("SELECT name, enabled, server_endpoint, roster_version, status_message, last_endpoint, additional FROM accounts");
-    static let accountInsert = Query("INSERT INTO accounts (name, enabled, server_endpoint, roster_version, status_message, additional) VALUES (:name, :enabled, :server_endpoint, :roster_version, :status_message, :push, :additional)");
+    static let accountInsert = Query("INSERT INTO accounts (name, enabled, server_endpoint, roster_version, status_message, additional) VALUES (:name, :enabled, :server_endpoint, :roster_version, :status_message, :additional)");
     static let accountDelete = Query("DELETE FROM accounts WHERE name = :name");
 }
 

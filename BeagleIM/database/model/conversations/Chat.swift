@@ -156,7 +156,7 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
     }
  
     public func prepareAttachment(url originalURL: URL) throws -> SharePreparedAttachment {
-        let encryption = self.options.encryption ?? .none;
+        let encryption = self.options.encryption ?? Settings.messageEncryption;
         switch encryption {
         case .none:
             return .init(url: originalURL, isTemporary: false, prepareShareURL: nil);
@@ -223,7 +223,6 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
             message.oob = content
         }
         message.lastMessageCorrectionId = correctedMessageOriginId;
-        
         if #available(macOS 12.0, *) {
             let sender = INPerson(personHandle: INPersonHandle(value: account.description, type: .unknown), nameComponents: nil, displayName: AccountManager.account(for: self.account)?.nickname, image: AvatarManager.instance.avatar(for: self.account, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: account.description, isMe: true, suggestionType: .instantMessageAddress);
             let recipient = INPerson(personHandle: INPersonHandle(value: jid.description, type: .unknown), nameComponents: nil, displayName: self.displayName, image: AvatarManager.instance.avatar(for: self.jid, on: self.account)?.inImage(), contactIdentifier: nil, customIdentifier: jid.description, isMe: false, suggestionType: .instantMessageAddress);

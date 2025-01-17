@@ -23,7 +23,7 @@ import AppKit
 import Martin
 import Combine
 
-class PortValueFormatter: NumberFormatter {
+class PortValueFormatter: NumberFormatter, @unchecked Sendable {
     
     override func isPartialStringValid(_ partialString: String, newEditingString newString: AutoreleasingUnsafeMutablePointer<NSString?>?, errorDescription error: AutoreleasingUnsafeMutablePointer<NSString?>?) -> Bool {
         if partialString.isEmpty {
@@ -56,6 +56,8 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
     @IBOutlet var showAdvConstraint: NSLayoutConstraint!;
     @IBOutlet var hideAdvConstraint: NSLayoutConstraint!;
     @IBOutlet var advGrid: NSGridView!;
+    
+    var accountValidatorTask: Task<Void,Never>?;
     
     override func viewWillAppear() {
         super.viewWillAppear();
@@ -128,39 +130,36 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
     
     @IBAction func logInClicked(_ button: NSButton) {
         let jid = BareJID(usernameField.stringValue);
-        self.showProgressIndicator();
-        
         let password = passwordField.stringValue;
-        let settings = AccountDetailsViewController.Settings();
-        settings.disableTLS13 = disableTLS13Check.state == .on;
-        settings.useDirectTLS = useDirectTLSCheck.state == .on;
+        self.showProgressIndicator();
+        var endpoint: SocketConnectorNetwork.Endpoint?;
         if !(hostField.stringValue.isEmpty || portField.stringValue.isEmpty), let port = Int(portField.stringValue) {
-            settings.host = hostField.stringValue;
-            settings.port = port;
+            endpoint = .init(proto: useDirectTLSCheck.state == .on ? .XMPPS : .XMPP, host: hostField.stringValue, port: port);
         }
-        Task {
+        let settings = ConnectitivySettings(disableTls13: disableTLS13Check.state == .on, serverEndpoint: endpoint);
+        self.accountValidatorTask = Task {
             do {
-                let certificateInfo = try await AccountValidatorTask.validate(viewController: self, account: jid, password: password, connectivitySettings: settings);
-                do {
-                    try AccountManager.modifyAccount(for: jid, { account in
-                        account.credentials = .password(password)
-                        if let host = settings.host, let port = settings.port {
-                            account.serverEndpoint = .init(proto: settings.useDirectTLS ? .XMPPS : .XMPP, host: host, port: port);
-                        }
-                        account.disableTLS13 = settings.disableTLS13;
-                        if let certInfo = certificateInfo {
-                            account.acceptedCertificate = AcceptableServerCertificate(certificate: certInfo, accepted: true)
-                        }
-                    })
-
-                    self.view.window?.sheetParent?.endSheet(self.view.window!);
-                } catch {
-                    let alert = NSAlert(error: error);
-                    alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
-                }
-
+                let acceptedCertificate = try await AccountValidatorTask.validate(controller: self, account: jid, password: password, connectivitySettings: settings);
+                await MainActor.run(body: {
+                    guard !Task.isCancelled else {
+                        return;
+                    }
+                    do {
+                        // save account
+                        try AccountManager.modifyAccount(for: jid, { account in
+                            account.credentials = .password(password);
+                            account.disableTLS13 = settings.disableTls13;
+                            account.serverEndpoint = settings.serverEndpoint;
+                        })
+                        self.view.window?.sheetParent?.endSheet(self.view.window!);
+                    } catch {
+                        let alert = NSAlert(error: error);
+                        alert.beginSheetModal(for: self.view.window!, completionHandler: nil);
+                    }
+                })
             } catch {
                 await MainActor.run(body: {
+                    self.hideProgressIndicator()
                     let alert = NSAlert();
                     alert.alertStyle = .critical;
                     alert.messageText = NSLocalizedString("Authentication failed", comment: "alert window title");
@@ -175,9 +174,6 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
                     })
                 })
             }
-            await MainActor.run(body: {
-                hideProgressIndicator();
-            })
         }
     }
     
@@ -204,25 +200,29 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
             self.view.window?.sheetParent?.endSheet(self.view.window!);
         })
     }
+    
+    struct ConnectitivySettings {
+        var disableTls13: Bool = false
+        var serverEndpoint: SocketConnectorNetwork.Endpoint? = nil
+    }
 
     class AccountValidatorTask {
-
-        public static func validate(viewController: NSViewController, account: BareJID, password: String, connectivitySettings: AccountDetailsViewController.Settings) async throws -> SSLCertificateInfo? {
+        
+        public static func validate(controller: AddAccountController, account: BareJID, password: String, connectivitySettings: ConnectitivySettings) async throws -> SSLCertificateInfo? {
             let client = XMPPClient();
             _ = client.modulesManager.register(StreamFeaturesModule());
             _ = client.modulesManager.register(SaslModule());
             _ = client.modulesManager.register(AuthModule());
             _ = client.modulesManager.register(ResourceBinderModule());
             _ = client.modulesManager.register(SessionEstablishmentModule());
+            
             client.connectionConfiguration.useSeeOtherHost = false;
             client.connectionConfiguration.userJid = account;
             client.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
-                if let host = connectivitySettings.host, let port = connectivitySettings.port {
-                    options.connectionDetails = .init(proto: connectivitySettings.useDirectTLS ? .XMPPS : .XMPP, host: host, port: port)
-                }
-                options.networkProcessorProviders.append(connectivitySettings.disableTLS13 ? SSLProcessorProvider(supportedTlsVersions: TLSVersion.TLSv1_2...TLSVersion.TLSv1_2) : SSLProcessorProvider());
-            })
-            client.connectionConfiguration.credentials = .password(password); // authenticationName: nil, cache: nil);
+                options.connectionDetails = connectivitySettings.serverEndpoint
+                options.networkProcessorProviders.append(connectivitySettings.disableTls13 ? SSLProcessorProvider(supportedTlsVersions: TLSVersion.TLSv1_2...TLSVersion.TLSv1_2) : SSLProcessorProvider())
+            });
+            client.connectionConfiguration.credentials = .password(password);
             defer {
                 Task {
                     try await client.disconnect();
@@ -237,7 +237,7 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
                     throw error;
                 }
                 let certData = SSLCertificateInfo(trust: trust)!;
-                guard await showCertificateError(viewController: viewController, account: account, certData: certData) else {
+                guard await showCertificateError(account: account, certData: certData, controller: controller) else {
                     throw error;
                 }
                 client.connectionConfiguration.modifyConnectorOptions(type: SocketConnectorNetwork.Options.self, { options in
@@ -250,7 +250,7 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
             }
         }
         
-        static func showCertificateError(viewController controller: NSViewController, account: BareJID, certData: SSLCertificateInfo) async -> Bool {
+        static func showCertificateError(account: BareJID, certData: SSLCertificateInfo, controller: NSViewController) async -> Bool {
             return await withUnsafeContinuation({ continuation in
                 DispatchQueue.main.async {
                     let alert = NSStoryboard(name: "Main", bundle: nil).instantiateController(withIdentifier: "ServerCertificateErrorController") as! ServerCertificateErrorController;
@@ -266,4 +266,5 @@ class AddAccountController: NSViewController, NSTextFieldDelegate {
         }
         
     }
+
 }

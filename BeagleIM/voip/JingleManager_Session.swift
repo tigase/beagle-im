@@ -33,7 +33,7 @@ protocol JingleSessionActionDelegate: AnyObject {
 
 extension JingleManager {
     
-    public class Session: JingleSession {
+    public class Session: JingleSession, @unchecked Sendable {
                         
         private static let queue = DispatchQueue(label: "JingleSessionQueue");
 

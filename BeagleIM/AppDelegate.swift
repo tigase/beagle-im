@@ -132,6 +132,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     }
     
     func applicationWillFinishLaunching(_ notification: Notification) {
+        try! AccountManager.initialize();
+        try! AccountManager.convertOldAccounts();
         NSAppleEventManager.shared().setEventHandler(self, andSelector: #selector(self.handleAppleEvent(event:replyEvent:)), forEventClass: AEEventClass(kInternetEventClass), andEventID: AEEventID(kAEGetURL));
     }
     
@@ -180,7 +182,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
 //        rosterWindowController.showWindow(self);
         XmppService.instance.initialize();
         
-        if AccountManager.accountNames().isEmpty {
+        if AccountManager.accounts.isEmpty {
             let alert = Alert();
             alert.messageText = NSLocalizedString("No account", comment: "No account added to BeagleIM");
             alert.informativeText = NSLocalizedString("To use BeagleIM you need to have the XMPP account configured. Would you like to add one now?", comment: "Should we add one now?");
@@ -579,7 +581,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         DispatchQueue.main.async {
             let alert = Alert();
             alert.messageText = String.localizedStringWithFormat(NSLocalizedString("Authentication failure for %@", comment: "authorization failure title"), accountName.description);
-            switch error {
+            switch error.cause {
             case .aborted, .temporary_auth_failure:
                 // those are temporary errors and we will retry, so there is no point in notifying user...
                 return;

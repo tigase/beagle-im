@@ -7,6 +7,9 @@ assignees: ''
 
 ---
 
+> # NOTE: Tigase BeagleIM has new home at [tigase.dev/tigase/_clients/beagle-im/](https://tigase.dev/tigase/_clients/beagle-im/) - please submit all issues/pull-requests there!
+
+
 **Describe the bug**
 A clear and concise description of what the bug is.
 

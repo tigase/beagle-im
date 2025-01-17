@@ -109,7 +109,7 @@ class Meet {
         if !PresenceStore.instance.isAvailable(for: jid.bareJid, context: client) {
             Task {
                 let presence = Presence(to: jid)
-                client.writer.write(stanza: presence);
+                try await client.writer.write(stanza: presence);
                 presenceSent = true;
             }
         }

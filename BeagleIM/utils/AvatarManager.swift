@@ -106,6 +106,34 @@ class AvatarManager {
 
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "AvatarManager");
     
+    // IDEA 1:
+    //
+    // Keep in memory all avatar hashes for all contacts
+    // This way we do not need to query the database
+    // With 1000 entries in 4 accounts it would give us up to 8000 hashes.
+    // Each entry is 40 bytes
+    // That gives us 312KB in RAM (not a lot) as iOS can have up to 1.3GB of RAM
+    // Each stored entry needs to contain a contact JID, up to 2KB, so we have usage of up to 8MB of RAM
+
+    // How about MUC? Each entry may need a corresponding entry
+    // We can be in 20-100 rooms with up to 100 people, what gives us 10000 entres.
+    // Each entry needs to have hash, room JID, nickname so up to 3KB, that gives us 30MB of RAM.
+    //
+    // In total that is up to 40MB of RAM from 1.3GB available to the app on iPhone.
+    
+    // IDEA 2:
+    //
+    // Maybe we should store avatar hashesh in the database for MUC as well? However, that would create
+    // rather big penalty.
+    //
+    
+    // IDEA 3:
+    //
+    // Do we need hash storage if we have publishers?
+    // Maybe just the best hash and image if it was loaded?
+    // Having a separate storage for images is good as it caches loaded images without the impact on the app.
+    // However I wonder how ofter the app will load images as it would use cached version in avatar manager..
+    
     fileprivate var queue = DispatchQueue(label: "avatar_manager", attributes: .concurrent);
 
     public init() {
@@ -252,7 +280,6 @@ class AvatarManager {
         guard let pepModule = XmppService.instance.getClient(for: account)?.module(.pepUserAvatar) else {
             return;
         }
-
         pepModule.retrieveAvatar(from: jid, itemId: hash, completionHandler: { result in
             switch result {
             case .success(let avatarData):

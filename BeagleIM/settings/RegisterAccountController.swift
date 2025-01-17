@@ -115,14 +115,12 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
             return;
         }
         do {
-            try AccountManager.modifyAccount(for: jid, { account in
-                if let certInfo = acceptedCertificate {
-                    account.acceptedCertificate = AcceptableServerCertificate(certificate: certInfo, accepted: true);
-                } else {
-                    account.acceptedCertificate = nil;
+            try AccountManager.modifyAccount(for: jid) { account in
+                account.credentials = .password(self.password ?? "");
+                if let sslCertificate = acceptedCertificate {
+                    account.acceptedCertificate = .init(certificate: sslCertificate, accepted: true);
                 }
-                account.credentials = .password(self.password!);
-            })
+            }
             dismissView();
         } catch {
             let alert = NSAlert(error: error);

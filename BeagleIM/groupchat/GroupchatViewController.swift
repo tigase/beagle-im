@@ -577,7 +577,7 @@ class GroupchatParticipantsContainer: NSObject, NSOutlineViewDelegate, NSOutline
         didSet {
             cancellables.removeAll();
             self.outlineView?.isHidden = true;
-            room?.occupantsPublisher.throttle(for: 0.1, scheduler: self.dispatcher, latest: true).sink(receiveValue:{ [weak self] value in
+            room?.occupantsPublisher.throttle(for: 0.1, scheduler: self.queue, latest: true).sink(receiveValue:{ [weak self] value in
                     self?.update(participants: value);
             }).store(in: &cancellables);
         }
@@ -593,7 +593,7 @@ class GroupchatParticipantsContainer: NSObject, NSOutlineViewDelegate, NSOutline
     
     weak var delegate: GroupchatViewController?;
     
-    private var dispatcher = DispatchQueue(label: "GroupchatParticipantsContainer");
+    private var queue = DispatchQueue(label: "GroupchatParticipantsContainer");
     
     private var initialized = false;
     

@@ -41,10 +41,10 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
         accountHeightConstraint = accountField.heightAnchor.constraint(equalToConstant: 0);
         self.showDisclosure(false);
         self.accountField.addItem(withTitle: "");
-        AccountManager.activeAccounts().filter { account -> Bool in
-            return XmppService.instance.getClient(for: account.name) != nil
+        AccountManager.accountNames().filter { account -> Bool in
+            return XmppService.instance.getClient(for: account) != nil
             }.forEach { (account) in
-                self.accountField.addItem(withTitle: account.name.description);
+                self.accountField.addItem(withTitle: account.description);
         }
         if let defAccount = AccountManager.defaultAccount {
             self.accountField.selectItem(withTitle: defAccount.description);
@@ -184,9 +184,9 @@ class Open1On1ChatController: NSViewController, NSTextFieldDelegate, NSTableView
             };
         }
         self.rows = rows.sorted { (i1, i2) -> Bool in
-                let n1 = i1.name ?? i1.jid.description;
-                let n2 = i2.name ?? i2.jid.description;
-                return n1.compare(n2) == .orderedAscending;
+            let n1 = i1.name ?? i1.jid.description;
+            let n2 = i2.name ?? i2.jid.description;
+            return n1.compare(n2) == .orderedAscending;
         }
         self.contactsView.reloadData();
     }

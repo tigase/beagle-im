@@ -63,7 +63,7 @@ class ServerCertificateErrorController: NSViewController {
             } else {
                 certificateValidPeriod.attributedStringValue = NSAttributedString(string: NSLocalizedString("Unknown", comment: "setting"), attributes: [.foregroundColor: NSColor.systemOrange]);
             }
-            certificateFingerprint.stringValue = info.subject.fingerprints.first?.value ?? "Unknown";//.fingerprintSha1;
+            certificateFingerprint.stringValue = info.subject.fingerprints.first?.value ?? "Unknown";
             issuerName.stringValue = info.issuer?.name ?? NSLocalizedString("Self-Signed", comment: "setting");
             issuesFingerprint.stringValue = info.issuer?.fingerprints.first?.value ?? "Unknown";
         }
@@ -84,15 +84,9 @@ class ServerCertificateErrorController: NSViewController {
             completionHandler = nil;
             handler(true);
         } else {
-            guard let jid = self.account else {
-                return;
-            }
-            
+            guard let jid = self.account else { return; }
             try? AccountManager.modifyAccount(for: jid, { account in
-                if let cert = account.acceptedCertificate?.certificate {
-                    account.acceptedCertificate = AcceptableServerCertificate(certificate: cert, accepted: true);
-                }
-                account.enabled = true;
+                account.acceptedCertificate?.accepted = true
             })
         }
     }

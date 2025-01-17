@@ -335,13 +335,13 @@ class MessageEventHandler: XmppServiceExtension {
         let error = message.error;
         let unread = (!archived) || isMuc;
         if direction == .incoming {
-            if let error = error {
-                return .incoming_error(unread ? .received : .displayed, errorMessage: error.localizedDescription);
+            if let error {
+                return .incoming_error(unread ? .received : .displayed, errorMessage: error.message ?? error.localizedDescription);
             }
             return .incoming(unread ? .received : .displayed);
         } else {
-            if let error = error {
-                return .outgoing_error(unread ? .received : .displayed, errorMessage: error.localizedDescription);
+            if let error {
+                return .outgoing_error(unread ? .received : .displayed, errorMessage: error.message ?? error.localizedDescription);
             }
             return .outgoing(.sent);
         }

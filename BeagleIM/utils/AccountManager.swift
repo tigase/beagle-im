@@ -25,7 +25,7 @@ import Martin
 import Combine
 
 open class AccountManager {
-    
+
     private static let serviceName = "BeagleIM";
     private static let queue = DispatchQueue(label: "AccountManager");
     private static var _accounts: [BareJID: Account] = [:];
@@ -81,23 +81,28 @@ open class AccountManager {
                 if let oldAccount = getAccountOld(for: name) {
                     var newAccount = Account(name: name, enabled: oldAccount.active);
                     newAccount.serverEndpoint = oldAccount.endpoint;
-                    newAccount.rosterVersion = oldAccount.rosterVersion;
+                    newAccount.rosterVersion = nil;
                     newAccount.disableTLS13 = oldAccount.disableTLS13;
                     newAccount.acceptedCertificate = oldAccount.serverCertificate?.acceptableServerCertificate();
                     newAccount.nickname = oldAccount.nickname;
-                    newAccount.statusMessage = oldAccount.presenceDescription;
-                    switch oldAccount.resourceType {
-                    case .automatic:
-                        newAccount.additional.resourceType = .automatic;
-                    case .hostname:
-                        newAccount.additional.resourceType = .hostname;
-                    case .custom:
-                        newAccount.additional.resourceType = .manual(oldAccount.resourceName ?? "UNKNOWN");
-                    }
+                    newAccount.statusMessage = nil;
 
                     newAccount.omemoDeviceId = UserDefaults.standard.value(forKey: "accounts.\(name).omemoRegistrationId") as? UInt32;
                     if let features = UserDefaults.standard.value(forKey: "accounts.\(name).KnownServerFeatures") as? [String] {
                         newAccount.additional.knownServerFeatures = features.compactMap({ ServerFeature(rawValue: $0) });
+                    }
+                    
+                    switch oldAccount.resourceType {
+                    case .automatic:
+                        newAccount.additional.resource = .automatic
+                    case .hostname:
+                        newAccount.additional.resource = .hostname
+                    case .custom:
+                        if let name = oldAccount.resourceName {
+                            newAccount.additional.resource = .custom(name: name);
+                        } else {
+                            newAccount.additional.resource = .automatic
+                        }
                     }
 
                     try DBAccountStore.create(account: newAccount);
@@ -209,7 +214,6 @@ open class AccountManager {
     
     private static func passwordOld(for account: BareJID) -> String? {
         let query = AccountManager.getAccountQueryOld(account.description, withData: kSecReturnData);
-
         
         var result: CFTypeRef?;
         
@@ -303,7 +307,7 @@ open class AccountManager {
             throw error;
         }
     }
-    
+
     fileprivate static func getAccountQueryOld(_ name:String, withData:CFString = kSecReturnAttributes) -> [String: Any] {
         return [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitOne, String(withData) : kCFBooleanTrue!, String(kSecAttrService) : "xmpp" as NSObject, String(kSecAttrAccount) : name as NSObject ];
     }
@@ -311,7 +315,7 @@ open class AccountManager {
     fileprivate static func accountQuery(_ name:String, withData:CFString = kSecReturnAttributes) -> [String: Any] {
         return [ String(kSecClass) : kSecClassGenericPassword, String(kSecMatchLimit) : kSecMatchLimitOne, String(withData) : kCFBooleanTrue!, String(kSecAttrService) : serviceName as NSObject, String(kSecAttrAccount) : name as NSObject ];
     }
-    
+
     public enum Event {
             case enabled(Account,Bool)
             case disabled(Account)

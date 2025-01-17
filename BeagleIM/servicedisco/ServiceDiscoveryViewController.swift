@@ -529,23 +529,27 @@ class ServiceDiscoveryViewController: NSViewController, NSOutlineViewDataSource,
     
     class Item {
         
-        public let jid:JID;
-        public let node:String?;
-        public let name:String?;
-
+        private(set) var item: DiscoveryModule.Item
+        var jid: JID {
+            item.jid
+        }
+        var node: String? {
+            item.node
+        }
+        var name: String? {
+            item.name
+        }
         private(set) var identities: [DiscoveryModule.Identity] = [];
         private(set) var features: [String] = [];
         fileprivate var subitems: [Item]? = nil;
         private(set) var version: SoftwareVersionModule.SoftwareVersion?;
         
         init(jid: JID, node: String?, name: String?) {
-            self.jid = jid;
-            self.node = node;
-            self.name = name;
+            item = DiscoveryModule.Item(jid: jid, node: node, name: name);
         }
         
-        convenience init(_ item: DiscoveryModule.Item) {
-            self.init(jid: item.jid, node: item.node, name: item.name);
+        init(_ item: DiscoveryModule.Item) {
+            self.item = item;
         }
         
         func hasFeature(_ feature: String) -> Bool {

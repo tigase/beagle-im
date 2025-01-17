@@ -58,7 +58,7 @@ class AddContactController: NSViewController, NSTextFieldDelegate {
         AccountManager.accountNames().filter { account -> Bool in
             return XmppService.instance.getClient(for: account)?.state ?? .disconnected() == .connected()
             }.forEach { account in
-            accountSelector.menu?.addItem(NSMenuItem(title: account.description, action: nil, keyEquivalent: ""));
+                accountSelector.menu?.addItem(NSMenuItem(title: account.description, action: nil, keyEquivalent: ""));
         }
         _ = formView.addRow(label: NSLocalizedString("Add to", comment: "add roster item label") + ":", field: accountSelector);
         formView.groupItems(from: accountSelector, to: accountSelector);

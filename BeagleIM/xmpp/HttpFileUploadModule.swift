@@ -23,7 +23,7 @@ import Foundation
 import Martin
 import Combine
 
-class HttpFileUploadModule: Martin.HttpFileUploadModule, Resetable {
+class HttpFileUploadModule: Martin.HttpFileUploadModule, Resetable, @unchecked Sendable {
     
     @Published
     var availableComponents: [UploadComponent] = [];

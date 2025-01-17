@@ -134,7 +134,7 @@ class MediaHelper {
         })
     }
 
-    static func askImageQuality(window: NSWindow, forceQualityQuestion askQuality: Bool, _ completionHandler: @escaping (Result<ImageQuality,ShareError>)->Void) {
+    static func askImageQuality(window: NSWindow, forceQualityQuestion askQuality: Bool, _ completionHandler: @escaping (sending Result<ImageQuality,ShareError>)->Void) {
         if let quality = askQuality ? nil : ImageQuality.current {
             completionHandler(.success(quality));
         } else {
@@ -159,7 +159,7 @@ class MediaHelper {
         }
     }
     
-    static func askVideoQuality(window: NSWindow, forceQualityQuestion askQuality: Bool, _ completionHandler: @escaping (Result<VideoQuality,ShareError>)->Void) {
+    static func askVideoQuality(window: NSWindow, forceQualityQuestion askQuality: Bool, _ completionHandler: @escaping (sending Result<VideoQuality,ShareError>)->Void) {
         if let quality = askQuality ? nil : VideoQuality.current {
             completionHandler(.success(quality));
         } else {
@@ -270,21 +270,19 @@ class MediaHelper {
         exportSession.outputFileType = .mp4;
         let fileUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: false);
         exportSession.outputURL = fileUrl;
-
-        let timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true, block: { _ in
-            progressCallback(exportSession.progress);
-        })
-        let _:Void = try await withUnsafeThrowingContinuation({ continuation in
-            exportSession.exportAsynchronously {
-                timer.invalidate();
-
-                if let error = exportSession.error {
-                    continuation.resume(throwing: error);
-                } else {
-                    continuation.resume(returning: Void());
+        Task {
+            repeat {
+                await Task.sleep(100000000)
+                let progress = exportSession.progress;
+                await MainActor.run {
+                    progressCallback(progress)
                 }
-            }
-        })
+            } while (exportSession.status != .completed && exportSession.status != .failed && exportSession.status != .cancelled)
+        }
+        await exportSession.export();
+        if let error = exportSession.error {
+            throw error;
+        }
         return (fileUrl, replaceExtension(filename: url.lastPathComponent, newExtension: "mp4"));
     }
     

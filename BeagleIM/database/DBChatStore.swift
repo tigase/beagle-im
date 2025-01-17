@@ -70,29 +70,29 @@ open class DBChatStore: ContextLifecycleAware {
             return accountsConversations.conversations(for: account);
         }) ?? [];
     }
-
+    
     public func conversation(for account: BareJID, with jid: BareJID) -> Conversation? {
         return queue.sync(execute: {
             return accountsConversations.conversation(for: account, with: jid);
-        })
+        });
     }
-
+    
     public func close(conversation: Conversation) -> Bool {
         return queue.sync {
             guard accountsConversations.remove(conversation) else {
-                return false;
+                return false
             }
-            conversationsEventsPublisher.send(.destroyed(conversation));
+            conversationsEventsPublisher.send(.destroyed(conversation))
             try! Database.main.writer({ database in
                 try database.delete(query: .chatDelete, params: ["id": conversation.id]);
-            });
+            })
             if conversation is Room {
                 DispatchQueue.global().async {
                     DBChatHistorySyncStore.instance.removeSyncPeriods(forAccount: conversation.account, component: conversation.jid);
                 }
             }
             if conversation.unread > 0 {
-                DBChatHistoryStore.instance.markAsRead(for: conversation, before: Date());
+                DBChatHistoryStore.instance.markAsRead(for: conversation, before: Date())
             }
             return true;
         }
@@ -117,7 +117,7 @@ open class DBChatStore: ContextLifecycleAware {
             return database.lastInsertedRowId!;
         })
     }
-
+    
     func closeAll(for account: BareJID) {
         queue.async {
             if let items = self.accountsConversations.conversations(for: account) {
@@ -128,6 +128,10 @@ open class DBChatStore: ContextLifecycleAware {
         }
     }
 
+    func isMuted(conversation: Conversation) -> Bool {
+        return conversation.notifications == .none;
+    }
+
     func process(chatState remoteChatState: ChatState, for account: BareJID, with jid: BareJID) {
         queue.async {
             if let chat = self.accountsConversations.conversation(for: account, with: jid) as? Chat {
@@ -135,13 +139,12 @@ open class DBChatStore: ContextLifecycleAware {
             }
         }
     }
-
-    func newActivity(_ activity: LastChatActivity, isUnread: Bool, for account: BareJID, with jid: BareJID, completionHandler: @escaping ()->Void) {
+    
+    func newActivity(_ activity: LastChatActivity, isUnread: Bool, for account: BareJID, with jid: BareJID) {
         queue.async {
             if let conversation = self.accountsConversations.conversation(for: account, with: jid) {
                 self.accountsConversations.newActivity(activity, isUnread: isUnread, for: conversation);
             }
-            completionHandler();
         }
     }
 
@@ -159,10 +162,17 @@ open class DBChatStore: ContextLifecycleAware {
         }
     }
 
+    func refreshConversationsList() {
+        queue.async {
+            self.accountsConversations.refresh();
+        }
+    }
+
     func messageDraft(for account: BareJID, with jid: BareJID) -> String? {
         return try! Database.main.reader({ database -> String? in
             return try database.select(query: .chatFindMessageDraft, params: ["account": account, "jid": jid]).mapFirst({ $0.string(for: "message_draft") });
         })
+    
     }
 
     func storeMessage(draft: String?, for account: BareJID, with jid: BareJID) {
@@ -253,12 +263,6 @@ open class DBChatStore: ContextLifecycleAware {
         }
     }
     
-    func refreshConversationsList() {
-        queue.async {
-            self.accountsConversations.refresh();
-        }
-    }
-    
     public enum ConversationEvent {
         case created(Conversation)
         case destroyed(Conversation)
@@ -329,7 +333,7 @@ open class DBChatStore: ContextLifecycleAware {
         }
         
         public func newActivity(_ activity: LastChatActivity, isUnread: Bool, for conversation: Conversation) {
-            let updated = conversation.update(activity, isUnread: isUnread);
+            let updated = conversation.update(lastActivity: activity, isUnread: isUnread);
             if isUnread && !conversation.isMuted {
                 unreadMessagesCount = unreadMessagesCount + 1;
             }
@@ -371,6 +375,7 @@ open class DBChatStore: ContextLifecycleAware {
             self.items = items;
         }
     }
+        
 }
 
 extension Conversation {

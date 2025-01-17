@@ -45,7 +45,7 @@ class BaseJoinChannelViewController: NSViewController {
         AccountManager.accountNames().filter { account -> Bool in
             return XmppService.instance.getClient(for: account) != nil
             }.forEach { (account) in
-            self.accountButton.addItem(withTitle: account.description);
+                self.accountButton.addItem(withTitle: account.description);
         }
         if self.account == nil {
             self.account = AccountManager.defaultAccount;

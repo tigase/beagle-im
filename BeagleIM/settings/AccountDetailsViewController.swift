@@ -89,17 +89,17 @@ class AccountDetailsViewController: NSViewController, AccountAware, NSTextFieldD
         resourceType?.itemArray.forEach { (item) in
             item.state = .off;
         }
-        if let rt = acc?.additional.resourceType {
+        resourceName?.stringValue = "BeagleIM";
+        if let rt = acc?.additional.resource {
             switch rt {
             case .automatic:
                 resourceType?.selectItem(at: 1);
                 resourceName?.stringValue = "BeagleIM";
             case .hostname:
                 resourceType?.selectItem(at: 2);
-                resourceName?.stringValue = "BeagleIM";
-            case .manual(let resource):
+            case .custom(let name):
                 resourceType?.selectItem(at: 3);
-                resourceName?.stringValue = resource;
+                resourceName?.stringValue = name;
             }
         } else {
             resourceType?.selectItem(at: 1);
@@ -148,13 +148,13 @@ class AccountDetailsViewController: NSViewController, AccountAware, NSTextFieldD
                 let idx = self.resourceType.indexOfSelectedItem;
                 switch idx {
                 case 2:
-                    account.additional.resourceType = .hostname;
+                    account.additional.resource = .hostname
                 case 3:
-                    account.additional.resourceType = .manual(self.resourceName.stringValue.isEmpty ? "BeagleIM" : self.resourceName.stringValue);
+                    account.additional.resource = .custom(name: self.resourceName.stringValue)
                 default:
-                    account.additional.resourceType = .automatic;
+                    account.additional.resource = .automatic
                 }
-                
+            
                 if !(self.host.stringValue.isEmpty || self.port.stringValue.isEmpty), let portInt = Int(self.port.stringValue) {
                     account.serverEndpoint = .init(proto: self.useDirectTLS.state == .on ? .XMPPS : .XMPP, host: self.host.stringValue, port: portInt)
                 }

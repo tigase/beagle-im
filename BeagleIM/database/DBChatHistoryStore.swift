@@ -319,7 +319,7 @@ class DBChatHistoryStore {
                 }
                 retractMessageSync(oldItem: oldItem, for: conversation, sender: oldItem.sender, retractionStanzaId: stanzaId, retractionTimestamp: timestamp, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId);
             case .retracted(let retractionTimestamp):
-                self.appendItemSync(for: conversation, state: state, sender: sender, type: .retraction, timestamp: timestamp, stanzaId: stanzaId, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, data: "", chatState: nil, appendix: ChatAttachmentAppendix(), options: .init(recipient: recipient, encryption: .none, isMarkable: true), linkPreviewAction: .none);
+                _ = self.appendItemSync(for: conversation, state: state, sender: sender, type: .retraction, timestamp: timestamp, stanzaId: stanzaId, serverMsgId: serverMsgId, remoteMsgId: remoteMsgId, data: "", chatState: nil, appendix: ChatAttachmentAppendix(), options: .init(recipient: recipient, encryption: .none, isMarkable: true), linkPreviewAction: .none);
             }
             return;
         }
@@ -498,12 +498,11 @@ class DBChatHistoryStore {
             
             if let payload = payload {
                 let entry = ConversationEntry(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, payload: payload, options: options);
-
+                
                 if let activityPayload = LastChatActivityType.from(payload) {
-                    DBChatStore.instance.newActivity(.init(timestamp: timestamp, sender: sender, payload: activityPayload), isUnread: state.isUnread, for: conversation.account, with: conversation.jid, completionHandler: {
-                        NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: entry);
-                    })
+                    DBChatStore.instance.newActivity(.init(timestamp: timestamp, sender: sender, payload: activityPayload), isUnread: state.isUnread, for: conversation.account, with: conversation.jid)
                 }
+                NotificationCenter.default.post(name: DBChatHistoryStore.MESSAGE_NEW, object: entry);
                 
                 self.events.send(.added(entry));
                 NotificationManager.instance.newMessage(entry);
@@ -554,8 +553,7 @@ class DBChatHistoryStore {
                 markedAsRead.send(MarkedAsRead(account: conversation.account, jid: conversation.jid, messages: [.init(id: oldItem.id, markableId: nil)], before: markAsReadTimestamp.addingTimeInterval(0.1), onlyLocally: true));
 
                 let newMessageState: ConversationEntryState = (oldItem.state.direction == .incoming) ? (oldItem.state.isUnread ? .incoming(.displayed) : .incoming(newState.isUnread ? .received : .displayed)) : (.outgoing(.sent));
-                DBChatStore.instance.newActivity(.init(timestamp: oldItem.timestamp, sender: sender, payload: .message(message: data)), isUnread: newMessageState.isUnread, for: conversation.account, with: conversation.jid, completionHandler: {
-                })
+                DBChatStore.instance.newActivity(.init(timestamp: oldItem.timestamp, sender: sender, payload: .message(message: data)), isUnread: newMessageState.isUnread, for: conversation.account, with: conversation.jid)
 
                 logger.debug("correcing previews for master id: \(itemId)");
                 self.itemUpdated(withId: itemId, for: conversation);
@@ -604,9 +602,7 @@ class DBChatHistoryStore {
 
             // what should be sent to "newMessage" how to reatract message from there??
             let activity: LastChatActivity = .init(timestamp: oldItem.timestamp, sender: sender, payload: .retraction);
-            DBChatStore.instance.newActivity(activity, isUnread: false, for: conversation.account, with: conversation.jid, completionHandler: {
-                self.logger.debug("chat store state updated with message retraction for \(itemId)");
-            })
+            DBChatStore.instance.newActivity(activity, isUnread: false, for: conversation.account, with: conversation.jid)
             if oldItem.state.isUnread {
                 DBChatStore.instance.markAsRead(for: conversation.account, with: conversation.jid, count: 1);
             }
@@ -706,7 +702,6 @@ class DBChatHistoryStore {
         }) > 0 else {
             return false;
         }
-        
         self.itemUpdated(withId: itemId, for: conversation);
         return true;
     }

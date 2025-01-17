@@ -157,15 +157,29 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
                     switch joinResult {
                     case .created(let room), .joined(let room):
                         (room as! Room).roomFeatures = Set(features.compactMap({ Room.Feature(rawValue: $0) }));
-                        let config = RoomConfig(form: form)
-                        (room as! Room).allowedPM = config.allowPM ?? .anyone;
+                        if let form = form {
+                            let config = RoomConfig(form: form)
+                            if let allowPM = config.allowPM {
+                                (room as! Room).allowedPM = allowPM;
+                            }
+                        } else {
+                            (room as! Room).allowedPM = .none;
+                            client.module(.muc).roomConfiguration(of: JID(room.jid), completionHandler: { result in
+                                switch result {
+                                case .success(let config):
+                                    (room as! Room).allowedPM = config.allowPM ?? .none;
+                                case .failure(let err):
+                                    (room as! Room).allowedPM = .none;
+                                }
+                            })
+                        }
                         Task {
                             try await MucEventHandler.instance.updateRoomName(room: (room as! Room));
                         }
-                    }
-                    if createBookmark {
-                        Task {
-                            try await client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: channelName ?? room.localPart ?? room.description, jid: JID(room), autojoin: autojoin, nick: nickname, password: password));
+                        if createBookmark {
+                            Task {
+                                try? await client.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: channelName ?? room.jid.localPart ?? room.jid.description, jid: JID(room.jid), autojoin: autojoin, nick: nickname, password: password));
+                            }
                         }
                     }
                 case .mix:

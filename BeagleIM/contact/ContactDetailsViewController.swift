@@ -140,6 +140,12 @@ open class ConversationDetailsViewController: NSViewController, ContactDetailsAc
                                 fn = DBRosterStore.instance.item(for: account, jid: JID(jid))?.name ?? jid.description;
                             }
                         }
+                        if let surname = vcard?.surname, !surname.isEmpty {
+                            fn = fn.isEmpty ? surname : "\(fn) \(surname)"
+                        }
+                        if fn.isEmpty {
+                            fn = DBRosterStore.instance.item(for: account, jid: JID(jid))?.name ?? jid.description;
+                        }
                         self.nameField.stringValue = fn;
                     })
                 }
@@ -436,13 +442,11 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
             return;
         }
         
-        if bookmark?.state == .on {
-            Task {
-                try await context.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: room.name ?? room.jid.localPart ?? room.jid.description, jid: JID(room.jid), autojoin: false, nick: room.nickname, password: room.password));
-            }
-        } else {
-            Task {
-                try await context.module(.pepBookmarks).remove(bookmark: Bookmarks.Conference(name: room.name ?? room.jid.description, jid: JID(room.jid), autojoin: false));
+        Task {
+            if bookmark?.state == .on {
+                try? await context.module(.pepBookmarks).addOrUpdate(bookmark: Bookmarks.Conference(name: room.name ?? room.jid.localPart ?? room.jid.description, jid: JID(room.jid), autojoin: false, nick: room.nickname, password: room.password));
+            } else {
+                try? await context.module(.pepBookmarks).remove(bookmark: Bookmarks.Conference(name: room.name ?? room.jid.description, jid: JID(room.jid), autojoin: false));
             }
         }
     }
