@@ -208,11 +208,12 @@ open class DBRosterStore: RosterStore {
     }
     
     public func deinitialize(context: Context) {
+        let account = context.userBareJid;
         queue.async {
-            guard let roster = self.accountRosters[context.userBareJid] else {
+            guard let roster = self.accountRosters[account] else {
                 return;
             }
-            self.accountRosters.removeValue(forKey: context.userBareJid);
+            self.accountRosters.removeValue(forKey: account);
             let items = Set(roster.items);
             self.items = self.items.filter({ !items.contains($0) });
         }
