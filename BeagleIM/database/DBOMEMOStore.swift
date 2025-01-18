@@ -451,6 +451,7 @@ class OMEMOStoreWrapper: SignalStorage {
     override func setup(withContext signalContext: SignalContext) {
         self.signalContext = signalContext;
         _ = regenerateKeys(wipe: false);
+        super.setup(withContext: signalContext)
     }
     
     override func regenerateKeys(wipe: Bool = false) -> Bool {
