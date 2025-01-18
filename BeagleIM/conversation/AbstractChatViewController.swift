@@ -408,17 +408,6 @@ extension NSTextField {
         }
         
         return CharacterRange(location: charIdx, length: self.attributedStringValue.length - charIdx);
-//        var nextIdx = idx;
-//
-//        if idx < layoutManager.numberOfGlyphs - 1 {
-//            let nextCharIdx = layoutManager.characterIndexForGlyph(at: idx + 1);
-//            let str = self.attributedStringValue;
-//            let tmp = str.attributedSubstring(from: NSRange(location: charIdx, length: nextCharIdx - charIdx));
-//            print("char:", charIdx, "next:", nextCharIdx, "tmp:", tmp);
-//            return (charIdx, nextCharIdx - charIdx);
-//        } else {
-//            return (charIdx, self.attributedStringValue.length - charIdx);
-//        }
     }
     
     class CharacterRange: Comparable {

@@ -33,6 +33,61 @@ class AvatarEventHandler: XmppServiceExtension {
     private init() {
     }
     
+    public actor VCardDownloadQueue {
+        
+        static let LIMIT = 30;
+        
+        struct Request: Equatable, Hashable {
+            let jid: JID;
+            let photoId: String;
+        }
+        
+        struct MissingPhoto: Equatable {
+            let request: Request
+            let timestamp = Date()
+        }
+        
+        class Counter {
+            var requestTimes: [Date] = [];
+            var waitingRequests: Set<Request> = [];
+            var missingPhotos: [MissingPhoto] = [];
+            func requestsLastSecond() -> Int {
+                requestTimes.removeAll(where: { $0.timeIntervalSinceNow < -1 });
+                return requestTimes.count;
+            }
+        }
+        
+        private var counters: [BareJID:Counter] = [:];
+        
+        func fetchVCard(client: XMPPClient, from: JID, forPhoto photoId: String) async throws -> VCard {
+            let counter = counters[client.userBareJid] ?? Counter();
+            counters[client.userBareJid] = counter;
+
+            let request = Request(jid: from, photoId: photoId);
+            counter.missingPhotos.removeAll(where: { $0.timestamp.timeIntervalSinceNow < 3600 });
+            if (counter.missingPhotos.contains(where: { $0.request == request })) {
+                return VCard();
+            }
+
+            let (added, _) = counter.waitingRequests.insert(request);
+            guard added else {
+                return VCard();
+            }
+            while (counter.requestsLastSecond() >= VCardDownloadQueue.LIMIT) {
+                try await Task.sleep(nanoseconds: 1000000000);
+            }
+            counter.waitingRequests.remove(request);
+            counter.requestTimes.append(Date());
+            let vcard = try await client.module(.vcardTemp).retrieveVCard(from: from);
+            if (vcard.photos.isEmpty) {
+                counter.missingPhotos.append(.init(request: request));
+            }
+            return vcard;
+        }
+    }
+    
+    private let vcardFetchQueue = VCardDownloadQueue();
+    
     func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
         client.module(.presence).presencePublisher.filter({ $0.presence.type != .error }).sink(receiveValue: { [weak client] e in
             guard let client = client else {
@@ -50,7 +105,7 @@ class AvatarEventHandler: XmppServiceExtension {
                     if !AvatarManager.instance.hasAvatar(withHash: photoId) {
                         os_log(OSLogType.debug, log: .avatar, "querying %s for VCard for avaar hash: %{public}s", e.presence.from!.description, photoId);
                         do {
-                            let vcard = try await client.module(.vcardTemp).retrieveVCard(from: e.jid);
+                            let vcard = try await self.vcardFetchQueue.fetchVCard(client: client, from: e.jid, forPhoto: photoId);
                             await withTaskGroup(of: Void.self, body: { group in
                                 for photo in vcard.photos {
                                     group.addTask {

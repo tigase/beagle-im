@@ -23,6 +23,7 @@ import Foundation
 import Martin
 import MartinOMEMO
 import TigaseSQLite3
+import TigaseLogging
 
 extension Query {
     static let omemoKeyPairForAccount = Query("SELECT key FROM omemo_identities WHERE account = :account AND name = :name AND device_id = :deviceId AND own = 1");
@@ -332,6 +333,7 @@ class SignalPreKeyStore: SignalPreKeyStoreProtocol, ContextAware {
 //        }
 //    }
 
+    private let logger = Logger(subsystem: "BeagleIM", category: "SignalPreKeyStore")
     private let queue = DispatchQueue(label: "SignalPreKeyRemovalQueue");
     private var preKeysMarkedForRemoval: [UInt32] = [];
     
@@ -357,7 +359,7 @@ class SignalPreKeyStore: SignalPreKeyStoreProtocol, ContextAware {
     
     func deletePreKey(withId: UInt32) -> Bool {
         queue.async {
-            print("queueing prekey with id \(withId) for removal..");
+            self.logger.debug("queueing prekey with id \(withId) for removal..");
             self.preKeysMarkedForRemoval.append(withId);
         }
         return true;
@@ -368,7 +370,7 @@ class SignalPreKeyStore: SignalPreKeyStoreProtocol, ContextAware {
             defer {
                 preKeysMarkedForRemoval.removeAll();
             }
-            print("removing queued prekeys: \(preKeysMarkedForRemoval)");
+            self.logger.debug("removing queued prekeys: \(self.preKeysMarkedForRemoval)");
             return preKeysMarkedForRemoval.filter({ id in DBOMEMOStore.instance.deletePreKey(forAccount: context!.userBareJid, withId: id) });
         }).count > 0;
     }
@@ -449,7 +451,6 @@ class OMEMOStoreWrapper: SignalStorage {
     override func setup(withContext signalContext: SignalContext) {
         self.signalContext = signalContext;
         _ = regenerateKeys(wipe: false);
-        super.setup(withContext: signalContext);
     }
     
     override func regenerateKeys(wipe: Bool = false) -> Bool {

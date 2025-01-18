@@ -114,12 +114,9 @@ class XmppService {
     private func accountChanged(event: AccountManager.Event) {
         switch event {
         case .enabled(let account, let reconnect):
-            guard reconnect else {
-                return;
-            }
             if let client = self._clients[account.name] {
                 // if client exists and is connected, then reconnect it..
-                if client.state != .disconnected() {
+                if client.state != .disconnected() && reconnect {
                     Task {
                         try await client.disconnect();
                     }
@@ -134,9 +131,11 @@ class XmppService {
                 let prevState = client.state;
                 Task {
                     try? await client.disconnect();
-                }
-                if prevState == .disconnected() && client.state == .disconnected() {
-                    self.unregisterClient(client);
+//                    if prevState == .disconnected() {
+//                        self.queue.async {
+//                            self.unregisterClient(client);
+//                        }
+//                    }
                 }
             }
             self.dnsCache.store(for: account.name.domain, result: nil);
@@ -234,6 +233,10 @@ class XmppService {
     
     private class ClientCancellables {
         var cancellables: Set<AnyCancellable> = [];
+        
+        deinit {
+            cancellables.forEach({ $0.cancel() })
+        }
     }
 
     private var clientCancellables: [BareJID:ClientCancellables] = [:];
@@ -243,11 +246,16 @@ class XmppService {
         defer {
             DBChatStore.instance.resetChatStates(for: accountName);
         }
-        self.queue.sync {
+
+        guard self.queue.sync(execute: {
             let active = AccountManager.account(for: accountName)?.enabled
             if !(active ?? false) {
                 self.unregisterClient(client, removed: active == nil);
+                return false;
             }
+            return true;
+        }) else {
+            return;
         }
         
         
@@ -366,9 +374,7 @@ class XmppService {
             
         client.$state.subscribe(account.state).store(in: &clientCancellables.cancellables);
         client.$state.dropFirst().sink(receiveValue: { state in self.changedState(state, for: client) }).store(in: &clientCancellables.cancellables);
-            
-        MucEventHandler.instance.register(for: client, cancellables: &clientCancellables.cancellables);
-            
+        
         for ext in extensions {
             ext.register(for: client, cancellables: &clientCancellables.cancellables);
         }
