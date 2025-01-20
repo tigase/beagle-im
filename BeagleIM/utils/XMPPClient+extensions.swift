@@ -39,6 +39,17 @@ extension XMPPClient {
             options.connectionTimeout = 5 * 60;
             options.networkProcessorProviders.append(account.disableTLS13 ? SSLProcessorProvider(supportedTlsVersions: TLSVersion.TLSv1_2...TLSVersion.TLSv1_2) : SSLProcessorProvider());
         });
+        module(.sasl2).deviceId = account.uuid.uuidString;
+        module(.sasl2).deviceName = "macOS \(operatingSystemVersion(osVersion: ProcessInfo.processInfo.operatingSystemVersion))";
+        module(.sasl2).software = Bundle.main.infoDictionary![kCFBundleNameKey as String] as? String;
+    }
+    
+    private func operatingSystemVersion(osVersion: OperatingSystemVersion) -> String {
+        if (osVersion.patchVersion == 0) {
+            return "\(osVersion.majorVersion).\(osVersion.minorVersion)";
+        } else {
+            return "\(osVersion.majorVersion).\(osVersion.minorVersion).\(osVersion.patchVersion)";
+        }
     }
     
 }

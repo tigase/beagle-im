@@ -28,6 +28,7 @@ public struct Account {
 
     public var state = CurrentValueSubject<XMPPClient.State,Never>(.disconnected());
 
+    public let uuid: UUID
     public let name: BareJID;
     public var credentials: Credentials;
     public var enabled: Bool;
@@ -131,7 +132,8 @@ public struct Account {
         }
     }
 
-    public init(name: BareJID, enabled: Bool, credentials: Credentials = .anonymous(), serverEndpoint: SocketConnectorNetwork.Endpoint? = nil, lastEndpoint: SocketConnectorNetwork.Endpoint? = nil, rosterVersion: String? = nil, statusMessage: String? = nil, additional: Additional = Additional())  {
+    public init(uuid: UUID, name: BareJID, enabled: Bool, credentials: Credentials = .anonymous(), serverEndpoint: SocketConnectorNetwork.Endpoint? = nil, lastEndpoint: SocketConnectorNetwork.Endpoint? = nil, rosterVersion: String? = nil, statusMessage: String? = nil, additional: Additional = Additional())  {
+        self.uuid = uuid;
         self.name = name;
         self.credentials = credentials;
         self.enabled = enabled;

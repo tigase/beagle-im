@@ -196,7 +196,6 @@
 		FE9408F528F5D57200A7E1BE /* AcceptableServerCertificate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9408F428F5D57200A7E1BE /* AcceptableServerCertificate.swift */; };
 		FE9408F728F5D5AA00A7E1BE /* ServerFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9408F628F5D5AA00A7E1BE /* ServerFeature.swift */; };
 		FE9408F928F88EBE00A7E1BE /* DBAccountStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9408F828F88EBE00A7E1BE /* DBAccountStore.swift */; };
-		FE9408FB28F88F4100A7E1BE /* db-schema-20.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE9408FA28F88F4100A7E1BE /* db-schema-20.sql */; };
 		FE9408FD28F8903200A7E1BE /* SocketConnectorNetworkEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9408FC28F8903200A7E1BE /* SocketConnectorNetworkEndpoint.swift */; };
 		FE9408FF28FB416400A7E1BE /* XMPPClient+extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9408FE28FB416400A7E1BE /* XMPPClient+extensions.swift */; };
 		FE9486B221BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9486B121BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift */; };
@@ -238,6 +237,7 @@
 		FEC5DC8421553A7500AA3E4F /* AbstractChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC5DC8321553A7500AA3E4F /* AbstractChatViewController.swift */; };
 		FEC5DC8621553F4700AA3E4F /* GroupchatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC5DC8521553F4700AA3E4F /* GroupchatViewController.swift */; };
 		FEC661F821AABFB0004FDE1E /* NSViewWithTextBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC661F721AABFB0004FDE1E /* NSViewWithTextBackground.swift */; };
+		FECE07DC2D3E629200FB1894 /* db-schema-20.sql in Resources */ = {isa = PBXBuildFile; fileRef = FECE07DB2D3E629200FB1894 /* db-schema-20.sql */; };
 		FECFA80826FE2CD0004CDC62 /* ChannelManageBlocked.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECFA80726FE2CD0004CDC62 /* ChannelManageBlocked.swift */; };
 		FECFA80A27022E49004CDC62 /* RTCDesktopVideoCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECFA80927022E49004CDC62 /* RTCDesktopVideoCapturer.swift */; };
 		FED2A95225F00159008828E4 /* DBChatMarkersStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED2A95125F00158008828E4 /* DBChatMarkersStore.swift */; };
@@ -517,7 +517,6 @@
 		FE9408F428F5D57200A7E1BE /* AcceptableServerCertificate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcceptableServerCertificate.swift; sourceTree = "<group>"; };
 		FE9408F628F5D5AA00A7E1BE /* ServerFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerFeature.swift; sourceTree = "<group>"; };
 		FE9408F828F88EBE00A7E1BE /* DBAccountStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBAccountStore.swift; sourceTree = "<group>"; };
-		FE9408FA28F88F4100A7E1BE /* db-schema-20.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-20.sql"; sourceTree = "<group>"; };
 		FE9408FC28F8903200A7E1BE /* SocketConnectorNetworkEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketConnectorNetworkEndpoint.swift; sourceTree = "<group>"; };
 		FE9408FE28FB416400A7E1BE /* XMPPClient+extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XMPPClient+extensions.swift"; sourceTree = "<group>"; };
 		FE9486B121BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSButtonNoSizeWhenHidden.swift; sourceTree = "<group>"; };
@@ -560,6 +559,7 @@
 		FEC5DC8321553A7500AA3E4F /* AbstractChatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractChatViewController.swift; sourceTree = "<group>"; };
 		FEC5DC8521553F4700AA3E4F /* GroupchatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupchatViewController.swift; sourceTree = "<group>"; };
 		FEC661F721AABFB0004FDE1E /* NSViewWithTextBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSViewWithTextBackground.swift; sourceTree = "<group>"; };
+		FECE07DB2D3E629200FB1894 /* db-schema-20.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "db-schema-20.sql"; sourceTree = "<group>"; };
 		FECFA80726FE2CD0004CDC62 /* ChannelManageBlocked.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelManageBlocked.swift; sourceTree = "<group>"; };
 		FECFA80927022E49004CDC62 /* RTCDesktopVideoCapturer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTCDesktopVideoCapturer.swift; sourceTree = "<group>"; };
 		FED2A95125F00158008828E4 /* DBChatMarkersStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBChatMarkersStore.swift; sourceTree = "<group>"; };
@@ -1061,6 +1061,7 @@
 				FE31409524952DD0007C5CBC /* db-schema-11.sql */,
 				FE2E3D5826091D4900805F68 /* db-schema-13.sql */,
 				FE69BBB42D2D6F1E008BC5F9 /* db-schema-17.sql */,
+				FECE07DB2D3E629200FB1894 /* db-schema-20.sql */,
 				FE0AE0BA26B0379F0010D2E2 /* Conversation.storyboard */,
 				FE0AE0BF26B038340010D2E2 /* ConversationDetails.storyboard */,
 				FE0AE12C26B0828A0010D2E2 /* SearchHistory.storyboard */,
@@ -1322,6 +1323,7 @@
 				FE31409624952DD0007C5CBC /* db-schema-11.sql in Resources */,
 				FE0AE0DB26B051C10010D2E2 /* MIX.storyboard in Resources */,
 				FED2ECF82066B01C00F506A5 /* Assets.xcassets in Resources */,
+				FECE07DC2D3E629200FB1894 /* db-schema-20.sql in Resources */,
 				FED2ECFB2066B01C00F506A5 /* Main.storyboard in Resources */,
 				FE0AE12E26B0828A0010D2E2 /* SearchHistory.storyboard in Resources */,
 			);

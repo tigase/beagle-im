@@ -24,6 +24,7 @@ import Martin
 import MartinOMEMO
 import Combine
 import TigaseLogging
+import CryptoKit
 
 extension Presence.Show: Codable {
     
@@ -223,7 +224,7 @@ class XmppService {
         case .automatic:
             client.connectionConfiguration.resource = nil;
         case .hostname:
-            client.connectionConfiguration.resource = Host.current().localizedName;
+            client.connectionConfiguration.resource = ProcessInfo.processInfo.hostName;
         case .custom(let name):
             client.connectionConfiguration.resource = name.isEmpty ? nil : name;
         }
@@ -309,9 +310,7 @@ class XmppService {
         _ = client.modulesManager.register(AuthModule());
         _ = client.modulesManager.register(StreamFeaturesModule());
         _ = client.modulesManager.register(StreamManagementModule(mode: .resumption, maxResumptionTimeout: 90));
-        _ = client.modulesManager.register(SaslModule());
         let sasl2 = client.modulesManager.register(Sasl2Module());
-        sasl2.software = Bundle.main.infoDictionary!["CFBundleName"] as! String;
         //_ = client.modulesManager.register(StreamFeaturesModuleWithPipelining(cache: streamFeaturesCache, enabled: false));
         // if you do not want Pipelining you may use StreamFeaturesModule instead StreamFeaturesModuleWithPipelining
         _ = client.modulesManager.register(ResourceBinderModule());

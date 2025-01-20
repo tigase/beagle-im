@@ -27,7 +27,7 @@ import CoreLocation
 
 public class DatabaseMigrator: DatabaseSchemaMigrator {
     
-    public let expectedVersion: Int = 19;
+    public let expectedVersion: Int = 20;
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "DatabaseMigrator");
     
     public func upgrade(database: DatabaseWriter, newVersion version: Int) throws {
@@ -111,6 +111,11 @@ CREATE INDEX chat_history_account_jid_correction_stanza_id on chat_history (acco
 """);
         case 19:
             try database.update("update chat_history set item_type = \(ItemType.retraction.rawValue) where item_type = 5");
+        case 20:
+            let accountsWithoutUUID = try database.select("select name from accounts where uuid is null").mapAll({ $0.string(for: "name") });
+            for name in accountsWithoutUUID {
+                try database.execute("update accounts set uuid = :uuid where name = :name", params: ["uuid": UUID().uuidString, "name": name]);
+            }
         default:
             break;
         }
