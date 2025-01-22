@@ -32,7 +32,7 @@ extension ExternalServiceDiscoveryModule.Service {
         guard ExternalServiceDiscoveryModule.Service.VALID_SERVICE_TYPES.contains(type) else {
             return nil;
         }
-        guard !type.hasSuffix("s") || transport == .tcp else {
+        guard !(type.hasSuffix("s") && transport == .udp) else {
             return nil;
         }
         guard !type.hasPrefix("turn") || username != nil else {
