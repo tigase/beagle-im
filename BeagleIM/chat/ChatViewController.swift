@@ -352,8 +352,10 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         })
     }
         
-    override func send(message: String, correctedMessageOriginId: String?) async throws {
-        try await chat.sendMessage(text: message, correctedMessageOriginId: correctedMessageOriginId);
+    override func send(message: String, correctedMessageOriginId: String?) throws {
+        Task {
+            try? await chat.sendMessage(text: message, correctedMessageOriginId: correctedMessageOriginId);
+        }
     }
             
 //    fileprivate func updateCapabilities() {

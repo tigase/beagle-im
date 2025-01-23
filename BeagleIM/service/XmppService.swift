@@ -132,11 +132,11 @@ class XmppService {
                 let prevState = client.state;
                 Task {
                     try? await client.disconnect();
-//                    if prevState == .disconnected() {
-//                        self.queue.async {
-//                            self.unregisterClient(client);
-//                        }
-//                    }
+                    if prevState == .disconnected() {
+                        self.queue.async {
+                            XmppService.instance.unregisterClient(client);
+                        }
+                    }
                 }
             }
             self.dnsCache.store(for: account.name.domain, result: nil);

@@ -152,7 +152,7 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
         self.messageField.complete(nil);
     }
         
-    func send(message: String, correctedMessageOriginId: String?) async throws {
+    func send(message: String, correctedMessageOriginId: String?) throws {
     }
         
     func updateMessageFieldSize() {
@@ -257,12 +257,16 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
                     }
                     
                     Task {
-                        try await self.send(message: msg, correctedMessageOriginId: self.correctedMessageOriginId);
-                        await MainActor.run(body: {
-                            self.messageField.reset();
-                            self.correctedMessageOriginId = nil;
-                            self.updateMessageFieldSize();
-                        })
+                        do {
+                            try self.send(message: msg, correctedMessageOriginId: self.correctedMessageOriginId);
+                            await MainActor.run(body: {
+                                self.messageField.reset();
+                                self.correctedMessageOriginId = nil;
+                                self.updateMessageFieldSize();
+                            })
+                        } catch {
+                            print("failed tsend message: \(error)")
+                        }
                     }
                 }
                 return true;

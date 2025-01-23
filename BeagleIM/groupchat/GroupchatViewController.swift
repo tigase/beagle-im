@@ -468,12 +468,14 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
         })
     }
     
-    override func send(message: String, correctedMessageOriginId: String?) async throws {
+    override func send(message: String, correctedMessageOriginId: String?) throws {
         guard (room.context?.isConnected ?? false) && room.state == .joined else {
             throw XMPPError(condition: .service_unavailable);
         }
         
-        try await room.sendMessage(text: message, correctedMessageOriginId: correctedMessageOriginId);
+        Task {
+            try? await room.sendMessage(text: message, correctedMessageOriginId: correctedMessageOriginId);
+        }
     }
         
     override func textDidChange(_ obj: Notification) {

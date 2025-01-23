@@ -200,11 +200,13 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         })
     }
     
-    override func send(message: String, correctedMessageOriginId: String?) async throws {
+    override func send(message: String, correctedMessageOriginId: String?) throws {
         guard let client = XmppService.instance.getClient(for: account), client.isConnected, channel.state == .joined else {
             throw XMPPError(condition: .service_unavailable);
         }
-        try await channel.sendMessage(text: message, correctedMessageOriginId: correctedMessageOriginId);
+        Task {
+            try? await channel.sendMessage(text: message, correctedMessageOriginId: correctedMessageOriginId);
+        }
     }
     
     private func update(permissions: Set<ChannelPermission>) {
