@@ -82,20 +82,20 @@ public class ConversationBase: Martin.ConversationBase, Identifiable, Hashable, 
     
     @Published
     public private(set) var unread: Int;
-    public var unreadPublisher: AnyPublisher<Int,Never> {
-        return $unread.receive(on: DispatchQueue.main).eraseToAnyPublisher();
+    public var unreadPublisher: Publishers.ReceiveOn<Published<Int>.Publisher, DispatchQueue> {
+        return $unread.receive(on: DispatchQueue.main);
     }
 
     @Published
     public private(set) var markers: [ConversationEntrySender: ChatMarker] = [:];
-    public var markersPublisher: AnyPublisher<[ChatMarker],Never> {
-        return $markers.map({ Array($0.values) }).eraseToAnyPublisher();
+    public var markersPublisher: Publishers.Map<Published<[ConversationEntrySender : ChatMarker]>.Publisher, [Dictionary<ConversationEntrySender, ChatMarker>.Values.Element]> {
+        return $markers.map({ Array($0.values) });
     }
     
     @Published
     public private(set) var features: [ConversationFeature] = [];
-    public var featuresPublisher: AnyPublisher<[ConversationFeature],Never> {
-        return $features.eraseToAnyPublisher();
+    public var featuresPublisher: Published<[ConversationFeature]>.Publisher {
+        return $features;
     }
     
     @Published

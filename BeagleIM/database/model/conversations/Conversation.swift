@@ -46,7 +46,7 @@ public protocol Conversation: ConversationProtocol, ConversationKey, Displayable
     var timestamp: Date { get }
     var timestampPublisher: Publishers.Map<Published<LastChatActivity>.Publisher, Date> { get }
     var unread: Int { get }
-    var unreadPublisher: AnyPublisher<Int,Never> { get }
+    var unreadPublisher: Publishers.ReceiveOn<Published<Int>.Publisher, DispatchQueue> { get }
     var lastActivity: LastConversationActivity { get }
     var lastActivityPublisher: Published<LastConversationActivity>.Publisher { get }
     
@@ -54,10 +54,10 @@ public protocol Conversation: ConversationProtocol, ConversationKey, Displayable
     
     var automaticallyFetchPreviews: Bool { get }
     
-    var markersPublisher: AnyPublisher<[ChatMarker],Never> { get }
+    var markersPublisher: Publishers.Map<Published<[ConversationEntrySender : ChatMarker]>.Publisher, [Dictionary<ConversationEntrySender, ChatMarker>.Values.Element]> { get }
     
     var features: [ConversationFeature] { get }
-    var featuresPublisher: AnyPublisher<[ConversationFeature],Never> { get }
+    var featuresPublisher: Published<[ConversationFeature]>.Publisher { get }
     
     func mark(as markerType: ChatMarker.MarkerType, before: Date, by sender: ConversationEntrySender);
     func markAsRead(count: Int) -> Bool;

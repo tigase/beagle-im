@@ -22,6 +22,7 @@
 import Foundation
 import Martin
 import Combine
+import TigaseLogging
 
 class HttpFileUploadModule: Martin.HttpFileUploadModule, Resetable, @unchecked Sendable {
     
@@ -32,10 +33,11 @@ class HttpFileUploadModule: Martin.HttpFileUploadModule, Resetable, @unchecked S
         return !availableComponents.isEmpty;
     }
     
-    var isAvailablePublisher: AnyPublisher<Bool,Never> {
-        return $availableComponents.map({ !$0.isEmpty }).eraseToAnyPublisher();
+    var isAvailablePublisher: Publishers.Map<Published<[HttpFileUploadModule.UploadComponent]>.Publisher, Bool> {
+        return $availableComponents.map({ !$0.isEmpty });
     }
  
+    private let logger = Logger(subsystem: "BeagleIM", category: "HttpFileUploadModule");
     private var cancellable: AnyCancellable?;
     
     override var context: Context? {
@@ -49,14 +51,18 @@ class HttpFileUploadModule: Martin.HttpFileUploadModule, Resetable, @unchecked S
                     return false;
                 }
             }).sink(receiveValue: { [weak self] _ in
-                self?.findHttpUploadComponent(completionHandler: { result in
-                    switch result {
-                    case .success(let values):
-                        self?.availableComponents = values;
-                    case .failure(let error):
-                        break;
+                guard let self else {
+                    return;
+                }
+                Task {
+                    do {
+                        let values = try await self.findHttpUploadComponents();
+                        self.logger.debug("found http upload components: \(values)")
+                        self.availableComponents = values
+                    } catch {
+                        self.logger.error("retrieval of http upload components failed: \(error)")
                     }
-                });
+                }
             });
         }
     }

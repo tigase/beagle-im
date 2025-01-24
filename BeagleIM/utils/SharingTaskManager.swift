@@ -102,12 +102,6 @@ class SharingTaskManager: @unchecked Sendable {
             switch item {
             case .url(let url):
                 try await share(conversation: conversation, url: url, task: task);
-            case .promiseReceived(let receiver):
-                let url = try await receiverFile(receiver: receiver);
-                defer {
-                    try? FileManager.default.removeItem(at: url);
-                }
-                try await share(conversation: conversation, url: url, task: task);
             }
         }
     }
@@ -156,35 +150,22 @@ class SharingTaskManager: @unchecked Sendable {
         }
         let mimeType = SharingTaskManager.guessContentType(of: url);
         let preparedAttachment = try task.conversation.prepareAttachment(url: url);
-        let uploadedUrl = try await uploadFileToHttpServer(conversation: task.conversation, fileUrl: preparedAttachment.url, filename: task.filename!, filesize: filesize, mimeType: mimeType, delegate: task)
+        let uploadedUrl = try await uploadFileToHttpServer(conversation: task.conversation, fileUrl: preparedAttachment.url, filename: task.filename!, mimeType: mimeType, delegate: task)
         var appendix = ChatAttachmentAppendix();
         appendix.filename = task.filename;
         appendix.filesize = filesize;
         appendix.mimetype = mimeType;
         appendix.state = .downloaded;
-        try await task.conversation.sendAttachment(url: uploadedUrl.absoluteString, appendix: appendix, originalUrl: url);
+        try await task.conversation.sendAttachment(url: (preparedAttachment.prepareShareURL?(uploadedUrl) ?? uploadedUrl).absoluteString, appendix: appendix, originalUrl: url);
     }
     
-    private func receiverFile(receiver: NSFilePromiseReceiver) async throws -> URL {
-        return try await withUnsafeThrowingContinuation({ continuation in
-            receiver.receivePromisedFiles(atDestination: FileManager.default.temporaryDirectory, options: [:], operationQueue: self.operationQueue, reader: { url, error in
-                guard let err: Error = error else {
-                    //continuation.resume(throwing: err);
-                    continuation.resume(throwing: XMPPError(condition: .item_not_found));
-                    return;
-                }
-                continuation.resume(returning: url)
-            })
-        });
-    }
-    
-    private func uploadFileToHttpServer(conversation: Conversation, fileUrl: URL, filename: String, filesize: Int, mimeType: String?, delegate: URLSessionDelegate) async throws -> URL {
-        guard let inputStream = InputStream(url: fileUrl), let context = conversation.context else {
+    private func uploadFileToHttpServer(conversation: Conversation, fileUrl: URL, filename: String, mimeType: String?, delegate: URLSessionDelegate) async throws -> URL {
+        guard let context = conversation.context else {
             throw ShareError.noAccessError;
         }
         
         do {
-            return try await HTTPFileUploadHelper.upload(withClient: context, filename: filename, inputStream: inputStream, filesize: filesize, mimeType: mimeType, delegate: delegate);
+            return try await HTTPFileUploadHelper.upload(withClient: context, filename: filename, fileUrl: fileUrl, mimeType: mimeType, delegate: delegate);
         } catch ShareError.invalidResponseCode(let uploadedUrl) {
             guard await SharingTaskManager.instance.askForInvalidHttpResponse(url: uploadedUrl) else {
                 throw ShareError.invalidResponseCode(url: uploadedUrl);
@@ -741,7 +722,6 @@ class SharingTaskManager: @unchecked Sendable {
 
 enum ShareItem {
     case url(URL)
-    case promiseReceived(NSFilePromiseReceiver)
     
     var mediaType: MediaType? {
         switch self {
@@ -750,11 +730,6 @@ enum ShareItem {
                 return nil;
             }
 
-            return MediaType.from(mimeType: UTTypeCopyPreferredTagWithClass(uti as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as String?);
-        case .promiseReceived(let receiver):
-            guard let uti = receiver.fileTypes.first else {
-                return nil;
-            }
             return MediaType.from(mimeType: UTTypeCopyPreferredTagWithClass(uti as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as String?);
         }
     }

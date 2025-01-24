@@ -187,21 +187,7 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
             return false;
         }
         
-        var items: [ShareItem] = [];
-        sender.enumerateDraggingItems(options: [], for: nil, classes: [NSFilePromiseReceiver.self, NSURL.self], searchOptions: [.urlReadingFileURLsOnly: true]) { (item, _, _) in
-            switch item.item {
-            case let filePromiseReceived as NSFilePromiseReceiver:
-                items.append(.promiseReceived(filePromiseReceived))
-            case let fileUrl as URL:
-                guard fileUrl.isFileURL else {
-                    return;
-                }
-                items.append(.url(fileUrl))
-            default:
-                break;
-            }
-        }
-        if !items.isEmpty {
+        sender.shareItems { items in
             let askForQuality = NSEvent.modifierFlags.contains(.option);
             Task {
                 do {
