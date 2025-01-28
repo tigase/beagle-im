@@ -20,7 +20,7 @@
 //
 
 import AppKit
-import TigaseLogging
+import os
 
 extension unichar: ExpressibleByUnicodeScalarLiteral {
     public typealias UnicodeScalarLiteralType = UnicodeScalar

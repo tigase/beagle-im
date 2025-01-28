@@ -23,7 +23,7 @@ import AppKit
 import Martin
 import MartinOMEMO
 import Combine
-import TigaseLogging
+import os
 import CryptoKit
 
 extension Presence.Show: Codable {

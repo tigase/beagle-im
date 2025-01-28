@@ -23,7 +23,7 @@ import Foundation
 import Martin
 import MartinOMEMO
 import TigaseSQLite3
-import TigaseLogging
+import os
 
 extension Query {
     static let omemoKeyPairForAccount = Query("SELECT key FROM omemo_identities WHERE account = :account AND name = :name AND device_id = :deviceId AND own = 1");

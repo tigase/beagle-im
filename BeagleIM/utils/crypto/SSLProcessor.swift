@@ -22,7 +22,7 @@
 import Foundation
 import Martin
 import OpenSSL
-import TigaseLogging
+import os
 import CryptoKit
 
 public enum TLSVersion: Comparable, CaseIterable {

@@ -26,7 +26,7 @@ import UserNotifications
 import AVFoundation
 import AVKit
 import Combine
-import TigaseLogging
+import os
 
 extension NSUserInterfaceItemIdentifier {
     
@@ -172,7 +172,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         DBChatStore.instance.unreadMessageCountPublisher.map({ $0 == 0 ? nil : "\($0)" }).receive(on: DispatchQueue.main).assign(to: \.badgeLabel,                                                                                                                            on: NSApplication.shared.dockTile).store(in: &cancellables);
         
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (result, error) in
-            self.logger.debug("could not get authorization for notifications: \(result), \(error as Any)");
+            self.logger.debug("could not get authorization for notifications: \(result), \(error)");
         }
         UNUserNotificationCenter.current().delegate = self;
         

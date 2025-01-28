@@ -23,7 +23,7 @@ import Foundation
 import Quartz
 import AppKit
 import Martin
-import TigaseLogging
+import os
 
 class CreateChannelViewController: BaseJoinChannelViewController, NSTextFieldDelegate {
 

@@ -23,7 +23,7 @@
 import Foundation
 import Combine
 import Martin
-import TigaseLogging
+import os
 
 protocol ConversationDataSourceDelegate: AnyObject {
     

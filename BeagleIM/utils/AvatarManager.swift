@@ -22,7 +22,7 @@
 import AppKit
 import Martin
 import Combine
-import TigaseLogging
+import os
 import CryptoKit
 
 struct AvatarWeakRef {

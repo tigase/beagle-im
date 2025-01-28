@@ -23,7 +23,7 @@ import Foundation
 import UserNotifications
 import Martin
 import Combine
-import TigaseLogging
+import os
 
 extension ConversationEntry {
     
@@ -186,7 +186,7 @@ public class NotificationManager {
  
         let request = UNNotificationRequest(identifier: "message:\(entry.id):new", content: content, trigger: nil);
         UNUserNotificationCenter.current().add(request) { (error) in
-            self.logger.debug("could not show notification: \(error as Any)");
+            self.logger.debug("could not show notification: \(error)");
         }
     }
     

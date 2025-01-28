@@ -21,7 +21,7 @@
 
 import Foundation
 import Martin
-import TigaseLogging
+import os
 
 class HTTPFileUploadHelper {
     
@@ -57,7 +57,7 @@ class HTTPFileUploadHelper {
         let (_, response) = try await session.upload(for: request, fromFile: fileUrl)
         let code = (response as? HTTPURLResponse)?.statusCode ?? 500;
         guard (code == 200 || code == 201) else {
-            self.logger.error("upload of file \(filename) failed, response: \(response as Any)");
+            self.logger.error("upload of file \(filename) failed, response: \(response)");
             throw ShareError.httpError;
         }
         if code == 200 {

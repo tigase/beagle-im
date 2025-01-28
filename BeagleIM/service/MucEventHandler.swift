@@ -23,7 +23,7 @@ import AppKit
 import Martin
 import UserNotifications
 import Combine
-import TigaseLogging
+import os
 
 class MucEventHandler: XmppServiceExtension {
 

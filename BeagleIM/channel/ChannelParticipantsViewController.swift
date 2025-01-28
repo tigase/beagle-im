@@ -23,7 +23,7 @@ import AppKit
 import Martin
 import Combine
 import TigaseSQLite3
-import TigaseLogging
+import os
 
 class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, NSTableViewDataSource, ChannelAwareProtocol, NSMenuDelegate {
     

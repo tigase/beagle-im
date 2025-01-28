@@ -20,7 +20,23 @@
 //
 
 import AppKit
-import TigaseLogging
+import os
+
+extension NSPoint: @retroactive CustomStringConvertible {
+    
+    public var description: String {
+        return debugDescription
+    }
+    
+}
+
+extension NSRect: @retroactive CustomStringConvertible {
+    
+    public var description: String {
+        return debugDescription
+    }
+    
+}
 
 class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
     
@@ -438,7 +454,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
             }
         }
         
-        logger.debug("found row view: \(rowView as Any), view: \(rowView?.subviews as Any), \(rowView?.subviews.first as Any)");
+        logger.debug("found row view: \(rowView), view: \(rowView?.subviews), \(rowView?.subviews.first)");
         guard let view = rowView?.subviews.first as? ChatMessageCellView else {
             return nil;
         }

@@ -22,7 +22,7 @@
 import Foundation
 import Martin
 import Combine
-import TigaseLogging
+import os
 
 class HttpFileUploadModule: Martin.HttpFileUploadModule, Resetable, @unchecked Sendable {
     
