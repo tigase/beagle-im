@@ -272,7 +272,7 @@ class MediaHelper {
         exportSession.outputURL = fileUrl;
         Task {
             repeat {
-                await Task.sleep(100000000)
+                try? await Task.sleep(nanoseconds: 100000000)
                 let progress = exportSession.progress;
                 await MainActor.run {
                     progressCallback(progress)

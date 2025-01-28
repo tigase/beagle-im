@@ -27,8 +27,6 @@
 		FE10BCED23FAA86900E214F3 /* InvitationCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCEC23FAA86900E214F3 /* InvitationCellView.swift */; };
 		FE10BCEF23FAB13800E214F3 /* InvitationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE10BCEE23FAB13800E214F3 /* InvitationsManager.swift */; };
 		FE10BCF123FC495700E214F3 /* db-schema-8.sql in Resources */ = {isa = PBXBuildFile; fileRef = FE10BCF023FC495700E214F3 /* db-schema-8.sql */; };
-		FE1252AF2D2C14B300500FF6 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1252AE2D2C14B000500FF6 /* Account.swift */; };
-		FE1252B12D2C152900500FF6 /* ServerFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1252B02D2C152500500FF6 /* ServerFeature.swift */; };
 		FE137A4621F5FE05006B7F7C /* ShowMainWindowSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE137A4521F5FE05006B7F7C /* ShowMainWindowSegue.swift */; };
 		FE14044325601BB000BE77E8 /* Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE14044225601BB000BE77E8 /* Chat.swift */; };
 		FE14044925601F9300BE77E8 /* Conversation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE14044825601F9300BE77E8 /* Conversation.swift */; };
@@ -195,7 +193,6 @@
 		FE9408F328F57D2A00A7E1BE /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9408F228F57D2A00A7E1BE /* Account.swift */; };
 		FE9408F528F5D57200A7E1BE /* AcceptableServerCertificate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9408F428F5D57200A7E1BE /* AcceptableServerCertificate.swift */; };
 		FE9408F728F5D5AA00A7E1BE /* ServerFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9408F628F5D5AA00A7E1BE /* ServerFeature.swift */; };
-		FE9408F928F88EBE00A7E1BE /* DBAccountStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9408F828F88EBE00A7E1BE /* DBAccountStore.swift */; };
 		FE9408FD28F8903200A7E1BE /* SocketConnectorNetworkEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9408FC28F8903200A7E1BE /* SocketConnectorNetworkEndpoint.swift */; };
 		FE9408FF28FB416400A7E1BE /* XMPPClient+extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9408FE28FB416400A7E1BE /* XMPPClient+extensions.swift */; };
 		FE9486B221BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9486B121BBD7A600C8DE49 /* NSButtonNoSizeWhenHidden.swift */; };
@@ -1232,8 +1229,9 @@
 		FED2ECE82066B01C00F506A5 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 0920;
-				LastUpgradeCheck = 1100;
+				LastUpgradeCheck = 1620;
 				ORGANIZATIONNAME = "HI-LOW";
 				TargetAttributes = {
 					FED2ECEF2066B01C00F506A5 = {
@@ -1517,7 +1515,6 @@
 				FE30309E2447517A003B9D76 /* RosterWindowController.swift in Sources */,
 				FED2A95225F00159008828E4 /* DBChatMarkersStore.swift in Sources */,
 				FE5BE64C213AC3EA00463183 /* ChatsCellViewCloseButton.swift in Sources */,
-				FE1252B12D2C152900500FF6 /* ServerFeature.swift in Sources */,
 				FE75CD702549E9BE0064A733 /* SharingTaskManager.swift in Sources */,
 				FE9408FF28FB416400A7E1BE /* XMPPClient+extensions.swift in Sources */,
 				FE3AA0D12154077D001667A9 /* ChatsListGroupAbstractChat.swift in Sources */,
@@ -1562,7 +1559,6 @@
 				FE87C76F22834E0B00B0B64C /* XMLConsoleViewController.swift in Sources */,
 				FEA3D128233D0A10000BD20A /* TasksQueue.swift in Sources */,
 				FE78E31226999306008131A1 /* ContactSuggestionField.swift in Sources */,
-				FE9408F928F88EBE00A7E1BE /* DBAccountStore.swift in Sources */,
 				FED7AEBF214035C0001E164B /* AccountsListController.swift in Sources */,
 				FEF8BED2216A6761001DA755 /* InviteToGroupchatController.swift in Sources */,
 				FEA2997625B9EE280021865E /* SuggestionsHighlightingView.swift in Sources */,
@@ -1590,7 +1586,6 @@
 				FE9408E528F48FC800A7E1BE /* RoomOptions.swift in Sources */,
 				FEB4EAFC2162A3DC00F8A9E2 /* AutoresizineTextView.swift in Sources */,
 				FEB994AF2413A03D00B8E7A7 /* ChannelEditConfigViewController.swift in Sources */,
-				FE1252AF2D2C14B300500FF6 /* Account.swift in Sources */,
 				FE2ACA842355B967004623BC /* EditKeywordsController.swift in Sources */,
 				FEC336F5240A78AB00EC1A0D /* ChannelEditInfoViewController.swift in Sources */,
 				FEB4EAFE2163714300F8A9E2 /* RoundedScrollView.swift in Sources */,
@@ -1794,6 +1789,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -1802,6 +1798,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -1854,6 +1851,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -1862,6 +1860,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1890,6 +1889,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 183;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1924,6 +1924,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 183;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = YBEYW6E35C;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1951,16 +1952,17 @@
 		FED2ED1A2066B01C00F506A5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEAD_CODE_STRIPPING = YES;
 				INFOPLIST_FILE = BeagleIMTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_BUNDLE_IDENTIFIER = eu.hilow.BeagleIMTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -1971,16 +1973,17 @@
 		FED2ED1B2066B01C00F506A5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEAD_CODE_STRIPPING = YES;
 				INFOPLIST_FILE = BeagleIMTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_BUNDLE_IDENTIFIER = eu.hilow.BeagleIMTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -1991,15 +1994,16 @@
 		FED2ED1D2066B01C00F506A5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEAD_CODE_STRIPPING = YES;
 				INFOPLIST_FILE = BeagleIMUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_BUNDLE_IDENTIFIER = eu.hilow.BeagleIMUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -2010,15 +2014,16 @@
 		FED2ED1E2066B01C00F506A5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEAD_CODE_STRIPPING = YES;
 				INFOPLIST_FILE = BeagleIMUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_BUNDLE_IDENTIFIER = eu.hilow.BeagleIMUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;

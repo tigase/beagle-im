@@ -23,7 +23,7 @@ import Foundation
 import Martin
 import Combine
 
-class PresenceStore: Martin.PresenceStore {
+class PresenceStore: Martin.PresenceStore, @unchecked Sendable {
     
     public static let instance = PresenceStore.init();
     

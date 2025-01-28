@@ -242,8 +242,8 @@ class RosterViewController: NSViewController, NSTableViewDataSource, NSTableView
         }
         
         let item = self.tableView(tableView, objectValueFor: tableColumn, row: row) as! Item;
-        let colorId = row % NSColor.controlAlternatingRowBackgroundColors.count;
-        view.backgroundColor = NSColor.controlAlternatingRowBackgroundColors[colorId];
+        let colorId = row % NSColor.alternatingContentBackgroundColors.count;
+        view.backgroundColor = NSColor.alternatingContentBackgroundColors[colorId];
         view.update(with: item);
         
         return view;
@@ -339,7 +339,7 @@ class RosterRowView: NSTableRowView {
         didSet {
             if let contactView = self.subviews.last as? RosterContactView {
                 if isSelected {
-                    contactView.selectedBackgroundColor = isEmphasized ? NSColor.alternateSelectedControlColor : NSColor.secondarySelectedControlColor;
+                    contactView.selectedBackgroundColor = isEmphasized ? NSColor.selectedContentBackgroundColor : NSColor.unemphasizedSelectedContentBackgroundColor;
                 } else {
                     contactView.selectedBackgroundColor = nil;
                 }
@@ -351,7 +351,7 @@ class RosterRowView: NSTableRowView {
         didSet {
             if let contactView = self.subviews.last as? RosterContactView {
                 if isSelected {
-                    contactView.selectedBackgroundColor = isEmphasized ? NSColor.alternateSelectedControlColor : NSColor.secondarySelectedControlColor;
+                    contactView.selectedBackgroundColor = isEmphasized ? NSColor.selectedContentBackgroundColor : NSColor.unemphasizedSelectedContentBackgroundColor;
                 } else {
                     contactView.selectedBackgroundColor = nil;
                 }
@@ -390,14 +390,14 @@ class RosterContactView: NSTableCellView {
     var selectedBackgroundColor: NSColor? {
         didSet {
             avatar.backgroundColor = selectedBackgroundColor ?? backgroundColor;
-            self.hasDarkBackground = self.selectedBackgroundColor != nil && self.selectedBackgroundColor! == NSColor.alternateSelectedControlColor;
+            self.hasDarkBackground = self.selectedBackgroundColor != nil && self.selectedBackgroundColor! == NSColor.selectedContentBackgroundColor;
         }
     }
     
     var backgroundColor: NSColor? {
         didSet {
             avatar.backgroundColor = selectedBackgroundColor ?? backgroundColor;
-            self.hasDarkBackground = self.selectedBackgroundColor != nil && self.selectedBackgroundColor! == NSColor.alternateSelectedControlColor;
+            self.hasDarkBackground = self.selectedBackgroundColor != nil && self.selectedBackgroundColor! == NSColor.selectedContentBackgroundColor;
         }
     }
     

@@ -35,7 +35,7 @@ class SuggestionsHighlightingView: NSView {
     
     override func draw(_ dirtyRect: NSRect) {
         if isHighlighted {
-            NSColor.alternateSelectedControlColor.set()
+            NSColor.selectedContentBackgroundColor.set()
             __NSRectFillUsingOperation(bounds, .sourceOver)
         } else {
             NSColor.clear.set()

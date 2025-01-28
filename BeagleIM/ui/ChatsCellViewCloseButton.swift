@@ -25,23 +25,23 @@ class ChatsCellViewCloseButton: NSButton {
     
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect);
-        self.cell?.backgroundStyle = .dark;
+        self.cell?.backgroundStyle = .emphasized;
     }
     
     required init?(coder: NSCoder) {
         super.init(coder: coder);
         
-        self.cell?.backgroundStyle = .dark;
+        self.cell?.backgroundStyle = .emphasized;
     }
 
     override func draw(_ dirtyRect: NSRect) {
-        self.cell?.backgroundStyle = .dark;
+        self.cell?.backgroundStyle = .emphasized;
         super.draw(dirtyRect);
     }
     
     override var isHidden: Bool {
         didSet {
-            self.cell?.backgroundStyle = .light;
+            self.cell?.backgroundStyle = .normal;
         }
     }
     

@@ -81,7 +81,7 @@ class ShareLocationController: NSViewController, CLLocationManagerDelegate, MKMa
             return;
         }
         
-        switch CLLocationManager.authorizationStatus() {
+        switch locationManager.authorizationStatus {
         case .authorizedAlways, .authorized:
             requestLocation();
         case .notDetermined:
@@ -100,7 +100,7 @@ class ShareLocationController: NSViewController, CLLocationManagerDelegate, MKMa
     }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        if CLLocationManager.authorizationStatus() == .authorizedAlways || CLLocationManager.authorizationStatus() == .authorized {
+        if locationManager.authorizationStatus == .authorizedAlways || locationManager.authorizationStatus == .authorized {
             requestLocation();
         }
     }

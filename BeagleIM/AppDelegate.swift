@@ -555,21 +555,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             guard let window = NSApp.windows.first(where: { w -> Bool in
                 return w.windowController is ChatsWindowController
             }) else {
-                completionHandler([.sound, .alert]);
+                completionHandler([.sound, .list, .banner]);
                 return;
             }
             
             guard let chatViewController = (window.contentViewController as? NSSplitViewController)?.splitViewItems.last?.viewController as? AbstractChatViewController else {
-                completionHandler([.sound, .alert]);
+                completionHandler([.sound, .list, .banner]);
                 return;
             }
             
             if (chatViewController.account?.description ?? "") != account || (chatViewController.conversation?.jid.description ?? "") != jid {
-                completionHandler([.sound, .alert]);
+                completionHandler([.sound, .list, .banner]);
                 return;
             }
         } else {
-            completionHandler([.sound, .alert]);
+            completionHandler([.sound, .list, .banner]);
         }
     }
     

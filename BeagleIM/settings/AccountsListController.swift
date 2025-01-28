@@ -286,7 +286,7 @@ class AccountCellView: NSTableCellView {
     }
     
     private func refreshBackgroundSelectionColor() {
-        avatar?.backgroundColor = isSelected ? (isEmphasized ? NSColor.alternateSelectedControlColor : NSColor.selectedControlColor) : NSColor.controlBackgroundColor;
+        avatar?.backgroundColor = isSelected ? (isEmphasized ? NSColor.selectedContentBackgroundColor : NSColor.selectedControlColor) : NSColor.controlBackgroundColor;
 
     }
 

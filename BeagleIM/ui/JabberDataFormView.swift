@@ -505,7 +505,7 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
             NSGraphicsContext.saveGraphicsState();
             NSColor.textBackgroundColor.setFill();
             self.bounds.fill();
-            NSColor.controlShadowColor.set();
+            NSColor.separatorColor.set();
             self.bounds.frame();
             NSGraphicsContext.restoreGraphicsState();
         }
