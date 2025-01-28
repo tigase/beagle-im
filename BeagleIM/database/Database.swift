@@ -73,39 +73,23 @@ extension Element: DatabaseConvertibleStringValue {
     }
 }
 
-extension Cursor {
+extension Row {
     
     func jid(for column: String) -> JID? {
         return JID(string(for: column));
     }
-    
-    func jid(at column: Int) -> JID? {
-        return JID(string(at: column));
-    }
-    
-    subscript(index: Int) -> JID? {
-        return JID(string(at: index));
-    }
-    
+        
     subscript(column: String) -> JID? {
         return JID(string(for: column));
     }
 }
 
-extension Cursor {
+extension Row {
     
     func bareJid(for column: String) -> BareJID? {
         return BareJID(string(for: column));
     }
-    
-    func bareJid(at column: Int) -> BareJID? {
-        return BareJID(string(at: column));
-    }
-    
-    subscript(index: Int) -> BareJID? {
-        return BareJID(string(at: index));
-    }
-    
+        
     subscript(column: String) -> BareJID? {
         return BareJID(string(for: column));
     }

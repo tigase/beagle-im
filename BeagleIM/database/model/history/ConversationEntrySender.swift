@@ -90,7 +90,7 @@ public enum ConversationEntrySender: Hashable, Sendable {
 
 extension ConversationEntrySender {
     
-    static func from(conversationType: ConversationType, conversation: ConversationKey, cursor: Cursor) -> ConversationEntrySender {
+    static func from(conversationType: ConversationType, conversation: ConversationKey, cursor: Row) -> ConversationEntrySender {
         let direction = ConversationEntryState.from(code: cursor.int(for: "state") ?? 0, errorMessage: nil).direction;
         switch conversationType {
         case .chat:
@@ -101,18 +101,18 @@ extension ConversationEntrySender {
                 return .buddy(conversation: conversation);
             }
         case .room:
-            guard let nickname: String = cursor["author_nickname"] else {
+            guard let nickname: String = cursor.string(for: "author_nickname") else {
                 return .none;
             }
-            return .occupant(nickname: nickname, jid: cursor["author_jid"]);
+            return .occupant(nickname: nickname, jid: cursor.bareJid(for: "author_jid"));
         case .channel:
-            guard let participantId: String = cursor["participant_id"], let nickname: String = cursor["author_nickname"] else {
-                guard let nickname: String = cursor["author_nickname"] else {
+            guard let participantId: String = cursor.string(for: "participant_id"), let nickname: String = cursor.string(for: "author_nickname") else {
+                guard let nickname: String = cursor.string(for: "author_nickname") else {
                     return .buddy(nickname: "");
                 }
-                return .occupant(nickname: nickname, jid: cursor["author_jid"]);
+                return .occupant(nickname: nickname, jid: cursor.bareJid(for: "author_jid"));
             }
-            return .participant(id: participantId, nickname: nickname, jid: cursor["author_jid"]);
+            return .participant(id: participantId, nickname: nickname, jid: cursor.bareJid(for: "author_jid"));
         }
     }
     

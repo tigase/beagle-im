@@ -49,7 +49,7 @@ class DBCapabilitiesCache: CapabilitiesCache {
         return queue.sync {
             guard let features = self.features[node] else {
                 let features = try! Database.main.reader({ database in
-                    try database.select(query: .capsFindFeaturesForNode, params: ["node": node]).mapAll({ $0.string(for: "feature")});
+                    try database.select(query: .capsFindFeaturesForNode, params: ["node": node]).compactMap({ $0.string(for: "feature")});
                 })
                 guard !features.isEmpty else {
                     return nil;
@@ -65,7 +65,7 @@ class DBCapabilitiesCache: CapabilitiesCache {
         return queue.sync {
             guard let identities = self.identities[node] else {
                 let identities = try! Database.main.reader({ database in
-                    try database.select(query: .capsFindIdentityForNode, params: ["node": node]).mapAll({ cursor -> DiscoveryModule.Identity? in
+                    try database.select(query: .capsFindIdentityForNode, params: ["node": node]).compactMap({ cursor -> DiscoveryModule.Identity? in
                         guard let category = cursor.string(for: "category"), let type = cursor.string(for: "type") else {
                             return nil;
                         }
@@ -85,7 +85,7 @@ class DBCapabilitiesCache: CapabilitiesCache {
     
     open func nodes(withFeature feature: String) -> [String] {
         return try! Database.main.reader({ database in
-            try database.select(query: .capsFindNodesWithFeature, params: ["feature": feature]).mapAll({ $0.string(for: "node") });
+            try database.select(query: .capsFindNodesWithFeature, params: ["feature": feature]).compactMap({ $0.string(for: "node") });
         })
     }
     

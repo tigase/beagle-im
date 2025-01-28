@@ -22,7 +22,7 @@
 import Foundation
 import TigaseSQLite3
 
-public protocol ConversationOptionsProtocol: DatabaseConvertibleStringValue {
+public protocol ConversationOptionsProtocol: Codable, DatabaseConvertibleStringValue {
     
     var notifications: ConversationNotification { get }
     

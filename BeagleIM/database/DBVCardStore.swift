@@ -46,7 +46,7 @@ class DBVCardStore {
         await withUnsafeContinuation({ continuation in
             queue.async {
                 let data: String? = try! Database.main.reader({ database in
-                    try database.select(query: .vcardFindByJid, params: ["jid": jid]).mapFirst({ cursor -> String? in
+                    try database.select(query: .vcardFindByJid, params: ["jid": jid]).first.flatMap({ cursor -> String? in
                         return cursor.string(for: "data");
                     })
                 });
@@ -63,9 +63,9 @@ class DBVCardStore {
     open func updateVCard(for jid: BareJID, on account: BareJID, vcard: VCard) {
         queue.async {
             try! Database.main.writer({ database in
-                let params: [String: Any?] = ["jid": jid, "data": vcard.toVCard4(), "timestamp": Date()];
+                let params: [String: Encodable?] = ["jid": jid, "data": vcard.toVCard4().description, "timestamp": Date()];
                 try database.update(query: .vcardUpdate, params: params);
-                if database.changes == 0 {
+                if database.changesCount == 0 {
                     try database.insert(query: .vcardInsert, params: params);
                 }
             })

@@ -2077,8 +2077,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tigase/tigase-sqlite3.swift.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
+				branch = "swift-6";
+				kind = branch;
 			};
 		};
 		FE392E04289AF994006AA914 /* XCRemoteSwiftPackageReference "MartinOMEMO" */ = {

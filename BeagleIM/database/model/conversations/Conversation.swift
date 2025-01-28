@@ -175,7 +175,7 @@ public enum LastChatActivityType {
 
 extension LastChatActivityType {
     
-    static func from(_ cursor: Cursor) -> LastChatActivityType? {
+    static func from(_ cursor: Row) -> LastChatActivityType? {
         guard let itemType = ItemType(rawValue: cursor.int(for: "item_type") ?? -1) else {
             return nil;
         }

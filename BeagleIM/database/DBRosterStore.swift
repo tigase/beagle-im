@@ -125,11 +125,11 @@ open class DBRosterStore: RosterStore {
         let data = DBRosterData(groups: groups, annotations: annotations);
         queue.sync {
             guard let item = self.accountRosters[account]?.item(for: jid) else {
-                let params: [String: Any?] = ["account": account, "jid": jid, "name": name, "subscription": subscription.rawValue, "timestamp": Date(), "ask": ask, "data": data];
+                let params: [String: Encodable?] = ["account": account, "jid": jid, "name": name, "subscription": subscription.rawValue, "timestamp": Date(), "ask": ask, "data": data];
                 
                 let id = try! Database.main.writer({ database -> Int? in
                     try database.insert(query: .rosterInsertItem, params: params);
-                    return database.lastInsertedRowId
+                    return database.lastInsertedId
                 })!;
                 let item = RosterItem(id: id, context: context, jid: jid, name: name, subscription: subscription, groups: groups, ask: ask, annotations: annotations);
                 self.accountRosters[account]?.update(item: item);
@@ -138,7 +138,7 @@ open class DBRosterStore: RosterStore {
                 return;
             }
 
-            let params: [String: Any?] = ["id": item.id, "name": name, "subscription": subscription.rawValue, "timestamp": Date(), "ask": ask, "data": data];
+            let params: [String: Encodable?] = ["id": item.id, "name": name, "subscription": subscription.rawValue, "timestamp": Date(), "ask": ask, "data": data];
             try! Database.main.writer({ database in
                 try database.update(query: .rosterUpdateItem, params: params);
             })
@@ -199,7 +199,7 @@ open class DBRosterStore: RosterStore {
             }
             
             let items = try! Database.main.reader({ database in
-                try database.select(query: .rosterFindItemsForAccount, params: ["account": context.userBareJid]).mapAll({ RosterItem.from(cursor: $0, context: context) })
+                try database.select(query: .rosterFindItemsForAccount, params: ["account": context.userBareJid]).compactMap({ RosterItem.from(cursor: $0, context: context) })
             });
             
             self.accountRosters[context.userBareJid] = AccountRoster(items: items);
@@ -234,12 +234,12 @@ public class RosterItem: Martin.RosterItemBase, Identifiable, Hashable {
         return lhs.id == rhs.id;
     }
     
-    static func from(cursor: Cursor, context: Context) -> RosterItem? {
+    static func from(cursor: Row, context: Context) -> RosterItem? {
         let itemId: Int = cursor.int(for: "id")!;
         let jid: JID = cursor.jid(for: "jid")!;
         let name: String? = cursor.string(for: "name");
         let subscription = RosterItemSubscription(rawValue: cursor.string(for: "subscription")!)!;
-        let ask: Bool = cursor.bool(for: "ask");
+        let ask: Bool = cursor.bool(for: "ask") ?? false;
         let data: DBRosterData = cursor.object(for: "data") ?? DBRosterData(groups: [], annotations: []);
         
         return RosterItem(id: itemId, context: context, jid: jid, name: name, subscription: subscription, groups: data.groups, ask: ask, annotations: data.annotations);

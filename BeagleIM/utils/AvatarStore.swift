@@ -50,8 +50,8 @@ open class AvatarStore {
     
     func avatarHash(for jid: BareJID, on account: BareJID) -> [AvatarHash] {
         return try! Database.main.reader({ database in
-            try database.select(query: .avatarFindHash, params: ["account": account, "jid": jid]).mapAll({ cursor -> AvatarHash? in
-                guard let type = AvatarType(rawValue: cursor["type"]!), let hash: String = cursor["hash"] else {
+            try database.select(query: .avatarFindHash, params: ["account": account, "jid": jid]).compactMap({ cursor -> AvatarHash? in
+                guard let type = AvatarType(rawValue: cursor.string(for: "type")!), let hash: String = cursor.string(for: "hash") else {
                     return nil;
                 }
                 return AvatarHash(type: type, hash: hash);

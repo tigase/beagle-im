@@ -111,10 +111,10 @@ open class DBChatStore: ContextLifecycleAware {
     }
 
     func openConversation(account: BareJID, jid: BareJID, type: ConversationType, timestamp: Date = Date(), options: ChatOptionsProtocol?) throws -> Int {
-        let params: [String: Any?] = [ "account": account, "jid": jid, "timestamp": Date(), "type": type.rawValue, "options": options];
+        let params: [String: Encodable?] = [ "account": account, "jid": jid, "timestamp": Date(), "type": type.rawValue, "options": options];
         return try Database.main.writer({ database in
             try database.insert(query: .chatInsert, params: params);
-            return database.lastInsertedRowId!;
+            return database.lastInsertedId;
         })
     }
     
@@ -170,7 +170,7 @@ open class DBChatStore: ContextLifecycleAware {
 
     func messageDraft(for account: BareJID, with jid: BareJID) -> String? {
         return try! Database.main.reader({ database -> String? in
-            return try database.select(query: .chatFindMessageDraft, params: ["account": account, "jid": jid]).mapFirst({ $0.string(for: "message_draft") });
+            return try database.select(query: .chatFindMessageDraft, params: ["account": account, "jid": jid]).first.flatMap({ $0.string(for: "message_draft") });
         })
     
     }
@@ -183,7 +183,7 @@ open class DBChatStore: ContextLifecycleAware {
 
     public func lastActivity(for account: BareJID, jid: BareJID, conversationType: ConversationType) -> LastChatActivity? {
         return try! Database.main.reader({ database in
-            try database.select(query: .chatFindLastActivity, params: ["account": account, "jid": jid]).mapFirst({ cursor -> LastChatActivity? in
+            try database.select(query: .chatFindLastActivity, params: ["account": account, "jid": jid]).first.flatMap({ cursor -> LastChatActivity? in
                 let timestamp = cursor.date(for: "timestamp")!;
                 return LastChatActivity.init(timestamp: timestamp, sender: .from(conversationType: conversationType, conversation: ConversationKeyItem(account: account, jid: jid), cursor: cursor), payload: .from(cursor));
             });
@@ -197,7 +197,7 @@ open class DBChatStore: ContextLifecycleAware {
             }
 
             let conversations = try! Database.main.reader({ database in
-                return try database.select(query: .chatFindAllForAccount, params: ["account": account]).mapAll({ cursor -> Conversation? in
+                return try database.select(query: .chatFindAllForAccount, params: ["account": account]).compactMap({ cursor -> Conversation? in
                     guard let type = ConversationType(rawValue: cursor.int(for: "type") ?? -1) else {
                         return nil;
                     }

@@ -91,8 +91,8 @@ class DBChatHistorySyncStore {
         // how about periods with less than a few minutes/seconds apart? should we merge them?
         let query: Query = component == nil ? .mamSyncFindPeriodsForAccount : .mamSyncFindPeriodsForAccountWith;
         let periods = try! Database.main.reader({ database in
-            try database.select(query: query, cached: false, params: params).mapAll({ cursor -> Period? in
-                return Period(id: UUID(uuidString: cursor["id"]!)!, account: cursor["account"]!, component: cursor["component"], from: cursor["from_timestamp"]!, after: cursor["from_id"], to: cursor["to_timestamp"]);
+            try database.select(query: query, cached: false, params: params).compactMap({ cursor -> Period? in
+                return Period(id: UUID(uuidString: cursor.string(for: "id")!)!, account: cursor.bareJid(for: "account")!, component: cursor.bareJid(for: "component"), from: cursor.date(for: "from_timestamp")!, after: cursor.string(for: "from_id"), to: cursor.date(for: "to_timestamp"));
             })
         })
         os_log("loaded %d sync periods for account %s and component %s", log: .chatHistorySync, type: .debug, periods.count, account.description, component?.description ?? "nil");

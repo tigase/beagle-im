@@ -34,7 +34,7 @@ public class DBChatMarkersStore {
     
     public static let instance = DBChatMarkersStore();
     
-    private func queryParams(conversation: ConversationKey, sender: ConversationEntrySender) -> [String: Any?]? {
+    private func queryParams(conversation: ConversationKey, sender: ConversationEntrySender) -> [String: Encodable?]? {
         switch sender {
         case .none, .channel:
             return nil;
@@ -120,7 +120,7 @@ public class DBChatMarkersStore {
         let timestamp: Date = message.timestamp;
         
         if let (oldType, oldTimestamp) = try! Database.main.reader({ database in
-            try database.select(query: .markerFind, params: params).mapFirst({ (ChatMarker.MarkerType(rawValue: $0.int(for: "type")!)!, $0.date(for: "timestamp")!) });
+            try database.select(query: .markerFind, params: params).first.flatMap({ (ChatMarker.MarkerType(rawValue: $0.int(for: "type")!)!, $0.date(for: "timestamp")!) });
         }) {
             switch type {
             case .received:
@@ -159,11 +159,11 @@ public class DBChatMarkersStore {
     
     public func markers(for conversation: ConversationKey) -> [ChatMarker] {
        return try! Database.main.reader({ database in
-            try database.select(query: .markersList, params: ["account": conversation.account, "jid": conversation.jid]).mapAll({ self.charMarker(fromCursor: $0, conversation: conversation)});
+            try database.select(query: .markersList, params: ["account": conversation.account, "jid": conversation.jid]).compactMap({ self.charMarker(fromCursor: $0, conversation: conversation)});
        });
     }
     
-    private func charMarker(fromCursor c: Cursor, conversation: ConversationKey) -> ChatMarker? {
+    private func charMarker(fromCursor c: Row, conversation: ConversationKey) -> ChatMarker? {
         guard let type = ChatMarker.MarkerType(rawValue: c.int(for: "type")!), let timestamp = c.date(for: "timestamp"), let jidStr = c.string(for: "sender_jid"), let nick = c.string(for: "sender_nick"), let id = c.string(for: "sender_id") else {
             return nil;
         }

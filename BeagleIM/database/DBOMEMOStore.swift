@@ -36,7 +36,7 @@ extension Query {
     static let omemoIdentityFind = Query("SELECT device_id, fingerprint, status, key, own FROM omemo_identities WHERE account = :account AND name = :name");
     static let omemoIdentityFingerprintFind = Query("SELECT fingerprint FROM omemo_identities WHERE account = :account AND name = :name AND device_id = :deviceId");
     
-    static let omemoPreKeyCurrent = Query("SELECT max(id) FROM omemo_pre_keys WHERE account = :account");
+    static let omemoPreKeyCurrent = Query("SELECT max(id) as max FROM omemo_pre_keys WHERE account = :account");
     static let omemoPreKeyLoad = Query("SELECT key FROM omemo_pre_keys WHERE account = :account AND id = :id");
     static let omemoPreKeyInsert = Query("INSERT INTO omemo_pre_keys (account, id, key) VALUES (:account,:id,:key)");
     static let omemoPreKeyDelete = Query("DELETE FROM omemo_pre_keys WHERE account = :account AND id = :id");
@@ -70,7 +70,7 @@ class DBOMEMOStore {
         }
         
         guard let data = try! Database.main.reader({ database in
-            return try database.select(query: .omemoKeyPairForAccount, params: ["account": account, "name": account.description, "deviceId": deviceId]).mapFirst({ $0.data(for: "key") });
+            return try database.select(query: .omemoKeyPairForAccount, params: ["account": account, "name": account.description, "deviceId": deviceId]).first.flatMap({ $0.data(for: "key") });
         }) else {
             return nil;
         }
@@ -84,17 +84,17 @@ class DBOMEMOStore {
     }
     
     func identityFingerprint(forAccount account: BareJID, andAddress address: SignalAddress) -> String? {
-        let params: [String: Any?] = ["account": account, "name": address.name, "deviceId": address.deviceId];
+        let params: [String: Encodable?] = ["account": account, "name": address.name, "deviceId": address.deviceId];
         return try! Database.main.reader({ database in
-            return try database.select(query: .omemoIdentityFingerprintFind, params: params).mapFirst({ $0.string(for: "fingerprint")});
+            return try database.select(query: .omemoIdentityFingerprintFind, params: params).first.flatMap({ $0.string(for: "fingerprint")});
         })
     }
     
     func identities(forAccount account: BareJID, andName name: String) -> [Identity] {
-        let params: [String: Any?] = ["account": account, "name": name];
+        let params: [String: Encodable?] = ["account": account, "name": name];
         return try! Database.main.reader({ database in
-            return try database.select(query: .omemoIdentityFind, params: params).mapAll({ cursor -> Identity? in
-                guard let fingerprint: String = cursor["fingerprint"], let statusInt: Int = cursor["status"], let status = IdentityStatus(rawValue: statusInt), let deviceId: Int32 = cursor["device_id"], let own: Int = cursor["own"], let key: Data = cursor["key"] else {
+            return try database.select(query: .omemoIdentityFind, params: params).compactMap({ cursor -> Identity? in
+                guard let fingerprint: String = cursor.string(for: "fingerprint"), let statusInt: Int = cursor.int(for: "status"), let status = IdentityStatus(rawValue: statusInt), let deviceId: Int32 = cursor.int32(for: "device_id"), let own: Int = cursor.int(for: "own"), let key: Data = cursor.data(for: "key") else {
                     return nil;
                 }
                 return Identity(address: SignalAddress(name: name, deviceId: deviceId), status: status, fingerprint: fingerprint, key: key, own: own > 0);
@@ -142,12 +142,12 @@ class DBOMEMOStore {
         
     private func save(identity: SignalAddress, fingerprint: String, own: Bool, data: Data?, forAccount account: BareJID) -> Bool {
         return try! Database.main.writer({ database -> Bool in
-            let paramsCount: [String: Any?] = ["account": account, "name": identity.name, "fingerprint": fingerprint];
+            let paramsCount: [String: Encodable?] = ["account": account, "name": identity.name, "fingerprint": fingerprint];
             guard try database.count(query: .omemoKeyPairExists, params: paramsCount) == 0 else {
                 return true;
             }
             
-            var params: [String: Any?] = paramsCount;
+            var params: [String: Encodable?] = paramsCount;
             params["deviceId"] = identity.deviceId;
             params["key"] = data;
             params["own"] = own ? 1 : 0;
@@ -160,13 +160,13 @@ class DBOMEMOStore {
     func setStatus(_ status: IdentityStatus, forIdentity identity: SignalAddress,  andAccount account: BareJID) -> Bool {
         return try! Database.main.writer({ database in
             try database.update(query: .omemoKeyPairUpdateStatus, params: ["account": account, "name": identity.name, "deviceId": identity.deviceId, "status": status.rawValue]);
-            return database.changes;
+            return database.changesCount;
         }) > 0;
     }
 
     func setStatus(active: Bool, forIdentity identity: SignalAddress,  andAccount account: BareJID) -> Bool {
         guard let status = try! Database.main.reader({ database in
-            return try database.select(query: .omemoKeyPairLoadStatus, params: ["account": account, "name": identity.name, "deviceId": identity.deviceId]).mapFirst({ cursor in
+            return try database.select(query: .omemoKeyPairLoadStatus, params: ["account": account, "name": identity.name, "deviceId": identity.deviceId]).first.flatMap({ cursor in
                 return IdentityStatus(rawValue: cursor.int(for: "status") ?? 0);
             });
         }) else {
@@ -177,20 +177,20 @@ class DBOMEMOStore {
     
     func currentPreKeyId(forAccount account: BareJID) -> UInt32 {
         return UInt32(try! Database.main.reader({ database in
-            return try database.select(query: .omemoPreKeyCurrent, params: ["account": account]).mapFirst({ $0.int(at: 0) })
+            return try database.select(query: .omemoPreKeyCurrent, params: ["account": account]).first.flatMap({ $0.int(for: "max") })
         }) ?? 0);
     }
     
     func loadPreKey(forAccount account: BareJID, withId: UInt32) -> Data? {
         return try! Database.main.reader({ database in
-            try database.select(query: .omemoPreKeyLoad, params: ["account": account, "id": withId]).mapFirst({ $0.data(for: "key") });
+            try database.select(query: .omemoPreKeyLoad, params: ["account": account, "id": withId]).first.flatMap({ $0.data(for: "key") });
         });
     }
     
     func store(preKey: Data, forAccount account: BareJID, withId: UInt32) -> Bool {
         return try! Database.main.writer({ database in
             try database.insert(query: .omemoPreKeyInsert, params: ["account": account, "id": withId, "key": preKey]);
-            return database.changes != 0;
+            return database.changesCount != 0;
         })
     }
 
@@ -201,7 +201,7 @@ class DBOMEMOStore {
     func deletePreKey(forAccount account: BareJID, withId: UInt32) -> Bool {
         return try! Database.main.writer({ database in
             try database.delete(query: .omemoPreKeyDelete, cached: false, params: ["account": account, "id": withId]);
-            return database.changes != 0;
+            return database.changesCount != 0;
         })
     }
     
@@ -213,14 +213,14 @@ class DBOMEMOStore {
 
     func loadSignedPreKey(forAccount account: BareJID, withId: UInt32) -> Data? {
         return try! Database.main.reader({ database in
-            return try database.select(query: .omemoSignedPreKeyLoad, params: ["account": account, "id": withId]).mapFirst({ $0.data(for: "key") });
+            return try database.select(query: .omemoSignedPreKeyLoad, params: ["account": account, "id": withId]).first.flatMap({ $0.data(for: "key") });
         })
     }
     
     func store(signedPreKey: Data, forAccount account: BareJID, withId: UInt32) -> Bool {
         return try! Database.main.writer({ database in
             try database.insert(query: .omemoSignedPreKeyInsert, params: ["account": account, "id": withId, "key": signedPreKey]);
-            return database.changes > 0;
+            return database.changesCount > 0;
         });
     }
     
@@ -231,27 +231,27 @@ class DBOMEMOStore {
     func deleteSignedPreKey(forAccount account: BareJID, withId: UInt32) -> Bool {
         return try! Database.main.writer({ database in
             try database.delete(query: .omemoSignedPreKeyDelete, cached: false, params: ["account": account, "id": withId]);
-            return database.changes > 0;
+            return database.changesCount > 0;
         })
     }
     
     func sessionRecord(forAccount account: BareJID, andAddress address: SignalAddress) -> Data? {
         return try! Database.main.reader({ database in
-            return try database.select(query: .omemoSessionRecordLoad, params: ["account": account, "name": address.name, "deviceId": address.deviceId]).mapFirst({ $0.data(for: "key") });
+            return try database.select(query: .omemoSessionRecordLoad, params: ["account": account, "name": address.name, "deviceId": address.deviceId]).first.flatMap({ $0.data(for: "key") });
         })
     }
 
     func allDevices(forAccount account: BareJID, andName name: String, activeAndTrusted: Bool) -> [Int32] {
-        let params: [String: Any?] = ["account": account, "name": name];
+        let params: [String: Encodable?] = ["account": account, "name": name];
         return try! Database.main.reader({ database in
-            return try database.select(query: activeAndTrusted ? .omemoDevicesFindActiveAndTrusted : .omemoDevicesFind, params: params).mapAll({ $0["device_id"] });
+            return try database.select(query: activeAndTrusted ? .omemoDevicesFindActiveAndTrusted : .omemoDevicesFind, params: params).compactMap({ $0.int32(for: "device_id") });
         })
     }
     
     func store(sessionRecord: Data, forAccount account: BareJID, andAddress address: SignalAddress) -> Bool {
         return try! Database.main.writer({ database in
             try database.insert(query: .omemoSessionRecordInsert, params: ["account": account, "name": address.name, "deviceId": address.deviceId, "key": sessionRecord]);
-            return database.changes > 0;
+            return database.changesCount > 0;
         })
     }
     
@@ -262,14 +262,14 @@ class DBOMEMOStore {
     func deleteSessionRecord(forAccount account: BareJID, andAddress address: SignalAddress) -> Bool {
         return try! Database.main.writer({ database in
             try database.delete(query: .omemoSessionRecordDelete, params: ["account": account, "name": address.name, "deviceId": address.deviceId]);
-            return database.changes > 0;
+            return database.changesCount > 0;
         })
     }
     
     func deleteAllSessions(forAccount account: BareJID, andName name: String) -> Bool {
         return try! Database.main.writer({ database in
             try database.delete(query: .omemoSessionRecordDeleteAll, params: ["account": account, "name": name]);
-            return database.changes > 0;
+            return database.changesCount > 0;
         });
     }
     

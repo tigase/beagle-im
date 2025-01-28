@@ -84,7 +84,7 @@ class DBChatHistoryStore {
         }
 
         let previewsToConvert: [Int] = try! Database.main.reader({ database in
-            try database.select("SELECT id FROM chat_history WHERE preview IS NOT NULL", cached: false).mapAll({ $0.int(for: "id") });
+            try database.select("SELECT id FROM chat_history WHERE preview IS NOT NULL", cached: false).compactMap({ $0.int(for: "id") });
         })
 
         let removePreview = { (id: Int) in
@@ -95,12 +95,12 @@ class DBChatHistoryStore {
 
         for id in previewsToConvert {
             guard let (item, previews, stanzaId) = try! Database.main.reader({ database in
-                return try database.select("SELECT id, account, jid, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, preview, stanza_id, correction_timestamp, markable FROM chat_history WHERE id = ?", cached: true, params: [id]).mapFirst({ cursor -> (ConversationEntry, [String:String], String?)? in
-                    let account: BareJID = cursor["account"]!;
-                    let jid: BareJID = cursor["jid"]!;
+                return try database.select("SELECT id, account, jid, author_nickname, author_jid, timestamp, item_type, data, state, preview, encryption, fingerprint, error, appendix, preview, stanza_id, correction_timestamp, markable FROM chat_history WHERE id = ?", cached: true, params: [id]).first.flatMap({ cursor -> (ConversationEntry, [String:String], String?)? in
+                    let account: BareJID = cursor.bareJid(for: "account")!;
+                    let jid: BareJID = cursor.bareJid(for: "jid")!;
                     let key = ConversationKeyItem(account: account, jid: jid);
-                    let stanzaId: String? = cursor["stanza_id"];
-                    guard let item = DBChatHistoryStore.instance.itemFrom(cursor: cursor, for: key), let previewStr: String = cursor["preview"] else {
+                    let stanzaId: String? = cursor.string(for: "stanza_id");
+                    guard let item = DBChatHistoryStore.instance.itemFrom(cursor: cursor, for: key), let previewStr: String = cursor.string(for: "preview") else {
                         return nil;
                     }
                     var previews: [String:String] = [:];
@@ -395,18 +395,18 @@ class DBChatHistoryStore {
 
     func findItemId(for conversation: ConversationKey, remoteMsgId: String) -> Int? {
         return try! Database.main.reader({ database -> Int? in
-            return try database.select(query: .messageFindIdByRemoteMsgId, params: ["remote_msg_id": remoteMsgId, "account": conversation.account, "jid": conversation.jid]).mapFirst({ $0.int(for: "id") });
+            return try database.select(query: .messageFindIdByRemoteMsgId, params: ["remote_msg_id": remoteMsgId, "account": conversation.account, "jid": conversation.jid]).first.flatMap({ $0.int(for: "id") });
         })
     }
 
     private func findItemId(for account: BareJID, serverMsgId: String) -> Int? {
         return try! Database.main.reader({ database -> Int? in
-            return try database.select(query: .messageFindIdByServerMsgId, params: ["server_msg_id": serverMsgId, "account": account]).mapFirst({ $0.int(for: "id") });
+            return try database.select(query: .messageFindIdByServerMsgId, params: ["server_msg_id": serverMsgId, "account": account]).first.flatMap({ $0.int(for: "id") });
         })
     }
 
     func findItemId(for conversation: ConversationKey, originId: String, sender: ConversationEntrySender) -> Int? {
-        var params: [String: Any?] = ["stanza_id": originId, "account": conversation.account, "jid": conversation.jid, "author_nickname": nil, "participant_id": nil];
+        var params: [String: Encodable?] = ["stanza_id": originId, "account": conversation.account, "jid": conversation.jid, "author_nickname": nil, "participant_id": nil];
         switch sender {
         case .none, .buddy(_), .me(_), .channel:
             break;
@@ -416,7 +416,7 @@ class DBChatHistoryStore {
             params["participant_id"] = id;
         }
         return try! Database.main.reader({ database -> Int? in
-            return try database.select(query: .messageFindIdByOriginId, params: params).mapFirst({ $0.int(for: "id") });
+            return try database.select(query: .messageFindIdByOriginId, params: params).first.flatMap({ $0.int(for: "id") });
         })
     }
 
@@ -462,7 +462,7 @@ class DBChatHistoryStore {
                 break;
             }
             
-            var params: [String:Any?] = ["account": conversation.account, "jid": conversation.jid, "timestamp": timestamp, "data": data, "item_type": type.rawValue, "state": state.code, "stanza_id": stanzaId, "author_nickname": nil, "author_jid": nil, "recipient_nickname": options.recipient.nickname, "participant_id": nil, "encryption": options.encryption.value.rawValue, "fingerprint": options.encryption.fingerprint ?? (options.encryption.errorCode != nil ? "\(options.encryption.errorCode!)" : nil), "error": state.errorMessage, "appendix": appendix, "server_msg_id": serverMsgId, "remote_msg_id": remoteMsgId, "master_id": masterId, "markable": options.isMarkable];
+            var params: [String:Encodable?] = ["account": conversation.account, "jid": conversation.jid, "timestamp": timestamp, "data": data, "item_type": type.rawValue, "state": state.code, "stanza_id": stanzaId, "author_nickname": nil, "author_jid": nil, "recipient_nickname": options.recipient.nickname, "participant_id": nil, "encryption": options.encryption.value.rawValue, "fingerprint": options.encryption.fingerprint ?? (options.encryption.errorCode != nil ? "\(options.encryption.errorCode!)" : nil), "error": state.errorMessage, "appendix": appendix, "server_msg_id": serverMsgId, "remote_msg_id": remoteMsgId, "master_id": masterId, "markable": options.isMarkable];
 
             switch sender {
             case .none, .me(_), .buddy(_), .channel:
@@ -490,7 +490,7 @@ class DBChatHistoryStore {
                 }
 
                 try database.insert(query: .messageInsert, params: params);
-                return database.lastInsertedRowId;
+                return database.lastInsertedId;
             }) else {
                 return nil;
             }
@@ -540,10 +540,10 @@ class DBChatHistoryStore {
         // MIX/MUC should send origin-id if they assume to use last message correction!
         if let oldItem = self.findItem(for: conversation, originId: stanzaId, sender: sender) {
             let itemId = oldItem.id;
-            let params: [String: Any?] = ["id": itemId, "data": data, "state": newState.code, "correction_stanza_id": correctionStanzaId, "remote_msg_id": remoteMsgId, "server_msg_id": serverMsgId, "correction_timestamp": correctionTimestamp];
+            let params: [String: Encodable?] = ["id": itemId, "data": data, "state": newState.code, "correction_stanza_id": correctionStanzaId, "remote_msg_id": remoteMsgId, "server_msg_id": serverMsgId, "correction_timestamp": correctionTimestamp];
             let updated = try! Database.main.writer({ database -> Int in
                 try! database.update(query: .messageCorrectLast, params: params);
-                return database.changes;
+                return database.changesCount;
             })
             if updated > 0 {
                 var markAsReadTimestamp = oldItem.timestamp;
@@ -588,10 +588,10 @@ class DBChatHistoryStore {
     private func retractMessageSync(oldItem: ConversationEntry, for conversation: ConversationKey, sender: ConversationEntrySender, retractionStanzaId: String?, retractionTimestamp: Date, serverMsgId: String?, remoteMsgId: String?) {
         let itemId = oldItem.id;
         let itemType: ItemType = .retraction
-        let params: [String: Any?] = ["id": itemId, "item_type": itemType.rawValue, "correction_stanza_id": retractionStanzaId, "remote_msg_id": remoteMsgId, "server_msg_id": serverMsgId, "correction_timestamp": retractionTimestamp];
+        let params: [String: Encodable?] = ["id": itemId, "item_type": itemType.rawValue, "correction_stanza_id": retractionStanzaId, "remote_msg_id": remoteMsgId, "server_msg_id": serverMsgId, "correction_timestamp": retractionTimestamp];
         let updated = try! Database.main.writer({ database -> Int in
             try database.update(query: .messageRetract, params: params);
-            return database.changes;
+            return database.changesCount;
         })
         if updated > 0 {
             var markAsReadTimestamp = oldItem.timestamp;
@@ -622,7 +622,7 @@ class DBChatHistoryStore {
 
     func message(for conversation: ConversationKey, withId msgId: Int) -> ConversationEntry? {
         return try! Database.main.writer({ database -> ConversationEntry? in
-            return try database.select(query: .messageFind, params: ["id": msgId]).mapFirst({ cursor -> ConversationEntry? in
+            return try database.select(query: .messageFind, params: ["id": msgId]).first.flatMap({ cursor -> ConversationEntry? in
                 return self.itemFrom(cursor: cursor, for: conversation);
             });
         });
@@ -630,7 +630,7 @@ class DBChatHistoryStore {
     
     private func conversation(withId msgId: Int) -> Conversation? {
         guard let (account, jid) = try! Database.main.writer({ database -> (BareJID, BareJID)? in
-            return try database.select(query: .messageFind, params: ["id": msgId]).mapFirst({ cursor -> (BareJID,BareJID)? in
+            return try database.select(query: .messageFind, params: ["id": msgId]).first.flatMap({ cursor -> (BareJID,BareJID)? in
                 guard let account = cursor.bareJid(for: "account"), let jid = cursor.bareJid(for: "jid") else {
                     return nil;
                 }
@@ -698,7 +698,7 @@ class DBChatHistoryStore {
 
         guard try! Database.main.writer({ database -> Int in
             try! database.update(query: .messageUpdateState, params: ["id": itemId, "newState": ConversationEntryState.outgoing_error(.received).rawValue, "error": error?.localizedDescription ?? "Unknown error"]);
-            return database.changes;
+            return database.changesCount;
         }) > 0 else {
             return false;
         }
@@ -738,7 +738,7 @@ class DBChatHistoryStore {
     
     open func markAsRead(for account: BareJID, with jid: BareJID, before: Date, sendMarkers: Bool) {
         let updatedRecords = try! Database.main.writer({ database -> [MarkedAsRead.Message] in
-            let markedAsRead = try database.select(query: .messagesUnreadBefore, params: ["account": account, "jid": jid, "before": before]).mapAll({ curor in MarkedAsRead.Message(id: curor.int(for: "id")!, markableId: sendMarkers ? curor.string(for: "markable_id") : nil) });
+            let markedAsRead = try database.select(query: .messagesUnreadBefore, params: ["account": account, "jid": jid, "before": before]).compactMap({ curor in MarkedAsRead.Message(id: curor.int(for: "id")!, markableId: sendMarkers ? curor.string(for: "markable_id") : nil) });
             if !markedAsRead.isEmpty {
                 try database.update(query: .messagesMarkAsReadBefore, params: ["account": account, "jid": jid, "before": before]);
             }
@@ -776,7 +776,7 @@ class DBChatHistoryStore {
     open func updateItemState(for conversation: ConversationKey, itemId msgId: Int, from oldState: ConversationEntryState, to newState: ConversationEntryState, withTimestamp timestamp: Date?) -> Bool {
         guard try! Database.main.writer({ database -> Int in
             try database.update(query: .messageUpdateState, params:  ["id": msgId, "oldState": oldState.code, "newState": newState.code, "newTimestamp": timestamp]);
-            return database.changes;
+            return database.changesCount;
         }) > 0 else {
             return false;
         }
@@ -790,7 +790,7 @@ class DBChatHistoryStore {
     open func remove(item: ConversationEntry) {
         guard try! Database.main.writer({ database in
             try database.delete(query: .messageDelete, cached: false, params: ["id": item.id]);
-            return database.changes;
+            return database.changesCount;
         }) > 0 else {
             return;
         }
@@ -800,8 +800,8 @@ class DBChatHistoryStore {
 
     private func removePreviews(idOfRelatedToItem masterId: Int) {
         let linkPreviews = try! Database.main.reader({ database in
-            return try database.select(query: .messageFindLinkPreviewsForMessage, cached: false, params: ["master_id": masterId]).mapAll({ cursor -> (Int, BareJID, BareJID)? in
-                guard let id: Int = cursor["id"], let account: BareJID = cursor["account"], let jid: BareJID = cursor["jid"] else {
+            return try database.select(query: .messageFindLinkPreviewsForMessage, cached: false, params: ["master_id": masterId]).compactMap({ cursor -> (Int, BareJID, BareJID)? in
+                guard let id: Int = cursor.int(for: "id"), let account: BareJID = cursor.bareJid(for: "account"), let jid: BareJID = cursor.bareJid(for: "jid") else {
                     return nil;
                 }
                 return (id, account, jid);
@@ -814,10 +814,10 @@ class DBChatHistoryStore {
         }
         for (id, account, jid) in linkPreviews {
             // this is a preview and needs to be removed..
-            let removeLinkParams: [String: Any?] = ["id": id];
+            let removeLinkParams: [String: Encodable?] = ["id": id];
             if try! Database.main.writer({ database -> Int in
                 try database.delete(query: .messageDelete, cached: false, params: removeLinkParams);
-                return database.changes;
+                return database.changesCount;
             }) > 0 {
                 self.itemRemoved(withId: id, for: ConversationKeyItem(account: account, jid: jid));
             }
@@ -832,7 +832,7 @@ class DBChatHistoryStore {
 
     func stableIds(forId id: Int) -> StableIds? {
         return try! Database.main.reader({ database in
-            try database.select(query: .messageFindStableIds, cached: true, params: ["id": id]).mapFirst({ StableIds(server: $0.string(for: "server_msg_id"), remote: $0.string(for: "remote_msg_id")) });
+            try database.select(query: .messageFindStableIds, cached: true, params: ["id": id]).first.flatMap({ StableIds(server: $0.string(for: "server_msg_id"), remote: $0.string(for: "remote_msg_id")) });
         })
     }
     
@@ -842,7 +842,7 @@ class DBChatHistoryStore {
     
     func originId(for account: BareJID, with jid: BareJID, id: Int) -> String? {
         return try! Database.main.reader({ dataase in
-            try dataase.select(query: .messageFindMessageOriginId, cached: false, params: ["id": id]).mapFirst({ $0.string(for: "stanza_id")});
+            try dataase.select(query: .messageFindMessageOriginId, cached: false, params: ["id": id]).first.flatMap({ $0.string(for: "stanza_id")});
         })
     }
 
@@ -876,7 +876,7 @@ class DBChatHistoryStore {
 
     func loadUnsentMessage(for account: BareJID, completionHandler: @escaping (BareJID,[UnsentMessage])->Void) {
         let messages = try! Database.main.reader({ database in
-            try database.select(query: .messagesFindUnsent, cached: false, params: ["account": account]).mapAll(UnsentMessage.from(cursor: ))
+            try database.select(query: .messagesFindUnsent, cached: false, params: ["account": account]).compactMap(UnsentMessage.from(cursor: ))
         })
         completionHandler(account, messages);
     }
@@ -897,7 +897,7 @@ class DBChatHistoryStore {
 
     func lastMessageTimestamp(for account: BareJID) -> Date? {
         return try! Database.main.reader({ database in
-            return try database.select(query: .messagesLastTimestampForAccount, cached: false, params: ["account": account]).mapFirst({ $0.date(for: "timestamp") });
+            return try database.select(query: .messagesLastTimestampForAccount, cached: false, params: ["account": account]).first.flatMap({ $0.date(for: "timestamp") });
         });
     }
 
@@ -907,16 +907,16 @@ class DBChatHistoryStore {
             case .with(let id, let overhead):
                 let position = try database.count(query: .messageFindPositionInChat, cached: true, params: ["account": conversation.account, "jid": conversation.jid, "msgId": id, "showLinkPreviews": linkPreviews]);
                 let cursor = try database.select(query: .messagesFindForChat, params: ["account": conversation.account, "jid": conversation.jid, "offset": 0, "limit": position + overhead, "showLinkPreviews": self.linkPreviews])
-                return try cursor.mapAll({ cursor -> ConversationEntry? in self.itemFrom(cursor: cursor, for: conversation) });
+                return try cursor.compactMap({ cursor -> ConversationEntry? in self.itemFrom(cursor: cursor, for: conversation) });
             case .unread(let overhead):
                 let unread = try database.count(query: .messagesCountUnread, cached: true, params: ["account": conversation.account, "jid": conversation.jid]);
                     
                 let cursor = try database.select(query: .messagesFindForChat, params: ["account": conversation.account, "jid": conversation.jid, "offset": 0, "limit": unread + overhead, "showLinkPreviews": self.linkPreviews])
-                return try cursor.mapAll({ cursor -> ConversationEntry? in self.itemFrom(cursor: cursor, for: conversation) });
+                return try cursor.compactMap({ cursor -> ConversationEntry? in self.itemFrom(cursor: cursor, for: conversation) });
             case .before(let item, let limit):
                 let position = try database.count(query: .messageFindPositionInChat, cached: true, params: ["account": conversation.account, "jid": conversation.jid, "msgId": item.id, "showLinkPreviews": linkPreviews]);
                 let cursor = try database.select(query: .messagesFindForChat, params: ["account": conversation.account, "jid": conversation.jid, "offset": position, "limit": limit, "showLinkPreviews": self.linkPreviews])
-                return try cursor.mapAll({ cursor -> ConversationEntry? in self.itemFrom(cursor: cursor, for: conversation) });
+                return try cursor.compactMap({ cursor -> ConversationEntry? in self.itemFrom(cursor: cursor, for: conversation) });
             }
         })
     }
@@ -929,8 +929,8 @@ class DBChatHistoryStore {
         });
         let query = tokens.joined(separator: " + ");
         let items = try! Database.main.reader({ database in
-            try database.select(query: .messageSearchHistory, params: ["account": account, "jid": jid, "query": query]).mapAll({ cursor -> ConversationEntry? in
-                guard let account: BareJID = cursor["account"], let jid: BareJID = cursor["jid"] else {
+            try database.select(query: .messageSearchHistory, params: ["account": account, "jid": jid, "query": query]).compactMap({ cursor -> ConversationEntry? in
+                guard let account: BareJID = cursor.bareJid(for: "account"), let jid: BareJID = cursor.bareJid(for: "jid") else {
                     return nil;
                 }
                 return self.itemFrom(cursor: cursor, for: ConversationKeyItem(account: account, jid: jid));
@@ -940,9 +940,9 @@ class DBChatHistoryStore {
     }
 
     public func loadAttachments(for conversation: ConversationKey) async -> [ConversationEntry] {
-        let params: [String: Any?] = ["account": conversation.account, "jid": conversation.jid];
+        let params: [String: Encodable?] = ["account": conversation.account, "jid": conversation.jid];
         return try! Database.main.reader({ database in
-            return try database.select(query: .messagesFindChatAttachments, cached: false, params: params).mapAll({ cursor -> ConversationEntry? in
+            return try database.select(query: .messagesFindChatAttachments, cached: false, params: params).compactMap({ cursor -> ConversationEntry? in
                 return self.itemFrom(cursor: cursor, for: conversation);
             })
         })
@@ -952,16 +952,16 @@ class DBChatHistoryStore {
         return Settings.linkPreviews;
     }
 
-    private func itemFrom(cursor: Cursor, for conversation: ConversationKey) -> ConversationEntry? {
-        let id: Int = cursor["id"]!;
+    private func itemFrom(cursor: Row, for conversation: ConversationKey) -> ConversationEntry? {
+        let id: Int = cursor.int(for: "id")!;
         let state: ConversationEntryState = ConversationEntryState.from(cursor: cursor);
-        let timestamp: Date = cursor["timestamp"]!;
+        let timestamp: Date = cursor.date(for: "timestamp")!;
 
-        guard let entryType = ItemType(rawValue: cursor["item_type"]!) else {
+        guard let entryType = ItemType(rawValue: cursor.int(for: "item_type")!) else {
             return nil;
         }
 
-        var correctionTimestamp: Date? = cursor["correction_timestamp"];
+        var correctionTimestamp: Date? = cursor.date(for: "correction_timestamp");
         if correctionTimestamp?.timeIntervalSince1970 == 0 {
             correctionTimestamp = nil;
         }
@@ -970,7 +970,7 @@ class DBChatHistoryStore {
             return nil;
         }
         
-        let options = ConversationEntry.Options(recipient: recipientFrom(cursor: cursor), encryption: DBChatHistoryStore.encryptionFrom(cursor: cursor), isMarkable: cursor.bool(for: "markable"));
+        let options = ConversationEntry.Options(recipient: recipientFrom(cursor: cursor), encryption: DBChatHistoryStore.encryptionFrom(cursor: cursor), isMarkable: cursor.bool(for: "markable") ?? false);
         
         
         guard let payload = payloadFrom(cursor: cursor, entryType: entryType, correctionTimestamp: correctionTimestamp) else {
@@ -980,15 +980,15 @@ class DBChatHistoryStore {
         return .init(id: id, conversation: conversation, timestamp: timestamp, state: state, sender: sender, payload: payload, options: options);
     }
     
-    private func payloadFrom(cursor: Cursor, entryType: ItemType, correctionTimestamp: Date?) -> ConversationEntryPayload? {
+    private func payloadFrom(cursor: Row, entryType: ItemType, correctionTimestamp: Date?) -> ConversationEntryPayload? {
         switch entryType {
         case .location:
-            guard let data: String = cursor["data"], let location = CLLocationCoordinate2D(geoUri: data) else {
+            guard let data: String = cursor.string(for: "data"), let location = CLLocationCoordinate2D(geoUri: data) else {
                 return nil;
             }
             return .location(location: location);
         case .message:
-            guard let message: String = cursor["data"] else {
+            guard let message: String = cursor.string(for: "data") else {
                 return nil;
             }
             return .message(message: message, correctionTimestamp: correctionTimestamp);
@@ -998,29 +998,29 @@ class DBChatHistoryStore {
             guard let appendix: ChatInvitationAppendix = cursor.object(for: "appendix")else {
                 return nil;
             }
-            return .invitation(message: cursor["data"], appendix: appendix);
+            return .invitation(message: cursor.string(for: "data"), appendix: appendix);
         case .attachment:
-            guard let url: String = cursor["data"] else {
+            guard let url: String = cursor.string(for: "data") else {
                 return nil;
             }
             let appendix = cursor.object(for: "appendix") ?? ChatAttachmentAppendix();
             return .attachment(url: url, appendix: appendix);
         case .linkPreview:
-            guard let url: String = cursor["data"] else {
+            guard let url: String = cursor.string(for: "data") else {
                 return nil;
             }
             return .linkPreview(url: url);
         }
     }
     
-    private func recipientFrom(cursor: Cursor) -> ConversationEntryRecipient {
+    private func recipientFrom(cursor: Row) -> ConversationEntryRecipient {
         guard let nickname = cursor.string(for: "recipient_nickname") else {
             return .none;
         }
         return .occupant(nickname: nickname);
     }
     
-    private func senderFrom(cursor: Cursor, for conversation: ConversationKey, direction: MessageDirection) -> ConversationEntrySender? {
+    private func senderFrom(cursor: Row, for conversation: ConversationKey, direction: MessageDirection) -> ConversationEntrySender? {
         // guessing based on conversation is not always possible, ie. for plain key (not Conversation)
         switch conversation {
         case is Chat:
@@ -1031,23 +1031,23 @@ class DBChatHistoryStore {
                 return .buddy(conversation: conversation);
             }
         case is Room:
-            guard let nickname: String = cursor["author_nickname"] else {
+            guard let nickname: String = cursor.string(for: "author_nickname") else {
                 return nil;
             }
-            return .occupant(nickname: nickname, jid: cursor["author_jid"]);
+            return .occupant(nickname: nickname, jid: cursor.bareJid(for: "author_jid"));
         case is Channel:
-            guard let participantId: String = cursor["participant_id"], let nickname: String = cursor["author_nickname"] else {
-                guard let nickname: String = cursor["author_nickname"] else {
+            guard let participantId: String = cursor.string(for: "participant_id"), let nickname: String = cursor.string(for: "author_nickname") else {
+                guard let nickname: String = cursor.string(for: "author_nickname") else {
                     return .buddy(nickname: "");
                 }
-                return .occupant(nickname: nickname, jid: cursor["author_jid"]);
+                return .occupant(nickname: nickname, jid: cursor.bareJid(for: "author_jid"));
             }
-            return .participant(id: participantId, nickname: nickname, jid: cursor["author_jid"]);
+            return .participant(id: participantId, nickname: nickname, jid: cursor.bareJid(for: "author_jid"));
         default:
-            if let participantId: String = cursor["participant_id"], let nickname: String = cursor["author_nickname"] {
-                return .participant(id: participantId, nickname: nickname, jid: cursor["author_jid"]);
-            } else if let nickname: String = cursor["author_nickname"]  {
-                return .occupant(nickname: nickname, jid: cursor["author_jid"]);
+            if let participantId: String = cursor.string(for: "participant_id"), let nickname: String = cursor.string(for: "author_nickname") {
+                return .participant(id: participantId, nickname: nickname, jid: cursor.bareJid(for: "author_jid"));
+            } else if let nickname: String = cursor.string(for: "author_nickname")  {
+                return .occupant(nickname: nickname, jid: cursor.bareJid(for: "author_jid"));
             } else {
                 switch direction {
                 case .outgoing:
@@ -1059,8 +1059,8 @@ class DBChatHistoryStore {
         }
     }
     
-    public static func encryptionFrom(cursor: Cursor, encryptionKey: String = "encryption", fingerprintKey: String = "fingerprint") -> ConversationEntryEncryption {
-        switch MessageEncryption(rawValue: cursor[encryptionKey] ?? 0) ?? .none {
+    public static func encryptionFrom(cursor: Row, encryptionKey: String = "encryption", fingerprintKey: String = "fingerprint") -> ConversationEntryEncryption {
+        switch MessageEncryption(rawValue: cursor.int(for: encryptionKey) ?? 0) ?? .none {
         case .none:
             return .none;
         case .decryptionFailed:
@@ -1069,7 +1069,7 @@ class DBChatHistoryStore {
         case .notForThisDevice:
             return .notForThisDevice;
         case .decrypted:
-            return .decrypted(fingerprint: cursor[fingerprintKey]);
+            return .decrypted(fingerprint: cursor.string(for: fingerprintKey));
         }
     }
 
@@ -1077,9 +1077,9 @@ class DBChatHistoryStore {
 
 extension ConversationEntryState {
     
-    static func from(cursor: Cursor) -> ConversationEntryState {
-        let stateInt: Int = cursor["state"]!;
-        return ConversationEntryState.from(code: stateInt, errorMessage: cursor["error"]);
+    static func from(cursor: Row) -> ConversationEntryState {
+        let stateInt: Int = cursor.int(for: "state")!;
+        return ConversationEntryState.from(code: stateInt, errorMessage: cursor.string(for: "error"));
     }
     
 }
@@ -1101,7 +1101,7 @@ final class UnsentMessage: Sendable {
         self.correctionStanzaId = correctionStanzaId;
     }
 
-    static func from(cursor: Cursor) -> UnsentMessage? {
+    static func from(cursor: Row) -> UnsentMessage? {
         guard let jid = cursor.bareJid(for: "jid"), let type = ItemType(rawValue: cursor.int(for: "item_type")!), let data = cursor.string(for: "data"), let stanzaId = cursor.string(for: "stanza_id"), let encryption = MessageEncryption(rawValue: cursor.int(for: "encryption") ?? 0) else {
             return nil;
         }
