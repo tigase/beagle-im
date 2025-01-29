@@ -36,7 +36,7 @@ struct DesktopVideoCapturer: VideoCapturer {
         self.displayId = displayId;
     }
     
-    func startCapture(completionHandler: @escaping (Result<Void, Error>) -> Void) {
+    func startCapture(completionHandler: @escaping (Result<Void, any Error>) -> Void) {
         self.capturer.startCapture(with: displayId, completionHander: {
             completionHandler(.success(Void()));
         })

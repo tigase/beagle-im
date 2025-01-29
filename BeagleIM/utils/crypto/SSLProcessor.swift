@@ -338,7 +338,7 @@ open class SSLProcessor: ConnectorBase.NetworkProcessor, SSLNetworkProcessor {
         }
     }
     
-    open func peerCertificate() throws -> Martin.SSLCertificate {
+    open func peerCertificate() throws -> any Martin.SSLCertificate {
         guard let cert = getPeerCertificate() else {
             throw XMPPError(condition: .item_not_found);
         }

@@ -994,7 +994,7 @@ class MucOccupantSuggestionItemView: SuggestionItemViewBase<MucOccupant> {
     
     struct Provider: SuggestionItemViewProvider {
         
-        func view(for item: Any) -> SuggestionItemView? {
+        func view(for item: Any) -> (any SuggestionItemView)? {
             guard item is MucOccupant else {
                 return nil;
             }

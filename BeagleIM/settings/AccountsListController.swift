@@ -125,7 +125,7 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
     }
 
     override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
-        if let aware = segue.destinationController as? AccountAware {
+        if let aware = segue.destinationController as? (any AccountAware) {
             aware.account = self.currentAccount;
         }
         if segue.identifier == "showEditAccountPrivateVCard", let controller = segue.destinationController as? VCardEditorViewController {

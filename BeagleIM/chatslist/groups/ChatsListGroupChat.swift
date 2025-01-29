@@ -24,11 +24,11 @@ import Martin
 
 class ChatsListGroupChat: ChatsListGroupAbstractChat {
     
-    init(delegate: ChatsListViewDataSourceDelegate) {
+    init(delegate: any ChatsListViewDataSourceDelegate) {
         super.init(name: NSLocalizedString("Direct messages", comment: "Chats list group name"), queue: DispatchQueue(label: "chats_list_group_chats_queue"), delegate: delegate, canOpenChat: true);
     }
     
-    override func isAccepted(chat: Conversation) -> Bool {
+    override func isAccepted(chat: any Conversation) -> Bool {
         return chat is Chat && DBRosterStore.instance.item(for: chat.account, jid: JID(chat.jid)) != nil;
     }
 
@@ -36,11 +36,11 @@ class ChatsListGroupChat: ChatsListGroupAbstractChat {
 
 class ChatsListGroupChatUnknown: ChatsListGroupAbstractChat {
     
-    init(delegate: ChatsListViewDataSourceDelegate) {
+    init(delegate: any ChatsListViewDataSourceDelegate) {
         super.init(name: NSLocalizedString("From unknown", comment: "Chats list group name"), queue: DispatchQueue(label: "chats_list_group_chats_unkonwn_queue"), delegate: delegate, canOpenChat: false);
     }
     
-    override func isAccepted(chat: Conversation) -> Bool {
+    override func isAccepted(chat: any Conversation) -> Bool {
         return chat is Chat && DBRosterStore.instance.item(for: chat.account, jid: JID(chat.jid)) == nil
     }
     

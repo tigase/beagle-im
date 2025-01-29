@@ -25,7 +25,7 @@ protocol VideoCapturer {
     
     var currentDevice: VideoCaptureDevice { get }
     
-    func startCapture(completionHandler: @escaping (Result<Void,Error>)->Void);
+    func startCapture(completionHandler: @escaping (Result<Void,any Error>)->Void);
     
     func stopCapture(completionHandler: @escaping ()->Void);
     

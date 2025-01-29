@@ -39,7 +39,7 @@ public class ConversationBase: Martin.ConversationBase, Identifiable, Hashable, 
         }
         return body();
     }
-    private let displayableId: DisplayableIdProtocol;
+    private let displayableId: any DisplayableIdProtocol;
 
     public var displayName: String {
         return displayableId.displayName;
@@ -101,7 +101,7 @@ public class ConversationBase: Martin.ConversationBase, Identifiable, Hashable, 
     @Published
     public var fileUploadProgress: Double = 1.0;
     
-    public init(context: Context, jid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, displayableId: DisplayableIdProtocol) {
+    public init(context: Context, jid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, displayableId: any DisplayableIdProtocol) {
         self.id = id;
         self.lastActivity = lastActivity;
         self.unread = unread;
@@ -196,7 +196,7 @@ public class ConversationBaseWithOptions<Options: ChatOptionsProtocol>: Conversa
     }
 
     
-    public init(context: Context, jid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, options: Options, displayableId: DisplayableIdProtocol) {
+    public init(context: Context, jid: BareJID, id: Int, lastActivity: LastChatActivity, unread: Int, options: Options, displayableId: any DisplayableIdProtocol) {
         self._options = options;
         super.init(context: context, jid: jid, id: id, lastActivity: lastActivity, unread:  unread, displayableId: displayableId);
     }
@@ -206,7 +206,7 @@ public class ConversationBaseWithOptions<Options: ChatOptionsProtocol>: Conversa
             var options = self._options;
             fn(&options);
             if !options.equals(self._options) {
-                DBChatStore.instance.update(options: options, for: self as! Conversation);
+                DBChatStore.instance.update(options: options, for: self as! (any Conversation));
                 self._options = options;
             }
         }

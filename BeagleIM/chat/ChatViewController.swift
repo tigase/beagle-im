@@ -495,7 +495,7 @@ class ChatViewTableView: NSTableView {
         return true;
     }
     
-    weak var mouseDelegate: ChatViewTableViewMouseDelegate?;
+    weak var mouseDelegate: (any ChatViewTableViewMouseDelegate)?;
     
     override open var isFlipped: Bool {
         return false;

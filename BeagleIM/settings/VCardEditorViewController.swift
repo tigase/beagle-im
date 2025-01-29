@@ -496,13 +496,13 @@ class VCardEditorViewController: NSViewController, AccountAware {
         });
     }
     
-    fileprivate func createRemoveButton(for item: VCardEntryItemTypeAware) -> NSButton {
+    fileprivate func createRemoveButton(for item: any VCardEntryItemTypeAware) -> NSButton {
         let removeButton = NSButton(image: NSImage(named: NSImage.removeTemplateName)!, target: self, action: #selector(removePositionClicked));
         removeButton.bezelStyle = .texturedRounded;
         return removeButton;
     }
  
-    fileprivate func createTypeButton(for item: VCardEntryItemTypeAware, tag: Int, action: Selector) -> NSButton {
+    fileprivate func createTypeButton(for item: any VCardEntryItemTypeAware, tag: Int, action: Selector) -> NSButton {
         let typeButton = NSPopUpButton(frame: .zero, pullsDown: false);
         typeButton.addItem(withTitle: NSLocalizedString("Home", comment: "vcard editor"));
         typeButton.addItem(withTitle: NSLocalizedString("Work", comment: "vcard editor"));

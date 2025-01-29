@@ -33,7 +33,7 @@ class Database {
 }
 
 extension DatabasePool {
-    convenience init(dbFilename: String, schemaMigrator: DatabaseSchemaMigrator? = nil) throws {
+    convenience init(dbFilename: String, schemaMigrator: (any DatabaseSchemaMigrator)? = nil) throws {
         let paths = NSSearchPathForDirectoriesInDomains(.applicationSupportDirectory, .userDomainMask, true);
         let documentDirectory = paths[0].appending("/" + (Bundle.main.infoDictionary!["CFBundleName"] as! String));
         let path = documentDirectory.appending("/" + dbFilename);

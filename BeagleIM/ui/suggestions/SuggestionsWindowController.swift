@@ -46,7 +46,7 @@ class SuggestionsWindowController: NSWindowController {
     private var textField: NSText?;
     
     private var trackingAreas: [NSTrackingArea] = [];
-    private var selectedView: SuggestionItemView? {
+    private var selectedView: (any SuggestionItemView)? {
         didSet {
             oldValue?.isHighlighted = false;
             selectedView?.isHighlighted = true;
@@ -54,8 +54,8 @@ class SuggestionsWindowController: NSWindowController {
     }
     
     private let edge: Edge;
-    private let viewProviders: [SuggestionItemViewProvider];
-    private var views: [SuggestionItemView] = [];
+    private let viewProviders: [any SuggestionItemViewProvider];
+    private var views: [any SuggestionItemView] = [];
     
     private var suggestions: [Any] = [];
     
@@ -66,7 +66,7 @@ class SuggestionsWindowController: NSWindowController {
     private var shouldAdjustWidth = true;
     var yOffset: CGFloat = 0;
     
-    init(viewProviders: [SuggestionItemViewProvider], edge: Edge) {
+    init(viewProviders: [any SuggestionItemViewProvider], edge: Edge) {
         self.viewProviders = viewProviders;
         self.edge = edge;
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 20, height: 20), styleMask: [.borderless], backing: .buffered, defer: true);
@@ -180,7 +180,7 @@ class SuggestionsWindowController: NSWindowController {
         }
         trackingAreas.removeAll()
         
-        let entries = suggestions.compactMap({ item -> SuggestionItemView? in
+        let entries = suggestions.compactMap({ item -> (any SuggestionItemView)? in
             guard let view = self.viewProviders.compactMap({ $0.view(for: item) }).first else {
                 return nil;
             }
@@ -270,7 +270,7 @@ class SuggestionsWindowController: NSWindowController {
     }
     
     override func mouseEntered(with event: NSEvent) {
-        if let view = event.trackingArea?.userInfo?["view"] as? SuggestionItemView {
+        if let view = event.trackingArea?.userInfo?["view"] as? (any SuggestionItemView) {
             self.selectedView = view;
         }
     }
@@ -292,7 +292,7 @@ class SuggestionsWindowController: NSWindowController {
     
     override func moveUp(_ sender: Any?) {
         let selectedView = self.selectedView
-        var previousView: SuggestionItemView? = nil
+        var previousView: (any SuggestionItemView)? = nil
         for view in views {
             if view === selectedView {
                 break;
@@ -307,7 +307,7 @@ class SuggestionsWindowController: NSWindowController {
     
     override func moveDown(_ sender: Any?) {
         let selectedView = self.selectedView
-        var previousView: SuggestionItemView? = nil
+        var previousView: (any SuggestionItemView)? = nil
         for view in views.reversed() {
             if view === selectedView {
                 break;

@@ -25,9 +25,9 @@ import Combine
 
 class NSViewWithTextBackgroundAndDragHandler: NSViewWithTextBackground {
     
-    weak var dragHandler: (NSDraggingDestination & PastingDelegate)? = nil;
+    weak var dragHandler: (any NSDraggingDestination & PastingDelegate)? = nil;
     
-    override func draggingEnded(_ sender: NSDraggingInfo) {
+    override func draggingEnded(_ sender: any NSDraggingInfo) {
         guard let handler = self.dragHandler?.draggingEnded else {
             super.draggingEnded(sender);
             return;
@@ -35,7 +35,7 @@ class NSViewWithTextBackgroundAndDragHandler: NSViewWithTextBackground {
         handler(sender);
     }
     
-    override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+    override func draggingEntered(_ sender: any NSDraggingInfo) -> NSDragOperation {
         guard let handler = self.dragHandler?.draggingEntered else {
             return super.draggingEntered(sender);
         }
@@ -47,7 +47,7 @@ class NSViewWithTextBackgroundAndDragHandler: NSViewWithTextBackground {
         }
     }
     
-    override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+    override func draggingUpdated(_ sender: any NSDraggingInfo) -> NSDragOperation {
         guard let handler = self.dragHandler?.draggingUpdated else {
             return super.draggingUpdated(sender);
         }
@@ -59,7 +59,7 @@ class NSViewWithTextBackgroundAndDragHandler: NSViewWithTextBackground {
         }
     }
     
-    override func draggingExited(_ sender: NSDraggingInfo?) {
+    override func draggingExited(_ sender: (any NSDraggingInfo)?) {
         guard let handler = self.dragHandler?.draggingExited else {
             super.draggingExited(sender);
             return;
@@ -67,7 +67,7 @@ class NSViewWithTextBackgroundAndDragHandler: NSViewWithTextBackground {
         handler(sender);
     }
     
-    override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+    override func performDragOperation(_ sender: any NSDraggingInfo) -> Bool {
         return (dragHandler?.performDragOperation?(sender) ?? false) || super.performDragOperation(sender);
     }
 }
@@ -166,23 +166,23 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         return false;
     }
     
-    func draggingEnded(_ sender: NSDraggingInfo) {
+    func draggingEnded(_ sender: any NSDraggingInfo) {
         
     }
     
-    func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+    func draggingEntered(_ sender: any NSDraggingInfo) -> NSDragOperation {
         return sender.draggingSourceOperationMask.contains(.copy) && sender.draggingPasteboard.canReadObject(forClasses: [NSURL.self, NSFilePromiseReceiver.self], options: nil) ? .copy : [];
     }
     
-    func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+    func draggingUpdated(_ sender: any NSDraggingInfo) -> NSDragOperation {
         return sender.draggingSourceOperationMask.contains(.copy) && sender.draggingPasteboard.canReadObject(forClasses: [NSURL.self, NSFilePromiseReceiver.self], options: nil) ? .copy : [];
     }
     
-    func draggingExited(_ sender: NSDraggingInfo?) {
+    func draggingExited(_ sender: (any NSDraggingInfo)?) {
         
     }
     
-    func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+    func performDragOperation(_ sender: any NSDraggingInfo) -> Bool {
         guard sharingButton.isEnabled else {
             return false;
         }

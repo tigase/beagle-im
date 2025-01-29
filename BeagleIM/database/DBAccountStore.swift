@@ -47,7 +47,7 @@ public class DBAccountStore {
         guard from.name == to.name else {
             throw XMPPError(condition: .not_acceptable);
         }
-        var params: [String: Encodable] = [:];
+        var params: [String: any Encodable] = [:];
         if from.enabled != to.enabled {
             params["enabled"] = to.enabled;
         }

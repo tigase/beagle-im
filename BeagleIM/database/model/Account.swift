@@ -98,7 +98,7 @@ public struct Account {
             self.resource = .automatic
         }
         
-        public init(from decoder: Decoder) throws {
+        public init(from decoder: any Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self);
             omemoDeviceId = try container.decodeIfPresent(UInt32.self, forKey: .omemoId);
             acceptedCertificate = try container.decodeIfPresent(AcceptableServerCertificate.self, forKey: .acceptedCertificate)
@@ -108,7 +108,7 @@ public struct Account {
             resource = try container.decodeIfPresent(Resource.self, forKey: .resource) ?? .automatic;
         }
 
-        public func encode(to encoder: Encoder) throws {
+        public func encode(to encoder: any Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self);
             try container.encodeIfPresent(omemoDeviceId, forKey: .omemoId);
             try container.encodeIfPresent(acceptedCertificate, forKey: .acceptedCertificate);

@@ -23,7 +23,7 @@ import AppKit
 
 class OutlineGroupItemButton: NSButton {
     
-    var group: ChatsListGroupProtocol?;
+    var group: (any ChatsListGroupProtocol)?;
     
 //    override var contentTintColor: NSColor? {
 //        get {

@@ -32,7 +32,7 @@ extension ConversationEntry {
             return false;
         }
          
-        guard let conversation = self.conversation as? Conversation else {
+        guard let conversation = self.conversation as? (any Conversation) else {
             return false;
         }
         
@@ -167,7 +167,7 @@ public class NotificationManager {
     }
     
     private func notifyNewMessage(message entry: ConversationEntry) {
-        guard let conversation = entry.conversation as? Conversation else {
+        guard let conversation = entry.conversation as? (any Conversation) else {
             return;
         }
         

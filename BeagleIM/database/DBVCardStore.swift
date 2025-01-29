@@ -63,7 +63,7 @@ class DBVCardStore {
     open func updateVCard(for jid: BareJID, on account: BareJID, vcard: VCard) {
         queue.async {
             try! Database.main.writer({ database in
-                let params: [String: Encodable?] = ["jid": jid, "data": vcard.toVCard4().description, "timestamp": Date()];
+                let params: [String: (any Encodable)?] = ["jid": jid, "data": vcard.toVCard4().description, "timestamp": Date()];
                 try database.update(query: .vcardUpdate, params: params);
                 if database.changesCount == 0 {
                     try database.insert(query: .vcardInsert, params: params);

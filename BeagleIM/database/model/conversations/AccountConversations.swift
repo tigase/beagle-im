@@ -24,36 +24,36 @@ import Martin
 
 public class AccountConversations {
 
-    private var conversations = [BareJID: Conversation]();
+    private var conversations = [BareJID: any Conversation]();
 
     var count: Int {
         return self.conversations.count;
     }
 
-    var items: [Conversation] {
-        return self.conversations.values.map({ (chat) -> Conversation in
+    var items: [any Conversation] {
+        return self.conversations.values.map({ (chat) -> (any Conversation) in
             return chat;
         });
     }
 
-    init(items: [Conversation]) {
+    init(items: [any Conversation]) {
         items.forEach { item in
             self.conversations[item.jid] = item;
         }
     }
 
-    func add(_ conversation: Conversation) {
+    func add(_ conversation: any Conversation) {
         self.conversations[conversation.jid] = conversation;
     }
 
-    func remove(_ conversation: Conversation) -> Bool {
+    func remove(_ conversation: any Conversation) -> Bool {
         var chats = self.conversations;
         let removed = chats.removeValue(forKey: conversation.jid) != nil;
         self.conversations = chats;
         return removed;
     }
 
-    func get(with jid: BareJID) -> Conversation? {
+    func get(with jid: BareJID) -> (any Conversation)? {
         return self.conversations[jid];
     }
 

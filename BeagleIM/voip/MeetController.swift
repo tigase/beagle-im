@@ -281,7 +281,7 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
         windowController.showWindow(self);
     }
     
-    func videoView(_ videoView: RTCVideoRenderer, didChangeVideoSize size: CGSize) {
+    func videoView(_ videoView: any RTCVideoRenderer, didChangeVideoSize size: CGSize) {
         DispatchQueue.main.async {
             self.localVideoRendererWidth?.animator().constant = (size.width * self.localVideoRenderer.frame.height) / size.height;
         }

@@ -43,7 +43,7 @@ public enum ConversationEntrySender: Hashable, Sendable {
         }
     }
     
-    func avatar(for key: ConversationKey) -> Avatar? {
+    func avatar(for key: any ConversationKey) -> Avatar? {
         switch self {
         case .me:
             return AvatarManager.instance.avatarPublisher(for: .init(account: key.account, jid: key.account, mucNickname: nil));
@@ -75,12 +75,12 @@ public enum ConversationEntrySender: Hashable, Sendable {
         }
     }
     
-    static func me(conversation: ConversationKey) -> ConversationEntrySender {
+    static func me(conversation: any ConversationKey) -> ConversationEntrySender {
         return .me(nickname: AccountManager.account(for: conversation.account)?.nickname ?? conversation.account.description);
     }
     
-    static func buddy(conversation: ConversationKey) -> ConversationEntrySender {
-        if let conv = conversation as? Conversation {
+    static func buddy(conversation: any ConversationKey) -> ConversationEntrySender {
+        if let conv = conversation as? (any Conversation) {
             return .buddy(nickname: conv.displayName);
         } else {
             return .buddy(nickname: DBRosterStore.instance.item(for: conversation.account, jid: JID(conversation.jid))?.name ?? conversation.jid.description);
@@ -90,7 +90,7 @@ public enum ConversationEntrySender: Hashable, Sendable {
 
 extension ConversationEntrySender {
     
-    static func from(conversationType: ConversationType, conversation: ConversationKey, cursor: Row) -> ConversationEntrySender {
+    static func from(conversationType: ConversationType, conversation: any ConversationKey, cursor: Row) -> ConversationEntrySender {
         let direction = ConversationEntryState.from(code: cursor.int(for: "state") ?? 0, errorMessage: nil).direction;
         switch conversationType {
         case .chat:

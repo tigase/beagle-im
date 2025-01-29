@@ -30,7 +30,7 @@ public final class DatabaseMigrator: DatabaseSchemaMigrator {
     public let expectedVersion: Int = 20;
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "DatabaseMigrator");
     
-    public func upgrade(database: DatabaseWriter, newVersion version: Int) throws {
+    public func upgrade(database: any DatabaseWriter, newVersion version: Int) throws {
         try loadSchema(to: database, fromFile: "/db-schema-\(version).sql");
         
         if version == 11 {
@@ -122,7 +122,7 @@ CREATE INDEX chat_history_account_jid_correction_stanza_id on chat_history (acco
         }
     }
     
-    private func loadSchema(to database: DatabaseWriter, fromFile fileName: String) throws {
+    private func loadSchema(to database: any DatabaseWriter, fromFile fileName: String) throws {
         let resourcePath = Bundle.main.resourcePath! + fileName;
         logger.debug("trying to load SQL from file \(resourcePath)");
         if let dbSchema = try? String(contentsOfFile: resourcePath, encoding: String.Encoding.utf8) {
@@ -135,7 +135,7 @@ CREATE INDEX chat_history_account_jid_correction_stanza_id on chat_history (acco
     }
 
     // Method used to cleanup schema before version no. 12
-    private func cleanupDuplicatedEntries(database: DatabaseWriter) throws {
+    private func cleanupDuplicatedEntries(database: any DatabaseWriter) throws {
         // removing duplicaed chats
         let duplicatedChats = try database.select("select account, jid, count(id) as count from chats group by account, jid", cached: false).compactMap({ cursor -> (BareJID, BareJID)? in
             guard cursor.int(for: "count")! > 1 else {

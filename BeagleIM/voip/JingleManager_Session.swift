@@ -37,7 +37,7 @@ extension JingleManager {
                         
         private static let queue = DispatchQueue(label: "JingleSessionQueue");
 
-        private weak var delegate: JingleSessionActionDelegate?;
+        private weak var delegate: (any JingleSessionActionDelegate)?;
         private var actionsQueue: [Action] = [];
         
         public enum Action {
@@ -84,7 +84,7 @@ extension JingleManager {
             }
         }
         
-        public func setDelegate(_ delegate: JingleSessionActionDelegate) {
+        public func setDelegate(_ delegate: any JingleSessionActionDelegate) {
             Session.queue.async {
                 self.delegate = delegate;
                 for action in self.actionsQueue {

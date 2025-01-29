@@ -46,7 +46,7 @@ enum VideoCaptureDevice: Equatable {
         }
     }
     
-    func capturer(for videoSource: RTCVideoSource) -> VideoCapturer {
+    func capturer(for videoSource: RTCVideoSource) -> any VideoCapturer {
         switch self {
         case .camera(let device, _):
             return CameraVideoCapture(delegate: videoSource, device: device);

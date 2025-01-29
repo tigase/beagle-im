@@ -31,7 +31,7 @@ public struct ChatAttachmentAppendix: AppendixProtocol, Hashable, Sendable {
     
     init() {}
     
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self);
         state = State(rawValue: try container.decode(Int.self, forKey: .state))!;
         filesize = try container.decodeIfPresent(Int.self, forKey: .filesize);
@@ -39,7 +39,7 @@ public struct ChatAttachmentAppendix: AppendixProtocol, Hashable, Sendable {
         filename = try container.decodeIfPresent(String.self, forKey: .filename);
     }
     
-    public func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self);
         try container.encode(state.rawValue, forKey: .state);
         

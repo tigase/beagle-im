@@ -66,7 +66,7 @@ open class ContactDetailsViewController: NSViewController, ContactDetailsAccount
         self.tabsView.tabViewItems.forEach { (item) in
             self.tabs.setLabel(item.label, forSegment: i);
             i = i + 1;
-            if let aware = item.viewController as? ContactDetailsAccountJidAware {
+            if let aware = item.viewController as? (any ContactDetailsAccountJidAware) {
                 aware.account = self.account;
                 aware.jid = self.jid;
             }
@@ -172,7 +172,7 @@ open class ConversationSettingsViewController: NSViewController, ContactDetailsA
     var account: BareJID?
     var jid: BareJID?
     
-    var chat: Conversation?;
+    var chat: (any Conversation)?;
     
     weak var superView: NSView?;
     
@@ -904,7 +904,7 @@ class ConversationGroupingViewController: NSViewController, ContactDetailsAccoun
     
     override func viewWillAppear() {
         controllers.forEach { (controller) in
-            if let aware = controller as? ContactDetailsAccountJidAware {
+            if let aware = controller as? (any ContactDetailsAccountJidAware) {
                 aware.account = self.account;
                 aware.jid = self.jid;
             }

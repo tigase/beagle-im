@@ -32,7 +32,7 @@ public struct AcceptableServerCertificate: Codable, Equatable {
     public let certificate: SSLCertificateInfo;
     public var accepted: Bool;
     
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self);
         certificate = try container.decode(SSLCertificateInfo.self, forKey: .certificate)
         accepted = try container.decode(Bool.self, forKey: .accepted);
@@ -43,7 +43,7 @@ public struct AcceptableServerCertificate: Codable, Equatable {
         self.accepted = accepted;
     }
     
-    public func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self);
         try container.encode(certificate, forKey: .certificate)
         try container.encode(accepted, forKey: .accepted);

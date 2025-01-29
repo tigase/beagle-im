@@ -24,11 +24,11 @@ import Martin
 
 class ChatsListGroupCommon: ChatsListGroupAbstractChat {
     
-    init(delegate: ChatsListViewDataSourceDelegate) {
+    init(delegate: any ChatsListViewDataSourceDelegate) {
         super.init(name: NSLocalizedString("Conversations", comment: "Chats list group name"), queue: DispatchQueue(label: "chats_list_group_chats_queue"), delegate: delegate, canOpenChat: true);
     }
     
-    override func isAccepted(chat: Conversation) -> Bool {
+    override func isAccepted(chat: any Conversation) -> Bool {
         if chat is Chat {
             return DBRosterStore.instance.item(for: chat.account, jid: JID(chat.jid)) != nil;
         };

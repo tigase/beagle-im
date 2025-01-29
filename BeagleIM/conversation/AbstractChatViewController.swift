@@ -25,7 +25,7 @@ import MapKit
 
 class AbstractChatViewController: NSViewController, NSTextViewDelegate {
 
-    var conversation: Conversation! {
+    var conversation: (any Conversation)! {
         didSet {
             conversationLogController?.conversation = conversation;
         }
@@ -347,7 +347,7 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
         suggestionsController?.cancelSuggestions();
     }
     
-    var suggestionProviders: [SuggestionItemViewProvider] = [EmojiShortcodeSuggestionItemView.Provider(),EmojiFaceSuggestionItemView.Provider()];
+    var suggestionProviders: [any SuggestionItemViewProvider] = [EmojiShortcodeSuggestionItemView.Provider(),EmojiFaceSuggestionItemView.Provider()];
     
     func suggestionSelected(item: Any, range: NSRange) {
         switch item {
@@ -445,7 +445,7 @@ class EmojiShortcodeSuggestionItemView: SuggestionItemViewBase<String> {
     
     struct Provider: SuggestionItemViewProvider {
         
-        func view(for item: Any) -> SuggestionItemView? {
+        func view(for item: Any) -> (any SuggestionItemView)? {
             guard item is String else {
                 return nil;
             }
@@ -537,7 +537,7 @@ class EmojiFaceSuggestionItemView: SuggestionItemViewBase<EmojiFace> {
     
     struct Provider: SuggestionItemViewProvider {
         
-        func view(for item: Any) -> SuggestionItemView? {
+        func view(for item: Any) -> (any SuggestionItemView)? {
             guard item is EmojiFace else {
                 return nil;
             }

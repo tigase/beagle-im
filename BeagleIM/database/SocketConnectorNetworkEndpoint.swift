@@ -26,12 +26,12 @@ import TigaseSQLite3
 
 extension SocketConnectorNetwork.Endpoint: Codable, DatabaseConvertibleStringValue {
 
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self);
         self.init(proto: ConnectorProtocol(rawValue: try container.decode(String.self, forKey: .proto))!, host: try container.decode(String.self, forKey: .host), port: try container.decode(Int.self, forKey: .port));
     }
     
-    public func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self);
         try container.encode(proto.rawValue, forKey: .proto);
         try container.encode(host, forKey: .host);

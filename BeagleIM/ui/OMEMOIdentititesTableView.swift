@@ -30,7 +30,7 @@ open class OMEMOIdentitiesTableView: NSTableView, NSTableViewDataSource {
         }
     }
     
-    override open var dataSource: NSTableViewDataSource? {
+    override open var dataSource: (any NSTableViewDataSource)? {
         get {
             return self;
         }

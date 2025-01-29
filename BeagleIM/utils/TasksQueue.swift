@@ -60,7 +60,7 @@ import Martin
 public actor KeyedTasksQueue {
     typealias Job = @Sendable () async throws -> Void
     
-    private var queues: [BareJID: Task<Void,Error>] = [:]
+    private var queues: [BareJID: Task<Void,any Error>] = [:]
     
     func schedule(for key: BareJID, operation: @escaping Job) async throws {
         if let prevTask = queues[key] {

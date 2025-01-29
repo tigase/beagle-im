@@ -130,7 +130,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
     }
     override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
         super.prepare(for: segue, sender: sender)
-        if let channelAware = segue.destinationController as? ChannelAwareProtocol {
+        if let channelAware = segue.destinationController as? (any ChannelAwareProtocol) {
             channelAware.channel = self.channel;
         }
         if let controller = segue.destinationController as? ChannelParticipantsViewController {
@@ -314,7 +314,7 @@ class MixParticipantSuggestionItemView: SuggestionItemViewBase<MixParticipant> {
     
     struct Provider: SuggestionItemViewProvider {
         
-        func view(for item: Any) -> SuggestionItemView? {
+        func view(for item: Any) -> (any SuggestionItemView)? {
             guard item is MixParticipant else {
                 return nil;
             }

@@ -40,7 +40,7 @@ struct ConversationItem: ChatsListItemProtocol, ChatsListContactItemProtocol, Ha
         return JID(chat.jid);
     }
     
-    let chat: Conversation;
+    let chat: any Conversation;
     
     let timestamp: Date;
     
@@ -52,7 +52,7 @@ struct ConversationItem: ChatsListItemProtocol, ChatsListContactItemProtocol, Ha
 class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
     
     let name: String;
-    weak var delegate: ChatsListViewDataSourceDelegate?;
+    weak var delegate: (any ChatsListViewDataSourceDelegate)?;
     fileprivate var items: [ConversationItem] = [];
     let queue: DispatchQueue;
     
@@ -60,7 +60,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
     
     private var cancellables: Set<AnyCancellable> = [];
     
-    init(name: String, queue: DispatchQueue, delegate: ChatsListViewDataSourceDelegate, canOpenChat: Bool) {
+    init(name: String, queue: DispatchQueue, delegate: any ChatsListViewDataSourceDelegate, canOpenChat: Bool) {
         self.name = name;
         self.delegate = delegate;
         self.queue = queue;
@@ -71,7 +71,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         }).store(in: &cancellables);
     }
     
-    func update(items: [Conversation]) {
+    func update(items: [any Conversation]) {
         let newItems = items.filter(self.isAccepted(chat:)).map({ conversation in ConversationItem(chat: conversation, timestamp: conversation.timestamp) }).sorted(by: { (c1,c2) in c1.timestamp > c2.timestamp });
         let oldItems = self.items;
         
@@ -103,11 +103,11 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         return items.count;
     }
     
-    func getItem(at index: Int) -> ChatsListItemProtocol? {
+    func getItem(at index: Int) -> (any ChatsListItemProtocol)? {
         return items[index];
     }
     
-    func forChat(_ chat: Conversation, execute: @escaping (ConversationItem) -> Void) {
+    func forChat(_ chat: any Conversation, execute: @escaping (ConversationItem) -> Void) {
         self.queue.async {
             let items = self.items;
             guard let item = items.first(where: { (it) -> Bool in
@@ -133,7 +133,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         }
     }
 
-    func isAccepted(chat: Conversation) -> Bool {
+    func isAccepted(chat: any Conversation) -> Bool {
         return false;
     }
     

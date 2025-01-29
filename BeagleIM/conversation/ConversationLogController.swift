@@ -24,7 +24,7 @@ import Martin
 
 class ConversationLogController: AbstractConversationLogController, NSTableViewDelegate {
     
-    weak var contextMenuDelegate: ConversationLogContextMenuDelegate?;
+    weak var contextMenuDelegate: (any ConversationLogContextMenuDelegate)?;
     
     override func viewDidLoad() {
         super.viewDidLoad();

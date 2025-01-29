@@ -64,7 +64,7 @@ class DBOMEMOStore {
     
     private let logger = Logger(subsystem: "BeagleIM", category: "DBOMEMOStore");
         
-    func keyPair(forAccount account: BareJID) -> SignalIdentityKeyPairProtocol? {
+    func keyPair(forAccount account: BareJID) -> (any SignalIdentityKeyPairProtocol)? {
         guard let deviceId = localRegistrationId(forAccount: account) else {
             return nil;
         }
@@ -84,14 +84,14 @@ class DBOMEMOStore {
     }
     
     func identityFingerprint(forAccount account: BareJID, andAddress address: SignalAddress) -> String? {
-        let params: [String: Encodable?] = ["account": account, "name": address.name, "deviceId": address.deviceId];
+        let params: [String: (any Encodable)?] = ["account": account, "name": address.name, "deviceId": address.deviceId];
         return try! Database.main.reader({ database in
             return try database.select(query: .omemoIdentityFingerprintFind, params: params).first.flatMap({ $0.string(for: "fingerprint")});
         })
     }
     
     func identities(forAccount account: BareJID, andName name: String) -> [Identity] {
-        let params: [String: Encodable?] = ["account": account, "name": name];
+        let params: [String: (any Encodable)?] = ["account": account, "name": name];
         return try! Database.main.reader({ database in
             return try database.select(query: .omemoIdentityFind, params: params).compactMap({ cursor -> Identity? in
                 guard let fingerprint: String = cursor.string(for: "fingerprint"), let statusInt: Int = cursor.int(for: "status"), let status = IdentityStatus(rawValue: statusInt), let deviceId: Int32 = cursor.int32(for: "device_id"), let own: Int = cursor.int(for: "own"), let key: Data = cursor.data(for: "key") else {
@@ -106,7 +106,7 @@ class DBOMEMOStore {
         return AccountManager.account(for: account)?.omemoDeviceId;
     }
     
-    func save(identity: SignalAddress, key: SignalIdentityKeyProtocol?, forAccount account: BareJID, own: Bool = false) -> Bool {
+    func save(identity: SignalAddress, key: (any SignalIdentityKeyProtocol)?, forAccount account: BareJID, own: Bool = false) -> Bool {
         guard let key = key else {
             // should we remove this key?
             return false;
@@ -142,12 +142,12 @@ class DBOMEMOStore {
         
     private func save(identity: SignalAddress, fingerprint: String, own: Bool, data: Data?, forAccount account: BareJID) -> Bool {
         return try! Database.main.writer({ database -> Bool in
-            let paramsCount: [String: Encodable?] = ["account": account, "name": identity.name, "fingerprint": fingerprint];
+            let paramsCount: [String: (any Encodable)?] = ["account": account, "name": identity.name, "fingerprint": fingerprint];
             guard try database.count(query: .omemoKeyPairExists, params: paramsCount) == 0 else {
                 return true;
             }
             
-            var params: [String: Encodable?] = paramsCount;
+            var params: [String: (any Encodable)?] = paramsCount;
             params["deviceId"] = identity.deviceId;
             params["key"] = data;
             params["own"] = own ? 1 : 0;
@@ -242,7 +242,7 @@ class DBOMEMOStore {
     }
 
     func allDevices(forAccount account: BareJID, andName name: String, activeAndTrusted: Bool) -> [Int32] {
-        let params: [String: Encodable?] = ["account": account, "name": name];
+        let params: [String: (any Encodable)?] = ["account": account, "name": name];
         return try! Database.main.reader({ database in
             return try database.select(query: activeAndTrusted ? .omemoDevicesFindActiveAndTrusted : .omemoDevicesFind, params: params).compactMap({ $0.int32(for: "device_id") });
         })
@@ -287,7 +287,7 @@ class SignalIdentityKeyStore: SignalIdentityKeyStoreProtocol, ContextAware {
     
     weak var context: Context?;
     
-    func keyPair() -> SignalIdentityKeyPairProtocol? {
+    func keyPair() -> (any SignalIdentityKeyPairProtocol)? {
         return DBOMEMOStore.instance.keyPair(forAccount: context!.userBareJid);
     }
     
@@ -295,7 +295,7 @@ class SignalIdentityKeyStore: SignalIdentityKeyStoreProtocol, ContextAware {
         return DBOMEMOStore.instance.localRegistrationId(forAccount: context!.userBareJid) ?? 0;
     }
     
-    func save(identity: SignalAddress, key: SignalIdentityKeyProtocol?) -> Bool {
+    func save(identity: SignalAddress, key: (any SignalIdentityKeyProtocol)?) -> Bool {
         return DBOMEMOStore.instance.save(identity: identity, key: key, forAccount: context!.userBareJid, own: true)
     }
     
@@ -311,7 +311,7 @@ class SignalIdentityKeyStore: SignalIdentityKeyStoreProtocol, ContextAware {
         return DBOMEMOStore.instance.setStatus(active: active, forIdentity: forIdentity, andAccount: context!.userBareJid);
     }
 
-    func isTrusted(identity: SignalAddress, key: SignalIdentityKeyProtocol?) -> Bool {
+    func isTrusted(identity: SignalAddress, key: (any SignalIdentityKeyProtocol)?) -> Bool {
         return true;
     }
     

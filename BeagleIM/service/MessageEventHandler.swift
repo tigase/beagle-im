@@ -181,7 +181,7 @@ class MessageEventHandler: XmppServiceExtension {
             }
         }).store(in: &cancellables);
         client.module(.messageCarbons).carbonsPublisher.sink(receiveValue: { carbon in
-            let conversation: ConversationKey = DBChatStore.instance.conversation(for: account, with: carbon.jid.bareJid) ?? ConversationKeyItem(account: account, jid: carbon.jid.bareJid);
+            let conversation: any ConversationKey = DBChatStore.instance.conversation(for: account, with: carbon.jid.bareJid) ?? ConversationKeyItem(account: account, jid: carbon.jid.bareJid);
                         
             DBChatHistoryStore.instance.append(for: conversation, message: carbon.message, source: .carbons(action: carbon.action));
         }).store(in: &cancellables);
@@ -219,7 +219,7 @@ class MessageEventHandler: XmppServiceExtension {
     private class ReadMarkersQueue {
         private var queue: [Item] = [];
         
-        func add(for conversation: ConversationKey, timestamp: Date, stanzaId: String) {
+        func add(for conversation: any ConversationKey, timestamp: Date, stanzaId: String) {
             if let idx = queue.firstIndex(where: { $0.conversation.account == conversation.account && $0.conversation.jid == $0.conversation.jid }) {
                 guard queue[idx].timestamp <= timestamp else {
                     return;
@@ -231,16 +231,16 @@ class MessageEventHandler: XmppServiceExtension {
         
         func sendQueued() {
             for item in queue {
-                (item.conversation as? Conversation)?.sendChatMarker(.received(id: item.stanzaId), andDeliveryReceipt: false);
+                (item.conversation as? (any Conversation))?.sendChatMarker(.received(id: item.stanzaId), andDeliveryReceipt: false);
             }
         }
         
-        func cancelReceived(for conversation: ConversationKey, before: Date) {
+        func cancelReceived(for conversation: any ConversationKey, before: Date) {
             queue = queue.filter({ $0.conversation.account != conversation.account || $0.conversation.jid != conversation.jid || $0.timestamp >= before });
         }
         
         struct Item {
-            let conversation: ConversationKey;
+            let conversation: any ConversationKey;
             let timestamp: Date;
             let stanzaId: String;
         }
@@ -254,8 +254,8 @@ class MessageEventHandler: XmppServiceExtension {
     }
     
     // FIXME: maybe this could be done on a separate thread?
-    func sendReceived(for conversation: ConversationKey, timestamp: Date, stanzaId: String, receipts: [ReceiptType]) {
-        guard !receipts.isEmpty, let conv = (conversation as? Conversation) ?? DBChatStore.instance.conversation(for: conversation.account,    with: conversation.jid) else {
+    func sendReceived(for conversation: any ConversationKey, timestamp: Date, stanzaId: String, receipts: [ReceiptType]) {
+        guard !receipts.isEmpty, let conv = (conversation as? (any Conversation)) ?? DBChatStore.instance.conversation(for: conversation.account,    with: conversation.jid) else {
             return;
         }
 
@@ -270,7 +270,7 @@ class MessageEventHandler: XmppServiceExtension {
         }
     }
     
-    func cancelReceived(for conv: ConversationKey, before: Date) {
+    func cancelReceived(for conv: any ConversationKey, before: Date) {
         guard let queue = readMarkersToSendQueue[.init(account: conv.account, jid: conv.jid)] ?? readMarkersToSendQueue[.init(account: conv.account, jid: nil)] else {
             return;
         }
@@ -288,7 +288,7 @@ class MessageEventHandler: XmppServiceExtension {
         }
     }
     
-    static func conversationKey(for message: Message, on account: BareJID) -> ConversationKey? {
+    static func conversationKey(for message: Message, on account: BareJID) -> (any ConversationKey)? {
         guard let from = message.from?.bareJid, let to = message.to?.bareJid else {
             return nil;
         }
@@ -298,7 +298,7 @@ class MessageEventHandler: XmppServiceExtension {
         return DBChatStore.instance.conversation(for: account, with: jid) ?? ConversationKeyItem(account: account, jid: jid);
     }
 
-    static func calculateDirection(for conversation: ConversationKey, direction: MessageDirection, sender: ConversationEntrySender) -> MessageDirection {
+    static func calculateDirection(for conversation: any ConversationKey, direction: MessageDirection, sender: ConversationEntrySender) -> MessageDirection {
         switch sender {
         case .none:
             assert(false, "Cannot calculate direction for sender `.none`")
@@ -442,7 +442,7 @@ class MessageEventHandler: XmppServiceExtension {
         }
     }
 
-    static func extractRealAuthor(from message: Message, for conversation: ConversationKey) -> (ConversationEntrySender,ConversationEntryRecipient)? {
+    static func extractRealAuthor(from message: Message, for conversation: any ConversationKey) -> (ConversationEntrySender,ConversationEntryRecipient)? {
         if message.type == .groupchat {
             if let mix = message.mix {
                 if let id = message.from?.resource, let nickname = mix.nickname {

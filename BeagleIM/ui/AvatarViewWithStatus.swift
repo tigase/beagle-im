@@ -47,7 +47,7 @@ class AvatarViewWithStatus: NSView {
     
     private var cancellables: Set<AnyCancellable> = [];
     
-    var displayableId: DisplayableIdProtocol? {
+    var displayableId: (any DisplayableIdProtocol)? {
         didSet {
             cancellables.removeAll();
             if let namePublisher = displayableId?.displayNamePublisher, let avatarPublisher = displayableId?.avatarPublisher {

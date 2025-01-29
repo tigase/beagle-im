@@ -38,7 +38,7 @@ public struct ChatInvitationAppendix: AppendixProtocol, Hashable, Sendable {
         token = mixInvitation.token;
     }
     
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self);
         type = InvitationType(rawValue: try container.decode(Int.self, forKey: .type))!;
         inviter = try container.decode(BareJID.self, forKey: .inveter);
@@ -47,7 +47,7 @@ public struct ChatInvitationAppendix: AppendixProtocol, Hashable, Sendable {
         token = try container.decodeIfPresent(String.self, forKey: .token);
     }
     
-    public func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self);
         try container.encode(type.rawValue, forKey: .type);
         try container.encode(inviter, forKey: .inveter);

@@ -24,14 +24,14 @@ import Martin
 
 extension NSViewController {
     
-    func showError(message: String, error: Error) {
+    func showError(message: String, error: any Error) {
         guard let window = self.view.window else {
             return;
         }
         let alert = NSAlert();
         alert.alertStyle = .warning;
         alert.messageText = message;
-        alert.informativeText = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription;
+        alert.informativeText = (error as? (any LocalizedError))?.errorDescription ?? error.localizedDescription;
         alert.icon = NSImage(named: NSImage.cautionName);
         alert.addButton(withTitle: "OK");
         alert.beginSheetModal(for: window);

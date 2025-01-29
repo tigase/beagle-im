@@ -188,7 +188,7 @@ class ChannelParticipantsViewController: NSViewController, NSTableViewDelegate, 
     }
     
     override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
-        if let channelAware = segue.destinationController as? ChannelAwareProtocol {
+        if let channelAware = segue.destinationController as? (any ChannelAwareProtocol) {
             channelAware.channel = channel;
         }
     }

@@ -39,7 +39,7 @@ public struct ChannelOptions: Codable, ChatOptionsProtocol, Equatable {
         self.state = state;
     }
     
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self);
         participantId = try container.decode(String.self, forKey: .participantId);
         state = try container.decodeIfPresent(Int.self, forKey: .state).map({ ChannelState(rawValue: $0) ?? .joined }) ?? .joined;
@@ -51,7 +51,7 @@ public struct ChannelOptions: Codable, ChatOptionsProtocol, Equatable {
         confirmMessages = try container.decodeIfPresent(Bool.self, forKey: .confirmMessages) ?? true;
     }
     
-    public func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self);
         try container.encode(participantId, forKey: .participantId);
         try container.encode(state.rawValue, forKey: .state);
@@ -65,7 +65,7 @@ public struct ChannelOptions: Codable, ChatOptionsProtocol, Equatable {
         try container.encode(confirmMessages, forKey: .confirmMessages);
     }
     
-    public func equals(_ options: ChatOptionsProtocol) -> Bool {
+    public func equals(_ options: any ChatOptionsProtocol) -> Bool {
         guard let options = options as? ChannelOptions else {
             return false;
         }

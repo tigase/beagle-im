@@ -27,7 +27,7 @@ import os
 
 protocol ConversationDataSourceDelegate: AnyObject {
     
-    var conversation: Conversation! { get }
+    var conversation: (any Conversation)! { get }
     
     func beginUpdates();
     
@@ -52,7 +52,7 @@ protocol ConversationDataSourceDelegate: AnyObject {
 
 extension ConversationDataSourceDelegate {
 
-    func update(_ block: (ConversationDataSourceDelegate)->Void) {
+    func update(_ block: (any ConversationDataSourceDelegate)->Void) {
         beginUpdates();
         block(self);
         endUpdates();
@@ -87,7 +87,7 @@ class ConversationDataSource {
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ConversationDataSource");
     private let queue = DispatchQueue(label: "chat_datasource");
     
-    weak var delegate: ConversationDataSourceDelegate? {
+    weak var delegate: (any ConversationDataSourceDelegate)? {
         didSet {
             delegate?.conversation.markersPublisher.receive(on: self.queue).sink(receiveValue: { [weak self] markers in
                 self?.update(markers: markers);
@@ -131,7 +131,7 @@ class ConversationDataSource {
         guard let conversation = delegate?.conversation else {
             return;
         }
-        guard conversation.id == (item.conversation as? Conversation)?.id else {
+        guard conversation.id == (item.conversation as? (any Conversation))?.id else {
             return;
         }
         
@@ -145,7 +145,7 @@ class ConversationDataSource {
         guard let conversation = delegate?.conversation else {
             return;
         }
-        guard conversation.id == (item.conversation as? Conversation)?.id else {
+        guard conversation.id == (item.conversation as? (any Conversation))?.id else {
             return;
         }
         
@@ -159,7 +159,7 @@ class ConversationDataSource {
         guard let conversation = delegate?.conversation else {
             return;
         }
-        guard conversation.id == (item.conversation as? Conversation)?.id else {
+        guard conversation.id == (item.conversation as? (any Conversation))?.id else {
             return;
         }
         remove(item: item);

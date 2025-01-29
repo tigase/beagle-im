@@ -43,13 +43,13 @@ open class DBChatStore: ContextLifecycleAware {
     
     let accountsConversations = Conversations();
     
-    public var conversations: [Conversation] {
+    public var conversations: [any Conversation] {
         return queue.sync(execute: {
             return accountsConversations.items;
         })
     }
     
-    public var conversationsPublisher: Published<[Conversation]>.Publisher {
+    public var conversationsPublisher: Published<[any Conversation]>.Publisher {
         return accountsConversations.$items;
     }
     
@@ -65,19 +65,19 @@ open class DBChatStore: ContextLifecycleAware {
         self.queue = DispatchQueue(label: "db_chat_store");
     }
     
-    public func conversations(for account: BareJID) -> [Conversation] {
+    public func conversations(for account: BareJID) -> [any Conversation] {
         return queue.sync(execute: {
             return accountsConversations.conversations(for: account);
         }) ?? [];
     }
     
-    public func conversation(for account: BareJID, with jid: BareJID) -> Conversation? {
+    public func conversation(for account: BareJID, with jid: BareJID) -> (any Conversation)? {
         return queue.sync(execute: {
             return accountsConversations.conversation(for: account, with: jid);
         });
     }
     
-    public func close(conversation: Conversation) -> Bool {
+    public func close(conversation: any Conversation) -> Bool {
         return queue.sync {
             guard accountsConversations.remove(conversation) else {
                 return false
@@ -98,7 +98,7 @@ open class DBChatStore: ContextLifecycleAware {
         }
     }
 
-    func convert<T: Conversation>(items: [Conversation]) -> [T] {
+    func convert<T: Conversation>(items: [any Conversation]) -> [T] {
         return items.filter({ $0 is T }).map({ $0 as! T});
     }
     
@@ -110,8 +110,8 @@ open class DBChatStore: ContextLifecycleAware {
         unloadChats(for: context.userBareJid);
     }
 
-    func openConversation(account: BareJID, jid: BareJID, type: ConversationType, timestamp: Date = Date(), options: ChatOptionsProtocol?) throws -> Int {
-        let params: [String: Encodable?] = [ "account": account, "jid": jid, "timestamp": Date(), "type": type.rawValue, "options": options];
+    func openConversation(account: BareJID, jid: BareJID, type: ConversationType, timestamp: Date = Date(), options: (any ChatOptionsProtocol)?) throws -> Int {
+        let params: [String: (any Encodable)?] = [ "account": account, "jid": jid, "timestamp": Date(), "type": type.rawValue, "options": options];
         return try Database.main.writer({ database in
             try database.insert(query: .chatInsert, params: params);
             return database.lastInsertedId;
@@ -128,7 +128,7 @@ open class DBChatStore: ContextLifecycleAware {
         }
     }
 
-    func isMuted(conversation: Conversation) -> Bool {
+    func isMuted(conversation: any Conversation) -> Bool {
         return conversation.notifications == .none;
     }
 
@@ -197,7 +197,7 @@ open class DBChatStore: ContextLifecycleAware {
             }
 
             let conversations = try! Database.main.reader({ database in
-                return try database.select(query: .chatFindAllForAccount, params: ["account": account]).compactMap({ cursor -> Conversation? in
+                return try database.select(query: .chatFindAllForAccount, params: ["account": account]).compactMap({ cursor -> (any Conversation)? in
                     guard let type = ConversationType(rawValue: cursor.int(for: "type") ?? -1) else {
                         return nil;
                     }
@@ -250,7 +250,7 @@ open class DBChatStore: ContextLifecycleAware {
         return nil;
     }
 
-    open func update(options: ChatOptionsProtocol, for conversation: Conversation) {
+    open func update(options: any ChatOptionsProtocol, for conversation: any Conversation) {
         let notificationChange = calculateChange(conversation.notifications, options.notifications);
         queue.async {
             try! Database.main.writer({ database in
@@ -264,14 +264,14 @@ open class DBChatStore: ContextLifecycleAware {
     }
     
     public enum ConversationEvent {
-        case created(Conversation)
-        case destroyed(Conversation)
+        case created(any Conversation)
+        case destroyed(any Conversation)
     }
     
     final class Conversations {
 
         @Published
-        public private(set) var items: [Conversation] = [];
+        public private(set) var items: [any Conversation] = [];
         public let conversationsEventsPublisher = PassthroughSubject<ConversationEvent,Never>();
 
         @Published
@@ -279,11 +279,11 @@ open class DBChatStore: ContextLifecycleAware {
         
         private var accountChats = [BareJID: AccountConversations]();
 
-        public func conversations(for account: BareJID) -> [Conversation]? {
+        public func conversations(for account: BareJID) -> [any Conversation]? {
             return accountChats[account]?.items;
         }
         
-        public func conversation(for account: BareJID, with jid: BareJID) -> Conversation? {
+        public func conversation(for account: BareJID, with jid: BareJID) -> (any Conversation)? {
             return accountChats[account]?.get(with: jid);
         }
         
@@ -305,7 +305,7 @@ open class DBChatStore: ContextLifecycleAware {
             unreadMessagesCount = max(unreadMessagesCount - removed.filter({ !$0.isMuted }).map({ $0.unread }).reduce(0, +), 0);
         }
         
-        public func add(_ conversation: Conversation) -> Bool {
+        public func add(_ conversation: any Conversation) -> Bool {
             guard let conversations = accountChats[conversation.account] else {
                 return false;
             }
@@ -317,7 +317,7 @@ open class DBChatStore: ContextLifecycleAware {
             return true;
         }
         
-        public func remove(_ conversation: Conversation) -> Bool {
+        public func remove(_ conversation: any Conversation) -> Bool {
             guard let conversations = accountChats[conversation.account] else {
                 return false;
             }
@@ -332,7 +332,7 @@ open class DBChatStore: ContextLifecycleAware {
             return true;
         }
         
-        public func newActivity(_ activity: LastChatActivity, isUnread: Bool, for conversation: Conversation) {
+        public func newActivity(_ activity: LastChatActivity, isUnread: Bool, for conversation: any Conversation) {
             let updated = conversation.update(lastActivity: activity, isUnread: isUnread);
             if isUnread && !conversation.isMuted {
                 unreadMessagesCount = unreadMessagesCount + 1;
@@ -346,13 +346,13 @@ open class DBChatStore: ContextLifecycleAware {
             }
         }
         
-        public func markAsRead(_ count: Int, in conversation: Conversation) {
+        public func markAsRead(_ count: Int, in conversation: any Conversation) {
             if conversation.markAsRead(count: count) && !conversation.isMuted {
                 unreadMessagesCount = max(self.unreadMessagesCount - count, 0);
             }
         }
         
-        public func muteChanged(for conversation: Conversation) {
+        public func muteChanged(for conversation: any Conversation) {
             if conversation.isMuted {
                 unreadMessagesCount = max(self.unreadMessagesCount - conversation.unread, 0);
             } else {

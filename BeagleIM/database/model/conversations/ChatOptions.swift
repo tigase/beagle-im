@@ -29,7 +29,7 @@ public struct ChatOptions: Codable, ConversationOptionsProtocol, Equatable {
     
     public init() {}
     
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self);
         if let val = try container.decodeIfPresent(String.self, forKey: .encryption) {
             encryption = ChatEncryption(rawValue: val);
@@ -38,7 +38,7 @@ public struct ChatOptions: Codable, ConversationOptionsProtocol, Equatable {
         confirmMessages = try container.decodeIfPresent(Bool.self, forKey: .confirmMessages) ?? true;
     }
     
-    public func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self);
         if encryption != nil {
             try container.encode(encryption!.rawValue, forKey: .encryption);
@@ -49,7 +49,7 @@ public struct ChatOptions: Codable, ConversationOptionsProtocol, Equatable {
         try container.encode(confirmMessages, forKey: .confirmMessages);
     }
     
-    public func equals(_ options: ChatOptionsProtocol) -> Bool {
+    public func equals(_ options: any ChatOptionsProtocol) -> Bool {
         guard let options = options as? ChatOptions else {
             return false;
         }

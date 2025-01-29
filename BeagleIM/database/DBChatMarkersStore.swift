@@ -34,7 +34,7 @@ public class DBChatMarkersStore {
     
     public static let instance = DBChatMarkersStore();
     
-    private func queryParams(conversation: ConversationKey, sender: ConversationEntrySender) -> [String: Encodable?]? {
+    private func queryParams(conversation: any ConversationKey, sender: ConversationEntrySender) -> [String: (any Encodable)?]? {
         switch sender {
         case .none, .channel:
             return nil;
@@ -60,7 +60,7 @@ public class DBChatMarkersStore {
             queue.append(.init(sender: sender, id: id, type: type));
         }
         
-        func replayQueue(for conversation: ConversationKey) {
+        func replayQueue(for conversation: any ConversationKey) {
             for item in queue {
                 DBChatMarkersStore.instance.mark(conversation: conversation, before: item.id, as: item.type, by: item.sender, enqueueIfMessageNotFound: false);
             }
@@ -87,7 +87,7 @@ public class DBChatMarkersStore {
         }
     }
     
-    private func findItemId(for conversation: ConversationKey, id: String, sender: ConversationEntrySender) -> Int? {
+    private func findItemId(for conversation: any ConversationKey, id: String, sender: ConversationEntrySender) -> Int? {
         if sender.isGroupchat {
             if let itemId = DBChatHistoryStore.instance.findItemId(for: conversation, remoteMsgId: id) {
                 return itemId;
@@ -97,7 +97,7 @@ public class DBChatMarkersStore {
         return DBChatHistoryStore.instance.findItemId(for: conversation, originId: id, sender: .none);
     }
     
-    public func mark(conversation: ConversationKey, before id: String, as type: ChatMarker.MarkerType, by sender: ConversationEntrySender, enqueueIfMessageNotFound: Bool = true) {
+    public func mark(conversation: any ConversationKey, before id: String, as type: ChatMarker.MarkerType, by sender: ConversationEntrySender, enqueueIfMessageNotFound: Bool = true) {
         guard var params = queryParams(conversation: conversation, sender: sender) else {
             return;
         }
@@ -146,7 +146,7 @@ public class DBChatMarkersStore {
             })
         }
         
-        if let conv = (conversation as? Conversation) ?? DBChatStore.instance.conversation(for: conversation.account, with: conversation.jid) {
+        if let conv = (conversation as? (any Conversation)) ?? DBChatStore.instance.conversation(for: conversation.account, with: conversation.jid) {
             conv.mark(as: type, before: message.timestamp, by: sender);
             if conv.isLocal(sender: sender) {
                 if type == .displayed {
@@ -157,13 +157,13 @@ public class DBChatMarkersStore {
         }
     }
     
-    public func markers(for conversation: ConversationKey) -> [ChatMarker] {
+    public func markers(for conversation: any ConversationKey) -> [ChatMarker] {
        return try! Database.main.reader({ database in
             try database.select(query: .markersList, params: ["account": conversation.account, "jid": conversation.jid]).compactMap({ self.charMarker(fromCursor: $0, conversation: conversation)});
        });
     }
     
-    private func charMarker(fromCursor c: Row, conversation: ConversationKey) -> ChatMarker? {
+    private func charMarker(fromCursor c: Row, conversation: any ConversationKey) -> ChatMarker? {
         guard let type = ChatMarker.MarkerType(rawValue: c.int(for: "type")!), let timestamp = c.date(for: "timestamp"), let jidStr = c.string(for: "sender_jid"), let nick = c.string(for: "sender_nick"), let id = c.string(for: "sender_id") else {
             return nil;
         }

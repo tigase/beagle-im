@@ -125,7 +125,7 @@ open class DBRosterStore: RosterStore {
         let data = DBRosterData(groups: groups, annotations: annotations);
         queue.sync {
             guard let item = self.accountRosters[account]?.item(for: jid) else {
-                let params: [String: Encodable?] = ["account": account, "jid": jid, "name": name, "subscription": subscription.rawValue, "timestamp": Date(), "ask": ask, "data": data];
+                let params: [String: (any Encodable)?] = ["account": account, "jid": jid, "name": name, "subscription": subscription.rawValue, "timestamp": Date(), "ask": ask, "data": data];
                 
                 let id = try! Database.main.writer({ database -> Int? in
                     try database.insert(query: .rosterInsertItem, params: params);
@@ -138,7 +138,7 @@ open class DBRosterStore: RosterStore {
                 return;
             }
 
-            let params: [String: Encodable?] = ["id": item.id, "name": name, "subscription": subscription.rawValue, "timestamp": Date(), "ask": ask, "data": data];
+            let params: [String: (any Encodable)?] = ["id": item.id, "name": name, "subscription": subscription.rawValue, "timestamp": Date(), "ask": ask, "data": data];
             try! Database.main.writer({ database in
                 try database.update(query: .rosterUpdateItem, params: params);
             })

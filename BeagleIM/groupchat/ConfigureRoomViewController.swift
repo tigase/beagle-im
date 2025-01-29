@@ -69,7 +69,7 @@ class ConfigureRoomViewController: NSViewController {
         }
         
         progressIndicator.startAnimation(nil);
-        var tasks: [Task<Void,Error>] = [
+        var tasks: [Task<Void,any Error>] = [
             Task {
                 do {
                     let config = try await mucModule.roomConfiguration(of:  JID(roomJid == nil ? mucComponent : roomJid!));
@@ -157,7 +157,7 @@ class ConfigureRoomViewController: NSViewController {
         
         progressIndicator.startAnimation(nil);
 
-        var tasks: [Task<Void,Error>] = [];
+        var tasks: [Task<Void,any Error>] = [];
                 
         let roomJid = self.roomJid!;
         

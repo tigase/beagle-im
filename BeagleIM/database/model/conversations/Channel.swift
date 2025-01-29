@@ -43,7 +43,7 @@ public class Channel: ConversationBaseWithOptions<ChannelOptions>, ChannelProtoc
         return $permissions.compactMap({ $0 }).eraseToAnyPublisher();
     }
 
-    private let participantsStore: MixParticipantsProtocol = MixParticipantsBase();
+    private let participantsStore: any MixParticipantsProtocol = MixParticipantsBase();
     
     public func update(state: ChannelState) {
         updateOptions({ options in

@@ -26,7 +26,7 @@ class ChatsListSuggestionItemView: SuggestionItemViewBase<ContactSuggestionField
     
     struct Provider: SuggestionItemViewProvider {
         
-        func view(for item: Any) -> SuggestionItemView? {
+        func view(for item: Any) -> (any SuggestionItemView)? {
             guard item is ContactSuggestionField.Item else {
                 return nil;
             }

@@ -41,7 +41,7 @@ public struct RoomOptions: Codable, ChatOptionsProtocol, Equatable {
         nickname = "";
     }
     
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self);
         encryption = try container.decodeIfPresent(String.self, forKey: .encryption).flatMap(ChatEncryption.init(rawValue: ));
         name = try container.decodeIfPresent(String.self, forKey: .name)
@@ -51,7 +51,7 @@ public struct RoomOptions: Codable, ChatOptionsProtocol, Equatable {
         confirmMessages = try container.decodeIfPresent(Bool.self, forKey: .confirmMessages) ?? true;
     }
     
-    public func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self);
         try container.encodeIfPresent(encryption?.rawValue, forKey: .encryption);
         try container.encodeIfPresent(name, forKey: .name);
@@ -63,7 +63,7 @@ public struct RoomOptions: Codable, ChatOptionsProtocol, Equatable {
         try container.encode(confirmMessages, forKey: .confirmMessages)
     }
      
-    public func equals(_ options: ChatOptionsProtocol) -> Bool {
+    public func equals(_ options: any ChatOptionsProtocol) -> Bool {
         guard let options = options as? RoomOptions else {
             return false;
         }

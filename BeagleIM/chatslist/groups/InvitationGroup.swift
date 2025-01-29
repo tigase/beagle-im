@@ -47,11 +47,11 @@ class InvitationGroup: ChatsListGroupProtocol {
         }).store(in: &cancellables);
     }
     
-    func getItem(at: Int) -> ChatsListItemProtocol? {
+    func getItem(at: Int) -> (any ChatsListItemProtocol)? {
         return items[at];
     }
     
-    func forChat(_ chat: Conversation, execute: @escaping (ConversationItem) -> Void) {
+    func forChat(_ chat: any Conversation, execute: @escaping (ConversationItem) -> Void) {
         // nothing to do...
     }
     

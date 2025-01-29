@@ -28,7 +28,7 @@ class AbstractConversationLogController: NSViewController, NSTableViewDataSource
     @IBOutlet var tableView: NSTableView!;
     
     let dataSource = ConversationDataSource();
-    var conversation: Conversation!;
+    var conversation: (any Conversation)!;
     
     private let newestVisibleDateSubject = PassthroughSubject<Date,Never>();
     

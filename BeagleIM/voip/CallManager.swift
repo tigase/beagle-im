@@ -114,7 +114,7 @@ class Call: NSObject, JingleSessionActionDelegate, @unchecked Sendable {
     
     private(set) var currentConnection: RTCPeerConnection?;
     
-    weak var delegate: CallDelegate? {
+    weak var delegate: (any CallDelegate)? {
         didSet {
             delegate?.callDidStart(self);
         }
@@ -216,7 +216,7 @@ class Call: NSObject, JingleSessionActionDelegate, @unchecked Sendable {
     private(set) var localVideoSource: RTCVideoSource?;
     private(set) var localVideoTrack: RTCVideoTrack?;
     private(set) var localAudioTrack: RTCAudioTrack?;
-    private(set) var localCapturer: VideoCapturer?;
+    private(set) var localCapturer: (any VideoCapturer)?;
     
     private var cancellables: Set<AnyCancellable> = [];
     
@@ -541,7 +541,7 @@ class Call: NSObject, JingleSessionActionDelegate, @unchecked Sendable {
         }
     }
     
-    func startVideoCapturer(device: VideoCaptureDevice, completionHandler: @escaping (Result<Void,Error>)->Void) {
+    func startVideoCapturer(device: VideoCaptureDevice, completionHandler: @escaping (Result<Void,any Error>)->Void) {
         guard let localVideoSource = localVideoSource else {
             return
         }

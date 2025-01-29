@@ -28,7 +28,7 @@ public protocol ConversationOptionsProtocol: Codable, DatabaseConvertibleStringV
     
     var confirmMessages: Bool { get }
     
-    func equals(_ options: ChatOptionsProtocol) -> Bool
+    func equals(_ options: any ChatOptionsProtocol) -> Bool
 }
 
 public typealias ChatOptionsProtocol = ConversationOptionsProtocol

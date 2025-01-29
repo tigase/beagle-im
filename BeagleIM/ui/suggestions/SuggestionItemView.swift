@@ -22,7 +22,7 @@
 import AppKit
 
 protocol SuggestionItemViewProvider {
-    func view(for: Any) -> SuggestionItemView?;
+    func view(for: Any) -> (any SuggestionItemView)?;
 }
 
 protocol SuggestionItemView: AnyObject {

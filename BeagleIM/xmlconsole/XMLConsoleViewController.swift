@@ -32,7 +32,7 @@ class XMLConsoleViewController: NSViewController, StreamLogger {
                 client.streamLogger = nil;
                 return;
             }
-            client.streamLogger = window.contentViewController as? StreamLogger;
+            client.streamLogger = window.contentViewController as? (any StreamLogger);
         }
     }
     

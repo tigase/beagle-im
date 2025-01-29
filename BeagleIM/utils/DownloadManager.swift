@@ -202,7 +202,7 @@ class DownloadManager: NSObject {
             completionHandler(.success((location, filename)));
         }
 
-        func completed(withError error: Error?) {
+        func completed(withError error: (any Error)?) {
             guard let err = error else {
                 completionHandler(.failure(.responseError(statusCode: 500)));
                 return;
@@ -221,7 +221,7 @@ class DownloadManager: NSObject {
     }
 
     enum DownloadError: Error {
-        case networkError(error: Error)
+        case networkError(error: any Error)
         case responseError(statusCode: Int)
         case tooBig(size: Int64, mimeType: String?, filename: String?)
         case badMimeType(mimeType: String?)
@@ -261,7 +261,7 @@ extension DownloadManager: URLSessionDownloadDelegate {
         }
     }
     
-    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: (any Error)?) {
         guard let downloadTask = task as? URLSessionDownloadTask, let item = queue.sync(execute: {
             return self.inProgress.removeValue(forKey: downloadTask);
         }) else {

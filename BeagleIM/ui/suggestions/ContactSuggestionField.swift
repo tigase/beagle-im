@@ -69,11 +69,11 @@ class ContactSuggestionField: NSSearchField, NSSearchFieldDelegate {
         } else {
             let query = self.stringValue.lowercased();
             
-            let conversations: [DisplayableIdWithKeyProtocol] = DBChatStore.instance.conversations.filter({ $0.displayName.lowercased().contains(query) || $0.jid.localPart?.lowercased().contains(query) ?? false || $0.jid.domain.lowercased().contains(query) });
+            let conversations: [any DisplayableIdWithKeyProtocol] = DBChatStore.instance.conversations.filter({ $0.displayName.lowercased().contains(query) || $0.jid.localPart?.lowercased().contains(query) ?? false || $0.jid.domain.lowercased().contains(query) });
 
             var keys = Set(conversations.map({ Contact.Key(account: $0.account, jid: $0.jid, type: .buddy) }));
             
-            let contacts: [DisplayableIdWithKeyProtocol] = DBRosterStore.instance.items.filter({ $0.name?.lowercased().contains(query) ?? false || $0.jid.localPart?.lowercased().contains(query) ?? false || $0.jid.domain.lowercased().contains(query) }).compactMap({ item -> Contact? in
+            let contacts: [any DisplayableIdWithKeyProtocol] = DBRosterStore.instance.items.filter({ $0.name?.lowercased().contains(query) ?? false || $0.jid.localPart?.lowercased().contains(query) ?? false || $0.jid.domain.lowercased().contains(query) }).compactMap({ item -> Contact? in
                 guard let account = item.context?.userBareJid, !keys.contains(.init(account: account, jid: item.jid.bareJid, type: .buddy)) else {
                     return nil;
                 }
@@ -139,7 +139,7 @@ class ContactSuggestionField: NSSearchField, NSSearchFieldDelegate {
         let jid: BareJID;
         let account: BareJID?;
         let name: String;
-        let displayableId: DisplayableIdProtocol?;
+        let displayableId: (any DisplayableIdProtocol)?;
     }
 
 }

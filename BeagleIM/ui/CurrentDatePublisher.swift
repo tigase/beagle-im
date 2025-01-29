@@ -24,7 +24,7 @@ import Combine
 
 struct CurrentTimePublisher {
     
-    private static var cancellable: Cancellable?;
+    private static var cancellable: (any Cancellable)?;
     public private(set) static var publisher: AnyPublisher<Date,Never> = {
         let publisher = CurrentValueSubject<Date,Never>(Date());
         cancellable = Timer.publish(every: 30, on: .main, in: .default).autoconnect().assign(to: \.value, on: publisher);

@@ -232,7 +232,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
         super.viewWillDisappear();
     }
     
-    func videoView(_ videoView: RTCVideoRenderer, didChangeVideoSize size: CGSize) {
+    func videoView(_ videoView: any RTCVideoRenderer, didChangeVideoSize size: CGSize) {
         DispatchQueue.main.async {
             if videoView === self.localVideoView! {
                 self.localVideoViewAspect?.isActive = false;
@@ -412,7 +412,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
     
     static let publicStunServers: [RTCIceServer] = [ RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:stun2.l.google.com:19302","stun:stun3.l.google.com:19302","stun:stun4.l.google.com:19302"]), RTCIceServer(urlStrings: ["stun:stunserver.org:3478" ]) ];
     
-    static func initiatePeerConnection(iceServers foundIceServers: [RTCIceServer], withDelegate delegate: RTCPeerConnectionDelegate) -> RTCPeerConnection? {
+    static func initiatePeerConnection(iceServers foundIceServers: [RTCIceServer], withDelegate delegate: any RTCPeerConnectionDelegate) -> RTCPeerConnection? {
         let configuration = RTCConfiguration();
         configuration.sdpSemantics = .unifiedPlan;
         

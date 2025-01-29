@@ -188,7 +188,7 @@ class MucEventHandler: XmppServiceExtension {
 
 class CustomMucModule: MucModule, @unchecked Sendable {
     
-    override func join(room: RoomProtocol, fetchHistory: RoomHistoryFetch) async throws -> RoomJoinResult {
+    override func join(room: any RoomProtocol, fetchHistory: RoomHistoryFetch) async throws -> RoomJoinResult {
         let result = try await super.join(room: room, fetchHistory: fetchHistory);
         Task {
             try await MucEventHandler.instance.updateRoomName(room: room as! Room);

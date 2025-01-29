@@ -39,7 +39,7 @@ class SharingTaskManager: @unchecked Sendable {
         return UTTypeCopyPreferredTagWithClass(uti as CFString, kUTTagClassMIMEType)?.takeRetainedValue() as String?;
     }
     
-    func progressUpdated(for conversation: Conversation) {
+    func progressUpdated(for conversation: any Conversation) {
         dispatcher.async {
             let tasks = self.tasks.filter({ $0.conversation.id == conversation.id });
             guard !tasks.isEmpty else {
@@ -81,7 +81,7 @@ class SharingTaskManager: @unchecked Sendable {
         }
     }
     
-    func share(conversation: Conversation, items: [ShareItem], quality: Quality) async throws {
+    func share(conversation: any Conversation, items: [ShareItem], quality: Quality) async throws {
         guard let mainWindow = await ((await NSApplication.shared.delegate) as! AppDelegate).mainWindowController?.window else {
             return;
         }
@@ -106,7 +106,7 @@ class SharingTaskManager: @unchecked Sendable {
         }
     }
     
-    func show(error: Error, window: NSWindow) {
+    func show(error: any Error, window: NSWindow) {
         DispatchQueue.main.async {
             let alert = NSAlert();
             alert.icon = NSImage(named: NSImage.cautionName);
@@ -118,7 +118,7 @@ class SharingTaskManager: @unchecked Sendable {
         }
     }
     
-    private func share(conversation: Conversation, url: URL, task: SharingTask2) async throws {
+    private func share(conversation: any Conversation, url: URL, task: SharingTask2) async throws {
         switch ShareItem.MediaType.from(mimeType: SharingTaskManager.guessContentType(of: url)) {
         case .image:
             let (compressedUrl, filename) = try MediaHelper.compressImage(url: url, quality: task.imageQuality);
@@ -159,7 +159,7 @@ class SharingTaskManager: @unchecked Sendable {
         try await task.conversation.sendAttachment(url: (preparedAttachment.prepareShareURL?(uploadedUrl) ?? uploadedUrl).absoluteString, appendix: appendix, originalUrl: url);
     }
     
-    private func uploadFileToHttpServer(conversation: Conversation, fileUrl: URL, filename: String, mimeType: String?, delegate: URLSessionDelegate) async throws -> URL {
+    private func uploadFileToHttpServer(conversation: any Conversation, fileUrl: URL, filename: String, mimeType: String?, delegate: any URLSessionDelegate) async throws -> URL {
         guard let context = conversation.context else {
             throw ShareError.noAccessError;
         }
@@ -248,13 +248,13 @@ class SharingTaskManager: @unchecked Sendable {
     
     class SharingTask2: NSObject, Identifiable, URLSessionDelegate {
         let id = UUID();
-        let conversation: Conversation;
+        let conversation: any Conversation;
         var progress: Double = 0;
         let imageQuality: ImageQuality;
         let videoQuality: VideoQuality;
         var filename: String?;
         
-        init(conversation: Conversation, imageQuality: ImageQuality, videoQuality: VideoQuality) {
+        init(conversation: any Conversation, imageQuality: ImageQuality, videoQuality: VideoQuality) {
             self.conversation = conversation;
             self.imageQuality = imageQuality;
             self.videoQuality = videoQuality;

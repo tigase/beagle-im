@@ -262,7 +262,7 @@ class ChatCellView: NSTableCellView {
     }
     
     private var cancellables: Set<AnyCancellable> = [];
-    private var conversation: Conversation? {
+    private var conversation: (any Conversation)? {
         didSet {
             unreadButton.isHidden = false;
             lastMessageTs.isHidden = false;

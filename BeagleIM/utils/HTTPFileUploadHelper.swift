@@ -27,7 +27,7 @@ class HTTPFileUploadHelper {
     
     private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "HTTPFileUploadHelper")
 
-    static func upload(withClient client: Context, filename: String, fileUrl: URL, mimeType: String?, delegate: URLSessionDelegate?) async throws -> URL {
+    static func upload(withClient client: Context, filename: String, fileUrl: URL, mimeType: String?, delegate: (any URLSessionDelegate)?) async throws -> URL {
         guard let size = try fileUrl.resourceValues(forKeys: [.fileSizeKey]).fileSize else {
             throw ShareError.noFileSizeError;
         }

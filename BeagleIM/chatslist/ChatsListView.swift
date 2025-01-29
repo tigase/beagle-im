@@ -56,7 +56,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     
     @IBOutlet var outlineView: ChatsListView!;
     
-    var groups: [ChatsListGroupProtocol] = [];
+    var groups: [any ChatsListGroupProtocol] = [];
     
     var invitationGroup: InvitationGroup?;
 
@@ -106,7 +106,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
             guard let that = self else {
                 return;
             }
-            var newGroups: [ChatsListGroupProtocol] = [];
+            var newGroups: [any ChatsListGroupProtocol] = [];
             if let invitationGroup = that.invitationGroup, !invitationGroup.items.isEmpty {
                 newGroups.append(invitationGroup)
             }
@@ -145,21 +145,21 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     }
     
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
-        if let group = item as? ChatsListGroupProtocol {
+        if let group = item as? (any ChatsListGroupProtocol) {
             return group.count;
         }
         return groups.count;
     }
     
     func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
-        if let group = item as? ChatsListGroupProtocol {
+        if let group = item as? (any ChatsListGroupProtocol) {
             return group.getItem(at: index)!;
         }
         return groups[index];
     }
     
     func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
-        guard item is ChatsListGroupProtocol else {
+        guard item is (any ChatsListGroupProtocol) else {
             return false;
         }
         return true;
@@ -205,14 +205,14 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     }
     
     
-    func outlineView(_ outlineView: NSOutlineView, validateDrop info: NSDraggingInfo, proposedItem item: Any?, proposedChildIndex index: Int) -> NSDragOperation {
+    func outlineView(_ outlineView: NSOutlineView, validateDrop info: any NSDraggingInfo, proposedItem item: Any?, proposedChildIndex index: Int) -> NSDragOperation {
         if let conv = (item as? ConversationItem)?.chat, conv.features.contains(.httpFileUpload) && info.draggingSourceOperationMask.contains(.copy) && info.draggingPasteboard.canReadObject(forClasses: [NSURL.self, NSFilePromiseReceiver.self], options: nil)  {
             return .copy;
         }
         return [];
     }
     
-    func outlineView(_ outlineView: NSOutlineView, acceptDrop info: NSDraggingInfo, item: Any?, childIndex index: Int) -> Bool {
+    func outlineView(_ outlineView: NSOutlineView, acceptDrop info: any NSDraggingInfo, item: Any?, childIndex index: Int) -> Bool {
         guard let conv = (item as? ConversationItem)?.chat, conv.features.contains(.httpFileUpload) else {
             return false;
         }
@@ -295,7 +295,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     }
     
     func blockSelectedContacts(wholeDomains: Bool) {
-        let selectedItems = self.outlineView.selectedRowIndexes.compactMap({ self.outlineView.item(atRow: $0) as? ChatsListContactItemProtocol });
+        let selectedItems = self.outlineView.selectedRowIndexes.compactMap({ self.outlineView.item(atRow: $0) as? (any ChatsListContactItemProtocol) });
         
         let byAccount = Dictionary(grouping: selectedItems, by: { $0.account });
         
@@ -350,7 +350,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     
     @objc func chatSelected(_ notification: Notification) {
         let messageId = notification.userInfo?["messageId"] as? Int;
-        guard let chat = notification.object as? Conversation else {
+        guard let chat = notification.object as? (any Conversation) else {
             guard let account = notification.userInfo?["account"] as? BareJID, let jid = notification.userInfo?["jid"] as? BareJID else {
                 self.outlineView.selectRowIndexes(IndexSet(), byExtendingSelection: false);
                 return;
@@ -409,7 +409,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
 extension ChatsListViewController: NSOutlineViewDelegate {
     
     func outlineView(_ outlineView: NSOutlineView, shouldSelectItem item: Any) -> Bool {
-        if item is ChatsListGroupProtocol {
+        if item is (any ChatsListGroupProtocol) {
             if outlineView.isItemExpanded(item) {
                 //                outlineView.collapseItem(item);
             } else {
@@ -427,7 +427,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
     }
     
     func outlineView(_ outlineView: NSOutlineView, isGroupItem item: Any) -> Bool {
-        return item is ChatsListGroupProtocol;
+        return item is (any ChatsListGroupProtocol);
     }
     
     func outlineView(_ outlineView: NSOutlineView, rowViewForItem item: Any) -> NSTableRowView? {
@@ -485,7 +485,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
         }
     }
     
-    private func conversationController(for conversation: Conversation) -> NSViewController {
+    private func conversationController(for conversation: any Conversation) -> NSViewController {
         switch conversation {
         case is Chat:
             return self.storyboard!.instantiateController(withIdentifier: "ChatViewController") as! ChatViewController;
@@ -520,7 +520,7 @@ extension ChatsListViewController: NSOutlineViewDelegate {
 //            return nil;
 //        }
         
-        if let group = item as? ChatsListGroupProtocol {
+        if let group = item as? (any ChatsListGroupProtocol) {
             let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("ChatGroupCell"), owner: nil) as? NSTableCellView;
             if let textField = view?.textField {
                 textField.stringValue = group.name;

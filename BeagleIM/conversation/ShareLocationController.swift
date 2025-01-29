@@ -28,7 +28,7 @@ class ShareLocationController: NSViewController, CLLocationManagerDelegate, MKMa
     
     @IBOutlet var mapView: MKMapView!;
     
-    var conversation: Conversation!;
+    var conversation: (any Conversation)!;
     
     private let locationManager = CLLocationManager();
     
@@ -128,7 +128,7 @@ class ShareLocationController: NSViewController, CLLocationManagerDelegate, MKMa
         setCurrentLocation(location, zoomIn: true);
     }
     
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
         let alert = NSAlert();
         alert.messageText = NSLocalizedString("Can't show your location", comment: "error message text");
         alert.informativeText = error.localizedDescription;
@@ -138,7 +138,7 @@ class ShareLocationController: NSViewController, CLLocationManagerDelegate, MKMa
         });
     }
     
-    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+    func mapView(_ mapView: MKMapView, viewFor annotation: any MKAnnotation) -> MKAnnotationView? {
         let view = MKPinAnnotationView(annotation: annotation, reuseIdentifier: nil);
         view.isEnabled = true;
         view.isDraggable = true;
@@ -342,7 +342,7 @@ class LocationSuggestionItemView: SuggestionItemViewBase<MKPlacemark> {
     
     struct Provider: SuggestionItemViewProvider {
         
-        func view(for item: Any) -> SuggestionItemView? {
+        func view(for item: Any) -> (any SuggestionItemView)? {
             guard item is MKPlacemark else {
                 return nil;
             }

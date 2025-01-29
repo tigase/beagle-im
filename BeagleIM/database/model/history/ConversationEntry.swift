@@ -46,7 +46,7 @@ public final class ConversationEntry: Hashable, Sendable {
     }
     
     let id: Int;
-    let conversation: ConversationKey;
+    let conversation: any ConversationKey;
     let timestamp: Date;
     let state: ConversationEntryState;
     let sender: ConversationEntrySender;
@@ -54,7 +54,7 @@ public final class ConversationEntry: Hashable, Sendable {
     let payload: ConversationEntryPayload
     let options: ConversationEntry.Options;
     
-    init(id: Int, conversation: ConversationKey, timestamp: Date, state: ConversationEntryState, sender: ConversationEntrySender, payload: ConversationEntryPayload, options: ConversationEntry.Options) {
+    init(id: Int, conversation: any ConversationKey, timestamp: Date, state: ConversationEntryState, sender: ConversationEntrySender, payload: ConversationEntryPayload, options: ConversationEntry.Options) {
         self.id = id;
         self.conversation = conversation;
         self.timestamp = timestamp;
@@ -155,7 +155,7 @@ extension ConversationEntry: Comparable {
                 return result == .orderedAscending ? false : true;
             }
             if it1.id == it2.id || (it1.id == -1 || it2.id == -1) {
-                if let i1 = it1 as? ConversationEntryRelated {
+                if let i1 = it1 as? (any ConversationEntryRelated) {
                     switch i1.order {
                     case .first:
                         return false;
@@ -163,7 +163,7 @@ extension ConversationEntry: Comparable {
                         return true;
                     }
                 }
-                if let i2 = it2 as? ConversationEntryRelated {
+                if let i2 = it2 as? (any ConversationEntryRelated) {
                     switch i2.order {
                     case .first:
                         return true;

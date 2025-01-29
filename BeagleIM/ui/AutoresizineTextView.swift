@@ -31,7 +31,7 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
     
     @objc var placeholderAttributedString: NSAttributedString?;
     
-    weak var dragHandler: (NSDraggingDestination & PastingDelegate)? = nil;
+    weak var dragHandler: (any NSDraggingDestination & PastingDelegate)? = nil;
       
     override var rangeForUserCompletion: NSRange {
         let currRange = super.rangeForUserCompletion;
@@ -111,7 +111,7 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
         }
     }
     
-    override func draggingEnded(_ sender: NSDraggingInfo) {
+    override func draggingEnded(_ sender: any NSDraggingInfo) {
         guard let handler = self.dragHandler?.draggingEnded else {
             super.draggingEnded(sender);
             return;
@@ -119,7 +119,7 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
         handler(sender);
     }
     
-    override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+    override func draggingEntered(_ sender: any NSDraggingInfo) -> NSDragOperation {
         guard let handler = self.dragHandler?.draggingEntered else {
             return super.draggingEntered(sender);
         }
@@ -131,7 +131,7 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
         }
     }
     
-    override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+    override func draggingUpdated(_ sender: any NSDraggingInfo) -> NSDragOperation {
         guard let handler = self.dragHandler?.draggingUpdated else {
             return super.draggingUpdated(sender);
         }
@@ -143,7 +143,7 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
         }
     }
     
-    override func draggingExited(_ sender: NSDraggingInfo?) {
+    override func draggingExited(_ sender: (any NSDraggingInfo)?) {
         guard let handler = self.dragHandler?.draggingExited else {
             super.draggingExited(sender);
             return;
@@ -151,7 +151,7 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
         handler(sender);
     }
     
-    override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+    override func performDragOperation(_ sender: any NSDraggingInfo) -> Bool {
         return (dragHandler?.performDragOperation?(sender) ?? false) || super.performDragOperation(sender);
     }
     

@@ -36,7 +36,7 @@ struct CameraVideoCapture: VideoCapturer {
         self.device = device;
     }
     
-    func startCapture(completionHandler: @escaping (Result<Void, Error>) -> Void) {
+    func startCapture(completionHandler: @escaping (Result<Void, any Error>) -> Void) {
         guard let format = RTCCameraVideoCapturer.format(for: device, preferredOutputPixelFormat: capturer.preferredOutputPixelFormat()) else {
             completionHandler(.failure(CameraVideoCapturerError.noSupportedFormatAvailable(device)))
             return;

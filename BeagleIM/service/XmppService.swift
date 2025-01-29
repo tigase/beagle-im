@@ -51,7 +51,7 @@ class XmppService {
  
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: XmppService.self));
     
-    let extensions: [XmppServiceExtension] = [MessageEventHandler.instance, BlockedEventHandler.instance, PresenceRosterEventHandler.instance, AvatarEventHandler.instance, MixEventHandler.instance, MucEventHandler.instance, MeetEventHandler.instance];
+    let extensions: [any XmppServiceExtension] = [MessageEventHandler.instance, BlockedEventHandler.instance, PresenceRosterEventHandler.instance, AvatarEventHandler.instance, MixEventHandler.instance, MucEventHandler.instance, MeetEventHandler.instance];
     
     var clients: [BareJID: XMPPClient] {
         get {
@@ -65,7 +65,7 @@ class XmppService {
     fileprivate var _clients = [BareJID: XMPPClient]();
     
     fileprivate let queue = DispatchQueue(label: "xmpp_service");
-    fileprivate let dnsCache: DNSSrvResolverCache = DNSSrvResolverWithCache.InMemoryCache(store: nil);
+    fileprivate let dnsCache: any DNSSrvResolverCache = DNSSrvResolverWithCache.InMemoryCache(store: nil);
     @Published
     var isAwake: Bool = true;
 
