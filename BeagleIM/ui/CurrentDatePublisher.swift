@@ -22,13 +22,19 @@
 import Foundation
 import Combine
 
-struct CurrentTimePublisher {
+struct CurrentTimePublisher: @unchecked Sendable {
     
-    private static var cancellable: (any Cancellable)?;
-    public private(set) static var publisher: AnyPublisher<Date,Never> = {
-        let publisher = CurrentValueSubject<Date,Never>(Date());
-        cancellable = Timer.publish(every: 30, on: .main, in: .default).autoconnect().assign(to: \.value, on: publisher);
-        return publisher.eraseToAnyPublisher();
-    }();
+    public static var publisher: CurrentValueSubject<Date,Never> {
+        return instance.publisher;
+    }
 
+    private static let instance = CurrentTimePublisher();
+        
+    private let cancellable: any Cancellable;
+    private let publisher: CurrentValueSubject<Date,Never>;
+        
+    init() {
+        publisher = CurrentValueSubject<Date,Never>(Date());
+        cancellable = Timer.publish(every: 30, on: .main, in: .default).autoconnect().assign(to: \.value, on: publisher);
+    }
 }

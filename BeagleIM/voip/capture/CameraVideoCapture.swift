@@ -50,7 +50,7 @@ struct CameraVideoCapture: VideoCapturer {
         capturer.stopCapture(completionHandler: completionHandler);
     }
     
-    enum CameraVideoCapturerError: Error {
+    enum CameraVideoCapturerError: Error, @unchecked Sendable {
         case noSupportedFormatAvailable(AVCaptureDevice)
     }
     

@@ -23,6 +23,8 @@ import AppKit
 import Martin
 import Combine
 
+extension NSPasteboard: @unchecked Sendable {}
+
 class NSViewWithTextBackgroundAndDragHandler: NSViewWithTextBackground {
     
     weak var dragHandler: (any NSDraggingDestination & PastingDelegate)? = nil;
@@ -135,32 +137,34 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
         self.sharingProgressBar.isHidden = value == 1;
     }
     
-    func paste(in textView: AutoresizingTextView, pasteboard: NSPasteboard) -> Bool {
+    nonisolated func paste(in textView: AutoresizingTextView, pasteboard: NSPasteboard) -> Bool {
         if pasteboard.canReadObject(forClasses: [NSURL.self], options: nil) {
             guard let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: nil) as? [NSURL], urls.allSatisfy({ $0.isFileURL }) else {
                 return false;
             }
 
-            let alert = NSAlert();
-            alert.alertStyle = .informational;
-            alert.icon = NSImage(named: NSImage.shareTemplateName);
-            alert.messageText = NSLocalizedString("Sending files", comment: "Title of alert to confirm sending files");
-            alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("You have pasted %d file(s). Do you wish to send them?", comment: "Alert confirm sending files message"), urls.count);
-            alert.addButton(withTitle: NSLocalizedString("Yes", comment: "Confirm sending files"));
-            alert.addButton(withTitle: NSLocalizedString("No", comment: "Deny sending files"));
-            alert.beginSheetModal(for: self.view.window!, completionHandler: { response in
-                if response == .alertFirstButtonReturn {
-                    Task {
-                        do {
-                            try await SharingTaskManager.instance.share(conversation: self.conversation, items: urls.map({ .url($0 as URL) }), quality: .default);
-                        } catch {
-                            SharingTaskManager.instance.show(error: error, window: self.view.window!);
+            DispatchQueue.main.async {
+                let alert = NSAlert();
+                alert.alertStyle = .informational;
+                alert.icon = NSImage(named: NSImage.shareTemplateName);
+                alert.messageText = NSLocalizedString("Sending files", comment: "Title of alert to confirm sending files");
+                alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("You have pasted %d file(s). Do you wish to send them?", comment: "Alert confirm sending files message"), urls.count);
+                alert.addButton(withTitle: NSLocalizedString("Yes", comment: "Confirm sending files"));
+                alert.addButton(withTitle: NSLocalizedString("No", comment: "Deny sending files"));
+                alert.beginSheetModal(for: self.view.window!, completionHandler: { response in
+                    if response == .alertFirstButtonReturn {
+                        Task {
+                            do {
+                                try await SharingTaskManager.instance.share(conversation: self.conversation, items: urls.map({ .url($0 as URL) }), quality: .default);
+                            } catch {
+                                SharingTaskManager.instance.show(error: error, window: self.view.window!);
+                            }
                         }
+                    } else {
+                        textView.pasteURLs(pasteboard);
                     }
-                } else {
-                    textView.pasteURLs(pasteboard);
-                }
-            })
+                })
+            }
             return true;
         }
         return false;
@@ -193,7 +197,7 @@ class AbstractChatViewControllerWithSharing: AbstractChatViewController, URLSess
                 do {
                     try await SharingTaskManager.instance.share(conversation: self.conversation, items: items, quality: askForQuality ? .ask : .default);
                 } catch {
-                    SharingTaskManager.instance.show(error: error, window: self.view.window!);
+                    await SharingTaskManager.instance.show(error: error, window: self.view.window!);
                 }
             }
         }

@@ -21,14 +21,34 @@
 
 import AppKit
 import Martin
-import WebRTC
+@preconcurrency import WebRTC
 import Combine
+import os
 
-class JingleManager: JingleSessionManager {
+class JingleManager: JingleSessionManager, @unchecked Sendable {
+    
+    static let defaultCallConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil);
+
+    static func initiatePeerConnection(iceServers servers: [RTCIceServer], withDelegate delegate: any RTCPeerConnectionDelegate) -> RTCPeerConnection? {
+            
+        let iceServers = (servers.isEmpty && Settings.usePublicStunServers) ? [ RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:stun2.l.google.com:19302","stun:stun3.l.google.com:19302","stun:stun4.l.google.com:19302"]), RTCIceServer(urlStrings: ["stun:stunserver.org:3478"]) ] : servers;
+        os_log(OSLogType.debug, log: .jingle, "using ICE servers: %s", iceServers.map({ $0.urlStrings.description }).description);
+
+        let configuration = RTCConfiguration();
+        configuration.tcpCandidatePolicy = .disabled;
+        configuration.sdpSemantics = .unifiedPlan;
+        configuration.iceServers = iceServers;
+        configuration.bundlePolicy = .maxCompat;
+        configuration.rtcpMuxPolicy = .require;
+        configuration.iceCandidatePoolSize = 5;
+            
+        return JingleManager.instance.connectionFactory.peerConnection(with: configuration, constraints: defaultCallConstraints, delegate: delegate);
+    }
     
     static let instance = JingleManager();
     
 //    let events: [Event] = [PresenceModule.ContactPresenceChanged.TYPE];
+    let connectionFactory: RTCPeerConnectionFactory;
     
     fileprivate var connections: [Session] = [];
     
@@ -38,9 +58,11 @@ class JingleManager: JingleSessionManager {
     
     init() {
         if !RTCInitializeSSL() {
-            let alert = NSAlert();
-            alert.messageText = NSLocalizedString("Failed to initialize RTC SSL for WebRTC!", comment: "jingle manager");
-            alert.runModal();
+            DispatchQueue.main.async {
+                let alert = NSAlert();
+                alert.messageText = NSLocalizedString("Failed to initialize RTC SSL for WebRTC!", comment: "jingle manager");
+                alert.runModal();
+            }
         }
         
         let path = FileManager.default.temporaryDirectory.path;
@@ -49,6 +71,9 @@ class JingleManager: JingleSessionManager {
                 try? FileManager.default.removeItem(at: FileManager.default.temporaryDirectory.appendingPathComponent(file, isDirectory: false));
             }
         }
+        
+        connectionFactory = RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(),
+                                                             decoderFactory: RTCDefaultVideoDecoderFactory());
     }
     
     func session(for context: Context, with jid: JID, sid: String?) -> Session? {

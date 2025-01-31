@@ -97,7 +97,7 @@ extension ConversationEntry {
 
 }
 
-public class NotificationManager {
+public class NotificationManager: @unchecked Sendable {
     
     public static let instance = NotificationManager();
     

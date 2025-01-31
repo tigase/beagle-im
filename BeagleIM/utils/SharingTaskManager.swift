@@ -23,13 +23,12 @@ import AppKit
 import Martin
 import Combine
 
-class SharingTaskManager: @unchecked Sendable {
+@MainActor
+class SharingTaskManager {
     
     static let instance = SharingTaskManager();
     
     private var tasks: [SharingTask2] = [];
-    let dispatcher = DispatchQueue(label: "SharingTaskManager");
-    fileprivate let semaphore = DispatchSemaphore(value: 1);
  
     static func guessContentType(of url: URL) -> String? {
         guard let uti = try? url.resourceValues(forKeys: [.typeIdentifierKey]).typeIdentifier else {
@@ -40,15 +39,13 @@ class SharingTaskManager: @unchecked Sendable {
     }
     
     func progressUpdated(for conversation: any Conversation) {
-        dispatcher.async {
-            let tasks = self.tasks.filter({ $0.conversation.id == conversation.id });
-            guard !tasks.isEmpty else {
-                (conversation as? ConversationBase)?.fileUploadProgress = 1.0;
-                return;
-            }
-            let progress = tasks.map({ $0.progress }).reduce(0.0, +) / Double(tasks.count);
-            (conversation as? ConversationBase)?.fileUploadProgress = progress;
+        let tasks = self.tasks.filter({ $0.conversation.id == conversation.id });
+        guard !tasks.isEmpty else {
+            (conversation as? ConversationBase)?.fileUploadProgress = 1.0;
+            return;
         }
+        let progress = tasks.map({ $0.progress }).reduce(0.0, +) / Double(tasks.count);
+        (conversation as? ConversationBase)?.fileUploadProgress = progress;
     }
     
     private let operationQueue = OperationQueue();
@@ -82,7 +79,7 @@ class SharingTaskManager: @unchecked Sendable {
     }
     
     func share(conversation: any Conversation, items: [ShareItem], quality: Quality) async throws {
-        guard let mainWindow = await ((await NSApplication.shared.delegate) as! AppDelegate).mainWindowController?.window else {
+        guard let mainWindow = ((NSApplication.shared.delegate) as! AppDelegate).mainWindowController?.window else {
             return;
         }
         let mediaTypes = items.compactMap({ $0.mediaType });
@@ -90,14 +87,10 @@ class SharingTaskManager: @unchecked Sendable {
         let videoQuality = mediaTypes.contains(.video) ? try await quality.video(window: mainWindow) : VideoQuality.current;
         for item in items {
             let task = SharingTask2(conversation: conversation, imageQuality: imageQuality, videoQuality: videoQuality);
-            dispatcher.async {
-                self.tasks.append(task);
-            }
+            self.tasks.append(task);
             defer {
-                dispatcher.async {
-                    self.tasks.removeAll(where: { $0.id == task.id });
-                    self.progressUpdated(for: conversation);
-                }
+                self.tasks.removeAll(where: { $0.id == task.id });
+                self.progressUpdated(for: conversation);
             }
             switch item {
             case .url(let url):
@@ -107,15 +100,13 @@ class SharingTaskManager: @unchecked Sendable {
     }
     
     func show(error: any Error, window: NSWindow) {
-        DispatchQueue.main.async {
-            let alert = NSAlert();
-            alert.icon = NSImage(named: NSImage.cautionName);
-            alert.messageText = NSLocalizedString("Sharing error", comment: "alert window title");
-            alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("File sharing failed with an error: %@", comment: "alert window message"), error.localizedDescription);
-            alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
-            alert.beginSheetModal(for: window, completionHandler: { response in
-            })
-        }
+        let alert = NSAlert();
+        alert.icon = NSImage(named: NSImage.cautionName);
+        alert.messageText = NSLocalizedString("Sharing error", comment: "alert window title");
+        alert.informativeText = String.localizedStringWithFormat(NSLocalizedString("File sharing failed with an error: %@", comment: "alert window message"), error.localizedDescription);
+        alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button"));
+        alert.beginSheetModal(for: window, completionHandler: { response in
+        })
     }
     
     private func share(conversation: any Conversation, url: URL, task: SharingTask2) async throws {
@@ -127,7 +118,9 @@ class SharingTaskManager: @unchecked Sendable {
                     try? FileManager.default.removeItem(at: compressedUrl);
                 }
             }
-            task.filename = filename;
+            await MainActor.run(body: {
+                task.filename = filename;
+            })
             try await share(task: task, url: compressedUrl);
         case .video:
             let (compressedUrl, filename) = try await MediaHelper.compressMovie(url: url, quality: task.videoQuality, progressCallback: { _ in });
@@ -136,10 +129,14 @@ class SharingTaskManager: @unchecked Sendable {
                     try? FileManager.default.removeItem(at: compressedUrl);
                 }
             }
-            task.filename = filename;
+            await MainActor.run(body: {
+                task.filename = filename;
+            })
             try await share(task: task, url: compressedUrl);
         default:
-            task.filename = url.lastPathComponent;
+            await MainActor.run(body: {
+                task.filename = url.lastPathComponent;
+            })
             try await share(task: task, url: url);
         }
     }
@@ -176,76 +173,57 @@ class SharingTaskManager: @unchecked Sendable {
     
     private var trustedCertificates: [String:SSLCertificateInfo] = [:];
     
-    fileprivate func askForSSLCertificateTrust(_ trust: SecTrust, challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+    @MainActor
+    fileprivate func askForSSLCertificateTrust(_ trust: SecTrust, challenge: URLAuthenticationChallenge) async -> (URLSession.AuthChallengeDisposition, URLCredential?) {
         guard let mainWindow = ((NSApplication.shared.delegate) as! AppDelegate).mainWindowController?.window else {
-            completionHandler(URLSession.AuthChallengeDisposition.performDefaultHandling, nil);
-            return;
+            return (URLSession.AuthChallengeDisposition.performDefaultHandling, nil);
         }
         let info = SSLCertificateInfo(trust: trust)!;
 
-        dispatcher.async {
-            self.semaphore.wait();
-            if let trusted = self.trustedCertificates[info.subject.name], trusted.subject.name == info.subject.name && trusted.subject.fingerprints.first == info.subject.fingerprints.first {
-                self.semaphore.signal();
-                let credential = URLCredential(trust: trust);
-                completionHandler(URLSession.AuthChallengeDisposition.useCredential, credential);
-                return;
-            }
+        if let trusted = self.trustedCertificates[info.subject.name], trusted.subject.name == info.subject.name && trusted.subject.fingerprints.first == info.subject.fingerprints.first {
+            let credential = URLCredential(trust: trust);
+            return (URLSession.AuthChallengeDisposition.useCredential, credential);
+        }
 
-            DispatchQueue.main.async {
-                let alert = NSAlert();
-                alert.icon = NSImage(named: NSImage.cautionName);
-                alert.messageText = NSLocalizedString("Invalid SSL certificate", comment: "alert window title")
-                alert.informativeText = info.issuer == nil ? String.localizedStringWithFormat(NSLocalizedString("HTTP File Upload server presented invalid SSL certificate for %@.\nReceived certificate %@ (%@) is self-signed!\n\nWould you like to connect to the server anyway?", comment: "alert window message - part 1"), challenge.protectionSpace.host, info.subject.name, info.subject.fingerprints.first!.value) : String.localizedStringWithFormat(NSLocalizedString("HTTP File Upload server presented invalid SSL certificate for %@.\nReceived certificate %@ (%@) is issued by %@.\n\nWould you like to connect to the server anyway?", comment: "alert window message - part 1"), challenge.protectionSpace.host, info.subject.name, info.subject.fingerprints.first!.value, info.issuer?.name ?? "Unknown");
-                alert.addButton(withTitle: NSLocalizedString("Yes", comment: "Button"));
-                alert.addButton(withTitle: NSLocalizedString("No", comment: "Button"));
-                alert.beginSheetModal(for: mainWindow, completionHandler: { (response) in
-                    switch response {
-                    case .alertFirstButtonReturn:
-                        self.trustedCertificates[info.subject.name] = info;
-                        let credential = URLCredential(trust: trust);
-                        completionHandler(URLSession.AuthChallengeDisposition.useCredential, credential);
-                    default:
-                        completionHandler(URLSession.AuthChallengeDisposition.performDefaultHandling, nil);
-                    }
-                    self.semaphore.signal();
-                })
-            }
+        let alert = NSAlert();
+        alert.icon = NSImage(named: NSImage.cautionName);
+        alert.messageText = NSLocalizedString("Invalid SSL certificate", comment: "alert window title")
+        alert.informativeText = info.issuer == nil ? String.localizedStringWithFormat(NSLocalizedString("HTTP File Upload server presented invalid SSL certificate for %@.\nReceived certificate %@ (%@) is self-signed!\n\nWould you like to connect to the server anyway?", comment: "alert window message - part 1"), challenge.protectionSpace.host, info.subject.name, info.subject.fingerprints.first!.value) : String.localizedStringWithFormat(NSLocalizedString("HTTP File Upload server presented invalid SSL certificate for %@.\nReceived certificate %@ (%@) is issued by %@.\n\nWould you like to connect to the server anyway?", comment: "alert window message - part 1"), challenge.protectionSpace.host, info.subject.name, info.subject.fingerprints.first!.value, info.issuer?.name ?? "Unknown");
+        alert.addButton(withTitle: NSLocalizedString("Yes", comment: "Button"));
+        alert.addButton(withTitle: NSLocalizedString("No", comment: "Button"));
+        let response = await alert.beginSheetModal(for: mainWindow);
+        switch response {
+        case .alertFirstButtonReturn:
+            self.trustedCertificates[info.subject.name] = info;
+            let credential = URLCredential(trust: trust);
+            return (URLSession.AuthChallengeDisposition.useCredential, credential);
+        default:
+            return (URLSession.AuthChallengeDisposition.performDefaultHandling, nil);
         }
     }
-    
+
+    @MainActor
     fileprivate func askForInvalidHttpResponse(url: URL) async -> Bool {
-        return await withUnsafeContinuation({ continuation in
-            self.askForInvalidHttpResponse(url: url, completionHandler: continuation.resume(returning:));
-        })
-    }
-    
-    fileprivate func askForInvalidHttpResponse(url: URL, completionHandler: @escaping (sending Bool)->Void) {
         guard let mainWindow = ((NSApplication.shared.delegate) as! AppDelegate).mainWindowController?.window else {
-            completionHandler(false);
-            return;
+            return false;
         }
 
-        self.semaphore.wait();
-        DispatchQueue.main.async {
-            let alert = NSAlert();
-            alert.icon = NSImage(named: NSImage.cautionName);
-            alert.messageText = NSLocalizedString("Warning", comment: "alert window title");
-            alert.informativeText = NSLocalizedString("File upload completed but it was not confirmed correctly by your server. Do you wish to proceed anyway?", comment: "alert window message");
-            alert.addButton(withTitle: NSLocalizedString("Yes", comment: "Button"));
-            alert.addButton(withTitle: NSLocalizedString("No", comment: "Button"));
-            alert.beginSheetModal(for: mainWindow, completionHandler: { response in
-                switch response {
-                case .alertFirstButtonReturn:
-                    completionHandler(true);
-                default:
-                    completionHandler(false);
-                }
-                self.semaphore.signal();
-            })
+        let alert = NSAlert();
+        alert.icon = NSImage(named: NSImage.cautionName);
+        alert.messageText = NSLocalizedString("Warning", comment: "alert window title");
+        alert.informativeText = NSLocalizedString("File upload completed but it was not confirmed correctly by your server. Do you wish to proceed anyway?", comment: "alert window message");
+        alert.addButton(withTitle: NSLocalizedString("Yes", comment: "Button"));
+        alert.addButton(withTitle: NSLocalizedString("No", comment: "Button"));
+        let response = await alert.beginSheetModal(for: mainWindow);
+        switch response {
+        case .alertFirstButtonReturn:
+            return true;
+        default:
+            return false;
         }
     }
     
+    @MainActor
     class SharingTask2: NSObject, Identifiable, URLSessionDelegate {
         let id = UUID();
         let conversation: any Conversation;
@@ -259,26 +237,25 @@ class SharingTaskManager: @unchecked Sendable {
             self.imageQuality = imageQuality;
             self.videoQuality = videoQuality;
         }
-        
+                
         func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
             self.progress = Double(totalBytesSent) / Double(totalBytesExpectedToSend);
             SharingTaskManager.instance.progressUpdated(for: conversation);
         }
         
-        func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge) async -> (URLSession.AuthChallengeDisposition, URLCredential?) {
             if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust, let trust = challenge.protectionSpace.serverTrust {
                 var trustResult: SecTrustResultType = .invalid;
                 if SecTrustGetTrustResult(trust, &trustResult) == noErr {
                     if trustResult == .proceed || trustResult == .unspecified {
                          let credential = URLCredential(trust: trust);
-                        completionHandler(URLSession.AuthChallengeDisposition.performDefaultHandling, credential);
-                        return;
+                        return (URLSession.AuthChallengeDisposition.performDefaultHandling, credential);
                     }
                 }
 
-                SharingTaskManager.instance.askForSSLCertificateTrust(trust, challenge: challenge, completionHandler: completionHandler);
+                return await SharingTaskManager.instance.askForSSLCertificateTrust(trust, challenge: challenge);
             } else {
-                completionHandler(URLSession.AuthChallengeDisposition.performDefaultHandling, nil);
+                return (URLSession.AuthChallengeDisposition.performDefaultHandling, nil);
             }
         }
         
@@ -720,7 +697,7 @@ class SharingTaskManager: @unchecked Sendable {
 //    }
 //}
 
-enum ShareItem {
+enum ShareItem: Sendable {
     case url(URL)
     
     var mediaType: MediaType? {

@@ -185,15 +185,15 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
     }
     
     fileprivate func retrieveRegistrationForm(domain: String, acceptedCertificate: SSLCertificateInfo?) {
-        self.task = InBandRegistrationModule.AccountRegistrationAsyncTask(domainName: domain, preauth: nil);
-        task?.acceptedSslCertificate = acceptedCertificate;
+        let task = InBandRegistrationModule.AccountRegistrationAsyncTask(domainName: domain, preauth: nil);
+        task.acceptedSslCertificate = acceptedCertificate;
 
         submitButton?.isEnabled = false;
         progressIndicator?.startAnimation(self);
-
+        self.task = task;
         Task {
             do {
-                let result = try await task!.retrieveForm();
+                let result = try await task.retrieveForm();
                 await MainActor.run(body: {
                     self.form?.xmppClient = self.task?.client;
                     self.form?.jid = JID(self.domainField.stringValue);

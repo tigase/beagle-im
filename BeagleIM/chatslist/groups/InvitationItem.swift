@@ -22,7 +22,7 @@
 import Foundation
 import Martin
 
-class InvitationItem: ChatsListItemProtocol, ChatsListContactItemProtocol, Identifiable, Equatable, Hashable {
+final class InvitationItem: ChatsListItemProtocol, ChatsListContactItemProtocol, Identifiable, Equatable, Hashable, Sendable {
     
     static func == (lhs: InvitationItem, rhs: InvitationItem) -> Bool {
         return lhs.type == rhs.type && lhs.account == rhs.account && lhs.jid == rhs.jid;
@@ -38,10 +38,10 @@ class InvitationItem: ChatsListItemProtocol, ChatsListContactItemProtocol, Ident
     let type: InvitationItemType;
     let account: BareJID;
     let jid: JID;
-    let object: Any?;
+    let object: MucModule.Invitation?;
     let order: Int;
     
-    init(type: InvitationItemType, account: BareJID, jid: JID, object: Any?, order: Int) {
+    init(type: InvitationItemType, account: BareJID, jid: JID, object: MucModule.Invitation?, order: Int) {
         self.type = type;
         self.jid = jid;
         self.account = account;

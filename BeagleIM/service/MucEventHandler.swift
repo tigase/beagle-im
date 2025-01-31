@@ -25,7 +25,7 @@ import UserNotifications
 import Combine
 import os
 
-class MucEventHandler: XmppServiceExtension {
+final class MucEventHandler: XmppServiceExtension, Sendable {
 
     static let instance = MucEventHandler();
 

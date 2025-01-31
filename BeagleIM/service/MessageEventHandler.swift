@@ -23,9 +23,9 @@ import AppKit
 import Martin
 import MartinOMEMO
 import os
-import Combine
+@preconcurrency import Combine
 
-class MessageEventHandler: XmppServiceExtension {
+final class MessageEventHandler: XmppServiceExtension, @unchecked Sendable {
 
     public static let instance = MessageEventHandler();
     
@@ -97,12 +97,13 @@ class MessageEventHandler: XmppServiceExtension {
     }
 
     private var cancellables: Set<AnyCancellable> = [];
+    private let queue = DispatchQueue(label: "MessageEventHandlerQueue");
     
     private init() {
         DBChatHistoryStore.instance.markedAsRead.filter({ !$0.onlyLocally }).sink(receiveValue: { [weak self] marked in
             self?.sendDisplayed(marked);
         }).store(in: &cancellables);
-        MessageEventHandler.eventsPublisher.receive(on: MessageEventHandler.syncSinceQueue).sink(receiveValue: { [weak self] event in
+        MessageEventHandler.eventsPublisher.receive(on: queue).sink(receiveValue: { [weak self] event in
             self?.syncStateChanged(event);
         }).store(in: &cancellables);
     }
@@ -346,8 +347,7 @@ class MessageEventHandler: XmppServiceExtension {
         }
     }
     
-    private static var syncSinceQueue = DispatchQueue(label: "syncSinceQueue");
-    private static var syncSince: [BareJID: Date] = [:];
+    private static let syncSince = UnfairLock(state: [BareJID: Date]());
     
     static func scheduleMessageSync(for account: BareJID) {
         if AccountSettings.messageSyncAuto(account).bool() {
@@ -357,26 +357,26 @@ class MessageEventHandler: XmppServiceExtension {
             }
             let syncMessagesSince = max(DBChatHistoryStore.instance.lastMessageTimestamp(for: account) ?? Date(timeIntervalSinceNow: -1 * syncPeriod * 3600), Date(timeIntervalSinceNow: -1 * syncPeriod * 3600));
             // use last "received" stable stanza id for account MAM archive in case of MAM:2?
-            syncSinceQueue.async {
-                self.syncSince[account] = syncMessagesSince;
+            self.syncSince.with {
+                $0[account] = syncMessagesSince;
             }
         } else {
-            syncSinceQueue.async {
-                syncSince.removeValue(forKey: account);
+            self.syncSince.with {
+                $0.removeValue(forKey: account);
                 DBChatHistorySyncStore.instance.removeSyncPeriods(forAccount: account);
             }
         }
     }
     
     static func syncMessagesScheduled(for client: XMPPClient) {
-        syncSinceQueue.async {
-            guard AccountSettings.messageSyncAuto(client.userBareJid).bool() else {
-                return;
-            }
-            let syncMessagesSince = syncSince[client.userBareJid];
-            Task {
-                try await syncMessages(for: client, since: syncMessagesSince);
-            }
+        guard AccountSettings.messageSyncAuto(client.userBareJid).bool() else {
+            return;
+        }
+        let syncMessagesSince = syncSince.with({
+            $0.removeValue(forKey: client.userBareJid);
+        })
+        Task {
+            try await syncMessages(for: client, since: syncMessagesSince);
         }
     }
     

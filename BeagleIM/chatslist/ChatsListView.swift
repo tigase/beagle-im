@@ -29,6 +29,7 @@ enum ChatsListStyle: String {
     case large
 }
 
+@MainActor
 protocol ChatsListViewDataSourceDelegate: AnyObject {
     
     func beginUpdates()
@@ -904,14 +905,15 @@ class ChatsListView: NSOutlineView {
 
 extension NSDraggingInfo {
     
-    func shareItems(_ completion: @escaping ([ShareItem])->Void) {
+    @MainActor
+    func shareItems(_ completion: @escaping @Sendable ([ShareItem])->Void) {
         let operationQueue = OperationQueue();
-        var items: [ShareItem] = [];
+        let items = UnfairLock(state: [ShareItem?]());
         let itemsCount = self.numberOfValidItemsForDrop;
-        let completionHandler = { (items: [ShareItem]) in
-            if (items.count == itemsCount) {
-                if !items.isEmpty {
-                    completion(items);
+        let completionHandler = { @Sendable in
+            if (items.with { $0.count } == itemsCount) {
+                if !items.with({ $0.isEmpty }) {
+                    completion(items.with { $0.compactMap({ $0 }) });
                 }
             }
         }
@@ -920,8 +922,8 @@ extension NSDraggingInfo {
             case let filePromiseReceived as NSFilePromiseReceiver:
                 filePromiseReceived.receivePromisedFiles(atDestination: FileManager.default.temporaryDirectory, options: [:], operationQueue: operationQueue, reader: { url, error in
                     if error == nil {
-                        items.append(.url(url))
-                        completionHandler(items);
+                        items.with({ $0.append(.url(url)) } )
+                        completionHandler();
                     }
                 })
             case let fileUrl as URL:
@@ -929,8 +931,8 @@ extension NSDraggingInfo {
                     return;
                 }
                 operationQueue.addOperation {
-                    items.append(.url(fileUrl))
-                    completionHandler(items);
+                    items.with({ $0.append(.url(fileUrl)) } )
+                    completionHandler();
                 }
             default:
                 break;

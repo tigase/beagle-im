@@ -36,7 +36,7 @@ extension Query {
     static let mamSyncUpdatePeriodTo = Query("UPDATE chat_history_sync SET to_timestamp = :to_timestamp WHERE id = :id");
 }
 
-class DBChatHistorySyncStore {
+class DBChatHistorySyncStore: @unchecked Sendable {
     
     static let instance = DBChatHistorySyncStore()
         

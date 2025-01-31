@@ -23,7 +23,7 @@ import Foundation
 import Martin
 import Carbon
 
-class ScriptsManager {
+class ScriptsManager: @unchecked Sendable {
     
     static let instance = ScriptsManager();
     
@@ -50,7 +50,7 @@ class ScriptsManager {
         return _contactsScripts;
     }
     
-    class ScriptItem {
+    class ScriptItem: @unchecked Sendable {
         let name: String;
         let url: URL;
         
@@ -60,7 +60,7 @@ class ScriptsManager {
         }
     }
     
-    class ContactScriptItem: ScriptItem {
+    class ContactScriptItem: ScriptItem, @unchecked Sendable {
         
         func execute(account: BareJID, jid: JID) {
             if let task = try? NSUserAppleScriptTask(url: self.url) {

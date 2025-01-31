@@ -30,7 +30,7 @@ extension Query {
     static let markersList = Query("SELECT sender_nick, sender_id, sender_jid, timestamp, type FROM chat_markers WHERE account = :account AND jid = :jid");
 }
 
-public class DBChatMarkersStore {
+public class DBChatMarkersStore: @unchecked Sendable {
     
     public static let instance = DBChatMarkersStore();
     

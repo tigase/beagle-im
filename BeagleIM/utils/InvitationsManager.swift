@@ -11,7 +11,7 @@ import Martin
 import UserNotifications
 import Combine
 
-class InvitationManager {
+class InvitationManager: @unchecked Sendable {
     
     static let INVITATION_CLICKED = Notification.Name(rawValue: "invitationClicked");
 //    static let INVITATIONS_ADDED = Notification.Name(rawValue: "invitationsAdded");
@@ -106,7 +106,7 @@ class InvitationManager {
                     return;
                 }
 
-                let mucInvitation = invitation.object as! MucModule.Invitation;
+                let mucInvitation = invitation.object!;
                 let alert = NSAlert();
                 alert.messageText = NSLocalizedString("Invitation to groupchat", comment: "invitation alert - title");
                 if let inviter = mucInvitation.inviter {
@@ -223,10 +223,10 @@ class InvitationManager {
     }
     
     private func deliverMucInvitationNotification(invitation: InvitationItem) {
-        guard Settings.notificationsFromUnknownSenders || (invitation.object as? MucModule.Invitation)?.inviter.map({ DBRosterStore.instance.item(for: invitation.account, jid: $0) }) != nil else {
+        guard Settings.notificationsFromUnknownSenders || invitation.object?.inviter.map({ DBRosterStore.instance.item(for: invitation.account, jid: $0) }) != nil else {
             return;
         }
-        let mucInvitation = invitation.object as! MucModule.Invitation;
+        let mucInvitation = invitation.object!;
         let content = UNMutableNotificationContent();
         content.title = NSLocalizedString("Invitation to groupchat", comment: "alert window title");
         content.body = String.localizedStringWithFormat(NSLocalizedString("You (%@) were invited to the groupchat %@", comment: "alert window message"), invitation.account.description, mucInvitation.roomJid.description);

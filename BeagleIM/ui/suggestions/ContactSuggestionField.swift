@@ -44,7 +44,9 @@ class ContactSuggestionField: NSSearchField, NSSearchFieldDelegate {
     
     override func awakeFromNib() {
         super.awakeFromNib();
-        self.setup();
+        MainActor.assumeIsolated {
+            self.setup();
+        }
     }
     
     func setup() {

@@ -24,7 +24,7 @@ import AppKit
 import Martin
 import MartinOMEMO
 
-class DownloadManager: NSObject {
+class DownloadManager: NSObject, @unchecked Sendable  {
 
     static let instance = DownloadManager();
 
@@ -72,15 +72,15 @@ class DownloadManager: NSObject {
                 }
             }
             
-            retrieveHeaders(session: self.downloadSession, url: url, completionHandler: { headersResult in
-                switch headersResult {
-                case .success(let suggestedFilename, let expectedSize, let mimeType):
-                    let isTooBig = expectedSize > maxSize;
+            Task {
+                do {
+                    let headersResult = try await retrieveHeaders(session: downloadSession, url: url)
+                    let isTooBig = headersResult.expectedSize > maxSize;
 
                     DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
-                        appendix.filesize = Int(expectedSize);
-                        appendix.mimetype = mimeType;
-                        appendix.filename = suggestedFilename;
+                        appendix.filesize = Int(headersResult.expectedSize);
+                        appendix.mimetype = headersResult.mimeType;
+                        appendix.filename = headersResult.suggestedFilename;
                         if isTooBig {
                             appendix.state = .tooBig;
                         }
@@ -95,7 +95,7 @@ class DownloadManager: NSObject {
                         return;
                     }
 
-                    self.download(session: self.downloadSession, url: url, expectedSize: expectedSize, completionHandler: { result in
+                    self.download(session: self.downloadSession, url: url, expectedSize: headersResult.expectedSize, completionHandler: { result in
                         switch result {
                         case .success((let downloadedUrl, let filename)):
                             self.queue.sync {
@@ -141,9 +141,13 @@ class DownloadManager: NSObject {
                             }
                         }
                     });
-                case .failure(let statusCode):
+                } catch {
+                    var state = ChatAttachmentAppendix.State.error;
+                    if case .responseError(statusCode: 404) = error as? DownloadError {
+                        state = .gone;
+                    }
                     DBChatHistoryStore.instance.updateItem(for: item.conversation, id: item.id, updateAppendix: { appendix in
-                        appendix.state = statusCode == 404 ? .gone : .error;
+                        appendix.state = state;
                     });
                     self.queue.async {
                         self.itemDownloadInProgress = self.itemDownloadInProgress.filter({ (id) -> Bool in
@@ -151,7 +155,7 @@ class DownloadManager: NSObject {
                         });
                     }
                 }
-            })
+            }
             return true;
         })
     }
@@ -172,22 +176,19 @@ class DownloadManager: NSObject {
         return extensionString
     }
 
-    func retrieveHeaders(session: URLSession, url: URL, completionHandler: @escaping (HeadersResult)->Void) {
+    func retrieveHeaders(session: URLSession, url: URL) async throws -> HeadersResult {
         var request = URLRequest(url: url);
         request.httpMethod = "HEAD";
-        session.dataTask(with: request) { (data, resp, error) in
-            guard let response = resp as? HTTPURLResponse else {
-                completionHandler(.failure(statusCode: 500));
-                return;
-            }
-
-            switch response.statusCode {
-            case 200:
-                completionHandler(.success(suggestedFilename: response.suggestedFilename, expectedSize: response.expectedContentLength, mimeType: response.mimeType))
-            default:
-                completionHandler(.failure(statusCode: response.statusCode));
-            }
-        }.resume();
+        let (data, resp) = try await session.data(for: request)
+        guard let response = resp as? HTTPURLResponse else {
+            throw DownloadError.responseError(statusCode: 500);
+        }
+        switch response.statusCode {
+        case 200:
+            return .init(suggestedFilename: response.suggestedFilename, expectedSize: response.expectedContentLength, mimeType: response.mimeType);
+        default:
+            throw DownloadError.responseError(statusCode: response.statusCode);
+        }
     }
 
     class Item {
@@ -215,9 +216,10 @@ class DownloadManager: NSObject {
         }
     }
 
-    enum HeadersResult {
-        case success(suggestedFilename: String?, expectedSize: Int64, mimeType: String?)
-        case failure(statusCode: Int)
+    struct HeadersResult: Sendable {
+        let suggestedFilename: String?;
+        let expectedSize: Int64
+        let mimeType: String?
     }
 
     enum DownloadError: Error {

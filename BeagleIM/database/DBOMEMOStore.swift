@@ -58,7 +58,7 @@ extension Query {
     static let omemoDevicesFindActiveAndTrusted = Query("SELECT s.device_id FROM omemo_sessions s LEFT JOIN omemo_identities i ON s.account = i.account AND s.name = i.name AND s.device_id = i.device_id WHERE s.account = :account AND s.name = :name AND ((i.status >= 0 AND i.status % 2 = 0) OR i.status IS NULL)");
 }
     
-class DBOMEMOStore {
+class DBOMEMOStore: @unchecked Sendable {
     
     public static let instance = DBOMEMOStore();
     
@@ -329,7 +329,7 @@ class SignalIdentityKeyStore: SignalIdentityKeyStoreProtocol, ContextAware {
     
 }
 
-class SignalPreKeyStore: SignalPreKeyStoreProtocol, ContextAware {
+class SignalPreKeyStore: SignalPreKeyStoreProtocol, ContextAware, @unchecked Sendable {
     
     //fileprivate(set) var currentPreKeyId: UInt32 = 0;
     

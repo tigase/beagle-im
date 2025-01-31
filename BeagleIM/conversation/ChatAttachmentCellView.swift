@@ -66,9 +66,14 @@ class ChatAttachmentCellView: BaseChatCellView {
 
     deinit {
         if #available(macOS 10.15, *) {
-            for item in self.customView.subviews.filter({ $0 is LPLinkView}) {
-                if let it = item as? LPLinkViewPool.PoolableLPLinkView {
-                    LPLinkViewPool.instance.release(linkView: it);
+            guard let customView = self.customView else {
+                return;
+            }
+            DispatchQueue.main.async {
+                for item in customView.subviews.filter({ $0 is LPLinkView}) {
+                    if let it = item as? LPLinkViewPool.PoolableLPLinkView {
+                        LPLinkViewPool.instance.release(linkView: it);
+                    }
                 }
             }
         }
@@ -136,7 +141,7 @@ class ChatAttachmentCellView: BaseChatCellView {
                     guard let meta = meta1 else {
                         return;
                     }
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { [weak linkView] in
                         guard let linkView = linkView, linkView.metadata.originalURL == localUrl else {
                             return;
                         }
@@ -616,10 +621,12 @@ class ChatAttachmentCellView: BaseChatCellView {
             self.actionButton.image = NSImage(named: "play.circle.fill");
         }
         
-        @objc func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-            audioPlayer?.stop();
-            audioPlayer = nil;
-            self.actionButton.image = NSImage(named: "play.circle.fill");
+        @objc nonisolated func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+            DispatchQueue.main.async {
+                self.audioPlayer?.stop();
+                self.audioPlayer = nil;
+                self.actionButton.image = NSImage(named: "play.circle.fill");
+            }
         }
         
         @objc func actionTapped(_ sender: Any) {

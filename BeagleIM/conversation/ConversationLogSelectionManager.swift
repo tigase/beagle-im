@@ -38,9 +38,24 @@ extension NSRect: @retroactive CustomStringConvertible {
     
 }
 
+@MainActor
 class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
     
-    private var mouseMonitor: Any?;
+    struct MouseMonitorHolder: @unchecked Sendable {
+        private let mouseMonitor: Any?;
+        
+        init(mouseMonitor: Any?) {
+            self.mouseMonitor = mouseMonitor
+        }
+        
+        func removeMonitor() {
+            if let mouseMonitor {
+                NSEvent.removeMonitor(mouseMonitor);
+            }
+        }
+    }
+    
+    private var mouseMonitor: MouseMonitorHolder?;
     private weak var controller: AbstractConversationLogController?;
     private var selectionStart: SelectionPoint?;
     private var selectionEnd: SelectionPoint?;
@@ -60,7 +75,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
     
     deinit {
         if let monitor = mouseMonitor {
-            NSEvent.removeMonitor(monitor);
+            monitor.removeMonitor();
         }
         mouseMonitor = nil;
     }
@@ -68,7 +83,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
     func initilizeHandlers(controller: AbstractConversationLogController) {
         self.controller = controller;
         (self.controller?.tableView as? ChatViewTableView)?.mouseDelegate = self;
-        mouseMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { [weak self] (event) -> NSEvent? in
+        mouseMonitor = MouseMonitorHolder(mouseMonitor: NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { [weak self] (event) -> NSEvent? in
             guard event.type != .keyDown else {
                 if let that = self {
                     if !that.selectedItems.isEmpty && event.modifierFlags.contains(.command) && event.characters?.first == "c" {
@@ -79,7 +94,7 @@ class ConversationLogSelectionManager: ChatViewTableViewMouseDelegate {
                 return event;
             }
             return (self?.handleMouse(event: event) ?? false) ? nil : event;
-        }
+        })
     }
     
     func handleMouse(event: NSEvent) -> Bool {

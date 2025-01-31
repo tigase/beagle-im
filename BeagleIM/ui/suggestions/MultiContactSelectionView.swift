@@ -44,49 +44,51 @@ class MultiContactSelectionView: NSView, NSTableViewDelegate, NSTableViewDataSou
     override func awakeFromNib() {
         super.awakeFromNib();
 
-        searchField.placeholderString = NSLocalizedString("Enter contact name or jid", comment: "contact selector placeholder")
-        searchField.translatesAutoresizingMaskIntoConstraints = false;
-        scrollView.translatesAutoresizingMaskIntoConstraints = false;
-        
-        self.addSubview(searchField);
-        self.addSubview(scrollView);
-        
-        NSLayoutConstraint.activate([
-            scrollView.heightAnchor.constraint(equalToConstant: 200),
+        MainActor.assumeIsolated {
+            searchField.placeholderString = NSLocalizedString("Enter contact name or jid", comment: "contact selector placeholder")
+            searchField.translatesAutoresizingMaskIntoConstraints = false;
+            scrollView.translatesAutoresizingMaskIntoConstraints = false;
             
-            searchField.topAnchor.constraint(equalTo: self.topAnchor),
-            searchField.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-            searchField.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            self.addSubview(searchField);
+            self.addSubview(scrollView);
             
-            searchField.bottomAnchor.constraint(equalTo: scrollView.topAnchor, constant: -10),
+            NSLayoutConstraint.activate([
+                scrollView.heightAnchor.constraint(equalToConstant: 200),
+                
+                searchField.topAnchor.constraint(equalTo: self.topAnchor),
+                searchField.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+                searchField.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+                
+                searchField.bottomAnchor.constraint(equalTo: scrollView.topAnchor, constant: -10),
+                
+                scrollView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+                scrollView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+                scrollView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+            ])
             
-            scrollView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
-        ])
-
-        tableView.frame = scrollView.bounds;
-        scrollView.backgroundColor = NSColor.clear;
-        tableView.backgroundColor = NSColor.clear;
-        
-        let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier(rawValue: "col"));
-        column.minWidth = 150;
-        tableView.addTableColumn(column);
-        
-        scrollView.documentView = tableView;
-        scrollView.hasHorizontalScroller = false;
-        scrollView.hasVerticalScroller = true;
-
-        tableView.headerView = nil;
-        
-        tableView.usesAutomaticRowHeights = true;
-        tableView.delegate = self;
-        tableView.dataSource = self;
-        
-        searchField.selectionPublisher.sink(receiveValue: { [weak self] item in
-            self?.items.append(item);
-            self?.tableView.insertRows(at: IndexSet([self!.items.count - 1]), withAnimation: .effectFade);
-        }).store(in: &cancellables);
+            tableView.frame = scrollView.bounds;
+            scrollView.backgroundColor = NSColor.clear;
+            tableView.backgroundColor = NSColor.clear;
+            
+            let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier(rawValue: "col"));
+            column.minWidth = 150;
+            tableView.addTableColumn(column);
+            
+            scrollView.documentView = tableView;
+            scrollView.hasHorizontalScroller = false;
+            scrollView.hasVerticalScroller = true;
+            
+            tableView.headerView = nil;
+            
+            tableView.usesAutomaticRowHeights = true;
+            tableView.delegate = self;
+            tableView.dataSource = self;
+            
+            searchField.selectionPublisher.sink(receiveValue: { [weak self] item in
+                self?.items.append(item);
+                self?.tableView.insertRows(at: IndexSet([self!.items.count - 1]), withAnimation: .effectFade);
+            }).store(in: &cancellables);
+        }
     }
     
     func numberOfRows(in tableView: NSTableView) -> Int {

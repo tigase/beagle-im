@@ -157,7 +157,9 @@ class SuggestionsWindowController: NSWindowController {
         })
         
         lostFocusObserver = NotificationCenter.default.addObserver(forName: NSWindow.didResignKeyNotification, object: parentWindow, queue: nil, using: { _ in
-            self.cancelSuggestions();
+            DispatchQueue.main.async {
+                self.cancelSuggestions();
+            }
         })
     }
     
@@ -282,9 +284,9 @@ class SuggestionsWindowController: NSWindowController {
     override func mouseUp(with event: NSEvent) {
 //        textField?.validateEditing()
 //        textField?.abortEditing();
-        if let action = self.action {
+        if let action = self.action, let target = self.target {
             print("sending action!", action, target);
-            target?.perform(action, with: self);
+            _ = target.perform(action, with: self);
 //            NSApp.sendAction(action, to: target, from: self);
         }
         cancelSuggestions();

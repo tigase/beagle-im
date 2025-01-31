@@ -165,7 +165,7 @@ public struct AvatarHash: Comparable, Equatable {
     }
 }
 
-public enum AvatarType: String, Comparable {
+public enum AvatarType: String, Comparable, Sendable {
     public static func < (lhs: AvatarType, rhs: AvatarType) -> Bool {
         return lhs.value < rhs.value;
     }

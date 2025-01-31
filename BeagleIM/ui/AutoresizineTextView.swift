@@ -58,7 +58,9 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
     }
     
     override func awakeFromNib() {
-        setup();
+        MainActor.assumeIsolated {
+            setup();
+        }
     }
     
     func setup() {
@@ -99,7 +101,7 @@ class AutoresizingTextView: NSTextView, NSTextStorageDelegate {
         NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: nil);
     }
     
-    func textStorage(_ textStorage: NSTextStorage, didProcessEditing editedMask: NSTextStorageEditActions, range editedRange: NSRange, changeInLength delta: Int) {
+    nonisolated func textStorage(_ textStorage: NSTextStorage, didProcessEditing editedMask: NSTextStorageEditActions, range editedRange: NSRange, changeInLength delta: Int) {
         let font = NSFont.systemFont(ofSize: NSFont.systemFontSize);
         let fullRange = NSRange(0..<textStorage.length);
         textStorage.setAttributes([.font: font], range: fullRange);

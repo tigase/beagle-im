@@ -19,7 +19,7 @@
 // If not, see https://www.gnu.org/licenses/.
 //
 
-import AppKit
+@preconcurrency import AppKit
 import Martin
 import MartinOMEMO
 
@@ -933,6 +933,7 @@ class ConversationGroupingViewController: NSViewController, ContactDetailsAccoun
     
 }
 
+@MainActor
 protocol ContactDetailsAccountJidAware: AnyObject {
     var account: BareJID? { get set }
     var jid: BareJID? { get set }
@@ -1331,6 +1332,8 @@ class ConversationAttachmentsCollectionView: NSCollectionView {
 
 }
 
+extension NSImage: @unchecked Sendable {}
+
 class ConversationAttachmentView: NSCollectionViewItem {
     
     var imageField: NSImageView!;
@@ -1515,18 +1518,21 @@ class ConversationAttachmentView: NSCollectionViewItem {
                         }
                         return;
                     }
+                    
+                    let image: NSImage? = switch data {
+                    case let img as NSImage:
+                        img;
+                    case let data as Data:
+                        NSImage(data: data);
+                    default:
+                        nil
+                    };
+                    
                     DispatchQueue.main.async {
-                        guard self.id == item.id else {
+                        guard self.id == item.id, let image else {
                             return;
                         }
-                        switch data! {
-                        case let image as NSImage:
-                            self.imageField.image = image.square(100);
-                        case let data as Data:
-                            self.imageField.image = NSImage(data: data)?.square(100);
-                        default:
-                            break;
-                        }
+                        self.imageField.image = image.square(100);
                     }
                 })
             } else if let image = NSImage(contentsOf: fileUrl)?.square(100) {

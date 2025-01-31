@@ -22,6 +22,7 @@
 import AppKit
 import AVFoundation
 
+@MainActor
 class Alert {
     
     var icon: NSImage?;

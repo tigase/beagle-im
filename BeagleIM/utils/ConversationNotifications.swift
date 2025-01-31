@@ -21,7 +21,7 @@
 
 import Foundation
 
-public enum ConversationNotification: String {
+public enum ConversationNotification: String, Sendable {
     case none
     case mention
     case always

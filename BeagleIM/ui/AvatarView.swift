@@ -75,8 +75,10 @@ class AvatarView: NSImageView {
     }
     
     override func awakeFromNib() {
-        self.imageScaling = .scaleProportionallyUpOrDown;
-        self.updateImage();
+        MainActor.assumeIsolated {
+            self.imageScaling = .scaleProportionallyUpOrDown;
+            self.updateImage();
+        }
     }
     
     func set(name: String?, avatar: NSImage?) {

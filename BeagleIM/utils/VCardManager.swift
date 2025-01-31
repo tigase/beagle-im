@@ -22,11 +22,11 @@
 import Foundation
 import Martin
 
-class VCardManager {
+final class VCardManager: Sendable {
     
     public static let instance = VCardManager();
         
-    open func retrieveVCard(for jid: JID, on account: BareJID) async throws -> VCard {
+    public func retrieveVCard(for jid: JID, on account: BareJID) async throws -> VCard {
         guard let client = XmppService.instance.getClient(for: account) else {
             throw XMPPError.undefined_condition;
         }
@@ -43,7 +43,7 @@ class VCardManager {
         }
     }
     
-    open func refreshVCard(for jid: BareJID, on account: BareJID) async throws -> VCard {
+    public func refreshVCard(for jid: BareJID, on account: BareJID) async throws -> VCard {
         let vcard = try await retrieveVCard(for: jid.jid(), on: account);
         DBVCardStore.instance.updateVCard(for: jid, on: account, vcard: vcard);
         return vcard;

@@ -49,17 +49,19 @@ class NSPopupButtonNoSizeWhenHidden: NSPopUpButton {
     }
     
     override func awakeFromNib() {
-        self.heightOriginalConstraint = self.constraints.first(where: { (constraint) -> Bool in
-            return constraint.relation == .equal && constraint.firstAnchor == self.heightAnchor;
-        });
-        self.widthOriginalConstraint = self.constraints.first(where: { (constraint) -> Bool in
-            return constraint.relation == .equal && constraint.firstAnchor == self.widthAnchor;
-        });
-
-        widthConstraint = self.widthAnchor.constraint(equalToConstant: 0);
-        heightConstraint = self.heightAnchor.constraint(equalToConstant: 0);
-//        widthConstraint?.isActive = isHidden;
-//        heightConstraint?.isActive = isHidden;
+        MainActor.assumeIsolated {
+            self.heightOriginalConstraint = self.constraints.first(where: { (constraint) -> Bool in
+                return constraint.relation == .equal && constraint.firstAnchor == self.heightAnchor;
+            });
+            self.widthOriginalConstraint = self.constraints.first(where: { (constraint) -> Bool in
+                return constraint.relation == .equal && constraint.firstAnchor == self.widthAnchor;
+            });
+            
+            widthConstraint = self.widthAnchor.constraint(equalToConstant: 0);
+            heightConstraint = self.heightAnchor.constraint(equalToConstant: 0);
+            //        widthConstraint?.isActive = isHidden;
+            //        heightConstraint?.isActive = isHidden;
+        }
     }
     
 }

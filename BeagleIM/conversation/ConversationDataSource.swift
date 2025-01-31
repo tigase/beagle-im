@@ -25,9 +25,10 @@ import Combine
 import Martin
 import os
 
+@MainActor
 protocol ConversationDataSourceDelegate: AnyObject {
     
-    var conversation: (any Conversation)! { get }
+    //var conversation: (any Conversation)! { get }
     
     func beginUpdates();
     
@@ -60,7 +61,7 @@ extension ConversationDataSourceDelegate {
 
 }
 
-public enum ConversationLoadType {
+public enum ConversationLoadType: Sendable {
     case with(id: Int, overhead: Int)
     case unread(overhead: Int)
     case before(entry: ConversationEntry, limit: Int)
@@ -75,7 +76,7 @@ public enum ConversationLoadType {
     }
 }
 
-class ConversationDataSource {
+class ConversationDataSource: @unchecked Sendable {
 
     enum State {
         case uninitialized
@@ -87,13 +88,14 @@ class ConversationDataSource {
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ConversationDataSource");
     private let queue = DispatchQueue(label: "chat_datasource");
     
-    weak var delegate: (any ConversationDataSourceDelegate)? {
+    var conversation: (any Conversation)? {
         didSet {
-            delegate?.conversation.markersPublisher.receive(on: self.queue).sink(receiveValue: { [weak self] markers in
+            conversation?.markersPublisher.receive(on: self.queue).sink(receiveValue: { @Sendable [weak self] markers in
                 self?.update(markers: markers);
             }).store(in: &cancellables);
         }
     }
+    weak var delegate: (any ConversationDataSourceDelegate)?
     
     public var defaultPageSize = 80;
     
@@ -128,7 +130,7 @@ class ConversationDataSource {
         guard let item = notification.object as? ConversationEntry else {
             return;
         }
-        guard let conversation = delegate?.conversation else {
+        guard let conversation = conversation else {
             return;
         }
         guard conversation.id == (item.conversation as? (any Conversation))?.id else {
@@ -142,7 +144,7 @@ class ConversationDataSource {
         guard let item = notification.object as? ConversationEntry else {
             return;
         }
-        guard let conversation = delegate?.conversation else {
+        guard let conversation = conversation else {
             return;
         }
         guard conversation.id == (item.conversation as? (any Conversation))?.id else {
@@ -156,7 +158,7 @@ class ConversationDataSource {
         guard let item = notification.object as? ConversationEntry else {
             return;
         }
-        guard let conversation = delegate?.conversation else {
+        guard let conversation = conversation else {
             return;
         }
         guard conversation.id == (item.conversation as? (any Conversation))?.id else {
@@ -178,7 +180,7 @@ class ConversationDataSource {
     // should be called from the main dispatch queue!!
     func loadItems(_ type: ConversationLoadType) {
         // do not load if load is already in progress..
-        guard state != .loading, let conversation = self.delegate?.conversation else {
+        guard state != .loading, let conversation = self.conversation else {
             return;
         }
         let initialLoad = self.state == .uninitialized;
@@ -197,7 +199,7 @@ class ConversationDataSource {
     }
     
     // call only from local dispatch queue
-    private func updateStore(scrollTo: ScrollTo = .none, completionHandler: (()->Void)? = nil) {
+    private func updateStore(scrollTo: ScrollTo = .none, completionHandler: (@Sendable ()->Void)? = nil) {
         let entriesCount = entries.count;
 
         let oldStore = store;
@@ -242,7 +244,7 @@ class ConversationDataSource {
     }
     
     private func update(markers: [ChatMarker]) {
-        guard let conversation = self.delegate?.conversation else {
+        guard let conversation = self.conversation else {
             return;
         }
                 
@@ -363,7 +365,7 @@ class ConversationDataSource {
     }
     
     // should be called from internal queue!
-    private func add(items: [ConversationEntry], scrollTo: ScrollTo, initial: Bool = false, completionHandler: (()->Void)?) {
+    private func add(items: [ConversationEntry], scrollTo: ScrollTo, initial: Bool = false, completionHandler: (@Sendable ()->Void)?) {
         let start = Date();
         let newItems = items.filter({ !self.knownItems.contains($0.id) });
         guard !newItems.isEmpty else {

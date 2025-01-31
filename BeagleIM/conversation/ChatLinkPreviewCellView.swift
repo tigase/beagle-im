@@ -20,7 +20,9 @@
 //
 
 import AppKit
-import LinkPresentation
+@preconcurrency import LinkPresentation
+
+extension LPLinkMetadata: @unchecked Sendable {}
 
 class ChatLinkPreviewCellView: NSTableCellView {
     
@@ -45,7 +47,9 @@ class ChatLinkPreviewCellView: NSTableCellView {
     deinit {
         if #available(macOS 10.15, *) {
             if let linkView = self.linkView as? LPLinkViewPool.PoolableLPLinkView {
-                LPLinkViewPool.instance.release(linkView: linkView);
+                DispatchQueue.main.async {
+                    LPLinkViewPool.instance.release(linkView: linkView);
+                }
             }
         }
     }
@@ -75,7 +79,7 @@ class ChatLinkPreviewCellView: NSTableCellView {
                 guard let meta = meta1 else {
                     return;
                 }
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [weak linkView] in
                     guard let linkView = linkView, linkView.metadata.originalURL == url else {
                         return;
                     }
@@ -89,7 +93,8 @@ class ChatLinkPreviewCellView: NSTableCellView {
 
 /// Custom class for delaying release/deinit of LPLinkView to deal with crashes when LPLinkView with a movie is being released too soon.
 @available(macOS 10.15, *)
-class LPLinkViewPool {
+@MainActor
+class LPLinkViewPool: Sendable {
     
     class Item {
         let linkView: LPLinkView;
@@ -134,7 +139,7 @@ class LPLinkViewPool {
         self.pool.removeAll(where: { $0 === linkView });
     }
     
-    class PoolableLPLinkView: LPLinkView {
+    class PoolableLPLinkView: LPLinkView, @unchecked Sendable {
         
         private var timer: Timer?;
         
@@ -145,7 +150,9 @@ class LPLinkViewPool {
                     timer = nil;
                 } else {
                     timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false, block: { _ in
-                        LPLinkViewPool.instance.remove(linkView: self);
+                        DispatchQueue.main.async {
+                            LPLinkViewPool.instance.remove(linkView: self);
+                        }
                     });
                 }
             }

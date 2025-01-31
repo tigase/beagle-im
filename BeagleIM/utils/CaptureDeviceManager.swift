@@ -22,33 +22,30 @@
 import Foundation
 import Combine
 import AVFoundation
+import Martin
 
 class CaptureDeviceManager {
     
-    private static var authorizations: [AVMediaType: CurrentValueSubject<AVAuthorizationStatus,Never>] = [:];
-    
-    private static let queue = DispatchQueue(label: "CaptureDeviceManager");
+    private static let authorizations = UnfairLock(state: [AVMediaType: CurrentValueSubject<AVAuthorizationStatus,Never>]());
     
     static func authorizationStatus(for mediaType: AVMediaType) -> AVAuthorizationStatus {
         return AVCaptureDevice.authorizationStatus(for: mediaType);
     }
     
     static func authorizationStatusPublisher(for mediaType: AVMediaType) -> CurrentValueSubject<AVAuthorizationStatus,Never> {
-        return queue.sync {
-            guard let subject = authorizations[mediaType] else {
+        return authorizations.with({
+            guard let subject = $0[mediaType] else {
                 let subject = CurrentValueSubject<AVAuthorizationStatus,Never>(AVCaptureDevice.authorizationStatus(for: mediaType));
-                authorizations[mediaType] = subject;
+                $0[mediaType] = subject;
                 return subject;
             }
             return subject;
-        }
+        })
     }
     
     static func requestAccess(for mediaType: AVMediaType, completionHandler: @escaping (Bool) -> Void) {
         AVCaptureDevice.requestAccess(for: mediaType, completionHandler: { result in
-            queue.sync {
-                authorizations[mediaType]?.send(result ? .authorized : .denied)
-            }
+            authorizations.with({ $0[mediaType] })?.send(result ? .authorized : .denied)
             completionHandler(result);
         })
     }

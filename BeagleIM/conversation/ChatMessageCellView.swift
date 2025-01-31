@@ -23,6 +23,8 @@ import AppKit
 import LinkPresentation
 import Martin
 
+extension NSTextCheckingResult: @unchecked Sendable {}
+
 class ChatMessageCellView: BaseChatCellView {
 
     var id: Int = 0;

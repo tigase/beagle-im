@@ -125,8 +125,10 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
 
         super.viewWillAppear();
         lastTextChangeTimer = Foundation.Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true, block: { (timer) in
-            if self.lastTextChange.timeIntervalSinceNow < -10.0 {
-                self.change(chatState: .active);
+            DispatchQueue.main.async {
+                if self.lastTextChange.timeIntervalSinceNow < -10.0 {
+                    self.change(chatState: .active);
+                }
             }
         });
 
@@ -569,6 +571,7 @@ class ChatViewTableView: NSTableView {
     }
 }
 
+@MainActor
 protocol ChatViewTableViewMouseDelegate: AnyObject {
     func handleMouse(event: NSEvent) -> Bool;
 }

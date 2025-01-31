@@ -23,15 +23,15 @@ import AppKit
 import Combine
 import Martin
 import os
-import WebRTC
+@preconcurrency import WebRTC
 import MetalKit
 
 class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate, RTCVideoViewDelegate {
-    func callDidStart(_ sender: Call) {
+    nonisolated func callDidStart(_ sender: Call) {
         // nothing to do..
     }
     
-    func callDidEnd(_ sender: Call) {
+    nonisolated func callDidEnd(_ sender: Call) {
         DispatchQueue.main.async {
             guard let window = self.view.window else {
                 return;
@@ -47,17 +47,17 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
         }
     }
     
-    func callStateChanged(_ sender: Call) {
+    nonisolated func callStateChanged(_ sender: Call) {
         // nothing to do..
     }
     
-    func call(_ sender: Call, didReceiveLocalVideoTrack localTrack: RTCVideoTrack) {
+    nonisolated func call(_ sender: Call, didReceiveLocalVideoTrack localTrack: RTCVideoTrack) {
         DispatchQueue.main.async {
             localTrack.add(self.localVideoRenderer);
         }
     }
     
-    func call(_ sender: Call, didReceiveRemoteVideoTrack remoteTrack: RTCVideoTrack, forStream mid: String, fromReceiver receiverId: String) {
+    nonisolated func call(_ sender: Call, didReceiveRemoteVideoTrack remoteTrack: RTCVideoTrack, forStream mid: String, fromReceiver receiverId: String) {
         DispatchQueue.main.async {
             self.items.append(Item(mid: mid, videoTrack: remoteTrack, receiverId: receiverId));
             self.collectionView.animator().performBatchUpdates({
@@ -66,7 +66,7 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
         }
     }
     
-    func call(_ sender: Call, goneRemoteVideoTrack remoteTrack: RTCVideoTrack, fromReceiver receiverId: String) {
+    nonisolated func call(_ sender: Call, goneRemoteVideoTrack remoteTrack: RTCVideoTrack, fromReceiver receiverId: String) {
         DispatchQueue.main.async {
             if let idx = self.items.firstIndex(where: { $0.receiverId == receiverId }) {
                 self.items.remove(at: idx);
@@ -281,7 +281,7 @@ class MeetController: NSViewController, NSCollectionViewDataSource, CallDelegate
         windowController.showWindow(self);
     }
     
-    func videoView(_ videoView: any RTCVideoRenderer, didChangeVideoSize size: CGSize) {
+    nonisolated func videoView(_ videoView: any RTCVideoRenderer, didChangeVideoSize size: CGSize) {
         DispatchQueue.main.async {
             self.localVideoRendererWidth?.animator().constant = (size.width * self.localVideoRenderer.frame.height) / size.height;
         }

@@ -35,7 +35,7 @@ extension Query {
     static let chatFindLastActivity = Query("SELECT last.timestamp as timestamp, last1.item_type, last1.data, last1.encryption, last1.fingerprint, (SELECT count(id) FROM chat_history ch2 WHERE ch2.account = last.account AND ch2.jid = last.jid AND ch2.state IN (\(ConversationEntryState.incoming(.received).rawValue), \(ConversationEntryState.incoming_error(.received).rawValue), \(ConversationEntryState.outgoing_error(.received).rawValue))) as unread, last1.author_nickname FROM (SELECT ch.account, ch.jid, max(ch.timestamp) as timestamp FROM chat_history ch WHERE ch.account = :account AND ch.jid = :jid AND ch.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue),\(ItemType.location.rawValue)) GROUP BY ch.account, ch.jid) last LEFT JOIN chat_history last1 ON last1.account = last.account AND last1.jid = last.jid AND last1.timestamp = last.timestamp AND last1.item_type IN (\(ItemType.message.rawValue), \(ItemType.attachment.rawValue),\(ItemType.location.rawValue))");
 }
 
-open class DBChatStore: ContextLifecycleAware {
+open class DBChatStore: ContextLifecycleAware, @unchecked Sendable {
 
     static let instance: DBChatStore = DBChatStore.init();
 

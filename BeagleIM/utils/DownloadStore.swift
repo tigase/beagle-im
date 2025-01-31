@@ -23,7 +23,7 @@ import Foundation
 import AppKit
 import Martin
 
-class DownloadStore {
+class DownloadStore: @unchecked Sendable {
     
     static let instance = DownloadStore();
 

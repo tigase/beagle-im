@@ -24,7 +24,7 @@ import Combine
 import Martin
 import AppKit
 
-class MeetEventHandler: XmppServiceExtension {
+final class MeetEventHandler: XmppServiceExtension, @unchecked Sendable {
     
     static let instance = MeetEventHandler();
     
@@ -35,12 +35,12 @@ class MeetEventHandler: XmppServiceExtension {
     }
     
     func register(for client: XMPPClient, cancellables: inout Set<AnyCancellable>) {
-        client.module(.meet).eventsPublisher.sink(receiveValue: { [weak self] event in
+        client.module(.meet).eventsPublisher.sink(receiveValue: { @Sendable [weak self] event in
             switch event {
             case .inivitation(let action, let sender):
                 switch action {
                 case .propose(let id, let meetJid, let media):
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { @Sendable [weak self] in
                         let alert = Alert();
                         alert.icon = NSImage(named: "videoCall");
                         alert.messageText = "Invitiation to meeting";

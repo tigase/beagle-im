@@ -115,7 +115,7 @@ extension UserDefaults {
     }
 }
 
-class SettingsStore {
+final class SettingsStore: @unchecked Sendable {
     @UserDefaultsSetting(key: "showRoomDetailsSidebar", defaultValue: true)
     var showRoomDetailsSidebar: Bool;
     @UserDefaultsSetting(key: "defaultAccount")

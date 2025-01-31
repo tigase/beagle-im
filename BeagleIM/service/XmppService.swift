@@ -42,7 +42,7 @@ extension XMPPClient: Hashable {
     
 }
 
-class XmppService {
+class XmppService: @unchecked Sendable {
     
     static let AUTHENTICATION_ERROR = Notification.Name("authenticationError");
     static let SERVER_CERTIFICATE_ERROR = Notification.Name("serverCertificateError");
@@ -361,8 +361,9 @@ class XmppService {
         let signalContext = SignalContext(withStorage: signalStorage)!;
         _ = client.modulesManager.register(OMEMOModule(signalContext: signalContext, signalStorage: signalStorage));
         
-        XMLConsoleViewController.configureLogging(for: client);
-        
+        DispatchQueue.main.async {
+            XMLConsoleViewController.configureLogging(for: client);
+        }
         return client;
     }
 

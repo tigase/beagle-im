@@ -22,7 +22,7 @@
 import Foundation
 import WebRTC
 
-class RTCDesktopVideoCapturer: RTCVideoCapturer {
+class RTCDesktopVideoCapturer: RTCVideoCapturer, @unchecked Sendable {
     
     private var timer: Timer?;
     
@@ -31,15 +31,15 @@ class RTCDesktopVideoCapturer: RTCVideoCapturer {
             self.timer = Timer.scheduledTimer(withTimeInterval: 1.0 / 25, repeats: true, block: { timer in
                 self.grabScreen(displayId: displayId);
             })
-            completionHander();
         }
+        completionHander();
     }
     
     func stopCapture(completionHander: @escaping ()->Void) {
         DispatchQueue.main.async {
             self.timer?.invalidate();
-            completionHander();
         }
+        completionHander();
     }
  
     private func grabScreen(displayId: CGDirectDisplayID) {

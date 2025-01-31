@@ -25,7 +25,7 @@ import WebRTC
 import os
 import Combine
 
-protocol JingleSessionActionDelegate: AnyObject {
+protocol JingleSessionActionDelegate: AnyObject, Sendable {
     
     func received(action: JingleManager.Session.Action);
     
@@ -40,7 +40,7 @@ extension JingleManager {
         private weak var delegate: (any JingleSessionActionDelegate)?;
         private var actionsQueue: [Action] = [];
         
-        public enum Action {
+        public enum Action: Sendable {
             case contentSet(SDP)
             case contentApply(Jingle.ContentAction, SDP)
             case transportAdd(Jingle.Transport.ICEUDPTransport.Candidate, String);

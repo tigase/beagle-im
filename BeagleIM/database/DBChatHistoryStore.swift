@@ -70,12 +70,12 @@ extension Query {
     static let messagesCountUnsent = Query("SELECT count(id) FROM chat_history WHERE state = \(ConversationEntryState.outgoing(.unsent).rawValue)");
 }
 
-class DBChatHistoryStore {
+class DBChatHistoryStore: @unchecked Sendable {
 
     static let MESSAGE_NEW = Notification.Name("messageAdded");
     static let MESSAGE_UPDATED = Notification.Name("messageUpdated");
     static let MESSAGE_REMOVED = Notification.Name("messageRemoved");
-    static var instance: DBChatHistoryStore = DBChatHistoryStore.init();
+    static let instance: DBChatHistoryStore = DBChatHistoryStore.init();
     
     static func convertToAttachments() {
         let diskCacheUrl = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!.appendingPathComponent(Bundle.main.bundleIdentifier!).appendingPathComponent("download", isDirectory: true);
@@ -191,7 +191,7 @@ class DBChatHistoryStore {
         
         private var accountLocks: [BareJID: AccountLock] = [:];
         
-        func execute(for jid: BareJID, body: @escaping () async -> Void) {
+        func execute(for jid: BareJID, body: sending @escaping () async -> Void) {
             lock.lock();
             let accountLock = ensureAccountLock(for: jid);
             accountLock.counter = accountLock.counter + 1;
@@ -220,11 +220,11 @@ class DBChatHistoryStore {
             accountLocks.removeValue(forKey: jid);
         }
                                     
-        private class AccountLock {
+        private class AccountLock: @unchecked Sendable {
             var counter: Int = 0;
             let semaphore = DispatchSemaphore(value: 1);
             
-            func execute(_ body: @escaping () async -> Void) {
+            func execute(_ body: sending @escaping () async -> Void) {
                 semaphore.wait();
                 Task {
                     await body();

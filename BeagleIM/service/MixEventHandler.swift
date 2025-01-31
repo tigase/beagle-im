@@ -23,7 +23,7 @@ import Foundation
 import Martin
 import Combine
 
-class MixEventHandler: XmppServiceExtension {
+final class MixEventHandler: XmppServiceExtension, Sendable {
         
     static let instance = MixEventHandler();
         

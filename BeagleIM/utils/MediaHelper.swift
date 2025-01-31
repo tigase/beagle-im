@@ -23,6 +23,8 @@ import Foundation
 
 import AVKit
 
+extension AVAssetExportSession: @unchecked Sendable {}
+
 public enum ShareError: Error {
     case unknownError
     case noAccessError
@@ -123,65 +125,59 @@ class MediaHelper {
     }
     
     static func askImageQuality(window: NSWindow) async throws -> ImageQuality {
-        return try await withUnsafeThrowingContinuation({ continuation in
-            askImageQuality(window: window, forceQualityQuestion: true, continuation.resume(with:));
-        })
+        return try await askImageQuality(window: window, forceQualityQuestion: true);
     }
 
     static func askVideoQuality(window: NSWindow) async throws -> VideoQuality {
-        return try await withUnsafeThrowingContinuation({ continuation in
-            askVideoQuality(window: window, forceQualityQuestion: true, continuation.resume(with:));
-        })
+        return try await askVideoQuality(window: window, forceQualityQuestion: true);
     }
 
-    static func askImageQuality(window: NSWindow, forceQualityQuestion askQuality: Bool, _ completionHandler: @escaping (sending Result<ImageQuality,ShareError>)->Void) {
+    static func askImageQuality(window: NSWindow, forceQualityQuestion askQuality: Bool) async throws -> ImageQuality {
         if let quality = askQuality ? nil : ImageQuality.current {
-            completionHandler(.success(quality));
+            return quality;
         } else {
-            DispatchQueue.main.async {
+            let values: [ImageQuality] = [.original, .highest, .high, .medium, .low];
+            let alert = await MainActor.run(body: {
                 let alert = NSAlert();
                 alert.icon = NSImage(named: NSImage.infoName);
                 alert.messageText = NSLocalizedString("Select quality", comment: "media helper question");
                 alert.informativeText = NSLocalizedString("Select quality of the image for sharing", comment: "media helper question");
-                let values: [ImageQuality] = [.original, .highest, .high, .medium, .low];
                 for value in  values {
                     alert.addButton(withTitle: value.label);
                 }
-                alert.beginSheetModal(for: window, completionHandler: { response in
-                    let idx = response.rawValue - 1000;
-                    guard idx < values.count else {
-                        completionHandler(.failure(.noAccessError));
-                        return;
-                    }
-                    completionHandler(.success(values[idx]));
-                });
+                return alert;
+            })
+            let response = await alert.beginSheetModal(for: window);
+            let idx = response.rawValue - 1000;
+            guard idx < values.count else {
+                throw ShareError.noAccessError;
             }
+            return values[idx];
         }
     }
     
-    static func askVideoQuality(window: NSWindow, forceQualityQuestion askQuality: Bool, _ completionHandler: @escaping (sending Result<VideoQuality,ShareError>)->Void) {
+    static func askVideoQuality(window: NSWindow, forceQualityQuestion askQuality: Bool) async throws -> VideoQuality {
         if let quality = askQuality ? nil : VideoQuality.current {
-            completionHandler(.success(quality));
+            return quality;
         } else {
-            DispatchQueue.main.async {
+            let values: [VideoQuality] = [.original, .high, .medium, .low];
+            let alert = await MainActor.run(body: {
                 let alert = NSAlert();
                 alert.icon = NSImage(named: NSImage.infoName);
                 alert.messageText = NSLocalizedString("Select quality", comment: "media helper question");
                 alert.informativeText = NSLocalizedString("Select quality of the video for sharing", comment: "media helper question");
 
-                let values: [VideoQuality] = [.original, .high, .medium, .low];
                 for value in  values {
                     alert.addButton(withTitle: value.label);
                 }
-                alert.beginSheetModal(for: window, completionHandler: { response in
-                    let idx = response.rawValue - 1000;
-                    guard idx < values.count else {
-                        completionHandler(.failure(.noAccessError));
-                        return;
-                    }
-                    completionHandler(.success(values[idx]));
-                });
+                return alert;
+            });
+            let response = await alert.beginSheetModal(for: window);
+            let idx = response.rawValue - 1000;
+            guard idx < values.count else {
+                throw ShareError.noAccessError;
             }
+            return values[idx];
         }
     }
     
@@ -259,7 +255,7 @@ class MediaHelper {
         }
     }
     
-    static func compressMovie(url: URL, quality: VideoQuality, progressCallback: @escaping (Float)->Void) async throws -> (URL, String) {
+    static func compressMovie(url: URL, quality: VideoQuality, progressCallback: @Sendable @escaping (Float)->Void) async throws -> (URL, String) {
         guard quality != .original else {
             return (url, url.lastPathComponent);
         }
@@ -284,31 +280,6 @@ class MediaHelper {
             throw error;
         }
         return (fileUrl, replaceExtension(filename: url.lastPathComponent, newExtension: "mp4"));
-    }
-    
-    static func compressMovie(url: URL, fileInfo: ShareFileInfo, quality: VideoQuality, deleteSource: Bool, progressCallback: @escaping (Float)->Void, completionHandler: @escaping (Result<(URL,ShareFileInfo),ShareError>)->Void) {
-        guard quality != .original else {
-            completionHandler(.success((url, fileInfo)));
-            return;
-        }
-        let video = AVAsset(url: url);
-        let exportSession = AVAssetExportSession(asset: video, presetName: quality.preset)!;
-        exportSession.shouldOptimizeForNetworkUse = true;
-        exportSession.outputFileType = .mp4;
-        let newFileInfo = fileInfo.with(suffix: "mp4");
-        let fileUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: false);
-        exportSession.outputURL = fileUrl;
-        
-        let timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true, block: { _ in
-            progressCallback(exportSession.progress);
-        })
-        exportSession.exportAsynchronously {
-            timer.invalidate();
-            if deleteSource {
-                try? FileManager.default.removeItem(at: url);
-            }
-            completionHandler(.success((fileUrl, newFileInfo)));
-        }
     }
     
 }

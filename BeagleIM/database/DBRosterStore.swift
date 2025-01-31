@@ -30,7 +30,7 @@ extension Query {
     static let rosterFindItemsForAccount = Query("SELECT id, jid, name, subscription, ask, data FROM roster_items WHERE account = :account");
 }
 
-class AccountRoster {
+class AccountRoster: @unchecked Sendable {
     
     private var roster = [JID: RosterItem]();
     
@@ -68,7 +68,7 @@ class AccountRoster {
     
 }
 
-open class DBRosterStore: RosterStore {
+open class DBRosterStore: RosterStore, @unchecked Sendable {
     
     public typealias RosterItem = BeagleIM.RosterItem
     
@@ -228,7 +228,7 @@ struct DBRosterData: Codable, DatabaseConvertibleStringValue {
         
 }
 
-public class RosterItem: Martin.RosterItemBase, Identifiable, Hashable {
+public class RosterItem: Martin.RosterItemBase, Identifiable, Hashable, @unchecked Sendable {
     
     public static func == (lhs: RosterItem, rhs: RosterItem) -> Bool {
         return lhs.id == rhs.id;

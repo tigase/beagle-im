@@ -21,6 +21,7 @@
 
 import Foundation
 
+@MainActor
 protocol ChannelAwareProtocol: AnyObject {
     
     var channel: Channel! { get set }

@@ -21,12 +21,14 @@
 
 import Foundation
 import Network
-import WebRTC
+@preconcurrency import WebRTC
 import Martin
 import Combine
 import os
 
-class CallManager {
+extension RTCIceCandidate: @unchecked Sendable {}
+
+class CallManager: @unchecked Sendable {
     
     static let instance = CallManager();
 
@@ -257,9 +259,7 @@ class Call: NSObject, JingleSessionActionDelegate, @unchecked Sendable {
         try await initiateOutgoingCall();
     }
     
-    func accept(offerMedia: [Media]) async throws {
-        try await self.accept(offerMedia: media);
-    }
+
     
     func end() {
         if self.state == .new || self.state == .ringing {
@@ -514,16 +514,16 @@ class Call: NSObject, JingleSessionActionDelegate, @unchecked Sendable {
     
     private func initiateWebRTC(iceServers: [RTCIceServer], offerMedia media: [Media]) throws {
         logger.debug("intiating WebRTC with iceServers: \(iceServers)")
-        self.currentConnection = VideoCallController.initiatePeerConnection(iceServers: iceServers, withDelegate: self);
+        self.currentConnection = JingleManager.initiatePeerConnection(iceServers: iceServers, withDelegate: self);
         if self.currentConnection != nil {
-            self.localAudioTrack = VideoCallController.peerConnectionFactory.audioTrack(withTrackId: "audio-" + UUID().uuidString);
+            self.localAudioTrack = JingleManager.instance.connectionFactory.audioTrack(withTrackId: "audio-" + UUID().uuidString);
             if let localAudioTrack = self.localAudioTrack {
                 self.currentConnection?.add(localAudioTrack, streamIds: ["RTCmS"]);
             }
             if media.contains(.video) && CaptureDeviceManager.authorizationStatus(for: .video) == .authorized {
-                let videoSource = VideoCallController.peerConnectionFactory.videoSource();
+                let videoSource = JingleManager.instance.connectionFactory.videoSource();
                 self.localVideoSource = videoSource;
-                let localVideoTrack = VideoCallController.peerConnectionFactory.videoTrack(with: videoSource, trackId: "video-" + UUID().uuidString);
+                let localVideoTrack = JingleManager.instance.connectionFactory.videoTrack(with: videoSource, trackId: "video-" + UUID().uuidString);
                 self.localVideoTrack = localVideoTrack;
                 
                 if let device = VideoCaptureDevice.default {
@@ -555,25 +555,23 @@ class Call: NSObject, JingleSessionActionDelegate, @unchecked Sendable {
         localCapturer = device.capturer(for: localVideoSource);
         localCapturer?.startCapture(completionHandler: completionHandler);
     }
-
-    func accept(offerMedia media: [Media]) {
+    
+    func accept(offerMedia: [Media]) async throws {
         guard let session = self.session else {
             reset();
             return;
         }
         changeState(.connecting);
-        Task {
-            do {
-                try initiateWebRTC(iceServers: await discoverIceServers(), offerMedia: media);
-                guard self.currentConnection != nil else {
-                    self.reject();
-                    return;
-                }
-                try await session.accept();
-                self.connectRemoteSDPPublishers(session: session);
-            } catch {
+        do {
+            try initiateWebRTC(iceServers: await discoverIceServers(), offerMedia: media);
+            guard self.currentConnection != nil else {
                 self.reject();
+                return;
             }
+            try await session.accept();
+            self.connectRemoteSDPPublishers(session: session);
+        } catch {
+            self.reject();
         }
     }
     
@@ -714,13 +712,13 @@ class Call: NSObject, JingleSessionActionDelegate, @unchecked Sendable {
     
     private func generateOfferAndSet(peerConnection: RTCPeerConnection, creatorProvider: @escaping (String)->Jingle.Content.Creator, localRole: Jingle.Content.Creator) async throws -> SDP {
         logger.debug("generating offer");
-        let sdpOffer = try await peerConnection.offer(for: VideoCallController.defaultCallConstraints)
+        let sdpOffer = try await peerConnection.offer(for: JingleManager.defaultCallConstraints)
         return try await setLocalDescription(peerConnection: peerConnection, sdp: sdpOffer, creatorProvider: creatorProvider, localRole: localRole);
     };
         
     private func generateAnswerAndSet(peerConnection: RTCPeerConnection, creatorProvider: @escaping (String)->Jingle.Content.Creator, localRole: Jingle.Content.Creator) async throws -> SDP {
         logger.debug("generating answer");
-        let sdpAnswer = try await peerConnection.answer(for: VideoCallController.defaultCallConstraints);
+        let sdpAnswer = try await peerConnection.answer(for: JingleManager.defaultCallConstraints);
         return try await setLocalDescription(peerConnection: peerConnection, sdp: sdpAnswer, creatorProvider: creatorProvider, localRole: localRole);
     }
     
@@ -753,6 +751,7 @@ class Call: NSObject, JingleSessionActionDelegate, @unchecked Sendable {
     
 }
 
+@preconcurrency
 protocol CallDelegate: AnyObject {
     
     func callDidStart(_ sender: Call);

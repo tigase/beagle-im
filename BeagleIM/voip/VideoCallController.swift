@@ -20,7 +20,7 @@
 //
 
 import AppKit
-import WebRTC
+@preconcurrency import WebRTC
 import Martin
 import Metal
 import UserNotifications
@@ -65,11 +65,8 @@ enum RTCVideoViewScaling {
     case fill
 }
 
-class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate {
-    
-    public static let peerConnectionFactory: RTCPeerConnectionFactory = {
-        return RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(), decoderFactory: RTCDefaultVideoDecoderFactory());
-    }();
+@preconcurrency
+class VideoCallController: NSViewController, RTCVideoViewDelegate, @preconcurrency CallDelegate {
     
     public static func open(completionHandler: @escaping (VideoCallController)->Void) {
         DispatchQueue.main.async {
@@ -232,7 +229,7 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
         super.viewWillDisappear();
     }
     
-    func videoView(_ videoView: any RTCVideoRenderer, didChangeVideoSize size: CGSize) {
+    nonisolated func videoView(_ videoView: any RTCVideoRenderer, didChangeVideoSize size: CGSize) {
         DispatchQueue.main.async {
             if videoView === self.localVideoView! {
                 self.localVideoViewAspect?.isActive = false;
@@ -326,8 +323,8 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
                 self.avplayer = nil;
                 switch response {
                 case .alertFirstButtonReturn:
-                    DispatchQueue.global().async {
-                        call.accept(offerMedia: call.media)
+                    Task {
+                        try? await call.accept(offerMedia: call.media)
                     }
                 default:
                     call.reject();
@@ -407,27 +404,9 @@ class VideoCallController: NSViewController, RTCVideoViewDelegate, CallDelegate 
             os_log(OSLogType.debug, log: .jingle, "switched video source");
         })
     }
-    
-    static let defaultCallConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement": "true"]);
-    
+        
     static let publicStunServers: [RTCIceServer] = [ RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:stun2.l.google.com:19302","stun:stun3.l.google.com:19302","stun:stun4.l.google.com:19302"]), RTCIceServer(urlStrings: ["stun:stunserver.org:3478" ]) ];
-    
-    static func initiatePeerConnection(iceServers foundIceServers: [RTCIceServer], withDelegate delegate: any RTCPeerConnectionDelegate) -> RTCPeerConnection? {
-        let configuration = RTCConfiguration();
-        configuration.sdpSemantics = .unifiedPlan;
         
-        let iceServers: [RTCIceServer] = (foundIceServers.isEmpty && Settings.usePublicStunServers) ? publicStunServers : foundIceServers;
-        
-        os_log(OSLogType.debug, log: .jingle, "using ICE servers: %s", iceServers.map({ $0.urlStrings.description }).description);
-        
-        configuration.iceServers = iceServers;
-        configuration.bundlePolicy = .maxCompat;
-        configuration.rtcpMuxPolicy = .require;
-        configuration.iceCandidatePoolSize = 3;
-        
-        return peerConnectionFactory.peerConnection(with: configuration, constraints: defaultCallConstraints, delegate: delegate);
-    }
-    
     @IBAction func closeClicked(_ sender: Any) {
         call?.reset();
 //        self.localVideoCapturer?.stopCapture();

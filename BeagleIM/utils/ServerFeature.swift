@@ -21,7 +21,7 @@
 import Foundation
 import Martin
 
-public enum ServerFeature: String, Codable {
+public enum ServerFeature: String, Codable, Sendable {
     case mam
     case push
     

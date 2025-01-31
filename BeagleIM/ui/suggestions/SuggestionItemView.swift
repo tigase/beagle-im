@@ -21,10 +21,12 @@
 
 import AppKit
 
+@MainActor
 protocol SuggestionItemViewProvider {
     func view(for: Any) -> (any SuggestionItemView)?;
 }
 
+@MainActor
 protocol SuggestionItemView: AnyObject {
     
     var appearance: NSAppearance? { get set };

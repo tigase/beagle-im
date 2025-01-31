@@ -66,14 +66,13 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         self.queue = queue;
         self.canOpenChat = canOpenChat;
 
-        DBChatStore.instance.conversationsPublisher.throttleFixed(for: 0.1, scheduler: self.queue, latest: true).sink(receiveValue: { [weak self] items in
-            self?.update(items: items);
+        DBChatStore.instance.conversationsPublisher.throttleFixed(for: 0.1, scheduler: self.queue, latest: true).receive(on: DispatchQueue.main).map({ return (self.items, $0) }).sink(receiveValue: { @Sendable [weak self] oldItems, items in
+            self?.update(oldItems: oldItems, newItems: items);
         }).store(in: &cancellables);
     }
     
-    func update(items: [any Conversation]) {
+    nonisolated func update(oldItems: [ConversationItem], newItems items: [any Conversation]) {
         let newItems = items.filter(self.isAccepted(chat:)).map({ conversation in ConversationItem(chat: conversation, timestamp: conversation.timestamp) }).sorted(by: { (c1,c2) in c1.timestamp > c2.timestamp });
-        let oldItems = self.items;
         
         let changes: [CollectionChange] = newItems.calculateChanges(from: oldItems);
         
@@ -107,33 +106,37 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         return items[index];
     }
     
-    func forChat(_ chat: any Conversation, execute: @escaping (ConversationItem) -> Void) {
-        self.queue.async {
+    func forChat(_ chat: any Conversation, execute: @Sendable @escaping (ConversationItem) -> Void) {
+        DispatchQueue.main.async {
             let items = self.items;
-            guard let item = items.first(where: { (it) -> Bool in
-                it.chat.id == chat.id
-            }) else {
-                return;
+            self.queue.async {
+                guard let item = items.first(where: { (it) -> Bool in
+                    it.chat.id == chat.id
+                }) else {
+                    return;
+                }
+                
+                execute(item);
             }
-
-            execute(item);
         }
     }
 
-    func forChat(account: BareJID, jid: BareJID, execute: @escaping (ConversationItem) -> Void) {
-        self.queue.async {
+    func forChat(account: BareJID, jid: BareJID, execute: @Sendable  @escaping (ConversationItem) -> Void) {
+        DispatchQueue.main.async {
             let items = self.items;
-            guard let item = items.first(where: { (it) -> Bool in
-                it.chat.account == account && it.chat.jid == jid
-            }) else {
-                return;
+            self.queue.async {
+                guard let item = items.first(where: { (it) -> Bool in
+                    it.chat.account == account && it.chat.jid == jid
+                }) else {
+                    return;
+                }
+                
+                execute(item);
             }
-
-            execute(item);
         }
     }
 
-    func isAccepted(chat: any Conversation) -> Bool {
+    nonisolated func isAccepted(chat: any Conversation) -> Bool {
         return false;
     }
     

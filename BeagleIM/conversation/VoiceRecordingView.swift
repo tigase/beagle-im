@@ -197,7 +197,9 @@ class VoiceRecordingView: NSView, AVAudioRecorderDelegate, AVAudioPlayerDelegate
         recordingStartTime = Date();
         updateTime();
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true, block: { [weak self] _ in
-            self?.updateTime();
+            DispatchQueue.main.async { [weak self] in
+                self?.updateTime();
+            }
         })
         
         let settings = encoding.settings;
@@ -330,14 +332,16 @@ class VoiceRecordingView: NSView, AVAudioRecorderDelegate, AVAudioPlayerDelegate
         self.hideVoiceRecordingView(self);
     }
     
-    func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
+    nonisolated func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
     }
     
-    func audioRecorderEncodeErrorDidOccur(_ recorder: AVAudioRecorder, error: (any Error)?) {
+    nonisolated func audioRecorderEncodeErrorDidOccur(_ recorder: AVAudioRecorder, error: (any Error)?) {
         
     }
     
-    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        self.stopPlaying();
+    nonisolated func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        DispatchQueue.main.async {
+            self.stopPlaying();
+        }
     }
 }

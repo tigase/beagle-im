@@ -43,43 +43,43 @@ class Markdown {
         }
     }
     
-    static let quoteParagraphStyle: NSParagraphStyle = {
-        var paragraphStyle = ParagraphStyle();
+    static var quoteParagraphStyle: NSParagraphStyle {
+        let paragraphStyle = ParagraphStyle();
         paragraphStyle.type = .quote;
         paragraphStyle.headIndent = 16;
         paragraphStyle.firstLineHeadIndent = 4;
         paragraphStyle.alignment = .natural;
         return paragraphStyle;
-    }();
+    };
     
-    static let codeParagraphStyle: NSParagraphStyle = {
-        var paragraphStyle = ParagraphStyle();
+    static var codeParagraphStyle: NSParagraphStyle {
+        let paragraphStyle = ParagraphStyle();
         paragraphStyle.type = .code;
         paragraphStyle.headIndent = 10;
         paragraphStyle.tailIndent = -10;
         paragraphStyle.firstLineHeadIndent = 10;
         paragraphStyle.alignment = .natural;
         return paragraphStyle;
-    }();
+    };
     
-    static let listParagraphStyle: NSParagraphStyle = {
-        var paragraphStyle = ParagraphStyle();
+    static var listParagraphStyle: NSParagraphStyle {
+        let paragraphStyle = ParagraphStyle();
         paragraphStyle.type = .list;
         paragraphStyle.headIndent = 22;
         paragraphStyle.alignment = .natural;
         paragraphStyle.paragraphSpacingBefore = 5;
         paragraphStyle.firstLineHeadIndent = 10;
         return paragraphStyle;
-    }();
+    };
     
-    static let listParagraphContinuationStyle: NSParagraphStyle = {
-        var paragraphStyle = ParagraphStyle();
+    static var listParagraphContinuationStyle: NSParagraphStyle {
+        let paragraphStyle = ParagraphStyle();
         paragraphStyle.type = .list;
         paragraphStyle.headIndent = 22;
         paragraphStyle.alignment = .natural;
         paragraphStyle.firstLineHeadIndent = 22;
         return paragraphStyle;
-    }();
+    };
     
     static let NEW_LINE: unichar = "\n";
     static let GT_SIGN: unichar = ">";
@@ -109,9 +109,7 @@ class Markdown {
     static func isNumber(_ c: unichar) -> Bool {
         return c >= 48 && c <= 57;
     }
-        
-    static var usedTime: Int = 0;
-    
+            
     enum ListMarker {
         case number
         case minus
@@ -395,9 +393,6 @@ class Markdown {
             }
         }
         
-        let end = Date();
-        usedTime = usedTime + Int((end.timeIntervalSince1970 - start.timeIntervalSince1970) * 1000);
-        logger.debug("time used for markdown parsing: \(usedTime)");
     }
     
     static func listParagraphStyle(for message: NSString, startAt: Int?, listMarker: ListMarker?) -> NSParagraphStyle? {
@@ -447,7 +442,7 @@ extension String {
         "😟": [":-(", ":("]
     ];
     
-    static var emojis: [String:String] = Dictionary(uniqueKeysWithValues: String.emojisList.flatMap({ (arg0) -> [(String,String)] in
+    static let emojis: [String:String] = Dictionary(uniqueKeysWithValues: String.emojisList.flatMap({ (arg0) -> [(String,String)] in
         let (k, list) = arg0
         return list.map { v in return (v, k)};
     }));

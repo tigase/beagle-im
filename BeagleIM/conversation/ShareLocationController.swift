@@ -99,9 +99,11 @@ class ShareLocationController: NSViewController, CLLocationManagerDelegate, MKMa
         }
     }
     
-    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        if locationManager.authorizationStatus == .authorizedAlways || locationManager.authorizationStatus == .authorized {
-            requestLocation();
+    nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        DispatchQueue.main.async {
+            if self.locationManager.authorizationStatus == .authorizedAlways || self.locationManager.authorizationStatus == .authorized {
+                self.requestLocation();
+            }
         }
     }
     
@@ -119,23 +121,27 @@ class ShareLocationController: NSViewController, CLLocationManagerDelegate, MKMa
         setCurrentLocation(CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude), zoomIn: false);
     }
     
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         print("received locations:", locations);
-        guard let location = locations.first, inProgress else {
-            return;
+        DispatchQueue.main.async {
+            guard let location = locations.first, self.inProgress else {
+                return;
+            }
+            self.inProgress = false;
+            self.setCurrentLocation(location, zoomIn: true);
         }
-        inProgress = false;
-        setCurrentLocation(location, zoomIn: true);
     }
     
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
-        let alert = NSAlert();
-        alert.messageText = NSLocalizedString("Can't show your location", comment: "error message text");
-        alert.informativeText = error.localizedDescription;
-        alert.addButton(withTitle: NSLocalizedString("OK", comment: "button label"));
-        alert.beginSheetModal(for: self.view.window!, completionHandler: { response in
-            
-        });
+    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
+        DispatchQueue.main.async {
+            let alert = NSAlert();
+            alert.messageText = NSLocalizedString("Can't show your location", comment: "error message text");
+            alert.informativeText = error.localizedDescription;
+            alert.addButton(withTitle: NSLocalizedString("OK", comment: "button label"));
+            alert.beginSheetModal(for: self.view.window!, completionHandler: { response in
+                
+            });
+        }
     }
     
     func mapView(_ mapView: MKMapView, viewFor annotation: any MKAnnotation) -> MKAnnotationView? {
@@ -253,7 +259,9 @@ class LocationSuggestionField: NSSearchField, NSSearchFieldDelegate {
     
     override func awakeFromNib() {
         super.awakeFromNib();
-        self.setup();
+        MainActor.assumeIsolated {
+            self.setup();
+        }
     }
     
     func setup() {

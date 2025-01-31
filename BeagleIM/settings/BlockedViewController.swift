@@ -37,34 +37,28 @@ class BlockedViewController: NSViewController, NSTableViewDataSource, NSTableVie
         let clients = XmppService.instance.clients.values.filter({ (client) -> Bool in
             return client.state == .connected();
         });
-        var items: [Item] = [];
         if !clients.isEmpty {
             self.progressIndicator.startAnimation(nil);
-            let group = DispatchGroup();
-            for client in clients {
-                group.enter();
-                DispatchQueue.global().async {
-                    let account = client.userBareJid;
-                    client.module(.blockingCommand).retrieveBlockedJids(completionHandler: { result in
-                        DispatchQueue.main.async {
-                            switch result {
-                            case .success(let jids):
-                                items.append(contentsOf: jids.map({ jid -> Item in
-                                    return Item(account: account, jid: jid);
-                                }));
-                            case .failure(_):
-                                break;
-                            }
-                        }
-                        group.leave();
-                    });
+            Task {
+                let items = await withTaskGroup(of: [Item].self, body: { group in
+                    for client in clients {
+                        let account = client.userBareJid;
+                        group.addTask(operation: {
+                            return (try? await client.module(.blockingCommand).retrieveBlockedJids().map { Item(account: account, jid: $0) }) ?? []
+                        })
+                    }
+                    var items = [Item]();
+                    for await x in group {
+                        items.append(contentsOf: x);
+                    }
+                    return items;
+                })
+                await MainActor.run {
+                    self.allItems = items.sorted();
+                    self.updateItems();
+                    self.progressIndicator.stopAnimation(nil);
                 }
             }
-            group.notify(queue: DispatchQueue.main, execute: {
-                self.allItems = items.sorted();
-                self.updateItems();
-                self.progressIndicator.stopAnimation(nil);
-            })
         }
     }
     
@@ -147,7 +141,7 @@ class BlockedViewController: NSViewController, NSTableViewDataSource, NSTableVie
     }
     
     
-    struct Item: Equatable, Comparable {
+    struct Item: Equatable, Comparable, Sendable {
         static func < (i1: BlockedViewController.Item, i2: BlockedViewController.Item) -> Bool {
             switch i1.jid.description.compare(i2.jid.description) {
             case.orderedAscending:

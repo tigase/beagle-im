@@ -95,7 +95,7 @@ class XMLConsoleViewController: NSViewController, StreamLogger {
         self.view.window?.close();
     }
     
-    func incoming(_ value: StreamEvent) {
+    nonisolated func incoming(_ value: StreamEvent) {
         DispatchQueue.main.async { [weak self] in
             switch value {
             case .stanza(let stanza):
@@ -112,7 +112,7 @@ class XMLConsoleViewController: NSViewController, StreamLogger {
         }
     }
 
-    func outgoing(_ value: StreamEvent) {
+    nonisolated func outgoing(_ value: StreamEvent) {
         DispatchQueue.main.async { [weak self] in
             switch value {
             case .stanza(let stanza):

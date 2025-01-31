@@ -505,9 +505,9 @@ class GroupchatViewController: AbstractChatViewControllerWithSharing, NSTableVie
 
 }
 
-class GroupchatParticipantsContainer: NSObject, NSOutlineViewDelegate, NSOutlineViewDataSource {
+class GroupchatParticipantsContainer: NSObject, NSOutlineViewDelegate, NSOutlineViewDataSource, @unchecked Sendable {
 
-    private class ParticipantsGroup: Equatable, Hashable {
+    private class ParticipantsGroup: Equatable, Hashable, @unchecked Sendable {
         static func == (lhs: ParticipantsGroup, rhs: ParticipantsGroup) -> Bool {
             return lhs.role == rhs.role;
         }
@@ -569,18 +569,20 @@ class GroupchatParticipantsContainer: NSObject, NSOutlineViewDelegate, NSOutline
     
     private var cancellables: Set<AnyCancellable> = [];
     
+    @MainActor
     weak var outlineView: NSOutlineView? {
         didSet {
             outlineView?.menu = self.prepareContextMenu();
             outlineView?.menu?.delegate = self;
         }
     }
+    @MainActor
     var room: Room? {
         didSet {
             cancellables.removeAll();
             self.outlineView?.isHidden = true;
-            room?.occupantsPublisher.throttle(for: 0.1, scheduler: self.queue, latest: true).sink(receiveValue:{ [weak self] value in
-                    self?.update(participants: value);
+            room?.occupantsPublisher.throttle(for: 0.1, scheduler: self.queue, latest: true).receive(on: DispatchQueue.main).map({ @Sendable [weak self] in (self?.groups,$0) }).receive(on: self.queue).sink(receiveValue:{ [weak self] oldGroups, value in
+                self?.update(oldGroups: oldGroups ?? [], participants: value);
             }).store(in: &cancellables);
         }
     }
@@ -612,8 +614,7 @@ class GroupchatParticipantsContainer: NSObject, NSOutlineViewDelegate, NSOutline
         case groupModified(role: MucRole, changes: Array<MucOccupant>.IndexSetChanges)
     }
     
-    private func update(participants: [MucOccupant]) {
-        let oldGroups = self.groups;
+    private func update(oldGroups: [ParticipantsGroup], participants: [MucOccupant]) {
         let newGroups = allRoles.map({ role in ParticipantsGroup(role: role, participants: participants.filter({ $0.role == role }).sorted(by: { (i1,i2) -> Bool in i1.nickname.lowercased() < i2.nickname.lowercased() })) }).filter({ !$0.participants.isEmpty });
 
         let allChanges = newGroups.calculateChanges(from: oldGroups);
@@ -664,6 +665,7 @@ class GroupchatParticipantsContainer: NSObject, NSOutlineViewDelegate, NSOutline
         }
     }
     
+    @MainActor
     func expandAll() {
         for group in groups {
             self.outlineView?.expandItem(group, expandChildren: true);
@@ -932,6 +934,7 @@ extension GroupchatParticipantsContainer: NSMenuDelegate {
         return true;
     }
     
+    @MainActor
     @objc func banUser(_ menuItem: NSMenuItem?) {
         guard let participant = (menuItem as? MenuItemWithOccupant)?.occupant, let jid = participant.jid, let room = self.room, let mucModule = room.context?.module(.muc) else {
             return;
@@ -974,6 +977,7 @@ extension GroupchatParticipantsContainer: NSMenuDelegate {
         })
     }
     
+    @MainActor
     @objc func privateMessage(_ menuItem: NSMenuItem) {
         guard let participant = (menuItem as? MenuItemWithOccupant)?.occupant else {
             return;

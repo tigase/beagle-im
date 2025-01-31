@@ -187,7 +187,7 @@ class BaseJoinChannelViewController: NSViewController {
         return component;
     }
     
-    enum ComponentType {
+    enum ComponentType: Sendable {
         case muc
         case mix
         
@@ -202,7 +202,7 @@ class BaseJoinChannelViewController: NSViewController {
         }
     }
     
-    class Component {
+    final class Component: Sendable {
         let jid: JID;
         let name: String?;
         let type: ComponentType;

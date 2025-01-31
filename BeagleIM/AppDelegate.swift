@@ -22,7 +22,7 @@
 import Cocoa
 import WebRTC
 import Martin
-import UserNotifications
+@preconcurrency import UserNotifications
 import AVFoundation
 import AVKit
 import Combine
@@ -43,8 +43,8 @@ extension NSApplication {
     }
 }
 
-@NSApplicationMain
-class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate, NSMenuDelegate {
+@main
+class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate, NSMenuDelegate, @unchecked Sendable {
     
     fileprivate let stampFormatter = ({()-> DateFormatter in
         var f = DateFormatter();
@@ -65,6 +65,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     fileprivate var statusItem: NSStatusItem?;
     lazy var mainWindowController: NSWindowController? = { NSStoryboard(name: "Main", bundle: nil).instantiateController(withIdentifier: "ChatsWindowController") as! NSWindowController }();
     
+    @MainActor
     var rosterWindow: NSWindow {
         get {
             if let rosterWindow = NSApplication.shared.windows.first(where: { (window) -> Bool in
@@ -249,7 +250,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         }
        
         if let action = uri.action {
-            handle(action: action, uri: uri);
+            DispatchQueue.main.async {
+                self.handle(action: action, uri: uri);
+            }
         } else {
             DispatchQueue.main.async {
                 let alert = Alert();
@@ -276,10 +279,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         }
     }
     
+    @MainActor
     fileprivate func handle(action: XmppUri.Action, uri: XmppUri) {
         switch action {
         case .join:
-            DispatchQueue.main.async {
                 guard let windowController = NSStoryboard(name: "MIX", bundle: nil).instantiateController(withIdentifier: "JoinChannelWindowController") as? NSWindowController else {
                     return;
                 }
@@ -287,17 +290,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                 (windowController.contentViewController as? JoinChannelViewController)?.channelNameField.stringValue = uri.jid.localPart ?? "";
                 (windowController.contentViewController as? JoinChannelViewController)?.password = uri.dict?["password"];
                 self.mainWindowController?.window?.beginSheet(windowController.window!, completionHandler: nil);
-            }
         case .message:
-            DispatchQueue.main.async {
                 guard let windowController = self.mainWindowController?.storyboard?.instantiateController(withIdentifier: "Open1On1ChatController") as? NSWindowController else {
                     return;
                 }
                 (windowController.contentViewController as? Open1On1ChatController)?.searchField.stringValue = uri.jid.bareJid.description;
                 self.mainWindowController?.window?.beginSheet(windowController.window!, completionHandler: nil);
-            }
         case .roster:
-            DispatchQueue.main.async {
                 let rosterWindow = self.rosterWindow;
                 rosterWindow.makeKeyAndOrderFront(self);
                 if let addContact = NSStoryboard(name: "Roster", bundle: nil).instantiateController(withIdentifier: "AddContactController") as? AddContactController {
@@ -308,7 +307,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                     rosterWindow.contentViewController?.presentAsSheet(addContact);
                     addContact.verify();
                 }
-            }
         }
     }
         
@@ -354,12 +352,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         }
     }
     
+    @MainActor
     @objc func showXmlConsole(_ sender: NSMenuItem) {
         let accountJid = BareJID(sender.title);
         
         XMLConsoleViewController.open(for: accountJid);
     }
 
+    @MainActor
     @objc func showServiceDiscovery(_ sender: NSMenuItem) {
         let accountJid = BareJID(sender.title);
         
@@ -451,6 +451,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         return false;
     }
     
+    @MainActor
     func updateStatusItem(status: XmppService.Status, unread: Int, show: Bool) {
         if show {
             if self.statusItem == nil {
@@ -475,6 +476,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         }
     }
     
+    @MainActor
     @objc func makeMainWindowKey() {
         NSApp.unhide(self);
         self.mainWindowController?.showWindow(self);
@@ -483,6 +485,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         }
     }
         
+    @MainActor
     var preferencesWindowController: NSWindowController? {
         return NSApplication.shared.windows.map({ (window) -> NSWindowController? in
             return window.windowController;
@@ -493,7 +496,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         }) ?? NSStoryboard(name: "Settings", bundle: nil).instantiateController(withIdentifier: "PreferencesWindowController") as? NSWindowController;
     }
     
-    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
         
         UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [response.notification.request.identifier]);
         
@@ -502,10 +505,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             return;
         }
         
+        let account = BareJID(userInfo["account"] as? String);
+        let jid = BareJID(userInfo["jid"] as? String);
+        let roomJid = BareJID(userInfo["roomJid"] as? String);
+        let nickname = userInfo["nickname"] as? String;
+        
+        await MainActor.run(body: {
         // TODO: remove in the next version
         switch id {
         case "authentication-failure":
-            guard let _ = BareJID(userInfo["account"] as? String) else {
+            guard account != nil else {
                 break;
             }
             guard let windowController = preferencesWindowController else {
@@ -514,7 +523,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             (windowController.contentViewController as? NSTabViewController)?.selectedTabViewItemIndex = 1;
             windowController.showWindow(self);
         case "room-join-error":
-            guard let accountStr = userInfo["account"] as? String, let roomJidStr = userInfo["roomJid"] as? String, let nickname = userInfo["nickname"] as? String else {
+            guard let account, let roomJid, let nickname else {
                 break;
             }
             let storyboard = NSStoryboard(name: "Main", bundle: nil);
@@ -524,10 +533,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             guard let openRoomController = windowController.contentViewController as? JoinChannelViewController else {
                 break;
             }
-            let roomJid = BareJID(roomJidStr);
             openRoomController.channelNameField.stringValue = roomJid.domain;
             openRoomController.channelNameField.stringValue = roomJid.localPart ?? "";
-            openRoomController.account = BareJID(accountStr);
+            openRoomController.account = account;
             openRoomController.nickname = nickname;
             guard let window = self.mainWindowController?.window else {
                 break;
@@ -535,7 +543,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             window.windowController?.showWindow(self);
             window.beginSheet(windowController.window!, completionHandler: nil);
         case "message-new":
-            guard let account = BareJID(userInfo["account"] as? String), let jid = BareJID(userInfo["jid"] as? String) else {
+            guard let account, let jid else {
                 break;
             }
             NotificationCenter.default.post(name: ChatsListViewController.CHAT_SELECTED, object: nil, userInfo: ["account": account, "jid": jid]);
@@ -545,32 +553,31 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         default:
             break;
         }
-        
-        completionHandler();
+        })
     }
     
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
         
-        if let account = notification.request.content.userInfo["account"] as? String, let jid = notification.request.content.userInfo["jid"] as? String {
-            guard let window = NSApp.windows.first(where: { w -> Bool in
-                return w.windowController is ChatsWindowController
-            }) else {
-                completionHandler([.sound, .list, .banner]);
-                return;
+        return await MainActor.run(body: {
+            if let account = notification.request.content.userInfo["account"] as? String, let jid = notification.request.content.userInfo["jid"] as? String {
+                guard let window = NSApp.windows.first(where: { w -> Bool in
+                    return w.windowController is ChatsWindowController
+                }) else {
+                    return [.sound, .list, .banner];
+                }
+                
+                guard let chatViewController = (window.contentViewController as? NSSplitViewController)?.splitViewItems.last?.viewController as? AbstractChatViewController else {
+                    return [.sound, .list, .banner];
+                }
+                
+                if (chatViewController.account?.description ?? "") != account || (chatViewController.conversation?.jid.description ?? "") != jid {
+                    return [.sound, .list, .banner];
+                }
+                return []
+            } else {
+                return [.sound, .list, .banner];
             }
-            
-            guard let chatViewController = (window.contentViewController as? NSSplitViewController)?.splitViewItems.last?.viewController as? AbstractChatViewController else {
-                completionHandler([.sound, .list, .banner]);
-                return;
-            }
-            
-            if (chatViewController.account?.description ?? "") != account || (chatViewController.conversation?.jid.description ?? "") != jid {
-                completionHandler([.sound, .list, .banner]);
-                return;
-            }
-        } else {
-            completionHandler([.sound, .list, .banner]);
-        }
+        });
     }
     
     @objc func authenticationFailure(_ notification: Notification) {
@@ -653,6 +660,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         blockSelectedItems(wholeDomains: true)
     }
 
+    @MainActor
     private func blockSelectedItems(wholeDomains: Bool) {
         if let chatsWindowController = NSApp.windows.compactMap({ w in
             return w.windowController as? ChatsWindowController

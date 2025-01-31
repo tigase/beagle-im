@@ -24,7 +24,7 @@ import Combine
 import Martin
 import os
 
-class MeetManager {
+class MeetManager: @unchecked Sendable {
     
     public static let instance = MeetManager();
     
@@ -65,9 +65,6 @@ class MeetManager {
                 return false;
             }
             meet.setIncomingCall(call);
-            Task {
-                try await call.accept(offerMedia: call.media);
-            }
             return true;
         }
     }
@@ -78,7 +75,7 @@ class MeetManager {
     }
 }
 
-class Meet {
+class Meet: @unchecked Sendable {
     
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "meet")
     
@@ -165,7 +162,9 @@ class Meet {
     
     fileprivate func setIncomingCall(_ call: Call) {
         incomingCall = call;
-        call.accept(offerMedia: []);
+        Task {
+            try? await call.accept(offerMedia: []);
+        }
     }
     
     private func handle(event: MeetModule.MeetEvent) {

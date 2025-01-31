@@ -22,6 +22,7 @@
 import AppKit
 import Martin
 
+@MainActor
 protocol ChatsListGroupProtocol {
     
     var name: String { get }
@@ -32,9 +33,9 @@ protocol ChatsListGroupProtocol {
     
     func getItem(at: Int) -> (any ChatsListItemProtocol)?;
     
-    func forChat(_ chat: any Conversation, execute: @escaping (ConversationItem)->Void);
+    func forChat(_ chat: any Conversation, execute: @Sendable @escaping (ConversationItem)->Void);
     
-    func forChat(account: BareJID, jid: BareJID, execute: @escaping (ConversationItem)->Void);
+    func forChat(account: BareJID, jid: BareJID, execute: @Sendable @escaping (ConversationItem)->Void);
 }
 
 protocol ChatsListItemProtocol {

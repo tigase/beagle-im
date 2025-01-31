@@ -24,7 +24,7 @@ import Martin
 import AppKit
 import Combine
 
-public class Contact: DisplayableIdWithKeyProtocol {
+public class Contact: DisplayableIdWithKeyProtocol, @unchecked Sendable {
 
     public let key: Key;
     
@@ -69,13 +69,13 @@ public class Contact: DisplayableIdWithKeyProtocol {
         ContactManager.instance.release(key);
     }
     
-    public struct Key: Hashable, Equatable {
+    public struct Key: Hashable, Equatable, Sendable {
         public let account: BareJID;
         public let jid: BareJID;
         public let type: KeyType
     }
 
-    public enum KeyType: Hashable, Equatable {
+    public enum KeyType: Hashable, Equatable, Sendable {
         case buddy
         case occupant(nickname: String)
         case participant(id: String)
@@ -87,7 +87,7 @@ public class Contact: DisplayableIdWithKeyProtocol {
     
 }
 
-public class ContactManager {
+public class ContactManager: @unchecked Sendable {
     
     public let queue = DispatchQueue(label: "contactManager");
     public static let instance = ContactManager();

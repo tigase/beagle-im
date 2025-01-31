@@ -21,56 +21,66 @@
 
 import AppKit
 
-class ShowMainWindowSegue: NSStoryboardSegue {
+class ShowMainWindowSegue: NSStoryboardSegue, @unchecked Sendable {
     
     override func perform() {
-        (NSApplication.shared.delegate as? AppDelegate)?.mainWindowController?.showWindow(self);
-    }
-    
-}
-
-class ChatWithWindowSegue: NSStoryboardSegue {
-    
-    override func perform() {
-        if let mainWindow = (NSApplication.shared.delegate as? AppDelegate)?.mainWindowController {
-            mainWindow.showWindow(self);
-            ((mainWindow.contentViewController as? NSSplitViewController)?.splitViewItems.first?.viewController as? ChatsListViewController)?.searchField.becomeFirstResponder();
+        DispatchQueue.main.async {
+            (NSApplication.shared.delegate as? AppDelegate)?.mainWindowController?.showWindow(self);
         }
     }
     
 }
 
-class CreateChannelWindowSegue: NSStoryboardSegue {
+class ChatWithWindowSegue: NSStoryboardSegue, @unchecked Sendable {
+    
+    override func perform() {
+        DispatchQueue.main.async {
+            if let mainWindow = (NSApplication.shared.delegate as? AppDelegate)?.mainWindowController {
+                mainWindow.showWindow(self);
+                ((mainWindow.contentViewController as? NSSplitViewController)?.splitViewItems.first?.viewController as? ChatsListViewController)?.searchField.becomeFirstResponder();
+            }
+        }
+    }
+    
+}
+
+class CreateChannelWindowSegue: NSStoryboardSegue, @unchecked Sendable {
 
     override func perform() {
-        if let mainWindow = (NSApplication.shared.delegate as? AppDelegate)?.mainWindowController {
-            mainWindow.showWindow(self);
-            ((mainWindow.contentViewController as? NSSplitViewController)?.splitViewItems.first?.viewController as? ChatsListViewController)?.createChannel(self);
+        DispatchQueue.main.async {
+            if let mainWindow = (NSApplication.shared.delegate as? AppDelegate)?.mainWindowController {
+                mainWindow.showWindow(self);
+                ((mainWindow.contentViewController as? NSSplitViewController)?.splitViewItems.first?.viewController as? ChatsListViewController)?.createChannel(self);
+            }
         }
     }
 
 }
 
-class JoinChannelWindowSegue: NSStoryboardSegue {
+class JoinChannelWindowSegue: NSStoryboardSegue, @unchecked Sendable {
 
     override func perform() {
-        if let mainWindow = (NSApplication.shared.delegate as? AppDelegate)?.mainWindowController {
-            mainWindow.showWindow(self);
-            ((mainWindow.contentViewController as? NSSplitViewController)?.splitViewItems.first?.viewController as? ChatsListViewController)?.joinChannel(self);
+        DispatchQueue.main.async {
+            if let mainWindow = (NSApplication.shared.delegate as? AppDelegate)?.mainWindowController {
+                mainWindow.showWindow(self);
+                ((mainWindow.contentViewController as? NSSplitViewController)?.splitViewItems.first?.viewController as? ChatsListViewController)?.joinChannel(self);
+            }
         }
     }
 
 }
 
 
-class CreateMeetingWindowSegue: NSStoryboardSegue {
+class CreateMeetingWindowSegue: NSStoryboardSegue, @unchecked Sendable {
 
     override func perform() {
-        if let mainWindow = (NSApplication.shared.delegate as? AppDelegate)?.mainWindowController {
-            mainWindow.showWindow(self);
-            if let window = mainWindow.window {
-                let sheetWindow = NSWindow(contentViewController: destinationController as! NSViewController);
-                window.beginSheet(sheetWindow, completionHandler: nil);
+        DispatchQueue.main.async {
+            if let mainWindow = (NSApplication.shared.delegate as? AppDelegate)?.mainWindowController {
+                mainWindow.showWindow(self);
+                if let window = mainWindow.window {
+                    let sheetWindow = NSWindow(contentViewController: self.destinationController as! NSViewController);
+                    window.beginSheet(sheetWindow, completionHandler: nil);
+                }
             }
         }
     }

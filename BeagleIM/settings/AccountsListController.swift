@@ -333,6 +333,7 @@ class AccountCellView: NSTableCellView {
 
 }
 
+@MainActor
 protocol AccountAware: AnyObject {
     
     var account: BareJID? { get set }

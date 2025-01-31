@@ -62,18 +62,20 @@ class MessageTextView: NSTextView, NSLayoutManagerDelegate {
     private var heightConstraint: NSLayoutConstraint?;
 
     override func awakeFromNib() {
-        self.maxSize = NSSize(width: 0, height: CGFloat.greatestFiniteMagnitude);
-        
-        self.textContainer!.replaceLayoutManager(CustomLayoutManager());
-        
-        self.layoutManager?.delegate = self;
-        self.layoutManager?.typesetterBehavior = .latestBehavior;
-        //self.layoutManager?.backgroundLayoutEnabled = false;
-        self.textContainer?.lineFragmentPadding = 1;
-        self.textContainerInset = .zero;
-        self.textContainer?.widthTracksTextView = false;
-        self.textContainer?.heightTracksTextView = false;
-        self.usesAdaptiveColorMappingForDarkAppearance = true;
+        MainActor.assumeIsolated {
+            self.maxSize = NSSize(width: 0, height: CGFloat.greatestFiniteMagnitude);
+            
+            self.textContainer!.replaceLayoutManager(CustomLayoutManager());
+            
+            self.layoutManager?.delegate = self;
+            self.layoutManager?.typesetterBehavior = .latestBehavior;
+            //self.layoutManager?.backgroundLayoutEnabled = false;
+            self.textContainer?.lineFragmentPadding = 1;
+            self.textContainerInset = .zero;
+            self.textContainer?.widthTracksTextView = false;
+            self.textContainer?.heightTracksTextView = false;
+            self.usesAdaptiveColorMappingForDarkAppearance = true;
+        }
     }
         
     class CustomLayoutManager: NSLayoutManager {

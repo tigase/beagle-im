@@ -21,10 +21,12 @@
 
 import AppKit
 
-class ShowRosterWindowSegue: NSStoryboardSegue {
+class ShowRosterWindowSegue: NSStoryboardSegue, @unchecked Sendable {
     
     override func perform() {
-        (NSApplication.shared.delegate as? AppDelegate)?.rosterWindow.makeKeyAndOrderFront(self);
+        MainActor.assumeIsolated {
+            (NSApplication.shared.delegate as? AppDelegate)?.rosterWindow.makeKeyAndOrderFront(self);
+        }
     }
     
 }

@@ -24,7 +24,7 @@ import os
 
 extension OSLog {
     
-    private static var subsystem = Bundle.main.bundleIdentifier!;
+    private static let subsystem = Bundle.main.bundleIdentifier!;
     
     static let avatar = OSLog(subsystem: subsystem, category: "avatar")
     static let jingle = OSLog(subsystem: subsystem, category: "jingle")

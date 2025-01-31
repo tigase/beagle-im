@@ -29,7 +29,7 @@ struct AvatarWeakRef {
     weak var avatar: Avatar?;
 }
 
-public class Avatar {
+public class Avatar: @unchecked Sendable {
 
     private enum AvatarResult: Equatable {
         case notReady
@@ -90,7 +90,7 @@ public class Avatar {
 
 }
 
-class AvatarManager {
+class AvatarManager: @unchecked Sendable {
 
     public static let AVATAR_CHANGED = Notification.Name("avatarChanged");
     public static let AVATAR_FOR_HASH_CHANGED = Notification.Name("avatarForHashChanged");

@@ -24,7 +24,7 @@ import LinkPresentation
 import Martin
 
 @available(OSX 10.15, *)
-class MetadataCache {
+class MetadataCache: @unchecked Sendable {
 
     static let instance = MetadataCache();
 
@@ -70,7 +70,7 @@ class MetadataCache {
         try? FileManager.default.removeItem(at: diskCacheUrl.appendingPathComponent("\(id).metadata"));
     }
 
-    func generateMetadata(for url: URL, withId id: String, completionHandler: @escaping (LPLinkMetadata?)->Void) {
+    func generateMetadata(for url: URL, withId id: String, completionHandler: @escaping @Sendable (LPLinkMetadata?)->Void) {
         queue.async {
             if let queue = self.inProgress[url] {
                 queue.addOperation {
