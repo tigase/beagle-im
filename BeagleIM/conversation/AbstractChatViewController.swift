@@ -113,7 +113,7 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
     
     override func viewWillAppear() {
         super.viewWillAppear();
-        self.messageField?.placeholderAttributedString = account != nil ? NSAttributedString(string: String.localizedStringWithFormat(NSLocalizedString("from %@...", comment: "placehoder of message entry field"), account.description), attributes: [.foregroundColor: NSColor.placeholderTextColor, .font: NSFont.systemFont(ofSize: NSFont.systemFontSize)]) : nil;
+        self.messageField?.placeholderAttributedString = account != nil ? NSAttributedString(string: String.localizedStringWithFormat(NSLocalizedString("from %@...", comment: "placehoder of message entry field"), account!.description), attributes: [.foregroundColor: NSColor.placeholderTextColor, .font: NSFont.systemFont(ofSize: NSFont.systemFontSize)]) : nil;
         
         self.updateMessageFieldSize();
         self.messageFieldScroller.cornerRadius = messageFieldScrollerHeight.constant / 2;

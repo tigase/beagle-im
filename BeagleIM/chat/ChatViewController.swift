@@ -95,7 +95,7 @@ class ChatViewController: AbstractChatViewControllerWithSharing, ConversationLog
         buddyAvatarView.displayableId = conversation;
         chat.descriptionPublisher.map({ $0 ?? "" }).assign(to: \.stringValue, on: buddyStatusLabel).store(in: &cancellables);
         chat.descriptionPublisher.assign(to: \.toolTip, on: buddyStatusLabel).store(in: &cancellables);
-        buddyJidLabel.title = jid.description;
+        buddyJidLabel.title = jid!.description;
 
         buddyAvatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
         

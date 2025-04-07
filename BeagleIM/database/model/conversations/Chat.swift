@@ -104,22 +104,25 @@ public class Chat: ConversationBaseWithOptions<ChatOptions>, ChatProtocol, Conve
         // proper handle when we have the same state!!
         let prevState = remoteChatState;
         if prevState == .composing {
-            remoteChatStateTimer?.invalidate();
-            remoteChatStateTimer = nil;
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return; }
+                remoteChatStateTimer?.invalidate();
+                remoteChatStateTimer = nil;
+            }
         }
         self.remoteChatState = state;
         
         if state == .composing {
             DispatchQueue.main.async {
                 self.remoteChatStateTimer = Foundation.Timer.scheduledTimer(withTimeInterval: 60.0, repeats: false, block: { [weak self] timer in
-                guard let that = self else {
-                    return;
-                }
-                if that.remoteChatState == .composing {
-                    that.remoteChatState = .active;
-                    that.remoteChatStateTimer = nil;
-                }
-            });
+                    guard let that = self else {
+                        return;
+                    }
+                    if that.remoteChatState == .composing {
+                        that.remoteChatState = .active;
+                        that.remoteChatStateTimer = nil;
+                    }
+                });
             }
         }
     }

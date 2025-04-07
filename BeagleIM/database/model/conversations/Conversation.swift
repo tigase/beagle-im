@@ -102,7 +102,7 @@ extension Conversation {
 
 public typealias LastConversationActivity = LastChatActivity
 
-public struct LastChatActivity: Sendable {
+public struct LastChatActivity: Sendable, Equatable {
     let timestamp: Date;
     let sender: ConversationEntrySender;
     let payload: LastChatActivityType?;
@@ -118,7 +118,7 @@ public struct LastChatActivity: Sendable {
     
 }
 
-public enum LastChatActivityType: Sendable {
+public enum LastChatActivityType: Sendable, Equatable {
     case message(message: String)
     case attachment
     case invitation

@@ -62,7 +62,7 @@ class ChannelViewController: AbstractChatViewControllerWithSharing, NSTableViewD
         channelAvatarView.displayableId = channel;
         channel.descriptionPublisher.map({ $0 ?? "" }).assign(to: \.stringValue, on: channelDescriptionLabel).store(in: &cancellables);
         channel.descriptionPublisher.assign(to: \.toolTip, on: channelDescriptionLabel).store(in: &cancellables);
-        channelJidLabel.title = jid.description;
+        channelJidLabel!.title = jid!.description;
         
         channelAvatarView.backgroundColor = NSColor(named: "chatBackgroundColor")!;
         

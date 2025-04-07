@@ -276,7 +276,7 @@ class ChatCellView: NSTableCellView {
             conversation?.timestampPublisher.combineLatest(CurrentTimePublisher.publisher).throttleFixed(for: 0.1, scheduler: ChatCellView.throttlingQueue, latest: true).map({ (value, now) in ChatCellView.formatTimestamp(value,now)}).receive(on: DispatchQueue.main).assign(to: \.stringValue, on: lastMessageTs).store(in: &cancellables);
             if let account = conversation?.account {
                 if let chat = conversation as? Chat {
-                    conversation?.lastActivityPublisher.throttleFixed(for: 0.1, scheduler: ChatCellView.throttlingQueue, latest: true).combineLatest(chat.$remoteChatState.replaceNil(with: ChatState.active)).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (activity, chatState) in
+                    conversation?.lastActivityPublisher.combineLatest(chat.$remoteChatState.replaceNil(with: ChatState.active)).throttleFixed(for: 0.1, scheduler: ChatCellView.throttlingQueue, latest: true).removeDuplicates(by: { r1, r2 -> Bool in r1.0 == r2.0 && r1.1 == r2.1 }).receive(on: DispatchQueue.main).sink(receiveValue: { [weak self] (activity, chatState) in
                         self?.set(lastActivity: activity, chatState: chatState, account: account);
                     }).store(in: &cancellables);
                 } else {
