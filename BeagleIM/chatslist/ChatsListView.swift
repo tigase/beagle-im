@@ -285,13 +285,25 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
     }
 
     @objc func closeSelectedChat(_ notification: Notification) {
-        let toClose = self.outlineView.selectedRowIndexes;
-        toClose.forEach { (row) in
-            guard let item = self.outlineView.item(atRow: row) as? ConversationItem else {
-                return;
+        let toClose = self.outlineView.selectedRowIndexes.compactMap { self.outlineView.item(atRow: $0) }
+        toClose.forEach { (item) in
+            switch item {
+            case let item as ConversationItem:
+                _ = self.close(chat: item)
+                break;
+            case let item as InvitationItem:
+                switch item.type {
+                case .presenceSubscription:
+                    XmppService.instance.getClient(for: item.account)?.module(.presence).unsubscribed(by: item.jid);
+                    break;
+                default:
+                    break;
+                }
+                InvitationManager.instance.remove(invitation: item);
+                break;
+            default:
+                break;
             }
-            
-            _ = self.close(chat: item);
         }
     }
     
