@@ -697,7 +697,7 @@ class DBChatHistoryStore: @unchecked Sendable {
         }
 
         guard try! Database.main.writer({ database -> Int in
-            try! database.update(query: .messageUpdateState, params: ["id": itemId, "newState": ConversationEntryState.outgoing_error(.received).rawValue, "error": error?.localizedDescription ?? "Unknown error"]);
+            try! database.update(query: .messageUpdateState, params: ["id": itemId, "newState": ConversationEntryState.outgoing_error(.received).rawValue, "error": error?.errorDescription ?? "Unknown error"]);
             return database.changesCount;
         }) > 0 else {
             return false;

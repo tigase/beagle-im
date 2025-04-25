@@ -52,6 +52,10 @@ final class MessageEventHandler: XmppServiceExtension, @unchecked Sendable {
                         break;
                     }
                 }
+                if (message.children.count == 2 && message.chatState != nil) {
+                    // we have just message and chat state, then just drop it
+                    return (nil, encryption)
+                }
                 return (message.to?.resource == nil ? nil : "", encryption);
             }
             return (body, encryption);
