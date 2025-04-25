@@ -302,17 +302,16 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
         
         for (account, items) in byAccount {
             if let client = XmppService.instance.getClient(for: account), client.state == .connected() {
-                let subscriptionRequests = items.compactMap({ $0 as? InvitationItem });
-                if !subscriptionRequests.isEmpty {
-                    for jid in subscriptionRequests.filter({ $0.type == .presenceSubscription }).map({ $0.jid }) {
-                        client.module(.presence).unsubscribed(by: jid)
-                    }
-                }
                 let jids = wholeDomains ? Array(Set(items.map({ JID($0.jid.domain)! }))) : items.map({ $0.jid.withoutResource() });
-                if wholeDomains {
+                let removedInvitations = if wholeDomains {
                     InvitationManager.instance.removeAll(fromServers: jids.map({ $0.domain }), on: account);
                 } else {
-                    InvitationManager.instance.remove(invitations: subscriptionRequests);
+                    InvitationManager.instance.removeAll(fromJids: jids, on: account);
+                }
+                if !removedInvitations.isEmpty {
+                    for jid in removedInvitations.filter({ $0.type == .presenceSubscription }).map({ $0.jid }) {
+                        client.module(.presence).unsubscribed(by: jid)
+                    }
                 }
                 client.module(.blockingCommand).block(jids: jids, completionHandler: { result in
                     switch result {
