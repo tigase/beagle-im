@@ -314,7 +314,7 @@ class ChatsListViewController: NSViewController, NSOutlineViewDataSource, ChatsL
                 } else {
                     InvitationManager.instance.remove(invitations: subscriptionRequests);
                 }
-                client.module(.blockingCommand).block(jids: items.map({ $0.jid.withoutResource() }), completionHandler: { result in
+                client.module(.blockingCommand).block(jids: jids, completionHandler: { result in
                     switch result {
                     case .failure(let error):
                         DispatchQueue.main.async {
