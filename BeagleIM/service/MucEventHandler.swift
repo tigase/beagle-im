@@ -49,7 +49,7 @@ final class MucEventHandler: XmppServiceExtension, Sendable {
                     do {
                         let info = try await client.module(.disco).info(for: JID(room.jid));
                         let mamVersions = info.features.compactMap(MessageArchiveManagementModule.Version.init(rawValue:));
-                        (room as! Room).roomFeatures = Set(info.features.compactMap(Room.Feature.init(rawValue:)));
+                        await (room as! Room).roomFeatures(roomFeatures: Set(info.features.compactMap(Room.Feature.init(rawValue:))));
                         let config = RoomConfig(form: info.form);
                         if let allowPM = config.allowPM {
                             (room as! Room).allowedPM = allowPM;

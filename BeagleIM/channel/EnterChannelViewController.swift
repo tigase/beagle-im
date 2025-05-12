@@ -156,7 +156,7 @@ class EnterChannelViewController: NSViewController, NSTextFieldDelegate {
                     let joinResult = try await client.module(.muc).join(roomName: room.localPart!, mucServer: room.domain, nickname: nickname, password: passwordField.description);
                     switch joinResult {
                     case .created(let room), .joined(let room):
-                        (room as! Room).roomFeatures = Set(features.compactMap({ Room.Feature(rawValue: $0) }));
+                        await (room as! Room).roomFeatures(roomFeatures: Set(features.compactMap(Room.Feature.init(rawValue:))));
                         if let form = form {
                             let config = RoomConfig(form: form)
                             if let allowPM = config.allowPM {

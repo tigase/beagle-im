@@ -105,28 +105,27 @@ public class Room: ConversationBaseWithOptions<RoomOptions>, RoomProtocol, Conve
     public var allowedPM: RoomConfig.AllowPM = .anyone;
     
     @Published
-    public var roomFeatures: Set<Feature> = [] {
-        didSet {
-            if self.roomFeatures.contains(.membersOnly) && self.roomFeatures.contains(.nonAnonymous) {
-                if let mucModule = context?.module(.muc) {
-                    Task {
-                        let members: [JID] = await withTaskGroup(of: [JID].self, body: { group in
-                            for affiliation: MucAffiliation in [.member, .admin, .owner] {
-                                group.addTask(operation: {
-                                    ((try? await mucModule.roomAffiliations(from: self, with: affiliation)) ?? []) .map({ $0.jid })
-                                })
-                            }
-                            return await group.reduce(into: [JID](), { $0.append(contentsOf: $1) })
-                        })
-                        withLock({
-                            self._members = members;
+    public private(set) var roomFeatures: Set<Feature> = [];
+     
+    public func roomFeatures(roomFeatures: Set<Feature>) async {
+        self.roomFeatures = roomFeatures;
+        if roomFeatures.contains(.membersOnly) && roomFeatures.contains(.nonAnonymous) {
+            if let mucModule = context?.module(.muc) {
+                let members: [JID] = await withTaskGroup(of: [JID].self, body: { group in
+                    for affiliation: MucAffiliation in [.member, .admin, .owner] {
+                        group.addTask(operation: {
+                            ((try? await mucModule.roomAffiliations(from: self, with: affiliation)) ?? []) .map({ $0.jid })
                         })
                     }
-                }
+                    return await group.reduce(into: [JID](), { $0.append(contentsOf: $1) })
+                })
+                withLock({
+                    self._members = members;
+                })
             }
         }
     }
-        
+
     public enum Feature: String {
         case membersOnly = "muc_membersonly"
         case nonAnonymous = "muc_nonanonymous"

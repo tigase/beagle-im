@@ -268,7 +268,23 @@ class DBChatHistoryStore: @unchecked Sendable {
                 fromArchive = false;
             }
         default:
-            inTimestamp = message.delay?.stamp;
+            if let delay = message.delay {
+                if delay.from == JID(conversation.account.domain) && message.type == .groupchat {
+                    if let context = XmppService.instance.getClient(for: conversation.account) {
+                        if let room = DBChatStore.instance.room(for: context, with: jid.bareJid) {
+                            let members = room.members;
+                            if (room.state != .joined || (room.roomFeatures.contains(.membersOnly) && room.roomFeatures.contains(.nonAnonymous)) && members == nil) {
+                                // we received message from the MUC but it offline stored on our local server and we do not've members yet.. skip it
+                                logger.debug("skipping processing of MUC room message sent by \(jid) from offline storage of local server as we do not have members yet..")
+                                return;
+                            } else {
+                                logger.debug("processing of MUC room message sent by \(jid) from offline storage of local server as we have members: \(members)")
+                            }
+                        }
+                    }
+                }
+                inTimestamp = delay.stamp;
+            }
             break;
         }
 
