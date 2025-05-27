@@ -301,8 +301,10 @@ class DBChatHistoryStore: @unchecked Sendable {
 
         if let stableId = serverMsgId, self.findItemId(for: conversation.account, serverMsgId: stableId) != nil {
             return;
+        } else if message.type == .groupchat, let stanzaId = remoteMsgId, self.findItemId(for: conversation, remoteMsgId: stanzaId) != nil {
+            return;
         }
-        
+                
         if let originId = stanzaId, message.type == .groupchat || direction == .outgoing, let existingMessageId = self.findItemId(for: conversation, originId: originId, sender: sender) {
             if let stableId = serverMsgId {
                 try! Database.main.writer({ database in
