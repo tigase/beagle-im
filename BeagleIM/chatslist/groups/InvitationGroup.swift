@@ -63,7 +63,7 @@ class InvitationGroup: ChatsListGroupProtocol {
         let newItems = items.sorted(by: { (i1, i2) -> Bool in i1.order > i2.order });
         let oldItems = self.items;
         
-        let changes: [CollectionChange] = newItems.calculateChanges(from: oldItems);
+        let changes: [CollectionChange] = newItems.calculateMoves(from: oldItems);
         
         guard !changes.isEmpty else {
             return;

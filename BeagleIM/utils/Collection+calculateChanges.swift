@@ -20,86 +20,44 @@
 //
 import Foundation
 
-private class QueuedForRemoval {
-    var idx: Int;
-    var removed: Bool = false;
-    init(idx: Int) {
-        self.idx = idx;
-    }
-}
-
-extension BidirectionalCollection where Element: Hashable {
+extension Array where Element: Hashable {
     
-    func calculateChanges<C>(from other: C) -> [CollectionChange] where C: BidirectionalCollection, Element == C.Element {
-
-        let diffs = self.difference(from: other).inferringMoves();
+    func calculateMoves(from other: Array) -> [CollectionChange] {
         
         var changes: [CollectionChange] = []
 
-        var queuedForRemoval: [QueuedForRemoval] = [];
-        var mappedForRemoval: [Element: QueuedForRemoval] = [:];
-        
-        let recalculateTarget = { (offset: Int) -> Int in
-            var newTarget = offset;
-            // we check all not removed before insertion place and bump insertion place index
-            for item in queuedForRemoval.reversed() {
-                if (!item.removed) && item.idx <= newTarget {
-                    newTarget = newTarget + 1;
-                }
-            }
-            return newTarget;
-        }
-        
-        for action in diffs {
-            switch action {
-            case .remove(let offset, let element, let associatedWith):
-                if associatedWith != nil {
-                    let item = QueuedForRemoval(idx: offset);
-                    queuedForRemoval.append(item);
-                    mappedForRemoval[element] = item;
-                } else {
-                    queuedForRemoval.forEach({ $0.idx = $0.idx - 1 });
-                    // we are not updating offset as they are descending (no impact on removal)
-                    changes.append(.remove(offset));
-                }
-            case .insert(let offset, let element, let associatedWith):
-                // we need to update offsets as those are ascending
-                if associatedWith != nil {
-                    let removedItem = mappedForRemoval[element]!;
-                    removedItem.removed = true;
-                    
-                    let newSource = removedItem.idx;
-                    let newTarget = recalculateTarget(offset);
-                    
-                    
-                    for item in queuedForRemoval {
-                        if !item.removed {
-                            if item.idx > newSource {
-                                item.idx = item.idx - 1;
-                            }
-                            if item.idx >= newTarget {
-                                item.idx = item.idx + 1;
-                            }
-                        }
-                    }
-                    
-                    changes.append(.move(newSource, newTarget))
-                } else {
-                    let newTarget = recalculateTarget(offset);
-                    changes.append(.insert(newTarget));
-                    for item in queuedForRemoval {
-                        if (!item.removed) {
-                            if item.idx < offset {
-                                break;
-                            }
-                            item.idx = item.idx + 1;
-                        }
-                    }
+        var testResult = other;
+        if !other.isEmpty {
+            for i in (0..<other.count).reversed() {
+                if !self.contains(testResult[i]) {
+                    testResult.remove(at: i)
+                    changes.append(.remove(i))
                 }
             }
         }
+        for i in 0..<self.count {
+            let elem = self[i];
+            if let idx = testResult.firstIndex(of: elem) {
+                if (idx == i) {
+                    continue;
+                } else {
+                    testResult.remove(at: idx)
+                    testResult.insert(elem, at: i);
+                    changes.append(.move(idx, i))
+                }
+            } else {
+                testResult.insert(elem, at: i)
+                changes.append(.insert(i))
+            }
+        }
         
-        
+//        let correct = self == testResult
+//        if !correct {
+//            let differences = difference(from: testResult);
+//            print("calculated differences: \(differences)")
+//            assert(correct, "found incorrect changes \(differences)" );
+//        }
+
         return changes;
     }
     

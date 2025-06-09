@@ -53,7 +53,7 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
     
     let name: String;
     weak var delegate: (any ChatsListViewDataSourceDelegate)?;
-    fileprivate var items: [ConversationItem] = [];
+    private var items: [ConversationItem] = [];
     let queue: DispatchQueue;
     
     let canOpenChat: Bool;
@@ -66,15 +66,19 @@ class ChatsListGroupAbstractChat: ChatsListGroupProtocol {
         self.queue = queue;
         self.canOpenChat = canOpenChat;
 
-        DBChatStore.instance.conversationsPublisher.throttleFixed(for: 0.1, scheduler: self.queue, latest: true).receive(on: DispatchQueue.main).map({ return (self.items, $0) }).receive(on: self.queue).sink(receiveValue: { @Sendable [weak self] oldItems, items in
-            self?.update(oldItems: oldItems, newItems: items);
+        DBChatStore.instance.conversationsPublisher.throttleFixed(for: 0.1, scheduler: self.queue, latest: true).sink(receiveValue: { @Sendable [weak self] items in
+            self?.update(newItems: items);
         }).store(in: &cancellables);
     }
     
-    nonisolated func update(oldItems: [ConversationItem], newItems items: [any Conversation]) {
+    nonisolated func update(newItems items: [any Conversation]) {
         let newItems = items.filter(self.isAccepted(chat:)).map({ conversation in ConversationItem(chat: conversation, timestamp: conversation.timestamp) }).sorted(by: { (c1,c2) in c1.timestamp > c2.timestamp });
-        
-        let changes: [CollectionChange] = newItems.calculateChanges(from: oldItems);
+        let oldItems = DispatchQueue.main.sync { self.items }
+        update(oldItems: oldItems, newItems: newItems)
+    }
+    
+    nonisolated func update(oldItems: [ConversationItem], newItems: [ConversationItem]) {
+        let changes: [CollectionChange] = newItems.calculateMoves(from: oldItems);
         
         guard !changes.isEmpty else {
             return;
