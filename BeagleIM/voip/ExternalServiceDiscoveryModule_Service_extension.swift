@@ -47,13 +47,13 @@ extension ExternalServiceDiscoveryModule.Service {
         let host = IPv6Address(self.host) != nil ? "[\(self.host)]" : self.host;
         
         if let port = self.port {
-            if let transport = self.transport {
+            if let transport = self.transport, (transport != .udp && type != "stun") {
                 return "\(type):\(host):\(port)?transport=\(transport.rawValue)"
             } else {
                 return "\(type):\(host):\(port)"
             }
         } else {
-            if let transport = self.transport {
+            if let transport = self.transport, (transport != .udp && type != "stun") {
                 return "\(type):\(host)?transport=\(transport.rawValue)"
             } else {
                 return "\(type):\(host)"
