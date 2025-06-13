@@ -161,6 +161,7 @@ class BaseJoinChannelViewController: NSViewController {
                 let components = try await retrieveComponents(from: domainJid, name: nil, discoModule: discoModule);
                 await MainActor.run(body: {
                     self.components = components;
+                    self.operationFinished();
                 })
             } catch {
                 await MainActor.run(body: {

@@ -314,7 +314,8 @@ class JabberDataFormView: NSTableView, NSTableViewDataSource, NSTableViewDelegat
         let row = (sender as? MultiSelectField)?.row ?? sender.tag;
         switch self.visibleFields[row] {
         case let f as DataForm.Field.Boolean:
-            f.value((sender as! NSButton).state == .on);
+            let newValue = (sender as! NSButton).state == .on
+            f.value(newValue);
         case let f as DataForm.Field.TextSingle:
             f.value((sender as! NSTextField).stringValue);
         case let f as DataForm.Field.TextPrivate:

@@ -215,7 +215,7 @@ class ConfigureRoomViewController: NSViewController {
                 case .failure(_):
                     return true;
                 case .success(_):
-                    return true;
+                    return false;
                 }
             })).filter({ $0 }).isEmpty {
                 await MainActor.run(body: {
