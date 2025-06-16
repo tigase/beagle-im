@@ -271,12 +271,6 @@ class AbstractChatViewController: NSViewController, NSTextViewDelegate {
                 }
                 return true;
             }
-        case #selector(NSResponder.deleteToBeginningOfLine(_:)):
-            guard textView.textStorage?.length ?? 0 == 0 else {
-                return false;
-            }
-            NotificationCenter.default.post(name: ChatsListViewController.CLOSE_SELECTED_CHAT, object: nil);
-            return true;
         default:
             break;
         }

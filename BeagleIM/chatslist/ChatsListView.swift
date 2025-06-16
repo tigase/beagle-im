@@ -706,15 +706,6 @@ class ChatsListView: NSOutlineView {
         super.init(frame: frameRect);
         trackingArea = NSTrackingArea(rect: self.frame, options: [.mouseEnteredAndExited,.mouseMoved,.activeAlways], owner: self, userInfo: nil);
         self.addTrackingArea(trackingArea!);
-        
-        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { (event) -> NSEvent? in
-            guard event.modifierFlags.contains(.command) && event.charactersIgnoringModifiers?.first?.unicodeScalars.first?.value == UInt32(NSBackspaceCharacter) else {
-                return event;
-            }
-            
-            // we detected shortcut!!
-            return nil;
-        }
     }
     
     required init?(coder: NSCoder) {
