@@ -60,7 +60,26 @@ class AccountsListController: NSViewController, NSTableViewDataSource, NSTableVi
         DispatchQueue.main.async {
             if self.accounts.isEmpty {
                 let addAccountController = self.storyboard!.instantiateController(withIdentifier: "AddAccountController") as! NSViewController;
-                self.presentAsSheet(addAccountController);
+                
+                // When the last account is removed, this controller can be in a transient state (no window,
+                // or window already presenting a sheet). Presenting a sheet in that moment may trigger
+                // AppKit assertions and crash the app.
+                if let window = self.view.window, window.attachedSheet == nil {
+                    self.presentAsSheet(addAccountController);
+                } else if let appDelegate = NSApplication.shared.delegate as? AppDelegate,
+                          let prefsWC = appDelegate.preferencesWindowController {
+                    prefsWC.showWindow(self);
+                    // If Preferences already shows a sheet (very common in this flow),
+                    // don't open a second "Untitled" modal window — just keep existing UI.
+                    guard let prefsWindow = prefsWC.window, prefsWindow.attachedSheet == nil,
+                          let hostVC = prefsWindow.contentViewController else {
+                        return;
+                    }
+                    hostVC.presentAsSheet(addAccountController);
+                } else {
+                    // If we have nowhere safe to present a sheet, do nothing to avoid AppKit assertions.
+                    return;
+                }
             }
         }
     }
