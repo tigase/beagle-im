@@ -303,7 +303,7 @@ open class SSLProcessor: ConnectorBase.NetworkProcessor, SSLNetworkProcessor {
 
             switch certificateValidation {
             case .default:
-                let policy = SecPolicyCreateSSL(false, serverName as CFString?);
+                let policy = SecPolicyCreateSSL(true, serverName as CFString?);
                 var result = SecTrustResultType.invalid;
                 SecTrustSetPolicies(trust, policy);
                 _ = SecTrustEvaluateWithError(trust, nil);
