@@ -163,7 +163,9 @@ class DownloadManager: NSObject, @unchecked Sendable  {
     func download(session: URLSession, url: URL, expectedSize: Int64, completionHandler: @escaping (Result<(URL,String), DownloadError>)->Void) {
         let request = URLRequest(url: url);
         let task = session.downloadTask(with: request);
-        inProgress[task] = Item(maxSize: expectedSize, completionHandler: completionHandler);
+        queue.sync(execute: {
+            inProgress[task] = Item(maxSize: expectedSize, completionHandler: completionHandler);
+        })
         task.resume();
     }
 
