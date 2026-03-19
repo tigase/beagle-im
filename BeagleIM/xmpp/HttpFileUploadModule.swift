@@ -54,11 +54,14 @@ class HttpFileUploadModule: Martin.HttpFileUploadModule, Resetable, @unchecked S
                 guard let self else {
                     return;
                 }
+                self.availableComponents = []
                 Task {
                     do {
-                        let values = try await self.findHttpUploadComponents();
-                        self.logger.debug("found http upload components: \(values)")
-                        self.availableComponents = values
+                        let stream = try await self.findHttpUploadComponentsStream();
+                        for await value in stream {
+                            self.logger.debug("found http upload component: \(value.jid)")
+                            self.availableComponents.append(value)
+                        }
                     } catch {
                         self.logger.error("retrieval of http upload components failed: \(error)")
                     }
