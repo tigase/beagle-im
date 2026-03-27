@@ -303,7 +303,16 @@ class DBChatHistoryStore: @unchecked Sendable {
             return;
         } else if message.type == .groupchat, let stanzaId = remoteMsgId, self.findItemId(for: conversation, remoteMsgId: stanzaId) != nil {
             return;
+        } else if let originId = stanzaId, direction == .incoming && (message.type == .chat || message.type == .normal) {
+            // workaround for Openfire advertising MAM:2 without support for XEP-0359
+            if let item = self.findItem(for: conversation, originId: originId, sender: sender) {
+                if (abs(item.timestamp.timeIntervalSince(timestamp)) < 60.0) {
+                    // duplicated message sent from MAM archive (mostly MAM:1 and not MAM:2)
+                    return;
+                }
+            }
         }
+
                 
         if let originId = stanzaId, message.type == .groupchat || direction == .outgoing, let existingMessageId = self.findItemId(for: conversation, originId: originId, sender: sender) {
             if let stableId = serverMsgId {
