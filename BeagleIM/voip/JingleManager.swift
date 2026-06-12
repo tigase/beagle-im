@@ -170,7 +170,7 @@ class JingleManager: JingleSessionManager, @unchecked Sendable {
         return Set(support);
     }
     
-    func messageInitiation(for context: Context, from jid: JID, action: Jingle.MessageInitiationAction) throws {
+    func messageInitiation(for context: Context, from jid: JID, action: Jingle.MessageInitiationAction, timestamp: Date?) throws {
         switch action {
         case .propose(let id, let descriptions):
             guard self.session(for: context.userBareJid, with: jid, sid: id) == nil else {
