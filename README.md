@@ -1,6 +1,3 @@
-> # NOTE: Tigase BeagleIM has new home at [tigase.dev/tigase/_clients/beagle-im/](https://tigase.dev/tigase/_clients/beagle-im/) - please submit all issues/pull-requests there!
-
-
 <p align="center">
   <a href="https://beagle.im/">
     <img
@@ -39,9 +36,8 @@ To learn more about the XMPP client features visit https://beagle.im.
 When looking for support, please first search for answers to your question in the available online channels:
 
 * Our online documentation: [Tigase Docs](https://docs.tigase.net)
-* Existing tickets: [GitHub issues](https://github.com/tigase/beagle-im/issues)
 
-If you didn't find an answer in the resources above, feel free to submit an [issue](https://github.com/tigase/beagle-im/issues/new/choose).
+If you didn't find an answer in the resources above, feel free to submit your question as [new issue on GitHub](./issues) or, if you have valid support subscription, open [new support ticket](https://tigase.net/technical-support).
 
 # Downloads
 
