@@ -125,6 +125,11 @@ class RegisterAccountController: NSViewController, NSTextFieldDelegate {
         DispatchQueue.main.async {
             self.submitButton?.isEnabled = true;
             self.progressIndicator?.stopAnimation(self);
+            // Martin's AccountRegistrationTask calls finish() on failure, which sets task.client=nil.
+            // If we keep the old task reference, subsequent Submit clicks can become a no-op.
+            // Reset task to force a fresh connection/flow on the next attempt.
+            self.task = nil;
+            self.form?.xmppClient = nil;
         }
 
         var msg = message;
